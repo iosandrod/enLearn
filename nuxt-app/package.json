@@ -1,0 +1,40 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "nuxt dev --port 3000",
+    "build": "nuxt build",
+    "preview": "nuxt preview --port 3000",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "@supabase/supabase-js": "^2.45.1",
+    "@vant/touch-emulator": "^1.5.0",
+    "@vueuse/core": "^14.3.0",
+    "@vueuse/integrations": "^14.3.0",
+    "animate.css": "^4.1.1",
+    "dayjs": "^1.11.21",
+    "element-plus": "^2.14.3",
+    "lodash-es": "^4.18.1",
+    "monaco-editor": "^0.33.0",
+    "nanoid": "^6.0.0",
+    "normalize.css": "^8.0.1",
+    "nuxt": "^3.0.0",
+    "qrcode": "^1.5.4",
+    "vant": "^3.5.2",
+    "vuedraggable": "^4.1.0",
+    "vxe-pc-ui": "latest",
+    "vxe-table": "latest"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
+    "@types/node": "^20.19.43",
+    "@types/qrcode": "^1.5.6",
+    "@vitejs/plugin-vue-jsx": "^5.1.6",
+    "sass": "^1.101.6",
+    "typescript": "^5.4.5",
+    "vue-tsc": "^3.3.7"
+  },
+  "packageManager": "pnpm@10.15.1"
+}

@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --dir nuxt-app dev",
+    "build": "pnpm --dir nuxt-app build",
+    "start": "pnpm --dir nuxt-app preview",
+    "typecheck": "pnpm --dir nuxt-app typecheck",
+    "api:dev": "pnpm --dir api dev",
+    "api:build": "pnpm --dir api build",
+    "api:start": "pnpm --dir api start"
+  },
+  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
+}

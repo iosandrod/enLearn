@@ -1,0 +1,117 @@
+<template>
+  <section class="content-panel">
+    <h2 class="page-title">Settings</h2>
+    <p class="page-description">
+      Preferences are rendered from a schema object and saved to Supabase metadata.
+    </p>
+
+    <LowCodeForm
+      v-model="settingsForm"
+      :schema="settingsSchema"
+      :loading="loading"
+      @submit="saveSettings"
+    />
+
+    <p v-if="message" :class="messageClass">{{ message }}</p>
+  </section>
+</template>
+
+<script setup lang="ts">
+import { settingsSchema } from '~/schemas/settings';
+
+definePageMeta({
+  layout: 'dashboard',
+  middleware: 'auth'
+});
+
+const SETTINGS_STORAGE_KEY = 'hikari-dashboard-settings';
+const supabase = useAppSupabase();
+const loading = ref(false);
+const message = ref('');
+const messageClass = ref('lc-help');
+const settingsForm = ref<Record<string, unknown>>({
+  notifyEverything: false,
+  notifyAvailable: true,
+  notifyIgnoring: true,
+  language: 'en',
+  theme: 'system',
+  font: 'sans'
+});
+
+function applyTheme(theme: unknown) {
+  if (import.meta.server) return;
+  document.documentElement.dataset.theme = String(theme);
+}
+
+async function loadSettings() {
+  const cached = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+
+  if (cached) {
+    try {
+      settingsForm.value = { ...settingsForm.value, ...JSON.parse(cached) };
+      applyTheme(settingsForm.value.theme);
+      return;
+    } catch {
+      window.localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    }
+  }
+
+  const { data } = await supabase.auth.getUser();
+  const saved = data.user?.user_metadata?.dashboard_settings;
+
+  if (saved && typeof saved === 'object') {
+    const normalized = saved as Record<string, unknown>;
+    settingsForm.value = {
+      notifyEverything:
+        normalized.notifyEverything ??
+        (normalized.notifications as Record<string, unknown> | undefined)
+          ?.everything ??
+        false,
+      notifyAvailable:
+        normalized.notifyAvailable ??
+        (normalized.notifications as Record<string, unknown> | undefined)
+          ?.available ??
+        true,
+      notifyIgnoring:
+        normalized.notifyIgnoring ??
+        (normalized.notifications as Record<string, unknown> | undefined)
+          ?.ignoring ??
+        true,
+      language: normalized.language ?? 'en',
+      theme: normalized.theme ?? 'system',
+      font: normalized.font ?? 'sans'
+    };
+    applyTheme(settingsForm.value.theme);
+  }
+}
+
+async function saveSettings(values: Record<string, unknown>) {
+  loading.value = true;
+  message.value = '';
+  settingsForm.value = { ...values };
+  window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(values));
+  applyTheme(values.theme);
+
+  try {
+    const { error } = await supabase.auth.updateUser({
+      data: {
+        dashboard_settings: values
+      }
+    });
+
+    if (error) throw error;
+    message.value = 'Settings saved successfully.';
+    messageClass.value = 'lc-help';
+  } catch (error) {
+    message.value =
+      error instanceof Error
+        ? `Saved locally. Supabase error: ${error.message}`
+        : 'Saved locally. Supabase could not be reached.';
+    messageClass.value = 'lc-error';
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(loadSettings);
+</script>
