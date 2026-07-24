@@ -9,18 +9,22 @@ export type LowCodeRule = {
   message: string;
 };
 
+export type LowCodeBuiltInFieldComponent =
+  | 'vxe-input'
+  | 'vxe-textarea'
+  | 'vxe-select'
+  | 'vxe-switch'
+  | 'vxe-password-input'
+  | 'vxe-checkbox-group'
+  | 'vxe-radio-group'
+  | 'vxe-tree-select';
+
+export type LowCodeFieldComponent = LowCodeBuiltInFieldComponent | (string & {});
+
 export type LowCodeField = {
   field: string;
   label: string;
-  component:
-    | 'vxe-input'
-    | 'vxe-textarea'
-    | 'vxe-select'
-    | 'vxe-switch'
-    | 'vxe-password-input'
-    | 'vxe-checkbox-group'
-    | 'vxe-radio-group'
-    | 'vxe-tree-select';
+  component: LowCodeFieldComponent;
   help?: string;
   props?: Record<string, unknown>;
   options?: LowCodeOption[];
@@ -102,32 +106,9 @@ export type LowCodeAction = {
   code: string;
   label: string;
   type?: 'submit' | 'reset' | 'button';
-  variant?: 'button' | 'link';
   status?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
   route?: string;
   disabled?: boolean;
-  handler?:
-    | {
-        type: 'auth.signInWithPassword';
-        emailField?: string;
-        passwordField?: string;
-        successRoute?: string;
-        successMessage?: string;
-        errorMessage?: string;
-      }
-    | {
-        type: 'auth.signUp';
-        emailField?: string;
-        passwordField?: string;
-        successRoute?: string;
-        successMessage?: string;
-        errorMessage?: string;
-      }
-    | {
-        type: 'auth.signInWithOAuth';
-        provider: string;
-        errorMessage?: string;
-      };
 };
 
 export type LowCodeFormSchema = {
@@ -227,7 +208,6 @@ export type LowCodePageFormBlock = {
   kind: 'form';
   title?: string;
   description?: string;
-  panel?: boolean;
   schema: LowCodeFormSchema;
   sourceKey?: string;
   submitSourceKey?: string;
@@ -350,9 +330,6 @@ export type LowCodePageSchema = {
   config?: {
     bgColor?: string;
     bgImage?: string;
-    shellClass?: string;
-    pageClass?: string;
-    showIntro?: boolean;
   };
   dataSources?: Record<string, LowCodePageDataSource>;
   blocks: LowCodePageBlock[];

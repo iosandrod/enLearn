@@ -6,192 +6,39 @@
       :fields-by-key="fieldsByKey"
     >
       <template #field="{ field }">
-        <div class="lc-field">
-          <label :for="field.field">{{ field.label }}</label>
-
-          <vxe-select
-            v-if="field.component === 'vxe-select'"
-            :id="field.field"
-            v-model="formData[field.field]"
-            v-bind="field.props"
-          >
-            <vxe-option
-              v-for="option in resolveOptions(field)"
-              :key="String(option.value)"
-              :label="option.label"
-              :value="option.value"
-            />
-          </vxe-select>
-
-          <vxe-switch
-            v-else-if="field.component === 'vxe-switch'"
-            :id="field.field"
-            v-model="formData[field.field]"
-            v-bind="field.props"
-          />
-
-          <vxe-textarea
-            v-else-if="field.component === 'vxe-textarea'"
-            :id="field.field"
-            v-model="formData[field.field]"
-            v-bind="field.props"
-          />
-
-          <vxe-password-input
-            v-else-if="field.component === 'vxe-password-input'"
-            :id="field.field"
-            v-model="formData[field.field]"
-            v-bind="field.props"
-          />
-
-          <vxe-checkbox-group
-            v-else-if="field.component === 'vxe-checkbox-group'"
-            :id="field.field"
-            v-model="formData[field.field]"
-            :options="resolveOptions(field)"
-            :option-props="field.optionProps"
-            v-bind="field.props"
-          />
-
-          <vxe-radio-group
-            v-else-if="field.component === 'vxe-radio-group'"
-            :id="field.field"
-            v-model="formData[field.field]"
-            :options="resolveOptions(field)"
-            :option-props="field.optionProps"
-            v-bind="field.props"
-          />
-
-          <vxe-tree-select
-            v-else-if="field.component === 'vxe-tree-select'"
-            :id="field.field"
-            v-model="formData[field.field]"
-            :options="resolveOptions(field)"
-            :option-props="field.optionProps"
-            v-bind="field.props"
-          />
-
-          <vxe-input
-            v-else
-            :id="field.field"
-            v-model="formData[field.field]"
-            v-bind="field.props"
-          />
-
-          <span v-if="field.help" class="lc-help">{{ field.help }}</span>
-          <span v-if="errors[field.field]" class="lc-error">
-            {{ errors[field.field] }}
-          </span>
-        </div>
+        <LowCodeFormField
+          :field="field"
+          :model-value="formData[field.field]"
+          :options="resolveOptions(field)"
+          :error="errors[field.field]"
+          @update:model-value="(value) => setFieldValue(field, value)"
+        />
       </template>
     </LowCodeFormLayout>
 
     <div class="lc-form-grid" v-else>
-      <div
+      <LowCodeFormField
         v-for="field in schema.fields"
         :key="field.field"
-        class="lc-field"
-      >
-        <label :for="field.field">{{ field.label }}</label>
-
-        <vxe-select
-          v-if="field.component === 'vxe-select'"
-          :id="field.field"
-          v-model="formData[field.field]"
-          v-bind="field.props"
-        >
-          <vxe-option
-            v-for="option in resolveOptions(field)"
-            :key="String(option.value)"
-            :label="option.label"
-            :value="option.value"
-          />
-        </vxe-select>
-
-        <vxe-switch
-          v-else-if="field.component === 'vxe-switch'"
-          :id="field.field"
-          v-model="formData[field.field]"
-          v-bind="field.props"
-        />
-
-        <vxe-textarea
-          v-else-if="field.component === 'vxe-textarea'"
-          :id="field.field"
-          v-model="formData[field.field]"
-          v-bind="field.props"
-        />
-
-        <vxe-password-input
-          v-else-if="field.component === 'vxe-password-input'"
-          :id="field.field"
-          v-model="formData[field.field]"
-          v-bind="field.props"
-        />
-
-        <vxe-checkbox-group
-          v-else-if="field.component === 'vxe-checkbox-group'"
-          :id="field.field"
-          v-model="formData[field.field]"
-          :options="resolveOptions(field)"
-          :option-props="field.optionProps"
-          v-bind="field.props"
-        />
-
-        <vxe-radio-group
-          v-else-if="field.component === 'vxe-radio-group'"
-          :id="field.field"
-          v-model="formData[field.field]"
-          :options="resolveOptions(field)"
-          :option-props="field.optionProps"
-          v-bind="field.props"
-        />
-
-        <vxe-tree-select
-          v-else-if="field.component === 'vxe-tree-select'"
-          :id="field.field"
-          v-model="formData[field.field]"
-          :options="resolveOptions(field)"
-          :option-props="field.optionProps"
-          v-bind="field.props"
-        />
-
-        <vxe-input
-          v-else
-          :id="field.field"
-          v-model="formData[field.field]"
-          v-bind="field.props"
-        />
-
-        <span v-if="field.help" class="lc-help">{{ field.help }}</span>
-        <span v-if="errors[field.field]" class="lc-error">
-          {{ errors[field.field] }}
-        </span>
-      </div>
+        :field="field"
+        :model-value="formData[field.field]"
+        :options="resolveOptions(field)"
+        :error="errors[field.field]"
+        @update:model-value="(value) => setFieldValue(field, value)"
+      />
     </div>
 
-    <div class="lc-actions">
-      <template v-for="action in schema.actions" :key="action.code">
-        <button
-          v-if="action.variant === 'link'"
-          class="lc-link-action"
-          type="button"
-          :disabled="action.disabled || loading"
-          @click="handleAction(action)"
-        >
-          {{ action.label }}
-        </button>
-
-        <vxe-button
-          v-else
-          :status="action.status"
-          :loading="loading && action.type === 'submit'"
-          :disabled="action.disabled || (loading && action.type !== 'submit')"
-          @click="handleAction(action)"
-        >
-          {{ action.label }}
-        </vxe-button>
-      </template>
+    <div v-if="schema.actions.length" class="lc-actions">
+      <vxe-button
+        v-for="action in schema.actions"
+        :key="action.code"
+        :status="action.status"
+        :loading="loading && action.type === 'submit'"
+        :disabled="action.disabled || (loading && action.type !== 'submit')"
+        @click="handleAction(action)"
+      >
+        {{ action.label }}
+      </vxe-button>
     </div>
   </form>
 </template>
@@ -204,6 +51,7 @@ import type {
   LowCodeOption,
   LowCodeRule
 } from '~/types/lowcode';
+import LowCodeFormField from './LowCodeFormField.vue';
 
 const props = defineProps<{
   schema: LowCodeFormSchema;
@@ -286,6 +134,10 @@ function resolveOptions(field: LowCodeField) {
   return field.options ?? [];
 }
 
+function setFieldValue(field: LowCodeField, value: unknown) {
+  formData[field.field] = value;
+}
+
 function checkRule(value: unknown, rule: LowCodeRule) {
   if (
     rule.required &&
@@ -344,4 +196,10 @@ function handleAction(action: LowCodeAction) {
 
   emit('action', action, snapshot());
 }
+
+defineExpose({
+  submit: handleSubmit,
+  validate,
+  snapshot
+});
 </script>

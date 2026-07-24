@@ -1,8 +1,8 @@
 <template>
-  <component
-    :is="materialComponent"
-    v-if="materialComponent"
-    :block="block"
+  <LowCodeBlockRenderer
+    v-for="child in blocks"
+    :key="child.id"
+    :block="child"
     :resolved-data="resolvedData"
     :form-models="formModels"
     :search-filters="searchFilters"
@@ -16,23 +16,20 @@
     @search-submit="(payload) => emit('searchSubmit', payload)"
     @search-action="(payload) => emit('searchAction', payload)"
   />
-
-  <article v-else class="content-panel lc-node-unsupported">
-    <strong>未注册区块</strong>
-    <span>{{ block.kind }}</span>
-  </article>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import {
-  getLowCodeBlockMaterial,
-  type LowCodeBlockMaterialEmits,
-  type LowCodeBlockMaterialProps,
+import type {
+  LowCodeBlockMaterialEmits,
+  LowCodeBlockMaterialProps,
+  LowCodeRuntimeBlock,
 } from '~/lowcode/block-materials';
 
-const props = defineProps<LowCodeBlockMaterialProps>();
-const emit = defineEmits<LowCodeBlockMaterialEmits>();
+defineProps<
+  Omit<LowCodeBlockMaterialProps, 'block'> & {
+    blocks: LowCodeRuntimeBlock[];
+  }
+>();
 
-const materialComponent = computed(() => getLowCodeBlockMaterial(props.block.kind)?.component);
+const emit = defineEmits<LowCodeBlockMaterialEmits>();
 </script>

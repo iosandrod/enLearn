@@ -330,6 +330,15 @@ a {
   gap: 6px;
 }
 
+.lc-field > .vxe-input,
+.lc-field > .vxe-password-input,
+.lc-field > .vxe-textarea,
+.lc-field > .vxe-select,
+.lc-field > .vxe-tree-select {
+  width: 100%;
+  max-width: 100%;
+}
+
 .lc-field label {
   color: #344054;
   font-size: 12px;
@@ -367,22 +376,6 @@ a {
   gap: 10px;
 }
 
-.lc-link-action {
-  border: 0;
-  background: transparent;
-  color: #667085;
-  cursor: pointer;
-  font: inherit;
-  font-size: 14px;
-  padding: 0;
-  text-align: left;
-}
-
-.lc-link-action:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
 .lc-grid {
   display: grid;
   gap: 8px;
@@ -392,34 +385,6 @@ a {
   display: grid;
   gap: 8px;
   padding: 8px;
-}
-
-.lowcode-runtime-page.auth-lowcode-panel {
-  gap: 12px;
-  max-width: 440px;
-  padding: 28px;
-}
-
-.lowcode-runtime-page.auth-lowcode-panel .page-intro {
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-}
-
-.lowcode-runtime-page.auth-lowcode-panel .page-intro h1 {
-  font-size: 28px;
-}
-
-.lowcode-runtime-page.auth-lowcode-panel .page-intro p {
-  margin: 0 0 12px;
-  font-size: 14px;
-}
-
-.lowcode-runtime-page.auth-lowcode-panel .lc-actions {
-  display: grid;
-  gap: 10px;
-  margin-top: 6px;
 }
 
 .lowcode-runtime-page .content-panel,
@@ -494,6 +459,13 @@ a {
 .lc-node-tabs {
   display: grid;
   gap: 8px;
+}
+
+.lc-node-unsupported {
+  display: grid;
+  gap: 4px;
+  color: #9a3412;
+  background: #fff7ed;
 }
 
 .lc-node-tabs > .vxe-tabs {
