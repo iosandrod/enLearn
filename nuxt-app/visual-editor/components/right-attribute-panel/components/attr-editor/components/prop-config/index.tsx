@@ -85,19 +85,23 @@ export const PropConfig = defineComponent({
           <TablePropEditor v-model={propObj[prop]} propConfig={propConfig} />
         ),
         [VisualEditorPropsType.modelBind]: () => (
-          <ElCascader
-            clearable={true}
-            props={{
-              checkStrictly: true,
-              children: 'entitys',
-              label: 'name',
-              value: 'key',
-              expandTrigger: 'hover',
-            }}
-            placeholder="请选择绑定的请求数据"
-            v-model={propObj[prop]}
-            options={[...models.value]}
-          ></ElCascader>
+          models.value.length ? (
+            <ElCascader
+              clearable={true}
+              props={{
+                checkStrictly: true,
+                children: 'entitys',
+                label: 'name',
+                value: 'key',
+                expandTrigger: 'hover',
+              }}
+              placeholder="请选择绑定的请求数据"
+              v-model={propObj[prop]}
+              options={[...models.value]}
+            ></ElCascader>
+          ) : (
+            <ElInput v-model={propObj[prop]} placeholder={propConfig.tips || propConfig.label} />
+          )
         ),
       }[propConfig.type]();
     };

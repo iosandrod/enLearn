@@ -14,5 +14,4 @@ Object.keys(modules).forEach((key: string) => {
     module) as VisualEditorComponent;
 });
 
-console.log(components, 'container-component');
 export default components;

@@ -7,25 +7,34 @@
  * @FilePath: \vite-vue3-lowcode\src\visual-editor\index.vue
 -->
 <template>
-  <el-container>
-    <el-header height="80px" class="flex items-center shadow-md">
+  <el-container
+    class="visual-editor-shell"
+    :class="{
+      'is-without-header': !showHeader,
+      'is-form-workbench': workbenchMode === 'form',
+    }"
+  >
+    <el-header v-if="showHeader" height="64px" class="visual-editor-header">
       <!-- 顶部start -->
       <Header />
       <!-- 顶部end -->
     </el-header>
-    <el-container class="layout-container">
-      <el-aside class="shadow-sm" width="380px">
+    <el-container class="visual-editor-workspace">
+      <el-aside class="visual-editor-sidebar" :width="leftWidth">
         <!-- 左侧组件start -->
-        <left-aside />
+        <left-aside :exclude-labels="leftExcludeLabels" />
         <!-- 左侧组件end -->
       </el-aside>
-      <el-main>
+      <el-main class="visual-editor-main">
         <!-- 中间编辑区域start -->
-        <simulator-editor />
+        <simulator-editor
+          :allow-form-design="allowFormDesign"
+          :workbench-mode="workbenchMode"
+        />
         <!-- 中间编辑区域end -->
 
         <!-- 右侧属性面板start -->
-        <right-attribute-panel />
+        <right-attribute-panel :show-page-setting="showPageSetting" />
         <!-- 右侧属性面板end -->
       </el-main>
     </el-container>
@@ -37,30 +46,82 @@
   import LeftAside from './components/left-aside/index.vue';
   import RightAttributePanel from './components/right-attribute-panel';
   import SimulatorEditor from './components/simulator-editor/simulator-editor.vue';
+
+  withDefaults(
+    defineProps<{
+      showHeader?: boolean;
+      leftExcludeLabels?: string[];
+      leftWidth?: string;
+      allowFormDesign?: boolean;
+      showPageSetting?: boolean;
+      workbenchMode?: 'page' | 'form';
+    }>(),
+    {
+      showHeader: true,
+      leftExcludeLabels: () => [],
+      leftWidth: '340px',
+      allowFormDesign: true,
+      showPageSetting: true,
+      workbenchMode: 'page',
+    },
+  );
 </script>
 
-<style lang="scss">
-  .el-header,
-  .el-footer {
+<style lang="scss" scoped>
+  .visual-editor-shell {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    border-top: 1px solid #d8e0ea;
+    background: #eef3f8;
+  }
+
+  .visual-editor-header {
     position: relative;
-    z-index: 99;
-    background-color: white;
+    z-index: 22;
+    padding: 0;
+    border-bottom: 1px solid #d8e0ea;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 6%);
   }
 
-  .el-aside {
-    background-color: white;
+  .visual-editor-workspace {
+    height: calc(100% - 64px);
+    min-height: 0;
   }
 
-  .layout-container {
-    height: calc(100vh - 80px);
+  .visual-editor-shell.is-without-header {
+    border-top: 0;
+
+    .visual-editor-workspace {
+      height: 100%;
+    }
   }
 
-  .el-main {
+  .visual-editor-sidebar {
+    min-height: 0;
+    overflow: hidden;
+    border-right: 1px solid #d8e0ea;
+    background: #ffffff;
+    box-shadow: 1px 0 2px rgb(15 23 42 / 4%);
+  }
+
+  .visual-editor-main {
     position: relative;
-    padding: 12px;
-    background-color: #f5f5f5;
-    @media (min-width: 1111px) {
-      overflow-x: hidden;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #f1f5f9;
+  }
+
+  .visual-editor-shell.is-form-workbench {
+    border: 1px solid #d8e0ea;
+    border-radius: 8px;
+
+    .visual-editor-sidebar {
+      width: 300px;
     }
   }
 </style>

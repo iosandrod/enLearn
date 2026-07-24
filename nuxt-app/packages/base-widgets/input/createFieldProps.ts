@@ -1,5 +1,6 @@
 import {
   createEditorInputProp,
+  createEditorInputNumberProp,
   createEditorSelectProp,
   createEditorSwitchProp,
   createEditorModelBindProp,
@@ -137,5 +138,15 @@ export const createFieldProps = () => ({
   'show-word-limit': createEditorSwitchProp({
     label: '是否显示字数统计',
     tips: '需要设置 maxlength 属性',
+  }),
+  __formSpan: createEditorInputNumberProp({
+    label: '表单跨列',
+    defaultValue: 1,
+    min: 1,
+    max: 6,
+  }),
+  __formHelp: createEditorInputProp({
+    label: '帮助文本',
+    defaultValue: '',
   }),
 });

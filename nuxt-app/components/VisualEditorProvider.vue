@@ -1,6 +1,13 @@
 <template>
   <el-config-provider :locale="zhCn">
-    <VisualEditor />
+    <VisualEditor
+      :show-header="showHeader"
+      :left-exclude-labels="leftExcludeLabels"
+      :left-width="leftWidth"
+      :allow-form-design="allowFormDesign"
+      :show-page-setting="showPageSetting"
+      :workbench-mode="workbenchMode"
+    />
   </el-config-provider>
 </template>
 
@@ -19,9 +26,30 @@ import {
 } from '@/visual-editor/hooks/useVisualData';
 import { provideVisualEditorPersistence } from '@/visual-editor/hooks/useVisualPersistence';
 
-const props = defineProps<{
-  initialData?: VisualEditorModelValue | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    initialData?: VisualEditorModelValue | null;
+    initialPath?: string;
+    showHeader?: boolean;
+    leftExcludeLabels?: string[];
+    leftWidth?: string;
+    allowFormDesign?: boolean;
+    showPageSetting?: boolean;
+    workbenchMode?: 'page' | 'form';
+    persistToSession?: boolean;
+  }>(),
+  {
+    initialData: null,
+    initialPath: '',
+    showHeader: true,
+    leftExcludeLabels: () => [],
+    leftWidth: '340px',
+    allowFormDesign: true,
+    showPageSetting: true,
+    workbenchMode: 'page',
+    persistToSession: true
+  }
+);
 
 const emit = defineEmits<{
   save: [
@@ -34,7 +62,8 @@ const emit = defineEmits<{
 }>();
 
 const visualData = initVisualData({
-  initialData: props.initialData
+  initialData: props.initialData,
+  initialPath: props.initialPath
 });
 
 provide(injectKey, visualData);
@@ -44,7 +73,7 @@ function cloneModel() {
 }
 
 function persistToSession() {
-  if (typeof sessionStorage === 'undefined') return;
+  if (props.persistToSession === false || typeof sessionStorage === 'undefined') return;
   sessionStorage.setItem(localKey, JSON.stringify(visualData.jsonData));
 }
 

@@ -189,7 +189,7 @@ export type VisualEditorTableOption = {
 interface EditorTableProp {
   label: string;
   option: VisualEditorTableOption;
-  defaultValue?: { label: string; value: string }[];
+  defaultValue?: Record<string, any>[];
 }
 
 export function createEditorTableProp({

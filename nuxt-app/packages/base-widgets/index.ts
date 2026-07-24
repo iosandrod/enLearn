@@ -13,5 +13,4 @@ Object.entries(modules).forEach(([key, module]) => {
     module) as VisualEditorComponent;
 });
 
-console.log(components, 'base-widgets');
 export default components;

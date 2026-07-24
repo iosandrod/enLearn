@@ -1,7 +1,7 @@
 <template>
-  <div class="simulator-container">
+  <div class="simulator-container" :class="{ 'is-form-workbench': workbenchMode === 'form' }">
     <div class="simulator-editor">
-      <div class="simulator-editor-content">
+      <div class="simulator-editor-content" :style="pageStyle">
         <DraggableTransitionGroup
           v-model:drag="drag"
           v-model="currentPage.blocks"
@@ -54,7 +54,7 @@
 </template>
 
 <script lang="tsx" setup>
-  import { ref, watchEffect } from 'vue';
+  import { computed, ref } from 'vue';
   import { cloneDeep } from 'lodash-es';
   import DraggableTransitionGroup from './draggable-transition-group.vue';
   import CompRender from './comp-render';
@@ -66,10 +66,25 @@
   import { useVisualData } from '@/visual-editor/hooks/useVisualData';
   import { useModal } from '@/visual-editor/hooks/useModal';
   import { generateNanoid } from '@/visual-editor/utils';
+  import {
+    $$formDesigner,
+    type FormDesignerResult,
+  } from '@/visual-editor/components/form-designer/form-designer.service';
 
   defineOptions({
     name: 'SimulatorEditor',
   });
+
+  const props = withDefaults(
+    defineProps<{
+      allowFormDesign?: boolean;
+      workbenchMode?: 'page' | 'form';
+    }>(),
+    {
+      allowFormDesign: true,
+      workbenchMode: 'page',
+    },
+  );
 
   const { currentPage, setCurrentBlock } = useVisualData();
 
@@ -77,23 +92,13 @@
 
   const drag = ref(false);
 
-  /**
-   * @description 操作当前页面样式表
-   */
-  watchEffect(() => {
+  const pageStyle = computed(() => {
     const { bgImage, bgColor } = currentPage.value.config;
-    const bodyStyleStr = `
-      .simulator-editor-content {
-        background-color: ${bgColor};
-        background-image: url(${bgImage});
-      }`;
-    const styleSheets = document.styleSheets[0];
-    const firstCssRule = document.styleSheets[0].cssRules[0];
-    const isExistContent = firstCssRule.cssText.includes('.simulator-editor-content');
-    if (isExistContent) {
-      styleSheets.deleteRule(0);
-    }
-    styleSheets.insertRule(bodyStyleStr);
+
+    return {
+      backgroundColor: bgColor || '#ffffff',
+      backgroundImage: bgImage ? `url(${bgImage})` : undefined,
+    };
   });
 
   //递归实现
@@ -160,7 +165,6 @@
    * 删除组件
    */
   const deleteComp = (block: VisualEditorBlockData, parentBlocks = currentPage.value.blocks) => {
-    console.log(block, 'block');
     const index = parentBlocks.findIndex((item) => item._vid == block._vid);
     if (index != -1) {
       delete globalProperties.$$refs[parentBlocks[index]._vid];
@@ -169,6 +173,35 @@
         setCurrentBlock({} as VisualEditorBlockData);
       }
     }
+  };
+
+  const formDesignComponentKeys = new Set(['form', 'lowcode-search-form', 'lowcode-edit-form']);
+
+  const isFormDesignBlock = (block: VisualEditorBlockData) =>
+    formDesignComponentKeys.has(block.componentKey) || Array.isArray(block.props?.fields);
+
+  const syncFormDesignToPageBlock = (
+    block: VisualEditorBlockData,
+    result: FormDesignerResult,
+  ) => {
+    block.props.fields = cloneDeep(result.fields);
+    delete block.props.columns;
+    block.props.formDesignerModel = cloneDeep(result.designerModel);
+    block.props.formDesignerUpdatedAt = Date.now();
+    selectComp(block);
+  };
+
+  const openFormDesigner = async (block: VisualEditorBlockData) => {
+    selectComp(block);
+    const isSearchForm = block.componentKey === 'lowcode-search-form';
+    const result = await $$formDesigner({
+      title: `${block.label || '表单'}设计`,
+      mode: isSearchForm ? 'search' : 'edit',
+      fields: Array.isArray(block.props?.fields) ? block.props.fields : [],
+      designerModel: block.props?.formDesignerModel || null,
+    });
+
+    syncFormDesignToPageBlock(block, result);
   };
 
   const onContextmenuBlock = (
@@ -180,6 +213,15 @@
       reference: e,
       content: () => (
         <>
+          {props.allowFormDesign && isFormDesignBlock(block) && (
+            <DropdownOption
+              label="进入设计"
+              icon="el-icon-edit"
+              {...{
+                onClick: () => void openFormDesigner(block),
+              }}
+            />
+          )}
           <DropdownOption
             label="复制节点"
             icon="el-icon-document-copy"
@@ -245,35 +287,73 @@
     display: flex;
     width: 100%;
     height: 100%;
-    padding-right: 380px;
-    align-items: center;
+    min-width: 0;
+    min-height: 0;
+    padding: 24px 384px 24px 24px;
+    overflow: auto;
+    box-sizing: border-box;
+    align-items: flex-start;
     justify-content: center;
 
     @media (max-width: 1114px) {
-      padding-right: 0;
+      padding-right: 24px;
+    }
+
+    &.is-form-workbench {
+      padding: 18px 374px 18px 18px;
+
+      .simulator-editor {
+        width: min(680px, 100%);
+        min-width: 420px;
+        height: min(720px, 100%);
+        border-radius: 12px;
+        padding: 18px;
+        background: #ffffff;
+      }
+
+      .simulator-editor-content {
+        width: 100%;
+        min-height: 640px;
+        border-radius: 6px;
+      }
+
+      @media (max-width: 1114px) {
+        padding-right: 18px;
+      }
     }
   }
 
   .simulator-editor {
-    width: 660px;
-    height: 740px;
-    min-width: 660px;
-    padding: 60px 150px 0;
+    width: 420px;
+    height: min(760px, 100%);
+    min-width: 420px;
+    min-height: 620px;
+    padding: 48px 30px 24px;
     overflow: hidden auto;
-    background: #fafafa;
-    border-radius: 5px;
+    border: 1px solid #dbe3ee;
+    border-radius: 24px;
+    background: linear-gradient(180deg, #fbfdff 0%, #f3f7fb 100%);
+    box-shadow:
+      0 18px 42px rgb(15 23 42 / 10%),
+      inset 0 0 0 1px rgb(255 255 255 / 70%);
     box-sizing: border-box;
     background-clip: content-box;
-    contain: layout;
+    flex: none;
+    contain: paint layout;
 
     &::-webkit-scrollbar {
       width: 0;
     }
 
     &-content {
+      width: 360px;
       min-height: 100%;
+      margin: 0 auto;
+      border: 1px solid #eef2f7;
+      border-radius: 4px;
+      overflow: hidden;
       transform: translate(0);
-      box-shadow: 0 8px 12px #ebedf0;
+      box-shadow: 0 12px 28px rgb(15 23 42 / 8%);
     }
   }
 

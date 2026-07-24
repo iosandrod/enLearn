@@ -1,38 +1,54 @@
 <template>
-  <div class="lowcode-runtime-page">
-    <section class="page-intro">
-      <h1>{{ page.schema.title }}</h1>
-      <p>{{ page.schema.description ?? page.description ?? '' }}</p>
-    </section>
+  <div :class="pageShellClass" :style="pageShellStyle">
+    <div :class="pageClass">
+      <section v-if="showPageIntro" class="page-intro">
+        <h1>{{ page.schema.title }}</h1>
+        <p>{{ page.schema.description ?? page.description ?? '' }}</p>
+      </section>
 
-    <section v-if="dataLoading" class="content-panel">
-      <p class="page-description">{{ loadingText }}</p>
-    </section>
+      <section v-if="dataLoading" class="content-panel">
+        <p class="page-description">{{ loadingText }}</p>
+      </section>
 
-    <LowCodeBlockRenderer
-      v-for="block in page.schema.blocks"
-      :key="block.id"
-      :block="block"
-      :resolved-data="resolvedData"
-      :form-models="formModels"
-      :search-filters="searchFilters"
-      :loading-block-id="loadingBlockId"
-      :loading-grid-id="loadingGridId"
-      @form-submit="({ block: formBlock, values }) => handleFormSubmit(formBlock, values)"
-      @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
-      @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
-      @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
-      @toolbar-action="({ action }) => handleToolbarAction(action)"
-      @search-submit="({ block: searchBlock, values }) => handleSearchSubmit(searchBlock, values)"
-      @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
-    />
+      <LowCodeBlockRenderer
+        v-for="block in page.schema.blocks"
+        :key="block.id"
+        :block="block"
+        :resolved-data="resolvedData"
+        :form-models="formModels"
+        :search-filters="searchFilters"
+        :loading-block-id="loadingBlockId"
+        :loading-grid-id="loadingGridId"
+        @form-submit="
+          ({ block: formBlock, values }) => handleFormSubmit(formBlock, values)
+        "
+        @form-action="
+          ({ block: formBlock, action, values }) =>
+            handleFormAction(formBlock, action, values)
+        "
+        @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
+        @grid-delete="
+          ({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)
+        "
+        @toolbar-action="({ action }) => handleToolbarAction(action)"
+        @search-submit="
+          ({ block: searchBlock, values }) =>
+            handleSearchSubmit(searchBlock, values)
+        "
+        @search-action="
+          ({ block: searchBlock, action, values }) =>
+            handleSearchAction(searchBlock, action, values)
+        "
+      />
 
-    <p v-if="message" :class="messageClass">{{ message }}</p>
+      <p v-if="message" :class="messageClass">{{ message }}</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
+import type { Provider } from '@supabase/supabase-js';
 import type {
   LowCodeAction,
   LowCodePageBlock,
@@ -51,6 +67,7 @@ const props = defineProps<{
 const route = useRoute();
 const router = useRouter();
 const serviceApi = useServiceApi();
+const auth = useAuth();
 const loadingBlockId = ref('');
 const loadingGridId = ref('');
 const message = ref('');
@@ -60,6 +77,26 @@ const resolvedData = reactive<Record<string, unknown>>({});
 const formModels = reactive<Record<string, Record<string, unknown>>>({});
 const searchFilters = reactive<Record<string, Record<string, unknown>>>({});
 let loadSequence = 0;
+
+const pageConfig = computed(() => props.page.schema.config ?? {});
+const pageShellClass = computed(() => pageConfig.value.shellClass);
+const pageClass = computed(() =>
+  ['lowcode-runtime-page', pageConfig.value.pageClass].filter(Boolean)
+);
+const pageShellStyle = computed(() => {
+  const style: Record<string, string> = {};
+
+  if (pageConfig.value.bgColor) {
+    style.backgroundColor = pageConfig.value.bgColor;
+  }
+
+  if (pageConfig.value.bgImage) {
+    style.backgroundImage = `url(${pageConfig.value.bgImage})`;
+  }
+
+  return Object.keys(style).length ? style : undefined;
+});
+const showPageIntro = computed(() => pageConfig.value.showIntro !== false);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -130,6 +167,81 @@ function resolveRuntimePostData(postData?: Record<string, unknown>) {
 
 function resolveRuntimeRoute(path: string, row: Record<string, unknown> = {}) {
   return resolveRuntimeValue(path, row) as string;
+}
+
+function getActionErrorMessage(action: LowCodeAction, fallback: string) {
+  return action.handler?.errorMessage ?? fallback;
+}
+
+function setSuccessMessage(messageText?: string) {
+  if (!messageText) return;
+  message.value = messageText;
+  messageClass.value = 'lc-help';
+}
+
+async function executeActionRoute(
+  action: LowCodeAction,
+  values: Record<string, unknown> = {}
+) {
+  if (!action.route) {
+    return false;
+  }
+
+  await router.push(resolveRuntimeRoute(action.route, values));
+  return true;
+}
+
+async function executeActionHandler(
+  action: LowCodeAction,
+  values: Record<string, unknown> = {}
+) {
+  const handler = action.handler;
+
+  if (!handler) {
+    return false;
+  }
+
+  if (handler.type === 'auth.signInWithPassword') {
+    await auth.signInWithPassword({
+      email: String(values[handler.emailField ?? 'email'] ?? ''),
+      password: String(values[handler.passwordField ?? 'password'] ?? '')
+    });
+    setSuccessMessage(handler.successMessage);
+
+    if (handler.successRoute) {
+      await router.push(resolveRuntimeRoute(handler.successRoute, values));
+    }
+
+    return true;
+  }
+
+  if (handler.type === 'auth.signUp') {
+    await auth.signUp({
+      email: String(values[handler.emailField ?? 'email'] ?? ''),
+      password: String(values[handler.passwordField ?? 'password'] ?? '')
+    });
+    setSuccessMessage(handler.successMessage);
+
+    if (handler.successRoute) {
+      await router.push(resolveRuntimeRoute(handler.successRoute, values));
+    }
+
+    return true;
+  }
+
+  if (handler.type === 'auth.signInWithOAuth') {
+    await auth.signInWithOAuth(handler.provider as Provider);
+    return true;
+  }
+
+  return false;
+}
+
+function getSubmitAction(block: LowCodePageFormBlock) {
+  return (
+    block.schema.actions.find((action) => action.type === 'submit') ??
+    block.schema.actions.find((action) => action.code === 'submit')
+  );
 }
 
 function getDataSource(key?: string) {
@@ -298,9 +410,10 @@ async function handleFormSubmit(
   values: Record<string, unknown>
 ) {
   if (block.kind !== 'form') return;
+  const submitAction = getSubmitAction(block);
   const source = getDataSource(block.submitSourceKey ?? block.sourceKey);
 
-  if (!source) {
+  if (!source && !submitAction?.handler && !submitAction?.route) {
     return;
   }
 
@@ -308,16 +421,35 @@ async function handleFormSubmit(
   message.value = '';
 
   try {
-    await serviceApi.invoke(source.serviceName, source.saveMethod ?? source.serviceMethod, {
-      ...(source.postData ?? {}),
-      ...values
-    });
-    message.value = 'Saved successfully.';
-    messageClass.value = 'lc-help';
-    await loadPageData(props.page);
+    if (
+      submitAction &&
+      ((await executeActionRoute(submitAction, values)) ||
+        (await executeActionHandler(submitAction, values)))
+    ) {
+      return;
+    }
+
+    if (source) {
+      await serviceApi.invoke(
+        source.serviceName,
+        source.saveMethod ?? source.serviceMethod,
+        {
+          ...(source.postData ?? {}),
+          ...values
+        }
+      );
+      message.value = 'Saved successfully.';
+      messageClass.value = 'lc-help';
+      await loadPageData(props.page);
+    }
   } catch (error) {
     message.value =
-      error instanceof Error ? error.message : 'Could not submit the form.';
+      error instanceof Error
+        ? error.message
+        : getActionErrorMessage(
+            submitAction ?? { code: '', label: '' },
+            'Could not submit the form.'
+          );
     messageClass.value = 'lc-error';
   } finally {
     loadingBlockId.value = '';
@@ -329,24 +461,56 @@ async function handleFormAction(
   action: LowCodeAction,
   values: Record<string, unknown>
 ) {
-  if (action.route) {
-    await router.push(resolveRuntimeRoute(action.route, values));
+  if (action.code === 'submit') {
+    await handleFormSubmit(block, values);
     return;
   }
 
-  if (action.code === 'submit') {
-    await handleFormSubmit(block, values);
+  if (action.type === 'reset') {
+    return;
+  }
+
+  loadingBlockId.value = block.id;
+  message.value = '';
+
+  try {
+    if (await executeActionRoute(action, values)) {
+      return;
+    }
+
+    await executeActionHandler(action, values);
+  } catch (error) {
+    message.value =
+      error instanceof Error
+        ? error.message
+        : getActionErrorMessage(action, 'Could not complete the action.');
+    messageClass.value = 'lc-error';
+  } finally {
+    loadingBlockId.value = '';
   }
 }
 
 async function handleToolbarAction(action: LowCodeAction) {
-  if (action.route) {
-    await router.push(resolveRuntimeRoute(action.route));
-    return;
-  }
+  message.value = '';
 
-  if (action.code === 'refresh') {
-    await loadPageData(props.page);
+  try {
+    if (await executeActionRoute(action)) {
+      return;
+    }
+
+    if (await executeActionHandler(action)) {
+      return;
+    }
+
+    if (action.code === 'refresh') {
+      await loadPageData(props.page);
+    }
+  } catch (error) {
+    message.value =
+      error instanceof Error
+        ? error.message
+        : getActionErrorMessage(action, 'Could not complete the action.');
+    messageClass.value = 'lc-error';
   }
 }
 

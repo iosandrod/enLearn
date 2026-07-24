@@ -61,36 +61,37 @@
       <h2 v-if="block.title">{{ block.title }}</h2>
       <p v-if="block.description">{{ block.description }}</p>
     </header>
-    <div class="lc-tab-list">
-      <button
+    <vxe-tabs
+      :model-value="activeTabKey(block)"
+      @update:model-value="(key) => setActiveTab(block, String(key))"
+    >
+      <vxe-tab-pane
         v-for="tab in block.tabs"
         :key="tab.key"
-        :class="['lc-tab-button', { active: activeTabKey(block) === tab.key }]"
-        type="button"
-        @click="setActiveTab(block, tab.key)"
+        :title="tab.label"
+        :name="tab.key"
       >
-        {{ tab.label }}
-      </button>
-    </div>
-    <div class="lc-node-stack">
-      <LowCodeBlockRenderer
-        v-for="child in activeTabBlocks(block)"
-        :key="child.id"
-        :block="child"
-        :resolved-data="resolvedData"
-        :form-models="formModels"
-        :search-filters="searchFilters"
-        :loading-block-id="loadingBlockId"
-        :loading-grid-id="loadingGridId"
-        @form-submit="(payload) => emit('formSubmit', payload)"
-        @form-action="(payload) => emit('formAction', payload)"
-        @grid-edit="(payload) => emit('gridEdit', payload)"
-        @grid-delete="(payload) => emit('gridDelete', payload)"
-        @toolbar-action="(payload) => emit('toolbarAction', payload)"
-        @search-submit="(payload) => emit('searchSubmit', payload)"
-        @search-action="(payload) => emit('searchAction', payload)"
-      />
-    </div>
+        <div class="lc-node-stack lc-tab-pane-stack">
+          <LowCodeBlockRenderer
+            v-for="child in tab.blocks"
+            :key="child.id"
+            :block="child"
+            :resolved-data="resolvedData"
+            :form-models="formModels"
+            :search-filters="searchFilters"
+            :loading-block-id="loadingBlockId"
+            :loading-grid-id="loadingGridId"
+            @form-submit="(payload) => emit('formSubmit', payload)"
+            @form-action="(payload) => emit('formAction', payload)"
+            @grid-edit="(payload) => emit('gridEdit', payload)"
+            @grid-delete="(payload) => emit('gridDelete', payload)"
+            @toolbar-action="(payload) => emit('toolbarAction', payload)"
+            @search-submit="(payload) => emit('searchSubmit', payload)"
+            @search-action="(payload) => emit('searchAction', payload)"
+          />
+        </div>
+      </vxe-tab-pane>
+    </vxe-tabs>
   </section>
 
   <section v-else-if="block.kind === 'toolbar'" class="content-panel lc-node-toolbar">
@@ -131,7 +132,10 @@
     />
   </article>
 
-  <article v-else-if="block.kind === 'form'" class="content-panel">
+  <article
+    v-else-if="block.kind === 'form'"
+    :class="['lc-form-node', { 'content-panel': block.panel !== false }]"
+  >
     <header v-if="block.title || block.description" class="lc-node-header">
       <h2 v-if="block.title">{{ block.title }}</h2>
       <p v-if="block.description">{{ block.description }}</p>
@@ -314,16 +318,19 @@ function widthStyle(width?: number | string) {
   return { width: typeof width === 'number' ? `${width}px` : width };
 }
 
-function activeTabKey(block: LowCodePageTabsBlock) {
+function activeTabKey(block: LowCodePageBlock) {
+  if (block.kind !== 'tabs') return '';
   const firstKey = block.tabs[0]?.key ?? '';
   return activeTabs[block.id] ?? block.defaultKey ?? firstKey;
 }
 
-function setActiveTab(block: LowCodePageTabsBlock, key: string) {
+function setActiveTab(block: LowCodePageBlock, key: string) {
+  if (block.kind !== 'tabs') return;
   activeTabs[block.id] = key;
 }
 
-function activeTabBlocks(block: LowCodePageTabsBlock) {
+function activeTabBlocks(block: LowCodePageBlock) {
+  if (block.kind !== 'tabs') return [];
   return block.tabs.find((tab) => tab.key === activeTabKey(block))?.blocks ?? [];
 }
 

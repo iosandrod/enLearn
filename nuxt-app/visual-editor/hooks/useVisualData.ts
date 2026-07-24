@@ -66,6 +66,7 @@ const defaultValue: VisualEditorModelValue = {
 
 type InitVisualDataOptions = {
   initialData?: VisualEditorModelValue | null;
+  initialPath?: string;
 };
 
 function readLocalVisualData() {
@@ -92,14 +93,14 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
       ? localData
       : cloneDefaultValue();
 
-  const route = useRoute();
+  const route = options.initialPath ? null : useRoute();
 
-  console.log('jsonData：', jsonData);
   // 所有页面的path都必须以 / 开发
   const getPrefixPath = (path: string) => (path.startsWith('/') ? path : `/${path}`);
 
   const paths = Object.keys(jsonData.pages);
-  const currentPath = ref(jsonData.pages[route.path] ? route.path : paths[0] || '/');
+  const initialPath = getPrefixPath(options.initialPath || route?.path || '/');
+  const currentPath = ref(jsonData.pages[initialPath] ? initialPath : paths[0] || '/');
   const currentPage = jsonData.pages[currentPath.value] ?? jsonData.pages['/'];
 
   const state: IState = reactive({
@@ -116,7 +117,6 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
 
   // 更新page
   const updatePage = ({ newPath = '', oldPath, page }) => {
-    console.log(state.jsonData.pages[oldPath], page);
     if (newPath && newPath != oldPath) {
       page.path = newPath;
       // 如果传了新的路径，则认为是修改页面路由

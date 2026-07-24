@@ -1,14 +1,96 @@
 <template>
   <form class="lc-form" @submit.prevent="handleSubmit">
-    <div
-      class="lc-form-grid"
-      :style="{ '--lc-columns': String(schema.columns ?? 1) }"
+    <LowCodeFormLayout
+      v-if="schema.layout?.length"
+      :nodes="schema.layout"
+      :fields-by-key="fieldsByKey"
     >
+      <template #field="{ field }">
+        <div class="lc-field">
+          <label :for="field.field">{{ field.label }}</label>
+
+          <vxe-select
+            v-if="field.component === 'vxe-select'"
+            :id="field.field"
+            v-model="formData[field.field]"
+            v-bind="field.props"
+          >
+            <vxe-option
+              v-for="option in resolveOptions(field)"
+              :key="String(option.value)"
+              :label="option.label"
+              :value="option.value"
+            />
+          </vxe-select>
+
+          <vxe-switch
+            v-else-if="field.component === 'vxe-switch'"
+            :id="field.field"
+            v-model="formData[field.field]"
+            v-bind="field.props"
+          />
+
+          <vxe-textarea
+            v-else-if="field.component === 'vxe-textarea'"
+            :id="field.field"
+            v-model="formData[field.field]"
+            v-bind="field.props"
+          />
+
+          <vxe-password-input
+            v-else-if="field.component === 'vxe-password-input'"
+            :id="field.field"
+            v-model="formData[field.field]"
+            v-bind="field.props"
+          />
+
+          <vxe-checkbox-group
+            v-else-if="field.component === 'vxe-checkbox-group'"
+            :id="field.field"
+            v-model="formData[field.field]"
+            :options="resolveOptions(field)"
+            :option-props="field.optionProps"
+            v-bind="field.props"
+          />
+
+          <vxe-radio-group
+            v-else-if="field.component === 'vxe-radio-group'"
+            :id="field.field"
+            v-model="formData[field.field]"
+            :options="resolveOptions(field)"
+            :option-props="field.optionProps"
+            v-bind="field.props"
+          />
+
+          <vxe-tree-select
+            v-else-if="field.component === 'vxe-tree-select'"
+            :id="field.field"
+            v-model="formData[field.field]"
+            :options="resolveOptions(field)"
+            :option-props="field.optionProps"
+            v-bind="field.props"
+          />
+
+          <vxe-input
+            v-else
+            :id="field.field"
+            v-model="formData[field.field]"
+            v-bind="field.props"
+          />
+
+          <span v-if="field.help" class="lc-help">{{ field.help }}</span>
+          <span v-if="errors[field.field]" class="lc-error">
+            {{ errors[field.field] }}
+          </span>
+        </div>
+      </template>
+    </LowCodeFormLayout>
+
+    <div class="lc-form-grid" v-else>
       <div
         v-for="field in schema.fields"
         :key="field.field"
         class="lc-field"
-        :style="{ gridColumn: field.span ? `span ${field.span}` : undefined }"
       >
         <label :for="field.field">{{ field.label }}</label>
 
@@ -89,16 +171,27 @@
     </div>
 
     <div class="lc-actions">
-      <vxe-button
-        v-for="action in schema.actions"
-        :key="action.code"
-        :status="action.status"
-        :loading="loading && action.type === 'submit'"
-        :disabled="action.disabled"
-        @click="handleAction(action)"
-      >
-        {{ action.label }}
-      </vxe-button>
+      <template v-for="action in schema.actions" :key="action.code">
+        <button
+          v-if="action.variant === 'link'"
+          class="lc-link-action"
+          type="button"
+          :disabled="action.disabled || loading"
+          @click="handleAction(action)"
+        >
+          {{ action.label }}
+        </button>
+
+        <vxe-button
+          v-else
+          :status="action.status"
+          :loading="loading && action.type === 'submit'"
+          :disabled="action.disabled || (loading && action.type !== 'submit')"
+          @click="handleAction(action)"
+        >
+          {{ action.label }}
+        </vxe-button>
+      </template>
     </div>
   </form>
 </template>
@@ -128,6 +221,12 @@ const emit = defineEmits<{
 const formData = reactive<Record<string, unknown>>({ ...props.modelValue });
 const errors = reactive<Record<string, string>>({});
 const initialModel = ref<Record<string, unknown>>({ ...props.modelValue });
+const fieldsByKey = computed(() =>
+  props.schema.fields.reduce<Record<string, LowCodeField>>((prev, field) => {
+    prev[field.field] = field;
+    return prev;
+  }, {})
+);
 
 watch(
   () => props.modelValue,

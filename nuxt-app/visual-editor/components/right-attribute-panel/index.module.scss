@@ -5,7 +5,7 @@
 * @description：index.module
 * @update: 2021/4/28 17:03
 */
-$boxShadow: -2px 0 4px 0 rgb(0 0 0 / 10%);
+$boxShadow: -8px 0 24px rgb(15 23 42 / 8%);
 
 .drawer {
   position: absolute;
@@ -13,11 +13,12 @@ $boxShadow: -2px 0 4px 0 rgb(0 0 0 / 10%);
   right: 0;
   bottom: 0;
   z-index: 20;
-  width: 390px;
+  width: 360px;
+  border-left: 1px solid #d8e0ea;
   background-color: white;
   transform: translateX(100%);
   box-shadow: $boxShadow;
-  transition: transform 0.5s ease-in-out;
+  transition: transform 0.24s ease;
   contain: layout;
 
   &.is-open {
@@ -40,19 +41,30 @@ $boxShadow: -2px 0 4px 0 rgb(0 0 0 / 10%);
   top: 50%;
   left: 0;
   display: flex;
-  width: 20px;
-  height: 80px;
+  width: 24px;
+  height: 76px;
+  border: 1px solid #d8e0ea;
+  border-right: 0;
+  border-radius: 8px 0 0 8px;
   cursor: pointer;
   background: #fff;
-  transform: translateX(-20px);
+  color: #334155;
+  transform: translate(-24px, -50%);
   box-shadow: $boxShadow;
-  transition: transform 0.5s ease-in-out;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
   justify-content: center;
   align-items: center;
+
+  &:hover {
+    background: #eef6ff;
+    color: #1d73d8;
+  }
 }
 
 .attrs {
-  position: absolute;
+  position: relative;
   width: 100%;
   height: 100%;
   overflow-y: hidden;
@@ -62,20 +74,86 @@ $boxShadow: -2px 0 4px 0 rgb(0 0 0 / 10%);
     height: 100%;
 
     :global {
+      .el-tabs__header {
+        background: #f8fafc;
+      }
+
+      .el-tabs__item {
+        height: 40px;
+        color: #64748b;
+        font-size: 13px;
+      }
+
+      .el-tabs__item.is-active {
+        color: #1d73d8;
+        font-weight: 600;
+      }
+
       .el-tabs__content {
-        height: 100%;
-        padding-bottom: 50px;
+        height: calc(100% - 40px);
+        padding: 14px 14px 44px;
         overflow-y: auto;
+        box-sizing: border-box;
+      }
+
+      .el-form {
+        display: grid;
+        gap: 12px;
       }
 
       .el-form-item__label {
+        width: 94px;
+        height: auto;
         font-size: 12px;
+        line-height: 32px;
+        color: #475569;
+      }
+
+      .el-form-item {
+        margin-bottom: 0;
+        align-items: flex-start;
       }
 
       .el-form-item .el-form-item__content {
         display: flex;
-        justify-content: flex-end;
+        min-width: 0;
+        justify-content: flex-start;
         align-items: center;
+        flex: 1;
+      }
+
+      .el-input,
+      .el-select,
+      .el-input-number,
+      .el-cascader {
+        width: 100%;
+      }
+
+      .el-input-number .el-input__inner {
+        text-align: left;
+      }
+
+      .el-radio-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .el-radio-button__inner {
+        border-left: var(--el-border);
+        border-radius: 4px;
+      }
+
+      .el-tag {
+        max-width: 100%;
+        margin: 4px 4px 4px 0;
+        cursor: pointer;
+      }
+
+      .el-tag__content {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
     }
   }

@@ -17,7 +17,13 @@ import { useVisualData } from '@/visual-editor/hooks/useVisualData';
 
 export default defineComponent({
   name: 'RightAttributePanel',
-  setup() {
+  props: {
+    showPageSetting: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  setup(props) {
     const { currentBlock } = useVisualData();
 
     const state = reactive({
@@ -61,9 +67,11 @@ export default defineComponent({
                   <FormRule />
                 </ElTabPane>
               ) : null}
-              <ElTabPane label="页面设置" name="page-setting">
-                <PageSetting />
-              </ElTabPane>
+              {props.showPageSetting ? (
+                <ElTabPane label="页面设置" name="page-setting">
+                  <PageSetting />
+                </ElTabPane>
+              ) : null}
             </ElTabs>
           </div>
         </div>

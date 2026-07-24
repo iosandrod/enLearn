@@ -52,6 +52,7 @@ import type {
   VisualEditorModelValue,
   VisualEditorPage
 } from '@/visual-editor/visual-editor.utils';
+import { convertVisualEditorToLowCode } from '~/utils/visual-to-lowcode';
 
 const props = defineProps<{
   code?: string;
@@ -125,6 +126,10 @@ function isVisualEditorModel(value: unknown): value is VisualEditorModelValue {
   );
 }
 
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function normalizeSchema(schema: LowCodePageSchema | null | undefined) {
   if (!schema) return fallbackVisualModel.value;
   return isVisualEditorModel(schema.visualEditor) ? schema.visualEditor : fallbackVisualModel.value;
@@ -179,6 +184,8 @@ function buildSchema(payload: {
   currentPage: VisualEditorPage;
 }) {
   const previousSchema = (page.value?.schema ?? {}) as Partial<LowCodePageSchema>;
+  const converted = convertVisualEditorToLowCode(payload.model, payload.currentPage);
+  const hasRuntimeBlocks = converted.blocks.length > 0;
 
   return {
     ...previousSchema,
@@ -191,7 +198,16 @@ function buildSchema(payload: {
     keepAlive: true,
     config: payload.currentPage.config,
     visualEditor: payload.model,
-    blocks: Array.isArray(previousSchema.blocks) ? previousSchema.blocks : []
+    dataSources: hasRuntimeBlocks
+      ? converted.dataSources
+      : isPlainRecord(previousSchema.dataSources)
+        ? previousSchema.dataSources
+        : {},
+    blocks: hasRuntimeBlocks
+      ? converted.blocks
+      : Array.isArray(previousSchema.blocks)
+        ? previousSchema.blocks
+        : []
   };
 }
 

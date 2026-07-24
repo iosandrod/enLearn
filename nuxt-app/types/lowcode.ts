@@ -30,6 +30,26 @@ export type LowCodeField = {
   span?: number;
 };
 
+export type LowCodeFormLayoutColumn = {
+  span?: number | string;
+  blocks: LowCodeFormLayoutNode[];
+};
+
+export type LowCodeFormLayoutNode =
+  | {
+      kind: 'field';
+      field: string;
+    }
+  | {
+      kind: 'row';
+      gutter?: number | string;
+      columns: LowCodeFormLayoutColumn[];
+    }
+  | {
+      kind: 'stack';
+      blocks: LowCodeFormLayoutNode[];
+    };
+
 export type LowCodeGridFormatter =
   | {
       type: 'text';
@@ -82,15 +102,39 @@ export type LowCodeAction = {
   code: string;
   label: string;
   type?: 'submit' | 'reset' | 'button';
+  variant?: 'button' | 'link';
   status?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
   route?: string;
   disabled?: boolean;
+  handler?:
+    | {
+        type: 'auth.signInWithPassword';
+        emailField?: string;
+        passwordField?: string;
+        successRoute?: string;
+        successMessage?: string;
+        errorMessage?: string;
+      }
+    | {
+        type: 'auth.signUp';
+        emailField?: string;
+        passwordField?: string;
+        successRoute?: string;
+        successMessage?: string;
+        errorMessage?: string;
+      }
+    | {
+        type: 'auth.signInWithOAuth';
+        provider: string;
+        errorMessage?: string;
+      };
 };
 
 export type LowCodeFormSchema = {
   title?: string;
   columns?: number;
   fields: LowCodeField[];
+  layout?: LowCodeFormLayoutNode[];
   actions: LowCodeAction[];
 };
 
@@ -183,6 +227,7 @@ export type LowCodePageFormBlock = {
   kind: 'form';
   title?: string;
   description?: string;
+  panel?: boolean;
   schema: LowCodeFormSchema;
   sourceKey?: string;
   submitSourceKey?: string;
@@ -305,6 +350,9 @@ export type LowCodePageSchema = {
   config?: {
     bgColor?: string;
     bgImage?: string;
+    shellClass?: string;
+    pageClass?: string;
+    showIntro?: boolean;
   };
   dataSources?: Record<string, LowCodePageDataSource>;
   blocks: LowCodePageBlock[];

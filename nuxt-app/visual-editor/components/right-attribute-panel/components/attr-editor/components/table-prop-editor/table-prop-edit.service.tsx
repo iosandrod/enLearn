@@ -66,11 +66,15 @@ const ServiceComponent = defineComponent({
 
     return () => (
       <>
-        <ElDialog v-model={state.showFlag}>
+        <ElDialog
+          v-model={state.showFlag}
+          title={state.option.config.label || '属性编辑'}
+          width="min(960px, calc(100vw - 64px))"
+        >
           {{
             default: () => (
-              <div>
-                <div>
+              <div style={{ maxHeight: '66vh', overflow: 'auto' }}>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                   <ElButton {...({ onClick: methods.add } as any)}>添加</ElButton>
                   <ElButton {...({ onClick: methods.reset } as any)}>重置</ElButton>
                 </div>
@@ -79,7 +83,9 @@ const ServiceComponent = defineComponent({
                   {state.option.config.table!.options.map((item) => (
                     <ElTableColumn {...({ label: item.label } as any)}>
                       {{
-                        default: ({ row }: { row: any }) => <ElInput v-model={row[item.field]} />,
+                        default: ({ row }: { row: any }) => (
+                          <ElInput v-model={row[item.field]} style={{ minWidth: '92px' }} />
+                        ),
                       }}
                     </ElTableColumn>
                   ))}

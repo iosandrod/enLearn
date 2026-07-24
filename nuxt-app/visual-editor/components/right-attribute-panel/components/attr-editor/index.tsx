@@ -53,7 +53,6 @@ export const AttrEditor = defineComponent({
       if (currentBlock.value) {
         const { componentKey } = currentBlock.value;
         const component = visualConfig.componentMap[componentKey];
-        console.log('props.block:', currentBlock.value);
         content.push(
           <>
             <ElFormItem label="组件ID" labelWidth={'76px'}>
@@ -77,7 +76,13 @@ export const AttrEditor = defineComponent({
         );
         if (component) {
           if (component.props) {
-            content.push(<PropConfig component={component} block={currentBlock.value} />);
+            content.push(
+              <PropConfig
+                key={`${currentBlock.value._vid}-${currentBlock.value.componentKey}-props`}
+                component={component}
+                block={currentBlock.value}
+              />,
+            );
             {
               currentBlock.value.showStyleConfig &&
                 content.push(
@@ -128,14 +133,19 @@ export const AttrEditor = defineComponent({
       }
       return (
         <>
-          <ElForm labelPosition={'left'}>{content}</ElForm>
+          <ElForm
+            key={`${currentBlock.value?._vid || 'empty'}-${currentBlock.value?.componentKey || 'none'}`}
+            labelPosition={'left'}
+          >
+            {content}
+          </ElForm>
         </>
       );
     };
 
     return () => (
       <>
-        <FormEditor />
+        {FormEditor()}
       </>
     );
   },

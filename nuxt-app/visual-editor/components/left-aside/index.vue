@@ -26,34 +26,79 @@
   /**
    * @description 左侧边栏
    */
-  import { ref } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import components from './components';
 
   defineOptions({
     name: 'LeftAside',
   });
 
-  const tabs = Object.entries(components)
-    .map(([name, component]) => {
-      const { label, icon, order } = component;
-      return { label, icon, name, order, comp: component };
-    })
-    .sort((a, b) => a.order - b.order);
+  const props = withDefaults(
+    defineProps<{
+      excludeLabels?: string[];
+      includeLabels?: string[];
+    }>(),
+    {
+      excludeLabels: () => [],
+      includeLabels: () => [],
+    },
+  );
 
-  const activeName = ref(tabs[0].name);
+  const tabs = computed(() =>
+    Object.entries(components)
+      .map(([name, component]) => {
+        const { label, icon, order } = component;
+        return { label, icon, name, order, comp: component };
+      })
+      .filter((tab) => {
+        const includeLabels = props.includeLabels;
+        const excludeLabels = props.excludeLabels;
+
+        if (includeLabels.length && !includeLabels.includes(tab.label)) {
+          return false;
+        }
+
+        return !excludeLabels.includes(tab.label);
+      })
+      .sort((a, b) => a.order - b.order),
+  );
+
+  const activeName = ref('');
+
+  watch(
+    tabs,
+    (nextTabs) => {
+      if (!nextTabs.some((tab) => tab.name === activeName.value)) {
+        activeName.value = nextTabs[0]?.name || '';
+      }
+    },
+    { immediate: true },
+  );
 </script>
 
 <style lang="scss" scoped>
   .left-aside {
     height: 100%;
+    background: #fff;
     contain: layout;
 
     > :deep(.el-tabs__header) {
       margin-right: 0;
+      border-right: 1px solid #e2e8f0;
+      background: #f8fafc;
 
       .el-tabs__item {
-        height: 80px;
-        padding: 20px 16px;
+        width: 88px;
+        height: 72px;
+        padding: 10px 8px;
+        color: #475569;
+        font-size: 13px;
+        line-height: 1.2;
+
+        &.is-active {
+          background: #eef6ff;
+          color: #1d73d8;
+        }
 
         .tab-item {
           display: flex;
@@ -64,13 +109,18 @@
           [class^='el-icon-'] {
             font-size: 20px;
           }
+
+          .el-icon {
+            margin-bottom: 5px;
+          }
         }
       }
     }
 
     > :deep(.el-tabs__content) {
       height: 100%;
-      overflow-y: auto;
+      background: #ffffff;
+      overflow: hidden auto;
     }
   }
 </style>
