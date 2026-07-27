@@ -35,3 +35,86 @@
 [36mi[39m Vite client warmed up in 6ms
 [36mi[39m [32m✨ new dependencies optimized: [33m@vue-flow/core[32m[39m
 [36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeFormField.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeGrid.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-checkbox-group/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-json-editor/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-color-picker/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-switch/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-password-input/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-number-input/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-radio-group/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-select/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-cascader/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-tree-select/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-sub-form/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-input/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-option-select/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-textarea/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/modal/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/drawer/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/container/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/stat-card/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/detail/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/text/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/toolbar/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/section/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/tree/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/form/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/button-group/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/grid/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/tabs/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/search-form/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeGrid.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/grid/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/modal/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m[2m (x4)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeFormField.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeGrid.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-checkbox-group/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-json-editor/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-color-picker/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-switch/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-password-input/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-number-input/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-radio-group/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-select/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-cascader/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-tree-select/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-sub-form/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-input/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-option-select/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/vxe-textarea/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/modal/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/drawer/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/container/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/stat-card/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/detail/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/text/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/toolbar/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/section/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/tree/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/form/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/button-group/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/grid/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/tabs/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/search-form/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32m✨ new dependencies optimized: [33mlodash-es, nanoid, @vueuse/integrations/useQRCode, @vueuse/core, vuedraggable, monaco-editor, dayjs[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeVisualDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeVisualDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m[2m (x2)[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue[22m[2m (x2)[22m
+[32m√[39m Vite server hmr 82 files in 8980.959ms
+[43m[30m WARN [39m[49m [Vue Router warn]: No match found for location with path "/api/_nuxt/"
+[43m[30m WARN [39m[49m [Vue Router warn]: No match found for location with path "/api/_nuxt/"
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /components/LowCodePageRenderer.vue, /components/LowCodeFormLayout.vue, /components/LowCodeTreeItem.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeGrid.vue, /components/LowCodeForm.vue[22m[2m (x4)[22m

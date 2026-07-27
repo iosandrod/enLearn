@@ -1,4 +1,8 @@
-import type { LowCodePageBlock, LowCodeRuntimeDirective } from '../../../types/lowcode';
+import type {
+  LowCodeGridRowAction,
+  LowCodePageBlock,
+  LowCodeRuntimeDirective,
+} from '../../../types/lowcode';
 import type { VisualToLowCodeConverter } from '../types';
 import {
   isDefined,
@@ -50,6 +54,40 @@ function normalizeGridEvents(value: unknown) {
   return { events, eventNames };
 }
 
+function normalizeActionStatus(value: unknown): LowCodeGridRowAction['status'] {
+  const status = readString(value);
+  return ['primary', 'success', 'warning', 'danger', 'info'].includes(status)
+    ? (status as LowCodeGridRowAction['status'])
+    : undefined;
+}
+
+function normalizeGridRowActions(value: unknown) {
+  return normalizeRows(value)
+    .map((row, index) => {
+      const code = readString(row.code, `row_action_${index + 1}`);
+      const label = readString(row.label, code);
+      if (!code || !label) return null;
+
+      const status = normalizeActionStatus(row.status);
+      const icon = readString(row.icon);
+      const eventName = readString(row.eventName);
+      const directives = normalizeRuntimeDirectives(row.directivesJson ?? row.directives);
+
+      return {
+        code,
+        label,
+        ...(status ? { status } : {}),
+        ...(icon ? { icon } : {}),
+        ...(eventName ? { eventName } : {}),
+        ...(readBoolean(row.disabled, false) ? { disabled: true } : {}),
+        ...(readBoolean(row.plain, false) ? { plain: true } : {}),
+        ...(readBoolean(row.text, false) ? { text: true } : {}),
+        ...(directives.length ? { directives } : {}),
+      } as LowCodeGridRowAction;
+    })
+    .filter(Boolean) as LowCodeGridRowAction[];
+}
+
 const converter: VisualToLowCodeConverter = {
   type: 'lowcode-grid',
   componentKey: 'lowcode-grid',
@@ -65,6 +103,7 @@ const converter: VisualToLowCodeConverter = {
     columns: [],
     gridOptions: {},
     gridEvents: [],
+    rowActions: [],
   },
   validate(block) {
     const props = readVisualBlockProps(block);
@@ -80,6 +119,7 @@ const converter: VisualToLowCodeConverter = {
     const postData = readJsonObject(props.postDataJson, {});
     const columns = normalizeRows(props.columns).map(normalizeColumn).filter(isDefined);
     const showRowActions = readBoolean(props.showRowActions, true);
+    const rowActions = normalizeGridRowActions(props.rowActions);
     const gridOptions = normalizeGridOptions(props.gridOptions);
     const rowConfig = isPlainRecord(gridOptions.rowConfig) ? gridOptions.rowConfig : {};
     const columnConfig = isPlainRecord(gridOptions.columnConfig) ? gridOptions.columnConfig : {};
@@ -123,7 +163,7 @@ const converter: VisualToLowCodeConverter = {
             : {}),
           columns: [
             ...columns,
-            ...(showRowActions
+            ...(showRowActions || rowActions.length
               ? [
                   {
                     title: '操作',
@@ -135,14 +175,20 @@ const converter: VisualToLowCodeConverter = {
               : []),
           ],
         },
-        rowActions: showRowActions
+        rowActions: rowActions.length
           ? {
-              edit: true,
-              editLabel: '编辑',
-              delete: Boolean(deleteMethod),
-              deleteLabel: '删除',
+              edit: false,
+              delete: false,
+              actions: rowActions,
             }
-          : undefined,
+          : showRowActions
+            ? {
+                edit: true,
+                editLabel: '编辑',
+                delete: Boolean(deleteMethod),
+                deleteLabel: '删除',
+              }
+            : undefined,
         ...(Object.keys(events).length ? { events } : {}),
         ...(Object.keys(eventNames).length ? { eventNames } : {}),
       },

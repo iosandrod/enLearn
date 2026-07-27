@@ -36,8 +36,21 @@
       @zoom="(payload) => handleGenericGridEvent('zoom', payload)"
     >
       <template #actions="{ row }">
+        <template v-if="customRowActions.length">
+          <vxe-button
+            v-for="action in customRowActions"
+            :key="action.code"
+            size="mini"
+            :status="action.status"
+            :disabled="action.disabled"
+            @click="emitRowAction(action, row)"
+          >
+            <i v-if="action.icon" :class="action.icon" aria-hidden="true" />
+            {{ action.label }}
+          </vxe-button>
+        </template>
         <vxe-button
-          v-if="schema.rowActions?.edit !== false"
+          v-if="!customRowActions.length && schema.rowActions?.edit !== false"
           size="mini"
           status="primary"
           @click="$emit('edit', row)"
@@ -45,7 +58,7 @@
           {{ schema.rowActions?.editLabel ?? 'Edit' }}
         </vxe-button>
         <vxe-button
-          v-if="schema.rowActions?.delete !== false"
+          v-if="!customRowActions.length && schema.rowActions?.delete !== false"
           size="mini"
           status="danger"
           @click="$emit('delete', row)"
@@ -60,7 +73,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { normalizeLowCodeGridColumns } from '../utils/lowcode';
-import type { LowCodeGridAction, LowCodeGridSchema } from '../types/lowcode';
+import type {
+  LowCodeGridAction,
+  LowCodeGridRowAction,
+  LowCodeGridSchema,
+} from '../types/lowcode';
 
 const props = defineProps<{
   schema: LowCodeGridSchema;
@@ -72,6 +89,7 @@ const emit = defineEmits<{
   toolbar: [code: string];
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
+  rowAction: [payload: { action: LowCodeGridRowAction; row: Record<string, unknown> }];
   rowCurrentChange: [payload: { row: Record<string, unknown>; rawEvent: Record<string, unknown> }];
   rowDblclick: [payload: { row: Record<string, unknown>; rawEvent: Record<string, unknown> }];
   cellDblclick: [payload: { row: Record<string, unknown>; rawEvent: Record<string, unknown> }];
@@ -84,6 +102,8 @@ type LowCodeGridEventPayload = {
   actionCode?: string;
   rawEvent: Record<string, unknown>;
 };
+
+const customRowActions = computed(() => props.schema.rowActions?.actions ?? []);
 
 const gridConfig = computed(() => {
   const baseGrid = props.schema.grid as Record<string, unknown>;
@@ -140,6 +160,10 @@ function readActionCode(payload: unknown) {
 
 function handleToolbar(action: LowCodeGridAction) {
   emit('toolbar', action.code);
+}
+
+function emitRowAction(action: LowCodeGridRowAction, row: Record<string, unknown>) {
+  emit('rowAction', { action, row });
 }
 
 function handleCurrentChange(payload: unknown) {

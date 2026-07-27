@@ -1,6 +1,7 @@
 import {
   arrayTablePropField,
   defineMaterialPropForms,
+  jsonPropField,
   option,
   propField,
   subFormPropField,
@@ -12,6 +13,9 @@ const formComponentOptions = [
   option('多行文本', 'vxe-textarea'),
   option('下拉选择', 'vxe-select'),
   option('开关', 'vxe-switch'),
+  option('单选组', 'vxe-radio-group'),
+  option('复选组', 'vxe-checkbox-group'),
+  option('树选择', 'vxe-tree-select'),
   option('密码框', 'vxe-password-input'),
   option('数字输入', 'lc-number-input'),
   option('JSON 编辑器', 'lc-json-editor'),
@@ -48,6 +52,18 @@ const buttonTypeOptions = [
   option('重置', 'reset'),
 ];
 
+const runtimeContainerOptions = [
+  option('容器', 'container'),
+  option('分区', 'section'),
+  option('弹框', 'modal'),
+  option('抽屉', 'drawer'),
+];
+
+const placementOptions = [
+  option('右侧', 'right'),
+  option('左侧', 'left'),
+];
+
 const fieldColumns = [
   { field: 'field', title: '字段', minWidth: 110, placeholder: 'email' },
   { field: 'label', title: '标签', minWidth: 110, placeholder: '邮箱' },
@@ -62,6 +78,10 @@ const fieldColumns = [
   { field: 'required', title: '必填', component: 'vxe-switch' as const, width: 72 },
   { field: 'span', title: '跨列', width: 76, placeholder: '1' },
   { field: 'help', title: '帮助文本', minWidth: 140 },
+  { field: 'optionsSourceKey', title: '选项数据源', minWidth: 130 },
+  { field: 'optionLabel', title: '选项标签字段', minWidth: 120, placeholder: 'title' },
+  { field: 'optionValue', title: '选项值字段', minWidth: 120, placeholder: 'id' },
+  { field: 'optionChildren', title: '子节点字段', minWidth: 110, placeholder: 'children' },
   {
     field: 'optionsJson',
     title: '选项 JSON',
@@ -86,6 +106,10 @@ const fieldDefaultRow = {
   required: false,
   span: '',
   help: '',
+  optionsSourceKey: '',
+  optionLabel: '',
+  optionValue: '',
+  optionChildren: '',
   optionsJson: '',
   propsJson: '',
 };
@@ -116,6 +140,24 @@ const buttonRows = [
       { code: 'import', label: '导入', type: 'button', eventName: 'buttonGroup.import' },
       { code: 'export', label: '导出', type: 'button', eventName: 'buttonGroup.export' },
     ],
+  },
+];
+
+const formActionRows = [
+  {
+    code: 'submit',
+    label: '保存',
+    status: 'primary',
+    type: 'submit',
+    eventName: 'form.submit',
+    directivesJson: [],
+  },
+  {
+    code: 'reset',
+    label: '重置',
+    type: 'reset',
+    eventName: 'form.reset',
+    directivesJson: [],
   },
 ];
 
@@ -208,6 +250,7 @@ export default defineMaterialPropForms([
             options: alignOptions,
           },
           { field: 'sortable', title: '排序', component: 'vxe-switch', width: 72 },
+          { field: 'treeNode', title: '树节点', component: 'vxe-switch', width: 72 },
           { field: 'visible', title: '显示', component: 'vxe-switch', width: 72 },
           { field: 'formatter', title: '格式化', minWidth: 150 },
           {
@@ -304,6 +347,26 @@ export default defineMaterialPropForms([
           },
         ],
       }),
+      arrayTablePropField({
+        field: 'rowActions',
+        path: 'rowActions',
+        label: '行按钮',
+        defaultValue: [],
+        addText: '新增行按钮',
+        rowKey: 'code',
+        defaultRow: {
+          code: 'rowAction{{index}}',
+          label: '操作 {{index}}',
+          status: '',
+          eventName: '',
+          icon: '',
+          disabled: false,
+          plain: false,
+          text: false,
+          directivesJson: [],
+        },
+        columns: buttonColumns,
+      }),
     ],
   },
   {
@@ -359,6 +422,15 @@ export default defineMaterialPropForms([
     title: '编辑表单属性',
     extendsVisualProps: true,
     fields: [
+      propField({ field: 'blockId', path: 'blockId', label: '区块 ID', defaultValue: 'edit-form' }),
+      propField({ field: 'title', path: 'title', label: '标题', defaultValue: '编辑信息' }),
+      propField({ field: 'sourceKey', path: 'sourceKey', label: '读取数据源', defaultValue: '' }),
+      propField({ field: 'submitSourceKey', path: 'submitSourceKey', label: '提交数据源', defaultValue: '' }),
+      propField({ field: 'serviceName', path: 'serviceName', label: '服务名', defaultValue: 'admin' }),
+      propField({ field: 'serviceMethod', path: 'serviceMethod', label: '读取方法', defaultValue: '' }),
+      propField({ field: 'saveMethod', path: 'saveMethod', label: '保存方法', defaultValue: '' }),
+      jsonPropField({ field: 'postDataJson', path: 'postDataJson', label: '请求参数', defaultValue: {} }),
+      jsonPropField({ field: 'initialValuesJson', path: 'initialValuesJson', label: '初始值', defaultValue: {} }),
       arrayTablePropField({
         field: 'fields',
         path: 'fields',
@@ -369,6 +441,25 @@ export default defineMaterialPropForms([
         defaultRow: fieldDefaultRow,
         columns: fieldColumns,
       }),
+      arrayTablePropField({
+        field: 'formActions',
+        path: 'formActions',
+        label: '表单按钮',
+        defaultValue: formActionRows,
+        addText: '新增按钮',
+        rowKey: 'code',
+        defaultRow: {
+          code: 'action{{index}}',
+          label: '按钮 {{index}}',
+          status: '',
+          type: 'button',
+          route: '',
+          eventName: '',
+          disabled: false,
+          directivesJson: [],
+        },
+        columns: buttonColumns,
+      }),
     ],
   },
   {
@@ -376,6 +467,15 @@ export default defineMaterialPropForms([
     title: '普通表单属性',
     extendsVisualProps: true,
     fields: [
+      propField({ field: 'blockId', path: 'blockId', label: '区块 ID', defaultValue: 'edit-form' }),
+      propField({ field: 'title', path: 'title', label: '标题', defaultValue: '编辑信息' }),
+      propField({ field: 'sourceKey', path: 'sourceKey', label: '读取数据源', defaultValue: '' }),
+      propField({ field: 'submitSourceKey', path: 'submitSourceKey', label: '提交数据源', defaultValue: '' }),
+      propField({ field: 'serviceName', path: 'serviceName', label: '服务名', defaultValue: 'admin' }),
+      propField({ field: 'serviceMethod', path: 'serviceMethod', label: '读取方法', defaultValue: '' }),
+      propField({ field: 'saveMethod', path: 'saveMethod', label: '保存方法', defaultValue: '' }),
+      jsonPropField({ field: 'postDataJson', path: 'postDataJson', label: '请求参数', defaultValue: {} }),
+      jsonPropField({ field: 'initialValuesJson', path: 'initialValuesJson', label: '初始值', defaultValue: {} }),
       arrayTablePropField({
         field: 'fields',
         path: 'fields',
@@ -385,6 +485,25 @@ export default defineMaterialPropForms([
         rowKey: 'field',
         defaultRow: fieldDefaultRow,
         columns: fieldColumns,
+      }),
+      arrayTablePropField({
+        field: 'formActions',
+        path: 'formActions',
+        label: '表单按钮',
+        defaultValue: formActionRows,
+        addText: '新增按钮',
+        rowKey: 'code',
+        defaultRow: {
+          code: 'action{{index}}',
+          label: '按钮 {{index}}',
+          status: '',
+          type: 'button',
+          route: '',
+          eventName: '',
+          disabled: false,
+          directivesJson: [],
+        },
+        columns: buttonColumns,
       }),
       arrayTablePropField({
         field: 'slots.default.children',
@@ -441,6 +560,52 @@ export default defineMaterialPropForms([
     title: '布局容器属性',
     extendsVisualProps: true,
     fields: [
+      propField({
+        field: 'blockId',
+        path: 'blockId',
+        label: '区块 ID',
+        component: 'vxe-input',
+        defaultValue: 'container-block',
+      }),
+      propField({
+        field: 'runtimeKind',
+        path: 'runtimeKind',
+        label: '运行形态',
+        component: 'vxe-select',
+        defaultValue: 'container',
+        options: runtimeContainerOptions,
+      }),
+      propField({
+        field: 'title',
+        path: 'title',
+        label: '标题',
+        component: 'vxe-input',
+        defaultValue: '',
+      }),
+      propField({
+        field: 'description',
+        path: 'description',
+        label: '描述',
+        component: 'vxe-textarea',
+        defaultValue: '',
+      }),
+      switchPropField({ field: 'open', path: 'open', label: '默认打开', defaultValue: false }),
+      switchPropField({ field: 'panel', path: 'panel', label: '面板样式', defaultValue: false }),
+      propField({
+        field: 'width',
+        path: 'width',
+        label: '弹框/抽屉宽度',
+        component: 'vxe-input',
+        defaultValue: '',
+      }),
+      propField({
+        field: 'placement',
+        path: 'placement',
+        label: '抽屉方向',
+        component: 'vxe-select',
+        defaultValue: 'right',
+        options: placementOptions,
+      }),
       propField({
         field: 'gutter',
         path: 'gutter',

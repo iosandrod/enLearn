@@ -10,6 +10,7 @@
       :loading="loadingGridId === block.id"
       @edit="handleEdit"
       @delete="handleDelete"
+      @row-action="handleRowAction"
       @toolbar="handleToolbar"
       @row-current-change="handleRowCurrentChange"
       @row-dblclick="handleRowDblclick"
@@ -22,7 +23,7 @@
 <script setup lang="ts">
 import LowCodeGrid from '../../../components/LowCodeGrid.vue';
 import { resolveGridRows } from '../helpers';
-import type { LowCodePageGridBlock } from '../../../types/lowcode';
+import type { LowCodeGridRowAction, LowCodePageGridBlock } from '../../../types/lowcode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageGridBlock>>();
@@ -97,6 +98,18 @@ function handleDelete(row: Record<string, unknown>) {
     directives: getGridEventDirectives('deleteClick'),
   });
   emit('gridDelete', { block: props.block, row });
+}
+
+function handleRowAction(payload: {
+  action: LowCodeGridRowAction;
+  row: Record<string, unknown>;
+}) {
+  emitRuntimeEvent(payload.action.eventName ?? 'grid.rowAction', {
+    row: payload.row,
+    action: payload.action,
+    actionCode: payload.action.code,
+    directives: payload.action.directives ?? [],
+  });
 }
 
 function handleRowCurrentChange(payload: {

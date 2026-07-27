@@ -23,7 +23,7 @@ export type LowCodePageSchema = {
       serviceMethod: string;
       saveMethod?: string;
       deleteMethod?: string;
-      postData?: Record<string, unknown>;
+  postData?: Record<string, unknown> | string;
       autoLoad?: boolean;
     }
   >;

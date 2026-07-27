@@ -65,3 +65,396 @@ Nest API listening on http://localhost:3002/api/service
 [32m[Nest] 24472  - [39m2026/07/26 21:27:20 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
 [32m[Nest] 24472  - [39m2026/07/26 21:27:20 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +7ms[39m
 Nest API listening on http://localhost:3002/api/service
+21:45:58 [tsx] change in ./src\auth\auth.service.ts Restarting...
+[32m[Nest] 51452  - [39m2026/07/26 21:46:03 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +28ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:04 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +1634ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:04 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +15ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:04 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:04 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:04 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:04 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:04 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:04 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:04 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:04 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 51452  - [39m2026/07/26 21:46:04 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +3ms[39m
+Nest API listening on http://localhost:3002/api/service
+22:51:47 [tsx] change in ./src\common\utils\supabase.ts Restarting...
+[32m[Nest] 21076  - [39m2026/07/26 22:51:59 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:51:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +42ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:51:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:51:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:51:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:51:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:51:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:51:59 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:52:02 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +3307ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:52:02 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +8ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:52:02 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:52:02 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:52:02 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:52:02 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:52:02 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:52:02 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:52:02 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:52:02 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 21076  - [39m2026/07/26 22:52:02 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +6ms[39m
+Nest API listening on http://localhost:3002/api/service
+22:54:11 [tsx] change in ./src\admin\admin.service.ts Restarting...
+[32m[Nest] 41288  - [39m2026/07/26 22:54:15 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +30ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:17 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +1907ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:17 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +9ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:17 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:17 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:17 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:17 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:17 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:17 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:17 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:17 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 41288  - [39m2026/07/26 22:54:17 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +5ms[39m
+Nest API listening on http://localhost:3002/api/service
+22:55:37 [tsx] change in ./src\lowcode\lowcode.service.ts Restarting...
+[32m[Nest] 10924  - [39m2026/07/26 22:55:45 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +33ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:47 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +1380ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +5ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:47 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 10924  - [39m2026/07/26 22:55:47 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +4ms[39m
+Nest API listening on http://localhost:3002/api/service
+23:00:40 [tsx] change in ./src\app.module.ts Restarting...
+[32m[Nest] 21052  - [39m2026/07/26 23:00:45 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +30ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:47 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +1730ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +8ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:47 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +2ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21052  - [39m2026/07/26 23:00:47 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +6ms[39m
+Nest API listening on http://localhost:3002/api/service
+23:01:33 [tsx] change in ./src\gateway\service-router.service.ts Restarting...
+[32m[Nest] 64964  - [39m2026/07/26 23:01:37 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:37 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +36ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:37 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:37 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:37 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:37 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:37 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:37 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:37 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:39 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +1337ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:39 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +9ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:39 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:39 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:39 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:39 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:39 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:39 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:39 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:39 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 64964  - [39m2026/07/26 23:01:39 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +6ms[39m
+Nest API listening on http://localhost:3002/api/service
+23:01:54 [tsx] change in ./src\gateway\service-gateway.controller.ts Restarting...
+[32m[Nest] 25484  - [39m2026/07/26 23:01:58 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:01:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +34ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:01:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:01:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:01:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:01:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:01:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:01:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:01:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:02:00 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +1362ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:02:00 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +7ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:02:00 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:02:00 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:02:00 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:02:00 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:02:00 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:02:00 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:02:00 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:02:00 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 25484  - [39m2026/07/26 23:02:00 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +5ms[39m
+Nest API listening on http://localhost:3002/api/service
+23:05:51 [tsx] change in ./src\auth\auth.service.ts Restarting...
+[32m[Nest] 44284  - [39m2026/07/26 23:05:57 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +40ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:59 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +1932ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +11ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:59 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +2ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 44284  - [39m2026/07/26 23:05:59 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +8ms[39m
+Nest API listening on http://localhost:3002/api/service
+23:32:29 [tsx] change in ./src\common\utils\supabase.ts Restarting...
+[32m[Nest] 52460  - [39m2026/07/26 23:32:39 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +41ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:42 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +2791ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:42 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +7ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:42 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:42 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:42 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:42 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:42 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:42 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:42 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:42 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 52460  - [39m2026/07/26 23:32:42 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +7ms[39m
+Nest API listening on http://localhost:3002/api/service
+23:40:07 [tsx] change in ./src\auth\auth.service.ts Restarting...
+[32m[Nest] 36252  - [39m2026/07/26 23:40:12 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:12 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +33ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:12 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:12 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:12 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:12 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:12 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:12 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:12 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:14 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +1891ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +10ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:14 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36252  - [39m2026/07/26 23:40:14 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +7ms[39m
+Nest API listening on http://localhost:3002/api/service
+00:02:08 [tsx] change in ./src\account\account.service.ts Restarting...
+00:02:08 [tsx] change in ./src\gateway\service-gateway.controller.ts Restarting...
+[32m[Nest] 3044  - [39m2026/07/27 00:02:14 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:14 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +30ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:14 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:14 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:14 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:14 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:14 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:14 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:14 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:16 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +2379ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +6ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:16 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3044  - [39m2026/07/27 00:02:16 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +4ms[39m
+Nest API listening on http://localhost:3002/api/service
+02:35:43 [tsx] change in ./src\common\utils\supabase.ts Restarting...
+[32m[Nest] 15400  - [39m2026/07/27 02:35:58 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:35:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +52ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:35:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:35:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:35:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:35:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:35:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:35:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +4ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:35:58 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +6ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:36:01 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +3563ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:36:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +12ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:36:01 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:36:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:36:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:36:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:36:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:36:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:36:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:36:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +5ms[39m
+[32m[Nest] 15400  - [39m2026/07/27 02:36:01 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +9ms[39m
+Nest API listening on http://localhost:3002/api/service
+02:36:13 [tsx] change in ./src\admin\admin.service.ts Restarting...
+[32m[Nest] 66796  - [39m2026/07/27 02:36:20 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:20 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +64ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:20 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +4ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:20 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:20 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +11ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:20 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:20 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:20 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +8ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:20 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:22 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +1684ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +80ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:22 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +21ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +27ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +20ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +19ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +83ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +11ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +32ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +22ms[39m
+[32m[Nest] 66796  - [39m2026/07/27 02:36:22 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +33ms[39m
+Nest API listening on http://localhost:3002/api/service
+03:51:58 [tsx] change in ./src\admin\admin.service.ts Restarting...
+[32m[Nest] 58840  - [39m2026/07/27 03:52:09 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +48ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:13 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +4324ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:13 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +8ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:13 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:13 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:13 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:13 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:13 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:13 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:13 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:13 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 58840  - [39m2026/07/27 03:52:13 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +4ms[39m
+Nest API listening on http://localhost:3002/api/service
+04:08:45 [tsx] change in ./src\lowcode\lowcode.service.ts Restarting...
+[32m[Nest] 22840  - [39m2026/07/27 04:08:57 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +33ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:59 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +2001ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +10ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:59 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 22840  - [39m2026/07/27 04:08:59 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +7ms[39m
+Nest API listening on http://localhost:3002/api/service
+14:47:46 [tsx] change in ./src\admin\admin.service.ts Restarting...
+[32m[Nest] 62300  - [39m2026/07/27 14:47:55 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:55 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +34ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:55 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:55 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:55 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:55 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:55 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:56 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:56 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:59 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +3246ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +7ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:59 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 62300  - [39m2026/07/27 14:47:59 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +8ms[39m
+Nest API listening on http://localhost:3002/api/service
+14:56:40 [tsx] change in ./src\lowcode\lowcode.schema.ts Restarting...
+[32m[Nest] 67720  - [39m2026/07/27 14:56:46 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +41ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:48 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +2078ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +9ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:48 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 67720  - [39m2026/07/27 14:56:48 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +5ms[39m
+Nest API listening on http://localhost:3002/api/service
+15:16:31 [tsx] change in ./src\admin\admin.service.ts Restarting...
+[32m[Nest] 7820  - [39m2026/07/27 15:16:35 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +30ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:37 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +1568ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:37 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 7820  - [39m2026/07/27 15:16:37 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +3ms[39m
+Nest API listening on http://localhost:3002/api/service

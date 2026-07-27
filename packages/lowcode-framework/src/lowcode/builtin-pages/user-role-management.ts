@@ -223,14 +223,6 @@ export const userRoleManagementSchema: LowCodePageSchema = {
       label: '用户权限档案',
       serviceName: 'admin',
       serviceMethod: 'listUsers',
-      saveMethod: 'saveUserRoles',
-      autoLoad: true,
-    },
-    roles: {
-      key: 'roles',
-      label: '应用角色',
-      serviceName: 'admin',
-      serviceMethod: 'listRoles',
       autoLoad: true,
     },
   },
@@ -325,8 +317,7 @@ export const userRoleManagementSchema: LowCodePageSchema = {
       schema: {
         grid: createUserGridConfig(userMainColumns, 360),
         rowActions: {
-          edit: true,
-          editLabel: '授权',
+          edit: false,
           delete: false,
         },
         events: {
@@ -341,63 +332,8 @@ export const userRoleManagementSchema: LowCodePageSchema = {
               sourceKey: 'selectedUserRows',
               value: ['{{ event.row }}'],
             },
-            {
-              type: 'setFormValues',
-              blockId: 'user-role-form',
-              mode: 'replace',
-              value: '{{ event.row }}',
-            },
           ],
         },
-      },
-    },
-    {
-      id: 'user-role-form',
-      kind: 'form',
-      title: '用户角色授权',
-      description: '选择用户后维护其应用角色，保存后写入 admin_user_roles。',
-      submitSourceKey: 'users',
-      initialValues: {
-        user_id: '',
-        email: '',
-        full_name: '',
-        role_codes: [],
-      },
-      schema: {
-        columns: 4,
-        fields: [
-          {
-            field: 'user_id',
-            label: '用户ID',
-            component: 'vxe-input',
-            props: { disabled: true },
-            rules: [{ required: true, message: '请选择用户' }],
-          },
-          {
-            field: 'email',
-            label: '邮箱',
-            component: 'vxe-input',
-            props: { disabled: true },
-          },
-          {
-            field: 'full_name',
-            label: '姓名',
-            component: 'vxe-input',
-            props: { disabled: true },
-          },
-          {
-            field: 'role_codes',
-            label: '应用角色',
-            component: 'vxe-select',
-            optionsSourceKey: 'roles',
-            optionProps: { label: 'name', value: 'code' },
-            props: { multiple: true, clearable: true, filterable: true },
-          },
-        ],
-        actions: [
-          { code: 'submit', label: '保存授权', type: 'submit', status: 'primary' },
-          { code: 'reset', label: '重置', type: 'reset' },
-        ],
       },
     },
     {

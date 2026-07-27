@@ -115,14 +115,25 @@ async function syncAdminRoutes(supabase: SupabaseClient, now: string) {
   const pageCode = (code: string) => (existingPageCodes.has(code) ? code : null);
 
   async function upsertRoute(route: Record<string, unknown>) {
+    const routeCode = typeof route.code === 'string' ? route.code : '';
+    const { data: existingRoute, error: existingRouteError } = routeCode
+      ? await supabase
+          .from('admin_routes')
+          .select('visible, status')
+          .eq('code', routeCode)
+          .maybeSingle()
+      : { data: null, error: null };
+
+    if (existingRouteError) throw existingRouteError;
+
     const { data, error } = await supabase
       .from('admin_routes')
       .upsert(
         {
-          visible: true,
+          visible: existingRoute?.visible ?? true,
           keep_alive: true,
           layout: 'dashboard',
-          status: 'active',
+          status: existingRoute?.status ?? 'active',
           metadata: {},
           updated_at: now,
           ...route,

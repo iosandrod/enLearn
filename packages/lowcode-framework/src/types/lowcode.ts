@@ -163,7 +163,7 @@ export type LowCodeRuntimeDirective = {
   status?: 'success' | 'error' | 'info' | 'warning';
   serviceName?: string;
   serviceMethod?: string;
-  postData?: Record<string, unknown>;
+  postData?: Record<string, unknown> | string;
   assignTo?: string;
   refreshSourceKeys?: string[];
   [key: string]: unknown;
@@ -210,8 +210,15 @@ export type LowCodeGridAction = {
   code: string;
   label: string;
   status?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  icon?: string;
+  disabled?: boolean;
   eventName?: string;
   directives?: LowCodeRuntimeDirective[];
+};
+
+export type LowCodeGridRowAction = LowCodeGridAction & {
+  plain?: boolean;
+  text?: boolean;
 };
 
 export type LowCodeGridSchema = {
@@ -227,6 +234,7 @@ export type LowCodeGridSchema = {
     editRoute?: string;
     delete?: boolean;
     deleteLabel?: string;
+    actions?: LowCodeGridRowAction[];
   };
   events?: Record<string, LowCodeRuntimeDirective[]>;
   eventNames?: Record<string, string>;

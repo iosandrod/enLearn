@@ -158,6 +158,16 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
   const componentName = readString(row.component, 'vxe-input');
   const component = componentMap[componentName] ?? 'vxe-input';
   const options = readJsonArray<LowCodeOption>(row.optionsJson);
+  const optionsSourceKey = readString(row.optionsSourceKey);
+  const optionLabel = readString(row.optionLabel);
+  const optionValue = readString(row.optionValue);
+  const optionChildren = readString(row.optionChildren);
+  const optionProps = {
+    ...(isPlainRecord(row.optionProps) ? cloneJson(row.optionProps) : {}),
+    ...(optionLabel ? { label: optionLabel } : {}),
+    ...(optionValue ? { value: optionValue } : {}),
+    ...(optionChildren ? { children: optionChildren } : {}),
+  };
   const required = readBoolean(row.required, false);
   const placeholder = readString(row.placeholder);
   const help = readString(row.help);
@@ -193,6 +203,8 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
     component,
     ...(Object.keys(props).length ? { props } : {}),
     ...(options ? { options } : {}),
+    ...(optionsSourceKey ? { optionsSourceKey } : {}),
+    ...(Object.keys(optionProps).length ? { optionProps } : {}),
     ...(help ? { help } : {}),
     ...(span ? { span } : {}),
     ...(required
@@ -243,6 +255,7 @@ export function normalizeColumn(row: Record<string, unknown>): LowCodeGridColumn
     ...(headerAlign ? { headerAlign } : {}),
     ...(footerAlign ? { footerAlign } : {}),
     ...(typeof row.sortable !== 'undefined' ? { sortable: readBoolean(row.sortable) } : {}),
+    ...(typeof row.treeNode !== 'undefined' ? { treeNode: readBoolean(row.treeNode) } : {}),
     ...(typeof row.resizable !== 'undefined' ? { resizable: readBoolean(row.resizable) } : {}),
     ...(typeof row.visible !== 'undefined' ? { visible: readBoolean(row.visible, true) } : {}),
     ...(typeof showOverflow !== 'undefined' ? { showOverflow } : {}),

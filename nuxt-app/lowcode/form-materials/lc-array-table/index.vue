@@ -296,7 +296,7 @@ function readComponent(value: unknown): ArrayTableColumn['component'] {
   return typeof value === 'string' && value.trim() ? value.trim() : 'vxe-input';
 }
 
-function getSelectModelValue(column: ArrayTableColumn, value: unknown) {
+function getSelectModelValue(column: ArrayTableColumn, value: unknown): any {
   const option = column.options?.find((item) => isSameValue(readOptionRawValue(item), value));
   return option?.value ?? value;
 }

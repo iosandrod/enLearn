@@ -1,9 +1,31 @@
 <template>
-  <section v-if="block.open !== false" class="lc-overlay-node">
-    <article class="content-panel lc-modal-node" :style="widthStyle(block.width)">
-      <header v-if="block.title || block.description" class="lc-node-header">
-        <h2 v-if="block.title">{{ block.title }}</h2>
-        <p v-if="block.description">{{ block.description }}</p>
+  <section
+    v-if="block.open !== false"
+    class="lc-overlay-node"
+    role="presentation"
+    @click.self="requestClose"
+  >
+    <article
+      class="content-panel lc-modal-node"
+      role="dialog"
+      aria-modal="true"
+      :aria-labelledby="block.title ? `${block.id}-title` : undefined"
+      :style="widthStyle(block.width)"
+    >
+      <header class="lc-modal-node__header">
+        <div v-if="block.title || block.description" class="lc-node-header">
+          <h2 v-if="block.title" :id="`${block.id}-title`">{{ block.title }}</h2>
+          <p v-if="block.description">{{ block.description }}</p>
+        </div>
+        <button
+          type="button"
+          class="lc-modal-node__close"
+          title="关闭"
+          aria-label="关闭"
+          @click="requestClose"
+        >
+          <i class="ri-close-line" aria-hidden="true" />
+        </button>
       </header>
       <div class="lc-node-stack">
         <LowCodeBlockChildren
@@ -33,6 +55,91 @@ import { widthStyle } from '../helpers';
 import type { LowCodePageModalBlock } from '../../../types/lowcode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 
-defineProps<LowCodeBlockMaterialProps<LowCodePageModalBlock>>();
+const props = defineProps<LowCodeBlockMaterialProps<LowCodePageModalBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
+
+function requestClose() {
+  emit('runtimeEvent', {
+    name: 'modal.close',
+    blockId: props.block.id,
+    blockKind: props.block.kind,
+    timestamp: Date.now(),
+    payload: {
+      directives: [
+        {
+          type: 'closeBlock',
+          blockId: props.block.id,
+        },
+      ],
+    },
+  });
+}
 </script>
+
+<style scoped>
+.lc-overlay-node {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 24px;
+  background: rgb(15 23 42 / 42%);
+}
+
+.lc-modal-node {
+  width: min(920px, 100%);
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+}
+
+.lc-modal-node__header {
+  display: flex;
+  min-height: 32px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lc-modal-node__header .lc-node-header {
+  margin-bottom: 8px;
+}
+
+.lc-modal-node__close {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #667085;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.lc-modal-node__close:hover {
+  background: #f2f4f7;
+  color: #111827;
+}
+
+.lc-modal-node :deep(.content-panel) {
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+@media (max-width: 640px) {
+  .lc-overlay-node {
+    padding: 12px;
+  }
+
+  .lc-modal-node {
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+  }
+}
+</style>

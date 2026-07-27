@@ -162,6 +162,25 @@ export function registerDefaultLowCodeRuntimeDirectives() {
     })
   );
 
+  registerLowCodeRuntimeDirectiveAliases(
+    ['dispatchWindowEvent', 'dispatchBrowserEvent'],
+    (directive, event, context) => {
+      if (typeof window === 'undefined') return;
+
+      const name = context.resolveDirectiveString(
+        directive.event ?? directive.name ?? directive.value,
+        event
+      );
+      if (!name) return;
+
+      window.dispatchEvent(
+        new CustomEvent(name, {
+          detail: context.resolveDirectiveRecord(directive.payload ?? {}, event),
+        })
+      );
+    }
+  );
+
   registerLowCodeRuntimeDirective('openBlock', (directive, event, context) =>
     context.setBlockOpen(context.resolveDirectiveString(directive.blockId, event), true)
   );

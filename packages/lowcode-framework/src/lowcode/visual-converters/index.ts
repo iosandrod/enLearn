@@ -200,6 +200,8 @@ function runtimeFieldToVisualField(field: LowCodeField) {
       : field.component === 'lc-array-table'
         ? cloneJson(props)
         : undefined;
+  const optionProps = isPlainRecord(field.optionProps) ? field.optionProps : {};
+  const propsJson = Object.keys(props).length ? stringifyJson(props, {}) : '';
 
   return {
     field: field.field,
@@ -209,11 +211,17 @@ function runtimeFieldToVisualField(field: LowCodeField) {
     required,
     ...(field.span ? { span: field.span } : {}),
     ...(field.help ? { help: field.help } : {}),
+    ...(field.optionsSourceKey ? { optionsSourceKey: field.optionsSourceKey } : {}),
+    ...(readString(optionProps.label) ? { optionLabel: readString(optionProps.label) } : {}),
+    ...(readString(optionProps.value) ? { optionValue: readString(optionProps.value) } : {}),
+    ...(readString(optionProps.children)
+      ? { optionChildren: readString(optionProps.children) }
+      : {}),
     ...(field.options ? { optionsJson: stringifyJson(field.options) } : {}),
-    ...(editableProps
+    ...(propsJson ? { propsJson } : {}),
+    ...(editableProps && Object.keys(editableProps).length
       ? {
           props: editableProps,
-          propsJson: stringifyJson(editableProps, {}),
         }
       : {}),
   };
@@ -271,10 +279,23 @@ function runtimeGridEventsToVisualRows(
   }));
 }
 
+function runtimeGridRowActionsToVisualRows(schema: Record<string, unknown>) {
+  const rowActions = isPlainRecord(schema.rowActions) ? schema.rowActions : {};
+  return Array.isArray(rowActions.actions)
+    ? rowActions.actions.map((action) =>
+        runtimeActionToVisualButton(action as LowCodeButtonGroupAction),
+      )
+    : [];
+}
+
 function hasRuntimeRowActions(schema: Record<string, unknown>, columns: LowCodeGridColumn[]) {
   const rowActions = isPlainRecord(schema.rowActions) ? schema.rowActions : null;
   if (rowActions) {
-    return rowActions.edit !== false || rowActions.delete !== false;
+    return Boolean(
+      rowActions.edit !== false ||
+        rowActions.delete !== false ||
+        (Array.isArray(rowActions.actions) && rowActions.actions.length),
+    );
   }
   return columns.some(isActionColumn);
 }
@@ -329,6 +350,7 @@ function convertRuntimeBlockToVisual(
         deleteMethod: source?.deleteMethod ?? '',
         postDataJson: stringifyJson(source?.postData, {}),
         showRowActions: hasRuntimeRowActions(schema, columns),
+        rowActions: runtimeGridRowActionsToVisualRows(schema),
         columns: runtimeColumnsToVisualColumns(columns),
         gridOptions: runtimeGridOptionsToVisualOptions(grid),
         gridEvents: runtimeGridEventsToVisualRows(schema.events, schema.eventNames),
@@ -368,8 +390,16 @@ function convertRuntimeBlockToVisual(
         serviceMethod: source?.serviceMethod ?? '',
         saveMethod: source?.saveMethod ?? '',
         postDataJson: stringifyJson(source?.postData, {}),
+        initialValuesJson:
+          block.kind === 'form' ? stringifyJson(block.initialValues, {}) : undefined,
         submitText: readString(submitAction?.label, '保存'),
         resetText: readString(resetAction?.label, '重置'),
+        formActions:
+          block.kind === 'form'
+            ? actions.map((action) =>
+                runtimeActionToVisualButton(action as LowCodeButtonGroupAction),
+              )
+            : undefined,
         fields,
       },
     });
@@ -426,13 +456,31 @@ function convertRuntimeBlockToVisual(
     block.kind === 'modal' ||
     block.kind === 'drawer'
   ) {
+    const width = block.kind === 'modal' || block.kind === 'drawer' ? block.width : undefined;
+    const placement = block.kind === 'drawer' ? block.placement : undefined;
+
     return createVisualBlock({
       block,
       componentKey: 'layout',
       moduleName: 'containerComponents',
-      label: '布局容器',
+      label:
+        block.kind === 'modal'
+          ? '弹框'
+          : block.kind === 'drawer'
+            ? '抽屉'
+            : block.kind === 'section'
+              ? '分区'
+              : '布局容器',
       path,
       props: {
+        blockId: block.id,
+        runtimeKind: block.kind,
+        title: readString(block.title),
+        description: readString(block.description),
+        open: 'open' in block ? block.open === true : false,
+        panel: 'panel' in block ? block.panel === true : false,
+        width: typeof width === 'undefined' ? '' : width,
+        placement: placement ?? 'right',
         gutter: String(block.kind === 'container' ? block.gap ?? '' : ''),
         slots: {
           value: '24',

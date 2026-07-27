@@ -2,7 +2,6 @@
   <div class="lowcode-runtime-page" :class="themeClass" :style="themeStyle">
     <section class="page-intro">
       <h1>{{ page.schema.title }}</h1>
-      <p>{{ page.schema.description ?? page.description ?? '' }}</p>
     </section>
 
     <section v-if="dataLoading" class="content-panel">

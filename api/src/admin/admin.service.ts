@@ -169,8 +169,12 @@ export class AdminService implements ServiceExecutor {
         return this.listRoutes(context);
       case 'listRouteTree':
         return this.listRouteTree(context);
+      case 'listRouteManageTree':
+        return this.listRouteManageTree(context);
       case 'saveRoute':
         return this.saveRoute(postData, context);
+      case 'hideRoute':
+        return this.hideRoute(postData, context);
       case 'deleteRoute':
         return this.deleteRoute(postData, context);
       case 'listEntities':
@@ -565,6 +569,31 @@ export class AdminService implements ServiceExecutor {
     );
   }
 
+  private async listRouteManageTree(context: ServiceContext) {
+    const { client } = await requireAdmin(context, 'admin.routes.manage');
+    const { data, error } = await client
+      .from('admin_routes')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      if (isMissingTableError(error)) return [];
+      throw new BadRequestException(error.message);
+    }
+
+    return buildTree(
+      (data ?? []).map((route: Record<string, unknown>) => ({
+        ...route,
+        title: route.title ?? route.name,
+        label: route.title ?? route.name,
+        metadata_json: toPrettyJson(route.metadata ?? {})
+      })),
+      'id',
+      'parent_id'
+    );
+  }
+
   private async saveRoute(postData: PostData, context: ServiceContext) {
     const { client, user } = await requireAdmin(context, 'admin.routes.manage');
     const id = readOptionalString(postData.id);
@@ -585,6 +614,38 @@ export class AdminService implements ServiceExecutor {
     const status = normalizeStatus(postData.status, ['active', 'inactive'], 'active') as 'active' | 'inactive';
     const sortOrder = readNumber(postData.sort_order ?? postData.sortOrder, 0);
     const metadata = readJsonObject(postData.metadata_json ?? postData.metadata);
+
+    if (id && parentId === id) {
+      throw new BadRequestException('A route cannot use itself as its parent.');
+    }
+
+    if (id && parentId) {
+      const { data: routeRows, error: routeRowsError } = await client
+        .from('admin_routes')
+        .select('id, parent_id');
+
+      if (routeRowsError) {
+        metadataTablesRequired(routeRowsError);
+        throw new BadRequestException(routeRowsError.message);
+      }
+
+      const parentById = new Map(
+        (routeRows ?? []).map((route: Record<string, unknown>) => [
+          String(route.id),
+          route.parent_id ? String(route.parent_id) : ''
+        ])
+      );
+      const visited = new Set<string>();
+      let cursor = parentId;
+
+      while (cursor && !visited.has(cursor)) {
+        if (cursor === id) {
+          throw new BadRequestException('A route cannot use one of its descendants as parent.');
+        }
+        visited.add(cursor);
+        cursor = parentById.get(cursor) ?? '';
+      }
+    }
 
     const payload = {
       code,
@@ -632,6 +693,38 @@ export class AdminService implements ServiceExecutor {
       })
       .select('*')
       .single();
+
+    if (error) {
+      metadataTablesRequired(error);
+      throw new BadRequestException(error.message);
+    }
+
+    return {
+      ...data,
+      metadata_json: toPrettyJson((data as Record<string, unknown>).metadata ?? {})
+    };
+  }
+
+  private async hideRoute(postData: PostData, context: ServiceContext) {
+    const { client, user } = await requireAdmin(context, 'admin.routes.manage');
+    const id = readOptionalString(postData.id);
+    const code = readOptionalString(postData.code);
+
+    if (!id && !code) {
+      throw new BadRequestException('id or code is required.');
+    }
+
+    let query = client
+      .from('admin_routes')
+      .update({
+        visible: false,
+        updated_by: user.id,
+        updated_at: new Date().toISOString()
+      });
+
+    query = id ? query.eq('id', id) : query.eq('code', code);
+
+    const { data, error } = await query.select('*').single();
 
     if (error) {
       metadataTablesRequired(error);

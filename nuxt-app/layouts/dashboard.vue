@@ -188,10 +188,19 @@ function rememberTab() {
   visitedTabs.value = [...existing, current].slice(-8);
 }
 
+function handleAdminRoutesUpdated() {
+  reloadRoutes();
+}
+
 onMounted(async () => {
   await auth.init();
   await reloadRoutes();
   rememberTab();
+  window.addEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
 });
 
 watch(
