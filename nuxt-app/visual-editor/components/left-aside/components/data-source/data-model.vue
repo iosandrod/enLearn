@@ -8,33 +8,19 @@
 -->
 <template>
   <div class="!mb-10px">
-    <el-button type="primary" @click="showModelMoal">添加</el-button>
-    <el-button type="warning" @click="showImportSwaggerJsonModal">导入swagger</el-button>
-    <el-popconfirm title="确定要删除全部模型吗？" @confirm="updateModel([], true)">
-      <template #reference>
-        <el-button type="danger">清空</el-button>
-      </template>
-    </el-popconfirm>
+    <vxe-button status="primary" @click="showModelMoal">添加</vxe-button>
+    <vxe-button status="warning" @click="showImportSwaggerJsonModal">导入swagger</vxe-button>
+    <vxe-button status="error" @click="confirmClearModels">清空</vxe-button>
   </div>
-  <el-collapse v-model="state.activeNames" v-infinite-scroll="() => {}">
+  <vxe-collapse v-model="state.activeNames" v-infinite-scroll="() => {}">
     <template v-for="item in models" :key="item.key">
-      <el-collapse-item :title="item.name" :name="item.key">
+      <vxe-collapse-pane :title="item.name" :name="item.key">
         <template #title>
           <div class="model-item-title">
             <span class="truncate w-160px">{{ item.name }}</span>
             <div class="model-actions">
-              <el-icon :size="24" color="#2196f3" @click.stop="editModel(item)">
-                <Edit />
-              </el-icon>
-              <el-popconfirm
-                title="确定要删除该模型吗？"
-                icon-color="red"
-                @confirm="deleteModel(item.key)"
-              >
-                <template #reference>
-                  <el-icon :size="24" color="#f44336"><Delete /></el-icon>
-                </template>
-              </el-popconfirm>
+              <span class="model-action-icon is-edit" @click.stop="editModel(item)"><Edit /></span>
+              <span class="model-action-icon is-delete" @click.stop="confirmDeleteModel(item.key)"><Delete /></span>
             </div>
           </div>
         </template>
@@ -43,9 +29,9 @@
             <pre class="code">{{ JSON.stringify(entity, null, 2) }}</pre>
           </div>
         </template>
-      </el-collapse-item>
+      </vxe-collapse-pane>
     </template>
-  </el-collapse>
+  </vxe-collapse>
 </template>
 
 <script setup lang="tsx">
@@ -59,10 +45,9 @@
     ElCard,
     ElButton,
     ElMessage,
-    ElIcon,
-  } from 'element-plus';
+  } from '@/visual-editor/components/common/designer-ui';
   import { cloneDeep } from 'lodash-es';
-  import { Delete, Edit } from '@element-plus/icons-vue';
+  import { Delete, Edit } from '@/visual-editor/components/common/remix-icons';
   import { useImportSwaggerJsonModal } from './utils';
   import type { VisualEditorModel } from '@/visual-editor/visual-editor.utils';
   import { useVisualData, fieldTypes } from '@/visual-editor/hooks/useVisualData';
@@ -109,6 +94,18 @@
     activeNames: [],
     ruleForm: createEmptyModel(),
   });
+
+  const confirmClearModels = () => {
+    if (window.confirm('???????????')) {
+      updateModel([], true);
+    }
+  };
+
+  const confirmDeleteModel = (key: string) => {
+    if (window.confirm('??????????')) {
+      deleteModel(key);
+    }
+  };
 
   /**
    * @param {number} 索引

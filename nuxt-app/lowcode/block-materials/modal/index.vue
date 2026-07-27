@@ -20,6 +20,7 @@
           @toolbar-action="(payload) => emit('toolbarAction', payload)"
           @search-submit="(payload) => emit('searchSubmit', payload)"
           @search-action="(payload) => emit('searchAction', payload)"
+          @runtime-event="(event) => emit('runtimeEvent', event)"
         />
       </div>
     </article>

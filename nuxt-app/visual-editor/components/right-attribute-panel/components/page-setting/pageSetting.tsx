@@ -7,8 +7,8 @@
  * @FilePath: \vite-vue3-lowcode\src\visual-editor\components\right-attribute-panel\components\page-setting\pageSetting.tsx
  */
 import { defineComponent } from 'vue';
-import { ElForm, ElFormItem, ElInput, ElUpload, ElColorPicker, ElSwitch } from 'element-plus';
-import { Plus } from '@element-plus/icons-vue';
+import { ElForm, ElFormItem, ElInput, ElUpload, ElColorPicker, ElSwitch } from '@/visual-editor/components/common/designer-ui';
+import { Plus } from '@/visual-editor/components/common/remix-icons';
 import styles from './styles.module.scss';
 import { useVisualData } from '@/visual-editor/hooks/useVisualData';
 
@@ -43,9 +43,9 @@ export const PageSetting = defineComponent({
             {pageConfig.bgImage ? (
               <img src={pageConfig.bgImage} />
             ) : (
-              <el-icon class="uploader-icon">
+              <span class="uploader-icon">
                 <Plus />
-              </el-icon>
+              </span>
             )}
           </ElUpload>
         </ElForm>

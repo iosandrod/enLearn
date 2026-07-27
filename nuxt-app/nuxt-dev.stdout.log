@@ -1,0 +1,1188 @@
+
+> @ dev C:\Users\11516\Desktop\project\enLearn\nuxt-app
+> nuxt dev --port 3000 "--host" "0.0.0.0" "--port" "3000"
+
+|
+•  [32mNuxt [1m3.21.9[22m[39m[90m (with [39m[90mNitro [1m2.13.4[22m[39m[90m, Vite [1m7.3.6[22m[39m[90m and Vue [1m3.5.40[22m[39m[90m)[39m
+
+ 
+              █▀▀▀▀▀▀▀██▀▀▀█▀██▀█▀▀▀▀▀▀▀█
+              █ █▀▀▀█ ██▀▀ ▄█▀█▀█ █▀▀▀█ █
+              █ █   █ █ █ ▄▀▄ ▄▄█ █   █ █
+              █ ▀▀▀▀▀ █▀▄ █▀▄ █ █ ▀▀▀▀▀ █
+              █▀▀███▀▀▀█ ▀█ ▀▄▀ ███▀▀████
+              ██ ▀▀  ▀▀▀▀▄▀▀█▀ ▄▄▀▀▄ ▄ ▀█
+              █▀██ █▄▀▀▄▀ ▄▀█ ▄ ▀▀█▄▄██ █
+              █ ▄▄██▀▀▄█▀▄█▄ ▄ █▀█▀█▀█ ▀█
+              █ █▄ ▀▄▀▄█▀▄ ▀▀▄█ ▀▀▀ █ █▄█
+              █▀▀▀▀▀▀▀█ ▀▄  █ ▄ █▀█ ▀▄█▀█
+              █ █▀▀▀█ █▄ ██▄▀▄▀ ▀▀▀ ▀▀███
+              █ █   █ ██▄▄▄ ████▀▄▄█▄▀▄ █
+              █ ▀▀▀▀▀ █ █▀▀▄█▀  █ ▄▄▀██ █
+              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+ 
+[32m  ➜ Local:   [39m [36m[4mhttp://0.0.0.0:[1m3000[22m/[24m[39m
+[35m  ➜ Network: [39m [36m[4mhttp://192.168.5.175:[1m3000[22m/[24m[39m[90m [QR code][39m
+
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 447ms
+[32m√[39m Vite server built in 7063ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 677.36ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 800.56ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 1131.07ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 1155.6ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 9804ms
+[36mi[39m Vite server warmed up in 6ms
+[36mi[39m Vite client warmed up in 15ms
+[36mi[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/form-designer/form-designer.service.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/form-designer/form-designer.service.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m
+[36mi[39m [32mpage reload [39m[2mplugins/vxe.client.ts[22m
+[36mi[39m [32mpage reload [39m[2mvirtual:nuxt:.nuxt%2Fplugins.client.mjs[22m
+[36mi[39m [32mpage reload [39m[2mplugins/element-plus.client.ts[22m
+[36mi[39m [32mpage reload [39m[2mvisual-editor/hooks/useModal.tsx[22m
+[36mi[39m [32mpage reload [39m[2mpackages/base-widgets/image/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/business-component/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/form-rule/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/base-widgets/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/event-action/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/container-component/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/animate/Animate.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/header/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-color-picker/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-cascader/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/animate/Animate.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-number-input/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/index.vue, /visual-editor/index.vue?vue&type=style&index=0&scoped=4a4c30bd&lang.scss[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/index.vue, /visual-editor/components/left-aside/index.vue?vue&type=style&index=0&scoped=0085639f&lang.scss[22m
+[36mi[39m [32mpage reload [39m[2mvisual-editor/components/common/remix-icons.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue?vue&type=style&index=0&scoped=32579591&lang.scss[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/header/preview.vue, /visual-editor/components/header/preview.vue?vue&type=style&index=0&lang.scss[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/custom-component/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/data-source/data-fetch.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/data-source/data-model.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/outline-tree/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/data-source/index.vue, /visual-editor/components/left-aside/components/data-source/index.vue?vue&type=style&index=0&scoped=18e401d3&lang.scss[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/header/index.vue, /visual-editor/components/header/index.vue?vue&type=style&index=0&scoped=e5b44d1d&lang.scss[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/app.css, /C:/Users/11516/Desktop/project/enLearn/nuxt-app/assets/styles/app.css?direct[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m[2m (x2)[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m[2m (x3)[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m[2m (x4)[22m
+[36mi[39m .nuxt/dist directory has been removed. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 73ms
+[32m√[39m Vite server built in 709ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 2670ms
+[36mi[39m Vite server warmed up in 2ms
+[36mi[39m Vite client warmed up in 5ms
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /pages/dashboard/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue[22m
+[36mi[39m .nuxt/dist directory has been removed. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 91ms
+[32m√[39m Vite server built in 946ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 535.12ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 630.02ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 657.62ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 2993ms
+[36mi[39m Vite server warmed up in 3ms
+[36mi[39m Vite client warmed up in 8ms
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeForm.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m
+[36mi[39m [32mpage reload [39m[2mlowcode/block-materials/button-group/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue[22m
+[32m√[39m Vite server hmr 61 files in 3982.984ms
+[43m[30m WARN [39m[49m [Vue Router warn]: No match found for location with path "/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/index.ts"
+[43m[30m WARN [39m[49m [Vue Router warn]: No match found for location with path "/packages/business-component/index.ts"
+[43m[30m WARN [39m[49m [Vue Router warn]: No match found for location with path "/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/index.ts"
+[43m[30m WARN [39m[49m [Vue Router warn]: No match found for location with path "/packages/business-component/index.ts"
+[43m[30m WARN [39m[49m [Vue Router warn]: No match found for location with path "/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/index.ts"
+[43m[30m WARN [39m[49m [Vue Router warn]: No match found for location with path "/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/index.ts"
+[43m[30m WARN [39m[49m [Vue Router warn]: No match found for location with path "/packages/business-component/index.ts"
+[43m[30m WARN [39m[49m [Vue Router warn]: No match found for location with path "/packages/business-component/index.ts"
+[36mi[39m [32mpage reload [39m[2mpackages/business-component/lowcode-button-group/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mpage reload [39m[2mpackages/business-component/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/common/designer-ui/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
+[36mi[39m [32mpage reload [39m[2massets/styles/visual-editor-utilities.scss[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/custom-component/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/app.css, /C:/Users/11516/Desktop/project/enLearn/nuxt-app/assets/styles/app.css?direct[22m
+[36mi[39m [32mpage reload [39m[2massets/styles/app.css[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/app.css, /C:/Users/11516/Desktop/project/enLearn/nuxt-app/assets/styles/app.css?direct[22m
+[36mi[39m [32mpage reload [39m[2massets/styles/app.css[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
+[36mi[39m [32mpage reload [39m[2massets/styles/visual-editor-utilities.scss[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/header/index.vue, /visual-editor/components/header/index.vue?vue&type=style&index=0&scoped=e5b44d1d&lang.scss[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/index.vue, /visual-editor/index.vue?vue&type=style&index=0&scoped=4a4c30bd&lang.scss[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/components/VisualEditorProvider.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
+[36mi[39m [32mpage reload [39m[2massets/styles/visual-editor-utilities.scss[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/simulator-editor/simulator-editor.vue?vue&type=style&index=0&scoped=df2b7a84&lang.scss[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+[36mi[39m nuxt.config.ts updated. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[36mi[39m Re-optimizing dependencies because vite config has changed
+[32m√[39m Vite client built in 526ms
+[32m√[39m Vite server built in 547ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 706.39ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 832.31ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 877.55ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 7431ms
+[36mi[39m Vite server warmed up in 3ms
+[36mi[39m Vite client warmed up in 6ms
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+[36mi[39m [32m✨ new dependencies optimized: [33m@supabase/supabase-js, lodash-es, @vueuse/integrations/useQRCode, @vueuse/core, vuedraggable, nanoid, monaco-editor, dayjs[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/header/index.vue?vue&type=style&index=0&scoped=e5b44d1d&lang.scss[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue?vue&type=style&index=0&scoped=df2b7a84&lang.scss[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/header/index.vue, /visual-editor/components/header/index.vue?vue&type=style&index=0&scoped=e5b44d1d&lang.scss[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue?vue&type=style&index=0&scoped=df2b7a84&lang.scss[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 590.13ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 611.04ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 619.21ms
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx[22m
+[36mi[39m [32m✨ new dependencies optimized: [33m@vue-flow/core[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue?vue&type=style&index=0&scoped=b91b0c02&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx[22m
+[36mi[39m .nuxt/dist directory has been removed. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 72ms
+[32m√[39m Vite server built in 937ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mruntime.vue-devtools-client.TYb4yMsa5D8TmdfjQj2CUBeCoKe_SZIS_DGJh44d0f4.js[39m in 636.54ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 898.84ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 552.79ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 571.84ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 1848ms
+[36mi[39m Vite server warmed up in 2ms
+[36mi[39m Vite client warmed up in 4ms
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalFlowViewer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue?vue&type=style&index=0&scoped=b91b0c02&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue?vue&type=style&index=0&scoped=b91b0c02&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue?vue&type=style&index=0&scoped=b91b0c02&lang.css[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalFlowNode.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x4)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x5)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x6)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x7)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x8)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x9)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x10)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x11)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x12)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalFlowNode.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalFlowNode.vue?vue&type=style&index=0&scoped=6cad0787&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue?vue&type=style&index=0&scoped=b91b0c02&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue?vue&type=style&index=0&scoped=b91b0c02&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue?vue&type=style&index=0&scoped=b91b0c02&lang.css[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalFlowNode.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalFlowViewer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalFlowViewer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalFlowViewer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?vue&type=style&index=0&scoped=47df0d16&lang.css, /pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue?vue&type=style&index=0&scoped=61d25fa3&lang.scss[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue?vue&type=style&index=0&scoped=61d25fa3&lang.scss[22m[2m (x2)[22m
+[36mi[39m [32mpage reload [39m[2mlowcode/form-materials/lc-array-table/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m[2m (x2)[22m
+[43m[30m WARN [39m[49m [h3] Please prefer using [36mmessage[39m for longer error messages instead of [36mstatusMessage[39m. In the future, [36mstatusMessage[39m will be sanitized by default.
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x4)[22m
+[43m[30m WARN [39m[49m [h3] Please prefer using [36mmessage[39m for longer error messages instead of [36mstatusMessage[39m. In the future, [36mstatusMessage[39m will be sanitized by default.
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x5)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x6)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x7)[22m
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x4)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue?vue&type=style&index=0&scoped=b91b0c02&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer.vue, /pages/dashboard/low-code/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/header/index.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/header/index.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/header/index.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/header/index.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /pages/dashboard/low-code/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 9294ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 863ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 1208ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 867ms
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 513.47ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 524.55ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 1673ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 911ms
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue?vue&type=style&index=0&lang.css[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 752.59ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 929.26ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 971.24ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 3401ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 1837ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 1333ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 1219ms
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /pages/dashboard/low-code/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeForm.vue[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue, /visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/header/index.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeFormField.vue[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mruntime.vue-devtools-client.TYb4yMsa5D8TmdfjQj2CUBeCoKe_SZIS_DGJh44d0f4.js[39m in 572.28ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 613.65ms
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /layouts/dashboard.vue, /pages/dashboard/low-code/index.vue[22m
+[36mi[39m [32mpage reload [39m[2mcomposables/useAppSupabase.ts[22m
+[36mi[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m
+[36mi[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/auth/callback.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/account.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/settings.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m nuxt.config.ts updated. Restarting Nuxt...
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/account.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 244ms
+[32m√[39m Vite server built in 4299ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mruntime.vue-devtools-client.TYb4yMsa5D8TmdfjQj2CUBeCoKe_SZIS_DGJh44d0f4.js[39m in 694.5ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 1342.86ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 1180.14ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 1316.52ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 1350ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 8348ms
+[36mi[39m Vite server warmed up in 4ms
+[36mi[39m Vite client warmed up in 9ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 1505ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 1120.19ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 1145.38ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 3205ms
+[36mi[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m
+[36mi[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeForm.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeForm.vue[22m[2m (x2)[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 574.39ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 964.14ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 986.98ms
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeForm.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeForm.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m[2m (x3)[22m
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 7318ms
+[36mi[39m [32mpage reload [39m[2mcomposables/useAuthState.ts[22m
+[36mi[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 1042.56ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 1172.9ms
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 4742.33ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 6674.1ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 6740.3ms
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m[2m (x2)[22m
+[36mi[39m nuxt.config.ts updated. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[36mi[39m Re-optimizing dependencies because vite config has changed
+[32m√[39m Vite client built in 1531ms
+[32m√[39m Vite server built in 1194ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 2450.75ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 2621.58ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 7749.9ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 22264ms
+[36mi[39m Vite server warmed up in 56ms
+[36mi[39m Vite client warmed up in 78ms
+[32m√[39m Vite server hmr 1 files in 5197.71ms
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeForm.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeForm.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeFormField.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeFormField.vue[22m[2m (x2)[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 872.77ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 993.29ms
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeFormLayout.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeFormLayout.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeTreeItem.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodePageRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x2)[22m
+[36mi[39m [32mpage reload [39m[2mlowcode/visual-converters/helpers.ts[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32m✨ new dependencies optimized: [33mlodash-es, nanoid, @vueuse/integrations/useQRCode, @vueuse/core, vuedraggable, monaco-editor, dayjs[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mpage reload [39m[2mlowcode/visual-converters/lowcode-button-group/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/form-components/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m nuxt.config.ts updated. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[36mi[39m Re-optimizing dependencies because vite config has changed
+[32m√[39m Vite client built in 1070ms
+[32m√[39m Vite server built in 799ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 610.35ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 928.52ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 1261.64ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 4192.87ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 678.36ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 11325ms
+[36mi[39m Vite server warmed up in 3ms
+[36mi[39m Vite client warmed up in 10ms
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32m✨ new dependencies optimized: [33mlodash-es, nanoid, @vueuse/integrations/useQRCode, @vueuse/core, vuedraggable, dayjs, monaco-editor[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue, /components/LowCodeForm.vue, /components/LowCodeFormField.vue, /components/LowCodeFormLayout.vue, /components/LowCodeBlockChildren.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeTreeItem.vue, /components/LowCodePageRenderer.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/designer/index.ts[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/materials/index.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/button-group/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockChildren.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/defaults.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/form/index.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/grid/index.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/search-form/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeBlockRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/tabs/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue, /components/LowCodeForm.vue, /components/LowCodeFormField.vue, /components/LowCodeFormLayout.vue, /components/LowCodeBlockChildren.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeTreeItem.vue, /components/LowCodePageRenderer.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/event-system.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/helpers.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/grid/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/container/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/modal/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/stat-card/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/text/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/tree/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/drawer/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/detail/index.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/lowcode-button-group/index.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/lowcode-edit-form/index.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/lowcode-grid/index.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/lowcode-search-form/index.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/vxe-tabs/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeFormField.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeGrid.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeFormLayout.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/index.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-edit-form/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-grid/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-search-form/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/container-component/form/compProps.ts[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue, /components/LowCodeForm.vue, /components/LowCodeFormField.vue, /components/LowCodeFormLayout.vue, /components/LowCodeBlockChildren.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeTreeItem.vue, /components/LowCodePageRenderer.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/utils/lowcode.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/button-group-designer/button-group-designer.service.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/base-widgets/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/business-component/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue, /components/LowCodeForm.vue, /components/LowCodeFormField.vue, /components/LowCodeFormLayout.vue, /components/LowCodeBlockChildren.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeTreeItem.vue, /components/LowCodePageRenderer.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/schema.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/container-component/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/lowcode-search-form/index.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/vxe-tabs/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue, /components/LowCodeForm.vue, /components/LowCodeFormField.vue, /components/LowCodeFormLayout.vue, /components/LowCodeBlockChildren.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeTreeItem.vue, /components/LowCodePageRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/container/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/form-components/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/animate/Animate.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/event-action/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/form-rule/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/comp-render.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/helpers.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/visual-editor.utils.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/container-component/form/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/utils/visual-to-lowcode.ts[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/header/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/data-source/data-fetch.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/data-source/data-model.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/detail/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/drawer/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/modal/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/button-group/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/animate/Animate.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/hooks/useVisualData.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/stat-card/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/section/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/text/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/toolbar/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/tree/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-sub-form/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/form/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/grid/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/search-form/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/header/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/tabs/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/custom-component/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/data-source/data-fetch.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/page-tree/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/data-source/data-model.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/header/preview.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/outline-tree/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/data-source/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/slot-item.vue[22m
+[36mi[39m changed tsconfig file detected: C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/hooks/useVisualData.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/hooks/useVisualData.ts[22m[2m (x2)[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/hooks/useVisualData.ts[22m[2m (x3)[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/hooks/useVisualData.ts[22m[2m (x4)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/VisualEditorProvider.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue?vue&type=style&index=0&scoped=a496e247&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue?vue&type=style&index=0&scoped=a496e247&lang.css[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-array-table/index.vue, /lowcode/form-materials/lc-array-table/index.vue?vue&type=style&index=0&scoped=914d9089&lang.css[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mruntime.vue-devtools-client.TYb4yMsa5D8TmdfjQj2CUBeCoKe_SZIS_DGJh44d0f4.js[39m in 534.19ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 733.3ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 808.29ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 957.25ms
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m[2m (x2)[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mruntime.vue-devtools-client.TYb4yMsa5D8TmdfjQj2CUBeCoKe_SZIS_DGJh44d0f4.js[39m in 1167.24ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 1161.94ms
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual.config.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/form-components/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/form-components/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx[22m[2m (x2)[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 566.31ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 637.32ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 3655.06ms
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue, /components/LowCodeForm.vue, /components/LowCodeFormField.vue, /components/LowCodeFormLayout.vue, /components/LowCodeBlockChildren.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeTreeItem.vue, /components/LowCodePageRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue, /components/LowCodeForm.vue, /components/LowCodeFormField.vue, /components/LowCodeFormLayout.vue, /components/LowCodeBlockChildren.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeTreeItem.vue, /components/LowCodePageRenderer.vue[22m[2m (x2)[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 1279.96ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 3600.51ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 4309.65ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 4340.42ms
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/helpers.ts[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m[2m (x4)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m[2m (x5)[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue?vue&type=style&index=0&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/form-components/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m[2m (x2)[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/index.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/form-components/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-array-table/index.vue[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mruntime.vue-devtools-client.TYb4yMsa5D8TmdfjQj2CUBeCoKe_SZIS_DGJh44d0f4.js[39m in 1482.64ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 2848.39ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 3931.95ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 3937.19ms
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/helpers.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/helpers.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 552.21ms
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 807.99ms
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-sub-form/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-sub-form/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-sub-form/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-sub-form/index.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/materials/page-blocks.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/materials/page-blocks.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/materials/page-blocks.ts[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-sub-form/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-sub-form/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue, /components/LowCodeForm.vue, /components/LowCodeFormField.vue, /components/LowCodeFormLayout.vue, /components/LowCodeBlockChildren.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeTreeItem.vue, /components/LowCodePageRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue, /components/LowCodeForm.vue, /components/LowCodeFormField.vue, /components/LowCodeFormLayout.vue, /components/LowCodeBlockChildren.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeTreeItem.vue, /components/LowCodePageRenderer.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue, /components/LowCodeForm.vue, /components/LowCodeFormField.vue, /components/LowCodeFormLayout.vue, /components/LowCodeBlockChildren.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeTreeItem.vue, /components/LowCodePageRenderer.vue[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue, /components/LowCodeForm.vue, /components/LowCodeFormField.vue, /components/LowCodeFormLayout.vue, /components/LowCodeBlockChildren.vue, /components/LowCodeBlockRenderer.vue, /components/LowCodeTreeItem.vue, /components/LowCodePageRenderer.vue[22m[2m (x4)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue?vue&type=style&index=0&scoped=a496e247&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-array-table/index.vue, /lowcode/form-materials/lc-array-table/index.vue?vue&type=style&index=0&scoped=914d9089&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-sub-form/index.vue?vue&type=style&index=0&scoped=22e15e9e&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-sub-form/index.vue?vue&type=style&index=0&scoped=0d56d8c7&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx[22m[2m (x2)[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mapp-component.mjs[39m in 1230.05ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/app.config.d.ts[39m in 1251ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mapp.config.mjs[39m in 1252.41ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/app-defaults.d.ts[39m in 1320.67ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/build.d.ts[39m in 1381.74ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mnitro.client.mjs[39m in 1403.36ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mcss.mjs[39m in 1435.51ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mfetch.mjs[39m in 1435.96ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36merror-component.mjs[39m in 1479.97ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mglobal-polyfills.mjs[39m in 1480.91ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mlayouts.mjs[39m in 1542.52ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mmiddleware.mjs[39m in 1657.81ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mnuxt.config.mjs[39m in 1548.84ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mpaths.mjs[39m in 1636.59ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mroot-component.mjs[39m in 1645.37ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtest-component-wrapper.mjs[39m in 1619.18ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/vue-shim.d.ts[39m in 1661.94ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/nitro-layouts.d.ts[39m in 1662.22ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/builder-env.d.ts[39m in 1665.76ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mroutes.mjs[39m in 1664.26ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mpages.mjs[39m in 1639.77ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/middleware.d.ts[39m in 1698.21ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/nitro-middleware.d.ts[39m in 1753.97ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/layouts.d.ts[39m in 1763.77ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36munhead-options.mjs[39m in 1764.66ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36munhead.config.mjs[39m in 1765.14ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mcomponents.d.ts[39m in 1772.36ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/components.d.ts[39m in 1772.85ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mcomponents.plugin.mjs[39m in 758.48ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mcomponent-names.mjs[39m in 758.84ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mcomponents.islands.mjs[39m in 759.35ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mcomponent-chunk.mjs[39m in 762.56ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mroute-rules.mjs[39m in 777.55ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mdevtools/settings.mjs[39m in 1868.56ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mimports.mjs[39m in 784.2ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mimports.d.ts[39m in 801.57ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/nitro-nuxt.d.ts[39m in 940.44ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/schema.d.ts[39m in 2054.42ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/imports.d.ts[39m in 946.27ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mruntime.vue-devtools-client.TYb4yMsa5D8TmdfjQj2CUBeCoKe_SZIS_DGJh44d0f4.js[39m in 2095.44ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 2082.29ms
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/index.tsx[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m
+[36mi[39m [32mhmr update [39m[2m/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/styles/visual-editor-utilities.scss?direct[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
+[36mi[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m[2m (x2)[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/helpers.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/materials/page-blocks.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m[2m (x2)[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/helpers.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/helpers.ts[22m[2m (x2)[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/index.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/index.ts[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/helpers.ts[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 1591.63ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 652.93ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 910.74ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 1054.8ms
+[32m√[39m Vite server hmr 249 files in 17506.751ms
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/visual-editor.props.tsx[22m
+[36mi[39m [32mpage reload [39m[2mvisual-editor/visual-editor.props.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/helpers.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/helpers.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/materials/page-blocks.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/helpers.ts[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/lowcode-button-group/index.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/array-table/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/materials/page-blocks.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/sub-form/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/index.tsx, /visual-editor/components/header/index.vue, /visual-editor/components/simulator-editor/simulator-editor.vue, /visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx, /visual-editor/components/right-attribute-panel/components/page-setting/pageSetting.tsx, /visual-editor/components/right-attribute-panel/components/animate/Animate.tsx, /visual-editor/components/right-attribute-panel/components/event-action/index.tsx, /visual-editor/components/left-aside/components/outline-tree/index.vue, /visual-editor/components/left-aside/components/page-tree/index.vue, /visual-editor/components/left-aside/components/data-source/data-fetch.vue, /visual-editor/components/left-aside/components/data-source/data-model.vue, /visual-editor/components/left-aside/components/outline-tree/LayerBlockList.vue, /visual-editor/components/simulator-editor/comp-render.tsx, /visual-editor/components/left-aside/components/business-component/index.tsx, /visual-editor/components/left-aside/components/container-component/index.tsx, /visual-editor/components/left-aside/components/form-components/index.tsx, /visual-editor/components/left-aside/components/base-widgets/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/container-component/form/compProps.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/container-component/form/compProps.ts[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-search-form/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mpackages/business-component/lowcode-search-form/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-edit-form/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mpackages/business-component/lowcode-edit-form/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-grid/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mpackages/business-component/lowcode-grid/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-array-table/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
+[36mi[39m [32mhmr update [39m[2m/lowcode/form-materials/lc-array-table/index.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-search-form/index.tsx[22m
+[36mi[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-edit-form/index.tsx[22m
+[36mi[39m nuxt.config.ts updated. Restarting Nuxt...
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m[2m (x2)[22m
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[36mi[39m Re-optimizing dependencies because vite config has changed
+[32m√[39m Vite client built in 1173ms
+[32m√[39m Vite server built in 795ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 1284.77ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 1409.61ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 1440.66ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 14075ms
+[36mi[39m Vite server warmed up in 5ms
+[36mi[39m Vite client warmed up in 11ms
+[36mi[39m [32m✨ new dependencies optimized: [33m@vue-flow/core[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue[22m[2m (x4)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue[22m[2m (x5)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/trigger-workflow/designer.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/trigger-workflow/designer.vue, /pages/dashboard/trigger-workflow/designer.vue?vue&type=style&index=0&scoped=2e272910&lang.css, /pages/dashboard/trigger-workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/trigger-workflow/designer.vue, /pages/dashboard/trigger-workflow/designer.vue?vue&type=style&index=0&scoped=2e272910&lang.css, /pages/dashboard/trigger-workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x2)[22m
+ ELIFECYCLE  Command failed with exit code 4294967295.

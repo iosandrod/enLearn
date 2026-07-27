@@ -5,8 +5,8 @@
  * @description：tools
  * @update: 2021/5/7 10:46
  */
-import { reactive } from 'vue';
-import { ElMessage, ElRadio, ElRadioGroup } from 'element-plus';
+import { computed, reactive } from 'vue';
+import { ElMessage, ElRadio, ElRadioGroup } from '@/visual-editor/components/common/designer-ui';
 import { useQRCode } from '@vueuse/integrations/useQRCode';
 import { useClipboard } from '@vueuse/core';
 import {
@@ -20,15 +20,26 @@ import {
   Download,
   Upload,
   DocumentChecked,
-} from '@element-plus/icons-vue';
+} from '@/visual-editor/components/common/remix-icons';
 import { useVisualData, localKey } from '@/visual-editor/hooks/useVisualData';
 import { useVisualEditorPersistence } from '@/visual-editor/hooks/useVisualPersistence';
 import { useModal } from '@/visual-editor/hooks/useModal';
 import MonacoEditor from '@/visual-editor/components/common/monaco-editor/MonacoEditor';
-import 'element-plus/es/components/message/style/css';
+import type { VisualEditorBlockData } from '@/visual-editor/visual-editor.utils';
 
 export const useTools = () => {
-  const { jsonData, updatePage, currentPage, overrideProject } = useVisualData();
+  const {
+    jsonData,
+    updatePage,
+    updatePageBlock,
+    currentPage,
+    overrideProject,
+    setCurrentBlock,
+    canUndo,
+    canRedo,
+    undoHistory,
+    redoHistory,
+  } = useVisualData();
   const persistence = useVisualEditorPersistence();
   const state = reactive({
     coverRadio: 'current',
@@ -145,37 +156,27 @@ export const useTools = () => {
     {
       title: '撤销',
       icon: RefreshLeft,
+      disabled: computed(() => !canUndo.value),
       onClick: () => {
-        ElMessage({
-          showClose: true,
-          type: 'info',
-          duration: 2000,
-          message: '敬请期待！',
-        });
+        undoHistory();
       },
     },
     {
       title: '重做',
       icon: RefreshRight,
+      disabled: computed(() => !canRedo.value),
       onClick: () => {
-        ElMessage({
-          showClose: true,
-          type: 'info',
-          duration: 2000,
-          message: '敬请期待！',
-        });
+        redoHistory();
       },
     },
     {
       title: '清空页面',
       icon: Delete,
+      disabled: computed(() => !currentPage.value.blocks.length),
       onClick: () => {
-        ElMessage({
-          showClose: true,
-          type: 'info',
-          duration: 2000,
-          message: '敬请期待！',
-        });
+        updatePageBlock(currentPage.value.path, []);
+        setCurrentBlock({} as VisualEditorBlockData);
+        ElMessage.success('已清空当前页面');
       },
     },
     {

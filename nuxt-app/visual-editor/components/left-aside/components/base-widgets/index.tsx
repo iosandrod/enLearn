@@ -8,11 +8,13 @@
  */
 import { defineComponent, ref } from 'vue';
 import { cloneDeep } from 'lodash-es';
-import { Edit } from '@element-plus/icons-vue';
+import { Edit } from '@/visual-editor/components/common/remix-icons';
 import styles from './index.module.scss';
 import { visualConfig } from '@/visual.config';
 import { createNewBlock } from '@/visual-editor/visual-editor.utils';
 import DraggableTransitionGroup from '@/visual-editor/components/simulator-editor/draggable-transition-group.vue';
+
+const DraggableTransitionGroupView = DraggableTransitionGroup as any;
 
 export default defineComponent({
   name: 'BaseWidgets',
@@ -30,7 +32,7 @@ export default defineComponent({
 
     return () => (
       <>
-        <DraggableTransitionGroup
+        <DraggableTransitionGroupView
           class={styles.listGroup}
           v-model={baseWidgets.value}
           group={{ name: 'components', pull: 'clone', put: false }}
@@ -44,7 +46,7 @@ export default defineComponent({
               </div>
             ),
           }}
-        </DraggableTransitionGroup>
+        </DraggableTransitionGroupView>
       </>
     );
   },

@@ -1,0 +1,42 @@
+{
+  "name": "@enlearn/approval-workflow",
+  "version": "0.1.0",
+  "description": "Vue approval workflow designer, viewer, task panel, and timeline components for EnLearn.",
+  "type": "module",
+  "private": false,
+  "sideEffects": [
+    "*.vue",
+    "*.scss",
+    "src/styles/*"
+  ],
+  "files": [
+    "src"
+  ],
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./components/*": "./src/components/*",
+    "./hooks/*": "./src/hooks/*",
+    "./types/*": "./src/types/*",
+    "./styles/*": "./src/styles/*"
+  },
+  "dependencies": {
+    "@enlearn/workflow-schema": "workspace:*",
+    "@vue-flow/core": "^1.48.2"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^5.4.5",
+    "vite": "^7.3.6",
+    "vue": "^3.5.0",
+    "vue-tsc": "^3.3.7"
+  },
+  "scripts": {
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+  }
+}

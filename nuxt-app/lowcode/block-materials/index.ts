@@ -1,4 +1,6 @@
 import type { LowCodeBlockMaterial } from './types';
+import type { VisualToLowCodeConverter } from '~/lowcode/visual-converters/types';
+import buttonGroupMaterial from './button-group';
 
 type MaterialModule =
   | { default?: LowCodeBlockMaterial | LowCodeBlockMaterial[]; material?: LowCodeBlockMaterial }
@@ -38,6 +40,7 @@ export function registerLowCodeBlockMaterial(material: LowCodeBlockMaterial) {
 Object.values(materialModules).forEach((module) => {
   normalizeModule(module).forEach(registerLowCodeBlockMaterial);
 });
+registerLowCodeBlockMaterial(buttonGroupMaterial);
 
 export function getLowCodeBlockMaterial(type?: string) {
   return type ? materialMap[type] : undefined;
@@ -47,10 +50,21 @@ export function getLowCodeBlockMaterials() {
   return [...materialList];
 }
 
+export function getLowCodeBlockMaterialConverters() {
+  return materialList
+    .map((material) => material.converter)
+    .filter((converter): converter is VisualToLowCodeConverter => Boolean(converter));
+}
+
+export function createDefaultLowCodeBlock(type: string, overrides = {}) {
+  return getLowCodeBlockMaterial(type)?.createDefaultBlock?.(overrides);
+}
+
 export { materialMap as lowCodeBlockMaterialMap };
 export type {
   LowCodeBlockMaterial,
   LowCodeBlockMaterialEmits,
   LowCodeBlockMaterialProps,
+  LowCodeBlockValidationIssue,
   LowCodeRuntimeBlock,
 } from './types';

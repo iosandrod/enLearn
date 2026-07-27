@@ -1,4 +1,5 @@
 import type { VisualEditorComponent } from '@/visual-editor/visual-editor.utils';
+import arrayTable from './array-table';
 
 const modules = import.meta.glob<{ default?: VisualEditorComponent } | VisualEditorComponent>(
   './*/index.tsx',
@@ -12,5 +13,7 @@ Object.entries(modules).forEach(([key, module]) => {
   components[name] = ((module as { default?: VisualEditorComponent }).default ||
     module) as VisualEditorComponent;
 });
+
+components['array-table'] = arrayTable;
 
 export default components;

@@ -5,6 +5,73 @@ import type { ServiceContext } from '../interfaces/service-executor';
 
 type ClientMode = 'public' | 'user' | 'admin';
 
+export type AccountRole = 'owner' | 'member';
+
+export type AccountSummary = {
+  account_id: string;
+  account_role: AccountRole;
+  is_primary_owner: boolean;
+  name: string | null;
+  slug: string | null;
+  personal_account: boolean;
+  metadata?: Record<string, unknown> | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type UserAuthorization = {
+  profile: Record<string, unknown> | null;
+  permissionCodes: string[];
+  accounts: AccountSummary[];
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isMissingFunctionError(error: { message?: string; code?: string } | null | undefined) {
+  return (
+    error?.code === 'PGRST202' ||
+    Boolean(error?.message?.includes('Could not find the function')) ||
+    Boolean(error?.message?.includes('function') && error.message.includes('does not exist'))
+  );
+}
+
+function normalizeStringArray(value: unknown) {
+  if (!Array.isArray(value)) return [] as string[];
+  return value.map((item) => (typeof item === 'string' ? item.trim() : '')).filter(Boolean);
+}
+
+function normalizeAccounts(value: unknown): AccountSummary[] {
+  if (!Array.isArray(value)) return [] as AccountSummary[];
+
+  return value
+    .filter(isRecord)
+    .map((account): AccountSummary => {
+      const accountRole: AccountRole = account.account_role === 'member' ? 'member' : 'owner';
+
+      return {
+        account_id: String(account.account_id ?? ''),
+        account_role: accountRole,
+        is_primary_owner: account.is_primary_owner === true,
+        name: typeof account.name === 'string' ? account.name : null,
+        slug: typeof account.slug === 'string' ? account.slug : null,
+        personal_account: account.personal_account === true,
+        metadata: isRecord(account.metadata) ? account.metadata : null,
+        created_at: typeof account.created_at === 'string' ? account.created_at : null,
+        updated_at: typeof account.updated_at === 'string' ? account.updated_at : null
+      };
+    })
+    .filter((account) => account.account_id);
+}
+
+function normalizeRequiredPermissions(requiredPermissions?: string | string[]) {
+  if (!requiredPermissions) return [] as string[];
+  return (Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions])
+    .map((code) => code.trim())
+    .filter(Boolean);
+}
+
 function resolveSupabaseConfig() {
   const env = getEnv();
   const supabaseUrl =
@@ -76,21 +143,61 @@ export async function getCurrentUser(context: ServiceContext) {
   return { client, user };
 }
 
-export async function requireAdmin(context: ServiceContext) {
+export async function getUserAuthorization(
+  client: SupabaseClient,
+  userId: string
+): Promise<UserAuthorization> {
+  const [{ data: profile, error: profileError }, permissionsResult, accountsResult] =
+    await Promise.all([
+      client.from('users').select('*').eq('id', userId).maybeSingle(),
+      client.rpc('current_user_permission_codes'),
+      client.rpc('get_accounts')
+    ]);
+
+  if (profileError) {
+    throw new ForbiddenException(profileError.message);
+  }
+
+  const permissionError = permissionsResult.error;
+  if (permissionError && !isMissingFunctionError(permissionError)) {
+    throw new ForbiddenException(permissionError.message);
+  }
+
+  const accountsError = accountsResult.error;
+  if (accountsError && !isMissingFunctionError(accountsError)) {
+    throw new ForbiddenException(accountsError.message);
+  }
+
+  return {
+    profile: (profile as Record<string, unknown> | null) ?? null,
+    permissionCodes: normalizeStringArray(permissionsResult.data),
+    accounts: normalizeAccounts(accountsResult.data)
+  };
+}
+
+export function hasRequiredPermission(
+  authorization: Pick<UserAuthorization, 'permissionCodes'>,
+  requiredPermissions?: string | string[]
+) {
+  const required = normalizeRequiredPermissions(requiredPermissions);
+
+  if (!required.length) {
+    return false;
+  }
+
+  return required.some((code) => authorization.permissionCodes.includes(code));
+}
+
+export async function requireAdmin(
+  context: ServiceContext,
+  requiredPermissions?: string | string[]
+) {
   const { client, user } = await getCurrentUser(context);
-  const { data: profile, error } = await client
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
+  const authorization = await getUserAuthorization(client, user.id);
 
-  if (error) {
-    throw new ForbiddenException(error.message);
+  if (!hasRequiredPermission(authorization, requiredPermissions)) {
+    throw new ForbiddenException('Admin permission required.');
   }
 
-  if (profile?.role !== 'admin') {
-    throw new ForbiddenException('Admin access required.');
-  }
-
-  return { client, user, profile };
+  return { client, user, ...authorization };
 }

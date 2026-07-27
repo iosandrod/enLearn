@@ -1,5 +1,6 @@
+import { invokeBackendService } from '../../utils/backend';
+
 export default defineEventHandler(async (event) => {
-  const { supabase, user } = await requireUser(event);
   const id = Number(getRouterParam(event, 'id'));
   const body = await readBody<{ title?: string; content?: string | null }>(event);
   const title = body.title?.trim();
@@ -11,24 +12,9 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const { data, error } = await supabase
-    .from('posts')
-    .update({
-      title,
-      content: body.content ?? null,
-      updated_at: new Date().toISOString()
-    })
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .select()
-    .single();
-
-  if (error) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: error.message
-    });
-  }
-
-  return data;
+  return invokeBackendService(event, 'posts', 'update', {
+    id,
+    title,
+    content: body.content ?? null
+  });
 });

@@ -1,0 +1,18 @@
+C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\job\job-scheduler.service.ts:33
+    if (!this.database.isConfigured) return;
+                       ^
+
+
+TypeError: Cannot read properties of undefined (reading 'isConfigured')
+    at JobSchedulerService.tick (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\job\job-scheduler.service.ts:33:24)
+    at JobSchedulerService.onModuleInit (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\job\job-scheduler.service.ts:25:15)
+    at MapIterator.iteratee (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:22:43)
+    at MapIterator.next (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\map.ts:9:39)
+    at IteratorWithOperators.next (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\iterate.ts:19:28)
+    at Function.from (<anonymous>)
+    at IteratorWithOperators.toArray (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\iterate.ts:227:22)
+    at callOperator (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:23:10)
+    at callModuleInitHook (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:43:23)
+    at NestApplication.callInitHook (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\nest-application-context.js:234:50)
+
+Node.js v22.20.0

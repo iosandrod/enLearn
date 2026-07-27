@@ -1,0 +1,29 @@
+{
+  "name": "@enlearn/workflow-schema",
+  "version": "0.1.0",
+  "description": "Shared workflow schema, validators, and compiler helpers for EnLearn approval workflows.",
+  "type": "module",
+  "private": false,
+  "files": [
+    "src"
+  ],
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema/*": "./src/schema/*",
+    "./validator/*": "./src/validator/*",
+    "./node-registry/*": "./src/node-registry/*",
+    "./compiler/*": "./src/compiler/*"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "tsx src/validator/validate.spec.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "tsx": "^4.19.2",
+    "typescript": "^5.4.5"
+  }
+}

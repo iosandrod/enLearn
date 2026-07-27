@@ -27,6 +27,8 @@ export class UserService implements ServiceExecutor {
         return this.updateProfile(postData, context);
       case 'updateEmail':
         return this.updateEmail(postData, context);
+      case 'updateSettings':
+        return this.updateSettings(postData, context);
       default:
         throw new BadRequestException(`Unsupported user method: ${method}`);
     }
@@ -99,6 +101,30 @@ export class UserService implements ServiceExecutor {
     return {
       success: true,
       email
+    };
+  }
+
+  private async updateSettings(postData: PostData, context: ServiceContext) {
+    const { client } = await getCurrentUser(context);
+    const settings = postData.settings;
+
+    if (typeof settings !== 'object' || settings === null || Array.isArray(settings)) {
+      throw new BadRequestException('settings must be an object.');
+    }
+
+    const { data, error } = await client.auth.updateUser({
+      data: {
+        dashboard_settings: settings as Record<string, unknown>
+      }
+    });
+
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+
+    return {
+      success: true,
+      user: data.user
     };
   }
 }

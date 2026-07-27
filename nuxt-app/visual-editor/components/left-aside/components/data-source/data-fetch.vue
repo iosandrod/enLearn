@@ -8,44 +8,28 @@
 -->
 <template>
   <div class="!mb-10px">
-    <el-button type="primary" @click="showModelMoal">添加</el-button>
-    <el-button type="warning" @click="showImportSwaggerJsonModal">导入swagger</el-button>
-    <el-popconfirm title="确定要删除全部接口吗？" @confirm="updateFetchApi([], true)">
-      <template #reference>
-        <el-button type="danger">清空</el-button>
-      </template>
-    </el-popconfirm>
+    <vxe-button status="primary" @click="showModelMoal">添加</vxe-button>
+    <vxe-button status="warning" @click="showImportSwaggerJsonModal">导入swagger</vxe-button>
+    <vxe-button status="error" @click="confirmClearFetchApis">清空</vxe-button>
   </div>
-  <el-collapse v-model="state.activeNames" v-infinite-scroll="() => {}">
+  <vxe-collapse v-model="state.activeNames" v-infinite-scroll="() => {}">
     <template v-for="item in apis" :key="item.key">
-      <el-collapse-item :title="item.name" :name="item.key">
+      <vxe-collapse-pane :title="item.name" :name="item.key">
         <template #title>
           <div class="model-item-title">
             <span class="truncate w-160px">{{ item.name }}</span>
             <div class="model-actions">
-              <ElIcon :size="24" color="#2196f3" @click.stop="editApiItem(item)">
-                <Edit />
-              </ElIcon>
-              <el-popconfirm
-                confirm-button-text="确定"
-                cancel-button-text="取消"
-                icon-color="red"
-                title="确定要删除该接口吗？"
-                @confirm="deleteFetchApi(item.key)"
-              >
-                <template #reference>
-                  <ElIcon :size="24" color="#f44336"><Delete /></ElIcon>
-                </template>
-              </el-popconfirm>
+              <span class="model-action-icon is-edit" @click.stop="editApiItem(item)"><Edit /></span>
+              <span class="model-action-icon is-delete" @click.stop="confirmDeleteFetchApi(item.key)"><Delete /></span>
             </div>
           </div>
         </template>
         <div class="low-model-item">
           <pre class="code">{{ JSON.stringify(item, null, 2) }}</pre>
         </div>
-      </el-collapse-item>
+      </vxe-collapse-pane>
     </template>
-  </el-collapse>
+  </vxe-collapse>
 </template>
 
 <script setup lang="tsx">
@@ -59,10 +43,9 @@
     ElButton,
     ElMessage,
     ElCascader,
-    ElIcon,
-  } from 'element-plus';
+  } from '@/visual-editor/components/common/designer-ui';
   import { cloneDeep } from 'lodash-es';
-  import { Delete, Edit } from '@element-plus/icons-vue';
+  import { Delete, Edit } from '@/visual-editor/components/common/remix-icons';
   import { useImportSwaggerJsonModal } from './utils';
   import type { FetchApiItem, VisualEditorModel } from '@/visual-editor/visual-editor.utils';
   import { useVisualData } from '@/visual-editor/hooks/useVisualData';
@@ -114,6 +97,18 @@
     activeNames: [],
     ruleForm: createEmptyApiItem(),
   });
+
+  const confirmClearFetchApis = () => {
+    if (window.confirm('???????????')) {
+      updateFetchApi([], true);
+    }
+  };
+
+  const confirmDeleteFetchApi = (key: string) => {
+    if (window.confirm('??????????')) {
+      deleteFetchApi(key);
+    }
+  };
 
   const rules = {
     name: [{ required: true, message: '请输入接口名称', trigger: 'change' }],

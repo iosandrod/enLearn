@@ -9,11 +9,13 @@
 import { defineComponent } from 'vue';
 import { cloneDeep } from 'lodash-es';
 import Draggable from 'vuedraggable';
-import { Suitcase } from '@element-plus/icons-vue';
+import { Suitcase } from '@/visual-editor/components/common/remix-icons';
 import styles from './index.module.scss';
 import type { VisualEditorComponent } from '@/visual-editor/visual-editor.utils';
 import { visualConfig } from '@/visual.config';
 import { createNewBlock } from '@/visual-editor/visual-editor.utils';
+
+const DraggableView = Draggable as any;
 
 export default defineComponent({
   name: 'ContainerComponent',
@@ -29,7 +31,7 @@ export default defineComponent({
 
     return () => (
       <>
-        <Draggable
+        <DraggableView
           class={styles.listGroup}
           sort={false}
           forceFallback={false}
@@ -45,7 +47,7 @@ export default defineComponent({
               </div>
             ),
           }}
-        </Draggable>
+        </DraggableView>
       </>
     );
   },

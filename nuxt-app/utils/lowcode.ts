@@ -16,6 +16,7 @@ export function formatLowCodeGridValue(
   value: unknown,
   formatter?:
     | LowCodeGridFormatter
+    | string
     | ((params: { cellValue: unknown }) => string)
 ) {
   if (!formatter) {
@@ -24,6 +25,10 @@ export function formatLowCodeGridValue(
 
   if (typeof formatter === 'function') {
     return formatter({ cellValue: value });
+  }
+
+  if (typeof formatter === 'string') {
+    return value ?? '';
   }
 
   if (value === null || value === undefined || value === '') {
@@ -80,7 +85,11 @@ export function formatLowCodeGridValue(
 
 export function normalizeLowCodeGridColumns(columns: LowCodeGridColumn[]) {
   return columns.map((column) => {
-    if (!column.formatter || typeof column.formatter === 'function') {
+    if (
+      !column.formatter ||
+      typeof column.formatter === 'function' ||
+      typeof column.formatter === 'string'
+    ) {
       return column;
     }
 

@@ -1,49 +1,45 @@
 <!--页面树-->
 <template>
-  <el-button type="primary" class="!my-10px !mx-6px" :icon="Plus" @click="addPage"
-    >添加页面</el-button
-  >
-  <el-tree
-    :data="pages"
-    :props="defaultProps"
-    node-key="path"
-    highlight-current
-    :current-node-key="currentNodeKey"
-    @node-click="handleNodeClick"
-  >
-    <template #default="{ node, data }">
-      <span class="custom-tree-node">
-        <span
-          >{{ node.label }}（{{ data.path }}）
-          <template v-if="data.isDefault">
-            <el-tag size="default">默认</el-tag>
-          </template>
+  <div class="page-tree">
+    <vxe-button status="primary" class="page-tree-add" @click="addPage">
+      <Plus />
+      添加页面
+    </vxe-button>
+
+    <div class="page-tree-list">
+      <button
+        v-for="page in pages"
+        :key="page.path"
+        type="button"
+        class="page-tree-node"
+        :class="{ 'is-active': page.path === currentNodeKey }"
+        @click="handleNodeClick(page)"
+      >
+        <span class="page-tree-node-main">
+          <span class="page-title">{{ page.title }}</span>
+          <span class="page-path">{{ page.path }}</span>
+          <vxe-tag v-if="page.isDefault" size="mini" status="primary">默认</vxe-tag>
         </span>
-        <span @click.stop>
-          <el-dropdown trigger="click">
-            <span class="el-dropdown-link">
-              <el-icon><more-filled /></el-icon>
-            </span>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item :icon="Edit" @click="editPage(data)">编辑</el-dropdown-item>
-                <el-dropdown-item :icon="Delete" @click="delPage(data)">删除</el-dropdown-item>
-                <el-dropdown-item :icon="Link" @click="setDefaultPage(data)"
-                  >设为首页</el-dropdown-item
-                >
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+        <span class="page-tree-actions" @click.stop>
+          <vxe-button mode="text" status="primary" title="编辑" @click="editPage(page)">
+            <Edit />
+          </vxe-button>
+          <vxe-button mode="text" status="error" title="删除" @click="delPage(page)">
+            <Delete />
+          </vxe-button>
+          <vxe-button mode="text" title="设为首页" @click="setDefaultPage(page)">
+            <Link />
+          </vxe-button>
         </span>
-      </span>
-    </template>
-  </el-tree>
+      </button>
+    </div>
+  </div>
 </template>
 
   <script lang="tsx" setup>
   import { ref, computed } from 'vue';
-  import { ElMessage, ElForm, ElFormItem, ElInput } from 'element-plus';
-  import { Tickets, Plus, MoreFilled, Edit, Delete, Link } from '@element-plus/icons-vue';
+  import { ElMessage, ElForm, ElFormItem, ElInput } from '@/visual-editor/components/common/designer-ui';
+  import { Tickets, Plus, Edit, Delete, Link } from '@/visual-editor/components/common/remix-icons';
   import type { VisualEditorPage } from '@/visual-editor/visual-editor.utils';
   import { useModal } from '@/visual-editor/hooks/useModal';
   import { useVisualData, createNewPage } from '@/visual-editor/hooks/useVisualData';
@@ -65,10 +61,6 @@
 
   const ruleFormRef = ref<InstanceType<typeof ElForm>>();
 
-  const defaultProps = ref({
-    children: 'children',
-    label: 'title',
-  });
   const currentNodeKey = computed(() => currentPath.value);
   // 当前要增加或修改的页面
   const operatePageData = ref<VisualEditorPage | null>(null);
@@ -83,6 +75,7 @@
     Object.keys(jsonData.pages).map((key) => ({
       title: jsonData.pages[key].title,
       path: key,
+      isDefault: Boolean(jsonData.pages[key].isDefault),
     })),
   );
 
@@ -162,7 +155,9 @@
   // 删除子页面
   const delPage = (data) => {
     console.log('删除子页面数据', data);
-    deletePage(data.path, '/');
+    if (window.confirm('确定要删除该页面吗？')) {
+      deletePage(data.path, '/');
+    }
   };
   // 设置为默认页面
   const setDefaultPage = (data) => {
@@ -171,12 +166,65 @@
 </script>
 
 <style lang="scss" scoped>
-  .custom-tree-node {
+  .page-tree {
+    display: grid;
+    gap: 8px;
+    padding: 10px 8px;
+  }
+
+  .page-tree-add {
+    justify-self: start;
+  }
+
+  .page-tree-list {
+    display: grid;
+    gap: 6px;
+  }
+
+  .page-tree-node {
     display: flex;
-    padding-right: 8px;
-    font-size: 14px;
-    flex: 1;
+    width: 100%;
+    min-height: 42px;
+    padding: 7px 8px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: #fff;
+    color: #334155;
+    font-size: 13px;
+    cursor: pointer;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
+    text-align: left;
+
+    &:hover,
+    &.is-active {
+      border-color: #bfdbfe;
+      background: #eff6ff;
+    }
+  }
+
+  .page-tree-node-main {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+  }
+
+  .page-title,
+  .page-path {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .page-path {
+    color: #64748b;
+    font-size: 12px;
+  }
+
+  .page-tree-actions {
+    display: inline-flex;
+    flex: none;
+    gap: 2px;
   }
 </style>

@@ -14,7 +14,7 @@
 
       <div class="content-panel">
         <h2 class="page-title">Email</h2>
-        <p class="page-description">Supabase may require email confirmation.</p>
+        <p class="page-description">Email changes may require confirmation.</p>
         <LowCodeForm
           v-model="emailForm"
           :schema="emailSchema"
@@ -48,8 +48,8 @@ definePageMeta({
   middleware: 'auth'
 });
 
-const supabase = useAppSupabase();
-const db: any = supabase;
+const auth = useAuth();
+const serviceApi = useServiceApi();
 const loading = ref(false);
 const message = ref('');
 const messageClass = ref('lc-help');
@@ -63,10 +63,16 @@ async function loadAccount() {
   loading.value = true;
 
   try {
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
+    await auth.init(true);
+    const account = await serviceApi.invoke<{
+      user: {
+        id: string;
+        email?: string;
+        user_metadata?: Record<string, unknown>;
+      };
+      profile: Record<string, unknown> | null;
+    }>('user', 'me');
+    const user = account.user;
     if (!user) return;
 
     emailForm.value = { email: user.email ?? '' };
@@ -74,22 +80,21 @@ async function loadAccount() {
       fullName: user.user_metadata?.full_name ?? ''
     };
 
-    const { data: details } = await db
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle();
-
-    if (details?.full_name) {
-      profileForm.value = { fullName: details.full_name };
+    if (account.profile?.full_name) {
+      profileForm.value = { fullName: String(account.profile.full_name) };
     }
 
-    const { data: subscription } = await db
-      .from('subscriptions')
-      .select('*, prices (*, products (*))')
-      .eq('user_id', user.id)
-      .in('status', ['trialing', 'active'])
-      .maybeSingle();
+    const subscription = await serviceApi.invoke<{
+      status?: string | null;
+      current_period_end?: string | null;
+      prices?: {
+        unit_amount?: number | null;
+        interval?: string | null;
+        products?: {
+          name?: string | null;
+        } | null;
+      } | null;
+    } | null>('payment', 'getSubscription');
 
     if (subscription) {
       const productName =
@@ -123,26 +128,12 @@ async function saveProfile(values: Record<string, unknown>) {
 
   try {
     const fullName = String(values.fullName ?? '');
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
-    if (!user) throw new Error('Authentication required');
-
-    const { error: authError } = await supabase.auth.updateUser({
-      data: { full_name: fullName }
-    });
-
-    if (authError) throw authError;
-
-    await db
-      .from('users')
-      .update({ full_name: fullName })
-      .eq('id', user.id);
+    await serviceApi.invoke('user', 'updateProfile', { fullName });
 
     profileForm.value = { fullName };
     message.value = 'Name updated successfully.';
     messageClass.value = 'lc-help';
+    await auth.init(true);
   } catch (error) {
     message.value =
       error instanceof Error ? error.message : 'Name could not be updated.';
@@ -157,12 +148,10 @@ async function saveEmail(values: Record<string, unknown>) {
   message.value = '';
 
   try {
-    const { error } = await supabase.auth.updateUser({
+    await serviceApi.invoke('user', 'updateEmail', {
       email: String(values.email)
     });
-
-    if (error) throw error;
-    message.value = 'Confirmation email sent if Supabase requires it.';
+    message.value = 'Confirmation email sent if required.';
     messageClass.value = 'lc-help';
   } catch (error) {
     message.value =

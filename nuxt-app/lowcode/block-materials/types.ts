@@ -1,9 +1,12 @@
 import type { Component } from 'vue';
+import type { VisualEditorComponent } from '@/visual-editor/visual-editor.utils';
+import type { VisualToLowCodeConverter } from '~/lowcode/visual-converters/types';
 import type {
   LowCodeAction,
   LowCodePageBlock,
   LowCodePageGridBlock,
   LowCodePageSearchFormBlock,
+  LowCodeRuntimeEvent,
 } from '~/types/lowcode';
 
 export type LowCodeRuntimeBlock =
@@ -46,12 +49,28 @@ export type LowCodeBlockMaterialEmits = {
       values: Record<string, unknown>;
     },
   ];
+  runtimeEvent: [event: LowCodeRuntimeEvent];
 };
 
-export type LowCodeBlockMaterial = {
+export type LowCodeBlockValidationIssue = {
+  path?: string;
+  message: string;
+};
+
+export type LowCodeBlockMaterialDesigner =
+  | VisualEditorComponent
+  | (() => Promise<VisualEditorComponent>);
+
+export type LowCodeBlockMaterial<T extends LowCodeRuntimeBlock = LowCodeRuntimeBlock> = {
   type: string;
   label?: string;
   component: Component;
+  designer?: LowCodeBlockMaterialDesigner;
+  propsSchema?: Record<string, unknown>;
+  materialVersion?: string;
+  createDefaultBlock?: (overrides?: Partial<T>) => T;
+  converter?: VisualToLowCodeConverter;
+  validate?: (block: T) => LowCodeBlockValidationIssue[];
   aliases?: string[];
   order?: number;
 };

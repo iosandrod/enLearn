@@ -7,7 +7,7 @@
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\image\index.tsx
  */
 import { Image } from 'vant';
-import { Picture } from '@element-plus/icons-vue';
+import { Picture } from '@/visual-editor/components/common/remix-icons';
 import type { VisualEditorComponent } from '@/visual-editor/visual-editor.utils';
 import {
   createEditorInputProp,
@@ -27,9 +27,9 @@ export default {
   preview: () => (
     <div style="text-align:center;">
       <div style="font-size:20px;background-color:#f2f2f2;color:#ccc;display:inline-flex;width:100px;height:50px;align-items:center;justify-content:center">
-        <el-icon>
+        <span class="lc-remix-icon-slot">
           <Picture></Picture>
-        </el-icon>
+        </span>
       </div>
     </div>
   ),

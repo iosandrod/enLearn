@@ -15,6 +15,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import { getBuiltinLowCodePageByRoute } from '@enlearn/lowcode-framework/runtime';
 import type { LowCodePageRecord } from '~/types/lowcode';
 
 definePageMeta({
@@ -37,6 +38,27 @@ const routePath = computed(() => {
   return `/dashboard/${raw}`.replace(/\/+$/, '');
 });
 
+function isMissingLowCodePageError(error: unknown) {
+  const fetchError = error as {
+    status?: number;
+    statusCode?: number;
+    statusMessage?: string;
+    message?: string;
+    data?: { message?: string; statusMessage?: string };
+  };
+  const statusCode = fetchError.statusCode ?? fetchError.status;
+  const message = [
+    fetchError.statusMessage,
+    fetchError.message,
+    fetchError.data?.message,
+    fetchError.data?.statusMessage,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return statusCode === 404 || message.includes('Low-code page not found');
+}
+
 async function loadPage() {
   loading.value = true;
   errorMessage.value = '';
@@ -47,6 +69,13 @@ async function loadPage() {
       includeData: true
     });
   } catch (error) {
+    const builtinPage = getBuiltinLowCodePageByRoute(routePath.value);
+    if (builtinPage && isMissingLowCodePageError(error)) {
+      page.value = builtinPage;
+      loading.value = false;
+      return;
+    }
+
     page.value = null;
     errorMessage.value =
       error instanceof Error ? error.message : 'Could not load the page.';

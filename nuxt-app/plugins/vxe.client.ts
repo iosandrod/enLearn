@@ -1,5 +1,6 @@
 import VxeUI from 'vxe-pc-ui';
 import VxeUITable from 'vxe-table';
+import 'remixicon/fonts/remixicon.css';
 import 'vxe-pc-ui/lib/style.css';
 import 'vxe-table/lib/style.css';
 

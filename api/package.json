@@ -6,6 +6,7 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",
     "db:test": "tsx scripts/test-db-connection.ts",
+    "db:apply-permissions": "tsx scripts/apply-permission-schema.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

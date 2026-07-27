@@ -2,7 +2,7 @@
   <section class="content-panel">
     <h2 class="page-title">Settings</h2>
     <p class="page-description">
-      Preferences are rendered from a schema object and saved to Supabase metadata.
+      Preferences are rendered from a schema object and saved to your account metadata.
     </p>
 
     <LowCodeForm
@@ -25,7 +25,8 @@ definePageMeta({
 });
 
 const SETTINGS_STORAGE_KEY = 'hikari-dashboard-settings';
-const supabase = useAppSupabase();
+const auth = useAuth();
+const serviceApi = useServiceApi();
 const loading = ref(false);
 const message = ref('');
 const messageClass = ref('lc-help');
@@ -56,8 +57,8 @@ async function loadSettings() {
     }
   }
 
-  const { data } = await supabase.auth.getUser();
-  const saved = data.user?.user_metadata?.dashboard_settings;
+  await auth.init(true);
+  const saved = auth.user.value?.user_metadata?.dashboard_settings;
 
   if (saved && typeof saved === 'object') {
     const normalized = saved as Record<string, unknown>;
@@ -93,20 +94,15 @@ async function saveSettings(values: Record<string, unknown>) {
   applyTheme(values.theme);
 
   try {
-    const { error } = await supabase.auth.updateUser({
-      data: {
-        dashboard_settings: values
-      }
-    });
-
-    if (error) throw error;
+    await serviceApi.invoke('user', 'updateSettings', { settings: values });
+    await auth.init(true);
     message.value = 'Settings saved successfully.';
     messageClass.value = 'lc-help';
   } catch (error) {
     message.value =
       error instanceof Error
-        ? `Saved locally. Supabase error: ${error.message}`
-        : 'Saved locally. Supabase could not be reached.';
+        ? `Saved locally. Backend error: ${error.message}`
+        : 'Saved locally. Backend could not be reached.';
     messageClass.value = 'lc-error';
   } finally {
     loading.value = false;

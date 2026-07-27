@@ -7,18 +7,18 @@
  * @FilePath: /vite-vue3-lowcode/src/visual-editor/components/left-aside/components/data-source/index.vue
 -->
 <template>
-  <el-tabs type="border-card" stretch class="data-source">
-    <el-tab-pane label="数据模型" lazy>
+  <vxe-tabs type="card" class="data-source">
+    <vxe-tab-pane title="数据模型" name="model" lazy>
       <data-model />
-    </el-tab-pane>
-    <el-tab-pane label="数据接口" lazy>
+    </vxe-tab-pane>
+    <vxe-tab-pane title="数据接口" name="fetch" lazy>
       <data-fetch />
-    </el-tab-pane>
-  </el-tabs>
+    </vxe-tab-pane>
+  </vxe-tabs>
 </template>
 
 <script setup lang="tsx" name="基本组件">
-  import { DataBoard } from '@element-plus/icons-vue';
+  import { DataBoard } from '@/visual-editor/components/common/remix-icons';
   import DataModel from './data-model.vue';
   import DataFetch from './data-fetch.vue';
 
@@ -31,13 +31,13 @@
 
 <style lang="scss" scoped>
   .data-source :deep {
-    .el-tabs__header {
+    .vxe-tabs--header {
       position: sticky;
       top: 0;
       z-index: 10;
     }
 
-    .el-tabs__content {
+    .vxe-tabs--body {
       contain: layout;
       content-visibility: auto;
     }

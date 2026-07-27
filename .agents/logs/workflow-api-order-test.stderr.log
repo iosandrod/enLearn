@@ -1,0 +1,61 @@
+[31m[Nest] 34944  - [39m2026/07/26 15:46:47 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mCannot read properties of undefined (reading 'saveModel')[39m
+TypeError: Cannot read properties of undefined (reading 'saveModel')
+    at ModelController.saveModel (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\definition\model.controller.ts:26:38)
+    at C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:38:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\job\job-worker.service.ts:26
+    this.connection = this.queue.createWorkerConnection();
+                                 ^
+
+
+TypeError: Cannot read properties of undefined (reading 'createWorkerConnection')
+    at JobWorkerService.onModuleInit (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\job\job-worker.service.ts:26:34)
+    at MapIterator.iteratee (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:22:43)
+    at MapIterator.next (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\map.ts:9:39)
+    at IteratorWithOperators.next (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\iterate.ts:19:28)
+    at Function.from (<anonymous>)
+    at IteratorWithOperators.toArray (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\iterate.ts:227:22)
+    at callOperator (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:23:10)
+    at callModuleInitHook (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:43:23)
+    at NestApplication.callInitHook (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\nest-application-context.js:234:50)
+    at async NestApplication.init (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\nest-application.js:100:9)
+
+Node.js v22.20.0
+C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\job\job-worker.service.ts:26
+    this.connection = this.queue.createWorkerConnection();
+                                 ^
+
+
+TypeError: Cannot read properties of undefined (reading 'createWorkerConnection')
+    at JobWorkerService.onModuleInit (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\job\job-worker.service.ts:26:34)
+    at MapIterator.iteratee (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:22:43)
+    at MapIterator.next (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\map.ts:9:39)
+    at IteratorWithOperators.next (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\iterate.ts:19:28)
+    at Function.from (<anonymous>)
+    at IteratorWithOperators.toArray (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\iterate.ts:227:22)
+    at callOperator (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:23:10)
+    at callModuleInitHook (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:43:23)
+    at NestApplication.callInitHook (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\nest-application-context.js:234:50)
+    at async NestApplication.init (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\nest-application.js:100:9)
+
+Node.js v22.20.0
+C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\job\job-worker.service.ts:26
+    this.connection = this.queue.createWorkerConnection();
+                                 ^
+
+
+TypeError: Cannot read properties of undefined (reading 'createWorkerConnection')
+    at JobWorkerService.onModuleInit (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\job\job-worker.service.ts:26:34)
+    at MapIterator.iteratee (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:22:43)
+    at MapIterator.next (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\map.ts:9:39)
+    at IteratorWithOperators.next (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\iterate.ts:19:28)
+    at Function.from (<anonymous>)
+    at IteratorWithOperators.toArray (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\iterare@1.2.1\node_modules\iterare\src\iterate.ts:227:22)
+    at callOperator (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:23:10)
+    at callModuleInitHook (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\hooks\on-module-init.hook.js:43:23)
+    at NestApplication.callInitHook (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\nest-application-context.js:234:50)
+    at async NestApplication.init (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\nest-application.js:100:9)
+
+Node.js v22.20.0

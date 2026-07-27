@@ -37,6 +37,18 @@ const defaultFields = [
   },
 ] as unknown as { label: string; value: string }[];
 
+const formComponentOptions = [
+  { label: '输入框', value: 'vxe-input' },
+  { label: '多行文本', value: 'vxe-textarea' },
+  { label: '下拉选择', value: 'vxe-select' },
+  { label: '开关', value: 'vxe-switch' },
+  { label: '密码框', value: 'vxe-password-input' },
+  { label: '数字输入', value: 'lc-number-input' },
+  { label: 'JSON 编辑器', value: 'lc-json-editor' },
+  { label: '表格输入', value: 'lc-array-table' },
+  { label: '子表单', value: 'lc-sub-form' },
+];
+
 export const compProps = {
   blockId: createEditorInputProp({
     label: 'Block ID',
@@ -44,7 +56,7 @@ export const compProps = {
   }),
   title: createEditorInputProp({
     label: '标题',
-    defaultValue: '编辑表单',
+    defaultValue: '普通表单',
   }),
   sourceKey: createEditorInputProp({
     label: '数据源',
@@ -66,12 +78,31 @@ export const compProps = {
       options: [
         { label: '字段', field: 'field' },
         { label: '标签', field: 'label' },
-        { label: '组件', field: 'component' },
+        {
+          label: '组件',
+          field: 'component',
+          component: 'vxe-select',
+          minWidth: 132,
+          options: formComponentOptions,
+        },
         { label: '占位提示', field: 'placeholder' },
-        { label: '必填', field: 'required' },
+        { label: '必填', field: 'required', component: 'vxe-switch', width: 72 },
         { label: '跨列', field: 'span' },
         { label: '帮助文本', field: 'help' },
-        { label: '选项 JSON', field: 'optionsJson' },
+        {
+          label: '选项 JSON',
+          field: 'optionsJson',
+          component: 'lc-json-editor',
+          minWidth: 220,
+          placeholder: '[{"label":"A","value":"a"}]',
+        },
+        {
+          label: '属性 JSON',
+          field: 'propsJson',
+          component: 'lc-json-editor',
+          minWidth: 240,
+          placeholder: '{"columns":[]}',
+        },
       ],
       showKey: 'label',
     },

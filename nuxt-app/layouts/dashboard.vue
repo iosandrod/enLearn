@@ -69,13 +69,7 @@
           </NuxtLink>
         </div>
 
-        <div class="admin-toolbar">
-          <div>
-            <h1>{{ activeTitle }}</h1>
-            <p>{{ route.path }}</p>
-          </div>
-          <span v-if="routeError" class="lc-error">{{ routeError }}</span>
-        </div>
+        <p v-if="routeError" class="admin-route-error lc-error">{{ routeError }}</p>
 
         <slot />
       </main>
@@ -89,6 +83,8 @@ type AdminRouteNode = {
   code: string;
   title: string;
   path: string;
+  route_type?: 'group' | 'page' | 'link';
+  permission_code?: string | null;
   visible?: boolean;
   status?: string;
   children?: AdminRouteNode[];
@@ -109,8 +105,10 @@ const fallbackRoutes: AdminRouteNode[] = [
     path: '/dashboard',
     children: [
       { code: 'dashboard-home', title: '工作台', path: '/dashboard' },
-      { code: 'low-code', title: '低代码页面', path: '/dashboard/low-code' },
-      { code: 'low-code-designer', title: '可视化设计器', path: '/dashboard/low-code/designer' }
+      { code: 'low-code', title: '低代码页面', path: '/dashboard/low-code', permission_code: 'lowcode.pages.manage' },
+      { code: 'low-code-designer', title: '可视化设计器', path: '/dashboard/low-code/designer', permission_code: 'lowcode.pages.manage' },
+      { code: 'workflow-designer', title: '审批流设计器', path: '/dashboard/workflow/designer', permission_code: 'workflow.definitions.manage' },
+      { code: 'trigger-workflow-designer', title: 'Trigger 编排器', path: '/dashboard/trigger-workflow/designer', permission_code: 'workflow.definitions.manage' }
     ]
   },
   {
@@ -118,24 +116,34 @@ const fallbackRoutes: AdminRouteNode[] = [
     title: '系统设置',
     path: '/dashboard/system',
     children: [
-      { code: 'system-users', title: '用户角色', path: '/dashboard/system/users' },
-      { code: 'system-roles', title: '角色管理', path: '/dashboard/system/roles' },
-      { code: 'system-permissions', title: '权限管理', path: '/dashboard/system/permissions' },
-      { code: 'system-routes', title: '动态路由', path: '/dashboard/system/routes' },
-      { code: 'system-entities', title: '实体管理', path: '/dashboard/system/entities' }
+      { code: 'system-users', title: '用户权限档案', path: '/dashboard/system/users', permission_code: 'admin.users.manage' },
+      { code: 'system-roles', title: '角色管理', path: '/dashboard/system/roles', permission_code: 'admin.roles.manage' },
+      { code: 'system-permissions', title: '权限管理', path: '/dashboard/system/permissions', permission_code: 'admin.permissions.manage' },
+      { code: 'system-routes', title: '动态路由', path: '/dashboard/system/routes', permission_code: 'admin.routes.manage' },
+      { code: 'system-entities', title: '实体管理', path: '/dashboard/system/entities', permission_code: 'admin.entities.manage' }
     ]
   }
 ];
 
 function normalizeNodes(nodes: AdminRouteNode[]): AdminRouteNode[] {
-  return nodes
-    .filter((node) => node.visible !== false && node.status !== 'inactive')
+  const normalized = nodes
+    .filter((node) => node.visible !== false && node.status !== 'inactive' && canViewRoute(node))
     .map((node) => ({
       ...node,
       code: node.code || node.path,
       title: node.title || node.code || node.path,
       children: normalizeNodes(node.children ?? [])
     }));
+
+  return normalized.filter((node) => {
+    if (node.children?.length) return true;
+    return node.route_type !== 'group' && !node.path.endsWith('/_group');
+  });
+}
+
+function canViewRoute(node: AdminRouteNode) {
+  if (!node.permission_code) return true;
+  return auth.permissions.value.includes(node.permission_code);
 }
 
 function flattenNodes(nodes: AdminRouteNode[]): AdminRouteNode[] {

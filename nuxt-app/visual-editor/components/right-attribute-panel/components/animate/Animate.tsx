@@ -7,16 +7,14 @@
  * @FilePath: \vite-vue3-lowcode\src\visual-editor\components\right-attribute-panel\components\animate\Animate.tsx
  */
 import { defineComponent, reactive, ref, watchEffect } from 'vue';
-import { ElTabs, ElTabPane, ElRow, ElCol, ElButton, ElSwitch, ElAlert, ElIcon } from 'element-plus';
+import { ElTabs, ElTabPane, ElRow, ElCol, ElButton, ElSwitch, ElAlert, ElIcon } from '@/visual-editor/components/common/designer-ui';
 import { onClickOutside } from '@vueuse/core';
-import { Plus, CaretRight } from '@element-plus/icons-vue';
+import { Plus, CaretRight } from '@/visual-editor/components/common/remix-icons';
 import { animationTabs } from './animateConfig';
 import styles from './animate.module.scss';
 import type { Animation } from '@/visual-editor/visual-editor.utils';
 import { useVisualData } from '@/visual-editor/hooks/useVisualData';
-import { useAnimate } from '@/hooks/useAnimate';
-import 'element-plus/es/components/alert/style/css';
-
+import { useAnimate } from '@/hooks/useAnimate';
 export const Animate = defineComponent({
   setup() {
     const { currentBlock } = useVisualData();

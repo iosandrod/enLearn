@@ -19,14 +19,17 @@ import {
   ElTabPane,
   ElForm,
   ElIcon,
-} from 'element-plus';
+} from '@/visual-editor/components/common/designer-ui';
 import { useVModel } from '@vueuse/core';
 import { cloneDeep } from 'lodash-es';
-import { Rank, CirclePlus, Remove } from '@element-plus/icons-vue';
+import { Rank, CirclePlus, Remove } from '@/visual-editor/components/common/remix-icons';
 import { PropConfig } from '../prop-config';
 import { isObject } from '@/visual-editor/utils/is';
 import { useVisualData } from '@/visual-editor/hooks/useVisualData';
 import { VisualEditorBlockData, VisualEditorComponent } from '@/visual-editor/visual-editor.utils';
+
+const DraggableView = Draggable as any;
+const ElIconView = ElIcon as any;
 
 interface OptionItem extends LabelValue {
   component?: VisualEditorComponent;
@@ -101,7 +104,7 @@ export const CrossSortableOptionsEditor = defineComponent({
           style={{ fontSize: 'inherit' }}
           onChange={onChange}
         >
-          <Draggable
+          <DraggableView
             tag="ul"
             list={state.list}
             class="list-group"
@@ -119,9 +122,9 @@ export const CrossSortableOptionsEditor = defineComponent({
             {{
               item: ({ element, index }) => (
                 <div class={'flex items-center justify-between'}>
-                  <ElIcon class="handle cursor-move">
+                  <ElIconView class="handle cursor-move">
                     <Rank></Rank>
-                  </ElIcon>
+                  </ElIconView>
                   {isObject(element) ? (
                     <>
                       <ElCheckbox label={element.value} class={'ml-5px'}>
@@ -151,23 +154,23 @@ export const CrossSortableOptionsEditor = defineComponent({
                     ></ElInput>
                   )}
                   <div class={'flex flex-col'}>
-                    <ElIcon
+                    <ElIconView
                       class="hover:text-blue-400 cursor-pointer"
                       onClick={() => incrementOption(index)}
                     >
                       <CirclePlus></CirclePlus>
-                    </ElIcon>
-                    <ElIcon
+                    </ElIconView>
+                    <ElIconView
                       class="hover:text-red-500 cursor-pointer"
                       onClick={() => state.list.splice(index, 1)}
                     >
                       <Remove></Remove>
-                    </ElIcon>
+                    </ElIconView>
                   </div>
                 </div>
               ),
             }}
-          </Draggable>
+          </DraggableView>
         </ElCheckboxGroup>
         {props.showItemPropsConfig && (
           <ElCollapse>

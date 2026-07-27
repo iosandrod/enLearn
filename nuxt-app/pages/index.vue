@@ -51,8 +51,8 @@
           <h2>Same product surface, Vue-friendly implementation.</h2>
         </div>
         <p>
-          The migration keeps Supabase as the backend and changes the frontend
-          shell to Nuxt 3, with VXE powering object-driven form and grid screens.
+          The migration keeps backend-controlled data access and changes the
+          frontend shell to Nuxt 3, with VXE powering object-driven form and grid screens.
         </p>
       </div>
 

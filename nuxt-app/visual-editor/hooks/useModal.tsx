@@ -14,7 +14,7 @@ import {
   ComponentInternalInstance,
   isVNode,
 } from 'vue';
-import { ElButton, ElDialog } from 'element-plus';
+import { ElButton, ElDialog } from '@/visual-editor/components/common/designer-ui';
 import { isFunction } from '@/visual-editor/utils/is';
 
 interface ModalOptions {

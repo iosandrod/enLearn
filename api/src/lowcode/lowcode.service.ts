@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException
 } from '@nestjs/common';
@@ -7,36 +8,20 @@ import type {
   ServiceContext,
   ServiceExecutor
 } from '../common/interfaces/service-executor';
-import { requireAdmin } from '../common/utils/supabase';
-
-type LowCodePageSchema = {
-  code: string;
-  route: string;
-  title: string;
-  description?: string;
-  layout?: 'default' | 'dashboard' | 'blank';
-  status?: 'draft' | 'published' | 'archived';
-  keepAlive?: boolean;
-  visualEditor?: Record<string, unknown>;
-  config?: {
-    bgColor?: string;
-    bgImage?: string;
-  };
-  dataSources?: Record<
-    string,
-    {
-      key: string;
-      label?: string;
-      serviceName: string;
-      serviceMethod: string;
-      saveMethod?: string;
-      deleteMethod?: string;
-      postData?: Record<string, unknown>;
-      autoLoad?: boolean;
-    }
-  >;
-  blocks: Array<Record<string, unknown>>;
-};
+import {
+  createSupabaseClient,
+  getCurrentUser,
+  getUserAuthorization,
+  hasRequiredPermission,
+  requireAdmin
+} from '../common/utils/supabase';
+import {
+  LowCodeSchemaValidationError,
+  assertValidLowCodePageSchema,
+  isRecord,
+  migrateLowCodePageSchema,
+  type LowCodePageSchema
+} from './lowcode.schema';
 
 type LowCodePageRow = {
   id: string;
@@ -54,97 +39,20 @@ type LowCodePageRow = {
   updated_at: string;
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
+function normalizeSchema(value: unknown, shouldValidate = false): LowCodePageSchema {
+  try {
+    const schema = migrateLowCodePageSchema(value);
+    if (shouldValidate) {
+      assertValidLowCodePageSchema(schema);
+    }
+    return schema;
+  } catch (error) {
+    if (error instanceof LowCodeSchemaValidationError) {
+      throw new BadRequestException(error.message);
+    }
 
-function normalizeSchema(value: unknown): LowCodePageSchema {
-  if (!isRecord(value)) {
-    throw new BadRequestException('schema must be an object.');
+    throw error;
   }
-
-  const code = typeof value.code === 'string' ? value.code.trim() : '';
-  const route = typeof value.route === 'string' ? value.route.trim() : '';
-  const title = typeof value.title === 'string' ? value.title.trim() : '';
-
-  if (!code || !route || !title) {
-    throw new BadRequestException('schema.code, schema.route and schema.title are required.');
-  }
-
-  const blocks = Array.isArray(value.blocks) ? value.blocks : [];
-  const dataSources = isRecord(value.dataSources) ? value.dataSources : {};
-
-  return {
-    code,
-    route,
-    title,
-    description:
-      typeof value.description === 'string' && value.description.trim()
-        ? value.description.trim()
-        : undefined,
-    layout:
-      value.layout === 'default' || value.layout === 'dashboard' || value.layout === 'blank'
-        ? value.layout
-        : 'dashboard',
-    status:
-      value.status === 'draft' || value.status === 'published' || value.status === 'archived'
-        ? value.status
-        : 'draft',
-    keepAlive: value.keepAlive !== false,
-    visualEditor: isRecord(value.visualEditor) ? value.visualEditor : undefined,
-    config: isRecord(value.config)
-      ? {
-          bgColor:
-            typeof value.config.bgColor === 'string' ? value.config.bgColor : undefined,
-          bgImage:
-            typeof value.config.bgImage === 'string' ? value.config.bgImage : undefined
-        }
-      : undefined,
-    dataSources: Object.fromEntries(
-      Object.entries(dataSources).map(([key, source]) => {
-        if (!isRecord(source)) {
-          throw new BadRequestException(`dataSources.${key} must be an object.`);
-        }
-
-        const sourceKey = typeof source.key === 'string' && source.key.trim() ? source.key.trim() : key;
-        const serviceName =
-          typeof source.serviceName === 'string' && source.serviceName.trim()
-            ? source.serviceName.trim()
-            : '';
-        const serviceMethod =
-          typeof source.serviceMethod === 'string' && source.serviceMethod.trim()
-            ? source.serviceMethod.trim()
-            : '';
-
-        if (!serviceName || !serviceMethod) {
-          throw new BadRequestException(
-            `dataSources.${key}.serviceName and serviceMethod are required.`
-          );
-        }
-
-        return [
-          key,
-          {
-            key: sourceKey,
-            label: typeof source.label === 'string' ? source.label : undefined,
-            serviceName,
-            serviceMethod,
-            saveMethod:
-              typeof source.saveMethod === 'string' && source.saveMethod.trim()
-                ? source.saveMethod.trim()
-                : undefined,
-            deleteMethod:
-              typeof source.deleteMethod === 'string' && source.deleteMethod.trim()
-                ? source.deleteMethod.trim()
-                : undefined,
-            postData: isRecord(source.postData) ? source.postData : undefined,
-            autoLoad: source.autoLoad !== false
-          }
-        ];
-      })
-    ),
-    blocks: blocks
-  };
 }
 
 function normalizePageRow(row: LowCodePageRow) {
@@ -174,7 +82,12 @@ export class LowCodeService implements ServiceExecutor {
   }
 
   private async listPages(context: ServiceContext) {
-    const { client } = await requireAdmin(context);
+    const { client } = await requireAdmin(context, [
+      'lowcode.pages.manage',
+      'admin.permissions.manage',
+      'admin.routes.manage',
+      'admin.entities.manage'
+    ]);
     const { data, error } = await client
       .from('lowcode_pages')
       .select('*')
@@ -188,7 +101,7 @@ export class LowCodeService implements ServiceExecutor {
   }
 
   private async getPage(postData: Record<string, unknown>, context: ServiceContext) {
-    const { client } = await requireAdmin(context);
+    const { client, user } = await getCurrentUser(context);
     const code = typeof postData.code === 'string' ? postData.code.trim() : '';
     const route = typeof postData.route === 'string' ? postData.route.trim() : '';
     const includeData = postData.includeData !== false;
@@ -215,6 +128,8 @@ export class LowCodeService implements ServiceExecutor {
       throw new NotFoundException('Low-code page not found.');
     }
 
+    await this.assertCanReadPage(client, user.id, data as LowCodePageRow, route);
+
     const page = normalizePageRow(data as LowCodePageRow);
     return {
       ...page,
@@ -222,9 +137,72 @@ export class LowCodeService implements ServiceExecutor {
     };
   }
 
+  private async assertCanReadPage(
+    client: ReturnType<typeof createSupabaseClient>,
+    userId: string,
+    page: LowCodePageRow,
+    requestedRoute: string
+  ) {
+    const authorization = await getUserAuthorization(client, userId);
+
+    if (hasRequiredPermission(authorization, 'lowcode.pages.manage')) {
+      return;
+    }
+
+    let routeClient = client;
+    try {
+      routeClient = createSupabaseClient('admin');
+    } catch {
+      routeClient = client;
+    }
+
+    const candidatePaths = [...new Set([requestedRoute, page.route].filter(Boolean))];
+    const routePermissions = new Set<string>();
+
+    if (candidatePaths.length) {
+      const { data: pathRows, error: pathError } = await routeClient
+        .from('admin_routes')
+        .select('permission_code')
+        .in('path', candidatePaths);
+
+      if (pathError) {
+        throw new ForbiddenException(pathError.message);
+      }
+
+      for (const row of pathRows ?? []) {
+        const permissionCode = (row as Record<string, unknown>).permission_code;
+        if (typeof permissionCode === 'string' && permissionCode.trim()) {
+          routePermissions.add(permissionCode.trim());
+        }
+      }
+    }
+
+    const { data: pageRows, error: pageError } = await routeClient
+      .from('admin_routes')
+      .select('permission_code')
+      .eq('page_code', page.code);
+
+    if (pageError) {
+      throw new ForbiddenException(pageError.message);
+    }
+
+    for (const row of pageRows ?? []) {
+      const permissionCode = (row as Record<string, unknown>).permission_code;
+      if (typeof permissionCode === 'string' && permissionCode.trim()) {
+        routePermissions.add(permissionCode.trim());
+      }
+    }
+
+    if (routePermissions.size && hasRequiredPermission(authorization, [...routePermissions])) {
+      return;
+    }
+
+    throw new ForbiddenException('Low-code page permission required.');
+  }
+
   private async savePage(postData: Record<string, unknown>, context: ServiceContext) {
-    const { client, user } = await requireAdmin(context);
-    const schema = normalizeSchema(postData.schema ?? postData);
+    const { client, user } = await requireAdmin(context, 'lowcode.pages.manage');
+    const schema = normalizeSchema(postData.schema ?? postData, true);
     const existingCode = typeof postData.code === 'string' ? postData.code.trim() : schema.code;
 
     if (!existingCode) {
@@ -329,7 +307,7 @@ export class LowCodeService implements ServiceExecutor {
   }
 
   private async archivePage(postData: Record<string, unknown>, context: ServiceContext) {
-    const { client, user } = await requireAdmin(context);
+    const { client, user } = await requireAdmin(context, 'lowcode.pages.manage');
     const code = typeof postData.code === 'string' ? postData.code.trim() : '';
 
     if (!code) {

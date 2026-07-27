@@ -1,0 +1,54 @@
+import { Body, Controller, Get, Headers, Inject, Post } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import {
+  EmailPasswordAuthDto,
+  OAuthUrlDto,
+  RefreshSessionDto,
+  SetSessionDto
+} from './auth.dto';
+
+@Controller('auth')
+export class AuthController {
+  constructor(@Inject(AuthService) private readonly authService: AuthService) {}
+
+  @Post('signin')
+  signInWithPassword(@Body() dto: EmailPasswordAuthDto) {
+    return this.authService.signInWithPassword(dto);
+  }
+
+  @Post('signup')
+  signUp(@Body() dto: EmailPasswordAuthDto) {
+    return this.authService.signUp(dto);
+  }
+
+  @Post('oauth')
+  getOAuthUrl(@Body() dto: OAuthUrlDto) {
+    return this.authService.getOAuthUrl(dto);
+  }
+
+  @Post('session')
+  setSession(@Body() dto: SetSessionDto) {
+    return this.authService.setSession(dto);
+  }
+
+  @Post('refresh')
+  refreshSession(@Body() dto: RefreshSessionDto) {
+    return this.authService.refreshSession(dto);
+  }
+
+  @Get('me')
+  me(
+    @Headers('authorization') authorization?: string,
+    @Headers('x-request-id') requestId?: string
+  ) {
+    return this.authService.me({ authorization, requestId });
+  }
+
+  @Post('signout')
+  signOut(
+    @Headers('authorization') authorization?: string,
+    @Headers('x-request-id') requestId?: string
+  ) {
+    return this.authService.signOut({ authorization, requestId });
+  }
+}

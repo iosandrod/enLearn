@@ -1,0 +1,21 @@
+import type { TriggerNodeType, TriggerWorkflowKind } from './types';
+export type TriggerNodeDefinition = {
+    type: TriggerNodeType;
+    label: string;
+    category: 'trigger' | 'control' | 'human' | 'task' | 'data' | 'ai' | 'terminal';
+    description: string;
+    icon: string;
+    accent: string;
+    accentSoft: string;
+    accentBorder: string;
+    allowedKinds: TriggerWorkflowKind[];
+    minOutgoing?: number;
+    maxOutgoing?: number;
+    allowIncoming: boolean;
+    allowOutgoing: boolean;
+};
+export declare const triggerNodeDefinitions: TriggerNodeDefinition[];
+export declare const triggerNodeDefinitionMap: Map<TriggerNodeType, TriggerNodeDefinition>;
+export declare function getTriggerNodeDefinition(type: TriggerNodeType): TriggerNodeDefinition | undefined;
+export declare function isBuiltInTriggerNodeType(type: TriggerNodeType): boolean;
+export declare function getTriggerNodeDefinitionsForKind(kind: TriggerWorkflowKind): TriggerNodeDefinition[];

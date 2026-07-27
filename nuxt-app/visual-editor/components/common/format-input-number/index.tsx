@@ -7,9 +7,9 @@
  * @FilePath: \vite-vue3-lowcode\src\visual-editor\components\common\format-input-number\index.tsx
  */
 import { defineComponent } from 'vue';
-import { ElInput, ElIcon } from 'element-plus';
+import { ElInput, ElIcon } from '@/visual-editor/components/common/designer-ui';
 import { useVModel } from '@vueuse/core';
-import { ArrowDown, ArrowUp } from '@element-plus/icons-vue';
+import { ArrowDown, ArrowUp } from '@/visual-editor/components/common/remix-icons';
 import styles from './index.module.scss';
 import type { PropType } from 'vue';
 

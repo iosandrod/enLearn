@@ -1,30 +1,13 @@
 <template>
-  <li class="lc-tree-item">
-    <span>{{ row[titleField] ?? row.label ?? row.name ?? row.code ?? row.id }}</span>
-    <ul v-if="children.length">
-      <LowCodeTreeItem
-        v-for="child in children"
-        :key="String(child.id ?? child[titleField])"
-        :row="child"
-        :title-field="titleField"
-        :children-field="childrenField"
-      />
-    </ul>
-  </li>
+  <component :is="PackageLowCodeTreeItemView" v-bind="$attrs" />
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { LowCodeTreeItem as PackageLowCodeTreeItem } from '@enlearn/lowcode-framework/runtime';
 
-const props = defineProps<{
-  row: Record<string, unknown>;
-  titleField: string;
-  childrenField: string;
-}>();
+defineOptions({
+  inheritAttrs: false
+});
 
-const children = computed(() =>
-  Array.isArray(props.row[props.childrenField])
-    ? (props.row[props.childrenField] as Record<string, unknown>[])
-    : []
-);
+const PackageLowCodeTreeItemView = PackageLowCodeTreeItem as any;
 </script>

@@ -5,7 +5,7 @@
         <DraggableTransitionGroup
           v-model:drag="drag"
           v-model="currentPage.blocks"
-          class="!min-h-680px"
+          class="simulator-drop-zone"
           draggable=".item-drag"
         >
           <template #item="{ element: outElement }">
@@ -69,7 +69,15 @@
   import {
     $$formDesigner,
     type FormDesignerResult,
-  } from '@/visual-editor/components/form-designer/form-designer.service';
+  } from '../form-designer/form-designer.service';
+  import {
+    $$gridDesigner,
+    type GridDesignerResult,
+  } from '../grid-designer/grid-designer.service';
+  import {
+    $$buttonGroupDesigner,
+    type ButtonGroupDesignerResult,
+  } from '../button-group-designer/button-group-designer.service';
 
   defineOptions({
     name: 'SimulatorEditor',
@@ -176,9 +184,27 @@
   };
 
   const formDesignComponentKeys = new Set(['form', 'lowcode-search-form', 'lowcode-edit-form']);
+  const gridDesignComponentKeys = new Set(['lowcode-grid', 'grid', 'table', 'vxe-grid']);
+  const buttonGroupDesignComponentKeys = new Set([
+    'lowcode-button-group',
+    'button-group',
+    'buttonGroup',
+  ]);
+  const subFormDesignComponentKeys = new Set(['sub-form', 'lc-sub-form']);
 
   const isFormDesignBlock = (block: VisualEditorBlockData) =>
     formDesignComponentKeys.has(block.componentKey) || Array.isArray(block.props?.fields);
+
+  const isGridDesignBlock = (block: VisualEditorBlockData) =>
+    gridDesignComponentKeys.has(block.componentKey) ||
+    (Array.isArray(block.props?.columns) && !isFormDesignBlock(block));
+
+  const isButtonGroupDesignBlock = (block: VisualEditorBlockData) =>
+    buttonGroupDesignComponentKeys.has(block.componentKey) || Array.isArray(block.props?.buttons);
+
+  const isSubFormDesignBlock = (block: VisualEditorBlockData) =>
+    subFormDesignComponentKeys.has(block.componentKey) ||
+    block.props?.__lowcodeComponent === 'lc-sub-form';
 
   const syncFormDesignToPageBlock = (
     block: VisualEditorBlockData,
@@ -188,6 +214,39 @@
     delete block.props.columns;
     block.props.formDesignerModel = cloneDeep(result.designerModel);
     block.props.formDesignerUpdatedAt = Date.now();
+    selectComp(block);
+  };
+
+  const syncGridDesignToPageBlock = (
+    block: VisualEditorBlockData,
+    result: GridDesignerResult,
+  ) => {
+    Object.assign(block.props, cloneDeep(result.business));
+    block.props.columns = cloneDeep(result.columns);
+    block.props.gridOptions = cloneDeep(result.gridOptions);
+    block.props.gridEvents = cloneDeep(result.gridEvents);
+    block.props.gridDesignerUpdatedAt = Date.now();
+    selectComp(block);
+  };
+
+  const syncButtonGroupDesignToPageBlock = (
+    block: VisualEditorBlockData,
+    result: ButtonGroupDesignerResult,
+  ) => {
+    Object.assign(block.props, cloneDeep(result.business));
+    block.props.buttons = cloneDeep(result.buttons);
+    block.props.buttonGroupDesignerUpdatedAt = Date.now();
+    selectComp(block);
+  };
+
+  const syncSubFormDesignToFieldBlock = (
+    block: VisualEditorBlockData,
+    result: FormDesignerResult,
+  ) => {
+    block.props.__lowcodeComponent = 'lc-sub-form';
+    block.props.fields = cloneDeep(result.fields);
+    block.props.subFormDesignerModel = cloneDeep(result.designerModel);
+    block.props.subFormDesignerUpdatedAt = Date.now();
     selectComp(block);
   };
 
@@ -204,6 +263,61 @@
     syncFormDesignToPageBlock(block, result);
   };
 
+  const openGridDesigner = async (block: VisualEditorBlockData) => {
+    selectComp(block);
+    const result = await $$gridDesigner({
+      title: `${block.label || '表格'}设计`,
+      business: {
+        blockId: block.props?.blockId,
+        title: block.props?.title,
+        sourceKey: block.props?.sourceKey,
+        serviceName: block.props?.serviceName,
+        serviceMethod: block.props?.serviceMethod,
+        saveMethod: block.props?.saveMethod,
+        deleteMethod: block.props?.deleteMethod,
+        postDataJson: block.props?.postDataJson,
+        showRowActions: block.props?.showRowActions,
+      },
+      columns: Array.isArray(block.props?.columns) ? block.props.columns : [],
+      gridOptions:
+        typeof block.props?.gridOptions === 'object' && block.props?.gridOptions !== null
+          ? block.props.gridOptions
+          : {},
+      gridEvents: Array.isArray(block.props?.gridEvents) ? block.props.gridEvents : [],
+    });
+
+    syncGridDesignToPageBlock(block, result);
+  };
+
+  const openButtonGroupDesigner = async (block: VisualEditorBlockData) => {
+    selectComp(block);
+    const result = await $$buttonGroupDesigner({
+      title: `${block.label || '按钮组'}设计`,
+      business: {
+        blockId: block.props?.blockId,
+        title: block.props?.title,
+        description: block.props?.description,
+        align: block.props?.align,
+        gap: block.props?.gap,
+      },
+      buttons: Array.isArray(block.props?.buttons) ? block.props.buttons : [],
+    });
+
+    syncButtonGroupDesignToPageBlock(block, result);
+  };
+
+  const openSubFormDesigner = async (block: VisualEditorBlockData) => {
+    selectComp(block);
+    const result = await $$formDesigner({
+      title: `${block.props?.label || block.label || '子表单'}设计`,
+      mode: 'edit',
+      fields: Array.isArray(block.props?.fields) ? block.props.fields : [],
+      designerModel: block.props?.subFormDesignerModel || null,
+    });
+
+    syncSubFormDesignToFieldBlock(block, result);
+  };
+
   const onContextmenuBlock = (
     e: MouseEvent,
     block: VisualEditorBlockData,
@@ -213,18 +327,35 @@
       reference: e,
       content: () => (
         <>
-          {props.allowFormDesign && isFormDesignBlock(block) && (
+          {props.allowFormDesign &&
+            (isFormDesignBlock(block) ||
+              isGridDesignBlock(block) ||
+              isButtonGroupDesignBlock(block)) && (
             <DropdownOption
               label="进入设计"
-              icon="el-icon-edit"
+              icon="ri-edit-line"
               {...{
-                onClick: () => void openFormDesigner(block),
+                onClick: () =>
+                  void (isButtonGroupDesignBlock(block)
+                    ? openButtonGroupDesigner(block)
+                    : isGridDesignBlock(block)
+                    ? openGridDesigner(block)
+                    : openFormDesigner(block)),
+              }}
+            />
+          )}
+          {isSubFormDesignBlock(block) && (
+            <DropdownOption
+              label="进入设计"
+              icon="ri-edit-line"
+              {...{
+                onClick: () => void openSubFormDesigner(block),
               }}
             />
           )}
           <DropdownOption
             label="复制节点"
-            icon="el-icon-document-copy"
+            icon="ri-file-copy-line"
             {...{
               onClick: () => {
                 const index = parentBlocks.findIndex((item) => item._vid == block._vid);
@@ -249,7 +380,7 @@
           />
           <DropdownOption
             label="查看节点"
-            icon="el-icon-view"
+            icon="ri-eye-line"
             {...{
               onClick: () =>
                 useModal({
@@ -270,7 +401,7 @@
           />
           <DropdownOption
             label="删除节点"
-            icon="el-icon-delete"
+            icon="ri-delete-bin-line"
             {...{
               onClick: () => deleteComp(block, parentBlocks),
             }}
@@ -289,18 +420,18 @@
     height: 100%;
     min-width: 0;
     min-height: 0;
-    padding: 24px 384px 24px 24px;
+    margin: 0;
+    padding: 16px;
     overflow: auto;
     box-sizing: border-box;
-    align-items: flex-start;
-    justify-content: center;
-
-    @media (max-width: 1114px) {
-      padding-right: 24px;
-    }
+    align-items: stretch;
+    justify-content: stretch;
+    background: #f6f8fb;
 
     &.is-form-workbench {
       padding: 18px 374px 18px 18px;
+      align-items: flex-start;
+      justify-content: center;
 
       .simulator-editor {
         width: min(680px, 100%);
@@ -324,21 +455,19 @@
   }
 
   .simulator-editor {
-    width: 420px;
-    height: min(760px, 100%);
-    min-width: 420px;
-    min-height: 620px;
-    padding: 48px 30px 24px;
-    overflow: hidden auto;
-    border: 1px solid #dbe3ee;
-    border-radius: 24px;
-    background: linear-gradient(180deg, #fbfdff 0%, #f3f7fb 100%);
-    box-shadow:
-      0 18px 42px rgb(15 23 42 / 10%),
-      inset 0 0 0 1px rgb(255 255 255 / 70%);
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    overflow: auto;
+    border: 1px solid #d8e0ea;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 10px 26px rgb(15 23 42 / 5%);
     box-sizing: border-box;
-    background-clip: content-box;
-    flex: none;
+    background-clip: border-box;
+    flex: 1 1 auto;
     contain: paint layout;
 
     &::-webkit-scrollbar {
@@ -346,20 +475,40 @@
     }
 
     &-content {
-      width: 360px;
+      width: 100%;
+      height: 100%;
       min-height: 100%;
-      margin: 0 auto;
-      border: 1px solid #eef2f7;
-      border-radius: 4px;
-      overflow: hidden;
+      margin: 0;
+      border: 0;
+      border-radius: 10px;
+      overflow: visible;
       transform: translate(0);
-      box-shadow: 0 12px 28px rgb(15 23 42 / 8%);
+      box-shadow: none;
     }
+  }
+
+  @media (max-width: 768px) {
+    .simulator-container {
+      padding: 10px;
+    }
+
+    .simulator-editor,
+    .simulator-editor-content {
+      border-radius: 8px;
+    }
+  }
+
+  .simulator-drop-zone {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
   }
 
   .list-group-item {
     position: relative;
-    padding: 3px;
+    padding: 0;
     cursor: move;
 
     > div {

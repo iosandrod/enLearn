@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { AccountService } from '../account/account.service';
 import { AdminService } from '../admin/admin.service';
 import type {
   ServiceContext,
@@ -6,11 +7,14 @@ import type {
 } from '../common/interfaces/service-executor';
 import { LowCodeService } from '../lowcode/lowcode.service';
 import { PaymentService } from '../payment/payment.service';
+import { PostsService } from '../posts/posts.service';
 import { UserService } from '../user/user.service';
 
 @Injectable()
 export class ServiceRouterService {
   constructor(
+    @Inject(AccountService)
+    private readonly accountService: AccountService,
     @Inject(AdminService)
     private readonly adminService: AdminService,
     @Inject(PaymentService)
@@ -18,7 +22,9 @@ export class ServiceRouterService {
     @Inject(UserService)
     private readonly userService: UserService,
     @Inject(LowCodeService)
-    private readonly lowCodeService: LowCodeService
+    private readonly lowCodeService: LowCodeService,
+    @Inject(PostsService)
+    private readonly postsService: PostsService
   ) {}
 
   async invoke(
@@ -33,6 +39,8 @@ export class ServiceRouterService {
 
   private resolveExecutor(serviceName: string): ServiceExecutor {
     switch (serviceName) {
+      case 'account':
+        return this.accountService;
       case 'admin':
         return this.adminService;
       case 'payment':
@@ -41,6 +49,8 @@ export class ServiceRouterService {
         return this.userService;
       case 'lowcode':
         return this.lowCodeService;
+      case 'posts':
+        return this.postsService;
       default:
         throw new BadRequestException(`Unsupported serviceName: ${serviceName}`);
     }

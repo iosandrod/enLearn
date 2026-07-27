@@ -1,6 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { ServiceContext, ServiceExecutor } from '../common/interfaces/service-executor';
-import { requireAdmin } from '../common/utils/supabase';
+import {
+  createSupabaseClient,
+  getCurrentUser,
+  getUserAuthorization,
+  hasRequiredPermission,
+  requireAdmin
+} from '../common/utils/supabase';
 
 type PostData = Record<string, unknown>;
 
@@ -84,6 +90,14 @@ function isMissingTableError(error: { message?: string } | null | undefined) {
   return Boolean(
     error?.message?.includes('Could not find the table') ||
       error?.message?.includes('relation') && error?.message?.includes('does not exist')
+  );
+}
+
+function isMissingFunctionError(error: { message?: string; code?: string } | null | undefined) {
+  return (
+    error?.code === 'PGRST202' ||
+    Boolean(error?.message?.includes('Could not find the function')) ||
+    Boolean(error?.message?.includes('function') && error.message.includes('does not exist'))
   );
 }
 
@@ -175,7 +189,7 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async listRoles(context: ServiceContext) {
-    const { client } = await requireAdmin(context);
+    const { client } = await requireAdmin(context, ['admin.roles.manage', 'admin.users.manage']);
     const [{ data: roles, error: roleError }, { data: permissions, error: permissionError }, { data: rolePermissions, error: mappingError }] = await Promise.all([
       client.from('admin_roles').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true }),
       client.from('admin_permissions').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true }),
@@ -265,7 +279,7 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async saveRole(postData: PostData, context: ServiceContext) {
-    const { client, user } = await requireAdmin(context);
+    const { client, user } = await requireAdmin(context, 'admin.roles.manage');
     const id = readOptionalString(postData.id);
     const code = readString(postData.code, 'code');
     const name = readString(postData.name, 'name');
@@ -366,7 +380,7 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async deleteRole(postData: PostData, context: ServiceContext) {
-    const { client } = await requireAdmin(context);
+    const { client } = await requireAdmin(context, 'admin.roles.manage');
     const id = readOptionalString(postData.id);
     const code = readOptionalString(postData.code);
 
@@ -386,7 +400,14 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async listPermissions(context: ServiceContext) {
-    const { client } = await requireAdmin(context);
+    const { client } = await requireAdmin(context, [
+      'admin.permissions.manage',
+      'admin.roles.manage',
+      'admin.routes.manage',
+      'admin.entities.manage',
+      'admin.users.manage',
+      'lowcode.pages.manage'
+    ]);
     const { data, error } = await client
       .from('admin_permissions')
       .select('*')
@@ -402,7 +423,7 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async savePermission(postData: PostData, context: ServiceContext) {
-    const { client, user } = await requireAdmin(context);
+    const { client, user } = await requireAdmin(context, 'admin.permissions.manage');
     const id = readOptionalString(postData.id);
     const code = readString(postData.code, 'code');
     const name = readString(postData.name, 'name');
@@ -466,7 +487,7 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async deletePermission(postData: PostData, context: ServiceContext) {
-    const { client } = await requireAdmin(context);
+    const { client } = await requireAdmin(context, 'admin.permissions.manage');
     const id = readOptionalString(postData.id);
     const code = readOptionalString(postData.code);
 
@@ -488,7 +509,7 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async listRoutes(context: ServiceContext) {
-    const { client } = await requireAdmin(context);
+    const { client } = await requireAdmin(context, 'admin.routes.manage');
     const { data, error } = await client
       .from('admin_routes')
       .select('*')
@@ -507,7 +528,32 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async listRouteTree(context: ServiceContext) {
-    const routes = await this.listRoutes(context);
+    const { client, user } = await getCurrentUser(context);
+    const authorization = await getUserAuthorization(client, user.id);
+    let routeClient = client;
+
+    try {
+      routeClient = createSupabaseClient('admin');
+    } catch {
+      routeClient = client;
+    }
+
+    const { data, error } = await routeClient
+      .from('admin_routes')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      if (isMissingTableError(error)) return [];
+      throw new BadRequestException(error.message);
+    }
+
+    const routes = (data ?? []).filter((route: Record<string, unknown>) => {
+      const permissionCode = typeof route.permission_code === 'string' ? route.permission_code : '';
+      return !permissionCode || hasRequiredPermission(authorization, permissionCode);
+    });
+
     return buildTree(
       routes.map((route: Record<string, unknown>) => ({
         ...route,
@@ -520,7 +566,7 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async saveRoute(postData: PostData, context: ServiceContext) {
-    const { client, user } = await requireAdmin(context);
+    const { client, user } = await requireAdmin(context, 'admin.routes.manage');
     const id = readOptionalString(postData.id);
     const code = readString(postData.code, 'code');
     const title = readString(postData.title, 'title');
@@ -599,7 +645,7 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async deleteRoute(postData: PostData, context: ServiceContext) {
-    const { client } = await requireAdmin(context);
+    const { client } = await requireAdmin(context, 'admin.routes.manage');
     const id = readOptionalString(postData.id);
     const code = readOptionalString(postData.code);
 
@@ -619,7 +665,7 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async listEntities(context: ServiceContext) {
-    const { client } = await requireAdmin(context);
+    const { client } = await requireAdmin(context, ['admin.entities.manage', 'lowcode.pages.manage']);
     const { data, error } = await client
       .from('admin_entities')
       .select('*')
@@ -638,7 +684,7 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async saveEntity(postData: PostData, context: ServiceContext) {
-    const { client, user } = await requireAdmin(context);
+    const { client, user } = await requireAdmin(context, 'admin.entities.manage');
     const id = readOptionalString(postData.id);
     const code = readString(postData.code, 'code');
     const title = readString(postData.title, 'title');
@@ -708,7 +754,7 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async deleteEntity(postData: PostData, context: ServiceContext) {
-    const { client } = await requireAdmin(context);
+    const { client } = await requireAdmin(context, 'admin.entities.manage');
     const id = readOptionalString(postData.id);
     const code = readOptionalString(postData.code);
 
@@ -728,61 +774,39 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async listUsers(context: ServiceContext) {
-    const { client } = await requireAdmin(context);
-    const [{ data: users, error: userError }, { data: roles, error: roleError }, { data: mappings, error: mappingError }] = await Promise.all([
-      client.from('users').select('*').order('updated_at', { ascending: false }),
-      client.from('admin_roles').select('id, code, name'),
-      client.from('admin_user_roles').select('*')
-    ]);
+    const { client } = await requireAdmin(context, 'admin.users.manage');
+    const { data, error } = await client.rpc('get_admin_user_permission_rows');
 
-    if (userError) {
-      throw new BadRequestException(userError.message);
-    }
-
-    if (roleError) {
-      if (isMissingTableError(roleError)) return [];
-      throw new BadRequestException(roleError.message);
-    }
-
-    if (mappingError) {
-      if (isMissingTableError(mappingError)) return [];
-      throw new BadRequestException(mappingError.message);
-    }
-
-    const roleById = new Map(
-      (roles ?? []).map((role: Record<string, unknown>) => [String(role.id), role])
-    );
-
-    const rolesByUserId = new Map<string, string[]>();
-    for (const mapping of mappings ?? []) {
-      const row = mapping as Record<string, unknown>;
-      const userId = String(row.user_id ?? '');
-      const roleId = String(row.role_id ?? '');
-      if (!userId || !roleId) continue;
-      const role = roleById.get(roleId);
-      const list = rolesByUserId.get(userId) ?? [];
-      if (role?.code) {
-        list.push(String(role.code));
-        rolesByUserId.set(userId, list);
+    if (error) {
+      if (isMissingFunctionError(error)) {
+        throw new BadRequestException(
+          'User permission profile function is not created yet. Run supabase/migrations/20260727010000_switch_user_table_to_permission_fields.sql first.'
+        );
       }
+      throw new BadRequestException(error.message);
     }
 
-    return (users ?? []).map((userRow: Record<string, unknown>) => ({
+    return (data ?? []).map((userRow: Record<string, unknown>) => ({
       ...userRow,
-      user_id: userRow.id,
-      public_role: userRow.role,
-      role_codes: rolesByUserId.get(String(userRow.id)) ?? [],
-      role_names: (rolesByUserId.get(String(userRow.id)) ?? [])
-        .map((code) =>
-          (roles ?? []).find((role: Record<string, unknown>) => String(role.code) === code)?.name
-        )
-        .filter(Boolean)
-        .join(', ')
+      id: userRow.id ?? userRow.user_id,
+      user_id: userRow.user_id ?? userRow.id,
+      app_role_codes: readStringArray(userRow.app_role_codes ?? userRow.role_codes),
+      app_role_names: readOptionalString(userRow.app_role_names ?? userRow.role_names),
+      role_codes: readStringArray(userRow.role_codes ?? userRow.app_role_codes),
+      role_names: readOptionalString(userRow.role_names ?? userRow.app_role_names),
+      permission_codes: readStringArray(userRow.permission_codes),
+      permission_names: readOptionalString(userRow.permission_names),
+      account_ids: Array.isArray(userRow.account_ids) ? userRow.account_ids : [],
+      account_roles: readStringArray(userRow.account_roles),
+      account_names: readOptionalString(userRow.account_names),
+      account_count: readNumber(userRow.account_count, 0),
+      permission_count: readNumber(userRow.permission_count, 0),
+      is_primary_account_owner: readBoolean(userRow.is_primary_account_owner, false)
     }));
   }
 
   private async saveUserRoles(postData: PostData, context: ServiceContext) {
-    const { client, user } = await requireAdmin(context);
+    const { client, user } = await requireAdmin(context, 'admin.users.manage');
     const userId = readString(postData.user_id ?? postData.userId, 'user_id');
     const roleCodes = readStringArray(postData.role_codes ?? postData.roleCodes);
 
@@ -824,6 +848,7 @@ export class AdminService implements ServiceExecutor {
     return {
       success: true,
       user_id: userId,
+      app_role_codes: roleCodes,
       role_codes: roleCodes
     };
   }

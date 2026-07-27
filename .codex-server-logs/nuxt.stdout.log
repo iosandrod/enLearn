@@ -1,0 +1,170 @@
+
+> @ dev C:\Users\11516\Desktop\project\enLearn\nuxt-app
+> nuxt dev --port 3000
+
+|
+•  [32mNuxt [1m3.21.9[22m[39m[90m (with [39m[90mNitro [1m2.13.4[22m[39m[90m, Vite [1m7.3.6[22m[39m[90m and Vue [1m3.5.40[22m[39m[90m)[39m
+
+[32m  ➜ Local:   [39m [36m[4mhttp://localhost:[1m3000[22m/[24m[39m
+[90m  ➜ Network:  use [37m--host[90m to expose[39m
+
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.2.4)[22m
+
+[32m√[39m Vite client built in 111ms
+[32m√[39m Vite server built in 2958ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 2307ms
+[36mi[39m Vite server warmed up in 2ms
+[36mi[39m Vite client warmed up in 5ms
+[36mi[39m nuxt.config.ts updated. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.2.4)[22m
+
+[36mi[39m Re-optimizing dependencies because vite config has changed
+[32m√[39m Vite client built in 786ms
+[32m√[39m Vite server built in 692ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 11762ms
+[36mi[39m Vite server warmed up in 7ms
+[36mi[39m Vite client warmed up in 13ms
+[36mi[39m nuxt.config.ts updated. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.2.4)[22m
+
+[36mi[39m Re-optimizing dependencies because vite config has changed[2m (x2)[22m
+[32m√[39m Vite client built in 680ms
+[32m√[39m Vite server built in 1964ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 31064ms
+[36mi[39m Vite server warmed up in 6ms
+[36mi[39m Vite client warmed up in 11ms
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32m✨ new dependencies optimized: [33m@element-plus/icons-vue, @supabase/supabase-js, lodash-es, element-plus/es/components/message/style/css, @vueuse/integrations/useQRCode, @vueuse/core, vuedraggable, nanoid, element-plus/es/components/alert/style/css, dayjs, monaco-editor[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeBlockRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeForm.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeGrid.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeFormLayout.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeTreeItem.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeBlockChildren.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeForm.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeBlockRenderer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeFormLayout.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeTreeItem.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/VisualEditorProvider.vue[22m
+[36mi[39m nuxt.config.ts updated. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.2.4)[22m
+
+[36mi[39m Re-optimizing dependencies because vite config has changed
+[32m√[39m Vite client built in 464ms
+[32m√[39m Vite server built in 280ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 5711ms
+[36mi[39m Vite server warmed up in 2ms
+[36mi[39m Vite client warmed up in 6ms
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32m✨ new dependencies optimized: [33m@element-plus/icons-vue, @supabase/supabase-js, lodash-es, element-plus/es/components/message/style/css, @vueuse/integrations/useQRCode, @vueuse/core, vuedraggable, nanoid, element-plus/es/components/alert/style/css, monaco-editor, dayjs[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+ ELIFECYCLE  Command failed with exit code 4294967295.

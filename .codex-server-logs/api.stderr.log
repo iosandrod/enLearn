@@ -1,0 +1,72 @@
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at runNextTicks (node:internal/process/task_queues:69:3)
+    at process.processImmediate (node:internal/timers:453:9)
+    at async _handleRequest (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:223:14)
+    at async _request (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:196:16)
+    at async <anonymous> (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3197:16)
+    at async SupabaseAuthClient._useSession (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:2937:14)
+    at async SupabaseAuthClient._getUser (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3186:14)
+    at async SupabaseAuthClient.getUser (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3166:16) {
+  [cause]: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 104.18.38.10:443, 172.64.149.246:443, timeout: 10000ms)
+      at onConnectTimeout (node:internal/deps/undici/undici:2602:28)
+      at Immediate._onImmediate (node:internal/deps/undici/undici:2568:35)
+      at process.processImmediate (node:internal/timers:485:21) {
+    code: 'UND_ERR_CONNECT_TIMEOUT'
+  }
+}
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async _handleRequest (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:223:14)
+    at async _request (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:196:16)
+    at async <anonymous> (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3197:16)
+    at async SupabaseAuthClient._useSession (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:2937:14)
+    at async SupabaseAuthClient._getUser (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3186:14)
+    at async SupabaseAuthClient.getUser (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3166:16)
+    at async getCurrentUser (C:\Users\11516\Desktop\project\enLearn\api\src\common\utils\supabase.ts:70:7)
+    at async requireAdmin (C:\Users\11516\Desktop\project\enLearn\api\src\common\utils\supabase.ts:80:28) {
+  [cause]: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 104.18.38.10:443, 172.64.149.246:443, timeout: 10000ms)
+      at onConnectTimeout (node:internal/deps/undici/undici:2602:28)
+      at Immediate._onImmediate (node:internal/deps/undici/undici:2568:35)
+      at process.processImmediate (node:internal/timers:485:21) {
+    code: 'UND_ERR_CONNECT_TIMEOUT'
+  }
+}
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async _handleRequest (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:223:14)
+    at async _request (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:196:16)
+    at async <anonymous> (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3197:16)
+    at async SupabaseAuthClient._useSession (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:2937:14)
+    at async SupabaseAuthClient._getUser (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3186:14)
+    at async SupabaseAuthClient.getUser (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3166:16)
+    at async getCurrentUser (C:\Users\11516\Desktop\project\enLearn\api\src\common\utils\supabase.ts:70:7)
+    at async requireAdmin (C:\Users\11516\Desktop\project\enLearn\api\src\common\utils\supabase.ts:80:28) {
+  [cause]: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 104.18.38.10:443, 172.64.149.246:443, timeout: 10000ms)
+      at onConnectTimeout (node:internal/deps/undici/undici:2602:28)
+      at Immediate._onImmediate (node:internal/deps/undici/undici:2568:35)
+      at process.processImmediate (node:internal/timers:485:21) {
+    code: 'UND_ERR_CONNECT_TIMEOUT'
+  }
+}
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async _handleRequest (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:223:14)
+    at async _request (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:196:16)
+    at async <anonymous> (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3197:16)
+    at async SupabaseAuthClient._useSession (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:2937:14)
+    at async SupabaseAuthClient._getUser (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3186:14)
+    at async SupabaseAuthClient.getUser (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:3166:16)
+    at async getCurrentUser (C:\Users\11516\Desktop\project\enLearn\api\src\common\utils\supabase.ts:70:7)
+    at async requireAdmin (C:\Users\11516\Desktop\project\enLearn\api\src\common\utils\supabase.ts:80:28) {
+  [cause]: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 104.18.38.10:443, 172.64.149.246:443, timeout: 10000ms)
+      at onConnectTimeout (node:internal/deps/undici/undici:2602:28)
+      at Immediate._onImmediate (node:internal/deps/undici/undici:2568:35)
+      at process.processImmediate (node:internal/timers:485:21) {
+    code: 'UND_ERR_CONNECT_TIMEOUT'
+  }
+}

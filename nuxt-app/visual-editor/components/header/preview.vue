@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="dialogVisible" custom-class="h5-preview" :show-close="false" width="360px">
+  <vxe-modal v-model="dialogVisible" class-name="h5-preview" :show-header="false" width="360px">
     <iframe
       v-if="dialogVisible"
       :style="{ width: '100%', height: '100%' }"
@@ -7,7 +7,7 @@
       frameborder="0"
       scrolling="auto"
     ></iframe>
-  </el-dialog>
+  </vxe-modal>
 </template>
 
 <script lang="ts" setup>
@@ -34,13 +34,14 @@
   .h5-preview {
     overflow: hidden;
 
-    .el-dialog__body {
+    .vxe-modal--body,
+    .vxe-modal--content {
       width: 360px;
       height: 640px;
       padding: 0;
     }
 
-    .el-dialog__header {
+    .vxe-modal--header {
       display: none;
     }
 

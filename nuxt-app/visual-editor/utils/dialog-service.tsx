@@ -1,5 +1,5 @@
 import { defineComponent, PropType, reactive, createApp, getCurrentInstance } from 'vue';
-import { ElInput, ElDialog, ElButton } from 'element-plus';
+import { ElInput, ElDialog, ElButton } from '@/visual-editor/components/common/designer-ui';
 import { defer } from './defer';
 
 enum DialogServiceEditType {

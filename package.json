@@ -5,9 +5,21 @@
     "build": "pnpm --dir nuxt-app build",
     "start": "pnpm --dir nuxt-app preview",
     "typecheck": "pnpm --dir nuxt-app typecheck",
+    "lowcode:typecheck": "pnpm --dir packages/lowcode-framework typecheck",
+    "workflow-schema:typecheck": "pnpm --dir packages/workflow-schema typecheck",
+    "workflow-schema:test": "pnpm --dir packages/workflow-schema test",
+    "approval-workflow:typecheck": "pnpm --dir packages/approval-workflow typecheck",
+    "trigger-workflow-editor:build": "pnpm --dir packages/trigger-workflow-editor build",
+    "trigger-workflow-editor:test": "pnpm --dir packages/trigger-workflow-editor test",
+    "trigger-workflow-editor:typecheck": "pnpm --dir packages/trigger-workflow-editor typecheck",
     "api:dev": "pnpm --dir api dev",
     "api:build": "pnpm --dir api build",
-    "api:start": "pnpm --dir api start"
+    "api:start": "pnpm --dir api start",
+    "workflow-api:dev": "pnpm --dir services/workflow-api dev",
+    "workflow-api:build": "pnpm --dir services/workflow-api build",
+    "workflow-api:start": "pnpm --dir services/workflow-api start",
+    "workflow-api:typecheck": "pnpm --dir services/workflow-api typecheck",
+    "workflow-api:test": "pnpm --dir services/workflow-api test"
   },
   "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
 }

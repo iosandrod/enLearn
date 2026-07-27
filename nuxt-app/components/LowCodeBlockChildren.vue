@@ -1,35 +1,13 @@
 <template>
-  <LowCodeBlockRenderer
-    v-for="child in blocks"
-    :key="child.id"
-    :block="child"
-    :resolved-data="resolvedData"
-    :form-models="formModels"
-    :search-filters="searchFilters"
-    :loading-block-id="loadingBlockId"
-    :loading-grid-id="loadingGridId"
-    @form-submit="(payload) => emit('formSubmit', payload)"
-    @form-action="(payload) => emit('formAction', payload)"
-    @grid-edit="(payload) => emit('gridEdit', payload)"
-    @grid-delete="(payload) => emit('gridDelete', payload)"
-    @toolbar-action="(payload) => emit('toolbarAction', payload)"
-    @search-submit="(payload) => emit('searchSubmit', payload)"
-    @search-action="(payload) => emit('searchAction', payload)"
-  />
+  <component :is="PackageLowCodeBlockChildrenView" v-bind="$attrs" />
 </template>
 
 <script setup lang="ts">
-import type {
-  LowCodeBlockMaterialEmits,
-  LowCodeBlockMaterialProps,
-  LowCodeRuntimeBlock,
-} from '~/lowcode/block-materials';
+import { LowCodeBlockChildren as PackageLowCodeBlockChildren } from '@enlearn/lowcode-framework/runtime';
 
-defineProps<
-  Omit<LowCodeBlockMaterialProps, 'block'> & {
-    blocks: LowCodeRuntimeBlock[];
-  }
->();
+defineOptions({
+  inheritAttrs: false
+});
 
-const emit = defineEmits<LowCodeBlockMaterialEmits>();
+const PackageLowCodeBlockChildrenView = PackageLowCodeBlockChildren as any;
 </script>

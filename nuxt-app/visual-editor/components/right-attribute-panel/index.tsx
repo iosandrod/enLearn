@@ -9,8 +9,8 @@
  */
 
 import { defineComponent, reactive, watch } from 'vue';
-import { ElTabPane, ElTabs } from 'element-plus';
-import { DArrowLeft, DArrowRight } from '@element-plus/icons-vue';
+import { ElTabPane, ElTabs } from '@/visual-editor/components/common/designer-ui';
+import { DArrowLeft, DArrowRight } from '@/visual-editor/components/common/remix-icons';
 import styles from './index.module.scss';
 import { AttrEditor, Animate, PageSetting, EventAction, FormRule } from './components';
 import { useVisualData } from '@/visual-editor/hooks/useVisualData';
@@ -25,6 +25,13 @@ export default defineComponent({
   },
   setup(props) {
     const { currentBlock } = useVisualData();
+    const isFormBlock = () => {
+      const block = currentBlock.value;
+      return (
+        ['form', 'lowcode-search-form', 'lowcode-edit-form'].includes(block.componentKey) ||
+        Array.isArray(block.props?.fields)
+      );
+    };
 
     const state = reactive({
       activeName: 'attr',
@@ -32,9 +39,9 @@ export default defineComponent({
     });
 
     watch(
-      () => currentBlock.value.label,
-      (newLabel) => {
-        if (!newLabel?.startsWith('表单') && state.activeName == 'form-rule') {
+      () => currentBlock.value.componentKey,
+      () => {
+        if (!isFormBlock() && state.activeName == 'form-rule') {
           state.activeName = 'attr';
         }
       },
@@ -54,22 +61,32 @@ export default defineComponent({
               class={styles.tabs}
             >
               <ElTabPane label="属性" name="attr">
-                <AttrEditor />
+                <div class={styles.panelBody}>
+                  <AttrEditor />
+                </div>
               </ElTabPane>
               <ElTabPane label="动画" name="animate" lazy>
-                <Animate />
+                <div class={styles.panelBody}>
+                  <Animate />
+                </div>
               </ElTabPane>
               <ElTabPane label="事件" name="events">
-                <EventAction />
+                <div class={styles.panelBody}>
+                  <EventAction />
+                </div>
               </ElTabPane>
-              {currentBlock.value.label?.startsWith('表单') ? (
+              {isFormBlock() ? (
                 <ElTabPane label="规则" name="form-rule" lazy>
-                  <FormRule />
+                  <div class={styles.panelBody}>
+                    <FormRule />
+                  </div>
                 </ElTabPane>
               ) : null}
               {props.showPageSetting ? (
                 <ElTabPane label="页面设置" name="page-setting">
-                  <PageSetting />
+                  <div class={styles.panelBody}>
+                    <PageSetting />
+                  </div>
                 </ElTabPane>
               ) : null}
             </ElTabs>

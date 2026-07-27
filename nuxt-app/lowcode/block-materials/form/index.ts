@@ -1,9 +1,16 @@
 import type { LowCodeBlockMaterial } from '../types';
+import { createDefaultFormBlock } from '../defaults';
+import converter from '~/lowcode/visual-converters/lowcode-edit-form';
 import component from './index.vue';
 
 export default {
   type: 'form',
-  label: '表单',
+  label: '普通表单',
   component,
+  designer: () =>
+    import('~/packages/business-component/lowcode-edit-form').then((module) => module.default),
+  materialVersion: '1.0.0',
+  createDefaultBlock: createDefaultFormBlock,
+  converter,
   order: 60,
 } satisfies LowCodeBlockMaterial;

@@ -3,8 +3,8 @@ import { IsIn, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validato
 export class ServiceInvokeDto {
   @IsString()
   @IsNotEmpty()
-  @IsIn(['payment', 'user', 'lowcode', 'admin'])
-  serviceName!: 'payment' | 'user' | 'lowcode' | 'admin';
+  @IsIn(['account', 'payment', 'user', 'lowcode', 'admin', 'posts'])
+  serviceName!: 'account' | 'payment' | 'user' | 'lowcode' | 'admin' | 'posts';
 
   @IsString()
   @IsNotEmpty()

@@ -1,38 +1,13 @@
 <template>
-  <component
-    :is="materialComponent"
-    v-if="materialComponent"
-    :block="block"
-    :resolved-data="resolvedData"
-    :form-models="formModels"
-    :search-filters="searchFilters"
-    :loading-block-id="loadingBlockId"
-    :loading-grid-id="loadingGridId"
-    @form-submit="(payload) => emit('formSubmit', payload)"
-    @form-action="(payload) => emit('formAction', payload)"
-    @grid-edit="(payload) => emit('gridEdit', payload)"
-    @grid-delete="(payload) => emit('gridDelete', payload)"
-    @toolbar-action="(payload) => emit('toolbarAction', payload)"
-    @search-submit="(payload) => emit('searchSubmit', payload)"
-    @search-action="(payload) => emit('searchAction', payload)"
-  />
-
-  <article v-else class="content-panel lc-node-unsupported">
-    <strong>未注册区块</strong>
-    <span>{{ block.kind }}</span>
-  </article>
+  <component :is="PackageLowCodeBlockRendererView" v-bind="$attrs" />
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import {
-  getLowCodeBlockMaterial,
-  type LowCodeBlockMaterialEmits,
-  type LowCodeBlockMaterialProps,
-} from '~/lowcode/block-materials';
+import { LowCodeBlockRenderer as PackageLowCodeBlockRenderer } from '@enlearn/lowcode-framework/runtime';
 
-const props = defineProps<LowCodeBlockMaterialProps>();
-const emit = defineEmits<LowCodeBlockMaterialEmits>();
+defineOptions({
+  inheritAttrs: false
+});
 
-const materialComponent = computed(() => getLowCodeBlockMaterial(props.block.kind)?.component);
+const PackageLowCodeBlockRendererView = PackageLowCodeBlockRenderer as any;
 </script>

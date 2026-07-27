@@ -28,8 +28,8 @@ function readDesignedBlocks(value: unknown) {
 
 export default {
   key: 'form',
-  moduleName: 'containerComponents',
-  label: '表单容器',
+  moduleName: 'businessComponents',
+  label: '普通表单',
   preview: () => (
     <Form>
       <Field name="username" label="用户名" placeholder="用户名" />

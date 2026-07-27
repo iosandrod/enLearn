@@ -1,0 +1,104 @@
+﻿[
+    {
+        "name":  "auth.signin (Nuxt proxy)",
+        "ok":  true,
+        "status":  200,
+        "summary":  "user=1151685410@qq.com"
+    },
+    {
+        "name":  "auth.me (Nuxt proxy)",
+        "ok":  true,
+        "status":  200,
+        "summary":  "user=1151685410@qq.com"
+    },
+    {
+        "name":  "user.me",
+        "ok":  true,
+        "status":  200,
+        "summary":  "user=1151685410@qq.com"
+    },
+    {
+        "name":  "account.listAccounts",
+        "ok":  false,
+        "status":  400,
+        "summary":  "Could not find the function public.get_accounts without parameters in the schema cache"
+    },
+    {
+        "name":  "account.getPersonalAccount",
+        "ok":  false,
+        "status":  400,
+        "summary":  "Could not find the function public.get_personal_account without parameters in the schema cache"
+    },
+    {
+        "name":  "payment.listPlans",
+        "ok":  true,
+        "status":  200,
+        "summary":  "array length=0"
+    },
+    {
+        "name":  "payment.getSubscription",
+        "ok":  true,
+        "status":  204,
+        "summary":  "null"
+    },
+    {
+        "name":  "admin.listRouteTree",
+        "ok":  true,
+        "status":  200,
+        "summary":  "array length=0"
+    },
+    {
+        "name":  "admin.listRoles",
+        "ok":  true,
+        "status":  200,
+        "summary":  "array length=0"
+    },
+    {
+        "name":  "admin.listPermissions",
+        "ok":  true,
+        "status":  200,
+        "summary":  "array length=0"
+    },
+    {
+        "name":  "admin.listEntities",
+        "ok":  true,
+        "status":  200,
+        "summary":  "array length=0"
+    },
+    {
+        "name":  "lowcode.listPages",
+        "ok":  true,
+        "status":  200,
+        "summary":  "\"[\\n  {\\n    \\\"id\\\": \\\"67bab186-42fb-408f-a9b4-83c002534d68\\\",\\n    \\\"code\\\": \\\"admin-system-users\\\",\\n    \\\"route\\\": \\\"/dashboard/system/users\\\",\\n    \\\"title\\\": \\\"鐢ㄦ埛瑙掕壊\\\",\\n    \\\"description\\\": \\\"鐢ㄦ埛瑙掕壊涓庤鑹插瓧娈电淮鎶よ鍥?,..."
+    },
+    {
+        "name":  "posts.list (gateway)",
+        "ok":  true,
+        "status":  200,
+        "summary":  "array length=1"
+    },
+    {
+        "name":  "posts.create (Nuxt posts API)",
+        "ok":  true,
+        "status":  200,
+        "summary":  "id=2"
+    },
+    {
+        "name":  "posts.update (Nuxt posts API)",
+        "ok":  true,
+        "status":  200,
+        "summary":  "id=2"
+    },
+    {
+        "name":  "posts.delete (Nuxt posts API)",
+        "ok":  true,
+        "status":  200,
+        "summary":  "success=True"
+    },
+    {
+        "name":  "posts.list (Nuxt posts API)",
+        "ok":  true,
+        "status":  200,
+        "summary":  "array length=1"
+    }
+]

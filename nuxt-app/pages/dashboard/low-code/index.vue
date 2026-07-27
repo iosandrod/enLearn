@@ -64,6 +64,7 @@ import {
   lowCodePageEditorSchema as pageEditorSchema,
   lowCodePagesGridSchema as pagesGridSchema
 } from '~/schemas/lowcode';
+import { prepareLowCodePageSchema } from '~/lowcode/schema';
 import type { LowCodePageRecord } from '~/types/lowcode';
 
 definePageMeta({
@@ -99,6 +100,7 @@ const pageForm = ref<LowCodePageForm>({
   keep_alive: true,
   schemaJson: JSON.stringify(
     {
+      schemaVersion: 1,
       code: '',
       route: '',
       title: '',
@@ -132,6 +134,7 @@ function normalizeFormFromPage(page: LowCodePageRecord | null): LowCodePageForm 
       keep_alive: true,
       schemaJson: JSON.stringify(
         {
+          schemaVersion: 1,
           code: '',
           route: '',
           title: '',
@@ -213,7 +216,7 @@ async function archivePage(row: Record<string, unknown>) {
 function buildSchemaPayload(values: LowCodePageForm) {
   const parsedSchema = JSON.parse(values.schemaJson || '{}') as Record<string, unknown>;
 
-  return {
+  return prepareLowCodePageSchema({
     ...parsedSchema,
     code: values.code,
     route: values.route,
@@ -222,7 +225,7 @@ function buildSchemaPayload(values: LowCodePageForm) {
     layout: values.layout,
     status: values.status,
     keepAlive: values.keep_alive
-  };
+  });
 }
 
 async function savePage(values: Record<string, unknown>) {

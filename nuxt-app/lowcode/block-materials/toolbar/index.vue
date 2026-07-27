@@ -10,7 +10,7 @@
         :key="action.code"
         :status="action.status"
         :disabled="action.disabled"
-        @click="emit('toolbarAction', { block, action })"
+        @click="handleAction(action)"
       >
         {{ action.label }}
       </vxe-button>
@@ -19,9 +19,24 @@
 </template>
 
 <script setup lang="ts">
-import type { LowCodePageToolbarBlock } from '~/types/lowcode';
+import type { LowCodeAction, LowCodePageToolbarBlock } from '~/types/lowcode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 
-defineProps<LowCodeBlockMaterialProps<LowCodePageToolbarBlock>>();
+const props = defineProps<LowCodeBlockMaterialProps<LowCodePageToolbarBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
+
+function handleAction(action: LowCodeAction) {
+  emit('runtimeEvent', {
+    name: action.eventName ?? 'toolbar.click',
+    blockId: props.block.id,
+    blockKind: props.block.kind,
+    timestamp: Date.now(),
+    payload: {
+      action,
+      actionCode: action.code,
+      directives: action.directives ?? [],
+    },
+  });
+  emit('toolbarAction', { block: props.block, action });
+}
 </script>

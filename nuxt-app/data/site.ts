@@ -11,7 +11,7 @@ import type {
 export const siteName = 'Hikari';
 
 export const siteDescription =
-  'A Supabase-backed SaaS starter with auth, dashboard, blog, and docs migrated to Nuxt 3.';
+  'A backend-proxied SaaS starter with auth, dashboard, blog, and docs migrated to Nuxt 3.';
 
 export const publicNav: SiteNavItem[] = [
   { label: 'Home', href: '/' },
@@ -24,13 +24,13 @@ export const homeHero = {
   eyebrow: 'Nuxt 3 migration',
   title: 'Hikari',
   description:
-    'Keep the original Supabase interfaces and product flows, while moving the public site, auth, dashboard, blog, and docs into a Vue-friendly Nuxt app.',
+    'Keep the product flows while routing auth and data access through the backend, with the public site, dashboard, blog, and docs in a Vue-friendly Nuxt app.',
   actions: [
     { label: 'Sign in', href: '/signin', primary: true },
     { label: 'Read the docs', href: '/docs' }
   ] satisfies HeroAction[],
   bullets: [
-    'Supabase cloud auth',
+    'Backend-managed auth',
     'Schema-driven dashboard',
     'Markdown blog and docs',
     'Nuxt 3 public routes'
@@ -40,15 +40,15 @@ export const homeHero = {
 export const heroStats = [
   { label: 'Framework', value: 'Nuxt 3' },
   { label: 'UI core', value: 'VXE' },
-  { label: 'Backend', value: 'Supabase' }
+  { label: 'Backend', value: 'Nest API' }
 ];
 
 export const marketingFeatures: MarketingFeature[] = [
   {
     kicker: 'Auth',
-    title: 'Supabase sign-in flows',
+    title: 'Backend sign-in flows',
     description:
-      'Email/password authentication and callback handling stay on the same cloud Supabase project.'
+      'Email/password authentication and callback handling now go through the Nest backend before reaching the auth provider.'
   },
   {
     kicker: 'Dashboard',
@@ -70,9 +70,9 @@ export const marketingFeatures: MarketingFeature[] = [
   },
   {
     kicker: 'Database',
-    title: 'Supabase APIs unchanged',
+    title: 'Backend-controlled data access',
     description:
-      'Existing tables, auth metadata, and API contracts remain the source of truth while the frontend changes framework.'
+      'Existing tables and auth metadata remain the source of truth, while browser requests use backend business APIs.'
   },
   {
     kicker: 'Migration',
@@ -161,9 +161,9 @@ export const faqItems: FaqItem[] = [
       'Yes. The plan cards describe the complete starter surface without hidden add-ons.'
   },
   {
-    question: 'Does the Nuxt migration change Supabase?',
+    question: 'Does the Nuxt app call Supabase directly?',
     answer:
-      'No. The frontend framework changes, while the Supabase project URL, auth flow, and API contracts stay intact.'
+      'No. Browser requests go through Nuxt server routes and the Nest API, which control auth and data access.'
   },
   {
     question: 'Can more screens become low-code?',

@@ -1,65 +1,118 @@
-import type { AuthChangeEvent, Provider, Session } from '@supabase/supabase-js';
+import type { AppAuthPayload } from './useAuthState';
+
+type OAuthProvider = 'github';
+
+function applyAuthPayload(payload: AppAuthPayload) {
+  const { user, profile, permissions, accounts, session, ready } = useAuthState();
+  user.value = payload.user;
+  profile.value = payload.profile;
+  permissions.value = Array.isArray(payload.permissions) ? payload.permissions : [];
+  accounts.value = Array.isArray(payload.accounts) ? payload.accounts : [];
+  session.value = payload.session;
+  ready.value = true;
+}
+
+function readOAuthHash() {
+  if (import.meta.server || !window.location.hash) return null;
+
+  const params = new URLSearchParams(window.location.hash.slice(1));
+  const accessToken = params.get('access_token');
+  if (!accessToken) return null;
+
+  const expiresAt = params.get('expires_at');
+
+  return {
+    accessToken,
+    refreshToken: params.get('refresh_token') ?? undefined,
+    expiresAt: expiresAt ? Number(expiresAt) : undefined
+  };
+}
 
 export function useAuth() {
-  const supabase = useAppSupabase();
-  const { user, session, ready } = useAuthState();
+  const { user, profile, permissions, accounts, session, ready } = useAuthState();
 
-  async function init() {
-    const { data } = await supabase.auth.getSession();
-    session.value = data.session;
-    user.value = data.session?.user ?? null;
-    ready.value = true;
+  async function init(force = false) {
+    if (import.meta.server) return;
+    if (ready.value && !force) return;
 
-    supabase.auth.onAuthStateChange(
-      (_event: AuthChangeEvent, nextSession: Session | null) => {
-      session.value = nextSession;
-      user.value = nextSession?.user ?? null;
-      ready.value = true;
-      }
-    );
+    const payload = await $fetch<AppAuthPayload>('/api/auth/me');
+    applyAuthPayload(payload);
   }
 
   async function signInWithPassword(credentials: {
     email: string;
     password: string;
   }) {
-    const { error } = await supabase.auth.signInWithPassword(credentials);
-    if (error) throw error;
-    await init();
+    const payload = await $fetch<AppAuthPayload>('/api/auth/signin', {
+      method: 'POST',
+      body: credentials
+    });
+    applyAuthPayload(payload);
   }
 
   async function signUp(credentials: { email: string; password: string }) {
-    const { error } = await supabase.auth.signUp(credentials);
-    if (error) throw error;
-    await init();
+    const payload = await $fetch<AppAuthPayload>('/api/auth/signup', {
+      method: 'POST',
+      body: credentials
+    });
+    applyAuthPayload(
+      payload.session
+        ? payload
+        : { user: null, profile: null, permissions: [], accounts: [], session: null }
+    );
   }
 
-  async function signInWithOAuth(provider: Provider) {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
+  async function signInWithOAuth(provider: OAuthProvider) {
+    const { url } = await $fetch<{ url: string }>('/api/auth/oauth', {
+      method: 'POST',
+      body: {
+        provider,
         redirectTo: `${window.location.origin}/auth/callback`
       }
     });
 
-    if (error) throw error;
+    window.location.href = url;
+  }
+
+  async function completeOAuthRedirect() {
+    const hashSession = readOAuthHash();
+
+    if (hashSession) {
+      const payload = await $fetch<AppAuthPayload>('/api/auth/session', {
+        method: 'POST',
+        body: hashSession
+      });
+      applyAuthPayload(payload);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
+    await init(true);
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await $fetch('/api/auth/signout', { method: 'POST' });
     user.value = null;
+    profile.value = null;
+    permissions.value = [];
+    accounts.value = [];
     session.value = null;
+    ready.value = true;
     await navigateTo('/signin');
   }
 
   return {
     user,
+    profile,
+    permissions,
+    accounts,
     session,
     ready,
     init,
     signInWithPassword,
     signUp,
     signInWithOAuth,
+    completeOAuthRedirect,
     signOut
   };
 }

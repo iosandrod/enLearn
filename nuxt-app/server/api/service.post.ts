@@ -1,3 +1,5 @@
+import { backendFetch } from '../utils/backend';
+
 type ServiceGatewayResponse<T = unknown> = {
   success?: boolean;
   data?: T;
@@ -6,23 +8,12 @@ type ServiceGatewayResponse<T = unknown> = {
 };
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig();
   const body = await readBody(event);
-  const authorization = getHeader(event, 'authorization');
-  const requestId = getHeader(event, 'x-request-id');
-  const apiBaseUrl = String(config.apiBaseUrl || 'http://localhost:3002/api').replace(
-    /\/+$/,
-    ''
-  );
 
   try {
-    const response = await $fetch<ServiceGatewayResponse>(`${apiBaseUrl}/service`, {
+    const response = await backendFetch<ServiceGatewayResponse>(event, '/service', {
       method: 'POST',
-      body,
-      headers: {
-        ...(authorization ? { Authorization: authorization } : {}),
-        ...(requestId ? { 'x-request-id': requestId } : {})
-      }
+      body
     });
 
     if (response.success === false) {

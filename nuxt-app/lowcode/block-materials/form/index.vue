@@ -9,17 +9,65 @@
       :schema="block.schema"
       :option-sources="resolvedData"
       :loading="loadingBlockId === block.id"
-      @submit="(values) => emit('formSubmit', { block, values })"
-      @action="(action, values) => emit('formAction', { block, action, values })"
+      @submit="handleSubmit"
+      @action="handleAction"
+      @field-change="handleFieldChange"
     />
   </article>
 </template>
 
 <script setup lang="ts">
 import LowCodeForm from '~/components/LowCodeForm.vue';
-import type { LowCodePageFormBlock } from '~/types/lowcode';
+import type { LowCodeAction, LowCodeField, LowCodePageFormBlock } from '~/types/lowcode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 
-defineProps<LowCodeBlockMaterialProps<LowCodePageFormBlock>>();
+const props = defineProps<LowCodeBlockMaterialProps<LowCodePageFormBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
+
+function emitRuntimeEvent(name: string, payload: Record<string, unknown>) {
+  emit('runtimeEvent', {
+    name,
+    blockId: props.block.id,
+    blockKind: props.block.kind,
+    timestamp: Date.now(),
+    payload,
+  });
+}
+
+function handleSubmit(values: Record<string, unknown>) {
+  const action = props.block.schema.actions.find(
+    (item) => item.type === 'submit' || item.code === 'submit'
+  );
+  emitRuntimeEvent(action?.eventName ?? 'form.submit', {
+    action,
+    actionCode: action?.code ?? 'submit',
+    values,
+    directives: action?.directives ?? [],
+  });
+  emit('formSubmit', { block: props.block, values });
+}
+
+function handleAction(action: LowCodeAction, values: Record<string, unknown>) {
+  emitRuntimeEvent(action.eventName ?? 'form.action', {
+    action,
+    actionCode: action.code,
+    values,
+    directives: action.directives ?? [],
+  });
+  emit('formAction', { block: props.block, action, values });
+}
+
+function handleFieldChange(payload: {
+  field: LowCodeField;
+  value: unknown;
+  previousValue: unknown;
+  values: Record<string, unknown>;
+}) {
+  emitRuntimeEvent('form.fieldChange', {
+    ...payload,
+    field: payload.field.field,
+    fieldConfig: payload.field,
+    directives: payload.field.events?.change ?? payload.field.events?.onChange ?? [],
+  });
+}
 </script>

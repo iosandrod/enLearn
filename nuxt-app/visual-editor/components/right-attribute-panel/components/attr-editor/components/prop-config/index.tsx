@@ -19,9 +19,9 @@ import {
   ElFormItem,
   ElTooltip,
   ElIcon,
-} from 'element-plus';
+} from '@/visual-editor/components/common/designer-ui';
 import { cloneDeep } from 'lodash-es';
-import { Warning } from '@element-plus/icons-vue';
+import { Warning } from '@/visual-editor/components/common/remix-icons';
 import { TablePropEditor, CrossSortableOptionsEditor } from '../../components';
 import { useDotProp } from '@/visual-editor/hooks/useDotProp';
 import { VisualEditorProps, VisualEditorPropsType } from '@/visual-editor/visual-editor.props';

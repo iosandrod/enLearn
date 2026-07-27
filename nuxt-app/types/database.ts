@@ -334,6 +334,38 @@ export type AdminUserRoleRow = {
   created_at: string;
 };
 
+export type AdminUserPermissionRow = {
+  id: string;
+  user_id: string;
+  email: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  phone: string | null;
+  nickname: string | null;
+  legacy_profile_role: UserDetailsRow['role'] | string | null;
+  lead_status: UserDetailsRow['lead_status'] | string | null;
+  city: string | null;
+  english_level: string | null;
+  learning_goal: string | null;
+  source_channel: string | null;
+  assigned_consultant_id: string | null;
+  updated_at: string | null;
+  app_role_codes: string[];
+  app_role_names: string;
+  role_codes: string[];
+  role_names: string;
+  permission_codes: string[];
+  permission_names: string;
+  permission_count: number;
+  account_ids: string[];
+  account_names: string;
+  account_roles: string[];
+  account_count: number;
+  personal_account_id: string | null;
+  personal_account_name: string | null;
+  is_primary_account_owner: boolean;
+};
+
 export type AdminRouteRow = {
   id: string;
   code: string;
@@ -373,6 +405,37 @@ export type AdminEntityRow = {
   updated_by: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type BasejumpAccountRole = 'owner' | 'member';
+
+export type BasejumpConfigRow = {
+  singleton: boolean;
+  enable_team_accounts: boolean;
+  enable_personal_account_billing: boolean;
+  enable_team_account_billing: boolean;
+  billing_provider: string;
+};
+
+export type BasejumpAccountRow = {
+  id: string;
+  primary_owner_user_id: string;
+  name: string | null;
+  slug: string | null;
+  personal_account: boolean;
+  private_metadata: Json;
+  public_metadata: Json;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type BasejumpAccountUserRow = {
+  user_id: string;
+  account_id: string;
+  account_role: BasejumpAccountRole;
+  created_at: string;
 };
 
 export type LowCodePageRow = {
@@ -501,7 +564,139 @@ export interface Database {
       lowcode_page_versions: TableDefinition<LowCodePageVersionRow>;
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      add_account_member: {
+        Args: {
+          account_id: string;
+          user_id: string;
+          account_role?: BasejumpAccountRole;
+        };
+        Returns: undefined;
+      };
+      create_account: {
+        Args: {
+          slug?: string | null;
+          name?: string | null;
+        };
+        Returns: Json;
+      };
+      current_user_account_role: {
+        Args: {
+          account_id: string;
+        };
+        Returns: Json;
+      };
+      current_user_permission_codes: {
+        Args: Record<string, never>;
+        Returns: string[];
+      };
+      get_account: {
+        Args: {
+          account_id: string;
+        };
+        Returns: Json;
+      };
+      get_account_by_slug: {
+        Args: {
+          slug: string;
+        };
+        Returns: Json;
+      };
+      get_account_id: {
+        Args: {
+          slug: string;
+        };
+        Returns: string;
+      };
+      get_account_members: {
+        Args: {
+          account_id: string;
+          results_limit?: number;
+          results_offset?: number;
+        };
+        Returns: Json;
+      };
+      get_accounts: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      get_admin_user_permission_rows: {
+        Args: Record<string, never>;
+        Returns: AdminUserPermissionRow[];
+      };
+      get_personal_account: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      has_app_permission: {
+        Args: {
+          permission_code: string;
+        };
+        Returns: boolean;
+      };
+      remove_account_member: {
+        Args: {
+          account_id: string;
+          user_id: string;
+        };
+        Returns: undefined;
+      };
+      update_account: {
+        Args: {
+          account_id: string;
+          slug?: string | null;
+          name?: string | null;
+          public_metadata?: Json | null;
+          replace_metadata?: boolean;
+        };
+        Returns: Json;
+      };
+      update_account_user_role: {
+        Args: {
+          account_id: string;
+          user_id: string;
+          new_account_role: BasejumpAccountRole;
+          make_primary_owner?: boolean;
+        };
+        Returns: undefined;
+      };
+    };
     Enums: Record<string, never>;
+  };
+  basejump: {
+    Tables: {
+      config: TableDefinition<BasejumpConfigRow>;
+      accounts: TableDefinition<BasejumpAccountRow>;
+      account_user: TableDefinition<BasejumpAccountUserRow>;
+    };
+    Views: Record<string, never>;
+    Functions: {
+      get_config: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      get_accounts_with_role: {
+        Args: {
+          passed_in_role?: BasejumpAccountRole | null;
+        };
+        Returns: string[];
+      };
+      has_role_on_account: {
+        Args: {
+          account_id: string;
+          account_role?: BasejumpAccountRole | null;
+        };
+        Returns: boolean;
+      };
+      is_set: {
+        Args: {
+          field_name: string;
+        };
+        Returns: boolean;
+      };
+    };
+    Enums: {
+      account_role: BasejumpAccountRole;
+    };
   };
 }

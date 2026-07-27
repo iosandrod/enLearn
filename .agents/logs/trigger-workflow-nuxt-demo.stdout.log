@@ -1,0 +1,37 @@
+
+> @ dev C:\Users\11516\Desktop\project\enLearn\nuxt-app
+> nuxt dev --port 3000 "--host" "0.0.0.0"
+
+|
+•  [32mNuxt [1m3.21.9[22m[39m[90m (with [39m[90mNitro [1m2.13.4[22m[39m[90m, Vite [1m7.3.6[22m[39m[90m and Vue [1m3.5.40[22m[39m[90m)[39m
+
+ 
+              █▀▀▀▀▀▀▀██▀████▀███▀▀▀▀▀▀▀█
+              █ █▀▀▀█ █▄ ▀ ▄▄▀▄██ █▀▀▀█ █
+              █ █   █ █▄▄▀▄▀▄▀█▄█ █   █ █
+              █ ▀▀▀▀▀ █ █ █▀█▀▄▀█ ▀▀▀▀▀ █
+              █▀▀▀▀▀█▀▀▀▀▀█ ▀█ ▀▀█▀█▀█▀██
+              █▀▀██▀▀▀ █ █▀▀█▄▀▀▄▀█▀▀█ ▀█
+              █ █▀█▀▀▀▄█ ▄ █▀█▄▀▄ ▄ █▀▀ █
+              █ ▄▀  █▀▄▀▄ █▄█▄▀▀▀█▀█ █ ▀█
+              █ █▀ █▄▀▄▀▀▀█ ▀█ ▀▀▀▀▀▄▀█▄█
+              █▀▀▀▀▀▀▀█ █▀▀▀ ▀█ █▀█   ▀▀█
+              █ █▀▀▀█ █▀▄▀ ██▄  ▀▀▀  ▀▀▀█
+              █ █   █ █ ▄██▄ ▀▄ ▀▄▄▄█ ▄ █
+              █ ▀▀▀▀▀ █   █ ▄▀ ▄▀    ▀▀ █
+              ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+ 
+[32m  ➜ Local:   [39m [36m[4mhttp://0.0.0.0:[1m3000[22m/[24m[39m
+[35m  ➜ Network: [39m [36m[4mhttp://1.1.1.190:[1m3000[22m/[24m[39m[90m [QR code][39m
+[35m  ➜ Network: [39m [36m[4mhttp://172.18.91.118:[1m3000[22m/[24m[39m
+
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[36mi[39m Re-optimizing dependencies because vite config has changed
+[32m√[39m Vite client built in 352ms
+[32m√[39m Vite server built in 349ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 6579ms
+[36mi[39m Vite server warmed up in 2ms
+[36mi[39m Vite client warmed up in 6ms
+[36mi[39m [32m✨ new dependencies optimized: [33m@vue-flow/core[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m

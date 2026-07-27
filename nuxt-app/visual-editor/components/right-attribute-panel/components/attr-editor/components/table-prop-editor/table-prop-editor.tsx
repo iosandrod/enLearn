@@ -1,5 +1,5 @@
 import { defineComponent, PropType, SetupContext } from 'vue';
-import { ElButton, ElTag } from 'element-plus';
+import { ElButton, ElTag } from '@/visual-editor/components/common/designer-ui';
 import { useVModel } from '@vueuse/core';
 import { $$tablePropEditor } from './table-prop-edit.service';
 import { VisualEditorProps } from '@/visual-editor/visual-editor.props';

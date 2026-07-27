@@ -1,0 +1,25 @@
+
+[41m[30m ERROR [39m[49m
+Another Nuxt dev server is already running:
+
+  URL:     http://0.0.0.0:3000
+  PID:     36744
+  Dir:     C:/Users/11516/Desktop/project/enLearn/nuxt-app
+  Started: 2026/7/26 02:22:12
+
+Run [36mtaskkill /PID 36744 /F[39m to stop it, or connect to http://0.0.0.0:3000
+Set NUXT_IGNORE_LOCK=1 to bypass this check.
+
+
+
+[41m[30m ERROR [39m[49m Another Nuxt dev is already running (PID 36744).
+
+    [90mat [39m#acquireDevLock ([36m/C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/@nuxt+cli@3.37.0_@nuxt+schema@3.21.9_@parcel+watcher@2.6.0_cac@6.7.14_magicast@0.5.3/node_modules/@nuxt/cli/dist/dev-DHhrJk9w.mjs:580:10[39m)
+    [90mat [39mNuxtDevServer.init ([36m/C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/@nuxt+cli@3.37.0_@nuxt+schema@3.21.9_@parcel+watcher@2.6.0_cac@6.7.14_magicast@0.5.3/node_modules/@nuxt/cli/dist/dev-DHhrJk9w.mjs:404:23[39m)
+    [90mat [39masync initialize ([36m/C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/@nuxt+cli@3.37.0_@nuxt+schema@3.21.9_@parcel+watcher@2.6.0_cac@6.7.14_magicast@0.5.3/node_modules/@nuxt/cli/dist/dev-DHhrJk9w.mjs:753:2[39m)
+    [90mat [39masync Object.run ([36m/C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/@nuxt+cli@3.37.0_@nuxt+schema@3.21.9_@parcel+watcher@2.6.0_cac@6.7.14_magicast@0.5.3/node_modules/@nuxt/cli/dist/dev-Cbii5ek4.mjs:198:51[39m)
+    [90mat [39masync runCommand ([36m/C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/citty@0.2.2/node_modules/citty/dist/index.mjs:228:47[39m)
+    [90mat [39masync runCommand ([36m/C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/citty@0.2.2/node_modules/citty/dist/index.mjs:217:5[39m)
+    [90mat [39masync runMain ([36m/C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/citty@0.2.2/node_modules/citty/dist/index.mjs:394:10[39m) 
+
+

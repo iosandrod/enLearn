@@ -1,0 +1,53 @@
+{
+  "name": "@enlearn/lowcode-framework",
+  "version": "0.1.0",
+  "description": "Low-code runtime, visual designer, material registries, and schema converters for EnLearn.",
+  "type": "module",
+  "private": false,
+  "sideEffects": [
+    "*.vue",
+    "*.scss",
+    "src/styles/*"
+  ],
+  "files": [
+    "src"
+  ],
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./core": "./src/core/index.ts",
+    "./runtime": "./src/runtime/index.ts",
+    "./designer": "./src/designer/index.ts",
+    "./materials": "./src/materials/index.ts",
+    "./runtime/directives": "./src/runtime/directives.ts",
+    "./core/host": "./src/core/host.ts",
+    "./styles/visual-editor-utilities.scss": "./src/styles/visual-editor-utilities.scss"
+  },
+  "peerDependencies": {
+    "@vitejs/plugin-vue-jsx": "^5.1.6",
+    "@vueuse/core": "^14.3.0",
+    "@vueuse/integrations": "^14.3.0",
+    "dayjs": "^1.11.21",
+    "lodash-es": "^4.18.1",
+    "monaco-editor": "^0.33.0",
+    "nanoid": "^6.0.0",
+    "remixicon": "^4.6.0",
+    "vant": "^3.5.2",
+    "vue": "^3.5.0",
+    "vue-router": "^4.0.0",
+    "vuedraggable": "^4.1.0",
+    "vxe-pc-ui": "latest",
+    "vxe-table": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^5.4.5",
+    "vite": "^7.3.6",
+    "vue-tsc": "^3.3.7"
+  },
+  "scripts": {
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+  }
+}

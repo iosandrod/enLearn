@@ -1,0 +1,62 @@
+﻿[
+    {
+        "name":  "workflow.health",
+        "ok":  true,
+        "status":  200,
+        "summary":  "success=True, data={\"service\":\"workflow-api\",\"status\":\"ok\",\"timestamp\":\"2026-07-26T16:05:35.869Z\"}"
+    },
+    {
+        "name":  "workflow.definitions.capabilities",
+        "ok":  true,
+        "status":  200,
+        "summary":  "{\"success\":true,\"data\":{\"nodeTypes\":[{\"type\":\"start\",\"label\":\"寮€濮?,\"category\":\"event\"},{\"type\":\"approval\",\"label\":\"瀹℃壒\",\"category\":\"task\"},{\"type\":\"sign\",\"label\":\"浼氱\",\"category\":\"..."
+    },
+    {
+        "name":  "workflow.definitions.list",
+        "ok":  true,
+        "status":  200,
+        "summary":  "{\"success\":true,\"data\":[{\"id\":\"f12cd9b0-8933-41ee-94f2-800ee64f6c0e\",\"tenantId\":\"default\",\"modelId\":\"2ab654ef-c08f-4130-b62a-abb6f7db9611\",\"modelVersionId\":\"54d1cd04-8129-4217-9301..."
+    },
+    {
+        "name":  "workflow.models.list",
+        "ok":  true,
+        "status":  200,
+        "summary":  "{\"success\":true,\"data\":[{\"id\":\"2ab654ef-c08f-4130-b62a-abb6f7db9611\",\"tenantId\":\"default\",\"code\":\"order_ops_ms1vi7q2\",\"name\":\"璁㈠崟瀹℃壒娴佹祴璇?,\"documentType\":\"order\",\"status\":\"published..."
+    },
+    {
+        "name":  "workflow.tasks.todo",
+        "ok":  true,
+        "status":  200,
+        "summary":  "success=True, data.length=0"
+    },
+    {
+        "name":  "workflow.tasks.done",
+        "ok":  true,
+        "status":  200,
+        "summary":  "success=True, data.length=0"
+    },
+    {
+        "name":  "workflow.tasks.cc",
+        "ok":  true,
+        "status":  200,
+        "summary":  "success=True, data.length=0"
+    },
+    {
+        "name":  "workflow.tasks.started",
+        "ok":  true,
+        "status":  200,
+        "summary":  "success=True, data.length=0"
+    },
+    {
+        "name":  "workflow.instances.list",
+        "ok":  true,
+        "status":  200,
+        "summary":  "success=True, data.length=2"
+    },
+    {
+        "name":  "workflow.instances.started",
+        "ok":  true,
+        "status":  200,
+        "summary":  "success=True, data.length=0"
+    }
+]

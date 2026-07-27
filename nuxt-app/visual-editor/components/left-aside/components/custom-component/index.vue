@@ -1,13 +1,13 @@
-<!--业务组件-->
-<template>业务组件</template>
+<!--自定义组件-->
+<template>自定义组件</template>
 
 <script lang="ts">
-  import { Upload } from '@element-plus/icons-vue';
+  import { Upload } from '@/visual-editor/components/common/remix-icons';
 
   export default {
     name: 'CustomComponent',
-    label: '业务组件',
-    order: 5,
+    label: '自定义组件',
+    order: 6,
     icon: Upload,
   };
 </script>

@@ -19,7 +19,7 @@ import {
   ElCollapse,
   ElCollapseItem,
   ElPopconfirm,
-} from 'element-plus';
+} from '@/visual-editor/components/common/designer-ui';
 import { cloneDeep } from 'lodash-es';
 import type { Action } from '@/visual-editor/visual-editor.utils';
 import { useVisualData } from '@/visual-editor/hooks/useVisualData';

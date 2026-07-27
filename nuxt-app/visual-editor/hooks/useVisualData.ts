@@ -5,7 +5,7 @@
  * @description：useVisualData
  * @update: 2021/5/6 11:59
  */
-import { reactive, inject, readonly, computed, ref } from 'vue';
+import { reactive, inject, readonly, computed, ref, watch, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import type { InjectionKey } from 'vue';
 import type {
@@ -69,6 +69,14 @@ type InitVisualDataOptions = {
   initialPath?: string;
 };
 
+type VisualHistorySnapshot = {
+  model: VisualEditorModelValue;
+  currentPath: string;
+  signature: string;
+};
+
+const HISTORY_LIMIT = 80;
+
 function readLocalVisualData() {
   if (typeof sessionStorage === 'undefined') {
     return null;
@@ -85,6 +93,76 @@ function cloneDefaultValue() {
   return JSON.parse(JSON.stringify(defaultValue)) as VisualEditorModelValue;
 }
 
+function cloneVisualData(value: VisualEditorModelValue) {
+  return JSON.parse(JSON.stringify(value)) as VisualEditorModelValue;
+}
+
+function normalizeLegacyBlock(block: VisualEditorBlockData) {
+  if (block.componentKey === 'form') {
+    if (block.label === '表单容器') {
+      block.label = '普通表单';
+    }
+    if (block.moduleName === 'containerComponents') {
+      block.moduleName = 'businessComponents';
+    }
+  }
+
+  const slots = block.props?.slots || {};
+  Object.keys(slots).forEach((slotKey) => {
+    const children = slots[slotKey]?.children;
+    if (Array.isArray(children)) {
+      children.forEach(normalizeLegacyBlock);
+    }
+  });
+}
+
+function normalizeLegacyVisualData(value: VisualEditorModelValue) {
+  Object.values(value.pages || {}).forEach((page) => {
+    if (Array.isArray(page.blocks)) {
+      page.blocks.forEach(normalizeLegacyBlock);
+    }
+  });
+
+  return value;
+}
+
+function normalizeHistoryValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => normalizeHistoryValue(item));
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.entries(value as Record<string, unknown>).reduce<Record<string, unknown>>(
+      (result, [key, item]) => {
+        if (key === 'focus' || key === 'focusWithChild') return result;
+        result[key] = normalizeHistoryValue(item);
+        return result;
+      },
+      {},
+    );
+  }
+
+  return value;
+}
+
+function createHistorySignature(value: VisualEditorModelValue) {
+  return JSON.stringify(normalizeHistoryValue(value));
+}
+
+function findFocusedBlock(blocks: VisualEditorBlockData[] = []): VisualEditorBlockData | undefined {
+  for (const block of blocks) {
+    if (block.focus) return block;
+
+    const slots = block.props?.slots || {};
+    for (const slotKey of Object.keys(slots)) {
+      const child = findFocusedBlock(slots[slotKey]?.children || []);
+      if (child) return child;
+    }
+  }
+
+  return undefined;
+}
+
 export const initVisualData = (options: InitVisualDataOptions = {}) => {
   const localData = readLocalVisualData();
   const jsonData: VisualEditorModelValue = Object.keys(options.initialData?.pages || {}).length
@@ -92,6 +170,7 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
     : Object.keys(localData?.pages || {}).length
       ? localData
       : cloneDefaultValue();
+  normalizeLegacyVisualData(jsonData);
 
   const route = options.initialPath ? null : useRoute();
 
@@ -102,11 +181,12 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
   const initialPath = getPrefixPath(options.initialPath || route?.path || '/');
   const currentPath = ref(jsonData.pages[initialPath] ? initialPath : paths[0] || '/');
   const currentPage = jsonData.pages[currentPath.value] ?? jsonData.pages['/'];
+  let syncCurrentHistoryPath = (_path: string) => {};
 
   const state: IState = reactive({
     jsonData,
     currentPage,
-    currentBlock: currentPage?.blocks?.find((item) => item.focus) ?? ({} as VisualEditorBlockData),
+    currentBlock: findFocusedBlock(currentPage?.blocks) ?? ({} as VisualEditorBlockData),
   });
 
   if (!state.currentPage) {
@@ -144,11 +224,16 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
     if (!state.currentPage) {
       state.currentPage = state.jsonData.pages['/'];
       currentPath.value = '/';
+      if (!state.currentPage) {
+        state.currentPage = createNewPage({});
+        state.jsonData.pages['/'] = state.currentPage;
+      }
     } else {
       currentPath.value = nextPath;
     }
-    const currentFocusBlock = state.currentPage.blocks.find((item) => item.focus);
+    const currentFocusBlock = findFocusedBlock(state.currentPage.blocks);
     setCurrentBlock(currentFocusBlock ?? ({} as VisualEditorBlockData));
+    syncCurrentHistoryPath(currentPath.value);
   };
 
   // 设置当前被操作的组件
@@ -235,12 +320,95 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
 
   // 使用自定义JSON覆盖整个项目
   const overrideProject = (jsonData) => {
-    const nextJsonData = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+    const nextJsonData = normalizeLegacyVisualData(
+      typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData,
+    );
     Object.keys(state.jsonData.pages).forEach((path) => delete state.jsonData.pages[path]);
     Object.assign(state.jsonData.pages, nextJsonData.pages || {});
     state.jsonData.models = nextJsonData.models || [];
     state.jsonData.actions = nextJsonData.actions || cloneDefaultValue().actions;
     setCurrentPage(Object.keys(state.jsonData.pages)[0] || '/');
+  };
+
+  const historyState = reactive({
+    current: 0,
+    snapshots: [] as VisualHistorySnapshot[],
+    restoring: false,
+  });
+
+  const createHistorySnapshot = (): VisualHistorySnapshot => {
+    const model = cloneVisualData(state.jsonData);
+    return {
+      model,
+      currentPath: currentPath.value,
+      signature: createHistorySignature(model),
+    };
+  };
+
+  const applyHistorySnapshot = (snapshot: VisualHistorySnapshot) => {
+    historyState.restoring = true;
+    const nextModel = cloneVisualData(snapshot.model);
+    const fallback = cloneDefaultValue();
+    const nextPages = Object.keys(nextModel.pages || {}).length ? nextModel.pages : fallback.pages;
+
+    Object.keys(state.jsonData.pages).forEach((path) => delete state.jsonData.pages[path]);
+    Object.assign(state.jsonData.pages, nextPages);
+    state.jsonData.models = nextModel.models || [];
+    state.jsonData.actions = nextModel.actions || fallback.actions;
+    setCurrentPage(snapshot.currentPath);
+
+    void nextTick(() => {
+      historyState.restoring = false;
+    });
+  };
+
+  const pushHistorySnapshot = () => {
+    if (historyState.restoring) return;
+
+    const snapshot = createHistorySnapshot();
+    const currentSnapshot = historyState.snapshots[historyState.current];
+    if (currentSnapshot?.signature === snapshot.signature) {
+      currentSnapshot.currentPath = snapshot.currentPath;
+      return;
+    }
+
+    historyState.snapshots = historyState.snapshots.slice(0, historyState.current + 1);
+    historyState.snapshots.push(snapshot);
+    if (historyState.snapshots.length > HISTORY_LIMIT) {
+      historyState.snapshots.shift();
+    }
+    historyState.current = historyState.snapshots.length - 1;
+  };
+
+  syncCurrentHistoryPath = (path: string) => {
+    const currentSnapshot = historyState.snapshots[historyState.current];
+    if (currentSnapshot) {
+      currentSnapshot.currentPath = path;
+    }
+  };
+
+  historyState.snapshots.push(createHistorySnapshot());
+
+  watch(() => state.jsonData, pushHistorySnapshot, {
+    deep: true,
+    flush: 'post',
+  });
+
+  const canUndo = computed(() => historyState.current > 0);
+  const canRedo = computed(() => historyState.current < historyState.snapshots.length - 1);
+
+  const undoHistory = () => {
+    if (!canUndo.value) return false;
+    historyState.current -= 1;
+    applyHistorySnapshot(historyState.snapshots[historyState.current]);
+    return true;
+  };
+
+  const redoHistory = () => {
+    if (!canRedo.value) return false;
+    historyState.current += 1;
+    applyHistorySnapshot(historyState.snapshots[historyState.current]);
+    return true;
   };
 
   return {
@@ -249,6 +417,11 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
     jsonData: readonly(state.jsonData), // 保护JSONData避免直接修改
     currentPage: computed(() => state.currentPage),
     currentBlock: computed(() => state.currentBlock),
+    historyState: readonly(historyState),
+    canUndo,
+    canRedo,
+    undoHistory,
+    redoHistory,
     overrideProject,
     incrementFetchApi,
     deleteFetchApi,

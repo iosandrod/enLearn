@@ -1,5 +1,5 @@
 import { defineComponent, getCurrentInstance, onMounted, PropType, reactive, createApp } from 'vue';
-import { ElButton, ElDialog, ElTable, ElTableColumn, ElInput } from 'element-plus';
+import { ElButton, ElDialog, ElTable, ElTableColumn, ElInput } from '@/visual-editor/components/common/designer-ui';
 import { cloneDeep } from 'lodash-es';
 import { defer } from '@/visual-editor/utils/defer';
 import { VisualEditorProps } from '@/visual-editor/visual-editor.props';

@@ -1,0 +1,417 @@
+import type {
+  LowCodeField,
+  LowCodeFormLayoutNode,
+  LowCodeGridColumn,
+  LowCodeGridFormatter,
+  LowCodeOption,
+  LowCodePageDataSource,
+} from '../../types/lowcode';
+import type { VisualEditorBlockData, VisualEditorModelValue } from '../../visual-editor/visual-editor.utils';
+import type { VisualBlockProps } from './types';
+
+const componentMap: Record<string, LowCodeField['component']> = {
+  input: 'vxe-input',
+  select: 'vxe-select',
+  switch: 'vxe-switch',
+  'vxe-input': 'vxe-input',
+  'vxe-textarea': 'vxe-textarea',
+  'vxe-select': 'vxe-select',
+  'vxe-switch': 'vxe-switch',
+  'vxe-password-input': 'vxe-password-input',
+  'vxe-checkbox-group': 'vxe-checkbox-group',
+  'vxe-radio-group': 'vxe-radio-group',
+  'vxe-tree-select': 'vxe-tree-select',
+  'lc-json-editor': 'lc-json-editor',
+  'lc-number-input': 'lc-number-input',
+  'array-table': 'lc-array-table',
+  'lc-array-table': 'lc-array-table',
+  'lc-sub-form': 'lc-sub-form',
+  'sub-form': 'lc-sub-form',
+};
+
+export function readString(value: unknown, fallback = '') {
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+export function readBoolean(value: unknown, fallback = false) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'y'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'n'].includes(normalized)) return false;
+  }
+  return fallback;
+}
+
+export function readNumber(value: unknown, fallback?: number) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
+export function readDimension(value: unknown) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim()) {
+    const trimmed = value.trim();
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) && String(parsed) === trimmed ? parsed : trimmed;
+  }
+  return undefined;
+}
+
+export function readJsonObject(value: unknown, fallback: Record<string, unknown> = {}) {
+  if (isPlainRecord(value)) return cloneJson(value);
+  if (typeof value !== 'string' || !value.trim()) return fallback;
+
+  try {
+    const parsed = JSON.parse(value);
+    return isPlainRecord(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function readJsonArray<T = unknown>(value: unknown) {
+  if (Array.isArray(value)) return cloneJson(value) as T[];
+  if (typeof value !== 'string' || !value.trim()) return undefined;
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? (parsed as T[]) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function normalizeRows(value: unknown) {
+  return Array.isArray(value) ? value.filter(isPlainRecord) : [];
+}
+
+const defaultArrayTableColumns = [
+  { field: 'name', title: '名称', minWidth: 120, placeholder: '请输入名称' },
+  { field: 'quantity', title: '数量', width: 88, placeholder: '0' },
+  { field: 'remark', title: '备注', minWidth: 140, placeholder: '备注' },
+];
+
+function normalizeArrayTableColumns(value: unknown) {
+  const rows = normalizeRows(value);
+  const sourceRows = rows.length ? rows : defaultArrayTableColumns;
+
+  return sourceRows.map((column, index) => {
+    const field = readString(column.field, `field${index + 1}`);
+    const title = readString(column.title, field);
+    const component = readString(column.component);
+    const width = readDimension(column.width);
+    const minWidth = readDimension(column.minWidth);
+    const options = Array.isArray(column.options)
+      ? cloneJson(column.options)
+      : readJsonArray<LowCodeOption>(column.optionsJson);
+    const props = {
+      ...(isPlainRecord(column.props) ? cloneJson(column.props) : {}),
+      ...readJsonObject(column.propsJson, {}),
+    };
+
+    return {
+      field,
+      title,
+      ...(component ? { component } : {}),
+      ...(width ? { width } : {}),
+      ...(minWidth ? { minWidth } : {}),
+      ...(readString(column.placeholder) ? { placeholder: readString(column.placeholder) } : {}),
+      ...(typeof column.defaultValue !== 'undefined'
+        ? { defaultValue: cloneJson(column.defaultValue) }
+        : {}),
+      ...(options?.length ? { options } : {}),
+      ...(Object.keys(props).length ? { props } : {}),
+    };
+  });
+}
+
+function normalizeArrayTableProps(rawProps: Record<string, unknown>) {
+  return {
+    ...rawProps,
+    columns: normalizeArrayTableColumns(rawProps.columns),
+    addText: readString(rawProps.addText, '新增行'),
+    rowKey: readString(rawProps.rowKey, '__rowKey'),
+    ...(isPlainRecord(rawProps.defaultRow)
+      ? { defaultRow: cloneJson(rawProps.defaultRow) }
+      : {}),
+  };
+}
+
+export function isDefined<T>(value: T | null | undefined): value is T {
+  return value !== null && value !== undefined;
+}
+
+export function normalizeField(row: Record<string, unknown>): LowCodeField | null {
+  const field = readString(row.field);
+  const label = readString(row.label, field);
+  if (!field || !label) return null;
+
+  const componentName = readString(row.component, 'vxe-input');
+  const component = componentMap[componentName] ?? 'vxe-input';
+  const options = readJsonArray<LowCodeOption>(row.optionsJson);
+  const required = readBoolean(row.required, false);
+  const placeholder = readString(row.placeholder);
+  const help = readString(row.help);
+  const span = readNumber(row.span);
+  const rawProps = {
+    ...(isPlainRecord(row.props) ? cloneJson(row.props) : {}),
+    ...readJsonObject(row.propsJson, {}),
+  };
+  const props: Record<string, unknown> = {
+    ...rawProps,
+    ...(placeholder ? { placeholder, clearable: true } : {}),
+  };
+
+  if (component === 'lc-sub-form') {
+    const nestedFields = normalizeRows(rawProps.fields).map(normalizeField).filter(isDefined);
+    props.fields = nestedFields;
+
+    const layout = readFormDesignerLayout(rawProps.formDesignerModel);
+    if (layout) {
+      props.layout = layout;
+    }
+
+    delete props.formDesignerModel;
+  }
+
+  if (component === 'lc-array-table') {
+    Object.assign(props, normalizeArrayTableProps(rawProps));
+  }
+
+  return {
+    field,
+    label,
+    component,
+    ...(Object.keys(props).length ? { props } : {}),
+    ...(options ? { options } : {}),
+    ...(help ? { help } : {}),
+    ...(span ? { span } : {}),
+    ...(required
+      ? { rules: [{ required: true, message: `${label} is required` }] }
+      : {}),
+  };
+}
+
+function cloneJson<T>(value: T): T {
+  try {
+    return JSON.parse(JSON.stringify(value)) as T;
+  } catch {
+    return value;
+  }
+}
+
+export function normalizeColumn(row: Record<string, unknown>): LowCodeGridColumn | null {
+  const field = readString(row.field);
+  const type = readString(row.type);
+  const title = readString(row.title, field || type);
+  if (!field && !title && !type) return null;
+
+  const formatter = normalizeColumnFormatter(row.formatter);
+  const width = readDimension(row.width);
+  const minWidth = readDimension(row.minWidth);
+  const maxWidth = readDimension(row.maxWidth);
+  const fixed = readColumnFixed(row.fixed);
+  const align = readColumnAlign(row.align);
+  const headerAlign = readColumnAlign(row.headerAlign);
+  const footerAlign = readColumnAlign(row.footerAlign);
+  const showOverflow = readColumnOverflow(row.showOverflow);
+  const showHeaderOverflow = readColumnOverflow(row.showHeaderOverflow);
+  const showFooterOverflow = readColumnOverflow(row.showFooterOverflow);
+  const filters = readColumnJsonArray(row.filters);
+  const cellRender = readColumnJsonObject(row.cellRender);
+  const editRender = readColumnJsonObject(row.editRender);
+  const params = readColumnJsonObject(row.params);
+
+  return {
+    ...(field ? { field } : {}),
+    title,
+    ...(type ? { type } : {}),
+    ...(width ? { width } : {}),
+    ...(minWidth ? { minWidth } : {}),
+    ...(maxWidth ? { maxWidth } : {}),
+    ...(fixed ? { fixed } : {}),
+    ...(align ? { align } : {}),
+    ...(headerAlign ? { headerAlign } : {}),
+    ...(footerAlign ? { footerAlign } : {}),
+    ...(typeof row.sortable !== 'undefined' ? { sortable: readBoolean(row.sortable) } : {}),
+    ...(typeof row.resizable !== 'undefined' ? { resizable: readBoolean(row.resizable) } : {}),
+    ...(typeof row.visible !== 'undefined' ? { visible: readBoolean(row.visible, true) } : {}),
+    ...(typeof showOverflow !== 'undefined' ? { showOverflow } : {}),
+    ...(typeof showHeaderOverflow !== 'undefined' ? { showHeaderOverflow } : {}),
+    ...(typeof showFooterOverflow !== 'undefined' ? { showFooterOverflow } : {}),
+    ...(typeof formatter !== 'undefined' ? { formatter } : {}),
+    ...(filters ? { filters } : {}),
+    ...(Object.keys(cellRender).length ? { cellRender } : {}),
+    ...(Object.keys(editRender).length ? { editRender } : {}),
+    ...(Object.keys(params).length ? { params } : {}),
+  };
+}
+
+function readColumnFixed(value: unknown) {
+  const fixed = readString(value);
+  return fixed === 'left' || fixed === 'right' ? fixed : undefined;
+}
+
+function readColumnAlign(value: unknown) {
+  const align = readString(value);
+  return align === 'left' || align === 'center' || align === 'right' ? align : undefined;
+}
+
+function readColumnOverflow(value: unknown) {
+  if (typeof value === 'boolean') return value;
+
+  const overflow = readString(value);
+  return overflow === 'ellipsis' || overflow === 'title' || overflow === 'tooltip'
+    ? overflow
+    : undefined;
+}
+
+function normalizeColumnFormatter(value: unknown) {
+  if (isPlainRecord(value) || typeof value === 'function') {
+    return value as LowCodeGridColumn['formatter'];
+  }
+
+  const textValue = readString(value);
+  if (!textValue) return undefined;
+
+  const parsed = readJsonObject(textValue, {});
+  return Object.keys(parsed).length ? (parsed as LowCodeGridFormatter) : textValue;
+}
+
+function readColumnJsonObject(value: unknown) {
+  if (isPlainRecord(value)) return value;
+  return readJsonObject(value, {});
+}
+
+function readColumnJsonArray(value: unknown) {
+  if (Array.isArray(value)) return value;
+  return readJsonArray(value);
+}
+
+export function toBlockId(value: unknown, fallback: string) {
+  return readString(value, fallback)
+    .replace(/\s+/g, '-')
+    .replace(/[^a-zA-Z0-9_-]/g, '')
+    .replace(/^-+|-+$/g, '') || fallback;
+}
+
+export function isVisualEditorModel(value: unknown): value is VisualEditorModelValue {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    !Array.isArray(value) &&
+    typeof (value as { pages?: unknown }).pages === 'object' &&
+    (value as { pages?: unknown }).pages !== null
+  );
+}
+
+export function toTabsSlotKey(value: string, index: number) {
+  const normalized = value.replace(/[^a-zA-Z0-9_-]/g, '_').replace(/^_+|_+$/g, '');
+  return `tab_${normalized || index + 1}`;
+}
+
+export function readVisualBlockProps(block: VisualEditorBlockData): VisualBlockProps {
+  return isPlainRecord(block.props) ? block.props : {};
+}
+
+export function upsertFormDataSource(
+  dataSources: Record<string, LowCodePageDataSource>,
+  key: string,
+  props: VisualBlockProps,
+  autoLoad = false
+) {
+  if (!key) return;
+
+  const serviceName = readString(props.serviceName, 'admin');
+  const serviceMethod = readString(props.serviceMethod, readString(props.saveMethod, 'save'));
+  const saveMethod = readString(props.saveMethod);
+  const postData = readJsonObject(props.postDataJson, {});
+
+  dataSources[key] = {
+    key,
+    label: readString(props.title, key),
+    serviceName,
+    serviceMethod,
+    ...(saveMethod ? { saveMethod } : {}),
+    ...(Object.keys(postData).length ? { postData } : {}),
+    autoLoad,
+  };
+}
+
+function isDesignerFieldBlock(block: VisualEditorBlockData) {
+  return [
+    'input',
+    'picker',
+    'switch',
+    'radio',
+    'checkbox',
+    'array-table',
+    'sub-form',
+  ].includes(block.componentKey);
+}
+
+function normalizeSlotItems(slots: unknown) {
+  if (!isPlainRecord(slots)) return [];
+
+  return Object.values(slots).filter(
+    (slot): slot is Record<string, unknown> =>
+      isPlainRecord(slot) && Array.isArray(slot.children)
+  );
+}
+
+function convertDesignedBlockToLayoutNode(
+  block: VisualEditorBlockData
+): LowCodeFormLayoutNode | null {
+  if (isDesignerFieldBlock(block)) {
+    const field = readString(block.props?.name);
+    return field ? { kind: 'field', field } : null;
+  }
+
+  if (block.componentKey === 'layout') {
+    const columns = normalizeSlotItems(block.props?.slots)
+      .map((slot) => ({
+        span: readNumber(slot.span),
+        blocks: convertDesignedBlocksToLayout(slot.children as VisualEditorBlockData[]),
+      }))
+      .filter((column) => column.blocks.length > 0);
+
+    return columns.length
+      ? {
+          kind: 'row',
+          gutter: readNumber(block.props?.gutter),
+          columns,
+        }
+      : null;
+  }
+
+  const nestedBlocks = normalizeSlotItems(block.props?.slots).flatMap((slot) =>
+    convertDesignedBlocksToLayout(slot.children as VisualEditorBlockData[])
+  );
+
+  return nestedBlocks.length ? { kind: 'stack', blocks: nestedBlocks } : null;
+}
+
+function convertDesignedBlocksToLayout(blocks: VisualEditorBlockData[] = []) {
+  return blocks
+    .map((block) => convertDesignedBlockToLayoutNode(block))
+    .filter(Boolean) as LowCodeFormLayoutNode[];
+}
+
+export function readFormDesignerLayout(value: unknown) {
+  if (!isVisualEditorModel(value)) return undefined;
+
+  const blocks = value.pages?.['/']?.blocks;
+  if (!Array.isArray(blocks)) return undefined;
+
+  const layout = convertDesignedBlocksToLayout(blocks);
+  return layout.length ? layout : undefined;
+}

@@ -6,7 +6,7 @@
  * @Description:
  * @FilePath: /vite-vue3-lowcode/src/visual-editor/components/left-aside/components/data-source/utils.tsx
  */
-import { ElMessage } from 'element-plus';
+import { ElMessage } from '@/visual-editor/components/common/designer-ui';
 import type { FetchApiItem, VisualEditorModel } from '@/visual-editor/visual-editor.utils';
 import { generateNanoid } from '@/visual-editor/utils';
 import { RequestEnum } from '@/enums/httpEnum';

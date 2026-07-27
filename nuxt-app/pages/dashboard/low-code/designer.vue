@@ -1,5 +1,5 @@
 <template>
-  <LowCodeVisualDesigner />
+  <NuxtPage />
 </template>
 
 <script setup lang="ts">
