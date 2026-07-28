@@ -76,6 +76,15 @@ export default defineNuxtConfig({
     '@enlearn/approval-workflow': approvalWorkflowRoot,
     '@enlearn/trigger-workflow-editor': triggerWorkflowEditorRoot,
     '@enlearn/workflow-schema': workflowSchemaRoot,
+    '@vue-flow/core': resolve(
+      __dirname,
+      '..',
+      'packages',
+      'trigger-workflow-editor',
+      'node_modules',
+      '@vue-flow',
+      'core'
+    ),
     '@enlearn/approval-workflow/components': resolve(approvalWorkflowRoot, 'components'),
     '@enlearn/approval-workflow/hooks': resolve(approvalWorkflowRoot, 'hooks'),
     '@enlearn/approval-workflow/types': resolve(approvalWorkflowRoot, 'types'),
