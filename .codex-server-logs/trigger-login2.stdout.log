@@ -1,0 +1,37 @@
+
+Trigger.dev (4.5.7)
+
+[90mT[39m  Logging in to Trigger.dev
+[90m|[39m
+[32mo[39m  Creating authorization code
+[90m|[39m
+[90m|[39m  Created authorization code
+[90m|[39m
+[32mo[39m  Please visit the following URL to login:
+[90m|[39m  http://localhost:8030/account/authorization-code/DUMadUVCidkvpmc_gqtvcWiFVGEVTm7W6yskDEwg8qTwOT3_aucnOOFlvTZ27UMo
+[90m|[39m
+[90m|[39m  Browser auto-open disabled. Visit the URL above to login.
+[90m|[39m
+[32mo[39m  Waiting for you to login
+[90m|[39m
+[90m|[39m  Logged in with token tr_pat_4f87******************ifsu
+[90mT[39m  Displaying your account details [default]
+[90m|[39m
+[32mo[39m  Checking your account details
+[90m|[39m
+[90m|[39m  Retrieved your account details
+[90m|[39m
+[32mo[39m  [0mAccount details [default][0m [90m----------+[39m
+[90m|[39m  [2m[22m                                    [90m|[39m
+[90m|[39m  [2mUser ID: cms4pp2d50000mw5vinm5x752[22m  [90m|[39m
+[90m|[39m  [2mEmail:   admin@example.com[22m          [90m|[39m
+[90m|[39m  [2mURL:     http://localhost:8030[22m      [90m|[39m
+[90m|[39m  [2m[22m                                    [90m|[39m
+[90m+--------------------------------------+[39m
+[90m|[39m
+[90m—[39m  Logged in successfully
+
+[90m|[39m
+[32mo[39m  Checking for notifications
+[90m|[39m
+[90m|[39m  No new notifications

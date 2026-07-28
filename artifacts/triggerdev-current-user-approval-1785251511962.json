@@ -1,0 +1,40 @@
+{
+  "runId": "1785251511962",
+  "trigger": {
+    "projectRef": "proj_nroeewcxfpnerjfwkman",
+    "apiUrl": "http://localhost:8030",
+    "triggerRunId": "run_cms4snpuv00075vmwr4ac6r24",
+    "usedTriggerDev": true
+  },
+  "actor": {
+    "tenantId": "default",
+    "userId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd"
+  },
+  "modelId": "40cecf03-280d-4fd3-b342-8432953a3a8e",
+  "definitionId": "b2f65b6d-e84f-4549-b1e4-59ae70294184",
+  "instanceId": "420df82a-7960-4280-a49e-f8c72fedb13a",
+  "taskId": "afb925b4-2faf-4998-aac6-0770f646b273",
+  "taskStatusBeforeApprove": "pending",
+  "taskDetailOpened": true,
+  "notificationFound": true,
+  "notification": {
+    "id": "e14abc9f-1855-4f18-8602-230b486ffd3b",
+    "title": "新的审批待办：Codex current user approval 1785251511962 - Current User Review",
+    "content": "请及时处理审批任务。",
+    "category": "approval",
+    "recipient_id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+    "source_type": "workflow_task",
+    "source_id": "afb925b4-2faf-4998-aac6-0770f646b273",
+    "link_url": "/dashboard/workflow/tasks/afb925b4-2faf-4998-aac6-0770f646b273",
+    "metadata": {
+      "eventType": "approval.task.created",
+      "templateCode": "approval_task_created_inbox"
+    },
+    "created_at": "2026-07-28T15:12:12.281Z"
+  },
+  "approvedTaskStatus": "running",
+  "finalStatus": "approved",
+  "finalEndedAt": "2026-07-28T15:12:27.382Z",
+  "completionNotificationFound": false,
+  "completionNotification": null
+}

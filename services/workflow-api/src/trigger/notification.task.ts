@@ -1,4 +1,4 @@
-import { task, tasks, wait } from '@trigger.dev/sdk/v3';
+import { task, tasks, wait } from '@trigger.dev/sdk';
 import { Pool, type PoolClient, type QueryResultRow } from 'pg';
 import { getWorkflowEnv } from '../common/env';
 

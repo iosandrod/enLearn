@@ -1,0 +1,37 @@
+{
+  "runId": 1785240220740,
+  "startedAt": "2026-07-28T12:03:40.740Z",
+  "base": "http://localhost:3011/api/workflow",
+  "steps": [
+    {
+      "name": "model_saved",
+      "at": "2026-07-28T12:03:42.071Z",
+      "modelId": "dd4b7331-03e2-4f47-adeb-3998ed6bc098",
+      "code": "codex_triggerdev_simple_1785240220740",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-28T12:03:44.606Z",
+      "definitionId": "e7db3b29-5e94-4977-9621-dca2c85c6d95",
+      "version": 1,
+      "status": "active"
+    },
+    {
+      "name": "instance_started",
+      "at": "2026-07-28T12:03:52.132Z",
+      "instanceId": "2f89f90c-173a-41b6-9dce-1d1b5c71a6ed",
+      "status": "running",
+      "triggerRunId": "run_06fqh70o7vdna5dl6g93o66q01",
+      "triggerRunIsLocal": false
+    },
+    {
+      "name": "todo_task_found",
+      "at": "2026-07-28T12:05:53.273Z",
+      "ok": false,
+      "attemptsMs": 121140
+    }
+  ],
+  "error": "Error: todo_task_found timed out\n    at waitFor ([stdin]:13:384)\n    at runNextTicks (node:internal/process/task_queues:65:5)\n    at listOnTimeout (node:internal/timers:549:9)\n    at process.processTimers (node:internal/timers:523:7)\n    at async [stdin]:20:18",
+  "finishedAt": "2026-07-28T12:05:53.273Z"
+}

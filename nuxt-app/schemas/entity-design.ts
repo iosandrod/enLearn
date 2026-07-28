@@ -183,6 +183,96 @@ export const entityColumnFormSchema: LowCodeFormSchema = {
   ]
 };
 
+export const entityColumnsTableFormSchema: LowCodeFormSchema = {
+  title: '字段集合',
+  columns: 1,
+  fields: [
+    {
+      field: 'columns',
+      label: '字段列表',
+      component: 'lc-array-table',
+      help: '在表格中维护字段集合；点击画布字段或编辑表格行时，下方单列表单会同步绑定当前字段。',
+      props: {
+        addText: '新增列',
+        rowKey: 'columnName',
+        defaultRow: {
+          id: '',
+          columnName: '',
+          label: '',
+          dataType: 'text',
+          storageKind: 'physical',
+          defaultValue: '',
+          expression: '',
+          isRequired: false,
+          isUnique: false
+        },
+        columns: [
+          {
+            field: 'columnName',
+            title: '列名',
+            component: 'vxe-input',
+            minWidth: 126,
+            placeholder: 'sale_no'
+          },
+          {
+            field: 'label',
+            title: '标题',
+            component: 'vxe-input',
+            minWidth: 120,
+            placeholder: '订单编号'
+          },
+          {
+            field: 'dataType',
+            title: '类型',
+            component: 'vxe-select',
+            width: 120,
+            options: dataTypeOptions
+          },
+          {
+            field: 'storageKind',
+            title: '存储',
+            component: 'vxe-select',
+            width: 112,
+            options: [
+              { label: '真实列', value: 'physical' },
+              { label: '虚拟列', value: 'virtual' }
+            ]
+          },
+          {
+            field: 'defaultValue',
+            title: '默认值',
+            component: 'vxe-input',
+            minWidth: 120,
+            placeholder: "'draft' / 0 / now()"
+          },
+          {
+            field: 'expression',
+            title: '表达式',
+            component: 'vxe-input',
+            minWidth: 130,
+            placeholder: 'quantity * unit_price'
+          },
+          {
+            field: 'isRequired',
+            title: '必填',
+            component: 'vxe-switch',
+            width: 72
+          },
+          {
+            field: 'isUnique',
+            title: '唯一',
+            component: 'vxe-switch',
+            width: 72
+          }
+        ]
+      }
+    }
+  ],
+  actions: [
+    { code: 'saveRows', label: '保存字段集合', type: 'submit', status: 'primary' }
+  ]
+};
+
 export const entityRelationFormSchema: LowCodeFormSchema = {
   title: '外键关系',
   columns: 2,

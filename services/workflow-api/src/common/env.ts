@@ -13,6 +13,7 @@ export type WorkflowApiEnv = {
   SUPABASE_URL?: string;
   WORKFLOW_API_PORT?: string;
   WORKFLOW_INTERVAL_SCHEDULER_ENABLED?: string;
+  WORKFLOW_TRIGGER_LOCAL_FALLBACK_ENABLED?: string;
   TRIGGER_PROJECT_REF?: string;
   TRIGGER_SECRET_KEY?: string;
   TRIGGER_API_URL?: string;

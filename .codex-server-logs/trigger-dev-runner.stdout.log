@@ -1,0 +1,31 @@
+
+> @ workflow-api:trigger:dev C:\Users\11516\Desktop\project\enLearn
+> pnpm --dir services/workflow-api exec trigger dev start -a http://localhost:8030 --env-file %INIT_CWD%\.env
+
+
+Trigger.dev (4.5.7 -> 4.5.8)
+------------------------------------------------------
+[90m|[39m
+[33m![39m  Warning: You're not running the latest CLI version, please consider updating ASAP
+[90m|[39m  
+[90m|[39m           Current:     4.5.7
+[90m|[39m           Latest:      4.5.8
+[90m|[39m  
+[90m|[39m           Run latest:  npx trigger.dev@latest
+------------------------------------------------------
+Key: Version | Task | Run
+------------------------------------------------------
+○ Building local worker…
+○ Local worker ready on branch: default [node] -> 20260728.1
+○ Jul 28, 23:10:34.528 ->  20260728.1 | workflow.instance.run | run_cms4slxup00025vmwy1cq50jn.1
+○ Jul 28, 23:10:50.125 ->  20260728.1 | notification.dispatch | run_cms4smawj00055vmwj80wj9h8.1
+○ Jul 28, 23:10:53.581 ->  20260728.1 | notification.dispatch | run_cms4smawj00055vmwj80wj9h8.1 | Success (2.5s)
+○ Jul 28, 23:11:57.107 ->  20260728.1 | workflow.instance.run | run_cms4snpuv00075vmwr4ac6r24.1
+○ Jul 28, 23:12:09.274 ->  20260728.1 | notification.dispatch | run_cms4snzjv000a5vmwucs28xfg.1
+○ Jul 28, 23:12:14.535 ->  20260728.1 | notification.dispatch | run_cms4snzjv000a5vmwucs28xfg.1 | Success (4.2s)
+○ Jul 28, 23:12:25.985 ->  20260728.1 | notification.dispatch | run_cms4socw0000c5vmwc4b7w1i9.1
+○ Jul 28, 23:12:27.755 ->  20260728.1 | workflow.instance.run | run_cms4snpuv00075vmwr4ac6r24.1 | Success (15.1s)
+○ Jul 28, 23:12:29.179 ->  20260728.1 | notification.dispatch | run_cms4socw0000c5vmwc4b7w1i9.1 | Success (2.4s)
+○ Connection was lost: ping timeout
+○ Connection was restored
+○ Connection was lost: transport close

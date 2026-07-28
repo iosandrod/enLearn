@@ -1,0 +1,91 @@
+{
+  "runId": 1785240161290,
+  "startedAt": "2026-07-28T12:02:41.290Z",
+  "base": "http://localhost:3011/api/workflow",
+  "steps": [
+    {
+      "name": "model_saved",
+      "at": "2026-07-28T12:02:41.582Z",
+      "modelId": "0a8ad311-e83d-431c-813c-5691702c15d9",
+      "code": "codex_triggerdev_simple_1785240161290",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-28T12:02:44.968Z",
+      "version": {
+        "id": "7e2a27ba-5e03-418c-9da3-fab9ad546260",
+        "modelId": "0a8ad311-e83d-431c-813c-5691702c15d9",
+        "version": 1,
+        "schema": {
+          "code": "codex_triggerdev_simple_1785240161290",
+          "name": "Codex Trigger.dev simple 1785240161290",
+          "edges": [
+            {
+              "id": "edge_start_approval",
+              "source": "start",
+              "target": "approval"
+            },
+            {
+              "id": "edge_approval_end",
+              "source": "approval",
+              "target": "end"
+            }
+          ],
+          "nodes": [
+            {
+              "id": "start",
+              "name": "Start",
+              "type": "start",
+              "position": {
+                "x": 360,
+                "y": 48
+              }
+            },
+            {
+              "id": "approval",
+              "name": "Current User Review",
+              "type": "approval",
+              "config": {
+                "allowReject": true,
+                "assigneeStrategy": {
+                  "type": "users",
+                  "userIds": [
+                    "90f8c866-56d2-4a0d-aa8c-e50534a97ebd"
+                  ]
+                }
+              },
+              "position": {
+                "x": 330,
+                "y": 190
+              }
+            },
+            {
+              "id": "end",
+              "name": "End",
+              "type": "end",
+              "position": {
+                "x": 360,
+                "y": 332
+              }
+            }
+          ],
+          "status": "draft",
+          "settings": {
+            "allowCancel": true,
+            "historyLevel": "full",
+            "allowWithdraw": true,
+            "duplicateSubmitPolicy": "reject"
+          },
+          "documentType": "codex_triggerdev_simple",
+          "schemaVersion": 1
+        },
+        "remark": "Codex Trigger.dev simple test",
+        "createdBy": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+        "createdAt": "2026-07-28T12:02:41.836Z"
+      }
+    }
+  ],
+  "error": "Error: POST /instances failed with HTTP 404: {\"message\":\"Workflow definition not found.\",\"error\":\"Not Found\",\"statusCode\":404}\n    at call ([stdin]:39:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async [stdin]:146:22",
+  "finishedAt": "2026-07-28T12:02:45.045Z"
+}

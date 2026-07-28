@@ -1,11 +1,25 @@
 <template>
   <section class="entity-designer">
     <header class="entity-toolbar">
-      <div>
+      <div class="toolbar-copy">
+        <span class="toolbar-kicker">Schema-driven ER Designer</span>
         <h1>表格实体设计</h1>
-        <p>使用 VueFlow 编排真实表、真实列、虚拟列和外键关系。</p>
+        <p>通过低代码表单 schema 维护真实表、真实列、虚拟列和外键关系。</p>
       </div>
-      <div class="entity-actions">
+
+      <div class="toolbar-actions">
+        <vxe-button :loading="loadingPhysicalTables" @click="openLoadTablesModal">
+          <i class="ri-database-2-line" />
+          加载表
+        </vxe-button>
+        <vxe-button
+          :disabled="!selectedTable"
+          :loading="syncingColumns"
+          @click="syncSelectedTableFields"
+        >
+          <i class="ri-loop-left-line" />
+          同步字段
+        </vxe-button>
         <vxe-button :loading="loading" @click="loadDesign">
           <i class="ri-refresh-line" />
           刷新
@@ -17,57 +31,147 @@
       </div>
     </header>
 
+    <vxe-modal
+      v-model="loadTablesModalOpen"
+      title="加载真实表"
+      width="min(860px, calc(100vw - 48px))"
+      height="min(640px, calc(100vh - 80px))"
+      show-footer
+      transfer
+    >
+      <div class="physical-table-loader">
+        <div class="physical-table-loader__summary">
+          <strong>{{ selectedPhysicalTables.length }}</strong>
+          <span>已选择 / {{ physicalTables.length }} 张真实表</span>
+        </div>
+        <vxe-table
+          border
+          show-overflow
+          size="small"
+          :data="physicalTables"
+          :row-config="{ keyField: 'fullName' }"
+          :checkbox-config="{ checkField: 'checked' }"
+        >
+          <vxe-column type="checkbox" width="52" />
+          <vxe-column field="fullName" title="真实表" min-width="220" />
+          <vxe-column field="title" title="显示名称" min-width="180" />
+          <vxe-column field="columnCount" title="字段数" width="96" align="right" />
+          <vxe-column field="existsInMetadata" title="Metadata" width="120" align="center">
+            <template #default="{ row }">
+              <span :class="['metadata-pill', row.existsInMetadata ? 'is-linked' : 'is-new']">
+                {{ row.existsInMetadata ? '已存在' : '待同步' }}
+              </span>
+            </template>
+          </vxe-column>
+        </vxe-table>
+      </div>
+      <template #footer>
+        <div class="load-table-footer">
+          <vxe-button @click="loadTablesModalOpen = false">取消</vxe-button>
+          <vxe-button
+            status="primary"
+            :loading="importingPhysicalTables"
+            :disabled="!selectedPhysicalTables.length"
+            @click="confirmLoadTables"
+          >
+            加载选中表
+          </vxe-button>
+        </div>
+      </template>
+    </vxe-modal>
+
     <div class="entity-workspace">
-      <aside class="entity-panel">
-        <div class="panel-title">
-          <h2>{{ tableForm.id ? '编辑表' : '新建表' }}</h2>
-          <button type="button" title="新建表" @click="resetTableForm">
-            <i class="ri-add-line" />
-          </button>
-        </div>
+      <aside class="entity-panel entity-panel-left">
+        <section class="panel-section">
+          <div class="panel-heading">
+            <div>
+              <span>Table</span>
+              <h2>{{ tableForm.id ? '编辑表' : '新建表' }}</h2>
+            </div>
+            <button type="button" title="新建表" @click="resetTableForm">
+              <i class="ri-add-line" />
+            </button>
+          </div>
 
-        <div class="field-grid">
-          <label>
-            <span>编码</span>
-            <vxe-input v-model="tableForm.code" placeholder="students" clearable />
-          </label>
-          <label>
-            <span>真实表名</span>
-            <vxe-input v-model="tableForm.tableName" placeholder="public.students" clearable />
-          </label>
-          <label>
-            <span>名称</span>
-            <vxe-input v-model="tableForm.title" placeholder="学生档案" clearable />
-          </label>
-          <label>
-            <span>主键</span>
-            <vxe-input v-model="tableForm.primaryKey" placeholder="id" clearable />
-          </label>
-          <label class="wide">
-            <span>描述</span>
-            <vxe-textarea v-model="tableForm.description" :auto-size="{ minRows: 2, maxRows: 3 }" />
-          </label>
-          <label class="check-line">
-            <vxe-checkbox v-model="tableForm.createPhysical" />
-            <span>保存时创建真实表</span>
-          </label>
-        </div>
+          <LowCodeForm
+            v-model="tableForm"
+            class="designer-form"
+            :schema="tableDesignerSchema"
+            :loading="savingTable"
+            @submit="saveTable"
+            @action="handleTableAction"
+          />
+        </section>
 
-        <div class="entity-actions">
-          <vxe-button status="primary" :loading="savingTable" @click="saveTable">
-            <i class="ri-save-3-line" />
-            保存表
-          </vxe-button>
-          <vxe-button v-if="selectedTable" status="danger" @click="deleteSelectedTable">
-            <i class="ri-delete-bin-line" />
-            删除
-          </vxe-button>
-        </div>
+        <section class="panel-section">
+          <div class="panel-heading compact">
+            <div>
+              <span>Tables</span>
+              <h2>实体列表</h2>
+            </div>
+            <strong>{{ tables.length }}</strong>
+          </div>
 
-        <p v-if="message" :class="messageClass">{{ message }}</p>
+          <vxe-table
+            border
+            show-overflow
+            size="small"
+            class="entity-table-grid"
+            :data="tables"
+            :row-config="{ keyField: 'id' }"
+          >
+            <vxe-column field="title" title="表名称" min-width="150">
+              <template #default="{ row }">
+                <button
+                  type="button"
+                  :class="['entity-table-name', { active: selectedTableId === row.id }]"
+                  @click="selectTable(row)"
+                >
+                  <span>{{ displayTableTitle(row) }}</span>
+                  <small>{{ row.full_name }}</small>
+                </button>
+              </template>
+            </vxe-column>
+            <vxe-column field="columns" title="字段" width="58" align="right">
+              <template #default="{ row }">
+                {{ row.columns.length }}
+              </template>
+            </vxe-column>
+            <vxe-column title="画布" width="70" align="center">
+              <template #default="{ row }">
+                <span :class="['canvas-pill', isTableVisible(row.id) ? 'is-visible' : 'is-hidden']">
+                  {{ isTableVisible(row.id) ? '显示' : '已移出' }}
+                </span>
+              </template>
+            </vxe-column>
+            <vxe-column title="操作" width="82" fixed="right" align="center">
+              <template #default="{ row }">
+                <button
+                  type="button"
+                  class="canvas-toggle"
+                  @click="toggleTableCanvasVisibility(row)"
+                >
+                  {{ isTableVisible(row.id) ? '移出' : '显示' }}
+                </button>
+              </template>
+            </vxe-column>
+          </vxe-table>
+        </section>
+
+        <p v-if="message" class="designer-message" :class="messageClass">{{ message }}</p>
       </aside>
 
       <main class="entity-flow-shell">
+        <div class="flow-topbar">
+          <div>
+            <span>{{ flowNodes.length }}/{{ tables.length }} 张表</span>
+            <span>{{ totalColumnCount }} 个字段</span>
+            <span>{{ relations.length }} 条关系</span>
+          </div>
+          <p v-if="selectedTable">当前：{{ selectedTable.full_name }}</p>
+          <p v-else>点击表节点或字段进行编辑，也可以拖拽节点保存布局。</p>
+        </div>
+
         <VueFlow
           :id="flowId"
           v-model:nodes="flowNodes"
@@ -80,7 +184,7 @@
           @connect="onConnect"
           @node-click="onNodeClick"
           @edge-click="onEdgeClick"
-          @pane-click="clearSelection"
+          @pane-click="clearColumnSelection"
           @node-drag-stop="onNodeDragStop"
         >
           <template #node-entity-table="nodeProps">
@@ -89,8 +193,8 @@
               <Handle type="source" :position="Position.Right" id="table-source" />
 
               <header>
-                <div>
-                  <strong>{{ nodeProps.data.table.title }}</strong>
+                <div class="node-title">
+                  <strong>{{ displayTableTitle(nodeProps.data.table) }}</strong>
                   <small>{{ nodeProps.data.table.full_name }}</small>
                 </div>
                 <span>{{ nodeProps.data.table.columns.length }}</span>
@@ -102,7 +206,10 @@
                   :key="column.id"
                   :class="{
                     primary: column.is_primary_key,
-                    virtual: column.storage_kind === 'virtual'
+                    virtual: column.storage_kind === 'virtual',
+                    selected:
+                      selectedTableId === nodeProps.id &&
+                      columnForm.columnName === column.column_name
                   }"
                   @click.stop="selectColumn(nodeProps.data.table, column)"
                 >
@@ -111,7 +218,8 @@
                     :position="Position.Left"
                     :id="`${column.column_name}:target`"
                   />
-                  <span>{{ column.column_name }}</span>
+                  <span class="column-name">{{ column.column_name }}</span>
+                  <span class="column-label">{{ displayColumnLabel(nodeProps.data.table, column) }}</span>
                   <em>{{ column.data_type }}</em>
                   <Handle
                     type="source"
@@ -124,135 +232,106 @@
           </template>
         </VueFlow>
 
-        <div v-if="!tables.length && !loading" class="empty-flow">
+        <div v-if="!flowNodes.length && !loading" class="empty-flow">
           <i class="ri-database-2-line" />
-          <span>创建第一张表后，会在这里形成可拖拽、可连线的 VueFlow ER 图。</span>
+          <strong>还没有实体表</strong>
+          <span>在左侧保存第一张表后，这里会生成可拖拽、可连线的 VueFlow ER 图。</span>
         </div>
       </main>
 
-      <aside class="entity-panel detail-panel">
-        <div class="panel-title">
-          <h2>列设计</h2>
-          <button type="button" title="新建列" :disabled="!selectedTable" @click="resetColumnForm">
-            <i class="ri-add-line" />
-          </button>
-        </div>
-
-        <p v-if="selectedTable" class="panel-hint">当前表：{{ selectedTable.full_name }}</p>
-        <p v-else class="panel-hint">选择一张表后编辑列。</p>
-
-        <div class="field-grid">
-          <label>
-            <span>列名</span>
-            <vxe-input v-model="columnForm.columnName" :disabled="Boolean(columnForm.id)" clearable />
-          </label>
-          <label>
-            <span>标签</span>
-            <vxe-input v-model="columnForm.label" clearable />
-          </label>
-          <label>
-            <span>类型</span>
-            <vxe-select v-model="columnForm.dataType" :options="dataTypeOptions" />
-          </label>
-          <label>
-            <span>存储</span>
-            <vxe-select v-model="columnForm.storageKind" :options="storageKindOptions" />
-          </label>
-          <label class="wide" v-if="columnForm.storageKind === 'virtual'">
-            <span>虚拟表达式</span>
-            <vxe-textarea v-model="columnForm.expression" :auto-size="{ minRows: 2, maxRows: 3 }" />
-          </label>
-          <label class="wide" v-else>
-            <span>默认值 SQL</span>
-            <vxe-input v-model="columnForm.defaultValue" placeholder="'draft' / 0 / now()" clearable />
-          </label>
-          <div class="flag-row">
-            <label><vxe-checkbox v-model="columnForm.isRequired" /> 必填</label>
-            <label><vxe-checkbox v-model="columnForm.isUnique" /> 唯一</label>
+      <aside class="entity-panel entity-panel-right">
+        <section class="panel-section column-table-section">
+          <div class="panel-heading">
+            <div>
+              <span>Column</span>
+              <h2>字段集合</h2>
+            </div>
+            <button
+              type="button"
+              title="新建列"
+              :disabled="!selectedTable"
+              @click="startNewColumn"
+            >
+              <i class="ri-add-line" />
+            </button>
           </div>
-        </div>
 
-        <div class="entity-actions">
-          <vxe-button
-            status="primary"
+          <p class="panel-hint">
+            {{ selectedTable ? `当前表：${selectedTable.full_name}` : '选择一张表后维护字段集合。' }}
+          </p>
+
+          <LowCodeForm
+            v-model="columnRowsForm"
+            class="designer-form columns-table-form"
+            :schema="columnsTableDesignerSchema"
             :loading="savingColumn"
-            :disabled="!selectedTable"
-            @click="saveColumn"
-          >
-            <i class="ri-save-3-line" />
-            保存列
-          </vxe-button>
-          <vxe-button v-if="columnForm.id" status="danger" @click="deleteSelectedColumn">
-            <i class="ri-delete-bin-line" />
-            删除列
-          </vxe-button>
-        </div>
+            @submit="saveColumnRows"
+            @field-change="handleColumnRowsFieldChange"
+          />
+        </section>
 
-        <div class="relation-form">
-          <div class="panel-title">
-            <h2>外键关系</h2>
+        <section class="panel-section">
+          <div class="panel-heading">
+            <div>
+              <span>Column Detail</span>
+              <h2>{{ columnForm.id ? '编辑单列' : '单列绑定' }}</h2>
+            </div>
+          </div>
+
+          <p class="panel-hint">
+            {{ columnForm.columnName ? `当前列：${columnForm.columnName}` : '从字段集合或画布字段选择一列。' }}
+          </p>
+
+          <LowCodeForm
+            v-model="columnForm"
+            class="designer-form"
+            :schema="columnDesignerSchema"
+            :loading="savingColumn"
+            @submit="saveColumn"
+            @action="handleColumnAction"
+          />
+        </section>
+
+        <section class="panel-section relation-section">
+          <div class="panel-heading">
+            <div>
+              <span>Relation</span>
+              <h2>外键关系</h2>
+            </div>
             <button type="button" title="新建关系" @click="resetRelationForm">
               <i class="ri-add-line" />
             </button>
           </div>
 
-          <div class="field-grid">
-            <label>
-              <span>来源表</span>
-              <vxe-select
-                v-model="relationForm.sourceTableId"
-                :options="tableOptions"
-                filterable
-                @change="handleRelationTableChange('source')"
-              />
-            </label>
-            <label>
-              <span>来源列</span>
-              <vxe-select v-model="relationForm.sourceColumnName" :options="sourceColumnOptions" filterable />
-            </label>
-            <label>
-              <span>目标表</span>
-              <vxe-select
-                v-model="relationForm.targetTableId"
-                :options="tableOptions"
-                filterable
-                @change="handleRelationTableChange('target')"
-              />
-            </label>
-            <label>
-              <span>目标列</span>
-              <vxe-select v-model="relationForm.targetColumnName" :options="targetColumnOptions" filterable />
-            </label>
-            <label>
-              <span>关系</span>
-              <vxe-select v-model="relationForm.relationType" :options="relationTypeOptions" />
-            </label>
-            <label class="check-line">
-              <vxe-checkbox v-model="relationForm.isEnforced" />
-              <span>创建真实 FK 约束</span>
-            </label>
-          </div>
-
-          <div class="entity-actions">
-            <vxe-button status="primary" :loading="savingRelation" @click="saveRelation">
-              <i class="ri-node-tree" />
-              保存关系
-            </vxe-button>
-          </div>
+          <LowCodeForm
+            v-model="relationForm"
+            class="designer-form"
+            :schema="relationDesignerSchema"
+            :option-sources="relationOptionSources"
+            :loading="savingRelation"
+            @submit="saveRelation"
+            @action="handleRelationAction"
+            @field-change="handleRelationFieldChange"
+          />
 
           <ul class="relation-list">
             <li v-for="relation in relations" :key="relation.id">
               <button type="button" @click="selectRelation(relation)">
-                {{ tableTitle(relation.source_table_id) }}.{{ relation.source_column_name }}
-                →
-                {{ tableTitle(relation.target_table_id) }}.{{ relation.target_column_name }}
+                <span>
+                  {{ tableTitle(relation.source_table_id) }}.{{ relation.source_column_name }}
+                </span>
+                <i class="ri-arrow-right-line" />
+                <span>
+                  {{ tableTitle(relation.target_table_id) }}.{{ relation.target_column_name }}
+                </span>
+                <em>{{ relationTypeLabel(relation.relation_type) }}</em>
               </button>
               <button type="button" title="删除关系" @click="deleteRelation(relation)">
                 <i class="ri-close-line" />
               </button>
             </li>
           </ul>
-        </div>
+        </section>
       </aside>
     </div>
   </section>
@@ -272,6 +351,13 @@ import {
 } from '@vue-flow/core';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
+import {
+  entityColumnsTableFormSchema,
+  entityColumnFormSchema,
+  entityRelationFormSchema,
+  entityTableFormSchema
+} from '~/schemas/entity-design';
+import type { LowCodeAction, LowCodeField, LowCodeFormSchema } from '~/types/lowcode';
 
 definePageMeta({
   layout: 'dashboard',
@@ -324,17 +410,52 @@ type DesignGraph = {
   message?: string;
 };
 
+type PhysicalTableOption = {
+  schemaName: string;
+  tableName: string;
+  fullName: string;
+  title: string;
+  existsInMetadata: boolean;
+  tableId: string | null;
+  columnCount: number;
+  checked?: boolean;
+};
+
+type SyncColumnsResult = {
+  inserted: number;
+  skipped: number;
+};
+
+type SyncPhysicalTablesResult = {
+  imported: number;
+  existing: number;
+  tables: Array<{
+    tableId: string;
+    fullName: string;
+    created: boolean;
+    insertedColumns: number;
+    skippedColumns: number;
+  }>;
+};
+
 type EntityNode = Node<{ table: EntityTable }>;
 type EntityEdge = Edge<Record<string, unknown>>;
 
+type FormValues = Record<string, unknown>;
+
 const serviceApi = useServiceApi();
-const flowId = `entity-design-flow-${Math.random().toString(36).slice(2)}`;
+const flowId = 'entity-design-flow';
 const { fitView } = useVueFlow(flowId);
+
 const loading = ref(false);
 const savingTable = ref(false);
 const savingColumn = ref(false);
 const savingRelation = ref(false);
 const savingLayout = ref(false);
+const syncingColumns = ref(false);
+const loadingPhysicalTables = ref(false);
+const importingPhysicalTables = ref(false);
+const loadTablesModalOpen = ref(false);
 const message = ref('');
 const messageClass = ref('lc-help');
 const tables = ref<EntityTable[]>([]);
@@ -342,108 +463,77 @@ const relations = ref<EntityRelation[]>([]);
 const flowNodes = ref<EntityNode[]>([]);
 const flowEdges = ref<EntityEdge[]>([]);
 const selectedTableId = ref('');
+const physicalTables = ref<PhysicalTableOption[]>([]);
+const hiddenCanvasTableIds = ref<Set<string>>(new Set());
+const canvasVisibilityInitialized = ref(false);
 
-const dataTypeOptions = [
-  { label: 'uuid', value: 'uuid' },
-  { label: 'text', value: 'text' },
-  { label: 'varchar', value: 'varchar' },
-  { label: 'integer', value: 'integer' },
-  { label: 'bigint', value: 'bigint' },
-  { label: 'numeric', value: 'numeric' },
-  { label: 'boolean', value: 'boolean' },
-  { label: 'date', value: 'date' },
-  { label: 'timestamptz', value: 'timestamptz' },
-  { label: 'jsonb', value: 'jsonb' }
-];
-const storageKindOptions = [
-  { label: '真实列', value: 'physical' },
-  { label: '虚拟列', value: 'virtual' }
-];
-const relationTypeOptions = [
-  { label: '多对一', value: 'many_to_one' },
-  { label: '一对多', value: 'one_to_many' },
-  { label: '一对一', value: 'one_to_one' },
-  { label: '多对多', value: 'many_to_many' }
-];
+const tableForm = ref<FormValues>(newTableForm());
+const columnRowsForm = ref<FormValues>({ columns: [] });
+const columnForm = ref<FormValues>(newColumnForm());
+const relationForm = ref<FormValues>(newRelationForm());
 
-const tableForm = reactive({
-  id: '',
-  code: '',
-  tableName: '',
-  title: '',
-  description: '',
-  primaryKey: 'id',
-  createPhysical: true
-});
-const columnForm = reactive({
-  id: '',
-  columnName: '',
-  label: '',
-  dataType: 'text',
-  storageKind: 'physical' as 'physical' | 'virtual',
-  expression: '',
-  defaultValue: '',
-  isRequired: false,
-  isUnique: false
-});
-const relationForm = reactive({
-  id: '',
-  sourceTableId: '',
-  sourceColumnName: '',
-  targetTableId: '',
-  targetColumnName: 'id',
-  relationType: 'many_to_one',
-  isEnforced: false
-});
-
-const selectedTable = computed(() =>
-  tables.value.find((table) => table.id === selectedTableId.value) ?? null
+const selectedTable = computed(
+  () => tables.value.find((table) => table.id === selectedTableId.value) ?? null
 );
+const selectedPhysicalTables = computed(() => physicalTables.value.filter((table) => table.checked));
+const totalColumnCount = computed(() =>
+  tables.value.reduce((total, table) => total + table.columns.length, 0)
+);
+const selectedColumn = computed(() => {
+  const columnName = stringValue(columnForm.value.columnName);
+  if (!selectedTable.value || !columnName) return null;
+  return selectedTable.value.columns.find((column) => column.column_name === columnName) ?? null;
+});
 const tableOptions = computed(() =>
-  tables.value.map((table) => ({ label: `${table.title} (${table.full_name})`, value: table.id }))
+  tables.value.map((table) => ({
+    label: `${displayTableTitle(table)} (${table.full_name})`,
+    value: table.id
+  }))
 );
-const sourceColumnOptions = computed(() => columnOptionsForTable(relationForm.sourceTableId));
-const targetColumnOptions = computed(() => columnOptionsForTable(relationForm.targetTableId));
+const sourceColumnOptions = computed(() =>
+  columnOptionsForTable(stringValue(relationForm.value.sourceTableId))
+);
+const targetColumnOptions = computed(() =>
+  columnOptionsForTable(stringValue(relationForm.value.targetTableId))
+);
+const relationOptionSources = computed(() => ({
+  tables: tableOptions.value,
+  sourceColumns: sourceColumnOptions.value,
+  targetColumns: targetColumnOptions.value
+}));
 
-function syncFlowFromGraph() {
-  flowNodes.value = tables.value.map((table, index) => ({
-    id: table.id,
-    type: 'entity-table',
-    position: {
-      x: Number.isFinite(table.position_x) ? table.position_x : 80 + index * 320,
-      y: Number.isFinite(table.position_y) ? table.position_y : 80
-    },
-    data: { table }
-  }));
-  flowEdges.value = relations.value.map((relation) => ({
-    id: relation.id,
-    source: relation.source_table_id,
-    target: relation.target_table_id,
-    sourceHandle: `${relation.source_column_name}:source`,
-    targetHandle: `${relation.target_column_name}:target`,
-    label: relation.relation_type,
-    animated: relation.is_enforced,
-    type: 'smoothstep',
-    style: { stroke: '#0f766e', strokeWidth: 2 },
-    labelStyle: { fill: '#0f172a', fontSize: 11, fontWeight: 700 },
-    labelBgStyle: { fill: '#ffffff', fillOpacity: 0.92 }
-  }));
-}
+const tableDesignerSchema = computed<LowCodeFormSchema>(() =>
+  prepareSchema(entityTableFormSchema, {
+    disableAction: (action) => action.code === 'delete' && !selectedTable.value,
+    disableField: (field) => field.field === 'createPhysical' && Boolean(tableForm.value.id)
+  })
+);
+const columnDesignerSchema = computed<LowCodeFormSchema>(() => {
+  const isVirtual = columnForm.value.storageKind === 'virtual';
+  return prepareSchema(entityColumnFormSchema, {
+    keepField: (field) =>
+      isVirtual ? field.field !== 'defaultValue' : field.field !== 'expression',
+    disableField: (field) =>
+      !selectedTable.value || (field.field === 'columnName' && Boolean(columnForm.value.id)),
+    disableAction: (action) =>
+      !selectedTable.value ||
+      (action.code === 'delete' && (!columnForm.value.columnName || selectedColumn.value?.is_primary_key))
+  });
+});
+const columnsTableDesignerSchema = computed<LowCodeFormSchema>(() =>
+  prepareSchema(entityColumnsTableFormSchema, {
+    disableField: () => !selectedTable.value,
+    disableAction: () => !selectedTable.value
+  })
+);
+const relationDesignerSchema = computed<LowCodeFormSchema>(() =>
+  prepareSchema(entityRelationFormSchema, {
+    disableAction: (action) => action.code === 'save' && tables.value.length < 2
+  })
+);
 
-function columnOptionsForTable(tableId: string) {
-  const table = tables.value.find((item) => item.id === tableId);
-  return (table?.columns ?? []).map((column) => ({
-    label: `${column.column_name} (${column.data_type})`,
-    value: column.column_name
-  }));
-}
-
-function parseHandleColumn(handleId?: string | null) {
-  return handleId?.split(':')[0] ?? '';
-}
-
-function resetTableForm() {
-  Object.assign(tableForm, {
+function newTableForm(): FormValues {
+  return {
     id: '',
     code: '',
     tableName: '',
@@ -451,13 +541,11 @@ function resetTableForm() {
     description: '',
     primaryKey: 'id',
     createPhysical: true
-  });
-  selectedTableId.value = '';
-  resetColumnForm();
+  };
 }
 
-function resetColumnForm() {
-  Object.assign(columnForm, {
+function newColumnForm(): FormValues {
+  return {
     id: '',
     columnName: '',
     label: '',
@@ -467,53 +555,324 @@ function resetColumnForm() {
     defaultValue: '',
     isRequired: false,
     isUnique: false
-  });
+  };
 }
 
-function resetRelationForm() {
-  Object.assign(relationForm, {
+function newRelationForm(): FormValues {
+  return {
     id: '',
-    sourceTableId: selectedTable.value?.id ?? '',
+    sourceTableId: '',
     sourceColumnName: '',
     targetTableId: '',
     targetColumnName: 'id',
     relationType: 'many_to_one',
     isEnforced: false
-  });
+  };
 }
 
-function selectTable(table: EntityTable) {
+function prepareSchema(
+  schema: LowCodeFormSchema,
+  options: {
+    keepField?: (field: LowCodeField) => boolean;
+    disableField?: (field: LowCodeField) => boolean;
+    disableAction?: (action: LowCodeAction) => boolean;
+  } = {}
+): LowCodeFormSchema {
+  const fields = schema.fields
+    .filter((field) => options.keepField?.(field) ?? true)
+    .map((field) => ({
+      ...field,
+      props: {
+        ...field.props,
+        disabled: Boolean(field.props?.disabled) || Boolean(options.disableField?.(field))
+      }
+    }));
+
+  return {
+    ...schema,
+    fields,
+    actions: schema.actions.map((action) => ({
+      ...action,
+      disabled: Boolean(action.disabled) || Boolean(options.disableAction?.(action))
+    }))
+  };
+}
+
+function stringValue(value: unknown) {
+  return typeof value === 'string' ? value : '';
+}
+
+function booleanValue(value: unknown) {
+  return value === true;
+}
+
+function isBadDisplayText(value: unknown) {
+  if (typeof value !== 'string') return true;
+  const text = value.trim();
+  if (!text) return true;
+  if (/^\?+$/.test(text)) return true;
+  if (/\?{2,}/.test(text)) return true;
+  if (text.includes('\uFFFD')) return true;
+  return false;
+}
+
+function humanizeIdentifier(value: string) {
+  return value
+    .replace(/^public\./, '')
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+const tableTitleFallbacks: Record<string, string> = {
+  sale: '销售订单',
+  sale_detail: '销售订单明细',
+  entity_design_smoke_students: 'VueFlow 测试学生'
+};
+
+const columnLabelFallbacks: Record<string, string> = {
+  id: 'ID',
+  sale_no: '订单编号',
+  customer_name: '客户名称',
+  sale_date: '销售日期',
+  total_amount: '总金额',
+  status: '状态',
+  sale_id: '销售订单ID',
+  product_name: '商品名称',
+  quantity: '数量',
+  unit_price: '单价',
+  line_amount: '行金额',
+  remark: '备注',
+  name: '名称',
+  display_name: '显示名称'
+};
+
+function displayTableTitle(table: EntityTable) {
+  if (!isBadDisplayText(table.title)) return table.title;
+  return tableTitleFallbacks[table.table_name] ?? tableTitleFallbacks[table.code] ?? humanizeIdentifier(table.table_name);
+}
+
+function displayColumnLabel(table: EntityTable, column: EntityColumn) {
+  if (!isBadDisplayText(column.label)) return column.label;
+  return columnLabelFallbacks[column.column_name] ?? humanizeIdentifier(column.column_name);
+}
+
+function displayColumnLabelFromName(columnName: string, label?: unknown) {
+  if (!isBadDisplayText(label)) return String(label);
+  return columnLabelFallbacks[columnName] ?? humanizeIdentifier(columnName);
+}
+
+function isTableVisible(tableId: string) {
+  return !hiddenCanvasTableIds.value.has(tableId);
+}
+
+function visibleTables() {
+  return tables.value.filter((table) => isTableVisible(table.id));
+}
+
+function syncFlowFromGraph() {
+  const activeTables = visibleTables();
+  const activeTableIds = new Set(activeTables.map((table) => table.id));
+  flowNodes.value = activeTables.map((table, index) => ({
+    id: table.id,
+    type: 'entity-table',
+    position: {
+      x: Number.isFinite(table.position_x) ? table.position_x : 80 + index * 340,
+      y: Number.isFinite(table.position_y) ? table.position_y : 80
+    },
+    data: { table }
+  }));
+  flowEdges.value = relations.value
+    .filter(
+      (relation) =>
+        activeTableIds.has(relation.source_table_id) && activeTableIds.has(relation.target_table_id)
+    )
+    .map((relation) => ({
+      id: relation.id,
+      source: relation.source_table_id,
+      target: relation.target_table_id,
+      sourceHandle: `${relation.source_column_name}:source`,
+      targetHandle: `${relation.target_column_name}:target`,
+      label: relationTypeLabel(relation.relation_type),
+      animated: relation.is_enforced,
+      type: 'smoothstep',
+      style: { stroke: relation.is_enforced ? '#0f766e' : '#475569', strokeWidth: 2.4 },
+      labelStyle: { fill: '#0f172a', fontSize: 11, fontWeight: 700 },
+      labelBgStyle: { fill: '#ffffff', fillOpacity: 0.96 },
+      labelBgPadding: [6, 4],
+      labelBgBorderRadius: 4,
+      markerEnd: {
+        type: 'arrowclosed',
+        color: relation.is_enforced ? '#0f766e' : '#475569'
+      }
+    }));
+}
+
+function columnOptionsForTable(tableId: string) {
+  const table = tables.value.find((item) => item.id === tableId);
+  return (table?.columns ?? []).map((column) => ({
+    label: `${column.column_name} - ${table ? displayColumnLabel(table, column) : column.label}`,
+    value: column.column_name
+  }));
+}
+
+function parseHandleColumn(handleId?: string | null) {
+  return handleId?.split(':')[0] ?? '';
+}
+
+function columnToFormRow(table: EntityTable, column: EntityColumn): FormValues {
+  return {
+    id: column.id,
+    columnName: column.column_name,
+    label: displayColumnLabel(table, column),
+    dataType: column.data_type,
+    storageKind: column.storage_kind,
+    expression: column.expression ?? '',
+    defaultValue: column.default_value ?? '',
+    isRequired: column.is_required,
+    isUnique: column.is_unique,
+    isPrimaryKey: column.is_primary_key
+  };
+}
+
+function normalizeColumnRows(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((row): row is FormValues => typeof row === 'object' && row !== null && !Array.isArray(row))
+    .map((row) => ({
+      id: stringValue(row.id),
+      columnName: stringValue(row.columnName),
+      label: displayColumnLabelFromName(stringValue(row.columnName), row.label),
+      dataType: stringValue(row.dataType) || 'text',
+      storageKind: stringValue(row.storageKind) || 'physical',
+      expression: stringValue(row.expression),
+      defaultValue: stringValue(row.defaultValue),
+      isRequired: booleanValue(row.isRequired),
+      isUnique: booleanValue(row.isUnique),
+      isPrimaryKey: booleanValue(row.isPrimaryKey)
+    }));
+}
+
+function syncColumnRowsFromSelectedTable() {
+  columnRowsForm.value = {
+    columns: selectedTable.value?.columns.map((column) => columnToFormRow(selectedTable.value!, column)) ?? []
+  };
+}
+
+function setColumnFormFromRow(row: FormValues) {
+  columnForm.value = {
+    id: stringValue(row.id),
+    columnName: stringValue(row.columnName),
+    label: displayColumnLabelFromName(stringValue(row.columnName), row.label),
+    dataType: stringValue(row.dataType) || 'text',
+    storageKind: stringValue(row.storageKind) || 'physical',
+    expression: stringValue(row.expression),
+    defaultValue: stringValue(row.defaultValue),
+    isRequired: booleanValue(row.isRequired),
+    isUnique: booleanValue(row.isUnique)
+  };
+}
+
+function sameColumnRow(prev: FormValues, next: FormValues) {
+  return (
+    stringValue(prev.id) === stringValue(next.id) &&
+    stringValue(prev.columnName) === stringValue(next.columnName) &&
+    stringValue(prev.label) === stringValue(next.label) &&
+    stringValue(prev.dataType) === stringValue(next.dataType) &&
+    stringValue(prev.storageKind) === stringValue(next.storageKind) &&
+    stringValue(prev.expression) === stringValue(next.expression) &&
+    stringValue(prev.defaultValue) === stringValue(next.defaultValue) &&
+    booleanValue(prev.isRequired) === booleanValue(next.isRequired) &&
+    booleanValue(prev.isUnique) === booleanValue(next.isUnique)
+  );
+}
+
+function findChangedColumnRow(previousRows: FormValues[], nextRows: FormValues[]) {
+  return nextRows.find((row, index) => !sameColumnRow(previousRows[index] ?? {}, row)) ?? nextRows[nextRows.length - 1];
+}
+
+function resetTableForm() {
+  tableForm.value = newTableForm();
+  selectedTableId.value = '';
+  columnRowsForm.value = { columns: [] };
+  resetColumnForm();
+}
+
+function resetColumnForm() {
+  columnForm.value = newColumnForm();
+}
+
+function startNewColumn() {
+  if (!selectedTable.value) return;
+  const rows = normalizeColumnRows(columnRowsForm.value.columns);
+  const draft = normalizeColumnRows([newColumnForm()])[0];
+  if (!draft) return;
+  rows.push(draft);
+  columnRowsForm.value = { columns: rows };
+  setColumnFormFromRow(draft);
+}
+
+function resetRelationForm() {
+  relationForm.value = {
+    ...newRelationForm(),
+    sourceTableId: selectedTable.value?.id ?? ''
+  };
+  applyRelationColumnDefaults('source');
+}
+
+function selectTable(table: EntityTable, options: { resetColumn?: boolean } = {}) {
   selectedTableId.value = table.id;
-  Object.assign(tableForm, {
+  tableForm.value = {
     id: table.id,
     code: table.code,
     tableName: table.full_name,
-    title: table.title,
+    title: displayTableTitle(table),
     description: table.description ?? '',
     primaryKey: table.primary_key,
     createPhysical: false
-  });
-  resetColumnForm();
-  if (!relationForm.sourceTableId) relationForm.sourceTableId = table.id;
+  };
+  syncColumnRowsFromSelectedTable();
+  if (options.resetColumn !== false) resetColumnForm();
+  if (!relationForm.value.sourceTableId) {
+    relationForm.value = { ...relationForm.value, sourceTableId: table.id };
+    applyRelationColumnDefaults('source');
+  }
+}
+
+async function toggleTableCanvasVisibility(table: EntityTable) {
+  const nextHiddenIds = new Set(hiddenCanvasTableIds.value);
+  if (nextHiddenIds.has(table.id)) {
+    nextHiddenIds.delete(table.id);
+    message.value = `已将 ${displayTableTitle(table)} 显示到画布。`;
+  } else {
+    nextHiddenIds.add(table.id);
+    message.value = `已从画布移出 ${displayTableTitle(table)}，metadata 和真实表未删除。`;
+  }
+  hiddenCanvasTableIds.value = nextHiddenIds;
+  messageClass.value = 'lc-help';
+  syncFlowFromGraph();
+  await nextTick();
+  if (flowNodes.value.length) fitView({ padding: 0.2, duration: 180 });
 }
 
 function selectColumn(table: EntityTable, column: EntityColumn) {
   selectTable(table);
-  Object.assign(columnForm, {
+  columnForm.value = {
     id: column.id,
     columnName: column.column_name,
-    label: column.label,
+    label: displayColumnLabel(table, column),
     dataType: column.data_type,
     storageKind: column.storage_kind,
     expression: column.expression ?? '',
     defaultValue: column.default_value ?? '',
     isRequired: column.is_required,
     isUnique: column.is_unique
-  });
+  };
 }
 
 function selectRelation(relation: EntityRelation) {
-  Object.assign(relationForm, {
+  relationForm.value = {
     id: relation.id,
     sourceTableId: relation.source_table_id,
     sourceColumnName: relation.source_column_name,
@@ -521,18 +880,79 @@ function selectRelation(relation: EntityRelation) {
     targetColumnName: relation.target_column_name,
     relationType: relation.relation_type,
     isEnforced: relation.is_enforced
-  });
+  };
 }
 
 function tableTitle(id: string) {
-  return tables.value.find((table) => table.id === id)?.title ?? id.slice(0, 8);
+  const table = tables.value.find((item) => item.id === id);
+  return table ? displayTableTitle(table) : id.slice(0, 8);
 }
 
-function handleRelationTableChange(role: 'source' | 'target') {
+function relationTypeLabel(value: string) {
+  const labels: Record<string, string> = {
+    many_to_one: '多对一',
+    one_to_many: '一对多',
+    one_to_one: '一对一',
+    many_to_many: '多对多'
+  };
+  return labels[value] ?? value;
+}
+
+function applyRelationColumnDefaults(role: 'source' | 'target') {
   const options = role === 'source' ? sourceColumnOptions.value : targetColumnOptions.value;
-  const first = options[0]?.value ?? '';
-  if (role === 'source') relationForm.sourceColumnName = first;
-  if (role === 'target') relationForm.targetColumnName = first || 'id';
+  const first = stringValue(options[0]?.value);
+  if (role === 'source') {
+    relationForm.value = { ...relationForm.value, sourceColumnName: first };
+  } else {
+    relationForm.value = { ...relationForm.value, targetColumnName: first || 'id' };
+  }
+}
+
+function handleRelationFieldChange(payload: { field: LowCodeField }) {
+  if (payload.field.field === 'sourceTableId') applyRelationColumnDefaults('source');
+  if (payload.field.field === 'targetTableId') applyRelationColumnDefaults('target');
+}
+
+function handleTableAction(action: LowCodeAction) {
+  if (action.code === 'delete') deleteSelectedTable();
+  if (action.code === 'reset') resetTableForm();
+}
+
+function handleColumnAction(action: LowCodeAction) {
+  if (action.code === 'delete') deleteSelectedColumn();
+  if (action.code === 'reset') resetColumnForm();
+}
+
+function handleColumnRowsFieldChange(payload: {
+  field: LowCodeField;
+  value: unknown;
+  previousValue: unknown;
+}) {
+  if (payload.field.field !== 'columns') return;
+
+  const previousRows = normalizeColumnRows(payload.previousValue);
+  const nextRows = normalizeColumnRows(payload.value);
+  const removedRows = previousRows.filter((previous) => {
+    const previousName = stringValue(previous.columnName);
+    if (!previousName) return false;
+    return !nextRows.some((next) => {
+      const nextId = stringValue(next.id);
+      const previousId = stringValue(previous.id);
+      return (previousId && nextId === previousId) || stringValue(next.columnName) === previousName;
+    });
+  });
+
+  const changedRow = findChangedColumnRow(previousRows, nextRows);
+  if (changedRow) setColumnFormFromRow(changedRow);
+
+  const removedPersistedRow = removedRows.find((row) => stringValue(row.id) || stringValue(row.columnName));
+  if (removedPersistedRow) {
+    void deleteColumnFromRow(removedPersistedRow);
+  }
+}
+
+function handleRelationAction(action: LowCodeAction) {
+  if (action.code === 'reset') resetRelationForm();
 }
 
 function onNodeClick(event: NodeMouseEvent) {
@@ -545,8 +965,7 @@ function onEdgeClick(event: EdgeMouseEvent) {
   if (relation) selectRelation(relation);
 }
 
-function clearSelection() {
-  selectedTableId.value = '';
+function clearColumnSelection() {
   resetColumnForm();
 }
 
@@ -559,12 +978,78 @@ function onNodeDragStop(event: { node: EntityNode }) {
 
 function onConnect(connection: Connection) {
   if (!connection.source || !connection.target) return;
-  relationForm.sourceTableId = connection.source;
-  relationForm.targetTableId = connection.target;
-  relationForm.sourceColumnName = parseHandleColumn(connection.sourceHandle);
-  relationForm.targetColumnName = parseHandleColumn(connection.targetHandle) || 'id';
-  message.value = '已从 VueFlow 连线填充关系表单，确认后点击“保存关系”。';
+  relationForm.value = {
+    ...relationForm.value,
+    sourceTableId: connection.source,
+    targetTableId: connection.target,
+    sourceColumnName: parseHandleColumn(connection.sourceHandle),
+    targetColumnName: parseHandleColumn(connection.targetHandle) || 'id'
+  };
+  message.value = '已根据 VueFlow 连线填充外键关系，确认后点击“保存关系”。';
   messageClass.value = 'lc-help';
+}
+
+async function openLoadTablesModal() {
+  loadingPhysicalTables.value = true;
+  message.value = '';
+  try {
+    const rows = await serviceApi.invoke<PhysicalTableOption[]>('entityDesign', 'listPhysicalTables');
+    physicalTables.value = (rows ?? []).map((row) => ({
+      ...row,
+      checked: false
+    }));
+    loadTablesModalOpen.value = true;
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '加载真实表失败。';
+    messageClass.value = 'lc-error';
+  } finally {
+    loadingPhysicalTables.value = false;
+  }
+}
+
+async function confirmLoadTables() {
+  const selectedRows = selectedPhysicalTables.value;
+  if (!selectedRows.length) return;
+  importingPhysicalTables.value = true;
+  message.value = '';
+  try {
+    const result = await serviceApi.invoke<SyncPhysicalTablesResult>('entityDesign', 'syncPhysicalTables', {
+      tables: selectedRows.map((table) => ({
+        schemaName: table.schemaName,
+        tableName: table.tableName
+      }))
+    });
+    const firstLoadedTableId = stringValue(result.tables?.[0]?.tableId);
+    if (firstLoadedTableId) selectedTableId.value = firstLoadedTableId;
+    loadTablesModalOpen.value = false;
+    message.value = `已加载 ${result.tables.length} 张真实表，新增 metadata ${result.imported} 张。`;
+    messageClass.value = 'lc-help';
+    await loadDesign();
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '加载选中表失败。';
+    messageClass.value = 'lc-error';
+  } finally {
+    importingPhysicalTables.value = false;
+  }
+}
+
+async function syncSelectedTableFields() {
+  if (!selectedTable.value) return;
+  syncingColumns.value = true;
+  message.value = '';
+  try {
+    const result = await serviceApi.invoke<SyncColumnsResult>('entityDesign', 'syncPhysicalColumns', {
+      tableId: selectedTable.value.id
+    });
+    message.value = `已同步字段：新增 ${result.inserted} 个，跳过 ${result.skipped} 个已有字段。`;
+    messageClass.value = 'lc-help';
+    await loadDesign();
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '同步字段失败。';
+    messageClass.value = 'lc-error';
+  } finally {
+    syncingColumns.value = false;
+  }
 }
 
 async function loadDesign() {
@@ -574,11 +1059,22 @@ async function loadDesign() {
     const graph = await serviceApi.invoke<DesignGraph>('entityDesign', 'listDesign');
     tables.value = graph.tables ?? [];
     relations.value = graph.relations ?? [];
+    const tableIds = new Set(tables.value.map((table) => table.id));
+    hiddenCanvasTableIds.value = canvasVisibilityInitialized.value
+      ? new Set([...hiddenCanvasTableIds.value].filter((tableId) => tableIds.has(tableId)))
+      : new Set(tableIds);
+    canvasVisibilityInitialized.value = true;
     if (graph.setupRequired && graph.message) {
       message.value = graph.message;
       messageClass.value = 'lc-help';
     }
-    if (!selectedTableId.value && tables.value.length) selectTable(tables.value[0]);
+    const nextSelectedTable =
+      tables.value.find((table) => table.id === selectedTableId.value) ?? tables.value[0];
+    if (nextSelectedTable) {
+      selectTable(nextSelectedTable, { resetColumn: !columnForm.value.columnName });
+    } else {
+      resetTableForm();
+    }
     syncFlowFromGraph();
     await nextTick();
     if (tables.value.length) fitView({ padding: 0.2, duration: 180 });
@@ -590,24 +1086,24 @@ async function loadDesign() {
   }
 }
 
-async function saveTable() {
+async function saveTable(values: FormValues) {
   savingTable.value = true;
   message.value = '';
   try {
     const selectedNode = flowNodes.value.find((node) => node.id === selectedTableId.value);
     const saved = await serviceApi.invoke<EntityTable>('entityDesign', 'saveTable', {
-      id: tableForm.id,
-      code: tableForm.code,
-      tableName: tableForm.tableName,
-      title: tableForm.title,
-      description: tableForm.description,
-      primaryKey: tableForm.primaryKey || 'id',
-      createPhysical: tableForm.createPhysical,
+      id: stringValue(values.id),
+      code: stringValue(values.code),
+      tableName: stringValue(values.tableName),
+      title: stringValue(values.title),
+      description: stringValue(values.description),
+      primaryKey: stringValue(values.primaryKey) || 'id',
+      createPhysical: booleanValue(values.createPhysical),
       positionX: selectedNode?.position.x ?? selectedTable.value?.position_x ?? 80,
       positionY: selectedNode?.position.y ?? selectedTable.value?.position_y ?? 80
     });
     selectedTableId.value = saved.id;
-    message.value = `已保存 ${saved.table_name}。`;
+    message.value = `已保存表 ${saved.table_name}。`;
     messageClass.value = 'lc-help';
     await loadDesign();
   } catch (error) {
@@ -620,7 +1116,9 @@ async function saveTable() {
 
 async function deleteSelectedTable() {
   if (!selectedTable.value) return;
-  const confirmed = window.confirm(`删除实体 ${selectedTable.value.full_name}？默认只删除 metadata。`);
+  const confirmed = window.confirm(
+    `删除实体 ${selectedTable.value.full_name}？默认只删除 metadata，不删除真实表。`
+  );
   if (!confirmed) return;
   savingTable.value = true;
   try {
@@ -630,30 +1128,42 @@ async function deleteSelectedTable() {
     });
     resetTableForm();
     await loadDesign();
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '删除表失败。';
+    messageClass.value = 'lc-error';
   } finally {
     savingTable.value = false;
   }
 }
 
-async function saveColumn() {
+async function persistColumn(values: FormValues, sortOrder: number) {
+  if (!selectedTable.value) return;
+  const columnName = stringValue(values.columnName);
+  if (!columnName) return;
+
+  await serviceApi.invoke('entityDesign', 'saveColumn', {
+    tableId: selectedTable.value.id,
+    id: stringValue(values.id),
+    columnName,
+    label: displayColumnLabelFromName(columnName, values.label),
+    dataType: stringValue(values.dataType) || 'text',
+    storageKind: stringValue(values.storageKind) || 'physical',
+    expression: stringValue(values.expression),
+    defaultValue: stringValue(values.defaultValue),
+    isRequired: booleanValue(values.isRequired),
+    isUnique: booleanValue(values.isUnique),
+    sortOrder
+  });
+}
+
+async function saveColumn(values: FormValues) {
   if (!selectedTable.value) return;
   savingColumn.value = true;
   message.value = '';
   try {
-    await serviceApi.invoke('entityDesign', 'saveColumn', {
-      tableId: selectedTable.value.id,
-      id: columnForm.id,
-      columnName: columnForm.columnName,
-      label: columnForm.label || columnForm.columnName,
-      dataType: columnForm.dataType,
-      storageKind: columnForm.storageKind,
-      expression: columnForm.expression,
-      defaultValue: columnForm.defaultValue,
-      isRequired: columnForm.isRequired,
-      isUnique: columnForm.isUnique,
-      sortOrder: selectedTable.value.columns.length + 10
-    });
-    message.value = `已保存列 ${columnForm.columnName}。`;
+    const columnName = stringValue(values.columnName);
+    await persistColumn(values, selectedTable.value.columns.length + 10);
+    message.value = `已保存列 ${columnName}。`;
     messageClass.value = 'lc-help';
     resetColumnForm();
     await loadDesign();
@@ -665,30 +1175,94 @@ async function saveColumn() {
   }
 }
 
-async function deleteSelectedColumn() {
-  if (!selectedTable.value || !columnForm.columnName) return;
-  const confirmed = window.confirm(`删除列 ${columnForm.columnName}？真实列会同步 DROP COLUMN。`);
-  if (!confirmed) return;
-  await serviceApi.invoke('entityDesign', 'deleteColumn', {
-    tableId: selectedTable.value.id,
-    columnName: columnForm.columnName,
-    dropPhysical: true
-  });
-  resetColumnForm();
-  await loadDesign();
+async function saveColumnRows(values: FormValues) {
+  if (!selectedTable.value) return;
+  const rows = normalizeColumnRows(values.columns);
+  savingColumn.value = true;
+  message.value = '';
+  try {
+    for (const [index, row] of rows.entries()) {
+      if (!stringValue(row.columnName)) continue;
+      await persistColumn(row, (index + 1) * 10);
+    }
+    message.value = `已保存 ${rows.filter((row) => stringValue(row.columnName)).length} 个字段。`;
+    messageClass.value = 'lc-help';
+    await loadDesign();
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '保存字段集合失败。';
+    messageClass.value = 'lc-error';
+  } finally {
+    savingColumn.value = false;
+  }
 }
 
-async function saveRelation() {
+async function deleteColumnByName(columnName: string) {
+  if (!selectedTable.value || !columnName) return false;
+  const confirmed = window.confirm(`删除列 ${columnName}？真实列会同步 DROP COLUMN。`);
+  if (!confirmed) return false;
+  await serviceApi.invoke('entityDesign', 'deleteColumn', {
+    tableId: selectedTable.value.id,
+    columnName,
+    dropPhysical: true
+  });
+  return true;
+}
+
+async function deleteColumnFromRow(row: FormValues) {
+  if (!selectedTable.value) return;
+  const columnName = stringValue(row.columnName);
+  const existingColumn = selectedTable.value.columns.find((column) => column.column_name === columnName);
+  if (!existingColumn || existingColumn.is_primary_key) {
+    syncColumnRowsFromSelectedTable();
+    return;
+  }
+
+  savingColumn.value = true;
+  try {
+    const deleted = await deleteColumnByName(columnName);
+    if (!deleted) {
+      syncColumnRowsFromSelectedTable();
+      return;
+    }
+    resetColumnForm();
+    await loadDesign();
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '删除列失败。';
+    messageClass.value = 'lc-error';
+    syncColumnRowsFromSelectedTable();
+  } finally {
+    savingColumn.value = false;
+  }
+}
+
+async function deleteSelectedColumn() {
+  if (!selectedTable.value || !columnForm.value.columnName) return;
+  const columnName = stringValue(columnForm.value.columnName);
+  savingColumn.value = true;
+  try {
+    const deleted = await deleteColumnByName(columnName);
+    if (!deleted) return;
+    resetColumnForm();
+    await loadDesign();
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '删除列失败。';
+    messageClass.value = 'lc-error';
+  } finally {
+    savingColumn.value = false;
+  }
+}
+
+async function saveRelation(values: FormValues) {
   savingRelation.value = true;
   message.value = '';
   try {
     await serviceApi.invoke('entityDesign', 'saveRelation', {
-      sourceTableId: relationForm.sourceTableId,
-      sourceColumnName: relationForm.sourceColumnName,
-      targetTableId: relationForm.targetTableId,
-      targetColumnName: relationForm.targetColumnName,
-      relationType: relationForm.relationType,
-      isEnforced: relationForm.isEnforced
+      sourceTableId: stringValue(values.sourceTableId),
+      sourceColumnName: stringValue(values.sourceColumnName),
+      targetTableId: stringValue(values.targetTableId),
+      targetColumnName: stringValue(values.targetColumnName),
+      relationType: stringValue(values.relationType) || 'many_to_one',
+      isEnforced: booleanValue(values.isEnforced)
     });
     message.value = '关系已保存。';
     messageClass.value = 'lc-help';
@@ -703,11 +1277,19 @@ async function saveRelation() {
 }
 
 async function deleteRelation(relation: EntityRelation) {
-  await serviceApi.invoke('entityDesign', 'deleteRelation', {
-    id: relation.id,
-    dropConstraint: false
-  });
-  await loadDesign();
+  savingRelation.value = true;
+  try {
+    await serviceApi.invoke('entityDesign', 'deleteRelation', {
+      id: relation.id,
+      dropConstraint: false
+    });
+    await loadDesign();
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '删除关系失败。';
+    messageClass.value = 'lc-error';
+  } finally {
+    savingRelation.value = false;
+  }
 }
 
 async function saveLayout() {
@@ -738,49 +1320,118 @@ onMounted(loadDesign);
 .entity-designer {
   display: flex;
   flex-direction: column;
-  min-height: 0;
   height: 100%;
-  background: #eef2f6;
+  min-height: calc(100vh - 60px);
+  background: #edf1f5;
+  color: #101828;
 }
 
 .entity-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 18px;
   flex: none;
+  min-height: 78px;
   border-bottom: 1px solid #d6dce5;
   background: #ffffff;
-  padding: 14px 18px;
+  padding: 12px 18px;
 }
 
-.entity-toolbar h1,
-.entity-toolbar p,
-.panel-title h2,
-.panel-hint {
+.toolbar-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.toolbar-kicker,
+.panel-heading span {
+  color: #667085;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.toolbar-copy h1,
+.toolbar-copy p,
+.panel-heading h2,
+.panel-hint,
+.flow-topbar p,
+.designer-message {
   margin: 0;
 }
 
-.entity-toolbar h1 {
+.toolbar-copy h1 {
   font-size: 20px;
   line-height: 1.2;
 }
 
-.entity-toolbar p,
-.panel-hint {
+.toolbar-copy p,
+.panel-hint,
+.flow-topbar,
+.designer-message {
   color: #667085;
   font-size: 12px;
 }
 
-.entity-actions {
+.toolbar-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.physical-table-loader {
+  display: grid;
+  gap: 12px;
+  min-height: 360px;
+}
+
+.physical-table-loader__summary {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #475467;
+  font-size: 13px;
+}
+
+.physical-table-loader__summary strong {
+  color: #0f766e;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.metadata-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 58px;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.metadata-pill.is-linked {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.metadata-pill.is-new {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.load-table-footer {
+  display: flex;
+  justify-content: flex-end;
   gap: 8px;
 }
 
 .entity-workspace {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr) 340px;
+  grid-template-columns: 370px minmax(0, 1fr) 390px;
   flex: 1 1 0;
   min-height: 0;
 }
@@ -788,77 +1439,203 @@ onMounted(loadDesign);
 .entity-panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   min-height: 0;
-  border-right: 1px solid #d6dce5;
-  background: #ffffff;
+  background: #f8fafc;
   overflow: auto;
-  padding: 14px;
+  padding: 12px;
 }
 
-.detail-panel {
-  border-right: 0;
+.entity-panel-left {
+  border-right: 1px solid #d6dce5;
+}
+
+.entity-panel-right {
   border-left: 1px solid #d6dce5;
 }
 
-.panel-title {
+.panel-section {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  border: 1px solid #dfe5ec;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+  box-shadow: 0 6px 18px rgb(15 23 42 / 4%);
+}
+
+.panel-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  min-width: 0;
 }
 
-.panel-title h2 {
+.panel-heading > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.panel-heading h2 {
   font-size: 15px;
+  line-height: 1.2;
 }
 
-.panel-title button,
-.relation-list button {
+.panel-heading strong {
+  color: #0f62fe;
+  font-size: 18px;
+}
+
+.panel-heading button,
+.relation-list > li > button:last-child {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
   border: 1px solid #d0d5dd;
+  border-radius: 6px;
   background: #ffffff;
   color: #344054;
   cursor: pointer;
 }
 
-.panel-title button {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
+.panel-heading button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
-.field-grid {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.field-grid label {
-  display: grid;
-  gap: 6px;
+.designer-form {
   min-width: 0;
+}
+
+.designer-form :deep(.lc-form) {
+  gap: 12px;
+}
+
+.designer-form :deep(.lc-form-layout),
+.designer-form :deep(.lc-form-grid) {
+  gap: 10px;
+}
+
+.designer-form :deep(.lc-form-row) {
+  flex-wrap: nowrap;
+  gap: 10px;
+}
+
+.designer-form :deep(.lc-form-col) {
+  min-width: 0;
+}
+
+.designer-form :deep(.lc-field) {
+  gap: 5px;
+}
+
+.designer-form :deep(.lc-field label) {
   color: #344054;
   font-size: 12px;
   font-weight: 600;
 }
 
-.field-grid .wide,
-.check-line {
-  grid-column: 1 / -1;
-}
-
-.check-line {
-  display: flex !important;
-  align-items: center;
+.designer-form :deep(.lc-actions) {
   gap: 8px;
+  padding-top: 2px;
 }
 
-.flag-row {
-  display: flex;
-  gap: 12px;
-  grid-column: 1 / -1;
-  color: #344054;
+.designer-message {
+  border: 1px solid #dfe5ec;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 9px 10px;
+}
+
+.relation-list,
+.entity-node ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entity-table-grid {
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.entity-table-name {
+  display: grid;
+  width: 100%;
+  gap: 2px;
+  min-height: 38px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #101828;
+  cursor: pointer;
+  padding: 5px 6px;
+  text-align: left;
+}
+
+.entity-table-name:hover,
+.entity-table-name.active {
+  background: #eef6ff;
+}
+
+.entity-table-name span,
+.entity-table-name small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entity-table-name span {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.entity-table-name small {
+  color: #667085;
   font-size: 12px;
+}
+
+.canvas-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 20px;
+  padding: 0 6px;
+}
+
+.canvas-pill.is-visible {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.canvas-pill.is-hidden {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.canvas-toggle {
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #344054;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 24px;
+  padding: 0 8px;
+}
+
+.canvas-toggle:hover {
+  border-color: #60a5fa;
+  color: #0f62fe;
 }
 
 .entity-flow-shell {
@@ -866,9 +1643,49 @@ onMounted(loadDesign);
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  background-color: #f8fafc;
-  background-image: radial-gradient(circle, rgba(100, 116, 139, 0.24) 1px, transparent 1px);
-  background-size: 22px 22px;
+  background-color: #f7f9fc;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.16) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.flow-topbar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 38px;
+  border: 1px solid #dfe5ec;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 8px 20px rgb(15 23 42 / 5%);
+  padding: 7px 10px;
+  pointer-events: none;
+}
+
+.flow-topbar > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.flow-topbar span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border: 1px solid #dfe5ec;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #344054;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 9px;
 }
 
 .entity-flow {
@@ -877,29 +1694,32 @@ onMounted(loadDesign);
 }
 
 .entity-node {
-  width: 292px;
+  width: 320px;
+  overflow: hidden;
   border: 1px solid #cbd5e1;
+  border-radius: 8px;
   background: #ffffff;
-  box-shadow: 0 10px 24px rgb(15 23 42 / 8%);
+  box-shadow: 0 14px 30px rgb(15 23 42 / 10%);
 }
 
 .entity-node.active {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgb(37 99 235 / 18%);
+  border-color: #0f62fe;
+  box-shadow:
+    0 0 0 3px rgb(15 98 254 / 16%),
+    0 14px 30px rgb(15 23 42 / 12%);
 }
 
 .entity-node header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
   gap: 8px;
-  min-height: 46px;
+  min-height: 52px;
   border-bottom: 1px solid #e4e7ec;
-  background: #eff6ff;
-  padding: 8px 10px;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+  padding: 9px 12px;
 }
 
-.entity-node header div {
+.node-title {
   display: grid;
   gap: 2px;
   min-width: 0;
@@ -907,15 +1727,18 @@ onMounted(loadDesign);
 
 .entity-node strong,
 .entity-node small,
-.entity-node li span {
+.column-name,
+.column-label {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .entity-node strong {
-  color: #111827;
-  font-size: 13px;
+  color: #101828;
+  font-size: 14px;
+  line-height: 1.25;
 }
 
 .entity-node small {
@@ -924,54 +1747,82 @@ onMounted(loadDesign);
 }
 
 .entity-node header > span {
-  flex: none;
-  min-width: 24px;
-  color: #2563eb;
+  display: grid;
+  min-width: 28px;
+  height: 28px;
+  place-items: center;
+  align-self: center;
+  border-radius: 999px;
+  background: #0f62fe;
+  color: #ffffff;
   font-size: 12px;
-  font-weight: 700;
-  text-align: right;
-}
-
-.entity-node ul,
-.relation-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  font-weight: 800;
 }
 
 .entity-node li {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(74px, 1fr) minmax(74px, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
-  min-height: 30px;
+  min-height: 32px;
   border-bottom: 1px solid #eef2f6;
+  cursor: pointer;
   padding: 0 12px;
   font-size: 12px;
 }
 
-.entity-node li:hover {
-  background: #f1f5f9;
+.entity-node li:last-child {
+  border-bottom: 0;
 }
 
-.entity-node li.primary span::before {
-  content: "PK ";
-  color: #d97706;
+.entity-node li:hover,
+.entity-node li.selected {
+  background: #f1f7ff;
+}
+
+.column-name {
+  color: #101828;
   font-weight: 700;
 }
 
-.entity-node li.virtual span::before {
-  content: "V ";
-  color: #7c3aed;
-  font-weight: 700;
+.column-label {
+  color: #667085;
+}
+
+.entity-node li.primary .column-name::before,
+.entity-node li.virtual .column-name::before {
+  display: inline-flex;
+  margin-right: 5px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.4;
+  padding: 0 3px;
+}
+
+.entity-node li.primary .column-name::before {
+  content: "PK";
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.entity-node li.virtual .column-name::before {
+  content: "V";
+  background: #f0fdf4;
+  color: #15803d;
 }
 
 .entity-node em {
-  flex: none;
-  color: #64748b;
+  justify-self: end;
+  border: 1px solid #e4e7ec;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #475467;
   font-size: 11px;
   font-style: normal;
+  line-height: 20px;
+  padding: 0 7px;
 }
 
 .entity-node :deep(.vue-flow__handle) {
@@ -987,22 +1838,30 @@ onMounted(loadDesign);
   display: grid;
   place-items: center;
   align-content: center;
-  gap: 10px;
-  color: #64748b;
+  gap: 8px;
+  color: #667085;
   pointer-events: none;
-  font-size: 13px;
+  text-align: center;
+  padding: 24px;
 }
 
 .empty-flow i {
-  color: #2563eb;
-  font-size: 36px;
+  color: #0f62fe;
+  font-size: 38px;
 }
 
-.relation-form {
-  display: grid;
-  gap: 12px;
-  border-top: 1px solid #e4e7ec;
-  padding-top: 14px;
+.empty-flow strong {
+  color: #101828;
+  font-size: 15px;
+}
+
+.empty-flow span {
+  max-width: 360px;
+  font-size: 13px;
+}
+
+.relation-section {
+  gap: 13px;
 }
 
 .relation-list {
@@ -1012,17 +1871,42 @@ onMounted(loadDesign);
 
 .relation-list li {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 28px;
+  grid-template-columns: minmax(0, 1fr) 30px;
   gap: 6px;
 }
 
-.relation-list button {
-  min-height: 28px;
+.relation-list > li > button:first-child {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 34px;
+  border: 1px solid #dfe5ec;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #344054;
+  cursor: pointer;
+  padding: 0 8px;
+  text-align: left;
+}
+
+.relation-list span {
   min-width: 0;
   overflow: hidden;
-  text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 12px;
+}
+
+.relation-list em {
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 20px;
+  padding: 0 7px;
 }
 
 :deep(.vue-flow__node-entity-table) {
@@ -1036,20 +1920,47 @@ onMounted(loadDesign);
   stroke-linecap: round;
 }
 
-@media (max-width: 1100px) {
+:deep(.vue-flow__edge.selected .vue-flow__edge-path) {
+  stroke: #0f62fe;
+  stroke-width: 3;
+}
+
+@media (max-width: 1260px) {
+  .entity-workspace {
+    grid-template-columns: 340px minmax(0, 1fr) 360px;
+  }
+}
+
+@media (max-width: 1060px) {
   .entity-workspace {
     grid-template-columns: 1fr;
+    overflow: auto;
   }
 
-  .entity-panel,
-  .detail-panel {
+  .entity-panel-left,
+  .entity-panel-right {
     border: 0;
     border-bottom: 1px solid #d6dce5;
-    max-height: none;
   }
 
   .entity-flow-shell {
-    min-height: 560px;
+    min-height: 580px;
+  }
+}
+
+@media (max-width: 640px) {
+  .entity-toolbar,
+  .flow-topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .designer-form :deep(.lc-form-row) {
+    flex-wrap: wrap;
+  }
+
+  .entity-node {
+    width: 292px;
   }
 }
 </style>

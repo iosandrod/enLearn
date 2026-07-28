@@ -19,7 +19,12 @@
     "workflow-api:build": "pnpm --dir services/workflow-api build",
     "workflow-api:start": "pnpm --dir services/workflow-api start",
     "workflow-api:typecheck": "pnpm --dir services/workflow-api typecheck",
-    "workflow-api:test": "pnpm --dir services/workflow-api test"
+    "workflow-api:test": "pnpm --dir services/workflow-api test",
+    "triggerdev:up": "docker compose --env-file infra/triggerdev/.env -f infra/triggerdev/docker-compose.yml up -d",
+    "triggerdev:down": "docker compose --env-file infra/triggerdev/.env -f infra/triggerdev/docker-compose.yml down",
+    "triggerdev:logs": "docker compose --env-file infra/triggerdev/.env -f infra/triggerdev/docker-compose.yml logs -f webapp supervisor",
+    "workflow-api:trigger:dev": "pnpm --dir services/workflow-api exec trigger dev start -a http://localhost:8030 --env-file %INIT_CWD%\\.env",
+    "workflow-api:trigger:deploy": "pnpm --dir services/workflow-api exec trigger deploy -a http://localhost:8030 --env-file %INIT_CWD%\\.env"
   },
   "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
 }

@@ -1,0 +1,17 @@
+
+Trigger.dev (4.5.7)
+
+[90mT[39m  Logging in to Trigger.dev
+[90m|[39m
+[32mo[39m  Creating authorization code
+[90m|[39m
+[90m|[39m  Created authorization code
+[90m|[39m
+[32mo[39m  Please visit the following URL to login:
+[90m|[39m  http://localhost:8030/account/authorization-code/X1xTUgyy-4uvgzqsnk1dod2C7Df7DPnRQ6Kwfe2LjMN9ehvdUKpceSfiHXDngU34
+[90m|[39m
+[90m|[39m  Browser auto-open disabled. Visit the URL above to login.
+[90m|[39m
+[32mo[39m  Waiting for you to login
+[90m|[39m
+[90m|[39m  Failed to get access token

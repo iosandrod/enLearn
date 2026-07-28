@@ -1,4 +1,4 @@
-import { task, tasks, wait } from '@trigger.dev/sdk/v3';
+import { task, tasks, wait } from '@trigger.dev/sdk';
 import {
   WORKFLOW_INSTANCE_TASK_ID,
   type WorkflowInstanceTaskPayload

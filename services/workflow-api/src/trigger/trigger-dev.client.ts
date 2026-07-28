@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
-import { runs, tasks, wait } from '@trigger.dev/sdk/v3';
+import { runs, tasks, wait } from '@trigger.dev/sdk';
 import { getWorkflowEnv } from '../common/env';
 import { createStandalonePostgresWorkflowRuntimeStore } from '../runtime/runtime.postgres-store';
 import type {
@@ -32,6 +32,7 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
 
   async triggerWorkflow(payload: WorkflowInstanceTaskPayload) {
     if (!this.useTriggerDev()) {
+      this.assertLocalFallbackEnabled();
       return this.triggerLocalWorkflow(payload);
     }
 
@@ -55,6 +56,7 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
     options: Record<string, unknown> = {}
   ) {
     if (!this.useTriggerDev()) {
+      this.assertLocalFallbackEnabled();
       return this.triggerLocalTask(taskId, payload);
     }
 
@@ -63,6 +65,7 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
 
   async createWaitpoint(options: { idempotencyKey: string; tags: string[] }) {
     if (!this.useTriggerDev()) {
+      this.assertLocalFallbackEnabled();
       return this.createToken(options);
     }
 
@@ -102,6 +105,7 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
 
   async completeWaitpoint(tokenId: string, decision: WorkflowTaskDecision) {
     if (!this.useTriggerDev()) {
+      this.assertLocalFallbackEnabled();
       const waiter = this.tokenWaiters.get(tokenId);
       if (!waiter) {
         throw new Error(`Local workflow waitpoint "${tokenId}" is not active.`);
@@ -124,6 +128,15 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
 
   private useTriggerDev() {
     return Boolean(getWorkflowEnv().TRIGGER_SECRET_KEY?.trim());
+  }
+
+  private assertLocalFallbackEnabled() {
+    const enabled = getWorkflowEnv().WORKFLOW_TRIGGER_LOCAL_FALLBACK_ENABLED === 'true';
+    if (!enabled) {
+      throw new Error(
+        'Trigger.dev is required for workflow execution. Set TRIGGER_SECRET_KEY or explicitly enable WORKFLOW_TRIGGER_LOCAL_FALLBACK_ENABLED=true.'
+      );
+    }
   }
 
   private triggerLocalWorkflow(payload: WorkflowInstanceTaskPayload) {
