@@ -108,6 +108,7 @@ const fallbackRoutes: AdminRouteNode[] = [
       { code: 'dashboard-home', title: '工作台', path: '/dashboard' },
       { code: 'low-code', title: '低代码页面', path: '/dashboard/low-code', permission_code: 'lowcode.pages.manage' },
       { code: 'low-code-designer', title: '可视化设计器', path: '/dashboard/low-code/designer', permission_code: 'lowcode.pages.manage' },
+      { code: 'file-management', title: '文件管理', path: '/dashboard/files' },
       { code: 'entity-design', title: '表格实体设计', path: '/dashboard/entity-design', permission_code: 'entity.design.manage' },
       { code: 'workflow-designer', title: '审批流设计器', path: '/dashboard/workflow/designer', permission_code: 'workflow.definitions.manage' },
       { code: 'trigger-workflow-designer', title: 'Trigger 编排器', path: '/dashboard/trigger-workflow/designer', permission_code: 'workflow.definitions.manage' }

@@ -1,9 +1,27 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
+import {
+  ForbiddenException,
+  ServiceUnavailableException,
+  UnauthorizedException
+} from '@nestjs/common';
 import { getEnv } from './env';
 import type { ServiceContext } from '../interfaces/service-executor';
 
 type ClientMode = 'public' | 'user' | 'admin';
+type CurrentUserResult = {
+  client: SupabaseClient;
+  user: User;
+};
+
+type CacheEntry<T> = {
+  expiresAt: number;
+  value: Promise<T>;
+};
+
+const AUTH_CACHE_TTL_MS = 10 * 60_000;
+const AUTH_CACHE_MAX_ENTRIES = 200;
+const currentUserCache = new Map<string, CacheEntry<CurrentUserResult>>();
+const userAuthorizationCache = new Map<string, CacheEntry<UserAuthorization>>();
 
 export type AccountRole = 'owner' | 'member';
 
@@ -72,6 +90,52 @@ function normalizeRequiredPermissions(requiredPermissions?: string | string[]) {
     .filter(Boolean);
 }
 
+function trimCache<T>(cache: Map<string, CacheEntry<T>>) {
+  const now = Date.now();
+
+  for (const [key, entry] of cache) {
+    if (entry.expiresAt <= now) {
+      cache.delete(key);
+    }
+  }
+
+  while (cache.size > AUTH_CACHE_MAX_ENTRIES) {
+    const oldestKey = cache.keys().next().value;
+    if (!oldestKey) return;
+    cache.delete(oldestKey);
+  }
+}
+
+function readCachedPromise<T>(
+  cache: Map<string, CacheEntry<T>>,
+  key: string,
+  factory: () => Promise<T>
+) {
+  trimCache(cache);
+
+  const now = Date.now();
+  const existing = cache.get(key);
+  if (existing && existing.expiresAt > now) {
+    return existing.value;
+  }
+
+  const value = factory().catch((error) => {
+    cache.delete(key);
+    throw error;
+  });
+  cache.set(key, {
+    expiresAt: now + AUTH_CACHE_TTL_MS,
+    value
+  });
+
+  return value;
+}
+
+function getAuthorizationCacheKey(context: ServiceContext) {
+  const authorization = context.authorization?.trim();
+  return authorization ? authorization : '';
+}
+
 function resolveSupabaseConfig() {
   const env = getEnv();
   const supabaseUrl =
@@ -129,21 +193,48 @@ export function createSupabaseClient(
   });
 }
 
-export async function getCurrentUser(context: ServiceContext) {
-  const client = createSupabaseClient('user', context);
-  const {
-    data: { user },
-    error
-  } = await client.auth.getUser();
+export async function getCurrentUser(context: ServiceContext): Promise<CurrentUserResult> {
+  const cacheKey = getAuthorizationCacheKey(context);
+  const loadCurrentUser = async () => {
+    const client = createSupabaseClient('user', context);
+    const {
+      data: { user },
+      error
+    } = await client.auth.getUser().catch((error: unknown) => {
+      throw new ServiceUnavailableException(
+        error instanceof Error
+          ? `Authentication service unavailable: ${error.message}`
+          : 'Authentication service unavailable.'
+      );
+    });
 
-  if (error || !user) {
-    throw new UnauthorizedException('Authentication required.');
-  }
+    if (error || !user) {
+      throw new UnauthorizedException('Authentication required.');
+    }
 
-  return { client, user };
+    return { client, user };
+  };
+
+  return cacheKey
+    ? readCachedPromise(currentUserCache, cacheKey, loadCurrentUser)
+    : loadCurrentUser();
 }
 
 export async function getUserAuthorization(
+  client: SupabaseClient,
+  userId: string
+): Promise<UserAuthorization> {
+  const cacheKey = userId.trim();
+  if (cacheKey) {
+    return readCachedPromise(userAuthorizationCache, cacheKey, () =>
+      loadUserAuthorization(client, userId)
+    );
+  }
+
+  return loadUserAuthorization(client, userId);
+}
+
+async function loadUserAuthorization(
   client: SupabaseClient,
   userId: string
 ): Promise<UserAuthorization> {

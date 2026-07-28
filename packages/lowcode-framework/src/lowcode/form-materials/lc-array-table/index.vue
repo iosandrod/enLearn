@@ -121,33 +121,14 @@
       </vxe-table>
     </div>
 
-    <vxe-modal
-      v-model="objectEditor.visible"
-      :title="objectEditor.title"
-      width="min(720px, calc(100vw - 48px))"
-      show-footer
-      transfer
-      @close="closeObjectEditor"
-    >
-      <LowCodeForm
-        :key="objectEditor.key"
-        :schema="objectEditorSchema"
-        :model-value="objectEditor.value"
-        @update:model-value="updateObjectEditorValue"
-      />
-      <template #footer>
-        <div class="lc-array-table__object-footer">
-          <vxe-button @click="closeObjectEditor">取消</vxe-button>
-          <vxe-button status="primary" @click="confirmObjectEditor">确定</vxe-button>
-        </div>
-      </template>
-    </vxe-modal>
+    <LcVxeModalRenderer :modals="modalConfigs" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, h, reactive, ref, watch } from 'vue';
 import type { LowCodeField, LowCodeFieldComponent, LowCodeOption } from '../../../types/lowcode';
+import LcVxeModalRenderer, { type LcVxeModalConfig } from '../../../components/LcVxeModalRenderer';
 import LcJsonEditor from '../lc-json-editor/index.vue';
 import type { LowCodeFormMaterialProps } from '../types';
 
@@ -209,6 +190,34 @@ const objectEditorSchema = computed(() => ({
   fields: resolveObjectEditorFields(objectEditor.column, objectEditor.value),
   actions: [],
 }));
+const modalConfigs = computed<LcVxeModalConfig[]>(() => [
+  {
+    id: 'object-editor',
+    visible: objectEditor.visible,
+    title: objectEditor.title,
+    width: 'min(720px, calc(100vw - 48px))',
+    props: {
+      showFooter: true,
+      transfer: true,
+    },
+    onVisibleChange: (visible) => {
+      objectEditor.visible = visible;
+    },
+    onClose: closeObjectEditor,
+    body: () =>
+      h(LowCodeForm, {
+        key: objectEditor.key,
+        schema: objectEditorSchema.value,
+        modelValue: objectEditor.value,
+        'onUpdate:modelValue': updateObjectEditorValue,
+      }),
+    footer: () =>
+      h('div', { class: 'lc-array-table__object-footer' }, [
+        h('vxe-button', { onClick: closeObjectEditor }, { default: () => '取消' }),
+        h('vxe-button', { status: 'primary', onClick: confirmObjectEditor }, { default: () => '确定' }),
+      ]),
+  },
+]);
 
 watch(
   () => props.modelValue,

@@ -72,51 +72,14 @@
       </div>
     </div>
 
-    <vxe-modal
-      v-model="pickerVisible"
-      title="关联实体表"
-      width="min(720px, calc(100vw - 48px))"
-      height="min(560px, calc(100vh - 80px))"
-      show-footer
-      resize
-      transfer
-    >
-      <div class="eds-picker">
-        <vxe-input v-model="pickerKeyword" placeholder="搜索实体名称 / 表名" clearable />
-        <div v-if="pickerLoading" class="eds-picker__state">正在加载实体表...</div>
-        <div v-else-if="!filteredTables.length" class="eds-picker__state">暂无可关联实体</div>
-        <template v-else>
-          <label
-            v-for="table in filteredTables"
-            :key="table.id"
-            class="eds-picker-row"
-            :class="{ 'is-linked': isLinked(table.id) }"
-          >
-            <input
-              type="checkbox"
-              :checked="pickedEntityIds.includes(table.id)"
-              :disabled="isLinked(table.id)"
-              @change="togglePickedEntity(table.id, ($event.target as HTMLInputElement).checked)"
-            />
-            <span>
-              <strong>{{ table.title || table.code }}</strong>
-              <small>{{ table.full_name || table.table_name }} · {{ table.columns?.length || 0 }} 字段</small>
-            </span>
-            <em v-if="isLinked(table.id)">已关联</em>
-          </label>
-        </template>
-      </div>
-      <template #footer>
-        <vxe-button @click="pickerVisible = false">取消</vxe-button>
-        <vxe-button status="primary" @click="confirmLinkEntities">确认关联</vxe-button>
-      </template>
-    </vxe-modal>
+    <LcVxeModalRenderer :modals="modalConfigs" />
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, h, ref } from 'vue';
 import { cloneDeep } from 'lodash-es';
+import LcVxeModalRenderer, { type LcVxeModalConfig } from '../../../../../components/LcVxeModalRenderer';
 import { ElMessage } from '../../../common/designer-ui';
 import { useVisualData } from '../../../../hooks/useVisualData';
 import { useLowCodeHost } from '../../../../../core/host';
@@ -174,6 +137,74 @@ const filteredTables = computed(() => {
       .some((value) => String(value).toLowerCase().includes(text)),
   );
 });
+
+const modalConfigs = computed<LcVxeModalConfig[]>(() => [
+  {
+    id: 'entity-picker',
+    visible: pickerVisible.value,
+    title: '关联实体表',
+    width: 'min(720px, calc(100vw - 48px))',
+    height: 'min(560px, calc(100vh - 80px))',
+    props: {
+      showFooter: true,
+      resize: true,
+      transfer: true,
+    },
+    onVisibleChange: (visible) => {
+      pickerVisible.value = visible;
+    },
+    body: () =>
+      h('div', { class: 'eds-picker' }, [
+        h('vxe-input', {
+          modelValue: pickerKeyword.value,
+          placeholder: '搜索实体名称 / 表名',
+          clearable: true,
+          'onUpdate:modelValue': (value: string) => {
+            pickerKeyword.value = value;
+          },
+        }),
+        renderEntityPickerContent(),
+      ]),
+    footer: () => [
+      h('vxe-button', { onClick: () => (pickerVisible.value = false) }, { default: () => '取消' }),
+      h('vxe-button', { status: 'primary', onClick: confirmLinkEntities }, { default: () => '确认关联' }),
+    ],
+  },
+]);
+
+function renderEntityPickerContent() {
+  if (pickerLoading.value) {
+    return h('div', { class: 'eds-picker__state' }, '正在加载实体表...');
+  }
+
+  if (!filteredTables.value.length) {
+    return h('div', { class: 'eds-picker__state' }, '暂无可关联实体');
+  }
+
+  return filteredTables.value.map((table) =>
+    h(
+      'label',
+      {
+        key: table.id,
+        class: ['eds-picker-row', { 'is-linked': isLinked(table.id) }],
+      },
+      [
+        h('input', {
+          type: 'checkbox',
+          checked: pickedEntityIds.value.includes(table.id),
+          disabled: isLinked(table.id),
+          onChange: (event: Event) =>
+            togglePickedEntity(table.id, (event.target as HTMLInputElement).checked),
+        }),
+        h('span', [
+          h('strong', table.title || table.code),
+          h('small', `${table.full_name || table.table_name} · ${table.columns?.length || 0} 字段`),
+        ]),
+        isLinked(table.id) ? h('em', '已关联') : null,
+      ],
+    ),
+  );
+}
 
 function getServiceApi() {
   try {

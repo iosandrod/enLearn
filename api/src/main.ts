@@ -3,6 +3,7 @@ import 'reflect-metadata';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { responseCompressionMiddleware } from './common/middleware/compression.middleware';
 import { getEnv } from './common/utils/env';
 
 async function bootstrap() {
@@ -14,6 +15,7 @@ async function bootstrap() {
     origin: true,
     credentials: true
   });
+  app.use(responseCompressionMiddleware);
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({

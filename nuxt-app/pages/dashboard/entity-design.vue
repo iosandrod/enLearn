@@ -31,54 +31,7 @@
       </div>
     </header>
 
-    <vxe-modal
-      v-model="loadTablesModalOpen"
-      title="加载真实表"
-      width="min(860px, calc(100vw - 48px))"
-      height="min(640px, calc(100vh - 80px))"
-      show-footer
-      transfer
-    >
-      <div class="physical-table-loader">
-        <div class="physical-table-loader__summary">
-          <strong>{{ selectedPhysicalTables.length }}</strong>
-          <span>已选择 / {{ physicalTables.length }} 张真实表</span>
-        </div>
-        <vxe-table
-          border
-          show-overflow
-          size="small"
-          :data="physicalTables"
-          :row-config="{ keyField: 'fullName' }"
-          :checkbox-config="{ checkField: 'checked' }"
-        >
-          <vxe-column type="checkbox" width="52" />
-          <vxe-column field="fullName" title="真实表" min-width="220" />
-          <vxe-column field="title" title="显示名称" min-width="180" />
-          <vxe-column field="columnCount" title="字段数" width="96" align="right" />
-          <vxe-column field="existsInMetadata" title="Metadata" width="120" align="center">
-            <template #default="{ row }">
-              <span :class="['metadata-pill', row.existsInMetadata ? 'is-linked' : 'is-new']">
-                {{ row.existsInMetadata ? '已存在' : '待同步' }}
-              </span>
-            </template>
-          </vxe-column>
-        </vxe-table>
-      </div>
-      <template #footer>
-        <div class="load-table-footer">
-          <vxe-button @click="loadTablesModalOpen = false">取消</vxe-button>
-          <vxe-button
-            status="primary"
-            :loading="importingPhysicalTables"
-            :disabled="!selectedPhysicalTables.length"
-            @click="confirmLoadTables"
-          >
-            加载选中表
-          </vxe-button>
-        </div>
-      </template>
-    </vxe-modal>
+    <LcVxeModalRenderer :modals="modalConfigs" />
 
     <div class="entity-workspace">
       <aside class="entity-panel entity-panel-left">
@@ -349,8 +302,10 @@ import {
   type Node,
   type NodeMouseEvent
 } from '@vue-flow/core';
+import { h } from 'vue';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
+import LcVxeModalRenderer, { type LcVxeModalConfig } from '~/components/LcVxeModalRenderer';
 import {
   entityColumnsTableFormSchema,
   entityColumnFormSchema,
@@ -501,6 +456,74 @@ const relationOptionSources = computed(() => ({
   sourceColumns: sourceColumnOptions.value,
   targetColumns: targetColumnOptions.value
 }));
+const modalConfigs = computed<LcVxeModalConfig[]>(() => [
+  {
+    id: 'load-physical-tables',
+    visible: loadTablesModalOpen.value,
+    title: '加载真实表',
+    width: 'min(860px, calc(100vw - 48px))',
+    height: 'min(640px, calc(100vh - 80px))',
+    props: {
+      showFooter: true,
+      transfer: true,
+    },
+    onVisibleChange: (visible) => {
+      loadTablesModalOpen.value = visible;
+    },
+    body: () =>
+      h('div', { class: 'physical-table-loader' }, [
+        h('div', { class: 'physical-table-loader__summary' }, [
+          h('strong', String(selectedPhysicalTables.value.length)),
+          h('span', `已选择 / ${physicalTables.value.length} 张真实表`),
+        ]),
+        h(
+          'vxe-table',
+          {
+            border: true,
+            showOverflow: true,
+            size: 'small',
+            data: physicalTables.value,
+            rowConfig: { keyField: 'fullName' },
+            checkboxConfig: { checkField: 'checked' },
+          },
+          {
+            default: () => [
+              h('vxe-column', { type: 'checkbox', width: 52 }),
+              h('vxe-column', { field: 'fullName', title: '真实表', minWidth: 220 }),
+              h('vxe-column', { field: 'title', title: '显示名称', minWidth: 180 }),
+              h('vxe-column', { field: 'columnCount', title: '字段数', width: 96, align: 'right' }),
+              h(
+                'vxe-column',
+                { field: 'existsInMetadata', title: 'Metadata', width: 120, align: 'center' },
+                {
+                  default: ({ row }: { row: PhysicalTableOption }) =>
+                    h(
+                      'span',
+                      { class: ['metadata-pill', row.existsInMetadata ? 'is-linked' : 'is-new'] },
+                      row.existsInMetadata ? '已存在' : '待同步',
+                    ),
+                },
+              ),
+            ],
+          },
+        ),
+      ]),
+    footer: () =>
+      h('div', { class: 'load-table-footer' }, [
+        h('vxe-button', { onClick: () => (loadTablesModalOpen.value = false) }, { default: () => '取消' }),
+        h(
+          'vxe-button',
+          {
+            status: 'primary',
+            loading: importingPhysicalTables.value,
+            disabled: !selectedPhysicalTables.value.length,
+            onClick: confirmLoadTables,
+          },
+          { default: () => '加载选中表' },
+        ),
+      ]),
+  },
+]);
 
 const tableDesignerSchema = computed<LowCodeFormSchema>(() =>
   prepareSchema(entityTableFormSchema, {

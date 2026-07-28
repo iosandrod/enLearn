@@ -19,7 +19,9 @@ type NormalizedServiceInvoke = {
     | 'posts'
     | 'notification'
     | 'workflow'
-    | 'entityDesign';
+    | 'entityDesign'
+    | 'files'
+    | 'chat';
   serviceMethod: string;
   postData: Record<string, unknown>;
 };
@@ -44,10 +46,12 @@ function normalizeBody(body: ServiceInvokeDto): NormalizedServiceInvoke {
     serviceName !== 'posts' &&
     serviceName !== 'notification' &&
     serviceName !== 'workflow' &&
-    serviceName !== 'entityDesign'
+    serviceName !== 'entityDesign' &&
+    serviceName !== 'files' &&
+    serviceName !== 'chat'
   ) {
     throw new BadRequestException(
-      'serviceName must be either "account", "payment", "user", "lowcode", "admin", "posts", "notification", "workflow", or "entityDesign".'
+      'serviceName must be either "account", "payment", "user", "lowcode", "admin", "posts", "notification", "workflow", "entityDesign", "files", or "chat".'
     );
   }
 

@@ -11,6 +11,8 @@ import { UserModule } from './user/user.module';
 import { NotificationModule } from './notification/notification.module';
 import { WorkflowModule } from './workflow/workflow.module';
 import { EntityDesignModule } from './entity-design/entity-design.module';
+import { FilesModule } from './files/files.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -23,7 +25,9 @@ import { EntityDesignModule } from './entity-design/entity-design.module';
     PostsModule,
     NotificationModule,
     WorkflowModule,
-    EntityDesignModule
+    EntityDesignModule,
+    FilesModule,
+    ChatModule
   ],
   controllers: [ServiceGatewayController],
   providers: [ServiceRouterService]

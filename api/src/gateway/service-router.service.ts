@@ -12,6 +12,8 @@ import { PostsService } from '../posts/posts.service';
 import { UserService } from '../user/user.service';
 import { WorkflowService } from '../workflow/workflow.service';
 import { EntityDesignService } from '../entity-design/entity-design.service';
+import { FilesService } from '../files/files.service';
+import { ChatService } from '../chat/chat.service';
 
 @Injectable()
 export class ServiceRouterService {
@@ -33,7 +35,11 @@ export class ServiceRouterService {
     @Inject(WorkflowService)
     private readonly workflowService: WorkflowService,
     @Inject(EntityDesignService)
-    private readonly entityDesignService: EntityDesignService
+    private readonly entityDesignService: EntityDesignService,
+    @Inject(FilesService)
+    private readonly filesService: FilesService,
+    @Inject(ChatService)
+    private readonly chatService: ChatService
   ) {}
 
   async invoke(
@@ -66,6 +72,10 @@ export class ServiceRouterService {
         return this.workflowService;
       case 'entityDesign':
         return this.entityDesignService;
+      case 'files':
+        return this.filesService;
+      case 'chat':
+        return this.chatService;
       default:
         throw new BadRequestException(`Unsupported serviceName: ${serviceName}`);
     }
