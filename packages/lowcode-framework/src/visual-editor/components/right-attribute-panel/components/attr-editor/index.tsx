@@ -21,7 +21,7 @@ import type { LowCodeField } from '../../../../../types/lowcode';
 
 export const AttrEditor = defineComponent({
   setup() {
-    const { visualConfig, currentBlock, jsonData } = useVisualData();
+    const { visualConfig, currentBlock, jsonData, historyState } = useVisualData();
 
     const formState = computed(() => {
       const block = currentBlock.value;
@@ -52,7 +52,7 @@ export const AttrEditor = defineComponent({
         {currentBlock.value?._vid ? (
           <div class="material-prop-form">
             <LowCodeForm
-              key={`${currentBlock.value._vid}-${currentBlock.value.componentKey}`}
+              key={`${currentBlock.value._vid}-${currentBlock.value.componentKey}-${historyState.restoreVersion}`}
               schema={formState.value.schema}
               modelValue={formState.value.model}
               optionSources={formState.value.optionSources}

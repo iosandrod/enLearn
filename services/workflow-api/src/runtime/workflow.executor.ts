@@ -9,11 +9,14 @@ import { isRecord, readString } from './runtime.helpers';
 import type {
   NodeInstanceRecord,
   RuntimeActor,
+  WorkflowCcRecord,
   WorkflowEdgeSnapshot,
   WorkflowNodeSnapshot,
   WorkflowTaskCandidateRecord,
   WorkflowTaskRecord
 } from './runtime.types';
+
+const NOTIFICATION_DISPATCH_TASK_ID = 'notification.dispatch';
 
 export type WorkflowWaitDriver = {
   createToken(input: {
@@ -23,6 +26,11 @@ export type WorkflowWaitDriver = {
   waitForToken<T>(tokenId: string): Promise<T>;
   waitFor(input: { seconds: number; idempotencyKey: string }): Promise<void>;
   waitUntil(input: { date: Date; idempotencyKey: string }): Promise<void>;
+  triggerTask?(
+    taskId: string,
+    payload: Record<string, unknown>,
+    options?: Record<string, unknown>
+  ): Promise<unknown>;
 };
 
 export async function executeWorkflowInstance(
@@ -134,7 +142,7 @@ async function enterNode(
         await completeNodeProjection(payload, store, node, nodeInstance, actor);
         return moveToNextNode(payload, store, waits, definition, node.id, pathKey, actor);
       case 'cc':
-        await createCcItems(payload, store, node, nodeInstance, actor);
+        await createCcItems(payload, store, waits, node, nodeInstance, actor);
         await completeNodeProjection(payload, store, node, nodeInstance, actor);
         return moveToNextNode(payload, store, waits, definition, node.id, pathKey, actor);
       case 'serviceTask':
@@ -396,7 +404,155 @@ async function createHumanTasks(
     });
   }
 
-  return store.createTasks(taskInputs);
+  const tasks = await store.createTasks(taskInputs);
+  await emitTaskCreatedNotifications(payload, store, waits, tasks, taskInputs, actor);
+  return tasks;
+}
+
+async function emitTaskCreatedNotifications(
+  payload: WorkflowInstanceTaskPayload,
+  store: WorkflowRuntimeStore,
+  waits: WorkflowWaitDriver,
+  tasks: WorkflowTaskRecord[],
+  taskInputs: CreateWorkflowTaskInput[],
+  actor: RuntimeActor
+) {
+  await Promise.all(
+    tasks.map((workflowTask, index) => {
+      const recipients = recipientIdsForTask(workflowTask, taskInputs[index]);
+      return triggerNotificationEvent(payload, store, waits, actor, {
+        eventType: 'approval.task.created',
+        sourceType: 'workflow_task',
+        sourceId: workflowTask.id,
+        idempotencyKey: `approval-task:${workflowTask.id}:created`,
+        payload: {
+          title: workflowTask.title,
+          taskId: workflowTask.id,
+          instanceId: workflowTask.processInstanceId,
+          nodeId: workflowTask.nodeId,
+          recipientIds: recipients,
+          linkUrl: `/dashboard/workflow/tasks/${workflowTask.id}`,
+          priority: 'normal'
+        }
+      });
+    })
+  );
+}
+
+async function emitCcCreatedNotifications(
+  payload: WorkflowInstanceTaskPayload,
+  store: WorkflowRuntimeStore,
+  waits: WorkflowWaitDriver,
+  items: WorkflowCcRecord[],
+  actor: RuntimeActor
+) {
+  await Promise.all(
+    items.map((item) => {
+      const recipients = recipientIdsForCc(item);
+      return triggerNotificationEvent(payload, store, waits, actor, {
+        eventType: 'approval.cc.created',
+        sourceType: 'workflow_cc',
+        sourceId: item.id,
+        idempotencyKey: `approval-cc:${item.id}:created`,
+        payload: {
+          title: item.title,
+          ccId: item.id,
+          instanceId: item.processInstanceId,
+          nodeId: item.nodeId,
+          recipientIds: recipients,
+          linkUrl: `/dashboard/workflow/instances/${item.processInstanceId}`,
+          priority: 'normal'
+        }
+      });
+    })
+  );
+}
+
+async function triggerNotificationEvent(
+  payload: WorkflowInstanceTaskPayload,
+  store: WorkflowRuntimeStore,
+  waits: WorkflowWaitDriver,
+  actor: RuntimeActor,
+  input: {
+    eventType: string;
+    sourceType: string;
+    sourceId: string;
+    idempotencyKey: string;
+    payload: Record<string, unknown>;
+  }
+) {
+  if (!waits.triggerTask) return;
+
+  try {
+    await waits.triggerTask(
+      NOTIFICATION_DISPATCH_TASK_ID,
+      {
+        tenantId: payload.tenantId,
+        event: {
+          tenantId: payload.tenantId,
+          eventType: input.eventType,
+          sourceType: input.sourceType,
+          sourceId: input.sourceId,
+          actorId: actor.userId,
+          payload: input.payload,
+          idempotencyKey: input.idempotencyKey
+        }
+      },
+      {
+        idempotencyKey: `notification:${input.idempotencyKey}`,
+        tags: [
+          `tenant:${payload.tenantId}`,
+          `workflow-instance:${payload.instanceId}`,
+          `notification:${input.eventType}`
+        ]
+      }
+    );
+  } catch (error) {
+    await store.recordHistory(
+      payload.tenantId,
+      payload.instanceId,
+      'NOTIFICATION_TRIGGER_FAILED',
+      actor.userId,
+      {
+        eventType: input.eventType,
+        sourceType: input.sourceType,
+        sourceId: input.sourceId,
+        message: error instanceof Error ? error.message : String(error)
+      },
+      `notification:${input.idempotencyKey}:trigger-failed`
+    );
+  }
+}
+
+function recipientIdsForTask(
+  task: WorkflowTaskRecord,
+  input: CreateWorkflowTaskInput | undefined
+) {
+  return [
+    ...new Set(
+      [
+        task.assigneeId,
+        ...(input?.candidates ?? [])
+          .filter((candidate) => candidate.candidateType === 'user')
+          .map((candidate) => candidate.candidateId)
+      ]
+        .map((id) => (typeof id === 'string' ? id.trim() : ''))
+        .filter(Boolean)
+    )
+  ];
+}
+
+function recipientIdsForCc(item: WorkflowCcRecord) {
+  return [
+    ...new Set(
+      [
+        item.recipientId,
+        item.candidateType === 'user' ? item.candidateId : undefined
+      ]
+        .map((id) => (typeof id === 'string' ? id.trim() : ''))
+        .filter(Boolean)
+    )
+  ];
 }
 
 async function waitForAnyTaskDecision(
@@ -415,6 +571,7 @@ async function waitForAnyTaskDecision(
 async function createCcItems(
   payload: WorkflowInstanceTaskPayload,
   store: WorkflowRuntimeStore,
+  waits: WorkflowWaitDriver,
   node: WorkflowNodeSnapshot,
   nodeInstance: NodeInstanceRecord,
   actor: RuntimeActor
@@ -437,6 +594,7 @@ async function createCcItems(
       candidateId: candidate.id
     }))
   );
+  await emitCcCreatedNotifications(payload, store, waits, items, actor);
   await store.recordHistory(
     payload.tenantId,
     payload.instanceId,
@@ -800,4 +958,3 @@ type RuntimeDefinition = {
 };
 
 type ExecutionResult = 'continued' | 'stopped';
-

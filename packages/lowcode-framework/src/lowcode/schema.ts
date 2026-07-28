@@ -3,6 +3,7 @@ import type {
   LowCodeEventHandler,
   LowCodePageBlock,
   LowCodePageDataSource,
+  LowCodePageOverlayBlock,
   LowCodePageSchema,
   LowCodeRuntimeDirective,
   LowCodeTabPane,
@@ -72,6 +73,12 @@ function readSchemaVersion(value: unknown) {
   return typeof value === 'number' && Number.isFinite(value) && value > 0
     ? value
     : LOW_CODE_SCHEMA_VERSION;
+}
+
+function normalizePageType(value: unknown) {
+  return value === 'list' || value === 'edit' || value === 'detail' || value === 'custom'
+    ? value
+    : 'custom';
 }
 
 function normalizeBlockKind(kind: string) {
@@ -152,6 +159,14 @@ function normalizeBlocks(value: unknown): LowCodePageBlock[] {
     : [];
 }
 
+function normalizeOverlays(value: unknown): LowCodePageOverlayBlock[] {
+  return Array.isArray(value)
+    ? (value
+        .map((block) => normalizeBlock(block))
+        .filter((block) => isRecord(block) && (block.kind === 'modal' || block.kind === 'drawer')) as LowCodePageOverlayBlock[])
+    : [];
+}
+
 function normalizeTabs(value: unknown): LowCodeTabPane[] {
   return Array.isArray(value)
     ? value
@@ -189,6 +204,9 @@ function normalizeBlock(value: unknown) {
     return {
       ...block,
       blocks: normalizeBlocks(value.blocks),
+      ...((kind === 'modal' || kind === 'drawer') && Array.isArray(value.overlays)
+        ? { overlays: normalizeOverlays(value.overlays) }
+        : {}),
     };
   }
 
@@ -227,6 +245,7 @@ export function normalizeLowCodePageSchema(
     code,
     route,
     title,
+    pageType: normalizePageType(value.pageType),
     ...(description ? { description } : {}),
     layout:
       value.layout === 'default' || value.layout === 'dashboard' || value.layout === 'blank'
@@ -249,6 +268,7 @@ export function normalizeLowCodePageSchema(
     dataSources: normalizeDataSources(value.dataSources),
     ...(eventHandlers.length ? { eventHandlers } : {}),
     blocks: normalizeBlocks(value.blocks),
+    ...(Array.isArray(value.overlays) ? { overlays: normalizeOverlays(value.overlays) } : {}),
   };
 }
 
@@ -528,6 +548,10 @@ function validateBlock(
     kind === 'drawer'
   ) {
     validateNestedBlocks(block.blocks, schema, issues, blockIds, `${path}.blocks`);
+
+    if (kind === 'modal' || kind === 'drawer') {
+      validateNestedBlocks(block.overlays, schema, issues, blockIds, `${path}.overlays`);
+    }
   }
 }
 
@@ -561,6 +585,9 @@ export function validateLowCodePageSchema(schema: LowCodePageSchema) {
   const blockIds = new Set<string>();
   schema.blocks.forEach((block, index) =>
     validateBlock(block, schema, issues, blockIds, `blocks.${index}`)
+  );
+  (schema.overlays ?? []).forEach((block, index) =>
+    validateBlock(block, schema, issues, blockIds, `overlays.${index}`)
   );
 
   return issues;

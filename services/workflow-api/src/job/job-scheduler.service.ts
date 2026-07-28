@@ -1,4 +1,5 @@
 import { Inject, Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { getWorkflowEnv } from '../common/env';
 import { DatabaseService } from '../common/database.service';
 import { JobService } from './job.service';
 
@@ -15,7 +16,8 @@ export class JobSchedulerService implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   onModuleInit() {
-    if (process.env.WORKFLOW_INTERVAL_SCHEDULER_ENABLED === 'false') {
+    const env = getWorkflowEnv();
+    if (env.WORKFLOW_INTERVAL_SCHEDULER_ENABLED === 'false') {
       this.logger.log('Workflow interval scheduler disabled.');
       return;
     }

@@ -3,15 +3,21 @@
     <header class="outline-panel__header">
       <div>
         <strong>{{ currentPage.title || '当前页面' }}</strong>
-        <span>{{ currentPage.blocks.length }} 个节点</span>
+        <span>{{ totalNodeCount }} 个节点</span>
       </div>
     </header>
 
-    <LayerBlockList
-      v-if="currentPage.blocks.length"
-      v-model:blocks="currentBlocks"
-    />
-    <vxe-empty v-else content="暂无节点" />
+    <section v-if="currentPage.blocks.length" class="outline-group">
+      <div class="outline-group__title">页面布局</div>
+      <LayerBlockList v-model:blocks="currentBlocks" />
+    </section>
+
+    <section v-if="currentOverlays.length" class="outline-group">
+      <div class="outline-group__title">页面弹层</div>
+      <LayerBlockList v-model:blocks="currentOverlays" overlay-list />
+    </section>
+
+    <vxe-empty v-if="!totalNodeCount" content="暂无节点" />
   </section>
 </template>
 
@@ -35,6 +41,20 @@
       currentPage.value.blocks = blocks;
     },
   });
+
+  const currentOverlays = computed({
+    get: () => {
+      currentPage.value.overlays ??= [];
+      return currentPage.value.overlays;
+    },
+    set: (blocks) => {
+      currentPage.value.overlays = blocks;
+    },
+  });
+
+  const totalNodeCount = computed(
+    () => currentPage.value.blocks.length + currentOverlays.value.length,
+  );
 </script>
 
 <style lang="scss" scoped>
@@ -76,5 +96,20 @@
       font-size: 12px;
       line-height: 18px;
     }
+  }
+
+  .outline-group {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .outline-group__title {
+    padding: 0 4px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
   }
 </style>

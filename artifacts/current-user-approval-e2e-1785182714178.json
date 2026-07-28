@@ -1,0 +1,243 @@
+{
+  "runId": 1785182714178,
+  "startedAt": "2026-07-27T20:05:14.178Z",
+  "apiBase": "http://localhost:3002/api",
+  "steps": [
+    {
+      "name": "signin",
+      "at": "2026-07-27T20:05:16.101Z",
+      "userId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "email": "1151685410@qq.com",
+      "role": "admin"
+    },
+    {
+      "name": "messages_before",
+      "at": "2026-07-27T20:05:16.752Z",
+      "count": 0
+    },
+    {
+      "name": "model_saved",
+      "at": "2026-07-27T20:05:17.006Z",
+      "modelId": "c1300ad5-ac19-418f-96b8-87ab249efeb2",
+      "code": "codex_current_user_approval_1785182714178",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-27T20:05:17.905Z",
+      "definitionId": "628518c3-f506-48b3-a713-02e91a6a752d",
+      "version": 1,
+      "status": "active"
+    },
+    {
+      "name": "instance_started",
+      "at": "2026-07-27T20:05:19.768Z",
+      "instanceId": "b82430e5-64b3-4693-a446-aae88f822392",
+      "status": "running",
+      "triggerRunId": "local-workflow-557a7231-63c3-4a9f-a8bc-26e7fda7b69b",
+      "taskCount": 0
+    },
+    {
+      "name": "todo_task_found",
+      "at": "2026-07-27T20:05:22.249Z",
+      "ok": true,
+      "attemptsMs": 2481,
+      "value": {
+        "id": "d8ae31dc-ef79-4a4f-96e6-4798a64d0d79",
+        "tenantId": "default",
+        "processInstanceId": "b82430e5-64b3-4693-a446-aae88f822392",
+        "nodeInstanceId": "cab8ec22-30b1-4cf0-a060-b82d81e72cab",
+        "nodeId": "approval",
+        "title": "Codex current user approval 1785182714178 - Current User Review",
+        "status": "pending",
+        "assigneeId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+        "waitpointTokenId": "local-waitpoint-52a7a17b-44d2-4e3e-960b-ea013731b5b9",
+        "createdAt": "2026-07-27T20:05:20.909Z"
+      }
+    },
+    {
+      "name": "approval_message_found",
+      "at": "2026-07-27T20:05:22.655Z",
+      "ok": true,
+      "attemptsMs": 406,
+      "value": {
+        "id": "a4c062b8-81f7-4bf0-92e7-0a6cbef681f3",
+        "tenant_id": "default",
+        "event_id": "94610ee7-ca58-4b77-aa58-420585c26c2e",
+        "recipient_id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+        "category": "approval",
+        "channel": "inbox",
+        "title": "新的审批待办：Codex current user approval 1785182714178 - Current User Review",
+        "content": "请及时处理审批任务。",
+        "link_url": "/dashboard/workflow/tasks/d8ae31dc-ef79-4a4f-96e6-4798a64d0d79",
+        "priority": "normal",
+        "source_type": "workflow_task",
+        "source_id": "d8ae31dc-ef79-4a4f-96e6-4798a64d0d79",
+        "metadata": {
+          "eventType": "approval.task.created",
+          "templateCode": "approval_task_created_local_inbox"
+        },
+        "read_at": null,
+        "archived_at": null,
+        "created_at": "2026-07-27T20:05:21.981501+00:00",
+        "updated_at": "2026-07-27T20:05:21.981501+00:00",
+        "read_status": "未读",
+        "category_label": "审批通知",
+        "priority_label": "普通",
+        "createdAt": "2026-07-27T20:05:21.981501+00:00",
+        "readAt": null,
+        "linkUrl": "/dashboard/workflow/tasks/d8ae31dc-ef79-4a4f-96e6-4798a64d0d79",
+        "sourceType": "workflow_task",
+        "sourceId": "d8ae31dc-ef79-4a4f-96e6-4798a64d0d79"
+      }
+    },
+    {
+      "name": "task_loaded",
+      "at": "2026-07-27T20:05:22.911Z",
+      "taskId": "d8ae31dc-ef79-4a4f-96e6-4798a64d0d79",
+      "status": "pending",
+      "assigneeId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "candidates": [
+        {
+          "id": "f9f8891f-ab16-4dd4-96e7-3c67c6c8af35",
+          "taskId": "d8ae31dc-ef79-4a4f-96e6-4798a64d0d79",
+          "candidateType": "user",
+          "candidateId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+          "snapshot": {
+            "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd"
+          }
+        }
+      ]
+    },
+    {
+      "name": "task_approved",
+      "at": "2026-07-27T20:05:24.627Z",
+      "instanceId": "b82430e5-64b3-4693-a446-aae88f822392",
+      "status": "running"
+    },
+    {
+      "name": "instance_completed",
+      "at": "2026-07-27T20:05:26.137Z",
+      "ok": true,
+      "attemptsMs": 1510,
+      "value": {
+        "id": "b82430e5-64b3-4693-a446-aae88f822392",
+        "tenantId": "default",
+        "definitionId": "628518c3-f506-48b3-a713-02e91a6a752d",
+        "definitionVersion": 1,
+        "businessKey": "codex-current-user-approval:1785182714178",
+        "documentType": "codex_current_user_approval",
+        "documentId": "doc-1785182714178",
+        "title": "Codex current user approval 1785182714178",
+        "status": "approved",
+        "initiatorId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+        "triggerRunId": "local-workflow-557a7231-63c3-4a9f-a8bc-26e7fda7b69b",
+        "triggerTaskId": "workflow.instance.run",
+        "startedAt": "2026-07-27T20:05:18.803Z",
+        "endedAt": "2026-07-27T20:05:26.159Z",
+        "variables": [
+          {
+            "id": "bf16c500-638a-40dd-a577-aa9f6add0a88",
+            "processInstanceId": "b82430e5-64b3-4693-a446-aae88f822392",
+            "key": "amount",
+            "value": 100,
+            "valueType": "number",
+            "updatedAt": "2026-07-27T20:05:18.803Z"
+          },
+          {
+            "id": "55e53560-2161-48f6-9cbc-946a16acf59a",
+            "processInstanceId": "b82430e5-64b3-4693-a446-aae88f822392",
+            "key": "requestedBy",
+            "value": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+            "valueType": "string",
+            "updatedAt": "2026-07-27T20:05:18.803Z"
+          }
+        ],
+        "comments": [
+          {
+            "id": "d7500a8b-f4bb-4b76-b791-d9d4e3760763",
+            "tenantId": "default",
+            "processInstanceId": "b82430e5-64b3-4693-a446-aae88f822392",
+            "taskId": "d8ae31dc-ef79-4a4f-96e6-4798a64d0d79",
+            "nodeId": "approval",
+            "action": "approve",
+            "operatorId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+            "comment": "Approved",
+            "createdAt": "2026-07-27T20:05:23.723Z"
+          }
+        ],
+        "ccItems": [],
+        "nodeInstances": [
+          {
+            "id": "1a3bdbcc-3495-4f74-bfb2-c0633e458bfc",
+            "processInstanceId": "b82430e5-64b3-4693-a446-aae88f822392",
+            "executionKey": "root:start",
+            "nodeId": "start",
+            "nodeType": "start",
+            "name": "Start",
+            "status": "completed",
+            "startedAt": "2026-07-27T20:05:19.836Z",
+            "endedAt": "2026-07-27T20:05:19.836Z"
+          },
+          {
+            "id": "cab8ec22-30b1-4cf0-a060-b82d81e72cab",
+            "processInstanceId": "b82430e5-64b3-4693-a446-aae88f822392",
+            "executionKey": "root:e1:approval",
+            "nodeId": "approval",
+            "nodeType": "approval",
+            "name": "Current User Review",
+            "status": "completed",
+            "startedAt": "2026-07-27T20:05:20.550Z",
+            "endedAt": "2026-07-27T20:05:25.112Z"
+          },
+          {
+            "id": "d892b116-c5ae-4e90-8f65-8a7676b73963",
+            "processInstanceId": "b82430e5-64b3-4693-a446-aae88f822392",
+            "executionKey": "root:e1:e2:end",
+            "nodeId": "end",
+            "nodeType": "end",
+            "name": "End",
+            "status": "completed",
+            "startedAt": "2026-07-27T20:05:25.637Z",
+            "endedAt": "2026-07-27T20:05:25.637Z"
+          }
+        ],
+        "tasks": [
+          {
+            "id": "d8ae31dc-ef79-4a4f-96e6-4798a64d0d79",
+            "tenantId": "default",
+            "processInstanceId": "b82430e5-64b3-4693-a446-aae88f822392",
+            "nodeInstanceId": "cab8ec22-30b1-4cf0-a060-b82d81e72cab",
+            "nodeId": "approval",
+            "title": "Codex current user approval 1785182714178 - Current User Review",
+            "status": "completed",
+            "assigneeId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+            "waitpointTokenId": "local-waitpoint-52a7a17b-44d2-4e3e-960b-ea013731b5b9",
+            "decisionPayload": {
+              "action": "approve",
+              "nodeId": "approval",
+              "taskId": "d8ae31dc-ef79-4a4f-96e6-4798a64d0d79",
+              "comment": "Approved",
+              "variables": {},
+              "operatorId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd"
+            },
+            "createdAt": "2026-07-27T20:05:20.909Z",
+            "completedAt": "2026-07-27T20:05:23.723Z"
+          }
+        ]
+      }
+    }
+  ],
+  "result": {
+    "ok": true,
+    "userId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+    "modelId": "c1300ad5-ac19-418f-96b8-87ab249efeb2",
+    "definitionId": "628518c3-f506-48b3-a713-02e91a6a752d",
+    "instanceId": "b82430e5-64b3-4693-a446-aae88f822392",
+    "taskId": "d8ae31dc-ef79-4a4f-96e6-4798a64d0d79",
+    "messageId": "a4c062b8-81f7-4bf0-92e7-0a6cbef681f3",
+    "messageLink": "/dashboard/workflow/tasks/d8ae31dc-ef79-4a4f-96e6-4798a64d0d79",
+    "finalStatus": "approved"
+  },
+  "finishedAt": "2026-07-27T20:05:26.137Z"
+}

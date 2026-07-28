@@ -10,7 +10,16 @@ import { ServiceInvokeDto } from '../common/dto/service-invoke.dto';
 import { ServiceRouterService } from './service-router.service';
 
 type NormalizedServiceInvoke = {
-  serviceName: 'account' | 'payment' | 'user' | 'lowcode' | 'admin' | 'posts';
+  serviceName:
+    | 'account'
+    | 'payment'
+    | 'user'
+    | 'lowcode'
+    | 'admin'
+    | 'posts'
+    | 'notification'
+    | 'workflow'
+    | 'entityDesign';
   serviceMethod: string;
   postData: Record<string, unknown>;
 };
@@ -32,10 +41,13 @@ function normalizeBody(body: ServiceInvokeDto): NormalizedServiceInvoke {
     serviceName !== 'user' &&
     serviceName !== 'lowcode' &&
     serviceName !== 'admin' &&
-    serviceName !== 'posts'
+    serviceName !== 'posts' &&
+    serviceName !== 'notification' &&
+    serviceName !== 'workflow' &&
+    serviceName !== 'entityDesign'
   ) {
     throw new BadRequestException(
-      'serviceName must be either "account", "payment", "user", "lowcode", "admin", or "posts".'
+      'serviceName must be either "account", "payment", "user", "lowcode", "admin", "posts", "notification", "workflow", or "entityDesign".'
     );
   }
 

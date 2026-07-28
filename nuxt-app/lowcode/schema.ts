@@ -48,6 +48,12 @@ function readSchemaVersion(value: unknown) {
     : LOW_CODE_SCHEMA_VERSION;
 }
 
+function normalizePageType(value: unknown) {
+  return value === 'list' || value === 'edit' || value === 'detail' || value === 'custom'
+    ? value
+    : 'custom';
+}
+
 function normalizeBlockKind(kind: string) {
   return kind === 'search-form' ? 'searchForm' : kind;
 }
@@ -201,6 +207,7 @@ export function normalizeLowCodePageSchema(
     code,
     route,
     title,
+    pageType: normalizePageType(value.pageType),
     ...(description ? { description } : {}),
     layout:
       value.layout === 'default' || value.layout === 'dashboard' || value.layout === 'blank'

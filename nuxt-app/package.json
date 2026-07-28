@@ -12,6 +12,7 @@
     "@enlearn/lowcode-framework": "workspace:*",
     "@enlearn/trigger-workflow-editor": "workspace:*",
     "@vant/touch-emulator": "^1.5.0",
+    "@vue-flow/core": "^1.48.2",
     "@vueuse/core": "^14.3.0",
     "@vueuse/integrations": "^14.3.0",
     "animate.css": "^4.1.1",

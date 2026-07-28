@@ -9,9 +9,27 @@
     </section>
 
     <LowCodeBlockRenderer
-      v-for="block in page.schema.blocks"
+      v-for="block in layoutBlocks"
       :key="block.id"
       :block="block"
+      :resolved-data="resolvedData"
+      :form-models="formModels"
+      :search-filters="searchFilters"
+      :loading-block-id="loadingBlockId"
+      :loading-grid-id="loadingGridId"
+      @form-submit="({ block: formBlock, values }) => handleFormSubmit(formBlock, values)"
+      @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
+      @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
+      @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
+      @toolbar-action="({ action }) => handleToolbarAction(action)"
+      @search-submit="({ block: searchBlock, values }) => handleSearchSubmit(searchBlock, values)"
+      @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
+      @runtime-event="publishRuntimeEvent"
+    />
+
+    <LowCodeOverlayHost
+      v-if="pageOverlays.length"
+      :overlays="pageOverlays"
       :resolved-data="resolvedData"
       :form-models="formModels"
       :search-filters="searchFilters"
@@ -40,11 +58,14 @@ import type {
   LowCodePageRecord,
   LowCodePageFormBlock,
   LowCodePageGridBlock,
+  LowCodePageRelation,
+  LowCodePageOverlayBlock,
   LowCodePageSearchFormBlock,
   LowCodeRuntimeDirective,
   LowCodeRuntimeEvent
 } from '../types/lowcode';
 import type { LowCodeRuntimeBlock } from '../lowcode/block-materials';
+import LowCodeOverlayHost from './LowCodeOverlayHost.vue';
 import {
   createLowCodeEventBus,
   resolveEventDirectives
@@ -99,9 +120,20 @@ const themeStyle = computed(() =>
     Object.entries(host.getTheme().variables ?? {}).map(([key, value]) => [key, String(value)])
   )
 );
+const layoutBlocks = computed(() =>
+  props.page.schema.blocks.filter((block) => !isOverlayBlock(block))
+);
+const pageOverlays = computed<LowCodePageOverlayBlock[]>(() => [
+  ...props.page.schema.blocks.filter(isOverlayBlock),
+  ...(props.page.schema.overlays ?? []),
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isOverlayBlock(block: LowCodePageBlock): block is LowCodePageOverlayBlock {
+  return block.kind === 'modal' || block.kind === 'drawer';
 }
 
 function clearObject(target: Record<string, unknown>) {
@@ -210,6 +242,73 @@ function resolveRuntimeRoute(path: string, row: Record<string, unknown> = {}) {
   return resolveRuntimeValue(path, row) as string;
 }
 
+function readString(value: unknown, fallback = '') {
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+function readRelationMetadataString(
+  relation: LowCodePageRelation | undefined,
+  key: string,
+  fallback = ''
+) {
+  return readString(relation?.metadata?.[key], fallback);
+}
+
+function findPageRelation(actionKey: string, block?: LowCodePageGridBlock) {
+  const relations = props.page.relations?.outgoing ?? [];
+  const blockActionKey = block ? `${block.id}.${actionKey}` : '';
+
+  return (
+    (blockActionKey
+      ? relations.find((relation) => relation.actionKey === blockActionKey)
+      : undefined) ??
+    relations.find((relation) => {
+      if (relation.actionKey !== actionKey) return false;
+      const blockId = readRelationMetadataString(relation, 'blockId');
+      return !block || !blockId || blockId === block.id;
+    })
+  );
+}
+
+function getGridRowKey(block: LowCodePageGridBlock, relation?: LowCodePageRelation) {
+  const metadataRowKey = readRelationMetadataString(relation, 'rowKey');
+  if (metadataRowKey) return metadataRowKey;
+
+  const rowConfig = block.schema.grid.rowConfig;
+  return isRecord(rowConfig) ? readString(rowConfig.keyField, 'id') : 'id';
+}
+
+function appendRouteQuery(route: string, query: Record<string, unknown>) {
+  const entries = Object.entries(query).filter(([, value]) => typeof value !== 'undefined' && value !== null && value !== '');
+  if (!entries.length) return route;
+
+  const [withoutHash, hash = ''] = route.split('#');
+  const separator = withoutHash.includes('?') ? '&' : '?';
+  const queryString = entries
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+    .join('&');
+
+  return `${withoutHash}${separator}${queryString}${hash ? `#${hash}` : ''}`;
+}
+
+function resolveRelationRoute(
+  relation: LowCodePageRelation,
+  block: LowCodePageGridBlock,
+  row: Record<string, unknown>
+) {
+  const route = readString(relation.targetPageRoute);
+  if (!route) return '';
+
+  const rowKey = getGridRowKey(block, relation);
+  const queryKey = readRelationMetadataString(relation, 'queryKey', rowKey);
+  const resolvedRoute = resolveRuntimeRoute(route, row);
+
+  return appendRouteQuery(resolvedRoute, {
+    fromPage: props.page.code,
+    [queryKey]: row[rowKey],
+  });
+}
+
 function getDataSource(key?: string) {
   if (!key) return undefined;
   return props.page.schema.dataSources?.[key];
@@ -274,23 +373,36 @@ async function refreshDataSources(sourceKeys: string[] = []) {
 }
 
 function getChildBlocks(block: LowCodePageBlock): LowCodePageBlock[] {
+  const children: LowCodePageBlock[] = [];
+
   if ('blocks' in block && Array.isArray(block.blocks)) {
-    return block.blocks;
+    children.push(...block.blocks);
   }
 
   if (block.kind === 'tabs') {
-    return block.tabs.flatMap((tab) => tab.blocks);
+    children.push(...block.tabs.flatMap((tab) => tab.blocks));
   }
 
-  return [];
+  if (isOverlayBlock(block) && Array.isArray(block.overlays)) {
+    children.push(...block.overlays);
+  }
+
+  return children;
 }
 
 function flattenBlocks(blocks: LowCodePageBlock[]): LowCodePageBlock[] {
   return blocks.flatMap((block) => [block, ...flattenBlocks(getChildBlocks(block))]);
 }
 
+function flattenPageBlocks(schema: LowCodePageRecord['schema']) {
+  return flattenBlocks([
+    ...schema.blocks,
+    ...(schema.overlays ?? []),
+  ]);
+}
+
 function getFormBlockTarget(block: LowCodePageGridBlock) {
-  const blocks = flattenBlocks(props.page.schema.blocks);
+  const blocks = flattenPageBlocks(props.page.schema);
 
   if (block.editorBlockId) {
     const target = blocks.find(
@@ -308,7 +420,7 @@ function getFormBlockTarget(block: LowCodePageGridBlock) {
 }
 
 function findRuntimeBlock(blockId: string) {
-  return flattenBlocks(props.page.schema.blocks).find((block) => block.id === blockId);
+  return flattenPageBlocks(props.page.schema).find((block) => block.id === blockId);
 }
 
 function deriveFormModel(
@@ -333,7 +445,7 @@ async function loadPageData(nextPage: LowCodePageRecord) {
   clearObject(formModels);
   clearObject(searchFilters);
 
-  for (const block of flattenBlocks(nextPage.schema.blocks)) {
+  for (const block of flattenPageBlocks(nextPage.schema)) {
     if (block.kind === 'form' || block.kind === 'searchForm') {
       formModels[block.id] = deriveFormModel(block);
     }
@@ -377,7 +489,7 @@ async function loadPageData(nextPage: LowCodePageRecord) {
     );
   });
 
-  for (const block of flattenBlocks(nextPage.schema.blocks)) {
+  for (const block of flattenPageBlocks(nextPage.schema)) {
     if (block.kind !== 'form') continue;
 
     const source = getDataSource(block.sourceKey ?? block.submitSourceKey);
@@ -755,6 +867,23 @@ function setBlockOpen(blockId: string, open: boolean) {
   const target = findRuntimeBlock(blockId);
   if (target && 'open' in target) {
     target.open = open;
+    if (!open && isOverlayBlock(target)) {
+      closeNestedOverlays(target);
+    }
+  }
+}
+
+function closeNestedOverlays(block: LowCodePageOverlayBlock) {
+  (block.overlays ?? []).forEach((overlay) => {
+    overlay.open = false;
+    closeNestedOverlays(overlay);
+  });
+}
+
+function toggleBlockOpen(blockId: string) {
+  const target = findRuntimeBlock(blockId);
+  if (target && 'open' in target) {
+    setBlockOpen(blockId, target.open === false);
   }
 }
 
@@ -779,6 +908,7 @@ async function executeRuntimeDirective(
     setRuntimeMessage,
     emitRuntimeEvent: publishRuntimeEvent,
     setBlockOpen,
+    toggleBlockOpen,
   };
 
   await executeLowCodeRuntimeDirective(directive, event, directiveContext);
@@ -868,6 +998,14 @@ async function handleGridEdit(
   block: LowCodePageGridBlock,
   row: Record<string, unknown>
 ) {
+  const editRelation = findPageRelation('edit', block);
+  const relationRoute = editRelation ? resolveRelationRoute(editRelation, block, row) : '';
+
+  if (relationRoute) {
+    await host.getRouter().push(relationRoute);
+    return;
+  }
+
   const editRoute = block.editRoute ?? block.schema.rowActions?.editRoute;
 
   if (editRoute) {

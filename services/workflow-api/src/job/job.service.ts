@@ -168,6 +168,7 @@ export class JobService {
     const tenantId = query.tenantId ?? actor.tenantId;
     const values: unknown[] = [tenantId];
     const conditions = ['tenant_id = $1'];
+    const limit = Math.min(Math.max(query.limit ?? 20, 1), 200);
 
     if (query.jobId) {
       values.push(query.jobId);
@@ -180,8 +181,8 @@ export class JobService {
     }
 
     const result = await this.database.query<WorkflowJobRunRow>(
-      `select * from public.wf_job_run where ${conditions.join(' and ')} order by created_at desc limit 200`,
-      values
+      `select * from public.wf_job_run where ${conditions.join(' and ')} order by created_at desc limit $${values.length + 1}`,
+      [...values, limit]
     );
     return result.rows.map(mapRun);
   }

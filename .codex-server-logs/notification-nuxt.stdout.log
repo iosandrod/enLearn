@@ -1,0 +1,11 @@
+Scope: all 9 workspace projects
+? The modules directory at "C:\Users\11516\Desktop\project\enLearn\node_modules"
+ will be removed and reinstalled from scratch. Proceed? (Y/n)[1A[143G
+   ╭──────────────────────────────────────────╮
+   │                                          │
+   │   Update available! 11.9.0 → 11.17.0.    │
+   │   Changelog: https://pnpm.io/v/11.17.0   │
+   │     To update, run: pnpm add -g pnpm     │
+   │                                          │
+   ╰──────────────────────────────────────────╯
+

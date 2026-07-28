@@ -51,6 +51,7 @@ export type LowCodeRuntimeDirectiveContext = {
   ): void;
   emitRuntimeEvent(event: LowCodeRuntimeEvent): Promise<void> | void;
   setBlockOpen(blockId: string, open: boolean): void;
+  toggleBlockOpen(blockId: string): void;
 };
 
 export type LowCodeRuntimeDirectiveHandler = (
@@ -181,13 +182,20 @@ export function registerDefaultLowCodeRuntimeDirectives() {
     }
   );
 
-  registerLowCodeRuntimeDirective('openBlock', (directive, event, context) =>
+  registerLowCodeRuntimeDirectiveAliases(['openBlock', 'openModal'], (directive, event, context) =>
     context.setBlockOpen(context.resolveDirectiveString(directive.blockId, event), true)
   );
 
-  registerLowCodeRuntimeDirective('closeBlock', (directive, event, context) =>
+  registerLowCodeRuntimeDirectiveAliases(['closeBlock', 'closeModal'], (directive, event, context) =>
     context.setBlockOpen(context.resolveDirectiveString(directive.blockId, event), false)
   );
+
+  registerLowCodeRuntimeDirective('toggleModal', (directive, event, context) => {
+    const blockId = context.resolveDirectiveString(directive.blockId, event);
+    if (!blockId) return;
+
+    context.toggleBlockOpen(blockId);
+  });
 }
 
 registerDefaultLowCodeRuntimeDirectives();

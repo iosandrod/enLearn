@@ -1,4 +1,8 @@
-import type { LowCodePageBlock, LowCodePageDataSource } from '../../types/lowcode';
+import type {
+  LowCodePageBlock,
+  LowCodePageDataSource,
+  LowCodePageOverlayBlock,
+} from '../../types/lowcode';
 import type {
   VisualEditorBlockData,
   VisualEditorModelValue,
@@ -9,12 +13,14 @@ export type VisualBlockProps = Record<string, unknown>;
 
 export type VisualToLowCodeConversionResult = {
   blocks: LowCodePageBlock[];
+  overlays: LowCodePageOverlayBlock[];
   dataSources: Record<string, LowCodePageDataSource>;
 };
 
 export type VisualToLowCodeContext = {
   dataSources: Record<string, LowCodePageDataSource>;
   convertBlocks: (blocks?: VisualEditorBlockData[]) => LowCodePageBlock[];
+  convertOverlays: (blocks?: VisualEditorBlockData[]) => LowCodePageOverlayBlock[];
 };
 
 export type VisualToLowCodeConverter = {

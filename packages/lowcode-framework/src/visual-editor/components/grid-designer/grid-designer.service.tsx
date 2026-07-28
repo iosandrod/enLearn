@@ -25,7 +25,11 @@ import DesignerUI, {
 } from '../common/designer-ui';
 import { cloneDeep } from 'lodash-es';
 import LowCodeForm from '../../../components/LowCodeForm.vue';
-import type { LowCodeFormSchema, LowCodeRuntimeDirective } from '../../../types/lowcode';
+import type {
+  LowCodeField,
+  LowCodeFormSchema,
+  LowCodeRuntimeDirective,
+} from '../../../types/lowcode';
 import { defer } from '../../utils/defer';
 import { generateNanoid } from '../../utils';
 
@@ -47,11 +51,11 @@ export type GridDesignerColumn = {
   showOverflow?: string | boolean;
   showHeaderOverflow?: string | boolean;
   showFooterOverflow?: string | boolean;
-  formatter?: string;
-  filtersJson?: string;
-  cellRenderJson?: string;
-  editRenderJson?: string;
-  paramsJson?: string;
+  formatter?: unknown;
+  filters?: unknown[];
+  cellRender?: Record<string, unknown>;
+  editRender?: Record<string, unknown>;
+  params?: Record<string, unknown>;
   [key: string]: unknown;
 };
 
@@ -75,6 +79,7 @@ export type GridDesignerEvent = {
   enabled: boolean;
   eventName?: string;
   directivesJson?: string;
+  directives?: LowCodeRuntimeDirective[];
 };
 
 export type GridDesignerResult = {
@@ -159,6 +164,273 @@ const overflowOptions = [
   { label: 'tooltip', value: 'tooltip' },
 ];
 
+const rendererPropFields: LowCodeField[] = [
+  { field: 'placeholder', label: 'placeholder', component: 'vxe-input' },
+  { field: 'clearable', label: 'clearable', component: 'vxe-switch' },
+  { field: 'disabled', label: 'disabled', component: 'vxe-switch' },
+  { field: 'readonly', label: 'readonly', component: 'vxe-switch' },
+];
+
+const rendererObjectFields: LowCodeField[] = [
+  { field: 'name', label: 'name', component: 'vxe-input', props: { placeholder: 'VxeInput' } },
+  {
+    field: 'props',
+    label: 'props',
+    component: 'lc-sub-form',
+    props: { fields: rendererPropFields },
+  },
+  {
+    field: 'attrs',
+    label: 'attrs',
+    component: 'lc-sub-form',
+    props: { fields: rendererPropFields },
+  },
+];
+
+const formatterObjectFields: LowCodeField[] = [
+  {
+    field: 'type',
+    label: 'type',
+    component: 'vxe-select',
+    options: [
+      { label: 'text', value: 'text' },
+      { label: 'date', value: 'date' },
+      { label: 'datetime', value: 'datetime' },
+      { label: 'currency', value: 'currency' },
+      { label: 'number', value: 'number' },
+      { label: 'enum', value: 'enum' },
+    ],
+  },
+  { field: 'emptyText', label: 'emptyText', component: 'vxe-input' },
+  { field: 'locale', label: 'locale', component: 'vxe-input' },
+  {
+    field: 'options',
+    label: 'options',
+    component: 'lc-sub-form',
+    props: {
+      fields: [
+        { field: 'dateStyle', label: 'dateStyle', component: 'vxe-input' },
+        { field: 'timeStyle', label: 'timeStyle', component: 'vxe-input' },
+        { field: 'style', label: 'style', component: 'vxe-input' },
+        { field: 'currency', label: 'currency', component: 'vxe-input' },
+        { field: 'minimumFractionDigits', label: 'minimumFractionDigits', component: 'lc-number-input' },
+        { field: 'maximumFractionDigits', label: 'maximumFractionDigits', component: 'lc-number-input' },
+      ],
+    },
+  },
+  {
+    field: 'map',
+    label: 'map',
+    component: 'lc-sub-form',
+    props: { fields: [] },
+  },
+];
+
+type AdvancedGridConfigDefinition = {
+  field: string;
+  label: string;
+  fields: LowCodeField[];
+};
+
+const triggerOptions = [
+  { label: '默认', value: '' },
+  { label: 'manual', value: 'manual' },
+  { label: 'click', value: 'click' },
+  { label: 'dblclick', value: 'dblclick' },
+];
+
+const editModeOptions = [
+  { label: '默认', value: '' },
+  { label: 'row', value: 'row' },
+  { label: 'cell', value: 'cell' },
+];
+
+const pagerConfigFields: LowCodeField[] = [
+  { field: 'enabled', label: 'enabled', component: 'vxe-switch' },
+  { field: 'pageSize', label: 'pageSize', component: 'lc-number-input' },
+  { field: 'currentPage', label: 'currentPage', component: 'lc-number-input' },
+  {
+    field: 'pageSizes',
+    label: 'pageSizes',
+    component: 'lc-array-table',
+    props: { valueMode: 'primitive', valueField: 'value', valueTitle: 'pageSize', addText: '新增' },
+  },
+  {
+    field: 'layouts',
+    label: 'layouts',
+    component: 'lc-array-table',
+    props: { valueMode: 'primitive', valueField: 'value', valueTitle: 'layout', addText: '新增' },
+  },
+  { field: 'autoHidden', label: 'autoHidden', component: 'vxe-switch' },
+  { field: 'perfect', label: 'perfect', component: 'vxe-switch' },
+];
+
+const toolbarConfigFields: LowCodeField[] = [
+  { field: 'enabled', label: 'enabled', component: 'vxe-switch' },
+  { field: 'refresh', label: 'refresh', component: 'vxe-switch' },
+  { field: 'import', label: 'import', component: 'vxe-switch' },
+  { field: 'export', label: 'export', component: 'vxe-switch' },
+  { field: 'print', label: 'print', component: 'vxe-switch' },
+  { field: 'zoom', label: 'zoom', component: 'vxe-switch' },
+  { field: 'custom', label: 'custom', component: 'vxe-switch' },
+  {
+    field: 'slots',
+    label: 'slots',
+    component: 'lc-sub-form',
+    props: {
+      fields: [
+        { field: 'buttons', label: 'buttons', component: 'vxe-input' },
+        { field: 'tools', label: 'tools', component: 'vxe-input' },
+      ],
+    },
+  },
+];
+
+const proxyConfigFields: LowCodeField[] = [
+  { field: 'enabled', label: 'enabled', component: 'vxe-switch' },
+  { field: 'autoLoad', label: 'autoLoad', component: 'vxe-switch' },
+  { field: 'seq', label: 'seq', component: 'vxe-switch' },
+  { field: 'sort', label: 'sort', component: 'vxe-switch' },
+  { field: 'filter', label: 'filter', component: 'vxe-switch' },
+  { field: 'form', label: 'form', component: 'vxe-switch' },
+  {
+    field: 'props',
+    label: 'props',
+    component: 'lc-sub-form',
+    props: {
+      fields: [
+        { field: 'result', label: 'result', component: 'vxe-input', props: { placeholder: 'result' } },
+        { field: 'total', label: 'total', component: 'vxe-input', props: { placeholder: 'total' } },
+        { field: 'message', label: 'message', component: 'vxe-input', props: { placeholder: 'message' } },
+      ],
+    },
+  },
+  {
+    field: 'ajax',
+    label: 'ajax',
+    component: 'lc-sub-form',
+    props: {
+      fields: [
+        { field: 'query', label: 'query', component: 'vxe-input' },
+        { field: 'queryAll', label: 'queryAll', component: 'vxe-input' },
+        { field: 'save', label: 'save', component: 'vxe-input' },
+        { field: 'delete', label: 'delete', component: 'vxe-input' },
+      ],
+    },
+  },
+];
+
+const editConfigFields: LowCodeField[] = [
+  { field: 'enabled', label: 'enabled', component: 'vxe-switch' },
+  { field: 'mode', label: 'mode', component: 'vxe-select', options: editModeOptions },
+  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
+  { field: 'showStatus', label: 'showStatus', component: 'vxe-switch' },
+  { field: 'showIcon', label: 'showIcon', component: 'vxe-switch' },
+  { field: 'autoClear', label: 'autoClear', component: 'vxe-switch' },
+  { field: 'showUpdateStatus', label: 'showUpdateStatus', component: 'vxe-switch' },
+  { field: 'showInsertStatus', label: 'showInsertStatus', component: 'vxe-switch' },
+  { field: 'activeMethod', label: 'activeMethod', component: 'vxe-input' },
+  { field: 'beforeEditMethod', label: 'beforeEditMethod', component: 'vxe-input' },
+];
+
+const checkboxConfigFields: LowCodeField[] = [
+  { field: 'checkField', label: 'checkField', component: 'vxe-input' },
+  { field: 'labelField', label: 'labelField', component: 'vxe-input' },
+  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
+  { field: 'showHeader', label: 'showHeader', component: 'vxe-switch' },
+  { field: 'reserve', label: 'reserve', component: 'vxe-switch' },
+  { field: 'range', label: 'range', component: 'vxe-switch' },
+  { field: 'highlight', label: 'highlight', component: 'vxe-switch' },
+  { field: 'strict', label: 'strict', component: 'vxe-switch' },
+  { field: 'checkStrictly', label: 'checkStrictly', component: 'vxe-switch' },
+];
+
+const radioConfigFields: LowCodeField[] = [
+  { field: 'checkRowKey', label: 'checkRowKey', component: 'vxe-input' },
+  { field: 'labelField', label: 'labelField', component: 'vxe-input' },
+  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
+  { field: 'reserve', label: 'reserve', component: 'vxe-switch' },
+  { field: 'highlight', label: 'highlight', component: 'vxe-switch' },
+  { field: 'strict', label: 'strict', component: 'vxe-switch' },
+];
+
+const sortConfigFields: LowCodeField[] = [
+  { field: 'remote', label: 'remote', component: 'vxe-switch' },
+  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
+  { field: 'multiple', label: 'multiple', component: 'vxe-switch' },
+  { field: 'chronological', label: 'chronological', component: 'vxe-switch' },
+  {
+    field: 'orders',
+    label: 'orders',
+    component: 'lc-array-table',
+    props: { valueMode: 'primitive', valueField: 'value', valueTitle: 'order', addText: '新增' },
+  },
+  {
+    field: 'defaultSort',
+    label: 'defaultSort',
+    component: 'lc-sub-form',
+    props: {
+      fields: [
+        { field: 'field', label: 'field', component: 'vxe-input' },
+        {
+          field: 'order',
+          label: 'order',
+          component: 'vxe-select',
+          options: [
+            { label: 'asc', value: 'asc' },
+            { label: 'desc', value: 'desc' },
+          ],
+        },
+      ],
+    },
+  },
+];
+
+const filterConfigFields: LowCodeField[] = [
+  { field: 'remote', label: 'remote', component: 'vxe-switch' },
+  { field: 'showIcon', label: 'showIcon', component: 'vxe-switch' },
+  { field: 'showFilterFooter', label: 'showFilterFooter', component: 'vxe-switch' },
+  { field: 'filterMethod', label: 'filterMethod', component: 'vxe-input' },
+];
+
+const treeConfigFields: LowCodeField[] = [
+  { field: 'transform', label: 'transform', component: 'vxe-switch' },
+  { field: 'rowField', label: 'rowField', component: 'vxe-input', props: { placeholder: 'id' } },
+  { field: 'parentField', label: 'parentField', component: 'vxe-input', props: { placeholder: 'parentId' } },
+  { field: 'childrenField', label: 'childrenField', component: 'vxe-input', props: { placeholder: 'children' } },
+  { field: 'hasChild', label: 'hasChild', component: 'vxe-input' },
+  { field: 'indent', label: 'indent', component: 'lc-number-input' },
+  { field: 'showIcon', label: 'showIcon', component: 'vxe-switch' },
+  { field: 'expandAll', label: 'expandAll', component: 'vxe-switch' },
+  { field: 'lazy', label: 'lazy', component: 'vxe-switch' },
+  { field: 'accordion', label: 'accordion', component: 'vxe-switch' },
+  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
+];
+
+const expandConfigFields: LowCodeField[] = [
+  { field: 'expandAll', label: 'expandAll', component: 'vxe-switch' },
+  { field: 'accordion', label: 'accordion', component: 'vxe-switch' },
+  { field: 'lazy', label: 'lazy', component: 'vxe-switch' },
+  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
+  { field: 'labelField', label: 'labelField', component: 'vxe-input' },
+  { field: 'iconOpen', label: 'iconOpen', component: 'vxe-input' },
+  { field: 'iconClose', label: 'iconClose', component: 'vxe-input' },
+  { field: 'visibleMethod', label: 'visibleMethod', component: 'vxe-input' },
+];
+
+const advancedGridConfigDefinitions: AdvancedGridConfigDefinition[] = [
+  { field: 'pagerConfigJson', label: 'pagerConfig', fields: pagerConfigFields },
+  { field: 'toolbarConfigJson', label: 'toolbarConfig', fields: toolbarConfigFields },
+  { field: 'proxyConfigJson', label: 'proxyConfig', fields: proxyConfigFields },
+  { field: 'editConfigJson', label: 'editConfig', fields: editConfigFields },
+  { field: 'checkboxConfigJson', label: 'checkboxConfig', fields: checkboxConfigFields },
+  { field: 'radioConfigJson', label: 'radioConfig', fields: radioConfigFields },
+  { field: 'sortConfigJson', label: 'sortConfig', fields: sortConfigFields },
+  { field: 'filterConfigJson', label: 'filterConfig', fields: filterConfigFields },
+  { field: 'treeConfigJson', label: 'treeConfig', fields: treeConfigFields },
+  { field: 'expandConfigJson', label: 'expandConfig', fields: expandConfigFields },
+];
+
 const columnAdvancedFormSchema: LowCodeFormSchema = {
   fields: [
     {
@@ -197,34 +469,50 @@ const columnAdvancedFormSchema: LowCodeFormSchema = {
       options: overflowOptions as any,
     },
     {
-      field: 'filtersJson',
-      label: 'filters JSON',
-      component: 'vxe-textarea',
-      props: { rows: 4, placeholder: '[]' },
+      field: 'filters',
+      label: 'filters',
+      component: 'lc-array-table',
+      props: {
+        addText: '新增筛选',
+        rowKey: '__rowKey',
+        defaultRow: {
+          label: '筛选项',
+          value: '',
+          checked: false,
+        },
+        columns: [
+          { field: 'label', title: 'label', minWidth: 110 },
+          { field: 'value', title: 'value', minWidth: 110 },
+          { field: 'checked', title: 'checked', component: 'vxe-switch', width: 86 },
+        ],
+      },
     },
     {
-      field: 'cellRenderJson',
-      label: 'cellRender JSON',
-      component: 'vxe-textarea',
-      props: { rows: 4, placeholder: '{}' },
+      field: 'cellRender',
+      label: 'cellRender',
+      component: 'lc-sub-form',
+      props: { fields: rendererObjectFields },
     },
     {
-      field: 'editRenderJson',
-      label: 'editRender JSON',
-      component: 'vxe-textarea',
-      props: { rows: 4, placeholder: '{}' },
+      field: 'editRender',
+      label: 'editRender',
+      component: 'lc-sub-form',
+      props: { fields: rendererObjectFields },
     },
     {
-      field: 'paramsJson',
-      label: 'params JSON',
-      component: 'vxe-textarea',
-      props: { rows: 4, placeholder: '{}' },
+      field: 'params',
+      label: 'params',
+      component: 'lc-sub-form',
+      props: { fields: formatterObjectFields },
     },
   ],
   actions: [],
 };
 
-const eventDefinitions: Omit<GridDesignerEvent, 'enabled' | 'eventName' | 'directivesJson'>[] = [
+const eventDefinitions: Omit<
+  GridDesignerEvent,
+  'enabled' | 'eventName' | 'directivesJson' | 'directives'
+>[] = [
   {
     key: 'rowCurrentChange',
     vxeName: 'currentRowChange',
@@ -432,6 +720,18 @@ function parseJsonArray(value: string, label: string): JsonParseResult {
     : { ok: false, message: `${label} 必须是 JSON 数组` };
 }
 
+function readJsonArrayValue(value: unknown): unknown[] {
+  if (Array.isArray(value)) return cloneDeep(value);
+  if (typeof value !== 'string' || !value.trim()) return [];
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function parseJsonValueOrString(value: unknown, label: string): JsonParseResult {
   const text = readString(value);
   if (!text) return { ok: true, value: undefined };
@@ -475,10 +775,10 @@ function createDefaultColumn(index = 0): GridDesignerColumn {
     showHeaderOverflow: '',
     showFooterOverflow: '',
     formatter: '',
-    filtersJson: '',
-    cellRenderJson: '',
-    editRenderJson: '',
-    paramsJson: '',
+    filters: [],
+    cellRender: {},
+    editRender: {},
+    params: {},
   };
 }
 
@@ -507,13 +807,11 @@ function normalizeColumn(column: unknown, index: number): GridDesignerColumn {
       row.showHeaderOverflow === undefined ? '' : (row.showHeaderOverflow as string | boolean),
     showFooterOverflow:
       row.showFooterOverflow === undefined ? '' : (row.showFooterOverflow as string | boolean),
-    formatter: isPlainRecord(row.formatter) || Array.isArray(row.formatter)
-      ? stringifyJson(row.formatter, {})
-      : readString(row.formatter),
-    filtersJson: stringifyJson(row.filters, []),
-    cellRenderJson: stringifyJson(row.cellRender, {}),
-    editRenderJson: stringifyJson(row.editRender, {}),
-    paramsJson: stringifyJson(row.params, {}),
+    formatter: isPlainRecord(row.formatter) ? cloneDeep(row.formatter) : readString(row.formatter),
+    filters: Array.isArray(row.filters) ? cloneDeep(row.filters) : [],
+    cellRender: isPlainRecord(row.cellRender) ? cloneDeep(row.cellRender) : {},
+    editRender: isPlainRecord(row.editRender) ? cloneDeep(row.editRender) : {},
+    params: isPlainRecord(row.params) ? cloneDeep(row.params) : {},
   };
 }
 
@@ -633,17 +931,46 @@ function normalizeGridOptions(value: unknown) {
   };
 }
 
+function readAdvancedConfigObject(
+  advanced: Record<string, unknown>,
+  field: string,
+  label: string,
+) {
+  const parsed = parseJsonObject(readString(advanced[field]), label);
+  return parsed.ok && isPlainRecord(parsed.value) ? cloneDeep(parsed.value) : {};
+}
+
+function createAdvancedFormModels(advanced: Record<string, unknown>) {
+  return {
+    ...advancedGridConfigDefinitions.reduce<Record<string, Record<string, unknown>>>(
+      (models, config) => {
+        models[config.field] = readAdvancedConfigObject(advanced, config.field, config.label);
+        return models;
+      },
+      {},
+    ),
+    extraPropsJson: readAdvancedConfigObject(advanced, 'extraPropsJson', 'extraProps'),
+  };
+}
+
 function normalizeEvents(value: unknown) {
   const rows = Array.isArray(value) ? value.filter(isPlainRecord) : [];
   const rowMap = new Map(rows.map((row) => [readString(row.key), row]));
 
   return eventDefinitions.map<GridDesignerEvent>((definition) => {
     const row = rowMap.get(definition.key) ?? {};
+    const directives = normalizeRuntimeDirectives(
+      Array.isArray(row.directives)
+        ? row.directives
+        : readJsonArrayValue(row.directivesJson),
+    );
+
     return {
       ...definition,
       enabled: readBoolean(row.enabled, false),
       eventName: readString(row.eventName),
-      directivesJson: readString(row.directivesJson, '[]'),
+      directives,
+      directivesJson: JSON.stringify(directives, null, 2),
     };
   });
 }
@@ -653,45 +980,169 @@ function resetReactiveObject(target: Record<string, unknown>, source: Record<str
   Object.assign(target, source);
 }
 
-function validateColumnJson(column: GridDesignerColumn, index: number) {
-  const label = `第 ${index + 1} 列`;
-  const fields = [
-    ['filtersJson', `${label} filters`],
-    ['cellRenderJson', `${label} cellRender`],
-    ['editRenderJson', `${label} editRender`],
-    ['paramsJson', `${label} params`],
-  ] as const;
+function validateColumnJson(_column: GridDesignerColumn, _index: number) {
+  return { ok: true, value: undefined } as JsonParseResult;
+}
 
-  for (const [field, fieldLabel] of fields) {
-    const text = readString(column[field]);
-    if (!text || text === '[]' || text === '{}') continue;
-
-    const parsed = parseJson(text, fieldLabel);
-    if (!parsed.ok) return parsed;
+function parseFormatterValue(value: unknown, label: string): JsonParseResult {
+  if (isPlainRecord(value)) {
+    return { ok: true, value: compactObject(cloneDeep(value)) };
   }
 
-  return { ok: true, value: undefined } as JsonParseResult;
+  return parseJsonValueOrString(value, label);
+}
+
+function normalizeObjectConfig(value: unknown) {
+  if (!isPlainRecord(value)) return undefined;
+  return compactObject(cloneDeep(value));
+}
+
+function inferObjectFields(value: Record<string, unknown>): LowCodeField[] {
+  return Object.keys(value).map((field) => {
+    const currentValue = value[field];
+
+    if (typeof currentValue === 'boolean') {
+      return { field, label: field, component: 'vxe-switch' };
+    }
+
+    if (typeof currentValue === 'number') {
+      return { field, label: field, component: 'lc-number-input' };
+    }
+
+    if (isPlainRecord(currentValue)) {
+      return {
+        field,
+        label: field,
+        component: 'lc-sub-form',
+        props: { fields: inferObjectFields(currentValue) },
+      };
+    }
+
+    if (Array.isArray(currentValue)) {
+      const columns = inferArrayColumns(currentValue);
+      return {
+        field,
+        label: field,
+        component: 'lc-array-table',
+        props: {
+          addText: '新增',
+          rowKey: '__rowKey',
+          columns,
+          defaultRow: createArrayDefaultRow(columns),
+        },
+      };
+    }
+
+    return { field, label: field, component: 'vxe-input' };
+  });
+}
+
+function createObjectSchema(value: Record<string, unknown>, fields?: LowCodeField[]): LowCodeFormSchema {
+  return {
+    fields: fields?.length ? fields : inferObjectFields(value),
+    actions: [],
+  };
+}
+
+type ArrayEditorColumn = {
+  field: string;
+  title: string;
+  component?: LowCodeField['component'];
+  width?: number | string;
+  minWidth?: number | string;
+  defaultValue?: unknown;
+  props?: Record<string, unknown>;
+};
+
+const directiveArrayColumns: ArrayEditorColumn[] = [
+  { field: 'type', title: 'type', minWidth: 130, defaultValue: 'setDataSource' },
+  { field: 'sourceKey', title: 'sourceKey', minWidth: 150 },
+  { field: 'targetKey', title: 'targetKey', minWidth: 150 },
+  { field: 'value', title: 'value', minWidth: 180 },
+];
+
+function inferArrayColumns(value: unknown[]): ArrayEditorColumn[] {
+  const keys = new Set<string>();
+
+  value.filter(isPlainRecord).forEach((item) => {
+    Object.keys(item).forEach((key) => keys.add(key));
+  });
+
+  const orderedKeys = [
+    ...['type', 'label', 'value', 'field', 'sourceKey', 'targetKey'].filter((key) => keys.delete(key)),
+    ...Array.from(keys),
+  ].slice(0, 8);
+  const finalKeys = orderedKeys.length ? orderedKeys : ['label', 'value'];
+
+  return finalKeys.map((field) => ({
+    field,
+    title: field,
+    minWidth: field === 'value' ? 160 : 120,
+    component: field === 'checked' || field === 'enabled' ? 'vxe-switch' : undefined,
+  }));
+}
+
+function createArrayDefaultRow(columns: ArrayEditorColumn[]) {
+  return columns.reduce<Record<string, unknown>>((row, column) => {
+    if (Object.prototype.hasOwnProperty.call(column, 'defaultValue')) {
+      row[column.field] = cloneDeep(column.defaultValue);
+      return row;
+    }
+
+    row[column.field] = column.component === 'vxe-switch' ? false : '';
+    return row;
+  }, {});
+}
+
+function createArraySchema(
+  value: unknown[],
+  columns?: ArrayEditorColumn[],
+): LowCodeFormSchema {
+  const resolvedColumns = columns?.length ? columns : inferArrayColumns(value);
+
+  return {
+    fields: [
+      {
+        field: 'items',
+        label: '列表',
+        component: 'lc-array-table',
+        props: {
+          addText: '新增',
+          rowKey: '__rowKey',
+          columns: resolvedColumns,
+          defaultRow: createArrayDefaultRow(resolvedColumns),
+        },
+      },
+    ],
+    actions: [],
+  };
+}
+
+function formatArraySummary(value: unknown) {
+  const items = Array.isArray(value) ? value : [];
+  return `${items.length} 项`;
+}
+
+function formatObjectSummary(value: unknown) {
+  if (!isPlainRecord(value)) return '{}';
+  if (!Object.keys(value).length) return '{}';
+
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return '[object]';
+  }
 }
 
 function normalizeColumnForResult(column: GridDesignerColumn, index: number): GridDesignerColumn {
   const field = readString(column.field);
   const title = readString(column.title, field || `列${index + 1}`);
   const type = readString(column.type);
-  const formatter = parseJsonValueOrString(column.formatter, `第 ${index + 1} 列 formatter`);
+  const formatter = parseFormatterValue(column.formatter, `第 ${index + 1} 列 formatter`);
 
   if (formatter.ok === false) {
     throw new Error(formatter.message);
   }
-
-  const filters = parseJson(readString(column.filtersJson), `第 ${index + 1} 列 filters`);
-  const cellRender = parseJson(readString(column.cellRenderJson), `第 ${index + 1} 列 cellRender`);
-  const editRender = parseJson(readString(column.editRenderJson), `第 ${index + 1} 列 editRender`);
-  const params = parseJson(readString(column.paramsJson), `第 ${index + 1} 列 params`);
-
-  assertJsonParsed(filters);
-  assertJsonParsed(cellRender);
-  assertJsonParsed(editRender);
-  assertJsonParsed(params);
 
   return compactObject({
     field,
@@ -711,10 +1162,10 @@ function normalizeColumnForResult(column: GridDesignerColumn, index: number): Gr
     showHeaderOverflow: column.showHeaderOverflow,
     showFooterOverflow: column.showFooterOverflow,
     formatter: formatter.value,
-    filters: filters.value,
-    cellRender: cellRender.value,
-    editRender: editRender.value,
-    params: params.value,
+    filters: Array.isArray(column.filters) ? cloneDeep(column.filters) : [],
+    cellRender: normalizeObjectConfig(column.cellRender),
+    editRender: normalizeObjectConfig(column.editRender),
+    params: normalizeObjectConfig(column.params),
   }) as GridDesignerColumn;
 }
 
@@ -804,20 +1255,21 @@ function buildGridOptions(
 
 function buildEvents(events: GridDesignerEvent[]) {
   return events.map((event) => {
+    const directives = normalizeRuntimeDirectives(event.directives);
+
     if (!event.enabled) {
       return {
         ...event,
-        directivesJson: readString(event.directivesJson, '[]'),
+        directives,
+        directivesJson: JSON.stringify(directives, null, 2),
       };
     }
-
-    const parsed = parseJsonArray(readString(event.directivesJson, '[]'), `${event.vxeName} 指令`);
-    assertJsonParsed(parsed);
 
     return {
       ...event,
       eventName: readString(event.eventName),
-      directivesJson: JSON.stringify(normalizeRuntimeDirectives(parsed.value), null, 2),
+      directives,
+      directivesJson: JSON.stringify(directives, null, 2),
     };
   });
 }
@@ -840,12 +1292,20 @@ const ServiceComponent = defineComponent({
       selectedColumnId: readString(initialColumns[0]?.__id),
       gridOptions: normalized.options,
       advanced: normalized.advanced,
+      advancedModels: createAdvancedFormModels(normalized.advanced),
       gridEvents: normalizeEvents(props.option.gridEvents),
       mounted: (() => {
         const dfd = defer();
         onMounted(() => setTimeout(() => dfd.resolve(), 0));
         return dfd.promise;
       })(),
+    });
+    const objectEditor = reactive({
+      showFlag: false,
+      title: '编辑对象',
+      model: {} as Record<string, unknown>,
+      schema: createObjectSchema({}),
+      onConfirm: null as null | ((value: Record<string, unknown>) => void),
     });
 
     const methods = {
@@ -858,6 +1318,7 @@ const ServiceComponent = defineComponent({
         state.selectedColumnId = readString(state.columns[0]?.__id);
         resetReactiveObject(state.gridOptions, nextGridOptions.options);
         resetReactiveObject(state.advanced, nextGridOptions.advanced);
+        resetReactiveObject(state.advancedModels, createAdvancedFormModels(nextGridOptions.advanced));
         state.gridEvents = normalizeEvents(option.gridEvents);
         await methods.show();
       },
@@ -968,6 +1429,183 @@ const ServiceComponent = defineComponent({
         <ElOption key={String(option.value)} label={option.label} value={option.value} />
       ));
 
+    const openObjectEditor = (
+      title: string,
+      value: unknown,
+      fields: LowCodeField[] | undefined,
+      onConfirm: (value: Record<string, unknown>) => void,
+    ) => {
+      const model = isPlainRecord(value) ? cloneDeep(value) : {};
+      objectEditor.title = title;
+      resetReactiveObject(objectEditor.model, model);
+      objectEditor.schema = createObjectSchema(model, fields);
+      objectEditor.onConfirm = onConfirm;
+      objectEditor.showFlag = true;
+    };
+
+    const openArrayEditor = (
+      title: string,
+      value: unknown,
+      columns: ArrayEditorColumn[] | undefined,
+      onConfirm: (value: unknown[]) => void,
+    ) => {
+      const items = Array.isArray(value) ? cloneDeep(value) : [];
+      objectEditor.title = title;
+      resetReactiveObject(objectEditor.model, { items });
+      objectEditor.schema = createArraySchema(items, columns);
+      objectEditor.onConfirm = (nextValue) => {
+        onConfirm(Array.isArray(nextValue.items) ? cloneDeep(nextValue.items) : []);
+      };
+      objectEditor.showFlag = true;
+    };
+
+    const renderObjectBoundInput = (
+      row: Record<string, unknown>,
+      field: string,
+      title: string,
+      placeholder: string,
+      fields?: LowCodeField[],
+    ) => {
+      const value = row[field];
+
+      if (!isPlainRecord(value)) {
+        return (
+          <ElInput
+            modelValue={readString(value)}
+            placeholder={placeholder}
+            {...({
+              'onUpdate:modelValue': (nextValue: unknown) => {
+                row[field] = nextValue;
+              },
+            } as any)}
+          />
+        );
+      }
+
+      return (
+        <div class="grid-designer-object-cell">
+          <ElInput modelValue={formatObjectSummary(value)} placeholder={placeholder} readonly />
+          <ElButton
+            text
+            type="primary"
+            onClick={(event?: Event) => {
+              event?.stopPropagation?.();
+              openObjectEditor(title, value, fields, (nextValue) => {
+                row[field] = cloneDeep(nextValue);
+              });
+            }}
+          >
+            编辑
+          </ElButton>
+        </div>
+      );
+    };
+
+    const renderArrayEditorInput = (
+      row: Record<string, unknown>,
+      field: string,
+      title: string,
+      columns?: ArrayEditorColumn[],
+    ) => (
+      <div class="grid-designer-object-cell">
+        <ElInput modelValue={formatArraySummary(row[field])} readonly />
+        <ElButton
+          text
+          type="primary"
+          onClick={(event?: Event) => {
+            event?.stopPropagation?.();
+            openArrayEditor(title, row[field], columns, (nextValue) => {
+              row[field] = nextValue;
+            });
+          }}
+        >
+          编辑
+        </ElButton>
+      </div>
+    );
+
+    const syncAdvancedConfigModel = (
+      field: string,
+      value: Record<string, unknown>,
+    ) => {
+      const nextValue = isPlainRecord(value) ? cloneDeep(value) : {};
+      (state.advancedModels as Record<string, Record<string, unknown>>)[field] = nextValue;
+      state.advanced[field] = JSON.stringify(compactObject(cloneDeep(nextValue)), null, 2);
+    };
+
+    const renderAdvancedConfigEditor = (config: AdvancedGridConfigDefinition) => {
+      const model =
+        (state.advancedModels as Record<string, Record<string, unknown>>)[config.field] ?? {};
+
+      return (
+        <section key={config.field} class="grid-designer-advanced-item">
+          <div class="grid-designer-advanced-item__header">
+            <strong>{config.label}</strong>
+          </div>
+          <LowCodeForm
+            class="grid-designer-advanced-sub-form"
+            schema={{ fields: config.fields, actions: [] }}
+            modelValue={model}
+            onUpdate:modelValue={(value: Record<string, unknown>) => {
+              syncAdvancedConfigModel(config.field, value);
+            }}
+          />
+        </section>
+      );
+    };
+
+    const renderExtraPropsEditor = () => {
+      const model =
+        (state.advancedModels as Record<string, Record<string, unknown>>).extraPropsJson ?? {};
+
+      return (
+        <section class="grid-designer-advanced-item grid-designer-advanced-item--wide">
+          <div class="grid-designer-advanced-item__header">
+            <strong>extraProps</strong>
+          </div>
+          <div class="grid-designer-object-cell">
+            <ElInput modelValue={formatObjectSummary(model)} readonly />
+            <ElButton
+              text
+              type="primary"
+              onClick={() => {
+                openObjectEditor('extraProps', model, undefined, (nextValue) => {
+                  syncAdvancedConfigModel('extraPropsJson', nextValue);
+                });
+              }}
+            >
+              编辑
+            </ElButton>
+          </div>
+        </section>
+      );
+    };
+
+    const renderBusinessPostDataEditor = () => (
+      <div class="grid-designer-object-cell">
+        <ElInput modelValue={readString(state.business.postDataJson, '{}')} readonly />
+        <ElButton
+          text
+          type="primary"
+          onClick={() => {
+            const parsed = parseJsonObject(state.business.postDataJson, 'postDataJson');
+
+            if (parsed.ok === false) {
+              ElMessage.error(parsed.message);
+              return;
+            }
+
+            const value = isPlainRecord(parsed.value) ? parsed.value : {};
+            openObjectEditor('postDataJson', value, undefined, (nextValue) => {
+              state.business.postDataJson = JSON.stringify(compactObject(nextValue), null, 2);
+            });
+          }}
+        >
+          编辑
+        </ElButton>
+      </div>
+    );
+
     const renderColumnDesigner = () => (
       <div class="grid-designer-panel">
         <div class="grid-designer-actions">
@@ -1046,7 +1684,13 @@ const ServiceComponent = defineComponent({
           <ElTableColumn label="formatter" minWidth={210}>
             {{
               default: ({ row }: { row: GridDesignerColumn }) => (
-                <ElInput v-model={row.formatter} placeholder='{"type":"text"} 或格式化器名' />
+                renderObjectBoundInput(
+                  row,
+                  'formatter',
+                  `${readString(row.title, readString(row.field, '列'))} formatter`,
+                  '{"type":"text"} 或格式化器名',
+                  formatterObjectFields,
+                )
               ),
             }}
           </ElTableColumn>
@@ -1176,7 +1820,13 @@ const ServiceComponent = defineComponent({
                 <ElTableColumn label="formatter" minWidth={210}>
                   {{
                     default: ({ row }: { row: GridDesignerColumn }) => (
-                      <ElInput v-model={row.formatter} placeholder='{"type":"text"} 或格式化器名' />
+                      renderObjectBoundInput(
+                        row,
+                        'formatter',
+                        `${readString(row.title, readString(row.field, '列'))} formatter`,
+                        '{"type":"text"} 或格式化器名',
+                        formatterObjectFields,
+                      )
                     ),
                   }}
                 </ElTableColumn>
@@ -1253,7 +1903,7 @@ const ServiceComponent = defineComponent({
               <ElSwitch v-model={state.business.showRowActions} />
             </ElFormItem>
             <ElFormItem label="postDataJson" class="grid-designer-col-span-2">
-              <ElInput v-model={state.business.postDataJson} type="textarea" rows={4} />
+              {renderBusinessPostDataEditor()}
             </ElFormItem>
           </div>
         </div>
@@ -1359,24 +2009,9 @@ const ServiceComponent = defineComponent({
 
         <div class="grid-designer-card">
           <h3>高级 VxeGrid 配置</h3>
-          <div class="grid-designer-form-grid">
-            {Object.entries({
-              pagerConfigJson: 'pagerConfig',
-              toolbarConfigJson: 'toolbarConfig',
-              proxyConfigJson: 'proxyConfig',
-              editConfigJson: 'editConfig',
-              checkboxConfigJson: 'checkboxConfig',
-              radioConfigJson: 'radioConfig',
-              sortConfigJson: 'sortConfig',
-              filterConfigJson: 'filterConfig',
-              treeConfigJson: 'treeConfig',
-              expandConfigJson: 'expandConfig',
-              extraPropsJson: 'extraProps',
-            }).map(([field, label]) => (
-              <ElFormItem key={field} label={label} class="grid-designer-col-span-2">
-                <ElInput v-model={state.advanced[field]} type="textarea" rows={4} />
-              </ElFormItem>
-            ))}
+          <div class="grid-designer-advanced-grid">
+            {advancedGridConfigDefinitions.map(renderAdvancedConfigEditor)}
+            {renderExtraPropsEditor()}
           </div>
         </div>
       </ElForm>
@@ -1400,10 +2035,15 @@ const ServiceComponent = defineComponent({
               ),
             }}
           </ElTableColumn>
-          <ElTableColumn label="directives JSON" minWidth={340}>
+          <ElTableColumn label="指令" minWidth={220}>
             {{
               default: ({ row }: { row: GridDesignerEvent }) => (
-                <ElInput v-model={row.directivesJson} type="textarea" rows={3} />
+                renderArrayEditorInput(
+                  row as unknown as Record<string, unknown>,
+                  'directives',
+                  `${row.vxeName} 指令`,
+                  directiveArrayColumns,
+                )
               ),
             }}
           </ElTableColumn>
@@ -1412,40 +2052,77 @@ const ServiceComponent = defineComponent({
     );
 
     return () => (
-      <ElDialog
-        v-model={state.showFlag}
-        title={state.option.title || '表格设计'}
-        width="min(1360px, calc(100vw - 40px))"
-        top="4vh"
-        class="grid-designer-dialog form-workbench-dialog"
-        destroyOnClose={true}
-      >
-        {{
-          default: () => (
-            <div class="grid-designer-workbench">
-              <ElTabs v-model={state.activeTab} class="grid-designer-tabs">
-                <ElTabPane label="列设计" name="columns">
-                  {renderColumnDesignerWorkbench()}
-                </ElTabPane>
-                <ElTabPane label="表格信息设计" name="info">
-                  {renderBaseInfo()}
-                </ElTabPane>
-                <ElTabPane label="事件属性" name="events">
-                  {renderEventDesigner()}
-                </ElTabPane>
-              </ElTabs>
-            </div>
-          ),
-          footer: () => (
-            <div class="form-workbench-footer">
-              <ElButton onClick={handler.onCancel}>取消</ElButton>
-              <ElButton type="primary" onClick={handler.onConfirm}>
-                确定
-              </ElButton>
-            </div>
-          ),
-        }}
-      </ElDialog>
+      <>
+        <ElDialog
+          v-model={state.showFlag}
+          title={state.option.title || '表格设计'}
+          width="min(1360px, calc(100vw - 40px))"
+          top="4vh"
+          class="grid-designer-dialog form-workbench-dialog"
+          destroyOnClose={true}
+        >
+          {{
+            default: () => (
+              <div class="grid-designer-workbench">
+                <ElTabs v-model={state.activeTab} class="grid-designer-tabs">
+                  <ElTabPane label="列设计" name="columns">
+                    {renderColumnDesignerWorkbench()}
+                  </ElTabPane>
+                  <ElTabPane label="表格信息设计" name="info">
+                    {renderBaseInfo()}
+                  </ElTabPane>
+                  <ElTabPane label="事件属性" name="events">
+                    {renderEventDesigner()}
+                  </ElTabPane>
+                </ElTabs>
+              </div>
+            ),
+            footer: () => (
+              <div class="form-workbench-footer">
+                <ElButton onClick={handler.onCancel}>取消</ElButton>
+                <ElButton type="primary" onClick={handler.onConfirm}>
+                  确定
+                </ElButton>
+              </div>
+            ),
+          }}
+        </ElDialog>
+
+        <ElDialog
+          v-model={objectEditor.showFlag}
+          title={objectEditor.title}
+          width="min(720px, calc(100vw - 48px))"
+          top="8vh"
+          class="grid-designer-object-dialog"
+          destroyOnClose={true}
+        >
+          {{
+            default: () => (
+              <LowCodeForm
+                schema={objectEditor.schema}
+                modelValue={objectEditor.model}
+                onUpdate:modelValue={(value: Record<string, unknown>) => {
+                  resetReactiveObject(objectEditor.model, value);
+                }}
+              />
+            ),
+            footer: () => (
+              <div class="form-workbench-footer">
+                <ElButton onClick={() => (objectEditor.showFlag = false)}>取消</ElButton>
+                <ElButton
+                  type="primary"
+                  onClick={() => {
+                    objectEditor.onConfirm?.(cloneDeep(objectEditor.model));
+                    objectEditor.showFlag = false;
+                  }}
+                >
+                  确定
+                </ElButton>
+              </div>
+            ),
+          }}
+        </ElDialog>
+      </>
     );
   },
 });

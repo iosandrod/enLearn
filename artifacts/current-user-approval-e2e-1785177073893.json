@@ -1,0 +1,91 @@
+{
+  "startedAt": "2026-07-27T18:31:13.893Z",
+  "code": "codex_current_user_approval_1785177073893",
+  "steps": [
+    {
+      "name": "signed_in",
+      "at": "2026-07-27T18:31:14.988Z",
+      "data": {
+        "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+        "email": "1151685410@qq.com",
+        "profile": {
+          "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+          "full_name": "qweqweqwe",
+          "avatar_url": null,
+          "billing_address": null,
+          "payment_method": null,
+          "phone": null,
+          "nickname": null,
+          "role": "admin",
+          "city": null,
+          "english_level": null,
+          "learning_goal": null,
+          "source_channel": null,
+          "lead_status": "new",
+          "assigned_consultant_id": null,
+          "updated_at": "2026-07-22T04:05:00.140246+00:00"
+        }
+      }
+    },
+    {
+      "name": "model_saved",
+      "at": "2026-07-27T18:31:15.034Z",
+      "data": {
+        "id": "43a05f34-47b5-4663-943f-3a4c763b44f4",
+        "code": "codex_current_user_approval_1785177073893",
+        "status": "draft"
+      }
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-27T18:31:15.056Z",
+      "data": {
+        "definitionId": "662ab998-d7d7-4629-b7ba-8e3d52ec9d93",
+        "version": 1
+      }
+    },
+    {
+      "name": "instance_start_failed",
+      "at": "2026-07-27T18:31:15.597Z",
+      "data": {
+        "message": "Internal server error",
+        "status": 500,
+        "payload": {
+          "statusCode": 500,
+          "message": "Internal server error"
+        }
+      }
+    }
+  ],
+  "user": {
+    "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+    "email": "1151685410@qq.com",
+    "profile": {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "billing_address": null,
+      "payment_method": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140246+00:00"
+    }
+  },
+  "ok": false,
+  "error": {
+    "message": "Internal server error",
+    "status": 500,
+    "payload": {
+      "statusCode": 500,
+      "message": "Internal server error"
+    }
+  },
+  "finishedAt": "2026-07-27T18:31:15.597Z"
+}

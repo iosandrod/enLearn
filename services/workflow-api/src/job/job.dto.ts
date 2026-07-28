@@ -86,4 +86,10 @@ export class JobRunQueryDto {
   @IsOptional()
   @IsIn(['queued', 'running', 'succeeded', 'failed', 'canceled'])
   status?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number;
 }

@@ -1,0 +1,74 @@
+{
+  "runId": 1785179391714,
+  "startedAt": "2026-07-27T19:09:51.714Z",
+  "apiBase": "http://localhost:3002/api",
+  "steps": [
+    {
+      "name": "signin",
+      "at": "2026-07-27T19:09:53.319Z",
+      "userId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "email": "1151685410@qq.com",
+      "role": "admin"
+    },
+    {
+      "name": "messages_before",
+      "at": "2026-07-27T19:09:54.399Z",
+      "count": 0
+    },
+    {
+      "name": "model_saved",
+      "at": "2026-07-27T19:09:54.650Z",
+      "modelId": "3b44b156-5c71-4f3f-ae92-02a47cd839a6",
+      "code": "codex_current_user_approval_1785179391714",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-27T19:09:55.929Z",
+      "definitionId": "08f0d9d5-32cc-44b8-ae26-7805fc0df973",
+      "version": 1,
+      "status": "active"
+    },
+    {
+      "name": "instance_started",
+      "at": "2026-07-27T19:09:58.619Z",
+      "instanceId": "43392685-8fab-4ba7-bd0c-9be4470545e0",
+      "status": "running",
+      "triggerRunId": "local-workflow-769ceff3-cd00-477f-8b41-db5300284dba",
+      "taskCount": 0
+    },
+    {
+      "name": "todo_task_found",
+      "at": "2026-07-27T19:10:00.583Z",
+      "ok": true,
+      "attemptsMs": 1964,
+      "value": {
+        "id": "09a0b0ff-617e-4d15-a4ea-acab1b2d5ec5",
+        "tenantId": "default",
+        "processInstanceId": "43392685-8fab-4ba7-bd0c-9be4470545e0",
+        "nodeInstanceId": "96a835fd-362b-4cc7-9f29-48a64d606489",
+        "nodeId": "approval",
+        "title": "Codex current user approval 1785179391714 - Current User Review",
+        "status": "pending",
+        "assigneeId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+        "waitpointTokenId": "local-waitpoint-7431cbbb-2cb5-4807-87a0-6efb09e2a30a",
+        "createdAt": "2026-07-27T19:10:00.778Z"
+      }
+    },
+    {
+      "name": "approval_message_found",
+      "at": "2026-07-27T19:10:46.984Z",
+      "ok": false,
+      "timeoutMs": 45000,
+      "last": {
+        "ok": false,
+        "count": 0
+      }
+    }
+  ],
+  "result": {
+    "ok": false,
+    "message": "approval_message_found_timeout"
+  },
+  "finishedAt": "2026-07-27T19:10:46.987Z"
+}

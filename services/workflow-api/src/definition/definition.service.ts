@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { BadRequestException, Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import type { QueryResultRow } from 'pg';
 import { DatabaseService } from '../common/database.service';
 import {
@@ -31,7 +31,11 @@ export class DefinitionService {
   private readonly modelVersions = new Map<string, WorkflowModelVersionRecord[]>();
   private readonly definitions = new Map<string, WorkflowProcessDefinitionRecord>();
 
-  constructor(@Optional() private readonly database?: DatabaseService) {}
+  constructor(
+    @Optional()
+    @Inject(DatabaseService)
+    private readonly database?: DatabaseService
+  ) {}
 
   getCapabilities(): WorkflowCapability {
     return {

@@ -1,0 +1,64 @@
+{
+  "runId": 1785179271954,
+  "startedAt": "2026-07-27T19:07:51.954Z",
+  "apiBase": "http://localhost:3002/api",
+  "steps": [
+    {
+      "name": "signin",
+      "at": "2026-07-27T19:07:53.096Z",
+      "userId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "email": "1151685410@qq.com",
+      "role": "admin"
+    },
+    {
+      "name": "messages_before",
+      "at": "2026-07-27T19:07:53.429Z",
+      "count": 0
+    },
+    {
+      "name": "model_saved",
+      "at": "2026-07-27T19:07:53.726Z",
+      "modelId": "5a6f3254-3389-40c1-a408-3ef646a63fa5",
+      "code": "codex_current_user_approval_1785179271954",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-27T19:07:55.446Z",
+      "definitionId": "8caa798c-af12-4cef-8828-5a5e457296ea",
+      "version": 1,
+      "status": "active"
+    },
+    {
+      "name": "instance_started",
+      "at": "2026-07-27T19:07:57.926Z",
+      "instanceId": "e043e536-2e8f-4332-be21-5fa0d089d1a0",
+      "status": "running",
+      "triggerRunId": "local-workflow-a6e7a179-b143-478c-9114-8a98dc8ef156",
+      "taskCount": 0
+    },
+    {
+      "name": "todo_task_found",
+      "at": "2026-07-27T19:07:59.903Z",
+      "ok": true,
+      "attemptsMs": 1976,
+      "value": {
+        "id": "3333f2b3-f8db-4e39-98d0-31da73221a76",
+        "tenantId": "default",
+        "processInstanceId": "e043e536-2e8f-4332-be21-5fa0d089d1a0",
+        "nodeInstanceId": "ec19c7f0-4907-4721-95c2-c379d05b3d11",
+        "nodeId": "approval",
+        "title": "Codex current user approval 1785179271954 - Current User Review",
+        "status": "pending",
+        "assigneeId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+        "waitpointTokenId": "local-waitpoint-499fcb8f-b328-458d-a164-43c62a453bfa",
+        "createdAt": "2026-07-27T19:07:59.129Z"
+      }
+    }
+  ],
+  "result": {
+    "ok": false,
+    "message": "fetch failed"
+  },
+  "finishedAt": "2026-07-27T19:08:07.655Z"
+}

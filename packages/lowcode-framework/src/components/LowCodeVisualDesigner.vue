@@ -244,7 +244,8 @@ const fallbackVisualModel = computed<VisualEditorModelValue>(() => ({
         bgImage: '',
         keepAlive: false
       },
-      blocks: []
+      blocks: [],
+      overlays: []
     }
   },
   models: [],
@@ -378,6 +379,9 @@ function buildSchema(payload: {
   const previousSchema = (page.value?.schema ?? {}) as Partial<LowCodePageSchema>;
   const converted = convertVisualEditorToLowCode(payload.model, payload.currentPage);
   const hasRuntimeBlocks = converted.blocks.length > 0;
+  const hasVisualOverlays = Array.isArray(payload.currentPage.overlays);
+  const hasRuntimeOverlays = converted.overlays.length > 0;
+  const hasRuntimeContent = hasRuntimeBlocks || hasRuntimeOverlays;
 
   return prepareLowCodePageSchema({
     ...previousSchema,
@@ -390,7 +394,7 @@ function buildSchema(payload: {
     keepAlive: true,
     config: payload.currentPage.config,
     visualEditor: payload.model,
-    dataSources: hasRuntimeBlocks
+    dataSources: hasRuntimeContent
       ? converted.dataSources
       : isPlainRecord(previousSchema.dataSources)
         ? previousSchema.dataSources
@@ -399,6 +403,11 @@ function buildSchema(payload: {
       ? converted.blocks
       : Array.isArray(previousSchema.blocks)
         ? previousSchema.blocks
+        : [],
+    overlays: hasVisualOverlays
+      ? converted.overlays
+      : Array.isArray(previousSchema.overlays)
+        ? previousSchema.overlays
         : []
   });
 }

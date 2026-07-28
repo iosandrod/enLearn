@@ -34,6 +34,17 @@ export const lowCodePageEditorSchema: LowCodeFormSchema = {
       rules: [{ required: true, message: 'Title is required' }]
     },
     {
+      field: 'pageType',
+      label: 'Page Type',
+      component: 'vxe-select',
+      options: [
+        { label: 'Custom', value: 'custom' },
+        { label: 'List Page', value: 'list' },
+        { label: 'Edit Page', value: 'edit' },
+        { label: 'Detail Page', value: 'detail' }
+      ]
+    },
+    {
       field: 'layout',
       label: 'Layout',
       component: 'vxe-select',
@@ -57,6 +68,26 @@ export const lowCodePageEditorSchema: LowCodeFormSchema = {
       field: 'keep_alive',
       label: 'Keep Alive',
       component: 'vxe-switch'
+    },
+    {
+      field: 'parentListPageCode',
+      label: 'Parent List Page',
+      component: 'vxe-input',
+      props: {
+        placeholder: 'Required when Page Type is Edit Page',
+        clearable: true
+      },
+      span: 2
+    },
+    {
+      field: 'editOpenType',
+      label: 'Edit Open Type',
+      component: 'vxe-select',
+      options: [
+        { label: 'Page', value: 'page' },
+        { label: 'Drawer', value: 'drawer' },
+        { label: 'Modal', value: 'modal' }
+      ]
     },
     {
       field: 'description',

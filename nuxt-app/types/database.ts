@@ -447,6 +447,7 @@ export type LowCodePageRow = {
   layout: 'default' | 'dashboard' | 'blank';
   status: 'draft' | 'published' | 'archived';
   keep_alive: boolean;
+  edit_page_id: string | null;
   schema: LowCodePageSchema;
   version: number;
   created_by: string | null;

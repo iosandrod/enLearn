@@ -1,0 +1,44 @@
+{
+  "runId": 1785177601275,
+  "startedAt": "2026-07-27T18:40:01.276Z",
+  "apiBase": "http://localhost:3002/api",
+  "steps": [
+    {
+      "name": "signin",
+      "at": "2026-07-27T18:40:02.478Z",
+      "userId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "email": "1151685410@qq.com",
+      "role": "admin"
+    },
+    {
+      "name": "messages_before",
+      "at": "2026-07-27T18:40:02.947Z",
+      "count": 0
+    },
+    {
+      "name": "model_saved",
+      "at": "2026-07-27T18:40:03.446Z",
+      "modelId": "2379dc21-bae9-4368-a85e-fa5a16932cd4",
+      "code": "codex_current_user_approval_1785177601275",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-27T18:40:07.170Z",
+      "definitionId": "6e81ffc6-da86-443f-b5c1-39bb6e6c96ba",
+      "version": 1,
+      "status": "active"
+    }
+  ],
+  "result": {
+    "ok": false,
+    "message": "Workflow API request failed: 500",
+    "status": 502,
+    "payload": {
+      "message": "Workflow API request failed: 500",
+      "error": "Bad Gateway",
+      "statusCode": 502
+    }
+  },
+  "finishedAt": "2026-07-27T18:40:09.616Z"
+}

@@ -239,6 +239,7 @@ export function createDefaultModalBlock(overrides?: Partial<LowCodePageModalBloc
       open: false,
       width: 640,
       blocks: [],
+      overlays: [],
     },
     overrides
   );
@@ -254,6 +255,7 @@ export function createDefaultDrawerBlock(overrides?: Partial<LowCodePageDrawerBl
       width: 480,
       placement: 'right',
       blocks: [],
+      overlays: [],
     },
     overrides
   );

@@ -15,7 +15,13 @@
     @end="isDrag = false"
   >
     <template #item="item">
-      <div :class="{ 'item-drag': item.element.draggable }" :data-el="item.element.draggable">
+      <div
+        :class="{
+          'item-drag': item.element.draggable,
+          'fill-remaining-item': isFillRemainingBlock(item.element),
+        }"
+        :data-el="item.element.draggable"
+      >
         <slot name="item" v-bind="item"> </slot>
       </div>
     </template>
@@ -68,6 +74,10 @@
     scroll: true,
     ghostClass: 'ghost',
   }));
+
+  function isFillRemainingBlock(block: Record<string, any>) {
+    return block?.layout?.fillRemaining === true || block?.props?.layout?.fillRemaining === true;
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -87,8 +97,12 @@
   }
 
   .list-group {
+    display: flex;
+    flex-direction: column;
     height: 100%;
+    min-height: 0;
     min-height: 40px;
+    overflow: hidden;
 
     // &.isDrag div[data-draggable='true'] {
     //   padding: 2px 0;
@@ -97,5 +111,12 @@
     &.isDrag:not(.no-child) :deep(.list-group-item.has-slot) {
       @include showContainerBorder;
     }
+  }
+
+  .fill-remaining-item {
+    display: flex;
+    flex: 1 1 0;
+    min-height: 0;
+    flex-direction: column;
   }
 </style>

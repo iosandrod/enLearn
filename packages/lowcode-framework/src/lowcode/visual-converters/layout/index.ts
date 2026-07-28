@@ -65,6 +65,9 @@ const converter: VisualToLowCodeConverter = {
     const description = readString(props.description);
     const runtimeKind = normalizeRuntimeKind(props.runtimeKind);
     const blocks = context.convertBlocks(readSlotChildren(props.slots));
+    const overlays = Array.isArray(props.overlays)
+      ? context.convertOverlays(props.overlays as VisualEditorBlockData[])
+      : [];
     const width = readDimension(props.width);
 
     if (runtimeKind === 'modal') {
@@ -76,6 +79,7 @@ const converter: VisualToLowCodeConverter = {
         open: readBoolean(props.open, false),
         ...(typeof width !== 'undefined' ? { width } : {}),
         blocks,
+        ...(overlays.length ? { overlays } : {}),
       } as LowCodePageModalBlock;
     }
 
@@ -90,6 +94,7 @@ const converter: VisualToLowCodeConverter = {
         ...(typeof width !== 'undefined' ? { width } : {}),
         placement: placement === 'left' ? 'left' : 'right',
         blocks,
+        ...(overlays.length ? { overlays } : {}),
       } as LowCodePageDrawerBlock;
     }
 

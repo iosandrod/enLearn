@@ -251,6 +251,32 @@ export type LowCodePageDataSource = {
   autoLoad?: boolean;
 };
 
+export type LowCodePageType = 'list' | 'edit' | 'detail' | 'custom';
+
+export type LowCodePageOpenType = 'page' | 'drawer' | 'modal';
+
+export type LowCodePageRelation = {
+  id?: string;
+  sourcePageId?: string;
+  sourcePageCode: string;
+  sourcePageRoute?: string;
+  sourcePageTitle?: string;
+  actionKey: string;
+  targetPageId?: string;
+  targetPageCode: string;
+  targetPageRoute?: string;
+  targetPageTitle?: string;
+  openType: LowCodePageOpenType;
+  metadata?: Record<string, unknown>;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type LowCodePageRelations = {
+  outgoing: LowCodePageRelation[];
+  incoming: LowCodePageRelation[];
+};
+
 export type LowCodeMaterialVersionedBlock = {
   materialVersion?: string;
 };
@@ -437,6 +463,7 @@ export type LowCodePageSchema = {
   code: string;
   route: string;
   title: string;
+  pageType?: LowCodePageType;
   description?: string;
   layout?: 'default' | 'dashboard' | 'blank';
   status?: 'draft' | 'published' | 'archived';
@@ -460,7 +487,9 @@ export type LowCodePageRecord = {
   layout: 'default' | 'dashboard' | 'blank';
   status: 'draft' | 'published' | 'archived';
   keep_alive: boolean;
+  edit_page_id: string | null;
   schema: LowCodePageSchema;
+  relations?: LowCodePageRelations;
   version: number;
   published_at: string | null;
   created_at: string;
@@ -469,5 +498,5 @@ export type LowCodePageRecord = {
 
 export type LowCodePageSummary = Pick<
   LowCodePageRecord,
-  'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'version' | 'published_at' | 'created_at' | 'updated_at'
+  'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'edit_page_id' | 'version' | 'published_at' | 'created_at' | 'updated_at'
 >;

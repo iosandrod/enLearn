@@ -1,9 +1,10 @@
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
 import { getWorkflowEnv } from './env';
 
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {
+  private readonly logger = new Logger(DatabaseService.name);
   private readonly pool?: Pool;
 
   constructor() {
@@ -14,8 +15,14 @@ export class DatabaseService implements OnModuleDestroy {
     this.pool = new Pool({
       connectionString,
       max: 10,
+      keepAlive: true,
+      keepAliveInitialDelayMillis: 10_000,
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 30_000
+    });
+
+    this.pool.on('error', (error) => {
+      this.logger.warn(`Postgres idle client error: ${error.message}`);
     });
   }
 

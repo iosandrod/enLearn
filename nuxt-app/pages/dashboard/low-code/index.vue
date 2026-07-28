@@ -10,10 +10,10 @@
         </div>
         <div class="lc-actions">
           <NuxtLink to="/dashboard/low-code/designer">
-            <vxe-button status="primary">可视化设计器</vxe-button>
+            <vxe-button status="primary">Visual Designer</vxe-button>
           </NuxtLink>
           <NuxtLink v-if="selectedCode" :to="`/dashboard/low-code/designer/${selectedCode}`">
-            <vxe-button>编辑当前页面</vxe-button>
+            <vxe-button>Edit Selected</vxe-button>
           </NuxtLink>
         </div>
       </div>
@@ -26,6 +26,47 @@
         @edit="selectPage"
         @delete="archivePage"
       />
+    </div>
+
+    <div class="content-panel">
+      <h3 class="page-title">Generate List Page</h3>
+      <div class="lowcode-generator-form">
+        <label>
+          <span>Feature / Table</span>
+          <vxe-select
+            v-model="generatorForm.tableName"
+            :options="generatorOptions"
+            :loading="loadingGeneratorOptions"
+            filterable
+            clearable
+          />
+        </label>
+        <label>
+          <span>Page Code</span>
+          <vxe-input v-model="generatorForm.code" clearable />
+        </label>
+        <label>
+          <span>Route</span>
+          <vxe-input v-model="generatorForm.route" clearable />
+        </label>
+        <label>
+          <span>Title</span>
+          <vxe-input v-model="generatorForm.title" clearable />
+        </label>
+        <div class="lowcode-generator-form__actions lc-actions">
+          <vxe-button :loading="loadingGeneratorOptions" @click="loadGeneratorOptions">
+            Refresh
+          </vxe-button>
+          <vxe-button
+            status="primary"
+            :loading="generatingPage"
+            :disabled="!generatorForm.tableName"
+            @click="generateTablePage"
+          >
+            Generate
+          </vxe-button>
+        </div>
+      </div>
     </div>
 
     <div class="two-column">
@@ -65,7 +106,7 @@ import {
   lowCodePagesGridSchema as pagesGridSchema
 } from '~/schemas/lowcode';
 import { prepareLowCodePageSchema } from '~/lowcode/schema';
-import type { LowCodePageRecord } from '~/types/lowcode';
+import type { LowCodePageOpenType, LowCodePageRecord, LowCodePageType } from '~/types/lowcode';
 
 definePageMeta({
   layout: 'dashboard',
@@ -76,89 +117,120 @@ type LowCodePageForm = {
   code: string;
   route: string;
   title: string;
+  pageType: LowCodePageType;
   description: string;
   layout: 'default' | 'dashboard' | 'blank';
   status: 'draft' | 'published' | 'archived';
   keep_alive: boolean;
+  parentListPageCode: string;
+  editOpenType: LowCodePageOpenType;
   schemaJson: string;
+};
+
+type TablePageOption = {
+  label: string;
+  value: string;
+  tableName: string;
+  title: string;
+  pageCode?: string;
+  routePath?: string;
+};
+
+type GeneratorForm = {
+  tableName: string;
+  code: string;
+  route: string;
+  title: string;
+};
+
+const emptySchema = {
+  schemaVersion: 1,
+  code: '',
+  route: '',
+  title: '',
+  pageType: 'custom',
+  description: '',
+  layout: 'dashboard',
+  status: 'draft',
+  keepAlive: true,
+  blocks: [],
+  dataSources: {}
 };
 
 const serviceApi = useServiceApi();
 const loadingPages = ref(false);
+const loadingGeneratorOptions = ref(false);
 const saving = ref(false);
+const generatingPage = ref(false);
 const message = ref('');
 const messageClass = ref('lc-help');
 const pages = ref<LowCodePageRecord[]>([]);
 const selectedCode = ref('');
-const pageForm = ref<LowCodePageForm>({
+const generatorOptions = ref<TablePageOption[]>([]);
+const generatorForm = ref<GeneratorForm>({
+  tableName: '',
   code: '',
   route: '',
-  title: '',
-  description: '',
-  layout: 'dashboard',
-  status: 'draft',
-  keep_alive: true,
-  schemaJson: JSON.stringify(
-    {
-      schemaVersion: 1,
-      code: '',
-      route: '',
-      title: '',
-      description: '',
-      layout: 'dashboard',
-      status: 'draft',
-      keepAlive: true,
-      blocks: [],
-      dataSources: {}
-    },
-    null,
-    2
-  )
+  title: ''
 });
+const pageForm = ref<LowCodePageForm>(createEmptyPageForm());
 
 const editingLabel = computed(() =>
   selectedCode.value ? `Editing ${selectedCode.value}` : 'Create New Page'
 );
-
 const schemaPreview = computed(() => pageForm.value.schemaJson || '{}');
 
+function createEmptyPageForm(): LowCodePageForm {
+  return {
+    code: '',
+    route: '',
+    title: '',
+    pageType: 'custom',
+    description: '',
+    layout: 'dashboard',
+    status: 'draft',
+    keep_alive: true,
+    parentListPageCode: '',
+    editOpenType: 'page',
+    schemaJson: JSON.stringify(emptySchema, null, 2)
+  };
+}
+
+function defaultPageCodeForTable(tableName: string) {
+  return tableName
+    .replace(/[^A-Za-z0-9_]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase();
+}
+
+function applyGeneratorOption(option: TablePageOption) {
+  const code = option.pageCode || defaultPageCodeForTable(option.tableName);
+  generatorForm.value = {
+    tableName: option.tableName,
+    code,
+    route: option.routePath || `/dashboard/low-code/${code}`,
+    title: option.title || option.tableName
+  };
+}
+
 function normalizeFormFromPage(page: LowCodePageRecord | null): LowCodePageForm {
-  if (!page) {
-    return {
-      code: '',
-      route: '',
-      title: '',
-      description: '',
-      layout: 'dashboard',
-      status: 'draft',
-      keep_alive: true,
-      schemaJson: JSON.stringify(
-        {
-          schemaVersion: 1,
-          code: '',
-          route: '',
-          title: '',
-          description: '',
-          layout: 'dashboard',
-          status: 'draft',
-          keepAlive: true,
-          blocks: [],
-          dataSources: {}
-        },
-        null,
-        2
-      )
-    };
-  }
+  if (!page) return createEmptyPageForm();
+
+  const incomingEditRelation = page.relations?.incoming.find(
+    (relation) => relation.actionKey === 'edit'
+  );
 
   return {
     code: page.code,
     route: page.route,
     title: page.title,
+    pageType: page.schema.pageType ?? 'custom',
     description: page.description ?? '',
     layout: page.layout,
     status: page.status,
     keep_alive: page.keep_alive,
+    parentListPageCode: incomingEditRelation?.sourcePageCode ?? '',
+    editOpenType: incomingEditRelation?.openType ?? 'page',
     schemaJson: JSON.stringify(page.schema, null, 2)
   };
 }
@@ -180,6 +252,26 @@ async function loadPages() {
     messageClass.value = 'lc-error';
   } finally {
     loadingPages.value = false;
+  }
+}
+
+async function loadGeneratorOptions() {
+  loadingGeneratorOptions.value = true;
+  try {
+    generatorOptions.value = await serviceApi.invoke<TablePageOption[]>(
+      'lowcode',
+      'listTablePageOptions'
+    );
+
+    if (!generatorForm.value.tableName && generatorOptions.value.length) {
+      applyGeneratorOption(generatorOptions.value[0]);
+    }
+  } catch (error) {
+    message.value =
+      error instanceof Error ? error.message : 'Could not load table options.';
+    messageClass.value = 'lc-error';
+  } finally {
+    loadingGeneratorOptions.value = false;
   }
 }
 
@@ -221,6 +313,7 @@ function buildSchemaPayload(values: LowCodePageForm) {
     code: values.code,
     route: values.route,
     title: values.title,
+    pageType: values.pageType,
     description: values.description,
     layout: values.layout,
     status: values.status,
@@ -234,11 +327,21 @@ async function savePage(values: Record<string, unknown>) {
 
   try {
     const formValues = values as unknown as LowCodePageForm;
+    if (formValues.pageType === 'edit' && !formValues.parentListPageCode.trim()) {
+      throw new Error('Edit Page must be linked to a Parent List Page.');
+    }
+
     const schema = buildSchemaPayload(formValues);
 
     const saved = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'savePage', {
       code: formValues.code,
-      schema
+      schema,
+      ...(formValues.parentListPageCode.trim()
+        ? {
+            parentListPageCode: formValues.parentListPageCode.trim(),
+            editOpenType: formValues.editOpenType
+          }
+        : {})
     });
 
     selectedCode.value = saved.code;
@@ -255,6 +358,38 @@ async function savePage(values: Record<string, unknown>) {
   }
 }
 
+async function generateTablePage() {
+  if (!generatorForm.value.tableName) return;
+
+  generatingPage.value = true;
+  message.value = '';
+
+  try {
+    const saved = await serviceApi.invoke<LowCodePageRecord>(
+      'lowcode',
+      'saveGeneratedTableListPage',
+      {
+        tableName: generatorForm.value.tableName,
+        code: generatorForm.value.code,
+        route: generatorForm.value.route,
+        title: generatorForm.value.title,
+        status: 'published'
+      }
+    );
+    selectedCode.value = saved.code;
+    pageForm.value = normalizeFormFromPage(saved);
+    message.value = `Generated ${saved.code} from ${generatorForm.value.tableName}.`;
+    messageClass.value = 'lc-help';
+    await loadPages();
+  } catch (error) {
+    message.value =
+      error instanceof Error ? error.message : 'Could not generate the page.';
+    messageClass.value = 'lc-error';
+  } finally {
+    generatingPage.value = false;
+  }
+}
+
 async function handleEditorAction(action: { code: string }) {
   if (action.code === 'publish') {
     saving.value = true;
@@ -263,7 +398,13 @@ async function handleEditorAction(action: { code: string }) {
     try {
       await serviceApi.invoke('lowcode', 'publishPage', {
         code: pageForm.value.code,
-        schema: buildSchemaPayload(pageForm.value)
+        schema: buildSchemaPayload(pageForm.value),
+        ...(pageForm.value.parentListPageCode.trim()
+          ? {
+              parentListPageCode: pageForm.value.parentListPageCode.trim(),
+              editOpenType: pageForm.value.editOpenType
+            }
+          : {})
       });
       message.value = `Published ${pageForm.value.code}.`;
       messageClass.value = 'lc-help';
@@ -295,5 +436,45 @@ watch(
   }
 );
 
-onMounted(loadPages);
+watch(
+  () => generatorForm.value.tableName,
+  (tableName) => {
+    const option = generatorOptions.value.find((item) => item.tableName === tableName);
+    if (option) {
+      applyGeneratorOption(option);
+    }
+  }
+);
+
+onMounted(async () => {
+  await Promise.all([loadPages(), loadGeneratorOptions()]);
+});
 </script>
+
+<style scoped>
+.lowcode-generator-form {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.lowcode-generator-form label {
+  display: grid;
+  gap: 6px;
+  color: #344054;
+  font-size: 12px;
+  min-width: 0;
+}
+
+.lowcode-generator-form__actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+@media (max-width: 960px) {
+  .lowcode-generator-form {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

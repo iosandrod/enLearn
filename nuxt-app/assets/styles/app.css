@@ -174,7 +174,9 @@ a {
 
 .admin-body {
   display: grid;
+  height: calc(100vh - 32px);
   min-height: calc(100vh - 32px);
+  min-width: 0;
   grid-template-columns: 198px minmax(0, 1fr);
 }
 
@@ -240,8 +242,11 @@ a {
 }
 
 .admin-main {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  overflow: auto;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .admin-tabs {
@@ -250,6 +255,7 @@ a {
   min-height: 28px;
   border-bottom: 1px solid #d6dce5;
   background: #ffffff;
+  flex: none;
   overflow-x: auto;
 }
 
@@ -366,14 +372,71 @@ a {
 }
 
 .lc-grid {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+  min-height: 0;
 }
 
 .lowcode-runtime-page {
-  display: grid;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   gap: 8px;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  overflow: hidden;
   padding: 8px;
+}
+
+.lowcode-runtime-page > *,
+.lowcode-runtime-page .content-panel,
+.lowcode-runtime-page .section-block,
+.lowcode-runtime-page .lc-node-section,
+.lowcode-runtime-page .lc-node-stack,
+.lowcode-runtime-page .lc-grid {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.lowcode-runtime-page > .lc-runtime-block {
+  flex: none;
+}
+
+.lowcode-runtime-page > .lc-runtime-block--fill,
+.lc-tab-pane-stack > .lc-runtime-block--fill {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.lc-runtime-block--fill.content-panel,
+.lc-runtime-block--fill .content-panel,
+.lc-runtime-block--fill .lc-grid,
+.lc-runtime-block--fill .lc-grid__table-scroll {
+  min-height: 0;
+}
+
+.lc-runtime-block--fill .lc-grid,
+.lc-runtime-block--fill .lc-node-tabs,
+.lc-runtime-block--fill .lc-tab-pane-stack,
+.lc-runtime-block--fill .lc-grid__table-scroll {
+  flex: 1 1 0;
+}
+
+.lc-runtime-block--fill.lc-node-tabs,
+.lc-runtime-block--fill .lc-node-tabs {
+  display: flex;
+  flex-direction: column;
+}
+
+.lc-runtime-block--fill.lc-node-tabs > .vxe-tabs,
+.lc-runtime-block--fill .lc-node-tabs > .vxe-tabs {
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .lowcode-runtime-page .content-panel,
@@ -412,8 +475,10 @@ a {
 
 .lc-node-section,
 .lc-node-stack {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+  min-height: 0;
 }
 
 .lc-node-header {

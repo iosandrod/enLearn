@@ -12,61 +12,64 @@
       </vxe-button>
     </div>
 
-    <vxe-grid
-      v-bind="gridConfig"
-      :data="rows"
-      :loading="loading"
-      @current-row-change="handleCurrentChange"
-      @cell-click="(payload) => handleGenericGridEvent('cellClick', payload)"
-      @cell-dblclick="handleCellDblclick"
-      @row-dblclick="handleRowDblclick"
-      @radio-change="(payload) => handleGenericGridEvent('radioChange', payload)"
-      @checkbox-change="(payload) => handleGenericGridEvent('checkboxChange', payload)"
-      @checkbox-all="(payload) => handleGenericGridEvent('checkboxAll', payload)"
-      @sort-change="(payload) => handleGenericGridEvent('sortChange', payload)"
-      @filter-change="(payload) => handleGenericGridEvent('filterChange', payload)"
-      @page-change="(payload) => handleGenericGridEvent('pageChange', payload)"
-      @toolbar-button-click="(payload) => handleToolbarGridEvent('toolbarButtonClick', payload)"
-      @toolbar-tool-click="(payload) => handleToolbarGridEvent('toolbarToolClick', payload)"
-      @proxy-query="(payload) => handleGenericGridEvent('proxyQuery', payload)"
-      @proxy-delete="(payload) => handleGenericGridEvent('proxyDelete', payload)"
-      @proxy-save="(payload) => handleGenericGridEvent('proxySave', payload)"
-      @form-submit="(payload) => handleGenericGridEvent('formSubmit', payload)"
-      @form-reset="(payload) => handleGenericGridEvent('formReset', payload)"
-      @zoom="(payload) => handleGenericGridEvent('zoom', payload)"
-    >
-      <template #actions="{ row }">
-        <template v-if="customRowActions.length">
+    <div class="lc-grid__table-scroll">
+      <vxe-grid
+        class="lc-grid__table"
+        v-bind="gridConfig"
+        :data="rows"
+        :loading="loading"
+        @current-row-change="handleCurrentChange"
+        @cell-click="(payload) => handleGenericGridEvent('cellClick', payload)"
+        @cell-dblclick="handleCellDblclick"
+        @row-dblclick="handleRowDblclick"
+        @radio-change="(payload) => handleGenericGridEvent('radioChange', payload)"
+        @checkbox-change="(payload) => handleGenericGridEvent('checkboxChange', payload)"
+        @checkbox-all="(payload) => handleGenericGridEvent('checkboxAll', payload)"
+        @sort-change="(payload) => handleGenericGridEvent('sortChange', payload)"
+        @filter-change="(payload) => handleGenericGridEvent('filterChange', payload)"
+        @page-change="(payload) => handleGenericGridEvent('pageChange', payload)"
+        @toolbar-button-click="(payload) => handleToolbarGridEvent('toolbarButtonClick', payload)"
+        @toolbar-tool-click="(payload) => handleToolbarGridEvent('toolbarToolClick', payload)"
+        @proxy-query="(payload) => handleGenericGridEvent('proxyQuery', payload)"
+        @proxy-delete="(payload) => handleGenericGridEvent('proxyDelete', payload)"
+        @proxy-save="(payload) => handleGenericGridEvent('proxySave', payload)"
+        @form-submit="(payload) => handleGenericGridEvent('formSubmit', payload)"
+        @form-reset="(payload) => handleGenericGridEvent('formReset', payload)"
+        @zoom="(payload) => handleGenericGridEvent('zoom', payload)"
+      >
+        <template #actions="{ row }">
+          <template v-if="customRowActions.length">
+            <vxe-button
+              v-for="action in customRowActions"
+              :key="action.code"
+              size="mini"
+              :status="action.status"
+              :disabled="action.disabled"
+              @click="emitRowAction(action, row)"
+            >
+              <i v-if="action.icon" :class="action.icon" aria-hidden="true" />
+              {{ action.label }}
+            </vxe-button>
+          </template>
           <vxe-button
-            v-for="action in customRowActions"
-            :key="action.code"
+            v-if="!customRowActions.length && schema.rowActions?.edit !== false"
             size="mini"
-            :status="action.status"
-            :disabled="action.disabled"
-            @click="emitRowAction(action, row)"
+            status="primary"
+            @click="$emit('edit', row)"
           >
-            <i v-if="action.icon" :class="action.icon" aria-hidden="true" />
-            {{ action.label }}
+            {{ schema.rowActions?.editLabel ?? 'Edit' }}
+          </vxe-button>
+          <vxe-button
+            v-if="!customRowActions.length && schema.rowActions?.delete !== false"
+            size="mini"
+            status="danger"
+            @click="$emit('delete', row)"
+          >
+            {{ schema.rowActions?.deleteLabel ?? 'Delete' }}
           </vxe-button>
         </template>
-        <vxe-button
-          v-if="!customRowActions.length && schema.rowActions?.edit !== false"
-          size="mini"
-          status="primary"
-          @click="$emit('edit', row)"
-        >
-          {{ schema.rowActions?.editLabel ?? 'Edit' }}
-        </vxe-button>
-        <vxe-button
-          v-if="!customRowActions.length && schema.rowActions?.delete !== false"
-          size="mini"
-          status="danger"
-          @click="$emit('delete', row)"
-        >
-          {{ schema.rowActions?.deleteLabel ?? 'Delete' }}
-        </vxe-button>
-      </template>
-    </vxe-grid>
+      </vxe-grid>
+    </div>
   </section>
 </template>
 
@@ -217,3 +220,27 @@ function handleCellDblclick(payload: unknown) {
   emit('rowDblclick', { row, rawEvent });
 }
 </script>
+
+<style scoped>
+.lc-grid {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+}
+
+.lc-grid__table-scroll {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.lc-grid__table {
+  width: 100%;
+  max-width: 100%;
+}
+</style>

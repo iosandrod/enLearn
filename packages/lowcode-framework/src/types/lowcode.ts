@@ -251,8 +251,37 @@ export type LowCodePageDataSource = {
   autoLoad?: boolean;
 };
 
+export type LowCodePageType = 'list' | 'edit' | 'detail' | 'custom';
+
+export type LowCodePageOpenType = 'page' | 'drawer' | 'modal';
+
+export type LowCodePageRelation = {
+  id?: string;
+  sourcePageId?: string;
+  sourcePageCode: string;
+  sourcePageRoute?: string;
+  sourcePageTitle?: string;
+  actionKey: string;
+  targetPageId?: string;
+  targetPageCode: string;
+  targetPageRoute?: string;
+  targetPageTitle?: string;
+  openType: LowCodePageOpenType;
+  metadata?: Record<string, unknown>;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type LowCodePageRelations = {
+  outgoing: LowCodePageRelation[];
+  incoming: LowCodePageRelation[];
+};
+
 export type LowCodeMaterialVersionedBlock = {
   materialVersion?: string;
+  layout?: {
+    fillRemaining?: boolean;
+  };
 };
 
 export type LowCodePageTextBlock = LowCodeMaterialVersionedBlock & {
@@ -374,6 +403,7 @@ export type LowCodePageModalBlock = LowCodeMaterialVersionedBlock & {
   open?: boolean;
   width?: number | string;
   blocks: LowCodePageBlock[];
+  overlays?: LowCodePageOverlayBlock[];
 };
 
 export type LowCodePageDrawerBlock = LowCodeMaterialVersionedBlock & {
@@ -385,6 +415,7 @@ export type LowCodePageDrawerBlock = LowCodeMaterialVersionedBlock & {
   width?: number | string;
   placement?: 'left' | 'right';
   blocks: LowCodePageBlock[];
+  overlays?: LowCodePageOverlayBlock[];
 };
 
 export type LowCodeStatItem = {
@@ -432,11 +463,14 @@ export type LowCodePageBlock =
   | LowCodePageStatCardBlock
   | LowCodePageTreeBlock;
 
+export type LowCodePageOverlayBlock = LowCodePageModalBlock | LowCodePageDrawerBlock;
+
 export type LowCodePageSchema = {
   schemaVersion?: number;
   code: string;
   route: string;
   title: string;
+  pageType?: LowCodePageType;
   description?: string;
   layout?: 'default' | 'dashboard' | 'blank';
   status?: 'draft' | 'published' | 'archived';
@@ -449,6 +483,7 @@ export type LowCodePageSchema = {
   dataSources?: Record<string, LowCodePageDataSource>;
   eventHandlers?: LowCodeEventHandler[];
   blocks: LowCodePageBlock[];
+  overlays?: LowCodePageOverlayBlock[];
 };
 
 export type LowCodePageRecord = {
@@ -460,7 +495,9 @@ export type LowCodePageRecord = {
   layout: 'default' | 'dashboard' | 'blank';
   status: 'draft' | 'published' | 'archived';
   keep_alive: boolean;
+  edit_page_id: string | null;
   schema: LowCodePageSchema;
+  relations?: LowCodePageRelations;
   version: number;
   published_at: string | null;
   created_at: string;
@@ -469,5 +506,5 @@ export type LowCodePageRecord = {
 
 export type LowCodePageSummary = Pick<
   LowCodePageRecord,
-  'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'version' | 'published_at' | 'created_at' | 'updated_at'
+  'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'edit_page_id' | 'version' | 'published_at' | 'created_at' | 'updated_at'
 >;

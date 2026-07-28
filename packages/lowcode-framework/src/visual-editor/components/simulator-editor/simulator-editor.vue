@@ -1,6 +1,23 @@
 <template>
   <div class="simulator-container" :class="{ 'is-form-workbench': workbenchMode === 'form' }">
     <div class="simulator-editor">
+      <div v-if="overlayEntries.length" class="simulator-overlay-shelf">
+        <div
+          v-for="entry in overlayEntries"
+          :key="entry.block._vid"
+          class="simulator-overlay-card"
+          :class="{ focus: entry.block.focus }"
+          @contextmenu.stop.prevent="onContextmenuBlock($event, entry.block, entry.parentBlocks)"
+          @mousedown.stop="selectComp(entry.block)"
+          @dblclick.stop="openModalDesigner(entry.block)"
+        >
+          <span class="simulator-overlay-card__tag">弹框</span>
+          <strong>{{ getBlockTitle(entry.block) }}</strong>
+          <small>{{ entry.block.props?.blockId || entry.block._vid }} · {{ countModalNodes(entry.block) }} 个节点</small>
+          <i class="ri-edit-line" aria-hidden="true" />
+        </div>
+      </div>
+
       <div class="simulator-editor-content" :style="pageStyle">
         <DraggableTransitionGroup
           v-model:drag="drag"
@@ -16,6 +33,7 @@
                 focus: outElement.focus,
                 focusWithChild: outElement.focusWithChild,
                 drag,
+                fillRemaining: isFillRemainingBlock(outElement),
                 ['has-slot']: !!Object.keys(outElement.props.slots || {}).length,
               }"
               @contextmenu.stop.prevent="onContextmenuBlock($event, outElement)"
@@ -54,7 +72,7 @@
 </template>
 
 <script lang="tsx" setup>
-  import { computed, ref } from 'vue';
+  import { computed, ref, watch } from 'vue';
   import { cloneDeep } from 'lodash-es';
   import DraggableTransitionGroup from './draggable-transition-group.vue';
   import CompRender from './comp-render';
@@ -78,6 +96,10 @@
     $$buttonGroupDesigner,
     type ButtonGroupDesignerResult,
   } from '../button-group-designer/button-group-designer.service';
+  import {
+    $$modalDesigner,
+    type ModalDesignerResult,
+  } from '../modal-designer/modal-designer.service';
 
   defineOptions({
     name: 'SimulatorEditor',
@@ -99,6 +121,162 @@
   const { globalProperties } = useGlobalProperties();
 
   const drag = ref(false);
+  let normalizingOverlayPlacement = false;
+
+  type OverlayEntry = {
+    block: VisualEditorBlockData;
+    parentBlocks: VisualEditorBlockData[];
+    index: number;
+  };
+
+  const overlayEntries = computed(() => {
+    currentPage.value.overlays ??= [];
+    return currentPage.value.overlays.map((block, index) => ({
+      block,
+      parentBlocks: currentPage.value.overlays ?? [],
+      index,
+    }));
+  });
+
+  const isRecord = (value: unknown): value is Record<string, any> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+
+  const isOverlayBlock = (block: VisualEditorBlockData) =>
+    block.componentKey === 'lowcode-modal' ||
+    block.props?.runtimeKind === 'modal' ||
+    block.props?.runtimeKind === 'drawer';
+
+  const isFillRemainingBlock = (block: VisualEditorBlockData) =>
+    block.layout?.fillRemaining === true || block.props?.layout?.fillRemaining === true;
+
+  const getSlotEntries = (block: VisualEditorBlockData) => {
+    const slots = isRecord(block.props?.slots) ? block.props.slots : {};
+    return Object.values(slots).filter(
+      (slot): slot is { children: VisualEditorBlockData[] } =>
+        isRecord(slot) && Array.isArray(slot.children),
+    );
+  };
+
+  const ensureModalDesignerSlots = (block: VisualEditorBlockData) => {
+    block.props ??= {};
+    if (!isRecord(block.props.slots)) {
+      block.props.slots = {
+        value: '24',
+        slot0: {
+          key: 'slot0',
+          label: '弹框内容',
+          span: 24,
+          children: [],
+        },
+      };
+      return;
+    }
+
+    if (!isRecord(block.props.slots.slot0)) {
+      block.props.slots.slot0 = {
+        key: 'slot0',
+        label: '弹框内容',
+        span: 24,
+        children: [],
+      };
+    }
+
+    if (!Array.isArray(block.props.slots.slot0.children)) {
+      block.props.slots.slot0.children = [];
+    }
+    block.props.slots.value ??= '24';
+  };
+
+  const ensureOverlayBlock = (block: VisualEditorBlockData) => {
+    block.props ??= {};
+    block.props.overlays ??= [];
+    ensureModalDesignerSlots(block);
+  };
+
+  const getBlockTitle = (block: VisualEditorBlockData) =>
+    String(block.props?.title || block.props?.blockId || block.label || '弹框');
+
+  function getModalContentBlocks(block: VisualEditorBlockData) {
+    return getSlotEntries(block).flatMap((slot) => slot.children);
+  }
+
+  function countDesignNodes(blocks: VisualEditorBlockData[] = []): number {
+    return blocks.reduce((total, block) => {
+      const childCount = getSlotEntries(block).reduce(
+        (sum, slot) => sum + countDesignNodes(slot.children),
+        0,
+      );
+      const overlayCount = countDesignNodes(block.props?.overlays ?? []);
+      return total + 1 + childCount + overlayCount;
+    }, 0);
+  }
+
+  function countModalNodes(block: VisualEditorBlockData) {
+    return countDesignNodes(getModalContentBlocks(block)) + countDesignNodes(block.props?.overlays ?? []);
+  }
+
+  function walkDesignBlocks(
+    blocks: VisualEditorBlockData[],
+    callback: (block: VisualEditorBlockData) => void,
+  ) {
+    blocks.forEach((block) => {
+      callback(block);
+      getSlotEntries(block).forEach((slot) => walkDesignBlocks(slot.children, callback));
+      if (Array.isArray(block.props?.overlays)) {
+        walkDesignBlocks(block.props.overlays, callback);
+      }
+    });
+  }
+
+  function normalizeOverlayBlockList(
+    blocks: VisualEditorBlockData[],
+    ownerOverlays: VisualEditorBlockData[],
+    isOwnerOverlayList = false,
+  ) {
+    let changed = false;
+
+    for (let index = blocks.length - 1; index >= 0; index -= 1) {
+      const block = blocks[index];
+
+      if (isOverlayBlock(block)) {
+        ensureOverlayBlock(block);
+
+        if (!isOwnerOverlayList) {
+          blocks.splice(index, 1);
+          ownerOverlays.push(block);
+          changed = true;
+        }
+
+        getSlotEntries(block).forEach((slot) => {
+          changed =
+            normalizeOverlayBlockList(slot.children, block.props.overlays, false) ||
+            changed;
+        });
+        changed =
+          normalizeOverlayBlockList(block.props.overlays, block.props.overlays, true) ||
+          changed;
+        continue;
+      }
+
+      getSlotEntries(block).forEach((slot) => {
+        changed = normalizeOverlayBlockList(slot.children, ownerOverlays, false) || changed;
+      });
+    }
+
+    return changed;
+  }
+
+  function normalizeOverlayPlacement() {
+    if (normalizingOverlayPlacement) return;
+
+    normalizingOverlayPlacement = true;
+    currentPage.value.overlays ??= [];
+
+    normalizeOverlayBlockList(currentPage.value.blocks, currentPage.value.overlays, false);
+    normalizeOverlayBlockList(currentPage.value.overlays, currentPage.value.overlays, true);
+
+    normalizingOverlayPlacement = false;
+  }
 
   const pageStyle = computed(() => {
     const { bgImage, bgColor } = currentPage.value.config;
@@ -109,13 +287,22 @@
     };
   });
 
+  watch(() => currentPage.value, normalizeOverlayPlacement, {
+    immediate: true,
+    deep: true,
+    flush: 'post',
+  });
+
   //递归实现
   //@leafId  为你要查找的id，
   //@nodes   为原始Json数据
   //@path    供递归使用，不要赋值
   const findPathByLeafId = (
     leafId,
-    nodes: VisualEditorBlockData[] = [],
+    nodes: VisualEditorBlockData[] = [
+      ...currentPage.value.blocks,
+      ...(currentPage.value.overlays ?? []),
+    ],
     path: VisualEditorBlockData[] = [],
   ) => {
     for (let i = 0; i < nodes.length; i++) {
@@ -133,6 +320,12 @@
           if (findResult) {
             return findResult;
           }
+        }
+      }
+      if (Array.isArray(nodes[i].props?.overlays)) {
+        const findResult = findPathByLeafId(leafId, nodes[i].props.overlays, tmpPath);
+        if (findResult) {
+          return findResult;
         }
       }
     }
@@ -161,12 +354,20 @@
   // 选择要操作的组件
   const selectComp = (element: VisualEditorBlockData) => {
     setCurrentBlock(element);
-    currentPage.value.blocks.forEach((block) => {
-      block.focus = element._vid == block._vid;
-      block.focusWithChild = false;
-      handleSlotsFocus(block, element._vid);
-      element.focusWithChild = false;
+    walkDesignBlocks(
+      [...currentPage.value.blocks, ...(currentPage.value.overlays ?? [])],
+      (block) => {
+        block.focus = element._vid == block._vid;
+        block.focusWithChild = false;
+      },
+    );
+
+    const path = findPathByLeafId(element._vid) ?? [];
+    path.forEach((block) => {
+      block.focusWithChild = block._vid !== element._vid;
     });
+    element.focus = true;
+    element.focusWithChild = false;
   };
 
   /**
@@ -191,6 +392,7 @@
     'buttonGroup',
   ]);
   const subFormDesignComponentKeys = new Set(['sub-form', 'lc-sub-form']);
+  const modalDesignComponentKeys = new Set(['lowcode-modal']);
 
   const isFormDesignBlock = (block: VisualEditorBlockData) =>
     formDesignComponentKeys.has(block.componentKey) || Array.isArray(block.props?.fields);
@@ -205,6 +407,10 @@
   const isSubFormDesignBlock = (block: VisualEditorBlockData) =>
     subFormDesignComponentKeys.has(block.componentKey) ||
     block.props?.__lowcodeComponent === 'lc-sub-form';
+
+  const isModalDesignBlock = (block: VisualEditorBlockData) =>
+    modalDesignComponentKeys.has(block.componentKey) ||
+    block.props?.runtimeKind === 'modal';
 
   const syncFormDesignToPageBlock = (
     block: VisualEditorBlockData,
@@ -247,6 +453,18 @@
     block.props.fields = cloneDeep(result.fields);
     block.props.subFormDesignerModel = cloneDeep(result.designerModel);
     block.props.subFormDesignerUpdatedAt = Date.now();
+    selectComp(block);
+  };
+
+  const syncModalDesignToPageBlock = (
+    block: VisualEditorBlockData,
+    result: ModalDesignerResult,
+  ) => {
+    ensureOverlayBlock(block);
+    block.props.slots.slot0.children = cloneDeep(result.blocks);
+    block.props.overlays = cloneDeep(result.overlays);
+    block.props.modalDesignerModel = cloneDeep(result.designerModel);
+    block.props.modalDesignerUpdatedAt = Date.now();
     selectComp(block);
   };
 
@@ -318,6 +536,19 @@
     syncSubFormDesignToFieldBlock(block, result);
   };
 
+  const openModalDesigner = async (block: VisualEditorBlockData) => {
+    selectComp(block);
+    ensureOverlayBlock(block);
+
+    const result = await $$modalDesigner({
+      title: `${getBlockTitle(block)}设计`,
+      blocks: getModalContentBlocks(block),
+      overlays: Array.isArray(block.props?.overlays) ? block.props.overlays : [],
+    });
+
+    syncModalDesignToPageBlock(block, result);
+  };
+
   const onContextmenuBlock = (
     e: MouseEvent,
     block: VisualEditorBlockData,
@@ -327,6 +558,15 @@
       reference: e,
       content: () => (
         <>
+          {props.allowFormDesign && isModalDesignBlock(block) && (
+            <DropdownOption
+              label="进入设计"
+              icon="ri-edit-line"
+              {...{
+                onClick: () => void openModalDesigner(block),
+              }}
+            />
+          )}
           {props.allowFormDesign &&
             (isFormDesignBlock(block) ||
               isGridDesignBlock(block) ||
@@ -369,6 +609,9 @@
                       slotKeys.forEach((slotKey) => {
                         slots[slotKey]?.children?.forEach((child) => setBlockVid(child));
                       });
+                    }
+                    if (Array.isArray(block.props?.overlays)) {
+                      block.props.overlays.forEach((child) => setBlockVid(child));
                     }
                   };
                   const blockCopy = cloneDeep(parentBlocks[index]);
@@ -455,6 +698,8 @@
   }
 
   .simulator-editor {
+    position: relative;
+    display: flex;
     width: 100%;
     height: 100%;
     min-width: 0;
@@ -468,6 +713,7 @@
     box-sizing: border-box;
     background-clip: border-box;
     flex: 1 1 auto;
+    flex-direction: column;
     contain: paint layout;
 
     &::-webkit-scrollbar {
@@ -475,15 +721,18 @@
     }
 
     &-content {
+      display: flex;
+      flex-direction: column;
       width: 100%;
       height: 100%;
-      min-height: 100%;
+      min-height: 0;
       margin: 0;
       border: 0;
       border-radius: 10px;
-      overflow: visible;
+      overflow: hidden;
       transform: translate(0);
       box-shadow: none;
+      flex: 1 1 auto;
     }
   }
 
@@ -499,11 +748,90 @@
   }
 
   .simulator-drop-zone {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     height: 100%;
-    min-height: 100%;
+    min-height: 0;
     margin: 0;
     padding: 0;
+    overflow: hidden;
+  }
+
+  .simulator-overlay-shelf {
+    display: flex;
+    flex: none;
+    min-height: 82px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+    box-sizing: border-box;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    align-items: stretch;
+  }
+
+  .simulator-overlay-card {
+    position: relative;
+    display: grid;
+    width: 184px;
+    min-width: 184px;
+    padding: 10px 34px 10px 10px;
+    border: 1px solid #d8e0ea;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgb(15 23 42 / 5%);
+    box-sizing: border-box;
+    cursor: pointer;
+    gap: 3px;
+
+    &:hover,
+    &.focus {
+      border-color: #409eff;
+      box-shadow: 0 8px 18px rgb(29 115 216 / 12%);
+    }
+
+    strong,
+    small {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    strong {
+      color: #0f172a;
+      font-size: 13px;
+      line-height: 18px;
+    }
+
+    small {
+      color: #64748b;
+      font-size: 11px;
+      line-height: 15px;
+    }
+
+    > i {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: #64748b;
+      font-size: 16px;
+    }
+  }
+
+  .simulator-overlay-card__tag {
+    display: inline-flex;
+    width: fit-content;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 4px;
+    background: #eff6ff;
+    color: #1d73d8;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 18px;
   }
 
   .list-group-item {
@@ -513,6 +841,20 @@
 
     > div {
       position: relative;
+    }
+
+    &.fillRemaining {
+      display: flex;
+      flex: 1 1 0;
+      min-height: 0;
+      flex-direction: column;
+
+      > div {
+        display: flex;
+        flex: 1 1 0;
+        min-height: 0;
+        flex-direction: column;
+      }
     }
 
     &.focus {

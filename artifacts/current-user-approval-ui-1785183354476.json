@@ -1,0 +1,47 @@
+{
+  "runId": 1785183354476,
+  "startedAt": "2026-07-27T20:15:54.476Z",
+  "steps": [
+    {
+      "name": "fresh_flow_created",
+      "userId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "modelId": "692b6ae7-394e-4f83-8366-460003036c96",
+      "definitionId": "ad7943b4-d773-4b58-a00a-8b4fdbba0e48",
+      "instanceId": "90ff2c54-42af-42e0-a28d-514f55530fab",
+      "taskId": "4f6c4a3e-5434-4be8-ab33-cf45a9ee33c5",
+      "messageId": "1c7fd126-39b7-4dbb-b2b0-609c67100166",
+      "messageLink": "/dashboard/workflow/tasks/4f6c4a3e-5434-4be8-ab33-cf45a9ee33c5"
+    },
+    {
+      "name": "message_visible_in_ui",
+      "screenshot": "artifacts/current-user-approval-ui-messages-1785183354476.png"
+    },
+    {
+      "name": "message_opened_task_page",
+      "url": "http://localhost:3000/dashboard/workflow/tasks/4f6c4a3e-5434-4be8-ab33-cf45a9ee33c5"
+    },
+    {
+      "name": "approval_clicked_in_ui",
+      "screenshot": "artifacts/current-user-approval-ui-approved-1785183354476.png"
+    },
+    {
+      "name": "final_state",
+      "instanceStatus": "approved",
+      "taskStatus": "completed",
+      "completedAt": "2026-07-27T20:34:58.316Z"
+    }
+  ],
+  "result": {
+    "ok": true,
+    "userId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+    "modelId": "692b6ae7-394e-4f83-8366-460003036c96",
+    "definitionId": "ad7943b4-d773-4b58-a00a-8b4fdbba0e48",
+    "instanceId": "90ff2c54-42af-42e0-a28d-514f55530fab",
+    "taskId": "4f6c4a3e-5434-4be8-ab33-cf45a9ee33c5",
+    "messageId": "1c7fd126-39b7-4dbb-b2b0-609c67100166",
+    "messageLink": "/dashboard/workflow/tasks/4f6c4a3e-5434-4be8-ab33-cf45a9ee33c5",
+    "finalStatus": "approved",
+    "finalTaskStatus": "completed"
+  },
+  "finishedAt": "2026-07-27T20:37:41.234Z"
+}

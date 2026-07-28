@@ -5,6 +5,7 @@ export type LowCodePageSchema = {
   code: string;
   route: string;
   title: string;
+  pageType?: 'list' | 'edit' | 'detail' | 'custom';
   description?: string;
   layout?: 'default' | 'dashboard' | 'blank';
   status?: 'draft' | 'published' | 'archived';
@@ -38,6 +39,7 @@ export type LowCodePageSchema = {
     directives: Array<Record<string, unknown> & { type: string; disabled?: boolean }>;
   }>;
   blocks: Array<Record<string, unknown>>;
+  overlays?: Array<Record<string, unknown>>;
 };
 
 export type LowCodeSchemaIssueLevel = 'error' | 'warning';
@@ -91,6 +93,12 @@ function readSchemaVersion(value: unknown) {
   return typeof value === 'number' && Number.isFinite(value) && value > 0
     ? value
     : LOW_CODE_SCHEMA_VERSION;
+}
+
+function normalizePageType(value: unknown) {
+  return value === 'list' || value === 'edit' || value === 'detail' || value === 'custom'
+    ? value
+    : 'custom';
 }
 
 function normalizeBlockKind(kind: string) {
@@ -168,6 +176,14 @@ function normalizeBlocks(value: unknown): Array<Record<string, unknown>> {
     : [];
 }
 
+function normalizeOverlays(value: unknown): Array<Record<string, unknown>> {
+  return Array.isArray(value)
+    ? (value
+        .map((block) => normalizeBlock(block))
+        .filter((block) => isRecord(block) && (block.kind === 'modal' || block.kind === 'drawer')) as Array<Record<string, unknown>>)
+    : [];
+}
+
 function normalizeTabs(value: unknown) {
   return Array.isArray(value)
     ? value
@@ -201,6 +217,9 @@ function normalizeBlock(value: unknown) {
     return {
       ...block,
       blocks: normalizeBlocks(value.blocks),
+      ...((kind === 'modal' || kind === 'drawer') && Array.isArray(value.overlays)
+        ? { overlays: normalizeOverlays(value.overlays) }
+        : {}),
     };
   }
 
@@ -236,6 +255,7 @@ export function normalizeLowCodePageSchema(value: unknown): LowCodePageSchema {
     code,
     route,
     title,
+    pageType: normalizePageType(value.pageType),
     ...(description ? { description } : {}),
     layout:
       value.layout === 'default' || value.layout === 'dashboard' || value.layout === 'blank'
@@ -258,6 +278,7 @@ export function normalizeLowCodePageSchema(value: unknown): LowCodePageSchema {
     dataSources: normalizeDataSources(value.dataSources),
     ...(eventHandlers.length ? { eventHandlers } : {}),
     blocks: normalizeBlocks(value.blocks),
+    ...(Array.isArray(value.overlays) ? { overlays: normalizeOverlays(value.overlays) } : {}),
   };
 }
 
@@ -512,6 +533,10 @@ function validateBlock(
     kind === 'drawer'
   ) {
     validateNestedBlocks(block.blocks, schema, issues, blockIds, `${path}.blocks`);
+
+    if (kind === 'modal' || kind === 'drawer') {
+      validateNestedBlocks(block.overlays, schema, issues, blockIds, `${path}.overlays`);
+    }
   }
 }
 
@@ -545,6 +570,9 @@ export function validateLowCodePageSchema(schema: LowCodePageSchema) {
   const blockIds = new Set<string>();
   schema.blocks.forEach((block, index) =>
     validateBlock(block, schema, issues, blockIds, `blocks.${index}`)
+  );
+  (schema.overlays ?? []).forEach((block, index) =>
+    validateBlock(block, schema, issues, blockIds, `overlays.${index}`)
   );
 
   return issues;

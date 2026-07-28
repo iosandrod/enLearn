@@ -4,6 +4,7 @@ import type {
   LowCodeGridColumn,
   LowCodePageBlock,
   LowCodePageDataSource,
+  LowCodePageOverlayBlock,
   LowCodePageSchema,
   LowCodeRuntimeDirective,
 } from '../../types/lowcode';
@@ -88,7 +89,22 @@ export function convertVisualBlock(
   context: VisualToLowCodeContext
 ) {
   const converter = getVisualToLowCodeConverter(block);
-  return (converter?.toRuntimeBlock ?? converter?.convert)?.(block, context) ?? null;
+  const runtimeBlock =
+    (converter?.toRuntimeBlock ?? converter?.convert)?.(block, context) ?? null;
+  const fillRemaining =
+    isPlainRecord(block.layout) && readBoolean(block.layout.fillRemaining, false);
+
+  if (!runtimeBlock || !fillRemaining) {
+    return runtimeBlock;
+  }
+
+  return {
+    ...runtimeBlock,
+    layout: {
+      ...(runtimeBlock.layout ?? {}),
+      fillRemaining: true,
+    },
+  } as LowCodePageBlock;
 }
 
 export function convertVisualBlocks(
@@ -100,6 +116,7 @@ export function convertVisualBlocks(
   const context: VisualToLowCodeContext = {
     dataSources,
     convertBlocks: (children = []) => convertVisualBlocks(children, dataSources),
+    convertOverlays: (children = []) => convertVisualOverlayBlocks(children, dataSources),
   };
 
   return blocks
@@ -107,13 +124,25 @@ export function convertVisualBlocks(
     .filter(Boolean) as LowCodePageBlock[];
 }
 
+export function convertVisualOverlayBlocks(
+  blocks: VisualEditorBlockData[] = [],
+  dataSources: Record<string, LowCodePageDataSource>
+) {
+  return convertVisualBlocks(blocks, dataSources).filter(
+    (block): block is LowCodePageOverlayBlock =>
+      block.kind === 'modal' || block.kind === 'drawer'
+  );
+}
+
 export function convertVisualEditorToLowCode({ model, currentPage }: VisualToLowCodeEntry) {
   const dataSources: Record<string, LowCodePageDataSource> = {};
   const page = model.pages[currentPage.path] ?? currentPage;
   const blocks = convertVisualBlocks(page.blocks, dataSources);
+  const overlays = convertVisualOverlayBlocks(page.overlays ?? [], dataSources);
 
   return {
     blocks,
+    overlays,
     dataSources,
   };
 }
@@ -160,6 +189,7 @@ function createVisualBlock(options: {
     adjustPosition: true,
     focus: false,
     styles: { ...defaultVisualStyles },
+    layout: cloneJson(options.block.layout ?? {}),
     hasResize: false,
     props: options.props ?? {},
     draggable: true,
@@ -443,9 +473,36 @@ function convertRuntimeBlockToVisual(
         type: 'default',
         position: 'top',
         width: '100%',
-        height: '',
+        height: block.layout?.fillRemaining ? '100%' : '',
         padding: true,
         showBody: true,
+      },
+    });
+  }
+
+  if (block.kind === 'modal') {
+    return createVisualBlock({
+      block,
+      componentKey: 'lowcode-modal',
+      moduleName: 'businessComponents',
+      label: '弹框',
+      path,
+      props: {
+        blockId: block.id,
+        title: readString(block.title, '弹框'),
+        description: readString(block.description),
+        open: block.open === true,
+        width: typeof block.width === 'undefined' ? 640 : block.width,
+        slots: {
+          value: '24',
+          slot0: {
+            key: 'slot0',
+            label: '弹框内容',
+            span: 24,
+            children: context.convertBlocks(block.blocks, [...path, 'slot0']),
+          },
+        },
+        overlays: context.convertBlocks(block.overlays ?? [], [...path, 'overlays']),
       },
     });
   }
@@ -453,10 +510,9 @@ function convertRuntimeBlockToVisual(
   if (
     block.kind === 'container' ||
     block.kind === 'section' ||
-    block.kind === 'modal' ||
     block.kind === 'drawer'
   ) {
-    const width = block.kind === 'modal' || block.kind === 'drawer' ? block.width : undefined;
+    const width = block.kind === 'drawer' ? block.width : undefined;
     const placement = block.kind === 'drawer' ? block.placement : undefined;
 
     return createVisualBlock({
@@ -464,13 +520,11 @@ function convertRuntimeBlockToVisual(
       componentKey: 'layout',
       moduleName: 'containerComponents',
       label:
-        block.kind === 'modal'
-          ? '弹框'
-          : block.kind === 'drawer'
-            ? '抽屉'
-            : block.kind === 'section'
-              ? '分区'
-              : '布局容器',
+        block.kind === 'drawer'
+          ? '抽屉'
+          : block.kind === 'section'
+            ? '分区'
+            : '布局容器',
       path,
       props: {
         blockId: block.id,
@@ -482,6 +536,9 @@ function convertRuntimeBlockToVisual(
         width: typeof width === 'undefined' ? '' : width,
         placement: placement ?? 'right',
         gutter: String(block.kind === 'container' ? block.gap ?? '' : ''),
+        ...(block.kind === 'drawer'
+          ? { overlays: context.convertBlocks(block.overlays ?? [], [...path, 'overlays']) }
+          : {}),
         slots: {
           value: '24',
           slot0: {
@@ -543,6 +600,10 @@ export function convertLowCodePageSchemaToVisualEditor(
           keepAlive: schema.keepAlive !== false,
         },
         blocks: convertLowCodeBlocksToVisualBlocks(schema.blocks, schema.dataSources ?? {}),
+        overlays: convertLowCodeBlocksToVisualBlocks(
+          schema.overlays ?? [],
+          schema.dataSources ?? {}
+        ),
       },
     },
     models: [],

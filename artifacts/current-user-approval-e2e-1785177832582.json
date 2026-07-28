@@ -1,0 +1,56 @@
+{
+  "runId": 1785177832582,
+  "startedAt": "2026-07-27T18:43:52.582Z",
+  "apiBase": "http://localhost:3002/api",
+  "steps": [
+    {
+      "name": "signin",
+      "at": "2026-07-27T18:43:53.595Z",
+      "userId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "email": "1151685410@qq.com",
+      "role": "admin"
+    },
+    {
+      "name": "messages_before",
+      "at": "2026-07-27T18:43:53.900Z",
+      "count": 0
+    },
+    {
+      "name": "model_saved",
+      "at": "2026-07-27T18:43:54.642Z",
+      "modelId": "27b721c3-0065-4411-8ead-66fccb4d46b4",
+      "code": "codex_current_user_approval_1785177832582",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-27T18:43:56.403Z",
+      "definitionId": "52022069-6899-48f6-b995-a41cfc634b2c",
+      "version": 1,
+      "status": "active"
+    },
+    {
+      "name": "instance_started",
+      "at": "2026-07-27T18:43:58.560Z",
+      "instanceId": "599d4cd8-2cc9-42ea-8e02-5149755dd6b8",
+      "status": "running",
+      "triggerRunId": "local-workflow-fac5930f-a42c-47f7-bf30-97c29ce8b587",
+      "taskCount": 0
+    },
+    {
+      "name": "todo_task_found",
+      "at": "2026-07-27T18:44:28.573Z",
+      "ok": false,
+      "timeoutMs": 30000,
+      "last": {
+        "ok": false,
+        "count": 0
+      }
+    }
+  ],
+  "result": {
+    "ok": false,
+    "message": "todo_task_found_timeout"
+  },
+  "finishedAt": "2026-07-27T18:44:28.574Z"
+}

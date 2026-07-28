@@ -1,0 +1,15 @@
+
+[41m[30m ERROR [39m[49m Cannot find package 'C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_4onk4azrhlv6qpboo7ei674pry\node_modules\impound\index.js' imported from C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_4onk4azrhlv6qpboo7ei674pry\node_modules\nuxt\dist\index.mjs
+
+    [90mat [39mlegacyMainResolve ([36mnode:internal/modules/esm/resolve:205:26[39m)
+    [90mat [39mpackageResolve ([36mnode:internal/modules/esm/resolve:778:12[39m)
+    [90mat [39mmoduleResolve ([36mnode:internal/modules/esm/resolve:859:18[39m)
+    [90mat [39mdefaultResolve ([36mnode:internal/modules/esm/resolve:991:11[39m)
+    [90mat [39m#cachedDefaultResolve ([36mnode:internal/modules/esm/loader:719:20[39m)
+    [90mat [39m#resolveAndMaybeBlockOnLoaderThread ([36mnode:internal/modules/esm/loader:736:38[39m)
+    [90mat [39mModuleLoader.resolveSync ([36mnode:internal/modules/esm/loader:765:52[39m)
+    [90mat [39m#resolve ([36mnode:internal/modules/esm/loader:701:17[39m)
+    [90mat [39mModuleLoader.getOrCreateModuleJob ([36mnode:internal/modules/esm/loader:621:35[39m)
+    [90mat [39mModuleJob.syncLink ([36mnode:internal/modules/esm/module_job:160:33[39m) 
+
+

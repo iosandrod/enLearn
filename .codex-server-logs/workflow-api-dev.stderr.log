@@ -1,0 +1,75 @@
+[31m[Nest] 45244  - [39m2026/07/28 01:48:04 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 45244  - [39m2026/07/28 01:49:24 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mcolumn "trigger_task_id" of relation "wf_process_instance" does not exist[39m
+error: column "trigger_task_id" of relation "wf_process_instance" does not exist
+    at C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\pg@8.22.0\node_modules\pg\lib\client.js:652:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\runtime\runtime.postgres-store.ts:53:24)
+    at async DatabaseService.withClient (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\common\database.service.ts:51:14)
+    at async RuntimeService.startInstance (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\runtime\runtime.service.ts:44:22)
+    at async RuntimeController.startInstance (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\runtime\runtime.controller.ts:41:15)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[31m[Nest] 45244  - [39m2026/07/28 02:31:15 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31minsert or update on table "wf_process_instance" violates foreign key constraint "wf_process_instance_definition_id_fkey"[39m
+error: insert or update on table "wf_process_instance" violates foreign key constraint "wf_process_instance_definition_id_fkey"
+    at C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\pg@8.22.0\node_modules\pg\lib\client.js:652:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async <anonymous> (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\runtime\runtime.postgres-store.ts:53:24)
+    at async DatabaseService.withClient (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\common\database.service.ts:51:14)
+    at async RuntimeService.startInstance (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\runtime\runtime.service.ts:44:22)
+    at async RuntimeController.startInstance (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\runtime\runtime.controller.ts:41:15)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[31m[Nest] 35496  - [39m2026/07/28 02:40:09 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mYou need to set the TRIGGER_SECRET_KEY environment variable. See https://trigger.dev/docs/management/overview#authentication[39m
+ApiClientMissingError: You need to set the TRIGGER_SECRET_KEY environment variable. See https://trigger.dev/docs/management/overview#authentication
+    at APIClientManagerAPI.clientOrThrow (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@trigger.dev+core@4.5.7_supports-color@10.2.2\node_modules\@trigger.dev\core\src\v3\apiClientManager\index.ts:131:13)
+    at trigger_internal (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@trigger.dev+sdk@4.5.7_zod@3.25.76\node_modules\@trigger.dev\sdk\src\v3\shared.ts:2296:38)
+    at Object.trigger (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@trigger.dev+sdk@4.5.7_zod@3.25.76\node_modules\@trigger.dev\sdk\src\v3\shared.ts:467:16)
+    at TriggerDevClient.triggerWorkflow (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\trigger\trigger-dev.client.ts:16:18)
+    at RuntimeService.startInstance (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\runtime\runtime.service.ts:58:44)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async RuntimeController.startInstance (C:\Users\11516\Desktop\project\enLearn\services\workflow-api\src\runtime\runtime.controller.ts:41:15)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[31m[Nest] 43976  - [39m2026/07/28 02:43:58 [31m  ERROR[39m [38;5;3m[TriggerDevClient] [39m[31mLocal workflow run local-workflow-fac5930f-a42c-47f7-bf30-97c29ce8b587 failed: there is no unique or exclusion constraint matching the ON CONFLICT specification[39m
+[31m[Nest] 48260  - [39m2026/07/28 03:00:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: connect ETIMEDOUT 52.199.109.3:6543[39m
+[31m[Nest] 48260  - [39m2026/07/28 03:00:53 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: connect ETIMEDOUT 52.199.109.3:6543[39m
+[31m[Nest] 48260  - [39m2026/07/28 03:01:14 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: connect ETIMEDOUT 52.199.109.3:6543[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:22:30 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:22:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:22:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:33:23 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated due to connection timeout[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:33:25 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:33:26 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:33:27 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:33:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:33:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:33:30 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:33:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:33:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:33:33 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 09:33:34 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:33:18 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:33:18 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:33 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:34 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:35 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:36 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:37 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:38 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:39 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:41 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:42 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:43 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 11:58:44 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 13:48:18 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 13:48:19 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 13:58:23 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated due to connection timeout[39m
+[31m[Nest] 50356  - [39m2026/07/28 13:58:24 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 13:58:25 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 13:58:26 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 13:58:27 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 13:58:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 13:58:30 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 13:58:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m
+[31m[Nest] 50356  - [39m2026/07/28 13:58:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: getaddrinfo ENOTFOUND db.bzidwylepgsxavvdtvvl.supabase.co[39m

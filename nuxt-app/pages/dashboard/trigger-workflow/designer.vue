@@ -92,9 +92,9 @@ definePageMeta({
 });
 
 const storageKey = 'enlearn.trigger-workflow-editor.default';
-const workflowApiBase = 'http://localhost:3010/api/workflow';
 const demoJobCode = 'supabase_users_20s_logger';
 const demoTaskId = 'workflow.supabase.users.log';
+const serviceApi = useServiceApi();
 const model = ref<TriggerWorkflowModel>(createApprovalTriggerWorkflow());
 const issues = ref<TriggerWorkflowIssue[]>([]);
 const compiledPlan = ref<TriggerWorkflowExecutionPlan | undefined>();
@@ -156,30 +156,27 @@ async function createAndEnableUsersLogJob() {
     await refreshUsersLogJob();
     let job = demoJob.value;
     if (!job) {
-      job = await workflowApi<WorkflowJobRecord>('/jobs', {
-        method: 'POST',
-        body: JSON.stringify({
-          code: demoJobCode,
-          name: 'Supabase users 20s logger',
-          type: 'interval',
-          triggerTaskId: demoTaskId,
+      job = await workflowApi<WorkflowJobRecord>('createJob', {
+        code: demoJobCode,
+        name: 'Supabase users 20s logger',
+        type: 'interval',
+        triggerTaskId: demoTaskId,
+        intervalSeconds: 20,
+        timezone: 'Asia/Shanghai',
+        payload: {
           intervalSeconds: 20,
-          timezone: 'Asia/Shanghai',
-          payload: {
-            intervalSeconds: 20,
-            limit: 20,
-            source: 'public.users',
-            logMode: 'backend-console'
-          },
-          retryPolicy: { maxAttempts: 1 },
-          concurrencyKey: demoJobCode
-        })
+          limit: 20,
+          source: 'public.users',
+          logMode: 'backend-console'
+        },
+        retryPolicy: { maxAttempts: 1 },
+        concurrencyKey: demoJobCode
       });
     }
 
-    demoJob.value = await workflowApi<WorkflowJobRecord>(`/jobs/${job.id}/status`, {
-      method: 'POST',
-      body: JSON.stringify({ status: 'enabled' })
+    demoJob.value = await workflowApi<WorkflowJobRecord>('updateJobStatus', {
+      jobId: job.id,
+      status: 'enabled'
     });
     await refreshUsersLogJob();
     jobMessage.value = '已创建并启用：后端调度器会每 20 秒执行一次，日志在 workflow-api 控制台输出。';
@@ -194,14 +191,12 @@ async function runUsersLogJobOnce() {
   if (!demoJob.value) return;
   isJobBusy.value = true;
   try {
-    await workflowApi<WorkflowJobRunRecord>(`/jobs/${demoJob.value.id}/run`, {
-      method: 'POST',
-      body: JSON.stringify({
-        payload: {
-          manual: true,
-          requestedAt: new Date().toISOString()
-        }
-      })
+    await workflowApi<WorkflowJobRunRecord>('runJob', {
+      jobId: demoJob.value.id,
+      payload: {
+        manual: true,
+        requestedAt: new Date().toISOString()
+      }
     });
     await refreshUsersLogJob();
     jobMessage.value = '已手动触发一次，请查看 workflow-api 后端日志。';
@@ -214,30 +209,21 @@ async function runUsersLogJobOnce() {
 
 async function refreshUsersLogJob() {
   try {
-    const jobs = await workflowApi<WorkflowJobRecord[]>('/jobs?type=interval');
+    const jobs = await workflowApi<WorkflowJobRecord[]>('listJobs', { type: 'interval' });
     demoJob.value = jobs.find((job) => job.code === demoJobCode);
     demoRuns.value = demoJob.value
-      ? await workflowApi<WorkflowJobRunRecord[]>(`/jobs/runs?jobId=${demoJob.value.id}`)
+      ? await workflowApi<WorkflowJobRunRecord[]>('listJobRuns', { jobId: demoJob.value.id, limit: 20 })
       : [];
   } catch (error) {
     jobMessage.value = error instanceof Error ? error.message : String(error);
   }
 }
 
-async function workflowApi<T>(path: string, init: RequestInit = {}) {
-  const response = await fetch(`${workflowApiBase}${path}`, {
-    ...init,
-    headers: {
-      'content-type': 'application/json',
-      'x-tenant-id': 'default',
-      ...(init.headers ?? {})
-    }
+async function workflowApi<T>(serviceMethod: string, postData: Record<string, unknown> = {}) {
+  return serviceApi.invoke<T>('workflow', serviceMethod, {
+    tenantId: 'default',
+    ...postData
   });
-  const result = (await response.json()) as { success: boolean; data?: T; error?: { message?: string } };
-  if (!response.ok || !result.success) {
-    throw new Error(result.error?.message ?? `Workflow API request failed: ${response.status}`);
-  }
-  return result.data as T;
 }
 
 function createUsersLogWorkflowModel(): TriggerWorkflowModel {

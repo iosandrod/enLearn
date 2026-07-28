@@ -2,6 +2,15 @@ import type { AppAuthPayload } from './useAuthState';
 
 type OAuthProvider = 'github';
 
+const DEV_AUTO_LOGIN_CREDENTIALS = {
+  email: '1151685410@qq.com',
+  password: 'Admin123456!'
+} as const;
+
+function shouldUseDevAutoLogin() {
+  return import.meta.dev;
+}
+
 function applyAuthPayload(payload: AppAuthPayload) {
   const { user, profile, permissions, accounts, session, ready } = useAuthState();
   user.value = payload.user;
@@ -33,10 +42,18 @@ export function useAuth() {
 
   async function init(force = false) {
     if (import.meta.server) return;
-    if (ready.value && !force) return;
+    if (ready.value && !force && (user.value || !shouldUseDevAutoLogin())) return;
 
     const payload = await $fetch<AppAuthPayload>('/api/auth/me');
     applyAuthPayload(payload);
+
+    if (!user.value && shouldUseDevAutoLogin()) {
+      try {
+        await signInWithPassword(DEV_AUTO_LOGIN_CREDENTIALS);
+      } catch (error) {
+        console.warn('Dev auto login failed.', error);
+      }
+    }
   }
 
   async function signInWithPassword(credentials: {

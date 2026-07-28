@@ -8,9 +8,23 @@ import { PaymentModule } from './payment/payment.module';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
 import { UserModule } from './user/user.module';
+import { NotificationModule } from './notification/notification.module';
+import { WorkflowModule } from './workflow/workflow.module';
+import { EntityDesignModule } from './entity-design/entity-design.module';
 
 @Module({
-  imports: [AuthModule, AccountModule, AdminModule, PaymentModule, UserModule, LowCodeModule, PostsModule],
+  imports: [
+    AuthModule,
+    AccountModule,
+    AdminModule,
+    PaymentModule,
+    UserModule,
+    LowCodeModule,
+    PostsModule,
+    NotificationModule,
+    WorkflowModule,
+    EntityDesignModule
+  ],
   controllers: [ServiceGatewayController],
   providers: [ServiceRouterService]
 })

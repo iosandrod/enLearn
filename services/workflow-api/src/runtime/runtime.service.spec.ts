@@ -21,6 +21,7 @@ const secondActor = {
 
 async function main() {
   await testApprovalAndAddSign();
+  await testTransferNotification();
   await testReject();
   await testAutomaticNodes();
   console.log('workflow-api Trigger.dev runtime tests passed');
@@ -109,11 +110,76 @@ async function testApprovalAndAddSign() {
   assert.ok(approved.variables.some((variable) => variable.key === 'managerApproved'));
   assert.ok((await service.getTimeline(approved.id)).some((event) => event.eventType === 'PROCESS_COMPLETED'));
   assert.equal((await service.listDoneTasks(actor)).length, 1);
+  assert.ok(trigger.notificationEventTypes().includes('approval.task.created'));
+  assert.ok(trigger.notificationEventTypes().includes('approval.task.add_signed'));
+  assert.equal(
+    trigger.notificationEventTypes().filter((eventType) => eventType === 'approval.task.completed').length,
+    2
+  );
 
   await assert.rejects(
     () => service.completeTask(firstTask.id, { comment: 'Duplicate' }, actor),
     BadRequestException
   );
+}
+
+async function testTransferNotification() {
+  const definitionService = new DefinitionService();
+  const definition = await publishDefinition(definitionService, {
+    schemaVersion: 1,
+    code: 'expense_trigger_transfer',
+    name: 'Expense Trigger Transfer',
+    nodes: [
+      { id: 'start', type: 'start', name: 'Start' },
+      {
+        id: 'approval',
+        type: 'approval',
+        name: 'Approval',
+        config: {
+          assigneeStrategy: {
+            type: 'users',
+            userIds: [actor.userId]
+          }
+        }
+      },
+      { id: 'end', type: 'end', name: 'End' }
+    ],
+    edges: [
+      { id: 'e1', source: 'start', target: 'approval' },
+      { id: 'e2', source: 'approval', target: 'end' }
+    ]
+  });
+  const store = new MemoryWorkflowRuntimeStore();
+  const trigger = new TestTriggerClient();
+  const service = new RuntimeService(definitionService, store, trigger);
+  const started = await service.startInstance(
+    {
+      definitionId: definition.id,
+      businessKey: 'expense:trigger:transfer',
+      title: 'Transfer Expense',
+      variables: {}
+    },
+    actor
+  );
+  const execution = executeWorkflowInstance(trigger.lastWorkflowPayload(), store, trigger);
+  const task = await waitForTask(service, actor);
+
+  const transferred = await service.transferTask(
+    task.id,
+    {
+      targetUserId: secondActor.userId,
+      comment: 'Please take over'
+    },
+    actor
+  );
+  assert.equal(transferred.assigneeId, secondActor.userId);
+  assert.ok(trigger.notificationEventTypes().includes('approval.task.transferred'));
+  assert.equal((await service.listTodoTasks(secondActor)).length, 1);
+
+  await service.completeTask(transferred.id, { comment: 'Approved after transfer' }, secondActor);
+  await execution;
+
+  assert.equal((await service.getInstance(started.id)).status, 'approved');
 }
 
 async function testReject() {
@@ -163,6 +229,7 @@ async function testReject() {
   assert.equal(rejected.status, 'rejected');
   assert.ok(rejected.comments.some((comment) => comment.action === 'reject'));
   assert.ok((await service.getTimeline(started.id)).some((event) => event.eventType === 'PROCESS_REJECTED'));
+  assert.ok(trigger.notificationEventTypes().includes('approval.task.rejected'));
 }
 
 async function testAutomaticNodes() {
@@ -268,6 +335,10 @@ class TestTriggerClient implements WorkflowTriggerClient, WorkflowWaitDriver {
   private runSequence = 0;
   private tokenSequence = 0;
   private readonly workflowPayloads: WorkflowInstanceTaskPayload[] = [];
+  private readonly taskPayloads: Array<{
+    taskId: string;
+    payload: Record<string, unknown>;
+  }> = [];
   private readonly tokenIdsByKey = new Map<string, string>();
   private readonly tokenWaiters = new Map<
     string,
@@ -283,7 +354,8 @@ class TestTriggerClient implements WorkflowTriggerClient, WorkflowWaitDriver {
     return { id: `run-${this.runSequence}` };
   }
 
-  async triggerTask() {
+  async triggerTask(taskId: string, payload: Record<string, unknown>) {
+    this.taskPayloads.push({ taskId, payload });
     this.runSequence += 1;
     return { id: `run-${this.runSequence}` };
   }
@@ -330,6 +402,19 @@ class TestTriggerClient implements WorkflowTriggerClient, WorkflowWaitDriver {
     if (!payload) throw new Error('Workflow was not triggered.');
     return payload;
   }
+
+  notificationEventTypes() {
+    return this.taskPayloads
+      .map((item) => readNotificationEventType(item.payload))
+      .filter((eventType): eventType is string => Boolean(eventType));
+  }
+}
+
+function readNotificationEventType(payload: Record<string, unknown>) {
+  const event = payload.event;
+  if (!event || typeof event !== 'object' || Array.isArray(event)) return undefined;
+  const eventType = (event as Record<string, unknown>).eventType;
+  return typeof eventType === 'string' ? eventType : undefined;
 }
 
 void main();

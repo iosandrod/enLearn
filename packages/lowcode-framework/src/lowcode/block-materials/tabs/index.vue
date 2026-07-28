@@ -6,6 +6,7 @@
     </header>
     <vxe-tabs
       :model-value="activeTabKey"
+      :height="tabsHeight"
       @update:model-value="(key) => setActiveTab(String(key))"
     >
       <vxe-tab-pane
@@ -46,6 +47,8 @@ import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../ty
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageTabsBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const localActiveKey = ref('');
+const isFillRemaining = computed(() => props.block.layout?.fillRemaining === true);
+const tabsHeight = computed(() => (isFillRemaining.value ? '100%' : undefined));
 
 const activeTabKey = computed(() => {
   const firstKey = props.block.tabs[0]?.key ?? '';

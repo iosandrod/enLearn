@@ -156,11 +156,8 @@ definePageMeta({
 });
 
 const localStorageKey = 'enlearn.workflow.designer.default';
-const workflowApiBase = 'http://localhost:3010/api/workflow';
-const workflowActorHeaders = {
-  'x-tenant-id': 'default',
-  'x-user-id': 'order-initiator'
-};
+const auth = useAuth();
+const serviceApi = useServiceApi();
 const route = useRoute();
 const routeCode = computed(() => String(route.params.code ?? '').trim());
 const activeStorageKey = computed(() =>
@@ -186,14 +183,6 @@ type ApprovalDesignerExpose = {
   validate: () => WorkflowSchemaIssue[];
   autoLayout: () => void;
   simulateWorkflowBuild: (model: WorkflowModel, options?: { intervalMs?: number }) => Promise<void>;
-};
-
-type WorkflowApiResponse<T> = {
-  success: boolean;
-  data?: T;
-  error?: {
-    message?: string;
-  };
 };
 
 type WorkflowModelRecord = {
@@ -486,21 +475,47 @@ async function publishCurrentWorkflow() {
 }
 
 async function workflowApi<T>(path: string, init: RequestInit = {}) {
-  const response = await fetch(`${workflowApiBase}${path}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...workflowActorHeaders,
-      ...(init.headers ?? {})
-    }
-  });
-  const payload = (await response.json().catch(() => ({}))) as WorkflowApiResponse<T>;
+  const body = parseWorkflowBody(init.body);
+  const publishMatch = path.match(/^\/models\/([^/]+)\/publish$/);
 
-  if (!response.ok || !payload.success || !payload.data) {
-    throw new Error(payload.error?.message ?? `Workflow API 请求失败：${response.status}`);
+  if (path === '/models') {
+    return invokeWorkflowService<T>('saveModel', body);
   }
 
-  return payload.data;
+  if (publishMatch) {
+    return invokeWorkflowService<T>('publishModel', {
+      modelId: publishMatch[1],
+      ...body
+    });
+  }
+
+  if (path === '/instances') {
+    return invokeWorkflowService<T>('startInstance', body);
+  }
+
+  throw new Error(`Unsupported workflow API path: ${path}`);
+}
+
+function parseWorkflowBody(body: BodyInit | null | undefined) {
+  if (typeof body !== 'string' || !body.trim()) return {};
+
+  const parsed = JSON.parse(body) as unknown;
+  return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+    ? (parsed as Record<string, unknown>)
+    : {};
+}
+
+async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<string, unknown>) {
+  const userId = auth.user.value?.id;
+  if (!userId) {
+    throw new Error('请先登录后再操作审批流');
+  }
+
+  return serviceApi.invoke<T>('workflow', serviceMethod, {
+    ...postData,
+    tenantId: 'default',
+    userId
+  });
 }
 </script>
 

@@ -108,6 +108,10 @@ export default {
     };
   },
   showStyleConfig: true,
+  styles: {
+    minHeight: '320px',
+    height: '360px',
+  },
   props: {
     blockId: createEditorInputProp({
       label: 'Block ID',

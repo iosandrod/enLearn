@@ -6,9 +6,12 @@ import type {
   ServiceExecutor
 } from '../common/interfaces/service-executor';
 import { LowCodeService } from '../lowcode/lowcode.service';
+import { NotificationService } from '../notification/notification.service';
 import { PaymentService } from '../payment/payment.service';
 import { PostsService } from '../posts/posts.service';
 import { UserService } from '../user/user.service';
+import { WorkflowService } from '../workflow/workflow.service';
+import { EntityDesignService } from '../entity-design/entity-design.service';
 
 @Injectable()
 export class ServiceRouterService {
@@ -24,7 +27,13 @@ export class ServiceRouterService {
     @Inject(LowCodeService)
     private readonly lowCodeService: LowCodeService,
     @Inject(PostsService)
-    private readonly postsService: PostsService
+    private readonly postsService: PostsService,
+    @Inject(NotificationService)
+    private readonly notificationService: NotificationService,
+    @Inject(WorkflowService)
+    private readonly workflowService: WorkflowService,
+    @Inject(EntityDesignService)
+    private readonly entityDesignService: EntityDesignService
   ) {}
 
   async invoke(
@@ -51,6 +60,12 @@ export class ServiceRouterService {
         return this.lowCodeService;
       case 'posts':
         return this.postsService;
+      case 'notification':
+        return this.notificationService;
+      case 'workflow':
+        return this.workflowService;
+      case 'entityDesign':
+        return this.entityDesignService;
       default:
         throw new BadRequestException(`Unsupported serviceName: ${serviceName}`);
     }

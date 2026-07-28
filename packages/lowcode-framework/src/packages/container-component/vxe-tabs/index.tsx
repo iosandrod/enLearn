@@ -152,15 +152,20 @@ export default {
     return () => {
       const panes = normalizePanes(props.panes);
       syncSlots(block, props, panes);
+      const fillRemaining =
+        block.layout?.fillRemaining === true || props.layout?.fillRemaining === true;
 
       return (
-        <div class={styleModule.tabsWrapper} style={styles}>
+        <div
+          class={[styleModule.tabsWrapper, fillRemaining ? styleModule.fillRemaining : '']}
+          style={styles}
+        >
           <VxeTabsComponent
             ref={(el) => registerRef(el, block._vid)}
             class={styleModule.tabs}
             modelValue={activeName.value}
             width={props.width || undefined}
-            height={props.height || undefined}
+            height={fillRemaining ? props.height || '100%' : props.height || undefined}
             type={props.type || undefined}
             position={props.position || undefined}
             titleWidth={props.titleWidth || undefined}

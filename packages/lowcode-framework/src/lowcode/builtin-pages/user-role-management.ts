@@ -378,6 +378,7 @@ export function createBuiltinLowCodePageRecord(
     layout: schema.layout ?? 'dashboard',
     status: schema.status ?? 'published',
     keep_alive: schema.keepAlive !== false,
+    edit_page_id: null,
     schema,
     version: 1,
     published_at: timestamp,

@@ -7,6 +7,7 @@
       </NuxtLink>
 
       <div class="admin-top-actions">
+        <NotificationBell />
         <span class="admin-user">{{ auth.user.value?.email ?? 'Signed in' }}</span>
         <vxe-button size="mini" mode="text" status="primary" @click="reloadRoutes">
           刷新菜单
@@ -107,6 +108,7 @@ const fallbackRoutes: AdminRouteNode[] = [
       { code: 'dashboard-home', title: '工作台', path: '/dashboard' },
       { code: 'low-code', title: '低代码页面', path: '/dashboard/low-code', permission_code: 'lowcode.pages.manage' },
       { code: 'low-code-designer', title: '可视化设计器', path: '/dashboard/low-code/designer', permission_code: 'lowcode.pages.manage' },
+      { code: 'entity-design', title: '表格实体设计', path: '/dashboard/entity-design', permission_code: 'entity.design.manage' },
       { code: 'workflow-designer', title: '审批流设计器', path: '/dashboard/workflow/designer', permission_code: 'workflow.definitions.manage' },
       { code: 'trigger-workflow-designer', title: 'Trigger 编排器', path: '/dashboard/trigger-workflow/designer', permission_code: 'workflow.definitions.manage' }
     ]
@@ -120,7 +122,8 @@ const fallbackRoutes: AdminRouteNode[] = [
       { code: 'system-roles', title: '角色管理', path: '/dashboard/system/roles', permission_code: 'admin.roles.manage' },
       { code: 'system-permissions', title: '权限管理', path: '/dashboard/system/permissions', permission_code: 'admin.permissions.manage' },
       { code: 'system-routes', title: '动态路由', path: '/dashboard/system/routes', permission_code: 'admin.routes.manage' },
-      { code: 'system-entities', title: '实体管理', path: '/dashboard/system/entities', permission_code: 'admin.entities.manage' }
+      { code: 'system-entities', title: '实体管理', path: '/dashboard/system/entities', permission_code: 'admin.entities.manage' },
+      { code: 'system-execution-tasks', title: '系统执行任务', path: '/dashboard/system/execution-tasks', permission_code: 'workflow.runtime.manage' }
     ]
   }
 ];

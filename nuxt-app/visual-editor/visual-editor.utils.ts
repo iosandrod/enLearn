@@ -244,6 +244,7 @@ export function createNewBlock(component: VisualEditorComponent): VisualEditorBl
       paddingLeft: '0',
       paddingBottom: '0',
       tempPadding: '0',
+      ...(component.styles || {}),
     },
     hasResize: false,
     props: Object.entries(component.props || {}).reduce((prev, [propName, propSchema]) => {

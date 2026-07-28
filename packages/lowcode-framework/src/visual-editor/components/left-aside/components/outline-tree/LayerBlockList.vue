@@ -98,6 +98,23 @@
           </section>
         </div>
 
+        <div v-if="getOverlayBlocks(block).length" class="layer-children">
+          <section class="layer-group">
+            <div class="layer-row layer-row--slot">
+              <span class="layer-icon"><FolderOpened /></span>
+              <span class="layer-row__text">
+                <strong>弹层</strong>
+                <small>{{ getOverlayBlocks(block).length }} 个节点</small>
+              </span>
+            </div>
+            <LayerBlockList
+              v-model:blocks="block.props.overlays"
+              :depth="depth + 1"
+              overlay-list
+            />
+          </section>
+        </div>
+
         <div v-if="getFormDesignerBlocks(block).length" class="layer-children">
           <section class="layer-group layer-group--readonly">
             <div class="layer-row layer-row--slot">
@@ -162,10 +179,12 @@
       blocks: VisualEditorBlockData[];
       depth?: number;
       readonly?: boolean;
+      overlayList?: boolean;
     }>(),
     {
       depth: 0,
       readonly: false,
+      overlayList: false,
     },
   );
 
@@ -229,6 +248,20 @@
       });
   }
 
+  function getOverlayBlocks(block: VisualEditorBlockData) {
+    return Array.isArray(block.props?.overlays)
+      ? (block.props.overlays as VisualEditorBlockData[])
+      : [];
+  }
+
+  function isOverlayBlock(block: VisualEditorBlockData) {
+    return (
+      block.componentKey === 'lowcode-modal' ||
+      block.props?.runtimeKind === 'modal' ||
+      block.props?.runtimeKind === 'drawer'
+    );
+  }
+
   function getFormDesignerBlocks(block: VisualEditorBlockData) {
     const model = block.props?.formDesignerModel;
     if (!isRecord(model) || !isRecord(model.pages)) return [];
@@ -246,12 +279,16 @@
     blocks.forEach((block) => {
       callback(block);
       getSlotGroups(block).forEach((group) => walkBlocks(group.slot.children, callback));
+      walkBlocks(getOverlayBlocks(block), callback);
     });
   }
 
   function findBlockPath(
     targetVid: string,
-    blocks: VisualEditorBlockData[] = currentPage.value.blocks,
+    blocks: VisualEditorBlockData[] = [
+      ...currentPage.value.blocks,
+      ...(currentPage.value.overlays ?? []),
+    ],
     path: VisualEditorBlockData[] = [],
   ): VisualEditorBlockData[] | null {
     for (const block of blocks) {
@@ -262,6 +299,9 @@
         const childPath = findBlockPath(targetVid, group.slot.children, nextPath);
         if (childPath) return childPath;
       }
+
+      const overlayPath = findBlockPath(targetVid, getOverlayBlocks(block), nextPath);
+      if (overlayPath) return overlayPath;
     }
 
     return null;
@@ -270,7 +310,7 @@
   function selectBlock(block: VisualEditorBlockData) {
     if (props.readonly) return;
 
-    walkBlocks(currentPage.value.blocks, (item) => {
+    walkBlocks([...currentPage.value.blocks, ...(currentPage.value.overlays ?? [])], (item) => {
       item.focus = item._vid === block._vid;
       item.focusWithChild = false;
     });
@@ -292,6 +332,7 @@
   function removeRefs(block: VisualEditorBlockData) {
     delete globalProperties.$$refs?.[block._vid];
     getSlotGroups(block).forEach((group) => group.slot.children.forEach(removeRefs));
+    getOverlayBlocks(block).forEach(removeRefs);
   }
 
   function containsBlock(root: VisualEditorBlockData, targetVid?: string) {
@@ -327,6 +368,7 @@
     block.focusWithChild = false;
 
     getSlotGroups(block).forEach((group) => group.slot.children.forEach(resetBlockIds));
+    getOverlayBlocks(block).forEach(resetBlockIds);
     getFormDesignerBlocks(block).forEach(resetBlockIds);
   }
 
@@ -391,6 +433,35 @@
       });
     });
 
+    if (getOverlayBlocks(block) === list) {
+      matched = true;
+    }
+
+    getOverlayBlocks(block).forEach((child) => {
+      if (isDescendantList(child, list)) {
+        matched = true;
+      }
+    });
+
+    return matched;
+  }
+
+  function isOverlayBlockList(list: unknown) {
+    if (props.overlayList && props.blocks === list) {
+      return true;
+    }
+
+    if (currentPage.value.overlays === list) {
+      return true;
+    }
+
+    let matched = false;
+    walkBlocks([...currentPage.value.blocks, ...(currentPage.value.overlays ?? [])], (block) => {
+      if (getOverlayBlocks(block) === list) {
+        matched = true;
+      }
+    });
+
     return matched;
   }
 
@@ -403,6 +474,18 @@
     const dragged = event.draggedContext?.element;
     const targetList = event.relatedContext?.list;
     if (!dragged || !targetList) return true;
+
+    const targetIsOverlayList = isOverlayBlockList(targetList);
+    const draggedIsOverlay = isOverlayBlock(dragged);
+
+    if (targetIsOverlayList !== draggedIsOverlay) {
+      ElMessage.warning(
+        targetIsOverlayList
+          ? '弹层列表只能放弹框或抽屉。'
+          : '弹框和抽屉请放在弹层列表中。',
+      );
+      return false;
+    }
 
     const allowed = !isDescendantList(dragged, targetList);
     if (!allowed) {

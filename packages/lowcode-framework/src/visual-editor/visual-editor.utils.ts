@@ -90,6 +90,7 @@ export type VisualEditorPage = {
   config: PageConfig;
   /** 当前页面的所有组件 */
   blocks: VisualEditorBlockData[];
+  overlays?: VisualEditorBlockData[];
 };
 /**
  * @description 可以认为是 路由=>页面
@@ -244,6 +245,7 @@ export function createNewBlock(component: VisualEditorComponent): VisualEditorBl
       paddingLeft: '0',
       paddingBottom: '0',
       tempPadding: '0',
+      ...(component.styles || {}),
     },
     hasResize: false,
     props: Object.entries(component.props || {}).reduce((prev, [propName, propSchema]) => {

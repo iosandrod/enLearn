@@ -169,14 +169,10 @@ function cloneSchemaValue<T>(value: T): T {
 
 function stripDataSourceMutations(schema: LowCodePageSchema) {
   return Object.fromEntries(
-    Object.entries(schema.dataSources ?? {}).map(([key, source]) => [
-      key,
-      {
-        ...source,
-        saveMethod: undefined,
-        deleteMethod: undefined,
-      },
-    ])
+    Object.entries(schema.dataSources ?? {}).map(([key, source]) => {
+      const { saveMethod: _saveMethod, deleteMethod: _deleteMethod, ...rest } = source;
+      return [key, rest];
+    })
   );
 }
 
@@ -276,6 +272,7 @@ function createListLayoutSchema(
   const childTabs: LowCodePageTabsBlock = {
     id: `${config.mainGridId}-child-tabs`,
     kind: 'tabs',
+    layout: { fillRemaining: true },
     defaultKey: config.childTabs[0]?.key,
     tabs: config.childTabs.map((tab) => ({
       key: tab.key,
@@ -284,10 +281,11 @@ function createListLayoutSchema(
         {
           id: `${config.mainGridId}-${tab.key}-grid`,
           kind: 'grid',
+          layout: { fillRemaining: true },
           sourceKey: tab.sourceKey,
           schema: {
             grid: {
-              ...gridConfig(tab.columns, 240),
+              ...gridConfig(tab.columns, '100%'),
               rowConfig: {
                 keyField: tab.keyField ?? 'id',
                 isCurrent: true,
@@ -934,7 +932,7 @@ export const routeManagementSchema: LowCodePageSchema = createListLayoutSchema({
   ],
 });
 
-export const entityManagementSchema: LowCodePageSchema = {
+export const entityManagementSchema: LowCodePageSchema = createListLayoutSchema({
   schemaVersion: 1,
   code: 'admin-system-entities',
   route: '/dashboard/system/entities',
@@ -1053,7 +1051,36 @@ export const entityManagementSchema: LowCodePageSchema = {
       },
     },
   ],
-};
+}, {
+  mainGridId: 'entity-grid',
+  actions: [
+    createFilterAction('entities', 'show-all-entities', '全部实体', {}, 'primary'),
+    createFilterAction('entities', 'show-active-entities', '启用实体', { status: 'active' }),
+    createFilterAction('entities', 'show-inactive-entities', '停用实体', { status: 'inactive' }),
+    createRefreshAction('entities'),
+  ],
+  rowCurrentChange: [
+    { type: 'setDataSource', sourceKey: 'selectedEntityRows', value: ['{{ event.row }}'] },
+    { type: 'setDataSource', sourceKey: 'selectedEntityPermissionRows', value: '{{ event.row.permission_rows }}' },
+    { type: 'setDataSource', sourceKey: 'selectedEntityRouteRows', value: '{{ event.row.route_rows }}' },
+  ],
+  childTabs: [
+    {
+      key: 'permissions',
+      label: '权限明细',
+      sourceKey: 'selectedEntityPermissionRows',
+      columns: entityPermissionChildColumns,
+      keyField: 'permission_id',
+    },
+    {
+      key: 'routes',
+      label: '菜单引用',
+      sourceKey: 'selectedEntityRouteRows',
+      columns: entityRouteChildColumns,
+      keyField: 'route_id',
+    },
+  ],
+});
 
 export const permissionSystemPages: LowCodePageRecord[] = [
   roleManagementSchema,

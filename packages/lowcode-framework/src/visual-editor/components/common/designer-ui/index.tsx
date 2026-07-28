@@ -610,6 +610,10 @@ export const ElTableColumn = defineComponent({
     align: String
   },
   setup(props, { slots }) {
+    const fixed = computed(() =>
+      props.fixed ? (props.fixed === true ? 'left' : props.fixed) : undefined
+    );
+
     return () =>
       h(
         VxeColumn as any,
@@ -619,7 +623,7 @@ export const ElTableColumn = defineComponent({
           title: props.label,
           width: props.width,
           minWidth: props.minWidth,
-          fixed: props.fixed,
+          fixed: fixed.value,
           align: props.align
         },
         slots

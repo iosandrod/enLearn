@@ -1,4 +1,4 @@
-import { task, wait } from '@trigger.dev/sdk/v3';
+import { task, tasks, wait } from '@trigger.dev/sdk/v3';
 import {
   WORKFLOW_INSTANCE_TASK_ID,
   type WorkflowInstanceTaskPayload
@@ -27,6 +27,9 @@ export const workflowInstanceTask = task({
       },
       waitUntil: async ({ date, idempotencyKey }) => {
         await wait.until({ date, idempotencyKey });
+      },
+      triggerTask: async (taskId, taskPayload, options) => {
+        await tasks.trigger(taskId, taskPayload, options);
       }
     };
 

@@ -631,7 +631,9 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
       ) values ($1, $2, $3, $4, $5, $6, $7, timezone('utc'::text, now()),
         case when $7 = 'completed' then timezone('utc'::text, now()) else null end
       )
-      on conflict (process_instance_id, execution_key) do update set
+      on conflict (process_instance_id, execution_key)
+      where execution_key is not null
+      do update set
         name = excluded.name
       returning *`,
       [
@@ -681,7 +683,9 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
           id, tenant_id, process_instance_id, node_instance_id, node_id,
           title, status, assignee_id, waitpoint_token_id, trigger_run_id
         ) values ($1, $2, $3, $4, $5, $6, 'pending', $7, $8, $9)
-        on conflict (waitpoint_token_id) do update set title = excluded.title
+        on conflict (waitpoint_token_id)
+        where waitpoint_token_id is not null
+        do update set title = excluded.title
         returning *`,
         [
           input.id,

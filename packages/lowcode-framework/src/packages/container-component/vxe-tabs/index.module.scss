@@ -1,20 +1,48 @@
 .tabsWrapper {
   width: 100%;
   min-width: 0;
+  min-height: 0;
   border: 1px solid #dcdfe6;
   border-radius: 6px;
   background: #ffffff;
   overflow: hidden;
 }
 
+.fillRemaining {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
 .tabs {
   width: 100%;
+  min-height: 0;
+}
+
+.fillRemaining .tabs {
+  flex: 1 1 0;
+  height: 100%;
 }
 
 .paneBody {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   min-height: 96px;
   padding: 12px;
   box-sizing: border-box;
+}
+
+.fillRemaining .paneBody {
+  flex: 1 1 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.fillRemaining .paneBody :global(.inner-draggable) {
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .preview {

@@ -195,6 +195,7 @@ export type VisualEditorTableColumnOption = {
     | 'lc-number-input'
     | 'lc-json-editor'
     | 'lc-option-select'
+    | 'lc-sub-form'
     | (string & {});
   width?: number | string;
   minWidth?: number | string;

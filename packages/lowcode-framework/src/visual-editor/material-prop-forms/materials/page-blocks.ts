@@ -37,6 +37,48 @@ const alignOptions = [
   option('右对齐', 'right'),
 ];
 
+const gridRendererPropFields = [
+  { field: 'placeholder', label: 'placeholder', component: 'vxe-input' as const },
+  { field: 'clearable', label: 'clearable', component: 'vxe-switch' as const },
+  { field: 'disabled', label: 'disabled', component: 'vxe-switch' as const },
+  { field: 'readonly', label: 'readonly', component: 'vxe-switch' as const },
+];
+
+const gridRendererObjectFields = [
+  { field: 'name', label: 'name', component: 'vxe-input' as const, props: { placeholder: 'VxeInput' } },
+  {
+    field: 'props',
+    label: 'props',
+    component: 'lc-sub-form' as const,
+    props: { fields: gridRendererPropFields },
+  },
+  {
+    field: 'attrs',
+    label: 'attrs',
+    component: 'lc-sub-form' as const,
+    props: { fields: gridRendererPropFields },
+  },
+];
+
+const gridColumnParamsFields = [
+  { field: 'type', label: 'type', component: 'vxe-input' as const },
+  { field: 'emptyText', label: 'emptyText', component: 'vxe-input' as const },
+  { field: 'locale', label: 'locale', component: 'vxe-input' as const },
+  {
+    field: 'options',
+    label: 'options',
+    component: 'lc-sub-form' as const,
+    props: {
+      fields: [
+        { field: 'dateStyle', label: 'dateStyle', component: 'vxe-input' as const },
+        { field: 'timeStyle', label: 'timeStyle', component: 'vxe-input' as const },
+        { field: 'minimumFractionDigits', label: 'minimumFractionDigits', component: 'lc-number-input' as const },
+        { field: 'maximumFractionDigits', label: 'maximumFractionDigits', component: 'lc-number-input' as const },
+      ],
+    },
+  },
+];
+
 const buttonStatusOptions = [
   option('默认', ''),
   option('主要', 'primary'),
@@ -269,24 +311,27 @@ export default defineMaterialPropForms([
           },
           {
             field: 'cellRender',
-            title: '渲染 JSON',
-            component: 'lc-json-editor',
+            title: '渲染对象',
+            component: 'lc-sub-form',
             minWidth: 220,
-            placeholder: '{}',
+            defaultValue: {},
+            props: { fields: gridRendererObjectFields },
           },
           {
             field: 'editRender',
-            title: '编辑 JSON',
-            component: 'lc-json-editor',
+            title: '编辑对象',
+            component: 'lc-sub-form',
             minWidth: 220,
-            placeholder: '{}',
+            defaultValue: {},
+            props: { fields: gridRendererObjectFields },
           },
           {
             field: 'params',
-            title: '参数 JSON',
-            component: 'lc-json-editor',
+            title: '参数对象',
+            component: 'lc-sub-form',
             minWidth: 220,
-            placeholder: '{}',
+            defaultValue: {},
+            props: { fields: gridColumnParamsFields },
           },
         ],
         help: '维护表格列配置。复杂 formatter 仍可填 JSON 字符串。',
@@ -552,6 +597,42 @@ export default defineMaterialPropForms([
           { field: 'preload', title: '预加载', component: 'vxe-switch', width: 72 },
         ],
         help: '维护页签 pane 列表，标识会用于页签 name 和内容插槽绑定。',
+      }),
+    ],
+  },
+  {
+    componentKey: 'lowcode-modal',
+    title: '弹框属性',
+    extendsVisualProps: false,
+    fields: [
+      propField({
+        field: 'blockId',
+        path: 'blockId',
+        label: '区块 ID',
+        component: 'vxe-input',
+        defaultValue: 'modal-block',
+      }),
+      propField({
+        field: 'title',
+        path: 'title',
+        label: '标题',
+        component: 'vxe-input',
+        defaultValue: '弹框',
+      }),
+      propField({
+        field: 'description',
+        path: 'description',
+        label: '描述',
+        component: 'vxe-textarea',
+        defaultValue: '',
+      }),
+      switchPropField({ field: 'open', path: 'open', label: '默认打开', defaultValue: false }),
+      propField({
+        field: 'width',
+        path: 'width',
+        label: '宽度',
+        component: 'vxe-input',
+        defaultValue: '640',
       }),
     ],
   },

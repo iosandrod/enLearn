@@ -24,19 +24,20 @@
         :width="column.width"
         :min-width="column.minWidth || 100"
       >
-        <template #default="{ row }">
+        <template #default="scope">
+          <template v-if="isRecord(scope?.row)">
           <vxe-switch
             v-if="column.component === 'vxe-switch'"
-            :model-value="Boolean(row[column.field])"
-            @update:model-value="(value) => setCell(row, column.field, value)"
+            :model-value="Boolean(scope.row[column.field])"
+            @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
           <vxe-select
             v-else-if="column.component === 'vxe-select'"
-            :model-value="getSelectModelValue(column, row[column.field])"
+            :model-value="getSelectModelValue(column, scope.row[column.field])"
             v-bind="column.props"
             transfer
             clearable
-            @update:model-value="(value) => setCell(row, column.field, readSelectValue(column, value))"
+            @update:model-value="(value) => setCell(scope.row, column.field, readSelectValue(column, value))"
           >
             <vxe-option
               v-for="option in column.options"
@@ -46,75 +47,111 @@
               :disabled="option.disabled"
             />
           </vxe-select>
+          <div
+            v-else-if="shouldUseObjectEditor(column, scope.row)"
+            class="lc-array-table__object-cell"
+          >
+            <vxe-input
+              :model-value="formatObjectPreview(scope.row[column.field])"
+              :placeholder="column.placeholder"
+              readonly
+            />
+            <button type="button" @click="openObjectEditor(scope.row, column)">编辑</button>
+          </div>
           <vxe-textarea
             v-else-if="column.component === 'vxe-textarea'"
-            :model-value="row[column.field]"
+            :model-value="readString(scope.row[column.field])"
             :placeholder="column.placeholder"
             v-bind="column.props"
-            @update:model-value="(value) => setCell(row, column.field, value)"
+            @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
           <vxe-password-input
             v-else-if="column.component === 'vxe-password-input'"
-            :model-value="row[column.field]"
+            :model-value="readString(scope.row[column.field])"
             :placeholder="column.placeholder"
             v-bind="column.props"
             clearable
-            @update:model-value="(value) => setCell(row, column.field, value)"
+            @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
           <vxe-number-input
             v-else-if="column.component === 'lc-number-input'"
-            :model-value="toNumber(row[column.field])"
+            :model-value="toNumber(scope.row[column.field])"
             :placeholder="column.placeholder"
             v-bind="column.props"
-            @update:model-value="(value) => setCell(row, column.field, value)"
+            @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
           <LcJsonEditor
             v-else-if="column.component === 'lc-json-editor'"
             :field="createCellField(column)"
-            :model-value="row[column.field]"
-            @update:model-value="(value) => setCell(row, column.field, value)"
+            :model-value="scope.row[column.field]"
+            @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
           <vxe-input
             v-else
-            :model-value="row[column.field]"
+            :model-value="readString(scope.row[column.field])"
             :placeholder="column.placeholder"
             v-bind="column.props"
             clearable
-            @update:model-value="(value) => setCell(row, column.field, value)"
+            @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
+          </template>
         </template>
       </vxe-column>
       <vxe-column title="操作" width="96" fixed="right">
-        <template #default="{ row }">
-          <div class="lc-array-table__actions">
+        <template #default="scope">
+          <div v-if="isRecord(scope?.row)" class="lc-array-table__actions">
             <button
               type="button"
-              :disabled="getRowIndex(row) <= 0"
-              @click="moveRow(row, -1)"
+              :disabled="getRowIndex(scope.row) <= 0"
+              @click="moveRow(scope.row, -1)"
             >
               上
             </button>
             <button
               type="button"
-              :disabled="getRowIndex(row) >= rows.length - 1"
-              @click="moveRow(row, 1)"
+              :disabled="getRowIndex(scope.row) >= rows.length - 1"
+              @click="moveRow(scope.row, 1)"
             >
               下
             </button>
-            <button type="button" class="is-danger" @click="removeRow(row)">删</button>
+            <button type="button" class="is-danger" @click="removeRow(scope.row)">删</button>
           </div>
         </template>
       </vxe-column>
       </vxe-table>
     </div>
+
+    <vxe-modal
+      v-model="objectEditor.visible"
+      :title="objectEditor.title"
+      width="min(720px, calc(100vw - 48px))"
+      show-footer
+      transfer
+      @close="closeObjectEditor"
+    >
+      <LowCodeForm
+        :key="objectEditor.key"
+        :schema="objectEditorSchema"
+        :model-value="objectEditor.value"
+        @update:model-value="updateObjectEditorValue"
+      />
+      <template #footer>
+        <div class="lc-array-table__object-footer">
+          <vxe-button @click="closeObjectEditor">取消</vxe-button>
+          <vxe-button status="primary" @click="confirmObjectEditor">确定</vxe-button>
+        </div>
+      </template>
+    </vxe-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
 import type { LowCodeField, LowCodeFieldComponent, LowCodeOption } from '~/types/lowcode';
 import LcJsonEditor from '../lc-json-editor/index.vue';
 import type { LowCodeFormMaterialProps } from '../types';
+
+const LowCodeForm = defineAsyncComponent(() => import('~/components/LowCodeForm.vue'));
 
 type ArrayTableColumn = {
   field: string;
@@ -136,6 +173,14 @@ const emit = defineEmits<{
 }>();
 
 const rows = ref<Record<string, unknown>[]>([]);
+const objectEditor = reactive({
+  visible: false,
+  title: '编辑对象',
+  row: null as Record<string, unknown> | null,
+  column: null as ArrayTableColumn | null,
+  value: {} as Record<string, unknown>,
+  key: 0,
+});
 
 const fieldProps = computed(() => props.field.props ?? {});
 const valueMode = computed<ArrayTableValueMode>(() =>
@@ -160,6 +205,10 @@ const columns = computed(() => {
 });
 const rowKey = computed(() => readString(fieldProps.value.rowKey, '__rowKey'));
 const addText = computed(() => readString(fieldProps.value.addText, '新增'));
+const objectEditorSchema = computed(() => ({
+  fields: resolveObjectEditorFields(objectEditor.column, objectEditor.value),
+  actions: [],
+}));
 
 watch(
   () => props.modelValue,
@@ -242,6 +291,31 @@ function setCell(row: Record<string, unknown>, field: string, value: unknown) {
   commitRows();
 }
 
+function openObjectEditor(row: Record<string, unknown>, column: ArrayTableColumn) {
+  objectEditor.row = row;
+  objectEditor.column = column;
+  objectEditor.title = `编辑 ${column.title || column.field}`;
+  objectEditor.value = createObjectEditorValue(row[column.field], column);
+  objectEditor.key += 1;
+  objectEditor.visible = true;
+}
+
+function updateObjectEditorValue(value: Record<string, unknown>) {
+  objectEditor.value = isRecord(value) ? cloneRecord(value) : {};
+}
+
+function confirmObjectEditor() {
+  if (objectEditor.row && objectEditor.column) {
+    setCell(objectEditor.row, objectEditor.column.field, cloneRecord(objectEditor.value));
+  }
+
+  closeObjectEditor();
+}
+
+function closeObjectEditor() {
+  objectEditor.visible = false;
+}
+
 function removeRow(row: Record<string, unknown>) {
   const index = getRowIndex(row);
   if (index < 0) return;
@@ -289,6 +363,9 @@ function ensureRowKey(row: Record<string, unknown>, index: number) {
 function getEmptyValue(column: ArrayTableColumn) {
   if (column.component === 'vxe-switch') return false;
   if (column.component === 'lc-number-input') return 0;
+  if (column.component === 'lc-sub-form') {
+    return isRecord(column.defaultValue) ? cloneRecord(column.defaultValue) : {};
+  }
   return '';
 }
 
@@ -323,6 +400,75 @@ function createCellField(column: ArrayTableColumn): LowCodeField {
       ...(column.props ?? {}),
     },
   };
+}
+
+function shouldUseObjectEditor(column: ArrayTableColumn, row: Record<string, unknown>) {
+  return column.component === 'lc-sub-form' || isRecord(row[column.field]);
+}
+
+function formatObjectPreview(value: unknown) {
+  if (!isRecord(value)) return '{}';
+  if (!Object.keys(value).length) return '{}';
+
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return '[object]';
+  }
+}
+
+function createObjectEditorValue(value: unknown, column: ArrayTableColumn) {
+  return {
+    ...(isRecord(column.defaultValue) ? cloneRecord(column.defaultValue) : {}),
+    ...(isRecord(value) ? cloneRecord(value) : {}),
+  };
+}
+
+function resolveObjectEditorFields(
+  column: ArrayTableColumn | null,
+  value: Record<string, unknown>,
+): LowCodeField[] {
+  const configuredFields = Array.isArray(column?.props?.fields)
+    ? (column.props.fields as unknown[]).filter(isRecord).map((field) => cloneRecord(field) as LowCodeField)
+    : [];
+
+  return configuredFields.length ? configuredFields : inferObjectEditorFields(value);
+}
+
+function inferObjectEditorFields(value: Record<string, unknown>): LowCodeField[] {
+  return Object.keys(value).map((field) => {
+    const currentValue = value[field];
+
+    if (typeof currentValue === 'boolean') {
+      return { field, label: field, component: 'vxe-switch' };
+    }
+
+    if (typeof currentValue === 'number') {
+      return { field, label: field, component: 'lc-number-input' };
+    }
+
+    if (isRecord(currentValue)) {
+      return {
+        field,
+        label: field,
+        component: 'lc-sub-form',
+        props: {
+          fields: inferObjectEditorFields(currentValue),
+        },
+      };
+    }
+
+    if (Array.isArray(currentValue)) {
+      return {
+        field,
+        label: field,
+        component: 'lc-json-editor',
+        props: { rows: 4, placeholder: '[]' },
+      };
+    }
+
+    return { field, label: field, component: 'vxe-input' };
+  });
 }
 
 function toNumber(value: unknown) {
@@ -440,6 +586,7 @@ function cloneValue(value: unknown) {
 .lc-array-table__grid :deep(.vxe-number-input),
 .lc-array-table__grid :deep(.vxe-textarea),
 .lc-array-table__grid :deep(.vxe-select),
+.lc-array-table__grid :deep(.lc-array-table__object-cell),
 .lc-array-table__grid :deep(.lc-json-editor) {
   width: 100%;
   max-width: 100%;
@@ -461,12 +608,26 @@ function cloneValue(value: unknown) {
   width: 100%;
 }
 
+.lc-array-table__object-cell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+}
+
 .lc-array-table__actions {
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
+.lc-array-table__object-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.lc-array-table__object-cell button,
 .lc-array-table__actions button {
   min-width: 22px;
   height: 22px;
@@ -485,9 +646,17 @@ function cloneValue(value: unknown) {
   color: #1d73d8;
 }
 
+.lc-array-table__object-cell button:hover,
 .lc-array-table__actions button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
+}
+
+.lc-array-table__object-cell button:hover {
+  cursor: pointer;
+  opacity: 1;
+  border-color: #93c5fd;
+  color: #1d73d8;
 }
 
 .lc-array-table__actions button.is-danger {

@@ -42,6 +42,7 @@ export const createNewPage = ({ title = '新页面', path = '/' }) => ({
     keepAlive: false,
   },
   blocks: [],
+  overlays: [],
 });
 
 const defaultValue: VisualEditorModelValue = {
@@ -72,6 +73,7 @@ type InitVisualDataOptions = {
 type VisualHistorySnapshot = {
   model: VisualEditorModelValue;
   currentPath: string;
+  currentBlockVid?: string;
   signature: string;
 };
 
@@ -114,13 +116,21 @@ function normalizeLegacyBlock(block: VisualEditorBlockData) {
       children.forEach(normalizeLegacyBlock);
     }
   });
+
+  if (Array.isArray(block.props?.overlays)) {
+    block.props.overlays.forEach(normalizeLegacyBlock);
+  }
 }
 
 function normalizeLegacyVisualData(value: VisualEditorModelValue) {
   Object.values(value.pages || {}).forEach((page) => {
+    page.overlays ??= [];
+
     if (Array.isArray(page.blocks)) {
       page.blocks.forEach(normalizeLegacyBlock);
     }
+
+    page.overlays.forEach(normalizeLegacyBlock);
   });
 
   return value;
@@ -158,9 +168,87 @@ function findFocusedBlock(blocks: VisualEditorBlockData[] = []): VisualEditorBlo
       const child = findFocusedBlock(slots[slotKey]?.children || []);
       if (child) return child;
     }
+
+    const overlay = findFocusedBlock(block.props?.overlays || []);
+    if (overlay) return overlay;
   }
 
   return undefined;
+}
+
+function findFocusedPageBlock(page?: VisualEditorPage) {
+  return findFocusedBlock(page?.blocks) ?? findFocusedBlock(page?.overlays);
+}
+
+function walkBlocks(
+  blocks: VisualEditorBlockData[] = [],
+  callback: (block: VisualEditorBlockData) => void,
+) {
+  blocks.forEach((block) => {
+    callback(block);
+
+    const slots = block.props?.slots || {};
+    Object.keys(slots).forEach((slotKey) => {
+      walkBlocks(slots[slotKey]?.children || [], callback);
+    });
+
+    walkBlocks(block.props?.overlays || [], callback);
+  });
+}
+
+function findBlockPathByVid(
+  vid: string | undefined,
+  blocks: VisualEditorBlockData[] = [],
+  path: VisualEditorBlockData[] = [],
+): VisualEditorBlockData[] | undefined {
+  if (!vid) return undefined;
+
+  for (const block of blocks) {
+    const nextPath = [...path, block];
+    if (block._vid === vid) return nextPath;
+
+    const slots = block.props?.slots || {};
+    for (const slotKey of Object.keys(slots)) {
+      const childPath = findBlockPathByVid(vid, slots[slotKey]?.children || [], nextPath);
+      if (childPath) return childPath;
+    }
+
+    const overlayPath = findBlockPathByVid(vid, block.props?.overlays || [], nextPath);
+    if (overlayPath) return overlayPath;
+  }
+
+  return undefined;
+}
+
+function findBlockByVid(
+  vid: string | undefined,
+  blocks: VisualEditorBlockData[] = [],
+): VisualEditorBlockData | undefined {
+  const path = findBlockPathByVid(vid, blocks);
+  return path?.[path.length - 1];
+}
+
+function findPageBlockByVid(page: VisualEditorPage | undefined, vid: string | undefined) {
+  return findBlockByVid(vid, page?.blocks) ?? findBlockByVid(vid, page?.overlays);
+}
+
+function findPageBlockPathByVid(page: VisualEditorPage | undefined, vid: string | undefined) {
+  return findBlockPathByVid(vid, page?.blocks) ?? findBlockPathByVid(vid, page?.overlays);
+}
+
+function syncPageFocus(page: VisualEditorPage | undefined, vid: string | undefined) {
+  if (!page) return;
+
+  walkBlocks([...(page.blocks || []), ...(page.overlays || [])], (block) => {
+    block.focus = false;
+    block.focusWithChild = false;
+  });
+
+  const path = findPageBlockPathByVid(page, vid);
+  path?.forEach((block) => {
+    block.focus = block._vid === vid;
+    block.focusWithChild = block._vid !== vid;
+  });
 }
 
 export const initVisualData = (options: InitVisualDataOptions = {}) => {
@@ -184,7 +272,7 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
   const state: IState = reactive({
     jsonData,
     currentPage,
-    currentBlock: findFocusedBlock(currentPage?.blocks) ?? ({} as VisualEditorBlockData),
+    currentBlock: findFocusedPageBlock(currentPage) ?? ({} as VisualEditorBlockData),
   });
 
   if (!state.currentPage) {
@@ -229,7 +317,7 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
     } else {
       currentPath.value = nextPath;
     }
-    const currentFocusBlock = findFocusedBlock(state.currentPage.blocks);
+    const currentFocusBlock = findFocusedPageBlock(state.currentPage);
     setCurrentBlock(currentFocusBlock ?? ({} as VisualEditorBlockData));
     syncCurrentHistoryPath(currentPath.value);
   };
@@ -332,6 +420,7 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
     current: 0,
     snapshots: [] as VisualHistorySnapshot[],
     restoring: false,
+    restoreVersion: 0,
   });
 
   const createHistorySnapshot = (): VisualHistorySnapshot => {
@@ -339,12 +428,15 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
     return {
       model,
       currentPath: currentPath.value,
+      currentBlockVid: state.currentBlock?._vid,
       signature: createHistorySignature(model),
     };
   };
 
   const applyHistorySnapshot = (snapshot: VisualHistorySnapshot) => {
     historyState.restoring = true;
+    historyState.restoreVersion += 1;
+    const targetBlockVid = snapshot.currentBlockVid;
     const nextModel = cloneVisualData(snapshot.model);
     const fallback = cloneDefaultValue();
     const nextPages = Object.keys(nextModel.pages || {}).length ? nextModel.pages : fallback.pages;
@@ -354,6 +446,13 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
     state.jsonData.models = nextModel.models || [];
     state.jsonData.actions = nextModel.actions || fallback.actions;
     setCurrentPage(snapshot.currentPath);
+
+    const selectedBlock =
+      findPageBlockByVid(state.currentPage, targetBlockVid) ??
+      findFocusedPageBlock(state.currentPage) ??
+      ({} as VisualEditorBlockData);
+    syncPageFocus(state.currentPage, selectedBlock?._vid);
+    setCurrentBlock(selectedBlock);
 
     void nextTick(() => {
       historyState.restoring = false;
@@ -367,6 +466,7 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
     const currentSnapshot = historyState.snapshots[historyState.current];
     if (currentSnapshot?.signature === snapshot.signature) {
       currentSnapshot.currentPath = snapshot.currentPath;
+      currentSnapshot.currentBlockVid = snapshot.currentBlockVid;
       return;
     }
 
@@ -380,9 +480,10 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
 
   syncCurrentHistoryPath = (path: string) => {
     const currentSnapshot = historyState.snapshots[historyState.current];
-    if (currentSnapshot) {
-      currentSnapshot.currentPath = path;
-    }
+    if (!currentSnapshot || historyState.restoring) return;
+
+    currentSnapshot.currentPath = path;
+    currentSnapshot.currentBlockVid = state.currentBlock?._vid;
   };
 
   historyState.snapshots.push(createHistorySnapshot());

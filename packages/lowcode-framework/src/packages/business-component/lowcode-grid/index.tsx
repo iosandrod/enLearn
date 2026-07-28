@@ -52,9 +52,11 @@ export default {
       </table>
     </div>
   ),
-  render({ props, styles }) {
+  render({ props, styles, block }) {
     return () => {
       const columns = Array.isArray(props.columns) && props.columns.length ? props.columns : [];
+      const fillRemaining =
+        block.layout?.fillRemaining === true || props.layout?.fillRemaining === true;
       const title = String(props.title || '数据表格');
 
       return (
@@ -62,7 +64,10 @@ export default {
           style={{
             ...styles,
             width: '100%',
-            display: 'block',
+            height: fillRemaining ? '100%' : styles.height,
+            minHeight: 0,
+            display: 'flex',
+            flexDirection: 'column',
             border: '1px solid #dcdfe6',
             borderRadius: '6px',
             background: '#fff',
@@ -74,7 +79,8 @@ export default {
           >
             {title}
           </div>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+          <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
             <thead>
               <tr>
                 {columns.map((column: Record<string, unknown>) => (
@@ -102,12 +108,17 @@ export default {
                 </tr>
               ))}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       );
     };
   },
   showStyleConfig: true,
+  styles: {
+    minHeight: '320px',
+    height: '360px',
+  },
   props: {
     blockId: createEditorInputProp({
       label: 'Block ID',
