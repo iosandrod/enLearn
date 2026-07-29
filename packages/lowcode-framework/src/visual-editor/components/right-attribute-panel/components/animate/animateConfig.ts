@@ -444,6 +444,10 @@ const defaultOption = {
   duration: 1,
   infinite: false,
 };
+type LabelValue = {
+  label: string;
+  value: string;
+};
 for (let index = 0; index < opt.length; index++) {
   const items = opt[index].children;
   items.forEach((item: LabelValue) => {

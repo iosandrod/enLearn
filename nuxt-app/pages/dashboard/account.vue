@@ -43,11 +43,6 @@ import {
   subscriptionGridSchema
 } from '~/schemas/account';
 
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
-
 const auth = useAuth();
 const serviceApi = useServiceApi();
 const loading = ref(false);

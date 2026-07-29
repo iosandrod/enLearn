@@ -1,7 +1,7 @@
-import { createVisualEditorConfig } from './visual-editor/visual-editor.utils';
-import baseWidgets from '@/packages/base-widgets';
-import containerComponent from '@/packages/container-component';
-import businessComponent from '@/packages/business-component';
+import { createVisualEditorConfig } from '@enlearn/lowcode-framework/designer';
+import baseWidgets from '@enlearn/lowcode-framework/packages/base-widgets';
+import containerComponent from '@enlearn/lowcode-framework/packages/container-component';
+import businessComponent from '@enlearn/lowcode-framework/packages/business-component';
 
 export const visualConfig = createVisualEditorConfig();
 const formComponentKeys = new Set([

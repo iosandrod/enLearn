@@ -9,12 +9,12 @@
           </p>
         </div>
         <div class="lc-actions">
-          <NuxtLink to="/dashboard/low-code/designer">
+          <RouterLink to="/dashboard/low-code/designer">
             <vxe-button status="primary">Visual Designer</vxe-button>
-          </NuxtLink>
-          <NuxtLink v-if="selectedCode" :to="`/dashboard/low-code/designer/${selectedCode}`">
+          </RouterLink>
+          <RouterLink v-if="selectedCode" :to="`/dashboard/low-code/designer/${selectedCode}`">
             <vxe-button>Edit Selected</vxe-button>
-          </NuxtLink>
+          </RouterLink>
         </div>
       </div>
 
@@ -105,13 +105,8 @@ import {
   lowCodePageEditorSchema as pageEditorSchema,
   lowCodePagesGridSchema as pagesGridSchema
 } from '~/schemas/lowcode';
-import { prepareLowCodePageSchema } from '~/lowcode/schema';
-import type { LowCodePageOpenType, LowCodePageRecord, LowCodePageType } from '~/types/lowcode';
-
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
+import { prepareLowCodePageSchema } from '@enlearn/lowcode-framework/lowcode/schema';
+import type { LowCodePageOpenType, LowCodePageRecord, LowCodePageType } from '@enlearn/lowcode-framework/types/lowcode';
 
 type LowCodePageForm = {
   code: string;

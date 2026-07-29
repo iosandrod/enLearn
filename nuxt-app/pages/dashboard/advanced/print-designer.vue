@@ -51,15 +51,13 @@
     </aside>
 
     <main class="print-canvas-shell">
-      <ClientOnly>
-        <TldrawVue
+      <TldrawVue
           ref="designerRef"
           :plugins="designerPlugins"
           :load-templates="loadTemplateRecords"
           :save-templates="saveTemplateRecords"
           @ready="handleDesignerReady"
         />
-      </ClientOnly>
     </main>
   </section>
 </template>
@@ -73,11 +71,6 @@ import TldrawVue, {
   type VueTemplateRecord,
   type VueTemplateWorkspaceConfig
 } from 'tldraw-vue-phase-one';
-
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
 
 type TldrawVueExpose = {
   getEditor(): Editor | null;

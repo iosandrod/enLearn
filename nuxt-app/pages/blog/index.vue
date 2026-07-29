@@ -8,7 +8,7 @@
 
     <section class="section-block">
       <div class="post-grid post-grid-wide">
-        <NuxtLink
+        <RouterLink
           v-for="post in posts"
           :key="post.href"
           class="post-card"
@@ -18,7 +18,7 @@
           <h2>{{ post.title }}</h2>
           <p>{{ post.description }}</p>
           <small>{{ post.author }}</small>
-        </NuxtLink>
+        </RouterLink>
       </div>
     </section>
   </div>
@@ -46,6 +46,6 @@ function formatDate(date?: string) {
 
 useSeoMeta({
   title: 'Blog | Hikari',
-  description: 'Read Hikari blog posts from the Nuxt migration.'
+  description: 'Read Hikari blog posts from the SPA migration.'
 });
 </script>

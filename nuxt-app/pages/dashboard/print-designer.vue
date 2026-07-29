@@ -86,11 +86,6 @@
 <script setup lang="ts">
 import type { VueTemplateRecord, VueTemplateWorkspaceConfig } from 'tldraw-vue-phase-one';
 
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
-
 const TEMPLATE_STORAGE_KEY = 'enlearn.print-designer.templates.v1';
 
 const router = useRouter();

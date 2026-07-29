@@ -4,7 +4,7 @@
       <p class="section-kicker">Pricing</p>
       <h1>Plans for building with Hikari.</h1>
       <p>
-        The original plan structure is now rendered in Nuxt. Cards and the
+        The original plan structure is now rendered in the SPA. Cards and the
         comparison grid are both driven by data objects.
       </p>
     </section>
@@ -33,9 +33,9 @@
               {{ feature }}
             </li>
           </ul>
-          <NuxtLink class="site-button site-button-primary" to="/signup">
+          <RouterLink class="site-button site-button-primary" to="/signup">
             Start with {{ plan.name }}
-          </NuxtLink>
+          </RouterLink>
         </article>
       </div>
     </section>
@@ -48,41 +48,17 @@
         </div>
       </div>
 
-      <ClientOnly>
-        <LowCodeGrid
-          :schema="comparisonGridSchema"
-          :rows="comparisonRows"
-        />
-        <template #fallback>
-          <div class="table-fallback">
-            <table>
-              <thead>
-                <tr>
-                  <th>Plan</th>
-                  <th>Monthly</th>
-                  <th>Yearly</th>
-                  <th>Features</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in comparisonRows" :key="row.plan">
-                  <td>{{ row.plan }}</td>
-                  <td>{{ row.monthly }}</td>
-                  <td>{{ row.yearly }}</td>
-                  <td>{{ row.features }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </template>
-      </ClientOnly>
+      <LowCodeGrid
+        :schema="comparisonGridSchema"
+        :rows="comparisonRows"
+      />
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import { pricingPlans } from '~/data/site';
-import type { LowCodeGridSchema } from '~/types/lowcode';
+import type { LowCodeGridSchema } from '@enlearn/lowcode-framework/types/lowcode';
 
 function formatPrice(cents: number) {
   return `$${(cents / 100).toLocaleString('en-US', {
@@ -118,6 +94,6 @@ const comparisonGridSchema: LowCodeGridSchema = {
 
 useSeoMeta({
   title: 'Pricing | Hikari',
-  description: 'Compare Hikari plans in the Nuxt migration.'
+  description: 'Compare Hikari plans in the SPA migration.'
 });
 </script>

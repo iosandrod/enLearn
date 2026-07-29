@@ -19,11 +19,6 @@
 <script setup lang="ts">
 import { settingsSchema } from '~/schemas/settings';
 
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
-
 const SETTINGS_STORAGE_KEY = 'hikari-dashboard-settings';
 const auth = useAuth();
 const serviceApi = useServiceApi();

@@ -295,6 +295,7 @@ import {
   Handle,
   Position,
   VueFlow,
+  MarkerType,
   useVueFlow,
   type Connection,
   type Edge,
@@ -305,19 +306,14 @@ import {
 import { h } from 'vue';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
-import LcVxeModalRenderer, { type LcVxeModalConfig } from '~/components/LcVxeModalRenderer';
+import { LcVxeModalRenderer, type LcVxeModalConfig } from '@enlearn/lowcode-framework/runtime';
 import {
   entityColumnsTableFormSchema,
   entityColumnFormSchema,
   entityRelationFormSchema,
   entityTableFormSchema
 } from '~/schemas/entity-design';
-import type { LowCodeAction, LowCodeField, LowCodeFormSchema } from '~/types/lowcode';
-
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
+import type { LowCodeAction, LowCodeField, LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode';
 
 type EntityColumn = {
   id: string;
@@ -415,8 +411,8 @@ const message = ref('');
 const messageClass = ref('lc-help');
 const tables = ref<EntityTable[]>([]);
 const relations = ref<EntityRelation[]>([]);
-const flowNodes = ref<EntityNode[]>([]);
-const flowEdges = ref<EntityEdge[]>([]);
+const flowNodes = shallowRef<EntityNode[]>([]);
+const flowEdges = shallowRef<EntityEdge[]>([]);
 const selectedTableId = ref('');
 const physicalTables = ref<PhysicalTableOption[]>([]);
 const hiddenCanvasTableIds = ref<Set<string>>(new Set());
@@ -705,7 +701,7 @@ function syncFlowFromGraph() {
       y: Number.isFinite(table.position_y) ? table.position_y : 80
     },
     data: { table }
-  }));
+  })) as EntityNode[];
   flowEdges.value = relations.value
     .filter(
       (relation) =>
@@ -726,10 +722,10 @@ function syncFlowFromGraph() {
       labelBgPadding: [6, 4],
       labelBgBorderRadius: 4,
       markerEnd: {
-        type: 'arrowclosed',
+        type: MarkerType.ArrowClosed,
         color: relation.is_enforced ? '#0f766e' : '#475569'
       }
-    }));
+    })) as EntityEdge[];
 }
 
 function columnOptionsForTable(tableId: string) {

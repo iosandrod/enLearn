@@ -11,7 +11,7 @@ import type {
 export const siteName = 'Hikari';
 
 export const siteDescription =
-  'A backend-proxied SaaS starter with auth, dashboard, blog, and docs migrated to Nuxt 3.';
+  'A backend-connected SaaS starter with auth, dashboard, blog, and docs migrated to a Vue SPA.';
 
 export const publicNav: SiteNavItem[] = [
   { label: 'Home', href: '/' },
@@ -21,10 +21,10 @@ export const publicNav: SiteNavItem[] = [
 ];
 
 export const homeHero = {
-  eyebrow: 'Nuxt 3 migration',
+  eyebrow: 'Vite SPA migration',
   title: 'Hikari',
   description:
-    'Keep the product flows while routing auth and data access through the backend, with the public site, dashboard, blog, and docs in a Vue-friendly Nuxt app.',
+    'Keep the product flows while routing auth and data access through the backend, with the public site, dashboard, blog, and docs in a Vue-friendly SPA.',
   actions: [
     { label: 'Sign in', href: '/signin', primary: true },
     { label: 'Read the docs', href: '/docs' }
@@ -33,12 +33,12 @@ export const homeHero = {
     'Backend-managed auth',
     'Schema-driven dashboard',
     'Markdown blog and docs',
-    'Nuxt 3 public routes'
+    'Vue Router public routes'
   ]
 };
 
 export const heroStats = [
-  { label: 'Framework', value: 'Nuxt 3' },
+  { label: 'Framework', value: 'Vue SPA' },
   { label: 'UI core', value: 'VXE' },
   { label: 'Backend', value: 'Nest API' }
 ];
@@ -60,7 +60,7 @@ export const marketingFeatures: MarketingFeature[] = [
     kicker: 'Content',
     title: 'Blog and docs routes',
     description:
-      'The original MDX content is read by Nuxt server endpoints and rendered into blog and documentation pages.'
+      'The original MDX content is bundled by Vite and rendered into blog and documentation pages.'
   },
   {
     kicker: 'Billing',
@@ -76,9 +76,9 @@ export const marketingFeatures: MarketingFeature[] = [
   },
   {
     kicker: 'Migration',
-    title: 'Next routes mirrored in Nuxt',
+    title: 'Next routes mirrored in Vue Router',
     description:
-      'Public routes such as /, /pricing, /blog, and /docs now have Nuxt counterparts.'
+      'Public routes such as /, /pricing, /blog, and /docs now have Vue Router counterparts.'
   }
 ];
 
@@ -161,9 +161,9 @@ export const faqItems: FaqItem[] = [
       'Yes. The plan cards describe the complete starter surface without hidden add-ons.'
   },
   {
-    question: 'Does the Nuxt app call Supabase directly?',
+    question: 'Does the SPA call Supabase directly?',
     answer:
-      'No. Browser requests go through Nuxt server routes and the Nest API, which control auth and data access.'
+      'No. Browser requests go through the Nest API, which controls auth and data access.'
   },
   {
     question: 'Can more screens become low-code?',
@@ -173,7 +173,7 @@ export const faqItems: FaqItem[] = [
   {
     question: 'Can the old Next app stay available?',
     answer:
-      'The root scripts now start Nuxt, while the Next scripts remain as backups for reference during migration.'
+      'The root scripts now start the Vite SPA, while the Next scripts remain as backups for reference during migration.'
   }
 ];
 

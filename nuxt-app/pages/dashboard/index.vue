@@ -108,11 +108,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
-
 const productionMetrics = [
   { label: '今日计划达成', value: '92.4%', trend: '较昨日 +3.1%', trendType: 'good' },
   { label: '在制工单', value: '48', trend: '6 单临近交期', trendType: 'warn' },

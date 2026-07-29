@@ -3,14 +3,14 @@
     <aside class="docs-sidebar" aria-label="Documentation navigation">
       <div v-for="group in docsNavGroups" :key="group.title" class="docs-group">
         <h2>{{ group.title }}</h2>
-        <NuxtLink
+        <RouterLink
           v-for="item in group.items"
           :key="item.href"
           class="docs-link"
           :to="item.href"
         >
           {{ item.label }}
-        </NuxtLink>
+        </RouterLink>
       </div>
     </aside>
 

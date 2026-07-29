@@ -4,9 +4,14 @@ export { default as LowCodeForm } from '../components/LowCodeForm.vue';
 export { default as LowCodeFormField } from '../components/LowCodeFormField.vue';
 export { default as LowCodeFormLayout } from '../components/LowCodeFormLayout.vue';
 export { default as LowCodeGrid } from '../components/LowCodeGrid.vue';
+export { default as LcVxeModalRenderer } from '../components/LcVxeModalRenderer';
 export { default as LowCodeOverlayHost } from '../components/LowCodeOverlayHost.vue';
 export { default as LowCodePageRenderer } from '../components/LowCodePageRenderer.vue';
 export { default as LowCodeTreeItem } from '../components/LowCodeTreeItem.vue';
+export type {
+  LcVxeModalConfig,
+  LcVxeModalRender,
+} from '../components/LcVxeModalRenderer';
 
 export * from '../core';
 export * from './directives';

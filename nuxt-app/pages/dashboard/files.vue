@@ -271,11 +271,6 @@
 <script setup lang="ts">
 import type { FileFolder, FileObject } from '~/composables/useFilesApi';
 
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
-
 type FileTreeNode = {
   key: string;
   label: string;

@@ -13,9 +13,9 @@
         @submit="handleSubmit"
       />
 
-      <NuxtLink class="muted" style="display: block; margin-top: 18px" to="/signin">
+      <RouterLink class="muted" style="display: block; margin-top: 18px" to="/signin">
         Already have an account? Sign in
-      </NuxtLink>
+      </RouterLink>
 
       <p v-if="message" :class="messageStatus">{{ message }}</p>
     </section>
@@ -24,8 +24,6 @@
 
 <script setup lang="ts">
 import { signUpSchema } from '~/schemas/auth';
-
-definePageMeta({ middleware: 'guest', layout: false });
 
 const auth = useAuth();
 const loading = ref(false);

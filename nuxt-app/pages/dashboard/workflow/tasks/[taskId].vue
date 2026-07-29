@@ -166,11 +166,6 @@ type ProcessInstanceDetail = {
   }>;
 };
 
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
-
 const route = useRoute();
 const auth = useAuth();
 const serviceApi = useServiceApi();

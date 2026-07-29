@@ -1,4 +1,4 @@
-import type { LowCodePageSchema } from '~/types/lowcode';
+import type { LowCodePageSchema } from '@enlearn/lowcode-framework/types/lowcode';
 
 export type Json =
   | string

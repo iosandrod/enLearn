@@ -61,11 +61,6 @@ import {
   type TriggerWorkflowModel
 } from '@enlearn/trigger-workflow-editor';
 
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
-
 const storageKey = 'enlearn.trigger-workflow-editor.default';
 const demoJobCode = 'supabase_users_20s_logger';
 const demoTaskId = 'workflow.supabase.users.log';

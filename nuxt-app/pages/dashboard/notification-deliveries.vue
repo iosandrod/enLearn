@@ -15,12 +15,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import type { LowCodePageRecord } from '~/types/lowcode';
-
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth',
-});
+import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
 
 const pageCode = 'notification-deliveries';
 const serviceApi = useServiceApi();

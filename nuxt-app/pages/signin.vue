@@ -21,9 +21,9 @@
         <vxe-button :loading="loading" @click="handleGithub">
           Sign in with GitHub
         </vxe-button>
-        <NuxtLink class="muted" to="/signup">
+        <RouterLink class="muted" to="/signup">
           Do not have an account? Sign up
-        </NuxtLink>
+        </RouterLink>
       </div>
 
       <p v-if="message" class="lc-error">{{ message }}</p>
@@ -33,8 +33,6 @@
 
 <script setup lang="ts">
 import { signInSchema } from '~/schemas/auth';
-
-definePageMeta({ middleware: 'guest', layout: false });
 
 const auth = useAuth();
 const loading = ref(false);

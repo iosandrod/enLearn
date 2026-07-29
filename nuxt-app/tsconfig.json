@@ -1,10 +1,32 @@
 {
-  "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "strict": false,
     "noImplicitAny": false,
     "verbatimModuleSyntax": false,
     "jsx": "preserve",
-    "skipLibCheck": true
-  }
+    "jsxImportSource": "vue",
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "types": ["node", "vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["./*"],
+      "@/*": ["./*"],
+      "@enlearn/lowcode-framework": ["../packages/lowcode-framework/src/index.ts"],
+      "@enlearn/lowcode-framework/*": ["../packages/lowcode-framework/src/*"],
+      "@enlearn/approval-workflow": ["../packages/approval-workflow/src/index.ts"],
+      "@enlearn/approval-workflow/*": ["../packages/approval-workflow/src/*"],
+      "@enlearn/chat-widget": ["../packages/chat-widget/src/index.ts"],
+      "@enlearn/chat-widget/*": ["../packages/chat-widget/src/*"],
+      "@enlearn/trigger-workflow-editor": ["../packages/trigger-workflow-editor/src/index.ts"],
+      "@enlearn/trigger-workflow-editor/*": ["../packages/trigger-workflow-editor/src/*"],
+      "@enlearn/workflow-schema/*": ["../packages/workflow-schema/src/*"]
+    }
+  },
+  "include": ["**/*"],
+  "exclude": ["node_modules", "dist", ".output", ".nuxt"]
 }

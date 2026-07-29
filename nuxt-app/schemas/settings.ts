@@ -1,4 +1,4 @@
-import type { LowCodeFormSchema } from '~/types/lowcode';
+import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode';
 
 export const settingsSchema: LowCodeFormSchema = {
   columns: 2,

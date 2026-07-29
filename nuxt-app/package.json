@@ -2,10 +2,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --max-old-space-size=8192 ./node_modules/nuxt/bin/nuxt.mjs dev --port 3000",
-    "build": "nuxt build",
-    "preview": "nuxt preview --port 3000",
-    "typecheck": "nuxt typecheck"
+    "dev": "vite --host 0.0.0.0 --port 3000",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 3000",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@enlearn/approval-workflow": "workspace:^",
@@ -13,6 +13,7 @@
     "@enlearn/lowcode-framework": "workspace:*",
     "@enlearn/trigger-workflow-editor": "workspace:*",
     "@vant/touch-emulator": "^1.5.0",
+    "@vitejs/plugin-vue": "^6.0.8",
     "@vue-flow/core": "^1.48.2",
     "@vueuse/core": "^14.3.0",
     "@vueuse/integrations": "^14.3.0",
@@ -23,11 +24,13 @@
     "monaco-editor": "^0.33.0",
     "nanoid": "^6.0.0",
     "normalize.css": "^8.0.1",
-    "nuxt": "^3.0.0",
     "qrcode": "^1.5.4",
     "remixicon": "^4.6.0",
     "socket.io-client": "^4.8.1",
     "vant": "^3.5.2",
+    "vite": "^8.1.5",
+    "vue": "^3.5.40",
+    "vue-router": "^4.6.4",
     "vuedraggable": "^4.1.0",
     "vxe-pc-ui": "latest",
     "vxe-table": "latest"
@@ -40,6 +43,8 @@
     "esbuild": "0.28.1",
     "sass": "^1.101.6",
     "typescript": "^5.4.5",
+    "unplugin-auto-import": "^21.0.0",
+    "unplugin-vue-components": "^32.1.0",
     "vue-tsc": "^3.3.7"
   },
   "packageManager": "pnpm@10.15.1"

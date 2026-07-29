@@ -1,34 +1,34 @@
 <template>
   <header class="site-header">
-    <NuxtLink class="site-brand" to="/">
+    <RouterLink class="site-brand" to="/">
       <span class="site-brand-mark">H</span>
       <span>Hikari</span>
-    </NuxtLink>
+    </RouterLink>
 
     <nav class="site-nav" aria-label="Primary navigation">
-      <NuxtLink
+      <RouterLink
         v-for="item in publicNav"
         :key="item.href"
         class="site-nav-link"
         :to="item.href"
       >
         {{ item.label }}
-      </NuxtLink>
+      </RouterLink>
     </nav>
 
     <div class="site-actions">
-      <NuxtLink
+      <RouterLink
         v-if="signedIn"
         class="site-button site-button-primary"
         to="/dashboard"
       >
         Dashboard
-      </NuxtLink>
+      </RouterLink>
       <template v-else>
-        <NuxtLink class="site-button" to="/signin">Sign in</NuxtLink>
-        <NuxtLink class="site-button site-button-primary" to="/signup">
+        <RouterLink class="site-button" to="/signin">Sign in</RouterLink>
+        <RouterLink class="site-button site-button-primary" to="/signup">
           Get started
-        </NuxtLink>
+        </RouterLink>
       </template>
     </div>
   </header>

@@ -8,8 +8,6 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ layout: false });
-
 const auth = useAuth();
 
 onMounted(async () => {

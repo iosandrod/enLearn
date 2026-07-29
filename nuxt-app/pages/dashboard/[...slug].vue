@@ -16,12 +16,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { getBuiltinLowCodePageByRoute } from '@enlearn/lowcode-framework/runtime';
-import type { LowCodePageRecord } from '~/types/lowcode';
-
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
+import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
 
 const route = useRoute();
 const serviceApi = useServiceApi();

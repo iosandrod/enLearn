@@ -111,9 +111,9 @@
             <div>
               <dt>任务</dt>
               <dd>
-                <NuxtLink v-if="startedTaskRoute" class="workflow-inline-link" :to="startedTaskRoute">
+                <RouterLink v-if="startedTaskRoute" class="workflow-inline-link" :to="startedTaskRoute">
                   {{ startedTaskId }}
-                </NuxtLink>
+                </RouterLink>
                 <span v-else>{{ startedTaskId || '-' }}</span>
               </dd>
             </div>
@@ -169,11 +169,6 @@ import {
   type WorkflowModel,
   type WorkflowSchemaIssue
 } from '@enlearn/approval-workflow';
-
-definePageMeta({
-  layout: 'dashboard',
-  middleware: 'auth'
-});
 
 const localStorageKey = 'enlearn.workflow.designer.default';
 const auth = useAuth();

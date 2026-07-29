@@ -1,10 +1,10 @@
 <template>
   <div class="admin-shell">
     <header class="admin-topbar">
-      <NuxtLink class="admin-brand" to="/dashboard">
+      <RouterLink class="admin-brand" to="/dashboard">
         <span class="admin-brand-mark">M</span>
         <span>工厂制造管理平台</span>
-      </NuxtLink>
+      </RouterLink>
 
       <div class="admin-top-actions">
         <ChatPopup />
@@ -71,14 +71,14 @@
 
       <main class="admin-main">
         <div class="admin-tabs">
-          <NuxtLink
+          <RouterLink
             v-for="tab in visitedTabs"
             :key="tab.path"
             class="admin-tab"
             :to="tab.path"
           >
             {{ tab.title }}
-          </NuxtLink>
+          </RouterLink>
         </div>
 
         <p v-if="routeError" class="admin-route-error lc-error">{{ routeError }}</p>
@@ -287,7 +287,7 @@ const MenuItem = defineComponent({
     return () => {
       if (!hasChildren.value) {
         return h(
-          resolveComponent('NuxtLink'),
+          resolveComponent('RouterLink'),
           {
             class: ['admin-menu-link', `level-${props.level}`],
             to: props.item.path,

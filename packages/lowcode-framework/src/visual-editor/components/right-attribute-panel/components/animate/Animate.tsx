@@ -43,9 +43,13 @@ export const Animate = defineComponent({
      * @description 运行动画
      */
     const runAnimation = (animation: Animation | Animation[] = []) => {
+      const blockRef = window.$$refs[currentBlock.value._vid] as
+        | HTMLElement
+        | { $el?: HTMLElement }
+        | undefined;
       let animateEl =
-        (window.$$refs[currentBlock.value._vid]?.$el as HTMLElement) ??
-        (window.$$refs[currentBlock.value._vid] as HTMLElement);
+        (blockRef && '$el' in blockRef ? blockRef.$el : undefined) ??
+        (blockRef as HTMLElement | undefined);
 
       animateEl = animateEl?.closest('.list-group-item')?.firstChild as HTMLElement;
 

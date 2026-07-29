@@ -7,7 +7,7 @@
         <p>{{ homeHero.description }}</p>
 
         <div class="hero-actions">
-          <NuxtLink
+          <RouterLink
             v-for="action in homeHero.actions"
             :key="action.href"
             :class="[
@@ -17,7 +17,7 @@
             :to="action.href"
           >
             {{ action.label }}
-          </NuxtLink>
+          </RouterLink>
         </div>
 
         <ul class="hero-checklist">
@@ -27,7 +27,7 @@
 
       <aside class="hero-panel" aria-label="Migration overview">
         <p class="section-kicker">Current Surface</p>
-        <h2>Nuxt now owns the main product routes.</h2>
+        <h2>Vue Router now owns the main product routes.</h2>
         <div class="hero-stat-grid">
           <div v-for="stat in heroStats" :key="stat.label">
             <strong>{{ stat.value }}</strong>
@@ -52,7 +52,7 @@
         </div>
         <p>
           The migration keeps backend-controlled data access and changes the
-          frontend shell to Nuxt 3, with VXE powering object-driven form and grid screens.
+          frontend shell to a Vite SPA, with VXE powering object-driven form and grid screens.
         </p>
       </div>
 
@@ -75,9 +75,9 @@
           <p class="section-kicker">Pricing</p>
           <h2>Plans migrated from the original starter.</h2>
         </div>
-        <NuxtLink class="site-button site-button-soft" to="/pricing">
+        <RouterLink class="site-button site-button-soft" to="/pricing">
           Compare all plans
-        </NuxtLink>
+        </RouterLink>
       </div>
 
       <div class="pricing-grid">
@@ -110,13 +110,13 @@
           <p class="section-kicker">Blog</p>
           <h2>Latest Hikari notes.</h2>
         </div>
-        <NuxtLink class="site-button site-button-soft" to="/blog">
+        <RouterLink class="site-button site-button-soft" to="/blog">
           View all posts
-        </NuxtLink>
+        </RouterLink>
       </div>
 
       <div class="post-grid">
-        <NuxtLink
+        <RouterLink
           v-for="post in latestPosts"
           :key="post.href"
           class="post-card"
@@ -125,7 +125,7 @@
           <span>{{ formatDate(post.date) }}</span>
           <h3>{{ post.title }}</h3>
           <p>{{ post.description }}</p>
-        </NuxtLink>
+        </RouterLink>
       </div>
     </section>
 

@@ -2,7 +2,7 @@
   <div class="content-layout">
     <article v-if="post" class="content-article">
       <header class="article-hero">
-        <NuxtLink class="back-link" to="/blog">Back to blog</NuxtLink>
+        <RouterLink class="back-link" to="/blog">Back to blog</RouterLink>
         <p class="section-kicker">{{ formatDate(post.date) }}</p>
         <h1>{{ post.title }}</h1>
         <p>{{ post.description }}</p>

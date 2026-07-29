@@ -57,9 +57,9 @@
         </button>
       </div>
 
-      <NuxtLink class="notification-bell__footer" to="/dashboard/messages" @click="open = false">
+      <RouterLink class="notification-bell__footer" to="/dashboard/messages" @click="open = false">
         进入消息中心
-      </NuxtLink>
+      </RouterLink>
     </section>
   </div>
 </template>
