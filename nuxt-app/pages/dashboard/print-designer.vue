@@ -1,192 +1,153 @@
 <template>
-  <section class="print-designer-page">
-    <aside class="print-template-panel">
-      <header class="print-template-panel__header">
-        <div>
-          <h2>打印设计器</h2>
-          <span>{{ templates.length }} 个模板</span>
-        </div>
-        <button type="button" class="print-icon-button" title="刷新模板" aria-label="刷新模板" @click="refreshTemplates">
+  <section class="print-template-page">
+    <header class="print-template-toolbar">
+      <div>
+        <h1>打印模板管理</h1>
+        <span>{{ templates.length }} 个模板</span>
+      </div>
+      <div class="print-template-toolbar__actions">
+        <button type="button" class="print-icon-button" title="刷新" aria-label="刷新" @click="refreshTemplates">
           <i class="ri-refresh-line" />
         </button>
-      </header>
-
-      <div class="print-template-actions">
-        <button type="button" class="print-button print-button--primary" @click="saveCurrentTemplate">
-          <i class="ri-save-3-line" />
-          <span>保存</span>
-        </button>
-        <button type="button" class="print-button" @click="createBlankTemplate">
+        <button type="button" class="print-button print-button--primary" @click="openDesigner()">
           <i class="ri-file-add-line" />
-          <span>新建</span>
+          <span>新建模板</span>
         </button>
       </div>
+    </header>
 
+    <div class="print-template-filters">
+      <label class="print-search">
+        <i class="ri-search-line" />
+        <input v-model.trim="keyword" type="search" placeholder="搜索模板名称" />
+      </label>
       <p v-if="message" :class="messageClass">{{ message }}</p>
+    </div>
 
-      <div class="print-template-list">
-        <button
-          v-for="template in templates"
-          :key="template.id"
-          type="button"
-          class="print-template-row"
-          :class="{ 'is-active': template.id === selectedTemplateId }"
-          @click="loadTemplate(template)"
-        >
-          <span class="print-template-row__name">{{ template.name }}</span>
-          <span class="print-template-row__meta">{{ formatTemplateDate(template.updatedAt) }}</span>
-        </button>
-      </div>
-
-      <div class="print-template-footer">
-        <button type="button" class="print-button" :disabled="!selectedTemplate" @click="duplicateSelectedTemplate">
-          <i class="ri-file-copy-line" />
-          <span>复制</span>
-        </button>
-        <button type="button" class="print-button print-button--danger" :disabled="!selectedTemplate" @click="deleteSelectedTemplate">
-          <i class="ri-delete-bin-line" />
-          <span>删除</span>
-        </button>
-      </div>
-    </aside>
-
-    <main class="print-canvas-shell">
-      <ClientOnly>
-        <TldrawVue
-          ref="designerRef"
-          :plugins="designerPlugins"
-          :load-templates="loadTemplateRecords"
-          :save-templates="saveTemplateRecords"
-          @ready="handleDesignerReady"
-        />
-      </ClientOnly>
-    </main>
+    <div class="print-template-table-shell">
+      <table class="print-template-table">
+        <thead>
+          <tr>
+            <th>模板名称</th>
+            <th>纸张</th>
+            <th>数据源</th>
+            <th>节点数</th>
+            <th>创建时间</th>
+            <th>更新时间</th>
+            <th class="print-template-table__actions">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="template in filteredTemplates" :key="template.id">
+            <td>
+              <button type="button" class="print-template-name" @click="openDesigner(template)">
+                {{ template.name }}
+              </button>
+            </td>
+            <td>{{ formatPageSize(template) }}</td>
+            <td>{{ formatDataSource(template) }}</td>
+            <td>{{ template.content.shapes.length }}</td>
+            <td>{{ formatTemplateDate(template.createdAt) }}</td>
+            <td>{{ formatTemplateDate(template.updatedAt) }}</td>
+            <td>
+              <div class="print-row-actions">
+                <button type="button" class="print-icon-button" title="设计" aria-label="设计" @click="openDesigner(template)">
+                  <i class="ri-edit-box-line" />
+                </button>
+                <button type="button" class="print-icon-button" title="重命名" aria-label="重命名" @click="renameTemplate(template)">
+                  <i class="ri-edit-2-line" />
+                </button>
+                <button type="button" class="print-icon-button" title="复制" aria-label="复制" @click="duplicateTemplate(template)">
+                  <i class="ri-file-copy-line" />
+                </button>
+                <button
+                  type="button"
+                  class="print-icon-button print-icon-button--danger"
+                  title="删除"
+                  aria-label="删除"
+                  @click="deleteTemplate(template)"
+                >
+                  <i class="ri-delete-bin-line" />
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr v-if="!filteredTemplates.length">
+            <td colspan="7" class="print-template-empty">
+              暂无打印模板
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import TldrawVue, {
-  defineVueEditorPlugin,
-  type Editor,
-  type TLContent,
-  type VueEditorPlugin,
-  type VueTemplateRecord,
-  type VueTemplateWorkspaceConfig
-} from 'tldraw-vue-phase-one';
+import type { VueTemplateRecord, VueTemplateWorkspaceConfig } from 'tldraw-vue-phase-one';
 
 definePageMeta({
   layout: 'dashboard',
   middleware: 'auth'
 });
 
-type TldrawVueExpose = {
-  getEditor(): Editor | null;
-  getWorkspaceTemplateConfig(): VueTemplateWorkspaceConfig | undefined;
-  applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig): void;
-};
-
 const TEMPLATE_STORAGE_KEY = 'enlearn.print-designer.templates.v1';
 
-const designerRef = ref<TldrawVueExpose | null>(null);
+const router = useRouter();
 const templates = ref<VueTemplateRecord[]>([]);
-const selectedTemplateId = ref('');
+const keyword = ref('');
 const message = ref('');
 const messageType = ref<'info' | 'success' | 'error'>('info');
 
-const designerPlugins: VueEditorPlugin[] = [
-  defineVueEditorPlugin({
-    id: 'enlearn-print-designer-shell',
-    commands: [
-      {
-        id: 'print.preview',
-        label: 'Print preview',
-        run: () => true
-      },
-      {
-        id: 'print.print',
-        label: 'Print',
-        run: () => true
-      }
-    ]
-  })
-];
-
-const selectedTemplate = computed(
-  () => templates.value.find((template) => template.id === selectedTemplateId.value) ?? null
-);
+const filteredTemplates = computed(() => {
+  const value = keyword.value.trim().toLowerCase();
+  if (!value) return templates.value;
+  return templates.value.filter((template) => template.name.toLowerCase().includes(value));
+});
 const messageClass = computed(() => `print-message print-message--${messageType.value}`);
 
 onMounted(() => {
   refreshTemplates();
 });
 
-function handleDesignerReady() {
-  refreshTemplates();
-}
-
 async function refreshTemplates() {
-  templates.value = await loadTemplateRecords();
-  if (selectedTemplateId.value && !selectedTemplate.value) {
-    selectedTemplateId.value = '';
-  }
+  templates.value = loadTemplateRecords().sort((left, right) => right.updatedAt - left.updatedAt);
 }
 
-async function loadTemplateRecords() {
+function loadTemplateRecords() {
   if (typeof window === 'undefined') return [];
 
   const raw = window.localStorage.getItem(TEMPLATE_STORAGE_KEY);
   if (!raw) return [];
 
   try {
-    const value = JSON.parse(raw) as unknown;
-    return normalizeTemplateRecords(value);
+    return normalizeTemplateRecords(JSON.parse(raw));
   } catch {
     window.localStorage.removeItem(TEMPLATE_STORAGE_KEY);
     return [];
   }
 }
 
-async function saveTemplateRecords(nextTemplates: readonly VueTemplateRecord[]) {
+function saveTemplateRecords(nextTemplates: readonly VueTemplateRecord[]) {
   const normalizedTemplates = normalizeTemplateRecords(nextTemplates);
-  templates.value = normalizedTemplates;
+  templates.value = normalizedTemplates.sort((left, right) => right.updatedAt - left.updatedAt);
 
   if (typeof window !== 'undefined') {
     window.localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(normalizedTemplates));
   }
 }
 
-async function createBlankTemplate() {
-  const editor = getEditor();
-  if (!editor) return;
-
-  const shapeIds = editor.getCurrentPageShapeIdsSorted();
-  if (shapeIds.length && !window.confirm('清空当前画布并新建模板？')) return;
-
-  editor.markHistoryStoppingPoint('new print template');
-  editor.run(
-    () => {
-      if (shapeIds.length) editor.deleteShapes(shapeIds);
-      editor.selectNone();
-    },
-    { ignoreShapeLock: true }
-  );
-
-  selectedTemplateId.value = '';
-  showMessage('已新建空白模板', 'success');
-}
-
-async function saveCurrentTemplate() {
-  const editor = getEditor();
-  if (!editor) return;
-
-  const content = await getCurrentTemplateContent(editor);
-  if (!content) {
-    showMessage('当前画布没有可保存内容', 'error');
+function openDesigner(template?: VueTemplateRecord) {
+  if (template) {
+    router.push({ path: '/dashboard/advanced/print-designer', query: { templateId: template.id } });
     return;
   }
 
-  const currentName = selectedTemplate.value?.name;
-  const nextName = window.prompt('模板名称', currentName ?? `打印模板 ${templates.value.length + 1}`);
+  router.push('/dashboard/advanced/print-designer');
+}
+
+function renameTemplate(template: VueTemplateRecord) {
+  const nextName = window.prompt('模板名称', template.name);
   if (nextName === null) return;
 
   const name = nextName.trim();
@@ -195,128 +156,45 @@ async function saveCurrentTemplate() {
     return;
   }
 
-  const workspace = designerRef.value?.getWorkspaceTemplateConfig();
-  const nextTemplates = templates.value.slice();
-  const existingIndex = selectedTemplateId.value
-    ? nextTemplates.findIndex((template) => template.id === selectedTemplateId.value)
-    : nextTemplates.findIndex((template) => template.name === name);
-
-  if (existingIndex >= 0) {
-    const existing = nextTemplates[existingIndex];
-    nextTemplates[existingIndex] = {
-      ...existing,
-      name,
-      content: cloneJson(content),
-      workspace: cloneWorkspace(workspace),
-      updatedAt: Date.now()
-    };
-    selectedTemplateId.value = existing.id;
-  } else {
-    const record = createTemplateRecord(name, content, workspace);
-    nextTemplates.unshift(record);
-    selectedTemplateId.value = record.id;
-  }
-
-  await saveTemplateRecords(nextTemplates);
-  showMessage('模板已保存', 'success');
-}
-
-async function loadTemplate(template: VueTemplateRecord) {
-  const editor = getEditor();
-  if (!editor) return;
-
-  const shapeIds = editor.getCurrentPageShapeIdsSorted();
-  if (shapeIds.length && selectedTemplateId.value !== template.id) {
-    const confirmed = window.confirm(`加载"${template.name}"会替换当前画布，是否继续？`);
-    if (!confirmed) return;
-  }
-
-  editor.markHistoryStoppingPoint('load print template');
-  editor.run(
-    () => {
-      if (shapeIds.length) editor.deleteShapes(shapeIds);
-      editor.selectNone();
-    },
-    { ignoreShapeLock: true }
+  saveTemplateRecords(
+    templates.value.map((item) =>
+      item.id === template.id ? { ...item, name, updatedAt: Date.now() } : item
+    )
   );
-
-  if (template.workspace) {
-    designerRef.value?.applyWorkspaceTemplateConfig(cloneWorkspace(template.workspace));
-  }
-
-  editor.putContentOntoCurrentPage(cloneJson(template.content), {
-    preservePosition: true,
-    select: true
-  });
-
-  selectedTemplateId.value = template.id;
-  showMessage(`已加载 ${template.name}`, 'success');
+  showMessage('模板已重命名', 'success');
 }
 
-async function duplicateSelectedTemplate() {
-  const template = selectedTemplate.value;
-  if (!template) return;
+function duplicateTemplate(template: VueTemplateRecord) {
+  const nextName = window.prompt('模板名称', `${template.name} 副本`);
+  if (nextName === null) return;
 
-  const name = window.prompt('模板名称', `${template.name} 副本`);
-  if (name === null) return;
-
-  const trimmedName = name.trim();
-  if (!trimmedName) {
+  const name = nextName.trim();
+  if (!name) {
     showMessage('模板名称不能为空', 'error');
     return;
   }
 
-  const nextTemplate = createTemplateRecord(
-    trimmedName,
-    cloneJson(template.content),
-    cloneWorkspace(template.workspace)
-  );
-  await saveTemplateRecords([nextTemplate, ...templates.value]);
-  selectedTemplateId.value = nextTemplate.id;
+  const now = Date.now();
+  saveTemplateRecords([
+    {
+      ...template,
+      id: createTemplateId(),
+      name,
+      createdAt: now,
+      updatedAt: now,
+      content: cloneJson(template.content),
+      workspace: cloneWorkspace(template.workspace)
+    },
+    ...templates.value
+  ]);
   showMessage('模板已复制', 'success');
 }
 
-async function deleteSelectedTemplate() {
-  const template = selectedTemplate.value;
-  if (!template) return;
+function deleteTemplate(template: VueTemplateRecord) {
   if (!window.confirm(`删除"${template.name}"？`)) return;
 
-  await saveTemplateRecords(templates.value.filter((item) => item.id !== template.id));
-  selectedTemplateId.value = '';
+  saveTemplateRecords(templates.value.filter((item) => item.id !== template.id));
   showMessage('模板已删除', 'success');
-}
-
-async function getCurrentTemplateContent(editor: Editor) {
-  const shapeIds = editor.getCurrentPageShapeIdsSorted();
-  if (!shapeIds.length) return null;
-
-  const content = editor.getContentFromCurrentPage(shapeIds);
-  return editor.resolveAssetsInContent(content);
-}
-
-function getEditor() {
-  const editor = designerRef.value?.getEditor();
-  if (!editor) {
-    showMessage('设计器尚未就绪', 'error');
-    return null;
-  }
-  return editor;
-}
-
-function createTemplateRecord(
-  name: string,
-  content: TLContent,
-  workspace?: VueTemplateWorkspaceConfig
-): VueTemplateRecord {
-  const now = Date.now();
-  return {
-    id: createTemplateId(),
-    name,
-    createdAt: now,
-    updatedAt: now,
-    content: cloneJson(content),
-    workspace: cloneWorkspace(workspace)
-  };
 }
 
 function normalizeTemplateRecords(value: unknown): VueTemplateRecord[] {
@@ -330,12 +208,14 @@ function normalizeTemplateRecords(value: unknown): VueTemplateRecord[] {
 
 function isTemplateRecord(value: unknown): value is VueTemplateRecord {
   if (!isRecord(value)) return false;
+  const content = value.content;
   return (
     typeof value.id === 'string' &&
     typeof value.name === 'string' &&
     typeof value.createdAt === 'number' &&
     typeof value.updatedAt === 'number' &&
-    isRecord(value.content)
+    isRecord(content) &&
+    Array.isArray(content.shapes)
   );
 }
 
@@ -352,8 +232,25 @@ function createTemplateId() {
   return `print-template:${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+function formatPageSize(template: VueTemplateRecord) {
+  const pageSize = template.workspace?.pageSizeMm;
+  if (!pageSize) return '-';
+  return `${formatNumber(pageSize.w)} x ${formatNumber(pageSize.h)} mm`;
+}
+
+function formatDataSource(template: VueTemplateRecord) {
+  const dataSource = template.workspace?.printDataSource;
+  if (!dataSource || dataSource.type === 'none') return '-';
+  const labels: Record<string, string> = {
+    static: '静态数据',
+    entity: '实体数据',
+    api: '接口数据'
+  };
+  return labels[dataSource.type] ?? dataSource.type;
+}
+
 function formatTemplateDate(timestamp: number) {
-  if (!Number.isFinite(timestamp)) return '';
+  if (!Number.isFinite(timestamp)) return '-';
 
   const date = new Date(timestamp);
   const year = date.getFullYear();
@@ -362,6 +259,11 @@ function formatTemplateDate(timestamp: number) {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+function formatNumber(value: number) {
+  if (!Number.isFinite(value)) return '-';
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
 function showMessage(nextMessage: string, type: 'info' | 'success' | 'error' = 'info') {
@@ -375,64 +277,130 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 </script>
 
 <style scoped>
-.print-designer-page {
-  display: grid;
-  grid-template-columns: 286px minmax(0, 1fr);
-  gap: 8px;
-  height: calc(100vh - 60px);
-  min-height: 0;
-  padding: 8px;
+.print-template-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: calc(100vh - 60px);
+  padding: 12px;
   background: #f4f6f8;
 }
 
-.print-template-panel,
-.print-canvas-shell {
-  min-height: 0;
+.print-template-toolbar,
+.print-template-filters,
+.print-template-table-shell {
   border: 1px solid #d6dce5;
   border-radius: 8px;
   background: #ffffff;
-  overflow: hidden;
 }
 
-.print-template-panel {
-  display: flex;
-  flex-direction: column;
-  color: #111827;
-}
-
-.print-template-panel__header {
+.print-template-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  min-height: 62px;
-  border-bottom: 1px solid #e5eaf1;
-  padding: 12px;
+  gap: 16px;
+  min-height: 64px;
+  padding: 12px 16px;
 }
 
-.print-template-panel__header h2 {
+.print-template-toolbar h1 {
   margin: 0;
-  font-size: 17px;
-  line-height: 22px;
+  color: #111827;
+  font-size: 18px;
+  line-height: 24px;
 }
 
-.print-template-panel__header span,
-.print-template-row__meta,
-.print-message {
+.print-template-toolbar span {
   color: #64748b;
   font-size: 12px;
 }
 
-.print-template-actions,
-.print-template-footer {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.print-template-toolbar__actions,
+.print-row-actions {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
+}
+
+.print-template-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: 10px 12px;
 }
 
-.print-template-footer {
-  border-top: 1px solid #e5eaf1;
+.print-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: min(360px, 100%);
+  height: 34px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0 10px;
+  color: #64748b;
+}
+
+.print-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #111827;
+  font: inherit;
+  font-size: 13px;
+}
+
+.print-template-table-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.print-template-table {
+  width: 100%;
+  min-width: 920px;
+  border-collapse: collapse;
+  color: #111827;
+  font-size: 13px;
+}
+
+.print-template-table th,
+.print-template-table td {
+  border-bottom: 1px solid #e5eaf1;
+  padding: 11px 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.print-template-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 750;
+}
+
+.print-template-table tbody tr:hover {
+  background: #f8fbff;
+}
+
+.print-template-table__actions {
+  width: 184px;
+}
+
+.print-template-name {
+  max-width: 260px;
+  border: 0;
+  background: transparent;
+  color: #0f62fe;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  overflow: hidden;
+  padding: 0;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .print-button,
@@ -441,7 +409,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-width: 0;
   height: 32px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
@@ -453,21 +420,21 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   font-weight: 700;
 }
 
+.print-button {
+  min-width: 92px;
+  padding: 0 12px;
+}
+
 .print-icon-button {
   width: 32px;
   padding: 0;
   font-size: 16px;
 }
 
-.print-button:hover:not(:disabled),
+.print-button:hover,
 .print-icon-button:hover {
   border-color: #94a3b8;
   background: #f8fafc;
-}
-
-.print-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.48;
 }
 
 .print-button--primary {
@@ -476,93 +443,44 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   color: #ffffff;
 }
 
-.print-button--primary:hover:not(:disabled) {
+.print-button--primary:hover {
   border-color: #0b605a;
   background: #0b605a;
 }
 
-.print-button--danger {
+.print-icon-button--danger {
   color: #b91c1c;
 }
 
 .print-message {
-  margin: 0 12px 10px;
-  border-radius: 6px;
-  background: #f8fafc;
-  line-height: 18px;
-  padding: 7px 9px;
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
 }
 
 .print-message--success {
-  background: #ecfdf5;
   color: #047857;
 }
 
 .print-message--error {
-  background: #fef2f2;
   color: #b91c1c;
 }
 
-.print-template-list {
-  display: flex;
-  flex: 1 1 0;
-  flex-direction: column;
-  gap: 6px;
-  min-height: 0;
-  overflow: auto;
-  padding: 2px 8px 12px;
+.print-template-empty {
+  height: 180px;
+  color: #94a3b8;
+  text-align: center;
 }
 
-.print-template-row {
-  display: grid;
-  gap: 3px;
-  min-height: 50px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: #111827;
-  cursor: pointer;
-  font: inherit;
-  padding: 8px 10px;
-  text-align: left;
-}
-
-.print-template-row:hover,
-.print-template-row.is-active {
-  border-color: #bfdbfe;
-  background: #eff6ff;
-}
-
-.print-template-row__name {
-  overflow: hidden;
-  font-size: 13px;
-  font-weight: 750;
-  line-height: 18px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.print-canvas-shell {
-  position: relative;
-}
-
-.print-canvas-shell :deep(.app-shell) {
-  height: 100%;
-}
-
-@media (max-width: 980px) {
-  .print-designer-page {
-    grid-template-columns: 1fr;
-    height: auto;
-    min-height: calc(100vh - 60px);
+@media (max-width: 760px) {
+  .print-template-toolbar,
+  .print-template-filters {
+    align-items: stretch;
+    flex-direction: column;
   }
 
-  .print-template-panel {
-    min-height: 260px;
-  }
-
-  .print-canvas-shell {
-    min-height: 640px;
+  .print-template-toolbar__actions {
+    justify-content: flex-end;
   }
 }
 </style>

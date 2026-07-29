@@ -152,6 +152,7 @@ const fallbackRoutes: AdminRouteNode[] = [
       { code: 'lowcode-visual-designer', title: '可视化设计器', path: '/dashboard/low-code/designer', permission_code: 'lowcode.pages.manage' },
       { code: 'workflow-designer', title: '审批流设计器', path: '/dashboard/workflow/designer', permission_code: 'workflow.definitions.manage' },
       { code: 'trigger-workflow-designer', title: '触发器编排器', path: '/dashboard/trigger-workflow/designer', permission_code: 'workflow.definitions.manage' },
+      { code: 'advanced-print-designer', title: '打印设计器', path: '/dashboard/advanced/print-designer', permission_code: 'print.templates.manage' },
       { code: 'print-designer', title: '打印模板', path: '/dashboard/print-designer', permission_code: 'print.templates.manage' },
       { code: 'print-logs', title: '打印日志', path: '/dashboard/print/logs', permission_code: 'print.logs.view' }
     ]
@@ -176,6 +177,7 @@ const menuTitleOverrides: Record<string, string> = {
   'low-code': '低代码页面管理',
   'lowcode-pages': '低代码页面管理',
   'entity-design': '实体设计器',
+  'advanced-print-designer': '打印设计器',
   'print-designer': '打印模板',
   'print-logs': '打印日志',
   'trigger-workflow-designer': '触发器编排器',
@@ -190,12 +192,25 @@ const advancedRouteCodes = new Set([
   'entity-design',
   'low-code-designer',
   'lowcode-visual-designer',
+  'advanced-print-designer',
   'workflow-designer',
   'trigger-workflow-designer'
 ]);
 const hiddenRouteCodes = new Set(['business-root', 'system-root']);
-const lowCodeDesignerLoadPageEventName = 'enlearn:lowcode-designer-load-page';
-const lowCodeDesignerLoadPageStorageKey = 'enlearn:lowcode-designer-load-page-code';
+function getLowCodeDesignerLoadPageBus() {
+  const scope = globalThis as any;
+  scope.__enlearnLowCodeDesignerLoadPageBus ??= { subscribers: [] };
+  return scope.__enlearnLowCodeDesignerLoadPageBus;
+}
+
+function publishLowCodeDesignerLoadPage(code: string) {
+  const bus = getLowCodeDesignerLoadPageBus();
+  bus.pendingCode = code;
+  for (const subscriber of bus.subscribers ?? []) {
+    subscriber(code);
+  }
+}
+
 const lowCodeMenuGroups = [
   {
     code: 'lowcode-config-root',
@@ -545,9 +560,8 @@ async function openLowCodeDesigner() {
   const pageCode = contextLowCodePageCode.value;
   closeMenuContext();
   if (!pageCode) return;
-  await router.push(`/dashboard/low-code/designer/${pageCode}`);
-  window.sessionStorage.setItem(lowCodeDesignerLoadPageStorageKey, pageCode);
-  window.dispatchEvent(new Event(lowCodeDesignerLoadPageEventName));
+  await router.push({ path: `/dashboard/low-code/designer/${pageCode}` });
+  publishLowCodeDesignerLoadPage(pageCode);
 }
 
 async function openLowCodePage() {

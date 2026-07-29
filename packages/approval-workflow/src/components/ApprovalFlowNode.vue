@@ -20,7 +20,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  extend: [];
+  extend: [event: MouseEvent];
   branch: [];
 }>();
 
@@ -100,7 +100,7 @@ const badgeText = computed(() => {
         type="button"
         title="延伸节点"
         @pointerdown.stop
-        @click.stop="emit('extend')"
+        @click.stop="emit('extend', $event)"
       >
         +
       </button>

@@ -1933,3 +1933,111 @@ Workflow API listening on http://localhost:3010/api/workflow
 [32m[Nest] 11632  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/status, POST} route[39m[38;5;3m +2ms[39m
 [32m[Nest] 11632  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/run, POST} route[39m[38;5;3m +1ms[39m
 [32m[Nest] 11632  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +17ms[39m
+23:34:59 [tsx] change in ./src\trigger\trigger-dev.client.ts Rerunning...
+23:35:14 [tsx] change in ./src\trigger\trigger-dev.client.ts Restarting...
+23:35:24 [tsx] change in ./src\trigger\trigger-dev.client.ts Restarting...
+[32m[Nest] 77268  - [39m2026/07/29 23:35:28 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:28 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +22ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:28 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatabaseModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:28 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:28 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIntegrationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:28 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:28 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDefinitionModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:28 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTaskModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:28 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHistoryModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:28 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuntimeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:28 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJobModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/api/workflow/health}:[39m[38;5;3m +2857ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/health, GET} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDefinitionController {/api/workflow/definitions}:[39m[38;5;3m +6ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/capabilities, GET} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/:definitionId/disable, POST} route[39m[38;5;3m +6ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mModelController {/api/workflow/models}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, PUT} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId/publish, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRuntimeController {/api/workflow/instances}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/started, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/timeline, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/withdraw, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/terminate, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTaskController {/api/workflow/tasks}:[39m[38;5;3m +3ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/todo, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/done, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/cc, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/started, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/approve, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/claim, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/reject, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/transfer, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/add-sign, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHistoryController {/api/workflow/history}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/history/instances/:instanceId/timeline, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mJobController {/api/workflow/jobs}:[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/runs, GET} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId, GET} route[39m[38;5;3m +8ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/status, POST} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/run, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77268  - [39m2026/07/29 23:35:31 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +16ms[39m
+23:39:15 [tsx] change in ./src\trigger\trigger-dev.client.ts Rerunning...
+[32m[Nest] 31292  - [39m2026/07/29 23:39:29 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +199ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatabaseModule dependencies initialized[39m[38;5;3m +6ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIntegrationModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDefinitionModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTaskModule dependencies initialized[39m[38;5;3m +8ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHistoryModule dependencies initialized[39m[38;5;3m +4ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuntimeModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJobModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/api/workflow/health}:[39m[38;5;3m +6917ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/health, GET} route[39m[38;5;3m +55ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDefinitionController {/api/workflow/definitions}:[39m[38;5;3m +5ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/capabilities, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions, GET} route[39m[38;5;3m +16ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/:definitionId/disable, POST} route[39m[38;5;3m +11ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mModelController {/api/workflow/models}:[39m[38;5;3m +16ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, GET} route[39m[38;5;3m +18ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, POST} route[39m[38;5;3m +17ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, PUT} route[39m[38;5;3m +10ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId/publish, POST} route[39m[38;5;3m +14ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRuntimeController {/api/workflow/instances}:[39m[38;5;3m +8ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/started, GET} route[39m[38;5;3m +17ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId, GET} route[39m[38;5;3m +17ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/timeline, GET} route[39m[38;5;3m +11ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/withdraw, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/terminate, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTaskController {/api/workflow/tasks}:[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/todo, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/done, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/cc, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/started, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/approve, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/claim, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/reject, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/transfer, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/add-sign, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHistoryController {/api/workflow/history}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/history/instances/:instanceId/timeline, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mJobController {/api/workflow/jobs}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/runs, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/status, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/run, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31292  - [39m2026/07/29 23:39:37 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +149ms[39m

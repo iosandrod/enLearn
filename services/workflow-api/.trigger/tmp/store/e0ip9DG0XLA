@@ -79,8 +79,8 @@ var TriggerDevClient = class {
       }
       return;
     } catch {
-      await wait.completeToken(tokenId, decision);
     }
+    await wait.completeToken(tokenId, decision);
   }
 };
 __name(TriggerDevClient, "TriggerDevClient");

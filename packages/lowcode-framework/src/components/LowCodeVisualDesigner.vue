@@ -166,8 +166,31 @@ type DesignerPageForm = {
   status: DesignerPageStatus;
 };
 
-const designerLoadPageEventName = 'enlearn:lowcode-designer-load-page';
-const designerLoadPageStorageKey = 'enlearn:lowcode-designer-load-page-code';
+function getLowCodeDesignerLoadPageBus() {
+  const scope = globalThis as any;
+  scope.__enlearnLowCodeDesignerLoadPageBus ??= { subscribers: [] };
+  return scope.__enlearnLowCodeDesignerLoadPageBus;
+}
+
+function subscribeLowCodeDesignerLoadPage(subscriber: (code: string) => void) {
+  const bus = getLowCodeDesignerLoadPageBus();
+  bus.subscribers ??= [];
+  bus.subscribers.push(subscriber);
+
+  if (bus.pendingCode) {
+    const pendingCode = bus.pendingCode;
+    bus.pendingCode = '';
+    subscriber(pendingCode);
+  }
+
+  return () => {
+    bus.subscribers = (bus.subscribers ?? []).filter(
+      (item: (code: string) => void) => item !== subscriber
+    );
+  };
+}
+
+let unsubscribeDesignerLoadPage: (() => void) | null = null;
 
 const host = useLowCodeHost(() => ({
   serviceApi: props.serviceApi,
@@ -387,17 +410,7 @@ function reloadCurrent() {
   reload();
 }
 
-function readDesignerLoadCode(event: Event) {
-  if (event.type !== designerLoadPageEventName) return '';
-  const code = window.sessionStorage.getItem(designerLoadPageStorageKey)?.trim() ?? '';
-  if (code) {
-    window.sessionStorage.removeItem(designerLoadPageStorageKey);
-  }
-  return code;
-}
-
-function handleDesignerLoadPage(event: Event) {
-  const code = readDesignerLoadCode(event);
+function handleDesignerLoadPage(code: string) {
   if (!code) return;
   loadPageByCode(code);
 }
@@ -411,12 +424,12 @@ watch(
 );
 
 onMounted(() => {
-  window.addEventListener(designerLoadPageEventName, handleDesignerLoadPage);
-  handleDesignerLoadPage(new Event(designerLoadPageEventName));
+  unsubscribeDesignerLoadPage = subscribeLowCodeDesignerLoadPage(handleDesignerLoadPage);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener(designerLoadPageEventName, handleDesignerLoadPage);
+  unsubscribeDesignerLoadPage?.();
+  unsubscribeDesignerLoadPage = null;
 });
 
 function buildSchema(payload: {

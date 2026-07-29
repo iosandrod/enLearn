@@ -1,4 +1,4 @@
--- Add print management menu entries for print templates and print logs.
+-- Add a print designer entry under the advanced features menu.
 
 insert into public.admin_permissions (
   code,
@@ -9,8 +9,7 @@ insert into public.admin_permissions (
   action_code,
   status,
   sort_order
-) values
-(
+) values (
   'print.templates.manage',
   'Manage Print Templates',
   'Create and maintain print design templates.',
@@ -19,16 +18,6 @@ insert into public.admin_permissions (
   'manage',
   'active',
   80
-),
-(
-  'print.logs.view',
-  'View Print Logs',
-  'View print execution logs.',
-  'menu',
-  'print_logs',
-  'view',
-  'active',
-  81
 )
 on conflict (code) do update set
   name = excluded.name,
@@ -44,7 +33,7 @@ insert into public.admin_role_permissions (role_id, permission_id)
 select roles.id, permissions.id
 from public.admin_roles roles
 join public.admin_permissions permissions
-  on permissions.code in ('print.templates.manage', 'print.logs.view')
+  on permissions.code = 'print.templates.manage'
 where roles.code = 'system_admin'
 on conflict do nothing;
 
@@ -78,7 +67,7 @@ with business_root as (
     code = public.admin_routes.code
   returning id
 ),
-print_root as (
+advanced_root as (
   insert into public.admin_routes (
     code,
     title,
@@ -96,29 +85,26 @@ print_root as (
     metadata
   )
   select
-    'print-management-root',
-    U&'\6253\5370\7BA1\7406',
-    '/dashboard/print/_group',
+    'advanced-root',
+    U&'\9AD8\7EA7\529F\80FD',
+    '/dashboard/advanced/_group',
     business_root.id,
     'group',
-    'ri-printer-line',
+    'ri-tools-line',
     null,
     null,
     true,
     true,
     'dashboard',
     'active',
-    55,
-    '{"group": "lowcode-app", "category": "print"}'::jsonb
+    30,
+    '{"group": "advanced"}'::jsonb
   from business_root
   on conflict (code) do update set
     title = excluded.title,
-    path = excluded.path,
     parent_id = excluded.parent_id,
     route_type = excluded.route_type,
     icon = excluded.icon,
-    page_code = excluded.page_code,
-    permission_code = excluded.permission_code,
     visible = excluded.visible,
     keep_alive = excluded.keep_alive,
     layout = excluded.layout,
@@ -145,42 +131,21 @@ insert into public.admin_routes (
   metadata
 )
 select
-  route.code,
-  route.title,
-  route.path,
-  print_root.id,
+  'advanced-print-designer',
+  U&'\6253\5370\8BBE\8BA1\5668',
+  '/dashboard/advanced/print-designer',
+  advanced_root.id,
   'page',
-  route.icon,
+  'ri-printer-line',
   null,
-  route.permission_code,
+  'print.templates.manage',
   true,
   true,
   'dashboard',
   'active',
-  route.sort_order,
-  route.metadata
-from print_root
-cross join (
-  values
-    (
-      'print-designer',
-      U&'\6253\5370\6A21\677F',
-      '/dashboard/print-designer',
-      'ri-file-paper-2-line',
-      'print.templates.manage',
-      10,
-      '{"group": "lowcode-app", "category": "print", "module": "print", "pageKind": "templates"}'::jsonb
-    ),
-    (
-      'print-logs',
-      U&'\6253\5370\65E5\5FD7',
-      '/dashboard/print/logs',
-      'ri-file-list-3-line',
-      'print.logs.view',
-      20,
-      '{"group": "lowcode-app", "category": "print", "module": "print", "pageKind": "logs"}'::jsonb
-    )
-) as route(code, title, path, icon, permission_code, sort_order, metadata)
+  50,
+  '{"group": "advanced", "category": "designer", "module": "print", "pageKind": "designer"}'::jsonb
+from advanced_root
 on conflict (code) do update set
   title = excluded.title,
   path = excluded.path,

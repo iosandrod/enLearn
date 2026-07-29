@@ -407,6 +407,22 @@ export type AdminEntityRow = {
   updated_at: string;
 };
 
+export type SystemConfigRow = {
+  singleton: boolean;
+  theme_mode: 'light' | 'dark' | 'system';
+  primary_color: string;
+  theme_config: Json;
+  table_config: Json;
+  language: string;
+  locale_config: Json;
+  feature_flags: Json;
+  metadata: Json;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type BasejumpAccountRole = 'owner' | 'member';
 
 export type BasejumpConfigRow = {
@@ -561,6 +577,7 @@ export interface Database {
       admin_user_roles: TableDefinition<AdminUserRoleRow>;
       admin_routes: TableDefinition<AdminRouteRow>;
       admin_entities: TableDefinition<AdminEntityRow>;
+      system_config: TableDefinition<SystemConfigRow>;
       lowcode_pages: TableDefinition<LowCodePageRow>;
       lowcode_page_versions: TableDefinition<LowCodePageVersionRow>;
     };
@@ -624,6 +641,10 @@ export interface Database {
       get_admin_user_permission_rows: {
         Args: Record<string, never>;
         Returns: AdminUserPermissionRow[];
+      };
+      get_system_config: {
+        Args: Record<string, never>;
+        Returns: Json;
       };
       get_personal_account: {
         Args: Record<string, never>;

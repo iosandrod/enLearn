@@ -15,3 +15,158 @@
 [90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 6231ms
 [36mi[39m Vite server warmed up in 5ms
 [36mi[39m Vite client warmed up in 13ms
+[36mi[39m [32m✨ new dependencies optimized: [33msocket.io-client[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+[36mi[39m [32m✨ new dependencies optimized: [33mvxe-table-plugin-extend-cell-area, qrcode, react/jsx-runtime, eventemitter3, lodash.isequal, lodash.isequalwith, lodash.throttle, lodash.uniq, react, classnames, react-dom, react-dom/client, rbush[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+[36mi[39m [32m✨ new dependencies optimized: [33m@vue-flow/core[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+[36mi[39m [32m✨ new dependencies optimized: [33mlodash-es, nanoid, @vueuse/integrations/useQRCode, @vueuse/core, vuedraggable, dayjs, monaco-editor[32m[39m
+[36mi[39m [32m✨ optimized dependencies changed. reloading[39m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print/logs.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print/logs.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print/logs.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print/logs.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m .nuxt/dist directory has been removed. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 367ms
+[32m√[39m Vite server built in 16637ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mrouter.options.mjs[39m in 771.82ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.server.mjs[39m in 645.49ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 790.99ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 823.77ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 13045ms
+[36mi[39m Vite server warmed up in 3ms
+[36mi[39m Vite client warmed up in 11ms
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mpage reload [39m[2mpages/dashboard/advanced/print-designer.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x4)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x5)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x6)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalFlowNode.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalFlowNode.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/approval-workflow/src/components/ApprovalDesigner.vue?vue&type=style&index=0&scoped=b91b0c02&lang.css[22m
+[32m√[39m Vite server hmr 23 files in 2321.574ms
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue, /pages/dashboard/advanced/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print-designer.vue, /pages/dashboard/print-designer.vue?vue&type=style&index=0&scoped=a4f61c8f&lang.css, /pages/dashboard/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print-designer.vue, /pages/dashboard/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue, /pages/dashboard/advanced/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue, /pages/dashboard/advanced/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print-designer.vue, /pages/dashboard/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m .nuxt/dist directory has been removed. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 67ms
+[32m√[39m Vite server built in 637ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 2015ms
+[36mi[39m Vite server warmed up in 2ms
+[36mi[39m Vite client warmed up in 6ms
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x3)[22m
+[36mi[39m .nuxt/dist directory has been removed. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 63ms
+[32m√[39m Vite server built in 951ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 3047ms
+[36mi[39m Vite server warmed up in 4ms
+[36mi[39m Vite client warmed up in 11ms
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x3)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x4)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x5)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x6)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x7)[22m

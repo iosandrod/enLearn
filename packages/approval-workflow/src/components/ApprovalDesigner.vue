@@ -90,6 +90,13 @@ type NodeContextMenuState = {
   y: number;
 };
 
+type NodeTypeMenuState = {
+  visible: boolean;
+  sourceId: string | null;
+  x: number;
+  y: number;
+};
+
 type NodeContextMenuAction = {
   key: string;
   label: string;
@@ -171,6 +178,12 @@ const suppressNextPaletteClick = ref(false);
 const contextMenu = ref<NodeContextMenuState>({
   visible: false,
   nodeId: null,
+  x: 0,
+  y: 0
+});
+const nodeTypeMenu = ref<NodeTypeMenuState>({
+  visible: false,
+  sourceId: null,
   x: 0,
   y: 0
 });
@@ -499,15 +512,15 @@ watch(
 );
 
 onMounted(() => {
-  window.addEventListener('click', closeContextMenu);
+  window.addEventListener('click', closeFloatingMenus);
   window.addEventListener('keydown', onWindowKeyDown);
-  window.addEventListener('resize', closeContextMenu);
+  window.addEventListener('resize', closeFloatingMenus);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('click', closeContextMenu);
+  window.removeEventListener('click', closeFloatingMenus);
   window.removeEventListener('keydown', onWindowKeyDown);
-  window.removeEventListener('resize', closeContextMenu);
+  window.removeEventListener('resize', closeFloatingMenus);
   window.removeEventListener('pointermove', onPalettePointerMove);
 });
 
@@ -1013,7 +1026,7 @@ function onNodeDragStop(payload: NodeDragEvent) {
 
 function onPaneClick() {
   selectedNodeId.value = null;
-  closeContextMenu();
+  closeFloatingMenus();
 }
 
 function openNodeContextMenu(event: MouseEvent, nodeId: string) {
@@ -1022,12 +1035,34 @@ function openNodeContextMenu(event: MouseEvent, nodeId: string) {
   event.preventDefault();
   event.stopPropagation();
   selectedNodeId.value = nodeId;
+  closeNodeTypeMenu();
   const menuWidth = 236;
   const menuHeight = 520;
 
   contextMenu.value = {
     visible: true,
     nodeId,
+    x: Math.max(8, Math.min(event.clientX, window.innerWidth - menuWidth - 8)),
+    y: Math.max(8, Math.min(event.clientY, window.innerHeight - menuHeight - 8))
+  };
+}
+
+function openNodeTypeMenu(event: MouseEvent, sourceId: string) {
+  if (props.readonly) return;
+
+  const sourceNode = currentModel.value.nodes.find((node) => node.id === sourceId);
+  if (!sourceNode || sourceNode.type === 'end') return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  selectedNodeId.value = sourceId;
+  closeContextMenu();
+  const menuWidth = 286;
+  const menuHeight = 430;
+
+  nodeTypeMenu.value = {
+    visible: true,
+    sourceId,
     x: Math.max(8, Math.min(event.clientX, window.innerWidth - menuWidth - 8)),
     y: Math.max(8, Math.min(event.clientY, window.innerHeight - menuHeight - 8))
   };
@@ -1044,9 +1079,25 @@ function closeContextMenu() {
   };
 }
 
+function closeNodeTypeMenu() {
+  if (!nodeTypeMenu.value.visible) return;
+
+  nodeTypeMenu.value = {
+    visible: false,
+    sourceId: null,
+    x: 0,
+    y: 0
+  };
+}
+
+function closeFloatingMenus() {
+  closeContextMenu();
+  closeNodeTypeMenu();
+}
+
 function onWindowKeyDown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
-    closeContextMenu();
+    closeFloatingMenus();
     return;
   }
 
@@ -1387,6 +1438,14 @@ function runContextMenuAction(action: NodeContextMenuAction) {
 
   closeContextMenu();
   action.run();
+}
+
+function chooseExtensionNodeType(type: WorkflowNodeType) {
+  const sourceId = nodeTypeMenu.value.sourceId;
+  if (!sourceId) return;
+
+  closeNodeTypeMenu();
+  extendFromNode(sourceId, type);
 }
 
 function setAssigneePreset(nodeId: string, preset: 'manager' | 'role' | 'users') {
@@ -2013,7 +2072,7 @@ defineExpose({
                 :extendable="!readonly && data.workflowType !== 'end'"
                 :branchable="!readonly && data.workflowType === 'condition'"
                 @contextmenu="openNodeContextMenu($event, id)"
-                @extend="extendFromNode(id, 'approval')"
+                @extend="openNodeTypeMenu($event, id)"
                 @branch="generateConditionBranches(id)"
               />
             </template>
@@ -2346,6 +2405,45 @@ defineExpose({
           <p v-else>Schema OK</p>
         </section>
       </aside>
+    </div>
+    <div
+      v-if="nodeTypeMenu.visible"
+      class="approval-designer__node-type-menu"
+      :style="{
+        left: `${nodeTypeMenu.x}px`,
+        top: `${nodeTypeMenu.y}px`
+      }"
+      @click.stop
+      @contextmenu.prevent.stop
+      @pointerdown.stop
+    >
+      <div class="approval-designer__node-type-head">
+        <strong>选择节点类型</strong>
+        <span>{{ currentModel.nodes.find((node) => node.id === nodeTypeMenu.sourceId)?.name || '延伸节点' }}</span>
+      </div>
+      <section
+        v-for="group in paletteGroups"
+        :key="group.title"
+        class="approval-designer__node-type-group"
+      >
+        <h3>{{ group.title }}</h3>
+        <button
+          v-for="item in group.items"
+          :key="item.type"
+          type="button"
+          class="approval-designer__node-type-action"
+          :style="{
+            '--node-type-accent': item.accent,
+            '--node-type-soft': item.accentSoft,
+            '--node-type-border': item.accentBorder
+          }"
+          @click="chooseExtensionNodeType(item.type)"
+        >
+          <span>{{ item.icon }}</span>
+          <strong>{{ item.label }}</strong>
+          <small>{{ item.description }}</small>
+        </button>
+      </section>
     </div>
     <div
       v-if="contextMenu.visible"
@@ -2744,6 +2842,114 @@ defineExpose({
   line-height: 18px;
   pointer-events: none;
   padding: 9px 12px;
+}
+
+.approval-designer__node-type-menu {
+  position: fixed;
+  z-index: 9998;
+  display: grid;
+  width: 286px;
+  max-height: calc(100vh - 16px);
+  gap: 10px;
+  overflow: auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+  padding: 10px;
+}
+
+.approval-designer__node-type-head {
+  display: grid;
+  gap: 2px;
+  border-bottom: 1px solid #edf1f7;
+  padding: 2px 2px 9px;
+}
+
+.approval-designer__node-type-head strong {
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 18px;
+}
+
+.approval-designer__node-type-head span {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.approval-designer__node-type-group {
+  display: grid;
+  gap: 6px;
+}
+
+.approval-designer__node-type-group h3 {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 16px;
+}
+
+.approval-designer__node-type-action {
+  display: grid;
+  min-height: 48px;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px 9px;
+  border: 1px solid var(--node-type-border);
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--node-type-soft), #ffffff);
+  color: #1f2937;
+  cursor: pointer;
+  padding: 7px 8px;
+  text-align: left;
+}
+
+.approval-designer__node-type-action:hover {
+  border-color: var(--node-type-accent);
+  background: var(--node-type-soft);
+}
+
+.approval-designer__node-type-action span {
+  grid-row: span 2;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--node-type-border);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--node-type-accent);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.approval-designer__node-type-action strong,
+.approval-designer__node-type-action small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.approval-designer__node-type-action strong {
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 17px;
+}
+
+.approval-designer__node-type-action small {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 15px;
 }
 
 .approval-designer__context-menu {

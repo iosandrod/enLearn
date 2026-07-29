@@ -23,3 +23,62 @@ Key: Version | Task | Run
 ○ Rebuilding local worker…
 ○ Local worker ready on branch: default [node] -> 20260729.8
 ○ Jul 29, 13:51:32.019 ->  20260729.8 | trigger-waitpoint-diagnostic | run_cms658641000p58otwgn35a6o.1
+○ Jul 29, 14:01:52.409 ->  20260729.8 | trigger-waitpoint-diagnostic | run_cms658641000p58otwgn35a6o.1 | Success (442ms)
+○ Jul 29, 14:01:57.519 ->  20260729.7 | workflow.instance.run | run_cms64t72g000g58ot184t56as.1 | Success (7.3s)
+○ Jul 29, 14:01:59.535 ->  20260729.6 | workflow.instance.run | run_cms60i47b000858oti2jvnipo.1 | Success (10.1s)
+○ Jul 29, 14:02:22.924 ->  20260729.8 | trigger-waitpoint-diagnostic | run_cms65m4fz000s58otffnyxjnp.1
+○ Jul 29, 14:02:27.322 ->  20260729.8 | trigger-waitpoint-diagnostic | run_cms65m4fz000s58otffnyxjnp.1 | Success (366ms)
+○ Rebuilding local worker…
+○ No changes detected, skipping build…
+○ Jul 29, 14:12:13.000 ->  20260729.8 | workflow.instance.run | run_cms65yrm5000u58otc877jl2n.1
+○ Jul 29, 14:12:16.865 ->  20260729.8 | notification.dispatch | run_cms65yupw000x58otkyw1y7i9.1
+○ Jul 29, 14:12:21.058 ->  20260729.8 | notification.dispatch | run_cms65yxy7000z58otqaebk3c3.1
+○ Jul 29, 14:12:23.864 ->  20260729.8 | notification.dispatch | run_cms65yupw000x58otkyw1y7i9.1 | Success (5.9s)
+○ Jul 29, 14:12:24.257 ->  20260729.8 | workflow.instance.run | run_cms65yrm5000u58otc877jl2n.1 | Success (5.7s)
+○ Jul 29, 14:12:26.052 ->  20260729.8 | notification.dispatch | run_cms65yxy7000z58otqaebk3c3.1 | Success (3.9s)
+○ Jul 29, 14:13:46.816 ->  20260729.8 | workflow.instance.run | run_cms660s2s001158ot5shokyp9.1
+○ Jul 29, 14:13:51.882 ->  20260729.8 | notification.dispatch | run_cms660w0q001458otbeq94dwx.1
+○ Jul 29, 14:13:54.845 ->  20260729.8 | notification.dispatch | run_cms660y8y001658ot0ieivd7q.1
+○ Jul 29, 14:13:57.724 ->  20260729.8 | notification.dispatch | run_cms660y8y001658ot0ieivd7q.1 | Success (1.5s)
+○ Jul 29, 14:14:01.131 ->  20260729.8 | workflow.instance.run | run_cms660s2s001158ot5shokyp9.1 | Success (9.8s)
+○ Jul 29, 14:14:03.375 ->  20260729.8 | notification.dispatch | run_cms660w0q001458otbeq94dwx.1 | Success (8.6s)
+○ Connection was lost: transport close
+○ Rebuilding local worker…
+[90m|[39m
+[31mx[39m  Error: Build failed: Connection error.
+[90m|[39m  
+[90m|[39m         Error: Connection error.
+[90m|[39m             at DevSupervisor.initializeWorker (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSupervisor.js:306:19)
+[90m|[39m             at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[90m|[39m             at async updateBundle (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSession.js:63:13)
+[90m|[39m             at async updateBuild (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSession.js:77:13)
+[90m|[39m             at async file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSession.js:106:17
+[90m|[39m             at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\esbuild@0.23.1\node_modules\esbuild\lib\main.js:1326:27
+[90m|[39m
+[90m|[39m  💡 Get a fix for this error using AI http://localhost:3030/projects/proj_rrkpdguyagvsoktglnod/ai-help?q=Build+failed%3A%0A+Connection+error.%0AError%3A+Connection+error.%0A++++at+DevSupervisor.initializeWorker+%28file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSupervisor.js%3A306%3A19%29%0A++++at+process.processTicksAndRejections+%28node%3Ainternal%2Fprocess%2Ftask_queues%3A105%3A5%29%0A++++at+async+updateBundle+%28file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSession.js%3A63%3A13%29%0A++++at+async+updateBuild+%28file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSession.js%3A77%3A13%29%0A++++at+async+file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSession.js%3A106%3A17%0A++++at+async+C%3A%5CUsers%5C11516%5CDesktop%5Cproject%5CenLearn%5Cnode_modules%5C.pnpm%5Cesbuild%400.23.1%5Cnode_modules%5Cesbuild%5Clib%5Cmain.js%3A1326%3A27
+○ Rebuilding local worker…
+[90m|[39m
+[31mx[39m  Error: Build failed: Connection error.
+[90m|[39m  
+[90m|[39m         Error: Connection error.
+[90m|[39m             at DevSupervisor.initializeWorker (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSupervisor.js:306:19)
+[90m|[39m             at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[90m|[39m             at async updateBundle (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSession.js:63:13)
+[90m|[39m             at async updateBuild (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSession.js:77:13)
+[90m|[39m             at async file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSession.js:106:17
+[90m|[39m             at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\esbuild@0.23.1\node_modules\esbuild\lib\main.js:1326:27
+[90m|[39m
+[90m|[39m  💡 Get a fix for this error using AI http://localhost:3030/projects/proj_rrkpdguyagvsoktglnod/ai-help?q=Build+failed%3A%0A+Connection+error.%0AError%3A+Connection+error.%0A++++at+DevSupervisor.initializeWorker+%28file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSupervisor.js%3A306%3A19%29%0A++++at+process.processTicksAndRejections+%28node%3Ainternal%2Fprocess%2Ftask_queues%3A105%3A5%29%0A++++at+async+updateBundle+%28file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSession.js%3A63%3A13%29%0A++++at+async+updateBuild+%28file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSession.js%3A77%3A13%29%0A++++at+async+file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSession.js%3A106%3A17%0A++++at+async+C%3A%5CUsers%5C11516%5CDesktop%5Cproject%5CenLearn%5Cnode_modules%5C.pnpm%5Cesbuild%400.23.1%5Cnode_modules%5Cesbuild%5Clib%5Cmain.js%3A1326%3A27
+○ Rebuilding local worker…
+[90m|[39m
+[31mx[39m  Error: Build failed: Connection error.
+[90m|[39m  
+[90m|[39m         Error: Connection error.
+[90m|[39m             at DevSupervisor.initializeWorker (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSupervisor.js:306:19)
+[90m|[39m             at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[90m|[39m             at async updateBundle (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSession.js:63:13)
+[90m|[39m             at async updateBuild (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSession.js:77:13)
+[90m|[39m             at async file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSession.js:106:17
+[90m|[39m             at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\esbuild@0.23.1\node_modules\esbuild\lib\main.js:1326:27
+[90m|[39m
+[90m|[39m  💡 Get a fix for this error using AI http://localhost:3030/projects/proj_rrkpdguyagvsoktglnod/ai-help?q=Build+failed%3A%0A+Connection+error.%0AError%3A+Connection+error.%0A++++at+DevSupervisor.initializeWorker+%28file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSupervisor.js%3A306%3A19%29%0A++++at+process.processTicksAndRejections+%28node%3Ainternal%2Fprocess%2Ftask_queues%3A105%3A5%29%0A++++at+async+updateBundle+%28file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSession.js%3A63%3A13%29%0A++++at+async+updateBuild+%28file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSession.js%3A77%3A13%29%0A++++at+async+file%3A%2F%2F%2FC%3A%2FUsers%2F11516%2FDesktop%2Fproject%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSession.js%3A106%3A17%0A++++at+async+C%3A%5CUsers%5C11516%5CDesktop%5Cproject%5CenLearn%5Cnode_modules%5C.pnpm%5Cesbuild%400.23.1%5Cnode_modules%5Cesbuild%5Clib%5Cmain.js%3A1326%3A27

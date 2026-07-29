@@ -78,15 +78,22 @@ var TriggerDevClient = class {
         throw new Error(`Trigger.dev waitpoint callback failed with HTTP ${response.status}.`);
       }
       return;
-    } catch {
-      await wait.completeToken(tokenId, decision);
+    } catch (error) {
+      this.logger.warn(
+        `Trigger.dev waitpoint callback failed, using completeToken: ${errorMessage(error)}`
+      );
     }
+    await wait.completeToken(tokenId, decision);
   }
 };
 __name(TriggerDevClient, "TriggerDevClient");
 TriggerDevClient = __decorateClass([
   (0, import_common.Injectable)()
 ], TriggerDevClient);
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+__name(errorMessage, "errorMessage");
 export {
   TriggerDevClient
 };

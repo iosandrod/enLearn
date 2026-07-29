@@ -24,13 +24,10 @@
         <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="saveAndPublish">
           保存并发布
         </button>
-        <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="startCurrentUserMinimalApproval">
-          开始最小审批
-        </button>
         <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="startOrderWorkflow">
           启动订单流程
         </button>
-        <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="testCurrentWorkflow">
+        <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="runMinimalApprovalOneClickTest">
           一键测试
         </button>
         <button type="button" class="workflow-button workflow-button--primary" @click="exportSchema">
@@ -182,7 +179,6 @@ const localStorageKey = 'enlearn.workflow.designer.default';
 const auth = useAuth();
 const serviceApi = useServiceApi();
 const route = useRoute();
-const router = useRouter();
 const routeCode = computed(() => String(route.params.code ?? '').trim());
 const activeStorageKey = computed(() =>
   routeCode.value ? `enlearn.workflow.designer.${routeCode.value}` : localStorageKey
@@ -487,16 +483,16 @@ async function startOrderWorkflow() {
   }
 }
 
-async function startCurrentUserMinimalApproval() {
+async function runMinimalApprovalOneClickTest() {
   isApiBusy.value = true;
   resetRuntimeState();
-  message.value = '正在生成当前用户最小审批...';
+  message.value = 'Running minimal approval test...';
   messageClass.value = 'workflow-help';
 
   try {
     const currentUserId = auth.user.value?.id ?? '';
     if (!currentUserId) {
-      throw new Error('请先登录后再启动当前用户最小审批');
+      throw new Error('Please sign in before running the approval test.');
     }
 
     const businessKey = `current-user-minimal-${Date.now().toString(36)}`;
@@ -507,19 +503,24 @@ async function startCurrentUserMinimalApproval() {
       },
       {
         code: 'current_user_minimal_approval',
-        name: '当前用户最小审批',
+        name: 'Current user minimal approval',
         documentType: 'minimal_approval'
       }
     );
 
     workflowModel.value = minimalWorkflow;
-    designerRef.value?.loadSchema(minimalWorkflow);
+    const designer = designerRef.value;
+    if (designer) {
+      designer.loadSchema(minimalWorkflow);
+    }
     schemaText.value = serializeWorkflowModel(minimalWorkflow);
     savedModelId.value = '';
     publishedDefinitionId.value = '';
     await nextTick();
 
-    message.value = '已生成最小审批，正在发布并通过 Trigger.dev 启动...';
+    testRunSummary.value = 'Publishing minimal approval';
+    message.value = 'Publishing minimal approval and starting it with Trigger.dev...';
+
     const published = await publishCurrentWorkflow();
     savedModelId.value = published.model?.id ?? savedModelId.value;
     publishedDefinitionId.value = published.definition.id;
@@ -529,24 +530,26 @@ async function startCurrentUserMinimalApproval() {
       businessKey,
       documentType: 'minimal_approval',
       documentId: businessKey,
-      title: '当前用户最小审批',
+      title: 'Current user minimal approval',
       variables: createMinimalApprovalVariables(businessKey, currentUserId)
     });
 
     updateRuntimeFromInstance(instance);
-    testRunSummary.value = '等待当前用户待办';
-    message.value = '流程已启动，正在等待当前用户审批任务...';
+    testRunSummary.value = 'Waiting for current-user task';
+    message.value = 'Instance started. Waiting for the current user approval task...';
 
     const task = await waitForWorkflowCondition<WorkflowRuntimeTask>(
       async () => {
-        const [tasks, currentInstance] = await Promise.all([
-          invokeWorkflowService<WorkflowRuntimeTask[]>('listTodoTasks', { status: 'pending' }),
-          invokeWorkflowService<WorkflowRuntimeInstance>('getInstance', { instanceId: instance.id })
-        ]);
+        const tasks = await invokeWorkflowService<WorkflowRuntimeTask[]>('listTodoTasks', {
+          status: 'pending'
+        });
+        const currentInstance = await invokeWorkflowService<WorkflowRuntimeInstance>('getInstance', {
+          instanceId: instance.id
+        });
         updateRuntimeFromInstance(currentInstance);
 
         if (isTerminalWorkflowStatus(currentInstance.status)) {
-          throw new Error(`流程已结束，状态 ${workflowStatusLabel(currentInstance.status)}，没有可审核待办`);
+          throw new Error(`Workflow ended before a pending task was created: ${currentInstance.status}`);
         }
 
         return tasks.find((item) => item.processInstanceId === instance.id && item.status === 'pending');
@@ -554,119 +557,55 @@ async function startCurrentUserMinimalApproval() {
       {
         timeoutMs: 60000,
         intervalMs: 2000,
-        timeoutMessage: '60 秒内没有生成当前用户待办，请检查 Trigger.dev worker 是否在线'
+        timeoutMessage: 'No pending task was created within 60 seconds. Check the Trigger.dev worker.'
       }
     );
 
     startedTaskId.value = task.id;
     startedTaskStatus.value = workflowStatusLabel(task.status);
-    testRunSummary.value = '当前用户待办已生成';
-    message.value = `当前用户已收到审批任务 ${task.title ?? task.id}`;
-    messageClass.value = 'workflow-success';
-    await router.push(`/dashboard/workflow/tasks/${task.id}`);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : '当前用户最小审批启动失败';
-    testRunSummary.value = errorMessage;
-    message.value = errorMessage;
-    messageClass.value = 'workflow-error';
-  } finally {
-    isApiBusy.value = false;
-  }
-}
+    testRunSummary.value = 'Approving automatically';
+    message.value = `Task ${task.title ?? task.id} received. Approving automatically...`;
 
-async function testCurrentWorkflow() {
-  isApiBusy.value = true;
-  resetRuntimeState();
-  message.value = '正在发布并测试审批流程...';
-  messageClass.value = 'workflow-help';
-
-  try {
-    const schema = designerRef.value?.getSchema() ?? workflowModel.value;
-    const published = await publishCurrentWorkflow();
-    const currentUserId = auth.user.value?.id ?? '';
-    const businessKey = `${schema.code || 'workflow'}-test-${Date.now().toString(36)}`;
-    const documentType = schema.documentType?.trim() || 'workflow_test';
-    const variables = createDesignerTestVariables(businessKey, currentUserId);
-
-    message.value = '已发布，正在启动测试流程...';
-    const instance = await invokeWorkflowService<WorkflowRuntimeInstance>('startInstance', {
-      definitionId: published.definition.id,
-      businessKey,
-      documentType,
-      documentId: businessKey,
-      title: `${schema.name || schema.code || '审批流程'}一键测试`,
-      variables
-    });
-
-    updateRuntimeFromInstance(instance);
-    testRunSummary.value = '等待待办';
-    message.value = '流程已启动，正在等待当前用户待办...';
-
-    const task = await waitForWorkflowCondition<WorkflowRuntimeTask>(
-      async () => {
-        const [tasks, currentInstance] = await Promise.all([
-          invokeWorkflowService<WorkflowRuntimeTask[]>('listTodoTasks', { status: 'pending' }),
-          invokeWorkflowService<WorkflowRuntimeInstance>('getInstance', { instanceId: instance.id })
-        ]);
-        updateRuntimeFromInstance(currentInstance);
-
-        if (isTerminalWorkflowStatus(currentInstance.status)) {
-          throw new Error(`流程已结束，状态 ${workflowStatusLabel(currentInstance.status)}，没有可审核待办`);
-        }
-
-        return tasks.find((item) => item.processInstanceId === instance.id && item.status === 'pending');
-      },
-      {
-        timeoutMs: 60000,
-        intervalMs: 2000,
-        timeoutMessage: '60 秒内没有生成当前用户的待办，请检查审批人配置或 Trigger.dev worker'
-      }
-    );
-
-    startedTaskId.value = task.id;
-    startedTaskStatus.value = workflowStatusLabel(task.status);
-    testRunSummary.value = '待办已生成，审核中';
-    message.value = `已找到待办 ${task.title ?? task.id}，正在自动审核...`;
-
-    const approvedInstance = await invokeWorkflowService<WorkflowRuntimeInstance>('approveTask', {
+    await invokeWorkflowService<WorkflowRuntimeInstance>('approveTask', {
       taskId: task.id,
-      comment: '设计器一键测试通过',
+      comment: 'One-click minimal approval test',
       variables: {
-        approvedAt: new Date().toISOString(),
-        approvedBy: currentUserId,
-        designerTestApproved: true
+        minimalApprovalApproved: true
       }
     });
-    updateRuntimeFromInstance(approvedInstance);
-    startedTaskStatus.value = '已审核';
-    testRunSummary.value = '已审核，等待流程结束';
-    message.value = '审核已通过，正在等待流程完成...';
 
-    const finalInstance = isTerminalWorkflowStatus(approvedInstance.status)
-      ? approvedInstance
-      : await waitForWorkflowCondition<WorkflowRuntimeInstance>(
-          async () => {
-            const currentInstance = await invokeWorkflowService<WorkflowRuntimeInstance>('getInstance', {
-              instanceId: instance.id
-            });
-            updateRuntimeFromInstance(currentInstance);
+    const completedInstance = await waitForWorkflowCondition<WorkflowRuntimeInstance>(
+      async () => {
+        const currentInstance = await invokeWorkflowService<WorkflowRuntimeInstance>('getInstance', {
+          instanceId: instance.id
+        });
+        updateRuntimeFromInstance(currentInstance);
 
-            return isTerminalWorkflowStatus(currentInstance.status) ? currentInstance : undefined;
-          },
-          {
-            timeoutMs: 90000,
-            intervalMs: 3000,
-            timeoutMessage: '审批已提交，但流程 90 秒内未结束，请检查 Trigger.dev waitpoint 是否恢复父运行'
-          }
-        );
+        if (currentInstance.status === 'approved') return currentInstance;
+        if (isTerminalWorkflowStatus(currentInstance.status)) {
+          throw new Error(`Minimal approval did not approve successfully: ${currentInstance.status}`);
+        }
 
-    updateRuntimeFromInstance(finalInstance);
-    startedTaskStatus.value = '已审核';
-    testRunSummary.value = `完成：${workflowStatusLabel(finalInstance.status)}`;
-    message.value = `一键测试完成，流程状态 ${workflowStatusLabel(finalInstance.status)}`;
-    messageClass.value = finalInstance.status === 'approved' ? 'workflow-success' : 'workflow-error';
+        return undefined;
+      },
+      {
+        timeoutMs: 60000,
+        intervalMs: 2000,
+        timeoutMessage: 'Minimal approval did not finish within 60 seconds. Check Trigger.dev Run Engine worker.'
+      }
+    );
+
+    const finalTask = await invokeWorkflowService<WorkflowRuntimeTask>('getTask', {
+      taskId: task.id
+    });
+    updateRuntimeFromInstance(completedInstance);
+    startedTaskId.value = finalTask.id;
+    startedTaskStatus.value = workflowStatusLabel(finalTask.status);
+    testRunSummary.value = 'Minimal approval test passed';
+    message.value = `One-click test passed. Instance ${completedInstance.id} is approved.`;
+    messageClass.value = 'workflow-success';
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : '一键测试失败';
+    const errorMessage = error instanceof Error ? error.message : 'Minimal approval test failed.';
     testRunSummary.value = errorMessage;
     message.value = errorMessage;
     messageClass.value = 'workflow-error';

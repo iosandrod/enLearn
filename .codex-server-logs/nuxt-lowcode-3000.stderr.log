@@ -1,0 +1,217 @@
+
+[43m[30m WARN [39m[49m [1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+
+
+[43m[30m WARN [39m[49m [1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+
+
+[43m[30m WARN [39m[49m [1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+
+
+[43m[30m WARN [39m[49m [1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x2)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x3)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x4)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x5)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x2)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x3)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x4)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x5)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x2)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x3)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x4)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Failed to resolve import "#app-manifest" from "../node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde". Does the file exist?
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher@2.6.0_@types+node@20.19.43_@vue+compiler-sfc@3.5.40_cac@6.7.14_db_xxzzmyk6h2qkk5rrj3l2cdb6ga/node_modules/nuxt/dist/app/composables/manifest.js?v=c6500cde[39m:16:6
+[33m  14 |        /* webpackIgnore: true */
+  15 |        /* @vite-ignore */
+  16 |        "#app-manifest"
+     |        ^
+  17 |      );
+  18 |    } else {[39m[2m (x5)[22m
+
+
+[41m[30m ERROR [39m[49m Pre-transform error: Error parsing JavaScript expression: Unterminated string constant. (1:31)
+  Plugin: [35mvite:vue[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/nuxt-app/pages/dashboard/workflow/designer.vue[39m:7:41
+[33m  5  |          <h2 class="page-title">瀹℃壒娴佽璁″櫒</h2>
+  6  |          <p class="page-description">
+  7  |            {{ workflowModel.code }} 路 {{ workflowModel.documentType || '鏈粦瀹氬崟鎹? }}
+     |                                           ^
+  8  |          </p>
+  9  |        </div>[39m
+
+
+[41m[30m ERROR [39m[49m [31mInternal server error: Error parsing JavaScript expression: Unterminated string constant. (1:31)[39m
+  Plugin: [35mvite:vue[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/nuxt-app/pages/dashboard/workflow/designer.vue[39m:7:41
+[33m  5  |          <h2 class="page-title">瀹℃壒娴佽璁″櫒</h2>
+  6  |          <p class="page-description">
+  7  |            {{ workflowModel.code }} 路 {{ workflowModel.documentType || '鏈粦瀹氬崟鎹? }}
+     |                                           ^
+  8  |          </p>
+  9  |        </div>[39m
+      at createCompilerError (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@vue+compiler-core@3.5.40\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1378:17)
+      at emitError (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@vue+compiler-core@3.5.40\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:3035:5)
+      at createExp (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@vue+compiler-core@3.5.40\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:3028:7)
+      at Object.oninterpolation (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@vue+compiler-core@3.5.40\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:2372:16)
+      at Tokenizer.stateInterpolationClose (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@vue+compiler-core@3.5.40\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:596:18)
+      at Tokenizer.parse (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@vue+compiler-core@3.5.40\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:1097:16)
+      at Object.baseParse (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@vue+compiler-core@3.5.40\node_modules\@vue\compiler-core\dist\compiler-core.cjs.js:3074:13)
+      at Object.parse (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@vue+compiler-dom@3.5.40\node_modules\@vue\compiler-dom\dist\compiler-dom.cjs.js:910:23)
+      at Object.parse$1 [as parse] (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@vue+compiler-sfc@3.5.40\node_modules\@vue\compiler-sfc\dist\compiler-sfc.cjs.js:1824:24)
+      at createDescriptor (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/@vitejs+plugin-vue@6.0.8_vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@_aui3qwuizx2toobjiq4cyilk2a/node_modules/@vitejs/plugin-vue/dist/index.mjs:50:42)
+      at handleHotUpdate (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/@vitejs+plugin-vue@6.0.8_vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@_aui3qwuizx2toobjiq4cyilk2a/node_modules/@vitejs/plugin-vue/dist/index.mjs:1197:25)
+      at async handleHMRUpdate (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@1.102.0_terser@5.49.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:26099:28)
+      at async onHMRUpdate (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@1.102.0_terser@5.49.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:25635:35)
+      at async FSWatcher.<anonymous> (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@1.102.0_terser@5.49.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:25660:3)
+
