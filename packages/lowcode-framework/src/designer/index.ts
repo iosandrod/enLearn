@@ -1,6 +1,4 @@
 export { default as LowCodeVisualDesigner } from '../components/LowCodeVisualDesigner.vue';
-export { default as LcVxeModalRenderer } from '../components/LcVxeModalRenderer';
-export type { LcVxeModalConfig, LcVxeModalRender } from '../components/LcVxeModalRenderer';
 export { default as VisualEditorProvider } from '../components/VisualEditorProvider.vue';
 export { default as VisualEditor } from '../visual-editor/index.vue';
 

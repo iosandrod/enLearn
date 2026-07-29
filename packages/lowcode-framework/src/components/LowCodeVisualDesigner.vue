@@ -49,14 +49,88 @@
       </ClientOnly>
     </div>
 
-    <LcVxeModalRenderer :modals="modalConfigs" />
+    <vxe-modal
+      v-model="pagePickerVisible"
+      title="加载页面"
+      width="min(1040px, calc(100vw - 48px))"
+      height="min(680px, calc(100vh - 96px))"
+      show-footer
+      resize
+    >
+      <div class="visual-designer-dialog">
+        <div class="visual-designer-dialog-toolbar lc-actions">
+          <vxe-button status="primary" :loading="pagePickerLoading" @click="fetchPageRows">
+            刷新列表
+          </vxe-button>
+        </div>
+        <vxe-grid
+          border
+          height="500"
+          :loading="pagePickerLoading"
+          :data="pagePickerRows"
+          :columns="pagePickerColumns"
+          :row-config="{ isCurrent: true, keyField: 'id' }"
+          @current-row-change="handlePagePickerCurrentChange"
+          @row-dblclick="handlePagePickerDblclick"
+        />
+      </div>
+      <template #footer>
+        <div class="visual-designer-dialog-footer">
+          <vxe-button @click="pagePickerVisible = false">取消</vxe-button>
+          <vxe-button
+            status="primary"
+            :disabled="!selectedPickerPage"
+            :loading="loading"
+            @click="confirmLoadSelectedPage"
+          >
+            加载
+          </vxe-button>
+        </div>
+      </template>
+    </vxe-modal>
+
+    <vxe-modal
+      v-model="pageInfoVisible"
+      title="页面信息"
+      width="min(760px, calc(100vw - 48px))"
+      show-footer
+      resize
+    >
+      <div class="visual-designer-info-form">
+        <label>
+          <span>页面编码</span>
+          <vxe-input v-model="pageInfoDraft.code" clearable />
+        </label>
+        <label>
+          <span>后台路由</span>
+          <vxe-input v-model="pageInfoDraft.route" clearable />
+        </label>
+        <label>
+          <span>页面标题</span>
+          <vxe-input v-model="pageInfoDraft.title" clearable />
+        </label>
+        <label>
+          <span>状态</span>
+          <vxe-select v-model="pageInfoDraft.status" :options="statusOptions" />
+        </label>
+        <label class="visual-designer-info-form__wide">
+          <span>描述</span>
+          <vxe-textarea v-model="pageInfoDraft.description" rows="3" />
+        </label>
+      </div>
+      <template #footer>
+        <div class="visual-designer-dialog-footer">
+          <vxe-button @click="pageInfoVisible = false">取消</vxe-button>
+          <vxe-button status="primary" @click="confirmPageInfo">确定</vxe-button>
+        </div>
+      </template>
+    </vxe-modal>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, h, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import VisualEditorProvider from './VisualEditorProvider.vue';
-import LcVxeModalRenderer, { type LcVxeModalConfig } from './LcVxeModalRenderer';
 import type { LowCodePageRecord, LowCodePageSchema } from '../types/lowcode';
 import type {
   VisualEditorModelValue,
@@ -159,112 +233,6 @@ const pagePickerColumns: Record<string, unknown>[] = [
   { field: 'version', title: '版本', width: 88 },
   { field: 'updated_at', title: '更新时间', width: 190 }
 ];
-
-const modalConfigs = computed<LcVxeModalConfig[]>(() => [
-  {
-    id: 'page-picker',
-    visible: pagePickerVisible.value,
-    title: '加载页面',
-    width: 'min(1040px, calc(100vw - 48px))',
-    height: 'min(680px, calc(100vh - 96px))',
-    props: {
-      showFooter: true,
-      resize: true,
-    },
-    onVisibleChange: (visible) => {
-      pagePickerVisible.value = visible;
-    },
-    body: () =>
-      h('div', { class: 'visual-designer-dialog' }, [
-        h('div', { class: 'visual-designer-dialog-toolbar lc-actions' }, [
-          h(
-            'vxe-button',
-            {
-              status: 'primary',
-              loading: pagePickerLoading.value,
-              onClick: fetchPageRows,
-            },
-            { default: () => '刷新列表' },
-          ),
-        ]),
-        h('vxe-grid', {
-          border: true,
-          height: 500,
-          loading: pagePickerLoading.value,
-          data: pagePickerRows.value,
-          columns: pagePickerColumns,
-          rowConfig: { isCurrent: true, keyField: 'id' },
-          onCurrentRowChange: handlePagePickerCurrentChange,
-          onRowDblclick: handlePagePickerDblclick,
-        }),
-      ]),
-    footer: () =>
-      h('div', { class: 'visual-designer-dialog-footer' }, [
-        h('vxe-button', { onClick: () => (pagePickerVisible.value = false) }, { default: () => '取消' }),
-        h(
-          'vxe-button',
-          {
-            status: 'primary',
-            disabled: !selectedPickerPage.value,
-            loading: loading.value,
-            onClick: confirmLoadSelectedPage,
-          },
-          { default: () => '加载' },
-        ),
-      ]),
-  },
-  {
-    id: 'page-info',
-    visible: pageInfoVisible.value,
-    title: '页面信息',
-    width: 'min(760px, calc(100vw - 48px))',
-    props: {
-      showFooter: true,
-      resize: true,
-    },
-    onVisibleChange: (visible) => {
-      pageInfoVisible.value = visible;
-    },
-    body: () =>
-      h('div', { class: 'visual-designer-info-form' }, [
-        renderPageInfoField('页面编码', 'code', 'vxe-input', { clearable: true }),
-        renderPageInfoField('后台路由', 'route', 'vxe-input', { clearable: true }),
-        renderPageInfoField('页面标题', 'title', 'vxe-input', { clearable: true }),
-        renderPageInfoField('状态', 'status', 'vxe-select', { options: statusOptions }),
-        renderPageInfoField(
-          '描述',
-          'description',
-          'vxe-textarea',
-          { rows: 3 },
-          'visual-designer-info-form__wide',
-        ),
-      ]),
-    footer: () =>
-      h('div', { class: 'visual-designer-dialog-footer' }, [
-        h('vxe-button', { onClick: () => (pageInfoVisible.value = false) }, { default: () => '取消' }),
-        h('vxe-button', { status: 'primary', onClick: confirmPageInfo }, { default: () => '确定' }),
-      ]),
-  },
-]);
-
-function renderPageInfoField(
-  label: string,
-  field: keyof DesignerPageForm,
-  component: string,
-  props: Record<string, unknown> = {},
-  className?: string,
-) {
-  return h('label', { class: className }, [
-    h('span', label),
-    h(component, {
-      ...props,
-      modelValue: pageInfoDraft.value[field],
-      'onUpdate:modelValue': (value: DesignerPageForm[keyof DesignerPageForm]) => {
-        pageInfoDraft.value[field] = value as never;
-      },
-    }),
-  ]);
-}
 
 const fallbackVisualModel = computed<VisualEditorModelValue>(() => ({
   pages: {

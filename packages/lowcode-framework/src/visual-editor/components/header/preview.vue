@@ -1,11 +1,17 @@
 <template>
-  <LcVxeModalRenderer :modals="modalConfigs" />
+  <vxe-modal v-model="dialogVisible" class-name="h5-preview" :show-header="false" width="360px">
+    <iframe
+      v-if="dialogVisible"
+      :style="{ width: '100%', height: '100%' }"
+      :src="previewUrl"
+      frameborder="0"
+      scrolling="auto"
+    ></iframe>
+  </vxe-modal>
 </template>
 
 <script lang="ts" setup>
-  import { computed, h } from 'vue';
   import { useVModel } from '@vueuse/core';
-  import LcVxeModalRenderer, { type LcVxeModalConfig } from '../../../components/LcVxeModalRenderer';
   import { BASE_URL } from '../../utils';
 
   defineOptions({
@@ -22,29 +28,6 @@
 
   const dialogVisible = useVModel(props, 'visible', emits);
   const previewUrl = `${BASE_URL}preview/${location.hash}`;
-  const modalConfigs = computed<LcVxeModalConfig[]>(() => [
-    {
-      id: 'h5-preview',
-      visible: dialogVisible.value,
-      width: '360px',
-      props: {
-        className: 'h5-preview',
-        showHeader: false,
-      },
-      onVisibleChange: (visible) => {
-        dialogVisible.value = visible;
-      },
-      body: () =>
-        dialogVisible.value
-          ? h('iframe', {
-              style: { width: '100%', height: '100%' },
-              src: previewUrl,
-              frameborder: '0',
-              scrolling: 'auto',
-            })
-          : null,
-    },
-  ]);
 </script>
 
 <style lang="scss">
