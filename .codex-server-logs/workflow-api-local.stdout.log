@@ -1,0 +1,1577 @@
+
+> @enlearn/workflow-api@0.1.0 dev C:\Users\11516\Desktop\project\enLearn\services\workflow-api
+> tsx watch src/main.ts
+
+[32m[Nest] 21100  - [39m2026/07/29 18:31:25 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +16ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatabaseModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIntegrationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDefinitionModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTaskModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHistoryModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuntimeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJobModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/api/workflow/health}:[39m[38;5;3m +769ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/health, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDefinitionController {/api/workflow/definitions}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/capabilities, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/:definitionId/disable, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mModelController {/api/workflow/models}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, PUT} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId/publish, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRuntimeController {/api/workflow/instances}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/started, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/timeline, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/withdraw, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/terminate, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTaskController {/api/workflow/tasks}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/todo, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/done, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/cc, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/started, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/approve, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/claim, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/reject, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/transfer, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/add-sign, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHistoryController {/api/workflow/history}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/history/instances/:instanceId/timeline, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mJobController {/api/workflow/jobs}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/runs, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/status, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/run, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21100  - [39m2026/07/29 18:31:26 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +11ms[39m
+Workflow API listening on http://localhost:3010/api/workflow
+[32m[Nest] 21100  - [39m2026/07/29 18:31:27 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=6bbd8075-7c0b-48a6-8456-d470669aa4c6[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "6bbd8075-7c0b-48a6-8456-d470669aa4c6",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:31:27.491Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:31:48 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=f17a5897-341e-443b-9506-f2ae54d6cd79[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "f17a5897-341e-443b-9506-f2ae54d6cd79",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:31:48.083Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:32:09 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=b9a88371-8f97-4578-ae39-cb997661887c[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "b9a88371-8f97-4578-ae39-cb997661887c",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:32:09.214Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:32:30 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=28f7063a-d52e-4531-90f4-191257f562b4[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "28f7063a-d52e-4531-90f4-191257f562b4",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:32:30.369Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:32:51 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=18a459c7-4bad-41ea-acc2-502d62595598[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "18a459c7-4bad-41ea-acc2-502d62595598",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:32:51.533Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:33:12 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=2fb322b0-599b-4c3f-a60d-817324c600ec[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "2fb322b0-599b-4c3f-a60d-817324c600ec",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:33:12.692Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:33:33 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=d816fa02-ab16-4c34-a6b8-722a03c9515b[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "d816fa02-ab16-4c34-a6b8-722a03c9515b",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:33:33.847Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:33:55 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=7a3ff785-5c4f-4b3a-8c8d-6c595d1619dd[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "7a3ff785-5c4f-4b3a-8c8d-6c595d1619dd",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:33:55.023Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:34:16 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=8a2aca60-75ab-48f4-95fe-966713f5ae43[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "8a2aca60-75ab-48f4-95fe-966713f5ae43",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:34:16.215Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:34:36 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=8b0853ab-149c-4b59-82b2-8482af9ed3e0[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "8b0853ab-149c-4b59-82b2-8482af9ed3e0",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:34:36.459Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:34:57 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=a9733c25-5bfe-4454-b891-bde7da0fb82b[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "a9733c25-5bfe-4454-b891-bde7da0fb82b",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:34:57.575Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:35:17 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=d574a701-8c26-4428-ba64-5efd8a4afe51[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "d574a701-8c26-4428-ba64-5efd8a4afe51",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T10:35:17.788Z"
+}
+[32m[Nest] 21100  - [39m2026/07/29 18:35:37 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=c2213f6d-fd89-4e13-b2db-f56c7e1a37cc[39m
+[workflow-api][supabase-u10:36:38 [tsx] change in ./src\trigger\trigger-dev.client.ts Rerunning...
+[32m[Nest] 100168  - [39m2026/07/29 10:36:45 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +64ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatabaseModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIntegrationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDefinitionModule dependencies initialized[39m[38;5;3m +6ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTaskModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHistoryModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuntimeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:45 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJobModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/api/workflow/health}:[39m[38;5;3m +1949ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/health, GET} route[39m[38;5;3m +5ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDefinitionController {/api/workflow/definitions}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/capabilities, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/:definitionId/disable, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mModelController {/api/workflow/models}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, PUT} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId/publish, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRuntimeController {/api/workflow/instances}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/started, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/timeline, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/withdraw, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/terminate, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTaskController {/api/workflow/tasks}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/todo, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/done, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/cc, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/started, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/approve, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/claim, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/reject, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/transfer, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/add-sign, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHistoryController {/api/workflow/history}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/history/instances/:instanceId/timeline, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mJobController {/api/workflow/jobs}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/runs, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/status, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/run, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 100168  - [39m2026/07/29 10:36:47 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +13ms[39m
+Workflow API listening on http://localhost:3010/api/workflow
+11:16:30 [tsx] change in ./src\runtime\workflow.executor.ts Rerunning...
+[32m[Nest] 90408  - [39m2026/07/29 11:16:35 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +30ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatabaseModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIntegrationModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDefinitionModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTaskModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHistoryModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuntimeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJobModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/api/workflow/health}:[39m[38;5;3m +1061ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/health, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDefinitionController {/api/workflow/definitions}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/capabilities, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/:definitionId/disable, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mModelController {/api/workflow/models}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, PUT} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId/publish, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRuntimeController {/api/workflow/instances}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/started, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/timeline, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/withdraw, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/terminate, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTaskController {/api/workflow/tasks}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/todo, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/done, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/cc, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/started, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/approve, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/claim, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/reject, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/transfer, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/add-sign, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHistoryController {/api/workflow/history}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/history/instances/:instanceId/timeline, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mJobController {/api/workflow/jobs}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/runs, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/status, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/run, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 90408  - [39m2026/07/29 11:16:36 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +6ms[39m
+Workflow API listening on http://localhost:3010/api/workflow
+11:17:38 [tsx] change in ./src\runtime\workflow.executor.ts Restarting...
+[32m[Nest] 77320  - [39m2026/07/29 11:17:42 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +21ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatabaseModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIntegrationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDefinitionModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTaskModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHistoryModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuntimeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJobModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/api/workflow/health}:[39m[38;5;3m +677ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/health, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDefinitionController {/api/workflow/definitions}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/capabilities, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/:definitionId/disable, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mModelController {/api/workflow/models}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, PUT} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId/publish, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRuntimeController {/api/workflow/instances}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/started, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/timeline, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/withdraw, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/terminate, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTaskController {/api/workflow/tasks}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/todo, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/done, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/cc, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/started, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/approve, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/claim, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/reject, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/transfer, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/add-sign, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHistoryController {/api/workflow/history}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/history/instances/:instanceId/timeline, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mJobController {/api/workflow/jobs}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/runs, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/status, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/run, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 77320  - [39m2026/07/29 11:17:43 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +5ms[39m
+Workflow API listening on http://localhost:3010/api/workflow
+11:35:40 [tsx] change in ./src\runtime\workflow.executor.ts Rerunning...
+[32m[Nest] 30140  - [39m2026/07/29 11:35:47 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:47 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +32ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:47 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatabaseModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:47 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:47 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIntegrationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:47 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:47 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDefinitionModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:47 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTaskModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:47 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHistoryModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:47 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuntimeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:47 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJobModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/api/workflow/health}:[39m[38;5;3m +1338ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/health, GET} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDefinitionController {/api/workflow/definitions}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/capabilities, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/:definitionId/disable, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mModelController {/api/workflow/models}:[39m[38;5;3m +2ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, PUT} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId/publish, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRuntimeController {/api/workflow/instances}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/started, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/timeline, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/withdraw, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/terminate, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTaskController {/api/workflow/tasks}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/todo, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/done, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/cc, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/started, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/approve, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/claim, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/reject, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/transfer, POST} route[39m[38;5;3m +11ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/add-sign, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHistoryController {/api/workflow/history}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/history/instances/:instanceId/timeline, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mJobController {/api/workflow/jobs}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/runs, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/status, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/run, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30140  - [39m2026/07/29 11:35:48 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +9ms[39m
+11:42:23 [tsx] change in ./src\trigger\trigger-dev.client.ts Rerunning...
+[32m[Nest] 66444  - [39m2026/07/29 11:42:29 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +26ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatabaseModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIntegrationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +4ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDefinitionModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTaskModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHistoryModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuntimeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJobModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/api/workflow/health}:[39m[38;5;3m +1241ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/health, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDefinitionController {/api/workflow/definitions}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/capabilities, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/:definitionId/disable, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mModelController {/api/workflow/models}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, PUT} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId/publish, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRuntimeController {/api/workflow/instances}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/started, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/timeline, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/withdraw, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/terminate, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTaskController {/api/workflow/tasks}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/todo, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/done, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/cc, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/started, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/approve, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/claim, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/reject, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/transfer, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/add-sign, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHistoryController {/api/workflow/history}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/history/instances/:instanceId/timeline, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mJobController {/api/workflow/jobs}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/runs, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/status, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/run, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66444  - [39m2026/07/29 11:42:30 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +7ms[39m
+Workflow API listening on http://localhost:3010/api/workflow
+ ELIFECYCLE  Command failed with exit code 4294967295.
+39m2026/07/29 19:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIntegrationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDefinitionModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTaskModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHistoryModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuntimeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:29 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJobModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/api/workflow/health}:[39m[38;5;3m +1240ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/health, GET} route[39m[38;5;3m +5ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDefinitionController {/api/workflow/definitions}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/capabilities, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/:definitionId/disable, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mModelController {/api/workflow/models}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, PUT} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId/publish, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRuntimeController {/api/workflow/instances}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/started, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/timeline, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/withdraw, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/terminate, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTaskController {/api/workflow/tasks}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/todo, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/done, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/cc, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/started, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/approve, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/claim, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/reject, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/transfer, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/add-sign, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHistoryController {/api/workflow/history}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/history/instances/:instanceId/timeline, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mJobController {/api/workflow/jobs}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/runs, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/status, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/run, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 33316  - [39m2026/07/29 19:42:30 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +15ms[39m

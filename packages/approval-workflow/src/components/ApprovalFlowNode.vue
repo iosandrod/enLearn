@@ -155,8 +155,8 @@ const badgeText = computed(() => {
 }
 
 .approval-flow-card--event {
-  width: 176px;
-  min-height: 72px;
+  width: 236px;
+  min-height: 86px;
   grid-template-columns: 36px minmax(0, 1fr);
   padding: 11px 12px;
 }

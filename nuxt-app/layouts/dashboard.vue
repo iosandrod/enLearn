@@ -19,44 +19,27 @@
 
     <div class="admin-body">
       <aside class="admin-sidebar">
-        <div class="admin-filter">菜单过滤</div>
+        <div class="admin-filter">
+          <input
+            v-model="menuFilter"
+            aria-label="菜单过滤"
+            placeholder="菜单过滤"
+            type="search"
+          />
+        </div>
 
         <nav class="admin-menu">
-          <template v-for="group in menuTree" :key="group.code">
-            <NuxtLink
-              v-if="!group.children.length"
-              class="admin-menu-group admin-menu-link"
-              :to="group.path"
-              @contextmenu.prevent.stop="openMenuContext($event, group)"
-            >
-              <span>{{ group.title }}</span>
-            </NuxtLink>
-
-            <section v-else class="admin-menu-section">
-              <button
-                class="admin-menu-group"
-                type="button"
-                @click="toggleGroup(group.code)"
-                @contextmenu.prevent.stop="openMenuContext($event, group)"
-              >
-                <span>{{ group.title }}</span>
-                <span>{{ expandedGroups[group.code] === false ? '+' : '-' }}</span>
-              </button>
-
-              <div
-                v-show="expandedGroups[group.code] !== false"
-                class="admin-submenu"
-              >
-                <NuxtLink
-                  v-for="item in group.children"
-                  :key="item.code"
-                  class="admin-menu-link"
-                  :to="item.path"
-                  @contextmenu.prevent.stop="openMenuContext($event, item)"
-                >
-                  {{ item.title }}
-                </NuxtLink>
-              </div>
+          <p v-if="!filteredMenuTree.length" class="admin-menu-empty">无匹配菜单</p>
+          <template v-for="group in filteredMenuTree" :key="group.code">
+            <section class="admin-menu-section">
+              <MenuItem
+                :item="group"
+                :expanded-groups="expandedGroups"
+                :filtering="Boolean(normalizedMenuFilter)"
+                :level="0"
+                @context="openMenuContext"
+                @toggle="toggleGroup"
+              />
             </section>
           </template>
         </nav>
@@ -107,6 +90,9 @@
 </template>
 
 <script setup lang="ts">
+import { defineComponent, h, resolveComponent } from 'vue';
+import type { PropType } from 'vue';
+
 type AdminRouteNode = {
   id?: string;
   code: string;
@@ -127,6 +113,11 @@ type AdminRouteNode = {
   children?: AdminRouteNode[];
 };
 
+type MenuContextPayload = {
+  event: MouseEvent;
+  item: AdminRouteNode;
+};
+
 const auth = useAuth();
 const serviceApi = useServiceApi();
 const route = useRoute();
@@ -135,6 +126,7 @@ const routeError = ref('');
 const routes = ref<AdminRouteNode[]>([]);
 const expandedGroups = reactive<Record<string, boolean>>({});
 const visitedTabs = ref<Array<{ title: string; path: string }>>([]);
+const menuFilter = ref('');
 const menuContext = reactive<{
   visible: boolean;
   x: number;
@@ -159,7 +151,9 @@ const fallbackRoutes: AdminRouteNode[] = [
       { code: 'entity-design', title: '实体设计器', path: '/dashboard/entity-design', permission_code: 'entity.design.manage' },
       { code: 'lowcode-visual-designer', title: '可视化设计器', path: '/dashboard/low-code/designer', permission_code: 'lowcode.pages.manage' },
       { code: 'workflow-designer', title: '审批流设计器', path: '/dashboard/workflow/designer', permission_code: 'workflow.definitions.manage' },
-      { code: 'trigger-workflow-designer', title: '触发器编排器', path: '/dashboard/trigger-workflow/designer', permission_code: 'workflow.definitions.manage' }
+      { code: 'trigger-workflow-designer', title: '触发器编排器', path: '/dashboard/trigger-workflow/designer', permission_code: 'workflow.definitions.manage' },
+      { code: 'print-designer', title: '打印模板', path: '/dashboard/print-designer', permission_code: 'print.templates.manage' },
+      { code: 'print-logs', title: '打印日志', path: '/dashboard/print/logs', permission_code: 'print.logs.view' }
     ]
   },
   {
@@ -182,6 +176,8 @@ const menuTitleOverrides: Record<string, string> = {
   'low-code': '低代码页面管理',
   'lowcode-pages': '低代码页面管理',
   'entity-design': '实体设计器',
+  'print-designer': '打印模板',
+  'print-logs': '打印日志',
   'trigger-workflow-designer': '触发器编排器',
   'workflow-jobs': '作业定义',
   'workflow-job-runs': '作业运行记录',
@@ -190,6 +186,7 @@ const menuTitleOverrides: Record<string, string> = {
 
 const productionRouteCodes = new Set(['dashboard-home']);
 const advancedRouteCodes = new Set([
+  'file-management',
   'entity-design',
   'low-code-designer',
   'lowcode-visual-designer',
@@ -197,6 +194,137 @@ const advancedRouteCodes = new Set([
   'trigger-workflow-designer'
 ]);
 const hiddenRouteCodes = new Set(['business-root', 'system-root']);
+const lowCodeDesignerLoadPageEventName = 'enlearn:lowcode-designer-load-page';
+const lowCodeDesignerLoadPageStorageKey = 'enlearn:lowcode-designer-load-page-code';
+const lowCodeMenuGroups = [
+  {
+    code: 'lowcode-config-root',
+    title: '页面配置',
+    routeCodes: ['lowcode-pages']
+  },
+  {
+    code: 'lowcode-user-root',
+    title: '用户权限',
+    routeCodes: ['system-users', 'system-roles', 'system-permissions']
+  },
+  {
+    code: 'lowcode-notification-root',
+    title: '消息通知',
+    routeCodes: ['notification-message-center', 'notification-deliveries']
+  },
+  {
+    code: 'lowcode-file-root',
+    title: '文件资料',
+    routeCodes: ['system-file-entities']
+  },
+  {
+    code: 'lowcode-print-root',
+    title: '打印管理',
+    routeCodes: ['print-designer', 'print-logs']
+  },
+  {
+    code: 'lowcode-job-root',
+    title: '作业调度',
+    routeCodes: [
+      'workflow-jobs',
+      'workflow-job-runs',
+      'workflow-timer-jobs',
+      'system-execution-tasks'
+    ]
+  },
+  {
+    code: 'lowcode-metadata-root',
+    title: '系统元数据',
+    routeCodes: ['system-routes', 'system-entities', 'system-options']
+  }
+];
+
+const MenuItem = defineComponent({
+  name: 'DashboardMenuItem',
+  props: {
+    item: {
+      type: Object as PropType<AdminRouteNode>,
+      required: true
+    },
+    expandedGroups: {
+      type: Object as PropType<Record<string, boolean>>,
+      required: true
+    },
+    filtering: {
+      type: Boolean,
+      default: false
+    },
+    level: {
+      type: Number,
+      default: 0
+    }
+  },
+  emits: {
+    context: (_payload: MenuContextPayload) => true,
+    toggle: (_code: string) => true
+  },
+  setup(props, { emit }) {
+    const hasChildren = computed(() => Boolean(props.item.children?.length));
+    const isExpanded = computed(
+      () => props.filtering || props.expandedGroups[props.item.code] !== false
+    );
+
+    return () => {
+      if (!hasChildren.value) {
+        return h(
+          resolveComponent('NuxtLink'),
+          {
+            class: ['admin-menu-link', `level-${props.level}`],
+            to: props.item.path,
+            onContextmenu: (event: MouseEvent) => {
+              event.preventDefault();
+              event.stopPropagation();
+              emit('context', { event, item: props.item });
+            }
+          },
+          () => props.item.title
+        );
+      }
+
+      return h('div', { class: 'admin-menu-node' }, [
+        h(
+          'button',
+          {
+            class: ['admin-menu-group', `level-${props.level}`],
+            type: 'button',
+            onClick: () => emit('toggle', props.item.code),
+            onContextmenu: (event: MouseEvent) => {
+              event.preventDefault();
+              event.stopPropagation();
+              emit('context', { event, item: props.item });
+            }
+          },
+          [
+            h('span', props.item.title),
+            h('span', isExpanded.value ? '-' : '+')
+          ]
+        ),
+        isExpanded.value
+          ? h(
+              'div',
+              { class: 'admin-submenu' },
+              props.item.children?.map((child) =>
+                h(MenuItem, {
+                  key: child.code,
+                  item: child,
+                  expandedGroups: props.expandedGroups,
+                  filtering: props.filtering,
+                  level: props.level + 1,
+                  onContext: (payload: MenuContextPayload) => emit('context', payload),
+                  onToggle: (code: string) => emit('toggle', code)
+                })
+              )
+            )
+          : null
+      ]);
+    };
+  }
+});
 
 function normalizeNodes(nodes: AdminRouteNode[]): AdminRouteNode[] {
   const normalized = nodes
@@ -235,14 +363,43 @@ function sortMenuPages(pages: AdminRouteNode[]) {
   });
 }
 
-function buildMenuGroup(code: string, title: string, children: AdminRouteNode[]) {
+function buildMenuGroup(
+  code: string,
+  title: string,
+  children: AdminRouteNode[],
+  sortOrder = 0
+) {
   return {
     code,
     title,
     path: `/dashboard/${code}/_group`,
     route_type: 'group' as const,
+    sort_order: sortOrder,
     children: sortMenuPages(children)
   };
+}
+
+function buildLowCodeMenuGroups(pages: AdminRouteNode[]) {
+  const byCode = new Map(pages.map((page) => [page.code, page]));
+  const groupedCodes = new Set<string>();
+  const groups = lowCodeMenuGroups
+    .map((group, index) => {
+      const children = group.routeCodes
+        .map((code) => byCode.get(code))
+        .filter((item): item is AdminRouteNode => Boolean(item));
+
+      children.forEach((child) => groupedCodes.add(child.code));
+
+      return buildMenuGroup(group.code, group.title, children, (index + 1) * 10);
+    })
+    .filter((group) => group.children.length);
+
+  const uncategorizedPages = pages.filter((page) => !groupedCodes.has(page.code));
+  if (uncategorizedPages.length) {
+    groups.push(buildMenuGroup('lowcode-other-root', '其他应用', uncategorizedPages));
+  }
+
+  return groups;
 }
 
 function regroupMenuTree(nodes: AdminRouteNode[]) {
@@ -257,7 +414,7 @@ function regroupMenuTree(nodes: AdminRouteNode[]) {
 
   return [
     buildMenuGroup('production-root', '生产运营', productionPages),
-    buildMenuGroup('lowcode-app-root', '低代码应用', lowCodePages),
+    buildMenuGroup('lowcode-app-root', '低代码应用', buildLowCodeMenuGroups(lowCodePages)),
     buildMenuGroup('advanced-root', '高级功能', advancedPages)
   ].filter((group) => group.children.length);
 }
@@ -274,6 +431,8 @@ function flattenNodes(nodes: AdminRouteNode[]): AdminRouteNode[] {
 const menuTree = computed<AdminRouteNode[]>(() =>
   regroupMenuTree(normalizeNodes(routes.value.length ? routes.value : fallbackRoutes))
 );
+const normalizedMenuFilter = computed(() => menuFilter.value.trim().toLowerCase());
+const filteredMenuTree = computed(() => filterMenuNodes(menuTree.value, normalizedMenuFilter.value));
 const flatMenu = computed<AdminRouteNode[]>(() => flattenNodes(menuTree.value));
 const activeTitle = computed<string>(
   () =>
@@ -301,7 +460,24 @@ function toggleGroup(code: string) {
   expandedGroups[code] = expandedGroups[code] === false;
 }
 
-function openMenuContext(event: MouseEvent, item: AdminRouteNode) {
+function filterMenuNodes(nodes: AdminRouteNode[], keyword: string): AdminRouteNode[] {
+  if (!keyword) return nodes;
+
+  return nodes
+    .map<AdminRouteNode | null>((node) => {
+      const children = filterMenuNodes(node.children ?? [], keyword);
+      const selfMatched = [node.title, node.code, node.path]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(keyword));
+
+      if (!selfMatched && !children.length) return null;
+      return { ...node, children };
+    })
+    .filter((node): node is AdminRouteNode => Boolean(node));
+}
+
+function openMenuContext(payload: MenuContextPayload) {
+  const { event, item } = payload;
   menuContext.visible = true;
   menuContext.x = event.clientX;
   menuContext.y = event.clientY;
@@ -370,6 +546,8 @@ async function openLowCodeDesigner() {
   closeMenuContext();
   if (!pageCode) return;
   await router.push(`/dashboard/low-code/designer/${pageCode}`);
+  window.sessionStorage.setItem(lowCodeDesignerLoadPageStorageKey, pageCode);
+  window.dispatchEvent(new Event(lowCodeDesignerLoadPageEventName));
 }
 
 async function openLowCodePage() {

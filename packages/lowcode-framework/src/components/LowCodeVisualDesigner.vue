@@ -35,7 +35,7 @@
               </vxe-button>
               <vxe-button size="mini" @click="createBlankPage">新建页面</vxe-button>
               <vxe-button size="mini" @click="openPageInfo">页面信息</vxe-button>
-              <vxe-button size="mini" :loading="loading" @click="reload">刷新当前</vxe-button>
+              <vxe-button size="mini" :loading="loading" @click="reloadCurrent">刷新当前</vxe-button>
               <vxe-button size="mini" status="primary" :loading="saving" @click="requestSave">
                 保存
               </vxe-button>
@@ -129,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import VisualEditorProvider from './VisualEditorProvider.vue';
 import type { LowCodePageRecord, LowCodePageSchema } from '../types/lowcode';
 import type {
@@ -166,6 +166,9 @@ type DesignerPageForm = {
   status: DesignerPageStatus;
 };
 
+const designerLoadPageEventName = 'enlearn:lowcode-designer-load-page';
+const designerLoadPageStorageKey = 'enlearn:lowcode-designer-load-page-code';
+
 const host = useLowCodeHost(() => ({
   serviceApi: props.serviceApi,
   router: props.router,
@@ -191,6 +194,7 @@ const errorMessage = ref('');
 const message = ref('');
 const messageType = ref<'success' | 'error'>('success');
 const visualModel = ref<VisualEditorModelValue | null>(null);
+const loadingPageCode = ref('');
 const pagePickerVisible = ref(false);
 const pagePickerLoading = ref(false);
 const pagePickerRows = ref<LowCodePageRecord[]>([]);
@@ -333,12 +337,14 @@ function createBlankPage() {
 }
 
 async function loadPageByCode(code: string) {
-  if (!code) return;
+  const nextCode = code.trim();
+  if (!nextCode || loadingPageCode.value === nextCode) return;
+  loadingPageCode.value = nextCode;
   resetDesignerFrame();
 
   try {
     const nextPage = await host.getServiceApi().invoke<LowCodePageRecord>('lowcode', 'getPage', {
-      code,
+      code: nextCode,
       includeData: false
     });
     applyVisualPage(nextPage);
@@ -349,11 +355,17 @@ async function loadPageByCode(code: string) {
       error instanceof Error ? error.message : '低代码页面加载失败。';
   } finally {
     loading.value = false;
+    if (loadingPageCode.value === nextCode) {
+      loadingPageCode.value = '';
+    }
   }
 }
 
-async function reload() {
-  const code = page.value?.code || props.code || '';
+async function reload(codeOverride?: string) {
+  const code =
+    typeof codeOverride === 'string'
+      ? codeOverride
+      : page.value?.code || props.code || '';
 
   if (code) {
     await loadPageByCode(code);
@@ -370,6 +382,42 @@ async function reload() {
     loading.value = false;
   }
 }
+
+function reloadCurrent() {
+  reload();
+}
+
+function readDesignerLoadCode(event: Event) {
+  if (event.type !== designerLoadPageEventName) return '';
+  const code = window.sessionStorage.getItem(designerLoadPageStorageKey)?.trim() ?? '';
+  if (code) {
+    window.sessionStorage.removeItem(designerLoadPageStorageKey);
+  }
+  return code;
+}
+
+function handleDesignerLoadPage(event: Event) {
+  const code = readDesignerLoadCode(event);
+  if (!code) return;
+  loadPageByCode(code);
+}
+
+watch(
+  () => props.code,
+  (nextCode) => {
+    reload(nextCode || '');
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  window.addEventListener(designerLoadPageEventName, handleDesignerLoadPage);
+  handleDesignerLoadPage(new Event(designerLoadPageEventName));
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener(designerLoadPageEventName, handleDesignerLoadPage);
+});
 
 function buildSchema(payload: {
   model: VisualEditorModelValue;
@@ -540,5 +588,4 @@ async function goBackToList() {
   await host.getRouter().push(props.backRoute ?? '/dashboard/low-code');
 }
 
-onMounted(reload);
 </script>

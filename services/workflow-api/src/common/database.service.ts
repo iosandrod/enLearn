@@ -9,7 +9,7 @@ export class DatabaseService implements OnModuleDestroy {
 
   constructor() {
     const env = getWorkflowEnv();
-    const connectionString = env.DATABASE_URL;
+    const connectionString = env.DIRECT_URL ?? env.DATABASE_URL;
     if (!connectionString) return;
 
     this.pool = new Pool({

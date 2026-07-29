@@ -224,6 +224,47 @@
         删除文件
       </button>
     </div>
+
+    <div v-if="uploadDialog.visible" class="upload-progress-mask">
+      <section class="upload-progress-modal" role="dialog" aria-modal="true" aria-labelledby="upload-progress-title" @click.stop>
+        <div class="upload-progress-header">
+          <div>
+            <h2 id="upload-progress-title">{{ uploadDialogTitle }}</h2>
+            <p>{{ uploadDialogStatusText }}</p>
+          </div>
+          <button
+            v-if="uploadDialog.phase === 'failed'"
+            class="icon-button"
+            type="button"
+            title="关闭"
+            @click="closeUploadDialog"
+          >
+            <i class="ri-close-line" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="upload-current-file">
+          <i class="ri-file-upload-line" aria-hidden="true"></i>
+          <span>{{ uploadDialog.currentFileName || '准备上传' }}</span>
+          <strong>{{ uploadDialog.overallProgress }}%</strong>
+        </div>
+
+        <div
+          class="upload-progress-track"
+          role="progressbar"
+          :aria-valuenow="uploadDialog.overallProgress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <span :style="{ width: `${uploadDialog.overallProgress}%` }"></span>
+        </div>
+
+        <div class="upload-progress-meta">
+          <span>当前 {{ uploadDialog.currentFileProgress }}%</span>
+          <span>{{ formatBytes(uploadDialogLoadedBytes) }} / {{ formatBytes(uploadDialog.totalBytes) }}</span>
+        </div>
+      </section>
+    </div>
   </section>
 </template>
 
@@ -243,6 +284,7 @@ type FileTreeNode = {
   level: number;
   children: FileTreeNode[];
 };
+type UploadPhase = 'idle' | 'preparing' | 'uploading' | 'confirming' | 'finishing' | 'success' | 'failed';
 
 const filesApi = useFilesApi();
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -257,6 +299,31 @@ const selectedPrefix = ref('');
 const selectedNodeLabel = ref('全部文件');
 const selectedFileId = ref('');
 const thumbnailUrls = reactive<Record<string, string>>({});
+const uploadDialog = reactive<{
+  visible: boolean;
+  phase: UploadPhase;
+  totalFiles: number;
+  currentIndex: number;
+  currentFileName: string;
+  currentFileLoaded: number;
+  currentFileTotal: number;
+  currentFileProgress: number;
+  uploadedBytes: number;
+  totalBytes: number;
+  overallProgress: number;
+}>({
+  visible: false,
+  phase: 'idle',
+  totalFiles: 0,
+  currentIndex: 0,
+  currentFileName: '',
+  currentFileLoaded: 0,
+  currentFileTotal: 0,
+  currentFileProgress: 0,
+  uploadedBytes: 0,
+  totalBytes: 0,
+  overallProgress: 0
+});
 const contextMenu = reactive<{
   visible: boolean;
   x: number;
@@ -315,9 +382,63 @@ const canDeleteSelectedFolder = computed(
     filteredFiles.value.length === 0 &&
     filteredFolderChildren.value.length === 0
 );
+const uploadDialogTitle = computed(() => {
+  if (uploadDialog.phase === 'success') return '上传完成';
+  if (uploadDialog.phase === 'failed') return '上传失败';
+  return '正在上传文件';
+});
+const uploadDialogStatusText = computed(() => {
+  const fileCount =
+    uploadDialog.totalFiles > 1
+      ? `第 ${uploadDialog.currentIndex} / ${uploadDialog.totalFiles} 个文件`
+      : '当前文件';
+  const phaseLabels: Record<UploadPhase, string> = {
+    idle: '等待开始',
+    preparing: '正在创建上传任务',
+    uploading: '正在传输文件',
+    confirming: '正在确认上传结果',
+    finishing: '正在刷新文件列表',
+    success: '文件已上传完成',
+    failed: '上传过程中出现错误'
+  };
+
+  return `${fileCount} · ${phaseLabels[uploadDialog.phase]}`;
+});
+const uploadDialogLoadedBytes = computed(() =>
+  Math.min(uploadDialog.totalBytes, uploadDialog.uploadedBytes + uploadDialog.currentFileLoaded)
+);
 
 function openPicker() {
   fileInput.value?.click();
+}
+
+function getUploadFileBytes(file: File) {
+  return Math.max(file.size, 1);
+}
+
+function calculateOverallProgress() {
+  if (!uploadDialog.totalBytes) return 0;
+  const loaded = uploadDialog.uploadedBytes + uploadDialog.currentFileLoaded;
+  return Math.min(100, Math.round((loaded / uploadDialog.totalBytes) * 100));
+}
+
+function resetUploadDialog(selected: File[]) {
+  uploadDialog.visible = true;
+  uploadDialog.phase = 'preparing';
+  uploadDialog.totalFiles = selected.length;
+  uploadDialog.currentIndex = 0;
+  uploadDialog.currentFileName = '';
+  uploadDialog.currentFileLoaded = 0;
+  uploadDialog.currentFileTotal = 0;
+  uploadDialog.currentFileProgress = 0;
+  uploadDialog.uploadedBytes = 0;
+  uploadDialog.totalBytes = selected.reduce((total, file) => total + getUploadFileBytes(file), 0);
+  uploadDialog.overallProgress = 0;
+}
+
+function closeUploadDialog() {
+  if (uploading.value) return;
+  uploadDialog.visible = false;
 }
 
 async function handleFileInput(event: Event) {
@@ -328,17 +449,51 @@ async function handleFileInput(event: Event) {
 
   uploading.value = true;
   errorMessage.value = '';
+  resetUploadDialog(selected);
 
   try {
-    for (const file of selected) {
+    for (let index = 0; index < selected.length; index += 1) {
+      const file = selected[index];
+      const fileBytes = getUploadFileBytes(file);
+      uploadDialog.phase = 'preparing';
+      uploadDialog.currentIndex = index + 1;
+      uploadDialog.currentFileName = file.name;
+      uploadDialog.currentFileLoaded = 0;
+      uploadDialog.currentFileTotal = fileBytes;
+      uploadDialog.currentFileProgress = 0;
+      uploadDialog.overallProgress = calculateOverallProgress();
+
       await filesApi.upload({
         file,
         visibility: 'private',
-        folderPath: selectedPrefix.value || undefined
+        folderPath: selectedPrefix.value || undefined,
+        onProgress: ({ loaded, total, progress }) => {
+          uploadDialog.phase = 'uploading';
+          uploadDialog.currentFileTotal = Math.max(total || fileBytes, 1);
+          uploadDialog.currentFileLoaded = Math.min(loaded, fileBytes);
+          uploadDialog.currentFileProgress = progress;
+          uploadDialog.overallProgress = calculateOverallProgress();
+        }
       });
+
+      uploadDialog.phase = 'confirming';
+      uploadDialog.uploadedBytes += fileBytes;
+      uploadDialog.currentFileLoaded = fileBytes;
+      uploadDialog.currentFileTotal = fileBytes;
+      uploadDialog.currentFileProgress = 100;
+      uploadDialog.overallProgress = calculateOverallProgress();
     }
+    uploadDialog.phase = 'finishing';
+    uploadDialog.overallProgress = 100;
     await loadAll();
+    uploadDialog.phase = 'success';
+    window.setTimeout(() => {
+      if (uploadDialog.phase === 'success') {
+        uploadDialog.visible = false;
+      }
+    }, 800);
   } catch (error) {
+    uploadDialog.phase = 'failed';
     errorMessage.value = error instanceof Error ? error.message : '文件上传失败。';
   } finally {
     uploading.value = false;
@@ -592,8 +747,30 @@ function closeContextMenu() {
 
 async function download(file: FileObject) {
   closeContextMenu();
-  const result = await filesApi.getDownloadUrl(file.id, 300);
-  window.open(result.download.signedUrl, '_blank', 'noopener,noreferrer');
+  try {
+    const result = await filesApi.getDownloadUrl(file.id, 300);
+    await downloadFromUrl(result.download.signedUrl, file.originalName);
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : '文件下载失败。';
+  }
+}
+
+async function downloadFromUrl(url: string, fileName: string) {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`文件下载失败，状态码 ${response.status}。`);
+  }
+
+  const blobUrl = URL.createObjectURL(await response.blob());
+  const anchor = document.createElement('a');
+  anchor.href = blobUrl;
+  anchor.download = fileName || 'download';
+  anchor.style.display = 'none';
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
 }
 
 async function toggleLock(file: FileObject) {
@@ -1029,6 +1206,95 @@ watch(filteredFiles, () => {
 
 .file-empty.error {
   color: #b42318;
+}
+
+.upload-progress-mask {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(15 23 42 / 28%);
+  padding: 16px;
+}
+
+.upload-progress-modal {
+  display: grid;
+  gap: 14px;
+  width: min(420px, 100%);
+  border: 1px solid #cfd7e3;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 42px rgb(15 23 42 / 20%);
+  padding: 18px;
+}
+
+.upload-progress-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.upload-progress-header h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.upload-progress-header p {
+  margin: 4px 0 0;
+  color: #667085;
+  font-size: 12px;
+}
+
+.upload-current-file {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: 8px;
+  color: #344054;
+  font-size: 13px;
+}
+
+.upload-current-file i {
+  color: #006be6;
+  font-size: 18px;
+}
+
+.upload-current-file span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upload-current-file strong {
+  color: #111827;
+  font-size: 13px;
+}
+
+.upload-progress-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #e4e7ec;
+  overflow: hidden;
+}
+
+.upload-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #006be6;
+  transition: width 160ms ease;
+}
+
+.upload-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #667085;
+  font-size: 12px;
 }
 
 .context-menu {

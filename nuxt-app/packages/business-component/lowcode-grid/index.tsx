@@ -22,6 +22,19 @@ const gridOverflowOptions = [
   { label: '气泡提示', value: 'tooltip' },
 ];
 
+function resolveGridMinHeight(value: unknown) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return `${Math.max(value, 200)}px`;
+  }
+
+  if (typeof value === 'string') {
+    const px = value.trim().match(/^(\d+(?:\.\d+)?)px$/i);
+    if (px) return `${Math.max(Number(px[1]), 200)}px`;
+  }
+
+  return '200px';
+}
+
 export default {
   key: 'lowcode-grid',
   moduleName: 'businessComponents',
@@ -55,13 +68,13 @@ export default {
   render({ props, styles }) {
     return () => {
       const columns = Array.isArray(props.columns) && props.columns.length ? props.columns : [];
-      const title = String(props.title || '数据表格');
 
       return (
         <div
           style={{
             ...styles,
             width: '100%',
+            minHeight: resolveGridMinHeight(styles.minHeight),
             display: 'block',
             border: '1px solid #dcdfe6',
             borderRadius: '6px',
@@ -69,11 +82,6 @@ export default {
             overflow: 'hidden',
           }}
         >
-          <div
-            style={{ fontWeight: 600, padding: '10px 12px', borderBottom: '1px solid #ebeef5' }}
-          >
-            {title}
-          </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
             <thead>
               <tr>

@@ -295,6 +295,7 @@ export type ComponentModules = {
   formComponents: VisualEditorComponent[]; // 表单组件
   containerComponents: VisualEditorComponent[]; // 容器组件
   businessComponents: VisualEditorComponent[]; // 业务组件
+  chartComponents: VisualEditorComponent[]; // 图表组件
 };
 /**
  * @description 创建编辑器配置
@@ -306,6 +307,7 @@ export function createVisualEditorConfig() {
     formComponents: [],
     containerComponents: [],
     businessComponents: [],
+    chartComponents: [],
   };
   // const componentList: VisualEditorComponent[] = []
   const componentMap: Record<string, VisualEditorComponent> = {};

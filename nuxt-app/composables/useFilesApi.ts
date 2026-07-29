@@ -65,6 +65,16 @@ type CreateUploadIntentInput = {
   expiresInSeconds?: number;
 };
 
+type UploadProgress = {
+  loaded: number;
+  total: number;
+  progress: number;
+};
+
+type UploadFileInput = CreateUploadIntentInput & {
+  onProgress?: (progress: UploadProgress) => void;
+};
+
 type UploadIntentResponse = {
   file: FileObject;
   upload: SignedUpload;
@@ -107,25 +117,48 @@ type AttachToEntityInput = {
   metadata?: Record<string, unknown>;
 };
 
-async function uploadFileToSignedUrl(file: File, upload: SignedUpload) {
+async function uploadFileToSignedUrl(
+  file: File,
+  upload: SignedUpload,
+  onProgress?: (progress: UploadProgress) => void
+) {
   const body = new FormData();
   body.append('cacheControl', '3600');
   body.append('', file);
 
-  const response = await fetch(upload.signedUrl, {
-    method: 'PUT',
-    headers: {
-      'x-upsert': 'false'
-    },
-    body
+  return new Promise<XMLHttpRequest>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      onProgress?.({
+        loaded: event.loaded,
+        total: event.total,
+        progress: Math.min(100, Math.round((event.loaded / event.total) * 100))
+      });
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        onProgress?.({
+          loaded: file.size || 1,
+          total: file.size || 1,
+          progress: 100
+        });
+        resolve(xhr);
+        return;
+      }
+
+      reject(new Error(xhr.responseText || `File upload failed with ${xhr.status}.`));
+    };
+
+    xhr.onerror = () => reject(new Error('File upload failed because the network request failed.'));
+    xhr.onabort = () => reject(new Error('File upload was cancelled.'));
+
+    xhr.open('PUT', upload.signedUrl);
+    xhr.setRequestHeader('x-upsert', 'false');
+    xhr.send(body);
   });
-
-  if (!response.ok) {
-    const message = await response.text().catch(() => '');
-    throw new Error(message || `File upload failed with ${response.status}.`);
-  }
-
-  return response;
 }
 
 export function useFilesApi() {
@@ -156,9 +189,9 @@ export function useFilesApi() {
     );
   }
 
-  async function upload(input: CreateUploadIntentInput) {
+  async function upload(input: UploadFileInput) {
     const intent = await createUploadIntent(input);
-    await uploadFileToSignedUrl(input.file, intent.upload);
+    await uploadFileToSignedUrl(input.file, intent.upload, input.onProgress);
     return confirmUpload({
       fileId: intent.file.id,
       status: 'ready'

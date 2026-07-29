@@ -36,18 +36,27 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
       return this.triggerLocalWorkflow(payload);
     }
 
-    return tasks.trigger<typeof workflowInstanceTask>(
-      WORKFLOW_INSTANCE_TASK_ID,
-      payload,
-      {
-        idempotencyKey: `workflow-instance:${payload.instanceId}`,
-        tags: [
-          `tenant:${payload.tenantId}`,
-          `workflow-instance:${payload.instanceId}`,
-          `definition:${payload.definitionId}`
-        ]
-      }
-    );
+    try {
+      return await tasks.trigger<typeof workflowInstanceTask>(
+        WORKFLOW_INSTANCE_TASK_ID,
+        payload,
+        {
+          idempotencyKey: `workflow-instance:${payload.instanceId}`,
+          tags: [
+            `tenant:${payload.tenantId}`,
+            `workflow-instance:${payload.instanceId}`,
+            `definition:${payload.definitionId}`
+          ]
+        }
+      );
+    } catch (error) {
+      if (!this.canFallbackToLocalRunner(error)) throw error;
+
+      this.logger.warn(
+        `Trigger.dev workflow trigger failed, using local runner: ${errorMessage(error)}`
+      );
+      return this.triggerLocalWorkflow(payload);
+    }
   }
 
   async triggerTask(
@@ -60,7 +69,16 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
       return this.triggerLocalTask(taskId, payload);
     }
 
-    return tasks.trigger(taskId, payload, options);
+    try {
+      return await tasks.trigger(taskId, payload, options);
+    } catch (error) {
+      if (!this.canFallbackToLocalRunner(error)) throw error;
+
+      this.logger.warn(
+        `Trigger.dev task "${taskId}" failed, using local task fallback: ${errorMessage(error)}`
+      );
+      return this.triggerLocalTask(taskId, payload);
+    }
   }
 
   async createWaitpoint(options: { idempotencyKey: string; tags: string[] }) {
@@ -69,7 +87,16 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
       return this.createToken(options);
     }
 
-    return wait.createToken(options);
+    try {
+      return await wait.createToken(options);
+    } catch (error) {
+      if (!this.canFallbackToLocalRunner(error)) throw error;
+
+      this.logger.warn(
+        `Trigger.dev waitpoint creation failed, using local token: ${errorMessage(error)}`
+      );
+      return this.createToken(options);
+    }
   }
 
   async createToken(options: { idempotencyKey: string; tags: string[] }) {
@@ -104,7 +131,7 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
   }
 
   async completeWaitpoint(tokenId: string, decision: WorkflowTaskDecision) {
-    if (!this.useTriggerDev()) {
+    if (!this.useTriggerDev() || this.isLocalWaitpointToken(tokenId)) {
       this.assertLocalFallbackEnabled();
       const waiter = this.tokenWaiters.get(tokenId);
       if (!waiter) {
@@ -115,11 +142,22 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
       return;
     }
 
-    await wait.completeToken(tokenId, decision);
+    try {
+      await this.completeTriggerWaitpoint(tokenId, decision);
+    } catch (error) {
+      if (!this.canFallbackToLocalRunner(error)) throw error;
+
+      const waiter = this.tokenWaiters.get(tokenId);
+      if (!waiter) throw error;
+      this.logger.warn(
+        `Trigger.dev waitpoint completion failed, using local token: ${errorMessage(error)}`
+      );
+      waiter.resolve(decision);
+    }
   }
 
   async cancelRun(runId: string) {
-    if (!this.useTriggerDev()) {
+    if (!this.useTriggerDev() || this.isLocalWorkflowRun(runId)) {
       return;
     }
 
@@ -131,7 +169,7 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
   }
 
   private assertLocalFallbackEnabled() {
-    const enabled = getWorkflowEnv().WORKFLOW_TRIGGER_LOCAL_FALLBACK_ENABLED === 'true';
+    const enabled = this.isLocalFallbackEnabled();
     if (!enabled) {
       throw new Error(
         'Trigger.dev is required for workflow execution. Set TRIGGER_SECRET_KEY or explicitly enable WORKFLOW_TRIGGER_LOCAL_FALLBACK_ENABLED=true.'
@@ -139,9 +177,25 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
     }
   }
 
+  private canFallbackToLocalRunner(error: unknown) {
+    return this.isLocalFallbackEnabled() && isTriggerConnectionError(error);
+  }
+
+  private isLocalFallbackEnabled() {
+    return getWorkflowEnv().WORKFLOW_TRIGGER_LOCAL_FALLBACK_ENABLED === 'true';
+  }
+
+  private isLocalWorkflowRun(runId: string) {
+    return runId.startsWith('local-workflow-');
+  }
+
+  private isLocalWaitpointToken(tokenId: string) {
+    return tokenId.startsWith('local-waitpoint-');
+  }
+
   private triggerLocalWorkflow(payload: WorkflowInstanceTaskPayload) {
     const runId = `local-workflow-${randomUUID()}`;
-    const connectionString = getWorkflowEnv().DATABASE_URL ?? getWorkflowEnv().DIRECT_URL;
+    const connectionString = getWorkflowEnv().DIRECT_URL ?? getWorkflowEnv().DATABASE_URL;
     if (!connectionString) {
       throw new Error('DIRECT_URL or DATABASE_URL is required by the local workflow runner.');
     }
@@ -183,8 +237,41 @@ export class TriggerDevClient implements WorkflowTriggerClient, WorkflowWaitDriv
 
     return { id: `local-task-${randomUUID()}` };
   }
+
+  private async completeTriggerWaitpoint(tokenId: string, decision: WorkflowTaskDecision) {
+    try {
+      const token = await wait.retrieveToken<WorkflowTaskDecision>(tokenId);
+      const response = await fetch(token.url, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(decision)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Trigger.dev waitpoint callback failed with HTTP ${response.status}.`);
+      }
+      return;
+    } catch (error) {
+      this.logger.warn(
+        `Trigger.dev waitpoint callback failed, using completeToken: ${errorMessage(error)}`
+      );
+    }
+
+    await wait.completeToken(tokenId, decision);
+  }
 }
 
 function delay(ms: number) {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+function isTriggerConnectionError(error: unknown) {
+  const message = errorMessage(error).toLowerCase();
+  return message.includes('connection error') || message.includes('fetch failed') || message.includes('econnrefused');
+}
+
+function errorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
 }

@@ -1,0 +1,13 @@
+{
+  "runId": 1785325547000,
+  "steps": [
+    {
+      "name": "failed",
+      "at": "2026-07-29T11:45:47.228Z",
+      "message": "POST /models failed 500: {\"statusCode\":500,\"message\":\"Internal server error\"}",
+      "stack": "Error: POST /models failed 500: {\"statusCode\":500,\"message\":\"Internal server error\"}\n    at request ([stdin]:10:334)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async [stdin]:16:17"
+    }
+  ],
+  "error": "Error: POST /models failed 500: {\"statusCode\":500,\"message\":\"Internal server error\"}",
+  "finishedAt": "2026-07-29T11:45:47.233Z"
+}

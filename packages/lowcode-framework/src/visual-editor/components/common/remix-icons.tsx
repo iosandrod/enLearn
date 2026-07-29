@@ -12,6 +12,7 @@ function createRemixIcon(name: string) {
 export const ArrowDown = createRemixIcon('ri-arrow-down-s-line');
 export const ArrowUp = createRemixIcon('ri-arrow-up-s-line');
 export const Aim = createRemixIcon('ri-focus-3-line');
+export const BarChart = createRemixIcon('ri-bar-chart-2-line');
 export const CaretRight = createRemixIcon('ri-play-fill');
 export const CirclePlus = createRemixIcon('ri-add-circle-line');
 export const CopyDocument = createRemixIcon('ri-file-copy-line');

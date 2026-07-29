@@ -23,6 +23,7 @@ import DesignerUI, {
   ElTableColumn,
   ElTabs,
 } from '../common/designer-ui';
+import { ArrowDown, ArrowUp, CopyDocument, Delete, Plus } from '../common/remix-icons';
 import { cloneDeep } from 'lodash-es';
 import LowCodeForm from '../../../components/LowCodeForm.vue';
 import type {
@@ -431,83 +432,100 @@ const advancedGridConfigDefinitions: AdvancedGridConfigDefinition[] = [
   { field: 'expandConfigJson', label: 'expandConfig', fields: expandConfigFields },
 ];
 
-const columnAdvancedFormSchema: LowCodeFormSchema = {
-  fields: [
-    {
-      field: 'maxWidth',
-      label: 'maxWidth',
-      component: 'vxe-input',
-      props: { placeholder: 'maxWidth' },
-    },
-    {
-      field: 'headerAlign',
-      label: 'headerAlign',
-      component: 'vxe-select',
-      options: alignOptions,
-    },
-    {
-      field: 'footerAlign',
-      label: 'footerAlign',
-      component: 'vxe-select',
-      options: alignOptions,
-    },
-    {
-      field: 'resizable',
-      label: 'resizable',
-      component: 'vxe-switch',
-    },
-    {
-      field: 'showHeaderOverflow',
-      label: 'showHeaderOverflow',
-      component: 'vxe-select',
-      options: overflowOptions as any,
-    },
-    {
-      field: 'showFooterOverflow',
-      label: 'showFooterOverflow',
-      component: 'vxe-select',
-      options: overflowOptions as any,
-    },
-    {
-      field: 'filters',
-      label: 'filters',
-      component: 'lc-array-table',
-      props: {
-        addText: '新增筛选',
-        rowKey: '__rowKey',
-        defaultRow: {
-          label: '筛选项',
-          value: '',
-          checked: false,
-        },
-        columns: [
-          { field: 'label', title: 'label', minWidth: 110 },
-          { field: 'value', title: 'value', minWidth: 110 },
-          { field: 'checked', title: 'checked', component: 'vxe-switch', width: 86 },
-        ],
+const columnAdvancedFormSections: Array<{ title: string; fields: LowCodeField[] }> = [
+  {
+    title: '尺寸与对齐',
+    fields: [
+      {
+        field: 'maxWidth',
+        label: 'maxWidth',
+        component: 'vxe-input',
+        props: { placeholder: 'maxWidth' },
       },
-    },
-    {
-      field: 'cellRender',
-      label: 'cellRender',
-      component: 'lc-sub-form',
-      props: { fields: rendererObjectFields },
-    },
-    {
-      field: 'editRender',
-      label: 'editRender',
-      component: 'lc-sub-form',
-      props: { fields: rendererObjectFields },
-    },
-    {
-      field: 'params',
-      label: 'params',
-      component: 'lc-sub-form',
-      props: { fields: formatterObjectFields },
-    },
-  ],
-  actions: [],
-};
+      {
+        field: 'headerAlign',
+        label: 'headerAlign',
+        component: 'vxe-select',
+        options: alignOptions,
+      },
+      {
+        field: 'footerAlign',
+        label: 'footerAlign',
+        component: 'vxe-select',
+        options: alignOptions,
+      },
+    ],
+  },
+  {
+    title: '显示行为',
+    fields: [
+      {
+        field: 'resizable',
+        label: 'resizable',
+        component: 'vxe-switch',
+      },
+      {
+        field: 'showHeaderOverflow',
+        label: 'showHeaderOverflow',
+        component: 'vxe-select',
+        options: overflowOptions as any,
+      },
+      {
+        field: 'showFooterOverflow',
+        label: 'showFooterOverflow',
+        component: 'vxe-select',
+        options: overflowOptions as any,
+      },
+    ],
+  },
+  {
+    title: '筛选项',
+    fields: [
+      {
+        field: 'filters',
+        label: 'filters',
+        component: 'lc-array-table',
+        props: {
+          addText: '新增筛选',
+          rowKey: '__rowKey',
+          defaultRow: {
+            label: '筛选项',
+            value: '',
+            checked: false,
+          },
+          columns: [
+            { field: 'label', title: 'label', minWidth: 110 },
+            { field: 'value', title: 'value', minWidth: 110 },
+            { field: 'checked', title: 'checked', component: 'vxe-switch', width: 86 },
+          ],
+        },
+      },
+    ],
+  },
+  {
+    title: '渲染配置',
+    fields: [
+      {
+        field: 'cellRender',
+        label: 'cellRender',
+        component: 'lc-sub-form',
+        props: { fields: rendererObjectFields },
+      },
+      {
+        field: 'editRender',
+        label: 'editRender',
+        component: 'lc-sub-form',
+        props: { fields: rendererObjectFields },
+      },
+      {
+        field: 'params',
+        label: 'params',
+        component: 'lc-sub-form',
+        props: { fields: formatterObjectFields },
+      },
+    ],
+  },
+];
 
 const eventDefinitions: Omit<
   GridDesignerEvent,
@@ -1606,13 +1624,68 @@ const ServiceComponent = defineComponent({
       </div>
     );
 
+    const renderColumnToolbar = () => (
+      <div class="grid-designer-column-toolbar">
+        <div class="grid-designer-column-toolbar__meta">
+          <strong>列配置</strong>
+          <span>
+            {state.columns.length} 列
+            {selectedColumnIndex.value >= 0 ? ` · 当前第 ${selectedColumnIndex.value + 1} 列` : ''}
+          </span>
+        </div>
+        <ElButton type="primary" icon={Plus} onClick={columnActions.add}>
+          新增列
+        </ElButton>
+      </div>
+    );
+
+    const renderColumnRowActions = (index: number) => (
+      <div class="grid-designer-row-actions">
+        <span title="上移">
+          <ElButton
+            circle
+            text
+            type="primary"
+            icon={ArrowUp}
+            disabled={index <= 0}
+            onClick={() => columnActions.move(index, -1)}
+          />
+        </span>
+        <span title="下移">
+          <ElButton
+            circle
+            text
+            type="primary"
+            icon={ArrowDown}
+            disabled={index >= state.columns.length - 1}
+            onClick={() => columnActions.move(index, 1)}
+          />
+        </span>
+        <span title="复制">
+          <ElButton
+            circle
+            text
+            type="primary"
+            icon={CopyDocument}
+            onClick={() => columnActions.copy(index)}
+          />
+        </span>
+        <span title="删除">
+          <ElButton
+            circle
+            text
+            type="danger"
+            icon={Delete}
+            disabled={state.columns.length <= 1}
+            onClick={() => columnActions.remove(index)}
+          />
+        </span>
+      </div>
+    );
+
     const renderColumnDesigner = () => (
       <div class="grid-designer-panel">
-        <div class="grid-designer-actions">
-          <ElButton type="primary" onClick={columnActions.add}>
-            新增列
-          </ElButton>
-        </div>
+        {renderColumnToolbar()}
         <ElTable data={state.columns} border height="460" rowKey="__id" class="grid-designer-table">
           <ElTableColumn type="index" width={48} label="#" />
           <ElTableColumn label="field" minWidth={150}>
@@ -1694,24 +1767,9 @@ const ServiceComponent = defineComponent({
               ),
             }}
           </ElTableColumn>
-          <ElTableColumn label="操作" width={172} fixed="right">
+          <ElTableColumn label="操作" width={144} align="center">
             {{
-              default: ({ $index }: { $index: number }) => (
-                <div class="grid-designer-row-actions">
-                  <ElButton text type="primary" onClick={() => columnActions.move($index, -1)}>
-                    上移
-                  </ElButton>
-                  <ElButton text type="primary" onClick={() => columnActions.move($index, 1)}>
-                    下移
-                  </ElButton>
-                  <ElButton text type="primary" onClick={() => columnActions.copy($index)}>
-                    复制
-                  </ElButton>
-                  <ElButton text type="danger" onClick={() => columnActions.remove($index)}>
-                    删除
-                  </ElButton>
-                </div>
-              ),
+              default: ({ $index }: { $index: number }) => renderColumnRowActions($index),
             }}
           </ElTableColumn>
         </ElTable>
@@ -1727,11 +1785,7 @@ const ServiceComponent = defineComponent({
         <div class="grid-designer-panel">
           <div class="grid-designer-column-layout">
             <section class="grid-designer-column-table-panel">
-              <div class="grid-designer-actions">
-                <ElButton type="primary" onClick={columnActions.add}>
-                  新增列
-                </ElButton>
-              </div>
+              {renderColumnToolbar()}
               <ElTable
                 data={state.columns}
                 border
@@ -1830,24 +1884,9 @@ const ServiceComponent = defineComponent({
                     ),
                   }}
                 </ElTableColumn>
-                <ElTableColumn label="操作" width={172} fixed="right">
+                <ElTableColumn label="操作" width={144} align="center">
                   {{
-                    default: ({ $index }: { $index: number }) => (
-                      <div class="grid-designer-row-actions">
-                        <ElButton text type="primary" onClick={() => columnActions.move($index, -1)}>
-                          上移
-                        </ElButton>
-                        <ElButton text type="primary" onClick={() => columnActions.move($index, 1)}>
-                          下移
-                        </ElButton>
-                        <ElButton text type="primary" onClick={() => columnActions.copy($index)}>
-                          复制
-                        </ElButton>
-                        <ElButton text type="danger" onClick={() => columnActions.remove($index)}>
-                          删除
-                        </ElButton>
-                      </div>
-                    ),
+                    default: ({ $index }: { $index: number }) => renderColumnRowActions($index),
                   }}
                 </ElTableColumn>
               </ElTable>
@@ -1855,14 +1894,30 @@ const ServiceComponent = defineComponent({
 
             <aside class="grid-designer-column-form-panel">
               <div class="grid-designer-card is-compact grid-designer-column-form-card">
-                <h3>{readString(column?.title, readString(column?.field, fallbackTitle))} 高级列属性</h3>
+                <div class="grid-designer-column-form-header">
+                  <div>
+                    <span>当前列</span>
+                    <h3>{readString(column?.title, readString(column?.field, fallbackTitle))}</h3>
+                  </div>
+                  {selectedColumnIndex.value >= 0 ? (
+                    <b>{selectedColumnIndex.value + 1}</b>
+                  ) : null}
+                </div>
                 {column ? (
-                  <LowCodeForm
-                    key={column.__id}
-                    schema={columnAdvancedFormSchema}
-                    modelValue={column as Record<string, unknown>}
-                    onUpdate:modelValue={syncSelectedColumn}
-                  />
+                  <div class="grid-designer-column-form-sections">
+                    {columnAdvancedFormSections.map((section) => (
+                      <section key={section.title} class="grid-designer-column-form-section">
+                        <div class="grid-designer-column-form-section__title">{section.title}</div>
+                        <LowCodeForm
+                          key={`${column.__id}-${section.title}`}
+                          class="grid-designer-column-sub-form"
+                          schema={{ fields: section.fields, actions: [] }}
+                          modelValue={column as Record<string, unknown>}
+                          onUpdate:modelValue={syncSelectedColumn}
+                        />
+                      </section>
+                    ))}
+                  </div>
                 ) : (
                   <div class="grid-designer-empty">请选择左侧表格中的列</div>
                 )}

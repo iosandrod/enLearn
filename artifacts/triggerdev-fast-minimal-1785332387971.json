@@ -1,0 +1,54 @@
+{
+  "runId": 1785332387971,
+  "steps": [
+    {
+      "name": "model_saved",
+      "at": "2026-07-29T13:39:50.396Z",
+      "modelId": "1aa4ff50-f6c7-4a62-8c8a-5d9e4950f2a7"
+    },
+    {
+      "name": "published",
+      "at": "2026-07-29T13:39:52.100Z",
+      "definitionId": "88cd176e-27db-4749-b1f2-a321cdb97055"
+    },
+    {
+      "name": "started",
+      "at": "2026-07-29T13:39:55.576Z",
+      "instanceId": "4dbfbe13-7506-46c3-9aaa-c5fd06ab68e1",
+      "status": "running",
+      "triggerRunId": "run_cms64t72g000g58ot184t56as",
+      "local": false
+    },
+    {
+      "name": "task",
+      "at": "2026-07-29T13:39:57.390Z",
+      "ok": true,
+      "taskId": "2e2d2c50-cf7e-4ffb-aa73-f983b5a49616",
+      "token": "waitpoint_cms64t9ed000i58otgre70z3u",
+      "attemptsMs": 1813
+    },
+    {
+      "name": "approved_call",
+      "at": "2026-07-29T13:40:00.150Z",
+      "status": "running"
+    },
+    {
+      "name": "final_snapshot",
+      "at": "2026-07-29T13:40:16.122Z",
+      "completedFast": false,
+      "instanceStatus": "running",
+      "triggerStatus": "EXECUTING",
+      "triggerIsWaiting": false,
+      "triggerIsExecuting": true,
+      "triggerIsCompleted": false
+    }
+  ],
+  "result": {
+    "ok": false,
+    "instanceStatus": "running",
+    "triggerRunId": "run_cms64t72g000g58ot184t56as",
+    "taskId": "2e2d2c50-cf7e-4ffb-aa73-f983b5a49616",
+    "waitpointTokenId": "waitpoint_cms64t9ed000i58otgre70z3u"
+  },
+  "finishedAt": "2026-07-29T13:40:16.122Z"
+}

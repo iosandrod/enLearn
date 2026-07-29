@@ -181,7 +181,7 @@ const defaultNodeVisual = {
 const layoutOptions = {
   originX: 360,
   originY: 48,
-  levelGap: 166,
+  levelGap: 210,
   siblingGap: 320,
   branchGap: 330,
   minSiblingGap: 284
@@ -198,12 +198,12 @@ export function workflowToFlowNodes(model: WorkflowModel): ApprovalFlowNode[] {
     },
     class: `approval-flow-node approval-flow-node--${node.type}`,
     data: getNodePresentation(node),
-    draggable: node.type !== 'start' && node.type !== 'end',
+    draggable: true,
     deletable: node.type !== 'start' && node.type !== 'end',
     selectable: true,
     connectable: true,
-    width: node.type === 'start' || node.type === 'end' ? 176 : 236,
-    height: node.type === 'start' || node.type === 'end' ? 72 : 86,
+    width: 236,
+    height: 86,
     sourcePosition: Position.Bottom,
     targetPosition: Position.Top
   }));
@@ -460,7 +460,7 @@ export function autoLayoutFlowNodes(nodes: ApprovalFlowNode[], edges: ApprovalFl
 
     return {
       ...node,
-      draggable: node.data.workflowType !== 'start' && node.data.workflowType !== 'end',
+      draggable: true,
       position: {
         x: Math.round(x),
         y: layoutOptions.originY + level * layoutOptions.levelGap

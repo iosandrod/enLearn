@@ -9,6 +9,8 @@
     "start": "node dist/main.js",
     "trigger:dev": "trigger dev",
     "trigger:deploy": "trigger deploy",
+    "smoke:trigger-waitpoint": "tsx scripts/smoke-trigger-waitpoint.ts",
+    "smoke:system-minimal-approval": "tsx scripts/smoke-system-minimal-approval.ts",
     "db:apply-trigger-runtime": "tsx scripts/apply-workflow-jobs-migration.ts",
     "db:apply-jobs": "pnpm db:apply-trigger-runtime",
     "typecheck": "tsc -p tsconfig.json --noEmit",

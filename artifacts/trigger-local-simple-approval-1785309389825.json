@@ -1,0 +1,92 @@
+{
+  "runId": 1785309389825,
+  "startedAt": "2026-07-29T07:16:29.825Z",
+  "triggerApiUrl": "http://localhost:3030",
+  "triggerProjectRef": "proj_rrkpdguyagvsoktglnod",
+  "steps": [
+    {
+      "name": "trigger_api_checked",
+      "at": "2026-07-29T07:16:30.551Z",
+      "currentDeployment": null,
+      "currentDeploymentError": "Not found",
+      "deploymentCount": 0
+    },
+    {
+      "name": "model_saved",
+      "at": "2026-07-29T07:16:31.534Z",
+      "modelId": "210eb4be-4885-4b08-88b7-db4cb7e6ec88",
+      "code": "codex_trigger_local_simple_1785309389825",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-29T07:16:32.731Z",
+      "definitionId": "3e96e29f-4c22-4054-81fd-a9e1a1806fd1",
+      "version": 1,
+      "status": "active"
+    },
+    {
+      "name": "instance_started",
+      "at": "2026-07-29T07:16:35.368Z",
+      "instanceId": "8bffb6ba-01df-426d-8a65-63a9e524656d",
+      "status": "running",
+      "triggerRunId": "run_cms5r48sy0000ysotjq43xw7q",
+      "triggerRunIsLocal": false
+    },
+    {
+      "name": "trigger_run_after_start",
+      "at": "2026-07-29T07:16:35.432Z",
+      "id": "run_cms5r48sy0000ysotjq43xw7q",
+      "status": "QUEUED",
+      "taskIdentifier": "workflow.instance.run",
+      "isQueued": true,
+      "isExecuting": false,
+      "isWaiting": false,
+      "isFailed": false
+    },
+    {
+      "name": "todo_task_found",
+      "at": "2026-07-29T07:17:35.473Z",
+      "ok": false,
+      "attemptsMs": 60040
+    },
+    {
+      "name": "trigger_run_after_wait",
+      "at": "2026-07-29T07:17:35.554Z",
+      "id": "run_cms5r48sy0000ysotjq43xw7q",
+      "status": "QUEUED",
+      "isQueued": true,
+      "isExecuting": false,
+      "isWaiting": false,
+      "isFailed": false,
+      "isCancelled": false
+    },
+    {
+      "name": "instance_terminated_for_cleanup",
+      "at": "2026-07-29T07:17:38.116Z",
+      "instanceId": "8bffb6ba-01df-426d-8a65-63a9e524656d",
+      "status": "terminated"
+    },
+    {
+      "name": "trigger_run_final",
+      "at": "2026-07-29T07:17:38.174Z",
+      "id": "run_cms5r48sy0000ysotjq43xw7q",
+      "status": "CANCELED",
+      "isCancelled": true,
+      "isQueued": false,
+      "isWaiting": false
+    }
+  ],
+  "currentDeploymentError": {
+    "name": "TriggerApiError",
+    "message": "Not found"
+  },
+  "deployments": [],
+  "result": {
+    "ok": false,
+    "reason": "todo task was not created",
+    "triggerRunId": "run_cms5r48sy0000ysotjq43xw7q",
+    "triggerRunStatus": "QUEUED"
+  },
+  "finishedAt": "2026-07-29T07:17:38.177Z"
+}

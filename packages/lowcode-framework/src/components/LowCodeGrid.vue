@@ -1,7 +1,6 @@
 <template>
   <section class="lc-grid">
-    <div v-if="schema.title || schema.toolbar?.length" class="lc-grid-toolbar">
-      <strong v-if="schema.title">{{ schema.title }}</strong>
+    <div v-if="schema.toolbar?.length" class="lc-grid-toolbar">
       <vxe-button
         v-for="action in schema.toolbar ?? []"
         :key="action.code"

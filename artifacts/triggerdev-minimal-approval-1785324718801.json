@@ -1,0 +1,54 @@
+{
+  "runId": 1785324718801,
+  "steps": [
+    {
+      "name": "model_saved",
+      "at": "2026-07-29T11:31:59.600Z",
+      "modelId": "ebba4204-2f29-4bd1-bd1a-163d7c693881",
+      "code": "api_current_user_minimal_approval_1785324718801",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-29T11:32:00.652Z",
+      "definitionId": "ca190fca-069a-43ac-b355-b77b54c7f50f",
+      "version": 1,
+      "status": "active"
+    },
+    {
+      "name": "instance_started",
+      "at": "2026-07-29T11:32:03.161Z",
+      "instanceId": "4d6d68de-fbdb-457e-925e-db9434537daa",
+      "status": "running",
+      "triggerRunId": "run_cms608rvx000058ot9pob0xcq",
+      "triggerRunIsLocal": false
+    },
+    {
+      "name": "todo_task_found",
+      "at": "2026-07-29T11:32:05.653Z",
+      "ok": true,
+      "attemptsMs": 2491,
+      "taskId": "7a75ebfc-0676-41c3-9bc9-07c494b9abcd",
+      "waitpointTokenId": "waitpoint_cms608ua2000258otokisr418"
+    },
+    {
+      "name": "task_approved",
+      "at": "2026-07-29T11:32:07.052Z",
+      "instanceId": "4d6d68de-fbdb-457e-925e-db9434537daa",
+      "status": "running"
+    },
+    {
+      "name": "instance_completed",
+      "at": "2026-07-29T11:34:09.250Z",
+      "ok": false,
+      "attemptsMs": 122198
+    }
+  ],
+  "result": {
+    "ok": false,
+    "triggerRunId": "run_cms608rvx000058ot9pob0xcq",
+    "taskId": "7a75ebfc-0676-41c3-9bc9-07c494b9abcd",
+    "waitpointTokenId": "waitpoint_cms608ua2000258otokisr418"
+  },
+  "finishedAt": "2026-07-29T11:34:09.251Z"
+}

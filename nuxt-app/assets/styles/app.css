@@ -187,12 +187,33 @@ a {
 }
 
 .admin-filter {
-  height: 28px;
+  display: flex;
+  align-items: center;
+  height: 34px;
   border-bottom: 1px solid #dfe5ec;
-  color: #99a3b1;
+  padding: 4px 8px;
+}
+
+.admin-filter input {
+  width: 100%;
+  height: 24px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: #111827;
+  font: inherit;
   font-size: 12px;
-  line-height: 28px;
-  padding: 0 10px;
+  outline: 0;
+  padding: 0 6px;
+}
+
+.admin-filter input::placeholder {
+  color: #99a3b1;
+}
+
+.admin-filter input:focus {
+  border-color: #99c7f5;
+  background: #ffffff;
 }
 
 .admin-menu {
@@ -229,8 +250,39 @@ a {
   align-items: center;
   min-height: 32px;
   line-height: 32px;
-  padding: 0 18px 0 40px;
   cursor: pointer;
+}
+
+.admin-menu-group.level-0 {
+  padding: 0 18px;
+}
+
+.admin-menu-group.level-1 {
+  min-height: 32px;
+  color: #344054;
+  font-weight: 600;
+  padding: 0 18px 0 32px;
+}
+
+.admin-menu-group.level-2 {
+  min-height: 30px;
+  padding: 0 18px 0 46px;
+}
+
+.admin-menu-link.level-0 {
+  padding: 0 18px;
+}
+
+.admin-menu-link.level-1 {
+  padding: 0 18px 0 40px;
+}
+
+.admin-menu-link.level-2 {
+  padding: 0 18px 0 56px;
+}
+
+.admin-menu-link.level-3 {
+  padding: 0 18px 0 68px;
 }
 
 .admin-menu-link.router-link-active,
@@ -242,6 +294,12 @@ a {
 
 .admin-submenu {
   display: grid;
+}
+
+.admin-menu-empty {
+  margin: 10px 12px;
+  color: #99a3b1;
+  font-size: 12px;
 }
 
 .admin-menu-context {

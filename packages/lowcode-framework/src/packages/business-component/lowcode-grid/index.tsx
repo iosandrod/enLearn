@@ -22,6 +22,19 @@ const gridOverflowOptions = [
   { label: '气泡提示', value: 'tooltip' },
 ];
 
+function resolveGridMinHeight(value: unknown) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return `${Math.max(value, 200)}px`;
+  }
+
+  if (typeof value === 'string') {
+    const px = value.trim().match(/^(\d+(?:\.\d+)?)px$/i);
+    if (px) return `${Math.max(Number(px[1]), 200)}px`;
+  }
+
+  return '200px';
+}
+
 export default {
   key: 'lowcode-grid',
   moduleName: 'businessComponents',
@@ -57,7 +70,6 @@ export default {
       const columns = Array.isArray(props.columns) && props.columns.length ? props.columns : [];
       const fillRemaining =
         block.layout?.fillRemaining === true || props.layout?.fillRemaining === true;
-      const title = String(props.title || '数据表格');
 
       return (
         <div
@@ -65,7 +77,7 @@ export default {
             ...styles,
             width: '100%',
             height: fillRemaining ? '100%' : styles.height,
-            minHeight: 0,
+            minHeight: resolveGridMinHeight(styles.minHeight),
             display: 'flex',
             flexDirection: 'column',
             border: '1px solid #dcdfe6',
@@ -74,11 +86,6 @@ export default {
             overflow: 'hidden',
           }}
         >
-          <div
-            style={{ fontWeight: 600, padding: '10px 12px', borderBottom: '1px solid #ebeef5' }}
-          >
-            {title}
-          </div>
           <div style={{ flex: '1 1 0', minHeight: 0, overflow: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
             <thead>

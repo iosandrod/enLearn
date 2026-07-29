@@ -1,0 +1,27 @@
+{
+  "runId": 1785324396463,
+  "steps": [
+    {
+      "name": "model_saved",
+      "at": "2026-07-29T11:26:37.261Z",
+      "modelId": "5c4d7c6d-3d2b-46a6-91a1-b45ac0270914",
+      "code": "api_current_user_minimal_approval_1785324396463",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-29T11:26:38.289Z",
+      "definitionId": "a44e03b6-f73d-4e3a-b188-35532b70337d",
+      "version": 1,
+      "status": "active"
+    },
+    {
+      "name": "failed",
+      "at": "2026-07-29T11:26:51.579Z",
+      "message": "POST /instances failed 500: {\"statusCode\":500,\"message\":\"Internal server error\"}",
+      "stack": "Error: POST /instances failed 500: {\"statusCode\":500,\"message\":\"Internal server error\"}\n    at request ([stdin]:15:334)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async [stdin]:24:20"
+    }
+  ],
+  "error": "Error: POST /instances failed 500: {\"statusCode\":500,\"message\":\"Internal server error\"}",
+  "finishedAt": "2026-07-29T11:26:51.582Z"
+}

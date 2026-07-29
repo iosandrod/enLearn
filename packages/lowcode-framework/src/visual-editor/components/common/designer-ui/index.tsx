@@ -154,7 +154,8 @@ export const ElButton = defineComponent({
     plain: Boolean,
     text: Boolean,
     circle: Boolean,
-    icon: [String, Object, Function] as PropType<unknown>
+    icon: [String, Object, Function] as PropType<unknown>,
+    title: String
   },
   emits: ['click'],
   setup(props, { attrs, slots, emit }) {
@@ -167,6 +168,7 @@ export const ElButton = defineComponent({
           status: resolveStatus(props.type),
           mode: props.text ? 'text' : 'button',
           disabled: props.disabled,
+          title: props.title,
           onClick: (params: unknown) => emit('click', params)
         },
         {
@@ -447,12 +449,15 @@ export const ElDialog = defineComponent({
       emit('close');
       emit('closed');
     };
+    const modalClassName = classNames(attrs.class, attrs.className);
 
     return () =>
       h(
         VxeModal as any,
         {
           ...attrs,
+          class: modalClassName,
+          className: modalClassName,
           modelValue: props.modelValue,
           title: props.title,
           width: props.width,

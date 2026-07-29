@@ -14,6 +14,12 @@ export type CreateWorkflowModelOptions = {
   documentType?: string;
 };
 
+const defaultNodeY = {
+  start: 48,
+  first: 258,
+  second: 468
+};
+
 export function createEmptyWorkflowModel(
   options: CreateWorkflowModelOptions = {}
 ): WorkflowModel {
@@ -28,13 +34,13 @@ export function createEmptyWorkflowModel(
         id: 'start',
         type: 'start',
         name: '开始',
-        position: { x: 360, y: 48 }
+        position: { x: 360, y: defaultNodeY.start }
       },
       {
         id: 'end',
         type: 'end',
         name: '结束',
-        position: { x: 360, y: 190 }
+        position: { x: 360, y: defaultNodeY.first }
       }
     ],
     edges: [
@@ -64,13 +70,13 @@ export function createSimpleApprovalWorkflow(
         id: 'start',
         type: 'start',
         name: '开始',
-        position: { x: 360, y: 48 }
+        position: { x: 360, y: defaultNodeY.start }
       },
       {
         id: 'approval',
         type: 'approval',
         name: '审批',
-        position: { x: 330, y: 190 },
+        position: { x: 360, y: defaultNodeY.first },
         config: {
           assigneeStrategy,
           allowReject: true
@@ -80,7 +86,7 @@ export function createSimpleApprovalWorkflow(
         id: 'end',
         type: 'end',
         name: '结束',
-        position: { x: 360, y: 332 }
+        position: { x: 360, y: defaultNodeY.second }
       }
     ],
     edges: [
@@ -113,14 +119,14 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'start',
       name: '开始',
       description: '订单提交后进入审批',
-      position: { x: 360, y: 48 }
+      position: { x: 360, y: defaultNodeY.start }
     },
     {
       id: 'lock_inventory',
       type: 'serviceTask',
       name: '锁定库存',
       description: '调用订单服务预占库存',
-      position: { x: 360, y: 214 },
+      position: { x: 360, y: defaultNodeY.first },
       config: {
         serviceName: 'order',
         serviceMethod: 'lockInventory'
@@ -131,7 +137,7 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'condition',
       name: '订单金额判断',
       description: '金额大于等于 5000 走高金额链路',
-      position: { x: 360, y: 380 },
+      position: { x: 360, y: defaultNodeY.second },
       config: {
         field: 'amount'
       }
@@ -141,7 +147,7 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'approval',
       name: '销售主管审批',
       description: '普通订单由销售主管确认',
-      position: { x: 525, y: 546 },
+      position: { x: 525, y: 678 },
       config: {
         assigneeStrategy: {
           type: 'users',
@@ -156,7 +162,7 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'approval',
       name: '直属主管审批',
       description: '高金额订单先由发起人主管审批',
-      position: { x: 195, y: 546 },
+      position: { x: 195, y: 678 },
       config: {
         assigneeStrategy: {
           type: 'initiatorManager',
@@ -172,7 +178,7 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'sign',
       name: '财务会签',
       description: '财务双人全部同意后继续',
-      position: { x: 195, y: 712 },
+      position: { x: 195, y: 888 },
       config: {
         assigneeStrategy: {
           type: 'users',
@@ -188,7 +194,7 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'orSign',
       name: '法务/风控或签',
       description: '任一专业角色通过即可继续',
-      position: { x: 195, y: 878 },
+      position: { x: 195, y: 1098 },
       config: {
         assigneeStrategy: {
           type: 'users',
@@ -203,7 +209,7 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'parallelGateway',
       name: '并行复核',
       description: '合同归档与仓储通知并行处理',
-      position: { x: 195, y: 1044 },
+      position: { x: 195, y: 1308 },
       config: {
         joinMode: 'all'
       }
@@ -213,7 +219,7 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'subProcess',
       name: '合同归档子流程',
       description: '调用合同归档审批子流程',
-      position: { x: 30, y: 1210 },
+      position: { x: 30, y: 1518 },
       config: {
         definitionCode: 'contract_archive'
       }
@@ -223,7 +229,7 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'cc',
       name: '抄送仓储',
       description: '通知仓储团队准备发货',
-      position: { x: 360, y: 1210 },
+      position: { x: 360, y: 1518 },
       config: {
         assigneeStrategy: {
           type: 'users',
@@ -236,7 +242,7 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'timer',
       name: '等待付款确认',
       description: '付款状态确认后继续',
-      position: { x: 360, y: 1376 },
+      position: { x: 360, y: 1728 },
       config: {
         delaySeconds: 0,
         action: 'continue'
@@ -247,7 +253,7 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'serviceTask',
       name: '回写订单状态',
       description: '同步审批结果到订单中心',
-      position: { x: 360, y: 1542 },
+      position: { x: 360, y: 1938 },
       config: {
         serviceName: 'order',
         serviceMethod: 'syncApprovalStatus'
@@ -258,7 +264,7 @@ export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions 
       type: 'end',
       name: '结束',
       description: '订单审批流程结束',
-      position: { x: 360, y: 1708 }
+      position: { x: 360, y: 2148 }
     }
   ];
 

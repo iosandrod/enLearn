@@ -26,8 +26,8 @@
     "triggerdev:bootstrap": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/triggerdev-bootstrap.ps1",
     "triggerdev:up:bootstrap": "pnpm triggerdev:up && pnpm triggerdev:bootstrap",
     "triggerdev:engine": "pnpm triggerdev:up && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/triggerdev-bootstrap.ps1 -EngineOnly",
-    "workflow-api:trigger:dev": "pnpm --dir services/workflow-api exec trigger dev start -a http://localhost:8030 --env-file %INIT_CWD%\\.env",
-    "workflow-api:trigger:deploy": "pnpm --dir services/workflow-api exec trigger deploy -a http://localhost:8030 --env-file %INIT_CWD%\\.env"
+    "workflow-api:trigger:dev": "pnpm --dir services/workflow-api exec trigger dev start -a http://localhost:3030 --env-file %INIT_CWD%\\.env",
+    "workflow-api:trigger:deploy": "pnpm --dir services/workflow-api exec trigger deploy -a http://localhost:3030 --env-file %INIT_CWD%\\.env"
   },
   "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
 }

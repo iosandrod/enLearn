@@ -1009,11 +1009,6 @@ function onNodeClick(payload: NodeMouseEvent) {
 
 function onNodeDragStop(payload: NodeDragEvent) {
   selectedNodeId.value = payload.node.id;
-
-  const node = currentModel.value.nodes.find((item) => item.id === payload.node.id);
-  if (node?.type === 'start' || node?.type === 'end') {
-    scheduleAutoLayout();
-  }
 }
 
 function onPaneClick() {

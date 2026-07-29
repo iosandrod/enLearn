@@ -1,0 +1,25 @@
+
+Trigger.dev (4.5.7 -> 4.5.8)
+------------------------------------------------------
+Key: Version | Task | Run
+------------------------------------------------------
+○ Building local worker…
+○ Local worker ready on branch: default [node] -> 20260729.6
+○ Jul 29, 11:39:17.904 ->  20260729.6 | workflow.instance.run | run_cms60i47b000858oti2jvnipo.1
+○ Jul 29, 11:39:20.439 ->  20260729.6 | notification.dispatch | run_cms60i66m000b58ot8t0kunmy.1
+○ Jul 29, 11:39:22.305 ->  20260729.6 | notification.dispatch | run_cms60i7mn000d58otb8qmk9sn.1
+○ Jul 29, 11:39:22.530 ->  20260729.6 | notification.dispatch | run_cms60i66m000b58ot8t0kunmy.1 | Success (1.4s)
+○ Jul 29, 11:39:24.416 ->  20260729.6 | notification.dispatch | run_cms60i7mn000d58otb8qmk9sn.1 | Success (1.5s)
+○ Rebuilding local worker…
+○ Local worker ready on branch: default [node] -> 20260729.7
+○ Connection was lost: ping timeout
+○ Connection was lost: transport close
+○ Connection was restored
+○ Jul 29, 13:39:53.333 ->  20260729.7 | workflow.instance.run | run_cms64t72g000g58ot184t56as.1
+○ Jul 29, 13:39:56.855 ->  20260729.7 | notification.dispatch | run_cms64t9tx000j58ot2wud4n30.1
+○ Jul 29, 13:39:59.886 ->  20260729.7 | notification.dispatch | run_cms64tc6c000l58ot1igvydu4.1
+○ Jul 29, 13:40:00.644 ->  20260729.7 | notification.dispatch | run_cms64t9tx000j58ot2wud4n30.1 | Success (3.1s)
+○ Jul 29, 13:40:03.157 ->  20260729.7 | notification.dispatch | run_cms64tc6c000l58ot1igvydu4.1 | Success (2.5s)
+○ Rebuilding local worker…
+○ Local worker ready on branch: default [node] -> 20260729.8
+○ Jul 29, 13:51:32.019 ->  20260729.8 | trigger-waitpoint-diagnostic | run_cms658641000p58otwgn35a6o.1

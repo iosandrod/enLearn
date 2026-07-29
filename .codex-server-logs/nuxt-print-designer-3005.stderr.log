@@ -1,0 +1,21 @@
+
+[41m[30m ERROR [39m[49m [31mInternal server error: Failed to resolve import "tldraw-vue-phase-one/style.css" from "pages/dashboard/print-designer.vue". Does the file exist?[39m
+  Plugin: [35mvite:import-analysis[39m
+  File: [36mC:/Users/11516/Desktop/project/enLearn/nuxt-app/pages/dashboard/print-designer.vue[39m:76:7
+[33m  5  |    defineVueEditorPlugin
+  6  |  } from "tldraw-vue-phase-one";
+  7  |  import "tldraw-vue-phase-one/style.css";
+     |          ^
+  8  |  
+  9  |  import { definePageMeta } from 'C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/nuxt@3.21.9_@parcel+watcher...[39m
+      at TransformPluginContext._formatLog (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@1.102.0_terser@5.49.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:29079:43)
+      at TransformPluginContext.error (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@1.102.0_terser@5.49.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:29076:14)
+      at normalizeUrl (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@1.102.0_terser@5.49.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:27199:18)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@1.102.0_terser@5.49.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:27257:32
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@1.102.0_terser@5.49.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:27225:4)
+      at async file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/vite-plugin-inspect@11.4.1_@nuxt+kit@4.5.0_magic-string@0.30.21_magicast@0.5.3_oxc-parser@0.1_ozru7sbvq7lsxwbu5mpsyxlbra/node_modules/vite-plugin-inspect/dist/shared/vite-plugin-inspect.Fv_Ybe1U.mjs:403:17
+      at async EnvironmentPluginContainer.transform (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@1.102.0_terser@5.49.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:28877:14)
+      at async loadAndTransform (file:///C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/vite@7.3.6_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0_sass@1.102.0_terser@5.49.0_tsx@4.23.1_yaml@2.9.0/node_modules/vite/dist/node/chunks/config.js:22746:26)
+

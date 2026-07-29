@@ -1,0 +1,112 @@
+{
+  "runId": 1785313920418,
+  "startedAt": "2026-07-29T08:32:00.418Z",
+  "triggerApiUrl": "http://localhost:3030",
+  "triggerProjectRef": "proj_rrkpdguyagvsoktglnod",
+  "steps": [
+    {
+      "name": "trigger_api_checked",
+      "at": "2026-07-29T08:32:00.655Z",
+      "currentDeployment": null,
+      "currentDeploymentError": "Not found",
+      "deploymentCount": 0
+    },
+    {
+      "name": "model_saved",
+      "at": "2026-07-29T08:32:01.584Z",
+      "modelId": "1d804791-b64c-4e5b-8df5-808b69bc2ecd",
+      "code": "codex_trigger_local_simple_1785313920418",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-29T08:32:02.708Z",
+      "definitionId": "deca130e-125a-4142-bd7e-1dbc08ca8d9a",
+      "version": 1,
+      "status": "active"
+    },
+    {
+      "name": "instance_started",
+      "at": "2026-07-29T08:32:04.873Z",
+      "instanceId": "d0a46fcf-258b-45d2-a2bb-ddb7f57f9962",
+      "status": "running",
+      "triggerRunId": "run_cms5ttc0s00026ootui8g31to",
+      "triggerRunIsLocal": false
+    },
+    {
+      "name": "trigger_run_after_start",
+      "at": "2026-07-29T08:32:04.964Z",
+      "id": "run_cms5ttc0s00026ootui8g31to",
+      "status": "EXECUTING",
+      "taskIdentifier": "workflow.instance.run",
+      "isQueued": false,
+      "isExecuting": true,
+      "isWaiting": false,
+      "isFailed": false
+    },
+    {
+      "name": "todo_task_found",
+      "at": "2026-07-29T08:32:09.200Z",
+      "ok": true,
+      "attemptsMs": 4235,
+      "value": {
+        "id": "2f371ea9-42ad-4bda-b220-e6079ed88466",
+        "tenantId": "default",
+        "processInstanceId": "d0a46fcf-258b-45d2-a2bb-ddb7f57f9962",
+        "nodeInstanceId": "86e63a39-8f55-4a3a-811f-a7c7b3f333eb",
+        "nodeId": "approval",
+        "title": "Codex Trigger local simple 1785313920418 - Current User Review",
+        "status": "pending",
+        "assigneeId": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+        "waitpointTokenId": "waitpoint_cms5ttehr00046ootjf62jfin",
+        "createdAt": "2026-07-29T08:32:08.642Z"
+      }
+    },
+    {
+      "name": "task_token_checked",
+      "at": "2026-07-29T08:32:09.200Z",
+      "taskId": "2f371ea9-42ad-4bda-b220-e6079ed88466",
+      "waitpointTokenId": "waitpoint_cms5ttehr00046ootjf62jfin",
+      "waitpointTokenIsLocal": false
+    },
+    {
+      "name": "task_approved",
+      "at": "2026-07-29T08:32:10.580Z",
+      "instanceId": "d0a46fcf-258b-45d2-a2bb-ddb7f57f9962",
+      "status": "running"
+    },
+    {
+      "name": "instance_completed",
+      "at": "2026-07-29T08:33:42.838Z",
+      "ok": false,
+      "attemptsMs": 92257
+    },
+    {
+      "name": "instance_terminated_for_cleanup",
+      "at": "2026-07-29T08:33:44.764Z",
+      "instanceId": "d0a46fcf-258b-45d2-a2bb-ddb7f57f9962",
+      "status": "terminated"
+    },
+    {
+      "name": "trigger_run_final",
+      "at": "2026-07-29T08:33:44.796Z",
+      "id": "run_cms5ttc0s00026ootui8g31to",
+      "status": "CANCELED",
+      "isCancelled": true,
+      "isQueued": false,
+      "isWaiting": false
+    }
+  ],
+  "currentDeploymentError": {
+    "name": "TriggerApiError",
+    "message": "Not found"
+  },
+  "deployments": [],
+  "result": {
+    "ok": false,
+    "triggerRunId": "run_cms5ttc0s00026ootui8g31to",
+    "taskId": "2f371ea9-42ad-4bda-b220-e6079ed88466",
+    "waitpointTokenId": "waitpoint_cms5ttehr00046ootjf62jfin"
+  },
+  "finishedAt": "2026-07-29T08:33:44.797Z"
+}

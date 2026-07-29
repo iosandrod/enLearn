@@ -1,0 +1,958 @@
+
+> @enlearn/workflow-api@0.1.0 dev C:\Users\11516\Desktop\project\enLearn\services\workflow-api
+> tsx watch src/main.ts
+
+[32m[Nest] 31208  - [39m2026/07/29 14:35:08 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:08 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +18ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:08 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatabaseModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:08 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:08 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIntegrationModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:08 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:08 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDefinitionModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:08 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTaskModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:08 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHistoryModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:08 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuntimeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:08 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJobModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/api/workflow/health}:[39m[38;5;3m +609ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/health, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDefinitionController {/api/workflow/definitions}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/capabilities, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/definitions/:definitionId/disable, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mModelController {/api/workflow/models}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId, PUT} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/models/:modelId/publish, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mRuntimeController {/api/workflow/instances}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/started, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/timeline, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/withdraw, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/instances/:instanceId/terminate, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mTaskController {/api/workflow/tasks}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/todo, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/done, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/cc, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/started, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/approve, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/claim, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/reject, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/transfer, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/tasks/:taskId/add-sign, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHistoryController {/api/workflow/history}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/history/instances/:instanceId/timeline, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mJobController {/api/workflow/jobs}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/runs, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/status, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/workflow/jobs/:jobId/run, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 31208  - [39m2026/07/29 14:35:09 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +10ms[39m
+Workflow API listening on http://localhost:3011/api/workflow
+[32m[Nest] 31208  - [39m2026/07/29 14:35:10 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=5bce87ba-f607-4ecd-85cf-90b7db51f9db[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "5bce87ba-f607-4ecd-85cf-90b7db51f9db",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T06:35:10.641Z"
+}
+[32m[Nest] 31208  - [39m2026/07/29 14:35:31 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=2be180c7-2b1f-4ff1-92f0-a6ca1f4ee140[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "2be180c7-2b1f-4ff1-92f0-a6ca1f4ee140",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T06:35:31.005Z"
+}
+[32m[Nest] 31208  - [39m2026/07/29 14:35:51 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=1644c39b-f394-4dfc-9dbb-e1caa046642a[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "1644c39b-f394-4dfc-9dbb-e1caa046642a",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T06:35:51.288Z"
+}
+[32m[Nest] 31208  - [39m2026/07/29 14:36:12 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=de1d635a-9547-4d1d-b56c-af6e1cb5f9de[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "de1d635a-9547-4d1d-b56c-af6e1cb5f9de",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T06:36:12.413Z"
+}
+[32m[Nest] 31208  - [39m2026/07/29 14:36:32 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=a2e48e49-c4e3-4865-8fb2-72de1018d4ad[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "a2e48e49-c4e3-4865-8fb2-72de1018d4ad",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T06:36:32.671Z"
+}
+[32m[Nest] 31208  - [39m2026/07/29 14:36:53 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=87ee40b0-57c5-40b6-9695-f9d26590880b[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "87ee40b0-57c5-40b6-9695-f9d26590880b",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T06:36:53.860Z"
+}
+[32m[Nest] 31208  - [39m2026/07/29 14:37:15 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=ae43b418-658e-40df-a1ab-36b0d529bb28[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "ae43b418-658e-40df-a1ab-36b0d529bb28",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T06:37:15.072Z"
+}
+[32m[Nest] 31208  - [39m2026/07/29 14:37:36 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=10c375c9-e117-4112-a451-2388707ef2fe[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "10c375c9-e117-4112-a451-2388707ef2fe",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T06:37:36.263Z"
+}
+[32m[Nest] 31208  - [39m2026/07/29 14:37:57 [32m    LOG[39m [38;5;3m[JobLocalExecutorService] [39m[32mSupabase users log job "supabase_users_20s_logger" fetched 6 rows. runId=0d46850e-c35f-4275-b204-109a6c0f0a6b[39m
+[workflow-api][supabase-users-log] {
+  "handledBy": "workflow.supabase.users.log",
+  "jobCode": "supabase_users_20s_logger",
+  "runId": "0d46850e-c35f-4275-b204-109a6c0f0a6b",
+  "userCount": 6,
+  "users": [
+    {
+      "id": "d327cb46-374f-483e-b721-182baf8fe32b",
+      "full_name": null,
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "student",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:29:33.444Z"
+    },
+    {
+      "id": "83ca3cc5-8ebf-4df4-a5f1-b6e695eb1256",
+      "full_name": "Codex Test User",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-21T18:59:04.796Z"
+    },
+    {
+      "id": "90f8c866-56d2-4a0d-aa8c-e50534a97ebd",
+      "full_name": "qweqweqwe",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-22T04:05:00.140Z"
+    },
+    {
+      "id": "c1b2a493-a876-4c02-979a-1dd3b0647578",
+      "full_name": "Codex Low-Code Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-23T03:10:49.583Z"
+    },
+    {
+      "id": "50bfca3f-e053-4225-a699-3a2f4522fae9",
+      "full_name": "Codex Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": null,
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-24T01:34:15.760Z"
+    },
+    {
+      "id": "5efcd1fd-5448-4f7b-9b75-9b60fbcf1c08",
+      "full_name": "Codex Screenshot Admin",
+      "avatar_url": null,
+      "phone": null,
+      "nickname": "Codex Admin",
+      "role": "admin",
+      "city": null,
+      "english_level": null,
+      "learning_goal": null,
+      "source_channel": null,
+      "lead_status": "new",
+      "assigned_consultant_id": null,
+      "updated_at": "2026-07-25T21:08:38.708Z"
+    }
+  ],
+  "loggedAt": "2026-07-29T06:37:57.460Z"
+}
+ ELIFECYCLE  Command failed with exit code 4294967295.

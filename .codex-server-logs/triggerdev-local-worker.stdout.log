@@ -1,0 +1,31 @@
+Running "dev" with the following options {
+  options: {
+    profile: 'default',
+    apiUrl: 'http://localhost:3030',
+    logLevel: 'debug',
+    projectRef: 'proj_rrkpdguyagvsoktglnod',
+    skipTelemetry: true
+  }
+}
+Node.js version: 22.20.0
+Node.js version: 22.20.0
+Reading auth config file {
+  configFilePath: 'C:\\Users\\11516\\AppData\\Roaming\\xdg.config\\trigger\\config.json',
+  configFileExists: true
+}
+[jiti] [cache hit] C:/Users/11516/Desktop/project/enLearn/services/workflow-api/trigger.config.ts ~> C:/Users/11516/AppData/Local/Temp/node-jiti/workflow-api-trigger.config.ts.f8f0fd11.js
+[jiti] [transpile] C:/Users/11516/Desktop/project/enLearn/services/workflow-api/trigger.config.ts (2.919ms)
+[jiti] [native] C:/Users/11516/Desktop/project/enLearn/node_modules/.pnpm/@trigger.dev+sdk@4.5.7_react@19.2.8_zod@3.25.76/node_modules/@trigger.dev/sdk/dist/commonjs/v3/index.js
+Reading auth config file {
+  configFilePath: 'C:\\Users\\11516\\AppData\\Roaming\\xdg.config\\trigger\\config.json',
+  configFileExists: true
+}
+[90m|[39m
+[31mx[39m  Error: Unable to validate existing personal access token
+[90m|[39m  
+[90m|[39m         Connection error.
+X Error: You must login first. Use the `login` CLI command.
+
+Connection error.
+undefined
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command "trigger" not found

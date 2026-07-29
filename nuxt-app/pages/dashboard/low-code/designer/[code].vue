@@ -1,5 +1,5 @@
 <template>
-  <LowCodeVisualDesigner :code="String(route.params.code ?? '')" />
+  <LowCodeVisualDesigner :key="pageCode" :code="pageCode" />
 </template>
 
 <script setup lang="ts">
@@ -9,4 +9,5 @@ definePageMeta({
 });
 
 const route = useRoute();
+const pageCode = computed(() => String(route.params.code ?? ''));
 </script>

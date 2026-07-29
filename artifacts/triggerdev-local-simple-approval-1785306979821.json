@@ -1,0 +1,91 @@
+{
+  "runId": 1785306979821,
+  "startedAt": "2026-07-29T06:36:19.821Z",
+  "triggerApiUrl": "http://localhost:3030",
+  "triggerProjectRef": "proj_rrkpdguyagvsoktglnod",
+  "steps": [
+    {
+      "name": "TriggerApiError",
+      "at": "2026-07-29T06:36:19.912Z",
+      "error": "Not found"
+    },
+    {
+      "name": "deployment_list",
+      "at": "2026-07-29T06:36:19.941Z",
+      "count": 0,
+      "value": []
+    },
+    {
+      "name": "model_saved",
+      "at": "2026-07-29T06:36:20.241Z",
+      "modelId": "c4dd66b7-9958-4f4e-810c-98c4586ef2f0",
+      "code": "codex_triggerdev_local_1785306979821",
+      "status": "draft"
+    },
+    {
+      "name": "model_published",
+      "at": "2026-07-29T06:36:21.412Z",
+      "definitionId": "19478b2f-d9b6-4983-ae8e-45c7e432768c",
+      "version": 1,
+      "status": "active"
+    },
+    {
+      "name": "instance_started",
+      "at": "2026-07-29T06:36:23.363Z",
+      "instanceId": "200fad32-820c-4329-83d6-5c6199456ceb",
+      "status": "running",
+      "triggerRunId": "run_cms5pok0s0001a4ot7l3fx6z3",
+      "triggerRunIsLocal": false
+    },
+    {
+      "name": "trigger_run_retrieved",
+      "at": "2026-07-29T06:36:23.413Z",
+      "id": "run_cms5pok0s0001a4ot7l3fx6z3",
+      "status": "QUEUED",
+      "taskIdentifier": "workflow.instance.run",
+      "isQueued": true,
+      "isExecuting": false,
+      "isWaiting": false,
+      "isCompleted": false,
+      "isFailed": false
+    },
+    {
+      "name": "todo_task_found",
+      "at": "2026-07-29T06:37:09.184Z",
+      "ok": false,
+      "attemptsMs": 45771
+    },
+    {
+      "name": "trigger_run_after_wait",
+      "at": "2026-07-29T06:37:09.208Z",
+      "id": "run_cms5pok0s0001a4ot7l3fx6z3",
+      "status": "QUEUED",
+      "isQueued": true,
+      "isExecuting": false,
+      "isWaiting": false,
+      "isCompleted": false,
+      "isFailed": false
+    },
+    {
+      "name": "cleanup_terminated",
+      "at": "2026-07-29T06:37:10.938Z",
+      "instanceId": "200fad32-820c-4329-83d6-5c6199456ceb",
+      "status": "terminated"
+    },
+    {
+      "name": "cleanup_run_status",
+      "at": "2026-07-29T06:37:10.956Z",
+      "id": "run_cms5pok0s0001a4ot7l3fx6z3",
+      "status": "CANCELED",
+      "isCancelled": true
+    }
+  ],
+  "result": {
+    "ok": false,
+    "reason": "No pending approval task was created before timeout.",
+    "instanceId": "200fad32-820c-4329-83d6-5c6199456ceb",
+    "triggerRunId": "run_cms5pok0s0001a4ot7l3fx6z3",
+    "triggerRunStatus": "QUEUED"
+  },
+  "finishedAt": "2026-07-29T06:37:10.956Z"
+}

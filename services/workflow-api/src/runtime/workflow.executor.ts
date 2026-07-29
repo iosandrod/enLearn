@@ -298,8 +298,13 @@ async function waitForHumanNode(
   actor: RuntimeActor
 ): Promise<ExecutionResult> {
   const initialTasks = await store.listNodeTasks(nodeInstance.id);
+  let pendingDecision: Promise<WorkflowTaskDecision> | undefined;
   if (!initialTasks.length) {
-    const tasks = await createHumanTasks(payload, store, waits, node, nodeInstance, actor);
+    const { tasks, taskInputs } = await createHumanTasks(payload, store, waits, node, nodeInstance, actor);
+    pendingDecision = waitForAnyTaskDecision(
+      tasks.filter((task) => Boolean(task.waitpointTokenId)),
+      waits
+    );
     await store.recordHistory(
       payload.tenantId,
       payload.instanceId,
@@ -312,6 +317,21 @@ async function waitForHumanNode(
         completionStrategy: completionStrategyForNode(node)
       },
       `node:${nodeInstance.id}:tasks-created`
+    );
+    void emitTaskCreatedNotifications(payload, store, waits, tasks, taskInputs, actor).catch((error) =>
+      store.recordHistory(
+        payload.tenantId,
+        payload.instanceId,
+        'NOTIFICATION_TRIGGER_FAILED',
+        actor.userId,
+        {
+          eventType: 'approval.task.created',
+          nodeId: node.id,
+          nodeInstanceId: nodeInstance.id,
+          message: error instanceof Error ? error.message : String(error)
+        },
+        `node:${nodeInstance.id}:task-created-notification-failed`
+      )
     );
   }
 
@@ -330,7 +350,8 @@ async function waitForHumanNode(
       throw new Error('Human task has no Trigger.dev waitpoint token.');
     }
 
-    const decision = await waitForAnyTaskDecision(waitableTasks, waits);
+    const decision = await (pendingDecision ?? waitForAnyTaskDecision(waitableTasks, waits));
+    pendingDecision = undefined;
     await store.markWaitpointCompleted(decision.taskId);
     if (!(await store.isInstanceRunning(payload.instanceId))) return 'stopped';
     if (decision.action === 'reject') return 'stopped';
@@ -405,8 +426,7 @@ async function createHumanTasks(
   }
 
   const tasks = await store.createTasks(taskInputs);
-  await emitTaskCreatedNotifications(payload, store, waits, tasks, taskInputs, actor);
-  return tasks;
+  return { tasks, taskInputs };
 }
 
 async function emitTaskCreatedNotifications(
@@ -559,13 +579,27 @@ async function waitForAnyTaskDecision(
   tasks: WorkflowTaskRecord[],
   waits: WorkflowWaitDriver
 ): Promise<WorkflowTaskDecision> {
-  const decisions = tasks.map(async (task) => {
-    if (!task.waitpointTokenId) {
-      throw new Error(`Task "${task.id}" has no waitpoint token.`);
-    }
-    return waits.waitForToken<WorkflowTaskDecision>(task.waitpointTokenId);
-  });
+  if (!tasks.length) {
+    throw new Error('Human node has no waitable tasks.');
+  }
+
+  if (tasks.length === 1) {
+    return waitForTaskDecision(tasks[0], waits);
+  }
+
+  const decisions = tasks.map((task) => waitForTaskDecision(task, waits));
   return Promise.race(decisions);
+}
+
+function waitForTaskDecision(
+  task: WorkflowTaskRecord,
+  waits: WorkflowWaitDriver
+): Promise<WorkflowTaskDecision> {
+  if (!task.waitpointTokenId) {
+    throw new Error(`Task "${task.id}" has no waitpoint token.`);
+  }
+
+  return waits.waitForToken<WorkflowTaskDecision>(task.waitpointTokenId);
 }
 
 async function createCcItems(

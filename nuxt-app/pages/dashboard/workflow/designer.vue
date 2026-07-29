@@ -24,8 +24,14 @@
         <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="saveAndPublish">
           保存并发布
         </button>
+        <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="startCurrentUserMinimalApproval">
+          开始最小审批
+        </button>
         <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="startOrderWorkflow">
           启动订单流程
+        </button>
+        <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="testCurrentWorkflow">
+          一键测试
         </button>
         <button type="button" class="workflow-button workflow-button--primary" @click="exportSchema">
           导出
@@ -105,6 +111,23 @@
               <dt>实例</dt>
               <dd>{{ startedInstanceId || '-' }}</dd>
             </div>
+            <div>
+              <dt>任务</dt>
+              <dd>
+                <NuxtLink v-if="startedTaskRoute" class="workflow-inline-link" :to="startedTaskRoute">
+                  {{ startedTaskId }}
+                </NuxtLink>
+                <span v-else>{{ startedTaskId || '-' }}</span>
+              </dd>
+            </div>
+            <div>
+              <dt>状态</dt>
+              <dd>{{ startedTaskStatus || '-' }}</dd>
+            </div>
+            <div>
+              <dt>结果</dt>
+              <dd>{{ testRunSummary || '-' }}</dd>
+            </div>
           </dl>
         </section>
 
@@ -159,6 +182,7 @@ const localStorageKey = 'enlearn.workflow.designer.default';
 const auth = useAuth();
 const serviceApi = useServiceApi();
 const route = useRoute();
+const router = useRouter();
 const routeCode = computed(() => String(route.params.code ?? '').trim());
 const activeStorageKey = computed(() =>
   routeCode.value ? `enlearn.workflow.designer.${routeCode.value}` : localStorageKey
@@ -203,14 +227,24 @@ type PublishWorkflowResult = {
   definition: WorkflowDefinitionRecord;
 };
 
+type WorkflowTaskStatus = 'pending' | 'claimed' | 'completed' | 'canceled';
+type WorkflowRuntimeStatus = 'running' | 'approved' | 'rejected' | 'canceled' | 'terminated' | 'failed';
+
+type WorkflowRuntimeTask = {
+  id: string;
+  status: WorkflowTaskStatus;
+  nodeId: string;
+  processInstanceId: string;
+  title?: string;
+  assigneeId?: string;
+  waitpointTokenId?: string;
+};
+
 type WorkflowRuntimeInstance = {
   id: string;
-  status: string;
-  tasks?: Array<{
-    id: string;
-    status: string;
-    nodeId: string;
-  }>;
+  status: WorkflowRuntimeStatus;
+  triggerRunId?: string;
+  tasks?: WorkflowRuntimeTask[];
 };
 
 const designerRef = ref<ApprovalDesignerExpose | null>(null);
@@ -223,6 +257,17 @@ const isApiBusy = ref(false);
 const savedModelId = ref('');
 const publishedDefinitionId = ref('');
 const startedInstanceId = ref('');
+const startedTaskId = ref('');
+const startedTaskStatus = ref('');
+const testRunSummary = ref('');
+
+const terminalWorkflowStatuses = new Set<WorkflowRuntimeStatus>([
+  'approved',
+  'rejected',
+  'canceled',
+  'terminated',
+  'failed'
+]);
 
 const nodeTypeCoverageLabels = [
   { type: 'start', label: '开始' },
@@ -240,6 +285,9 @@ const nodeTypeCoverageLabels = [
 
 const validationErrors = computed(() =>
   validationIssues.value.filter((issue) => issue.level === 'error')
+);
+const startedTaskRoute = computed(() =>
+  startedTaskId.value ? `/dashboard/workflow/tasks/${startedTaskId.value}` : ''
 );
 const coverageItems = computed(() => {
   const usedTypes = new Set(workflowModel.value.nodes.map((node) => node.type));
@@ -309,7 +357,7 @@ function createBlankModel() {
   );
   savedModelId.value = '';
   publishedDefinitionId.value = '';
-  startedInstanceId.value = '';
+  resetRuntimeState();
   message.value = '已新建草稿';
   messageClass.value = 'workflow-help';
 }
@@ -319,7 +367,7 @@ async function simulateOrderWorkflow() {
 
   savedModelId.value = '';
   publishedDefinitionId.value = '';
-  startedInstanceId.value = '';
+  resetRuntimeState();
   message.value = '正在模拟拖入订单审批节点...';
   messageClass.value = 'workflow-help';
 
@@ -409,6 +457,7 @@ async function saveAndPublish() {
 
 async function startOrderWorkflow() {
   isApiBusy.value = true;
+  resetRuntimeState();
   message.value = '正在启动订单流程...';
   messageClass.value = 'workflow-help';
 
@@ -427,11 +476,199 @@ async function startOrderWorkflow() {
       })
     });
 
-    startedInstanceId.value = instance.id;
+    updateRuntimeFromInstance(instance);
     message.value = `流程已启动，状态 ${instance.status}，待办 ${instance.tasks?.length ?? 0} 个`;
     messageClass.value = 'workflow-success';
   } catch (error) {
     message.value = error instanceof Error ? error.message : '启动流程失败';
+    messageClass.value = 'workflow-error';
+  } finally {
+    isApiBusy.value = false;
+  }
+}
+
+async function startCurrentUserMinimalApproval() {
+  isApiBusy.value = true;
+  resetRuntimeState();
+  message.value = '正在生成当前用户最小审批...';
+  messageClass.value = 'workflow-help';
+
+  try {
+    const currentUserId = auth.user.value?.id ?? '';
+    if (!currentUserId) {
+      throw new Error('请先登录后再启动当前用户最小审批');
+    }
+
+    const businessKey = `current-user-minimal-${Date.now().toString(36)}`;
+    const minimalWorkflow = createSimpleApprovalWorkflow(
+      {
+        type: 'users',
+        userIds: [currentUserId]
+      },
+      {
+        code: 'current_user_minimal_approval',
+        name: '当前用户最小审批',
+        documentType: 'minimal_approval'
+      }
+    );
+
+    workflowModel.value = minimalWorkflow;
+    designerRef.value?.loadSchema(minimalWorkflow);
+    schemaText.value = serializeWorkflowModel(minimalWorkflow);
+    savedModelId.value = '';
+    publishedDefinitionId.value = '';
+    await nextTick();
+
+    message.value = '已生成最小审批，正在发布并通过 Trigger.dev 启动...';
+    const published = await publishCurrentWorkflow();
+    savedModelId.value = published.model?.id ?? savedModelId.value;
+    publishedDefinitionId.value = published.definition.id;
+
+    const instance = await invokeWorkflowService<WorkflowRuntimeInstance>('startInstance', {
+      definitionId: published.definition.id,
+      businessKey,
+      documentType: 'minimal_approval',
+      documentId: businessKey,
+      title: '当前用户最小审批',
+      variables: createMinimalApprovalVariables(businessKey, currentUserId)
+    });
+
+    updateRuntimeFromInstance(instance);
+    testRunSummary.value = '等待当前用户待办';
+    message.value = '流程已启动，正在等待当前用户审批任务...';
+
+    const task = await waitForWorkflowCondition<WorkflowRuntimeTask>(
+      async () => {
+        const [tasks, currentInstance] = await Promise.all([
+          invokeWorkflowService<WorkflowRuntimeTask[]>('listTodoTasks', { status: 'pending' }),
+          invokeWorkflowService<WorkflowRuntimeInstance>('getInstance', { instanceId: instance.id })
+        ]);
+        updateRuntimeFromInstance(currentInstance);
+
+        if (isTerminalWorkflowStatus(currentInstance.status)) {
+          throw new Error(`流程已结束，状态 ${workflowStatusLabel(currentInstance.status)}，没有可审核待办`);
+        }
+
+        return tasks.find((item) => item.processInstanceId === instance.id && item.status === 'pending');
+      },
+      {
+        timeoutMs: 60000,
+        intervalMs: 2000,
+        timeoutMessage: '60 秒内没有生成当前用户待办，请检查 Trigger.dev worker 是否在线'
+      }
+    );
+
+    startedTaskId.value = task.id;
+    startedTaskStatus.value = workflowStatusLabel(task.status);
+    testRunSummary.value = '当前用户待办已生成';
+    message.value = `当前用户已收到审批任务 ${task.title ?? task.id}`;
+    messageClass.value = 'workflow-success';
+    await router.push(`/dashboard/workflow/tasks/${task.id}`);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : '当前用户最小审批启动失败';
+    testRunSummary.value = errorMessage;
+    message.value = errorMessage;
+    messageClass.value = 'workflow-error';
+  } finally {
+    isApiBusy.value = false;
+  }
+}
+
+async function testCurrentWorkflow() {
+  isApiBusy.value = true;
+  resetRuntimeState();
+  message.value = '正在发布并测试审批流程...';
+  messageClass.value = 'workflow-help';
+
+  try {
+    const schema = designerRef.value?.getSchema() ?? workflowModel.value;
+    const published = await publishCurrentWorkflow();
+    const currentUserId = auth.user.value?.id ?? '';
+    const businessKey = `${schema.code || 'workflow'}-test-${Date.now().toString(36)}`;
+    const documentType = schema.documentType?.trim() || 'workflow_test';
+    const variables = createDesignerTestVariables(businessKey, currentUserId);
+
+    message.value = '已发布，正在启动测试流程...';
+    const instance = await invokeWorkflowService<WorkflowRuntimeInstance>('startInstance', {
+      definitionId: published.definition.id,
+      businessKey,
+      documentType,
+      documentId: businessKey,
+      title: `${schema.name || schema.code || '审批流程'}一键测试`,
+      variables
+    });
+
+    updateRuntimeFromInstance(instance);
+    testRunSummary.value = '等待待办';
+    message.value = '流程已启动，正在等待当前用户待办...';
+
+    const task = await waitForWorkflowCondition<WorkflowRuntimeTask>(
+      async () => {
+        const [tasks, currentInstance] = await Promise.all([
+          invokeWorkflowService<WorkflowRuntimeTask[]>('listTodoTasks', { status: 'pending' }),
+          invokeWorkflowService<WorkflowRuntimeInstance>('getInstance', { instanceId: instance.id })
+        ]);
+        updateRuntimeFromInstance(currentInstance);
+
+        if (isTerminalWorkflowStatus(currentInstance.status)) {
+          throw new Error(`流程已结束，状态 ${workflowStatusLabel(currentInstance.status)}，没有可审核待办`);
+        }
+
+        return tasks.find((item) => item.processInstanceId === instance.id && item.status === 'pending');
+      },
+      {
+        timeoutMs: 60000,
+        intervalMs: 2000,
+        timeoutMessage: '60 秒内没有生成当前用户的待办，请检查审批人配置或 Trigger.dev worker'
+      }
+    );
+
+    startedTaskId.value = task.id;
+    startedTaskStatus.value = workflowStatusLabel(task.status);
+    testRunSummary.value = '待办已生成，审核中';
+    message.value = `已找到待办 ${task.title ?? task.id}，正在自动审核...`;
+
+    const approvedInstance = await invokeWorkflowService<WorkflowRuntimeInstance>('approveTask', {
+      taskId: task.id,
+      comment: '设计器一键测试通过',
+      variables: {
+        approvedAt: new Date().toISOString(),
+        approvedBy: currentUserId,
+        designerTestApproved: true
+      }
+    });
+    updateRuntimeFromInstance(approvedInstance);
+    startedTaskStatus.value = '已审核';
+    testRunSummary.value = '已审核，等待流程结束';
+    message.value = '审核已通过，正在等待流程完成...';
+
+    const finalInstance = isTerminalWorkflowStatus(approvedInstance.status)
+      ? approvedInstance
+      : await waitForWorkflowCondition<WorkflowRuntimeInstance>(
+          async () => {
+            const currentInstance = await invokeWorkflowService<WorkflowRuntimeInstance>('getInstance', {
+              instanceId: instance.id
+            });
+            updateRuntimeFromInstance(currentInstance);
+
+            return isTerminalWorkflowStatus(currentInstance.status) ? currentInstance : undefined;
+          },
+          {
+            timeoutMs: 90000,
+            intervalMs: 3000,
+            timeoutMessage: '审批已提交，但流程 90 秒内未结束，请检查 Trigger.dev waitpoint 是否恢复父运行'
+          }
+        );
+
+    updateRuntimeFromInstance(finalInstance);
+    startedTaskStatus.value = '已审核';
+    testRunSummary.value = `完成：${workflowStatusLabel(finalInstance.status)}`;
+    message.value = `一键测试完成，流程状态 ${workflowStatusLabel(finalInstance.status)}`;
+    messageClass.value = finalInstance.status === 'approved' ? 'workflow-success' : 'workflow-error';
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : '一键测试失败';
+    testRunSummary.value = errorMessage;
+    message.value = errorMessage;
     messageClass.value = 'workflow-error';
   } finally {
     isApiBusy.value = false;
@@ -494,6 +731,89 @@ async function workflowApi<T>(path: string, init: RequestInit = {}) {
   }
 
   throw new Error(`Unsupported workflow API path: ${path}`);
+}
+
+async function waitForWorkflowCondition<T>(
+  resolver: () => Promise<T | undefined>,
+  options: { timeoutMs: number; intervalMs: number; timeoutMessage: string }
+) {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt <= options.timeoutMs) {
+    const result = await resolver();
+    if (result) return result;
+    await wait(options.intervalMs);
+  }
+
+  throw new Error(options.timeoutMessage);
+}
+
+function wait(ms: number) {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, ms));
+}
+
+function createDesignerTestVariables(businessKey: string, currentUserId: string) {
+  return {
+    ...ORDER_APPROVAL_TEST_VARIABLES,
+    applicantId: currentUserId,
+    businessKey,
+    currentUserId,
+    designerTest: true,
+    documentId: businessKey,
+    initiatorId: currentUserId,
+    userId: currentUserId
+  };
+}
+
+function createMinimalApprovalVariables(businessKey: string, currentUserId: string) {
+  return {
+    applicantId: currentUserId,
+    businessKey,
+    currentUserId,
+    documentId: businessKey,
+    initiatorId: currentUserId,
+    minimalApproval: true,
+    userId: currentUserId
+  };
+}
+
+function resetRuntimeState() {
+  startedInstanceId.value = '';
+  startedTaskId.value = '';
+  startedTaskStatus.value = '';
+  testRunSummary.value = '';
+}
+
+function updateRuntimeFromInstance(instance: WorkflowRuntimeInstance) {
+  startedInstanceId.value = instance.id;
+  const task =
+    instance.tasks?.find((item) => item.status === 'pending' || item.status === 'claimed') ??
+    instance.tasks?.at(-1);
+
+  if (task) {
+    startedTaskId.value = task.id;
+    startedTaskStatus.value = workflowStatusLabel(task.status);
+  }
+}
+
+function isTerminalWorkflowStatus(status: WorkflowRuntimeStatus) {
+  return terminalWorkflowStatuses.has(status);
+}
+
+function workflowStatusLabel(status?: string) {
+  const labels: Record<string, string> = {
+    approved: '已通过',
+    canceled: '已取消',
+    claimed: '已认领',
+    completed: '已完成',
+    failed: '失败',
+    pending: '待审核',
+    rejected: '已驳回',
+    running: '流转中',
+    terminated: '已终止'
+  };
+
+  return labels[status ?? ''] ?? status ?? '-';
 }
 
 function parseWorkflowBody(body: BodyInit | null | undefined) {
@@ -723,6 +1043,16 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   cursor: pointer;
   font: inherit;
   font-size: 13px;
+}
+
+.workflow-inline-link {
+  color: #0f766e;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.workflow-inline-link:hover {
+  text-decoration: underline;
 }
 
 .workflow-help,
