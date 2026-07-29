@@ -1,0 +1,74 @@
+[31m[Nest] 3224  - [39m2026/07/29 06:54:25 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mfetch failed[39m
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async WorkflowService.invokeWorkflowApi (C:\Users\11516\Desktop\project\enLearn\api\src\workflow\workflow.service.ts:201:22)
+    at async ServiceGatewayController.service (C:\Users\11516\Desktop\project\enLearn\api\src\gateway\service-gateway.controller.ts:90:18)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[31m[Nest] 3224  - [39m2026/07/29 06:59:39 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mfetch failed[39m
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async WorkflowService.invokeWorkflowApi (C:\Users\11516\Desktop\project\enLearn\api\src\workflow\workflow.service.ts:201:22)
+    at async ServiceGatewayController.service (C:\Users\11516\Desktop\project\enLearn\api\src\gateway\service-gateway.controller.ts:90:18)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[31m[Nest] 3224  - [39m2026/07/29 07:00:55 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mfetch failed[39m
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async WorkflowService.invokeWorkflowApi (C:\Users\11516\Desktop\project\enLearn\api\src\workflow\workflow.service.ts:201:22)
+    at async ServiceGatewayController.service (C:\Users\11516\Desktop\project\enLearn\api\src\gateway\service-gateway.controller.ts:90:18)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[31m[Nest] 3224  - [39m2026/07/29 07:04:39 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mfetch failed[39m
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async WorkflowService.invokeWorkflowApi (C:\Users\11516\Desktop\project\enLearn\api\src\workflow\workflow.service.ts:201:22)
+    at async ServiceGatewayController.service (C:\Users\11516\Desktop\project\enLearn\api\src\gateway\service-gateway.controller.ts:90:18)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[31m[Nest] 3224  - [39m2026/07/29 07:04:52 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mfetch failed[39m
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async WorkflowService.invokeWorkflowApi (C:\Users\11516\Desktop\project\enLearn\api\src\workflow\workflow.service.ts:201:22)
+    at async ServiceGatewayController.service (C:\Users\11516\Desktop\project\enLearn\api\src\gateway\service-gateway.controller.ts:90:18)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[31m[Nest] 3224  - [39m2026/07/29 07:05:09 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mfetch failed[39m
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async WorkflowService.invokeWorkflowApi (C:\Users\11516\Desktop\project\enLearn\api\src\workflow\workflow.service.ts:201:22)
+    at async ServiceGatewayController.service (C:\Users\11516\Desktop\project\enLearn\api\src\gateway\service-gateway.controller.ts:90:18)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[31m[Nest] 3224  - [39m2026/07/29 07:07:35 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mfetch failed[39m
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async WorkflowService.invokeWorkflowApi (C:\Users\11516\Desktop\project\enLearn\api\src\workflow\workflow.service.ts:201:22)
+    at async ServiceGatewayController.service (C:\Users\11516\Desktop\project\enLearn\api\src\gateway\service-gateway.controller.ts:90:18)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[31m[Nest] 3224  - [39m2026/07/29 07:07:38 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mfetch failed[39m
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async WorkflowService.invokeWorkflowApi (C:\Users\11516\Desktop\project\enLearn\api\src\workflow\workflow.service.ts:201:22)
+    at async ServiceGatewayController.service (C:\Users\11516\Desktop\project\enLearn\api\src\gateway\service-gateway.controller.ts:90:18)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+[31m[Nest] 3224  - [39m2026/07/29 07:10:25 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] [39m[31mfetch failed[39m
+TypeError: fetch failed
+    at node:internal/deps/undici/undici:13510:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async WorkflowService.invokeWorkflowApi (C:\Users\11516\Desktop\project\enLearn\api\src\workflow\workflow.service.ts:201:22)
+    at async ServiceGatewayController.service (C:\Users\11516\Desktop\project\enLearn\api\src\gateway\service-gateway.controller.ts:90:18)
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-execution-context.js:46:28
+    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_wv7sonobpk6cc2m3n6ev6bfqdu\node_modules\@nestjs\core\router\router-proxy.js:9:17
+(node:3224) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)

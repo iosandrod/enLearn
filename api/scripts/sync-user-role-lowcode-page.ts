@@ -149,7 +149,7 @@ async function syncAdminRoutes(supabase: SupabaseClient, now: string) {
 
   const businessRoot = await upsertRoute({
     code: 'business-root',
-    title: '运营管理',
+    title: '生产运营',
     path: '/dashboard/business/_group',
     route_type: 'group',
     icon: 'ri-dashboard-line',
@@ -186,7 +186,7 @@ async function syncAdminRoutes(supabase: SupabaseClient, now: string) {
     },
     {
       code: 'lowcode-pages',
-      title: '低代码页面',
+      title: '低代码页面管理',
       path: '/dashboard/low-code',
       parent_id: businessRoot.id,
       route_type: 'page',

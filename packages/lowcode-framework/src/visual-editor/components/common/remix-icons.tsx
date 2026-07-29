@@ -18,6 +18,7 @@ export const CopyDocument = createRemixIcon('ri-file-copy-line');
 export const DArrowLeft = createRemixIcon('ri-arrow-left-double-line');
 export const DArrowRight = createRemixIcon('ri-arrow-right-double-line');
 export const DataBoard = createRemixIcon('ri-dashboard-3-line');
+export const BarChart = createRemixIcon('ri-bar-chart-2-line');
 export const Delete = createRemixIcon('ri-delete-bin-line');
 export const Document = createRemixIcon('ri-file-list-3-line');
 export const DocumentChecked = createRemixIcon('ri-file-check-line');

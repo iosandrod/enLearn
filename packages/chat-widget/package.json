@@ -1,0 +1,36 @@
+{
+  "name": "@enlearn/chat-widget",
+  "version": "0.1.0",
+  "description": "Reusable Vue chat popup widget for EnLearn.",
+  "type": "module",
+  "private": false,
+  "sideEffects": [
+    "*.vue",
+    "src/styles/*"
+  ],
+  "files": [
+    "src"
+  ],
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./components/*": "./src/components/*",
+    "./types/*": "./src/types/*"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "typescript": "^5.4.5",
+    "vite": "^7.3.6",
+    "vue": "^3.5.0",
+    "vue-tsc": "^3.3.7"
+  },
+  "scripts": {
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+  }
+}
+

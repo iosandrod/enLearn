@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@enlearn/approval-workflow": "workspace:^",
+    "@enlearn/chat-widget": "workspace:*",
     "@enlearn/lowcode-framework": "workspace:*",
     "@enlearn/trigger-workflow-editor": "workspace:*",
     "@vant/touch-emulator": "^1.5.0",
@@ -17,6 +18,7 @@
     "@vueuse/integrations": "^14.3.0",
     "animate.css": "^4.1.1",
     "dayjs": "^1.11.21",
+    "echarts": "^5.6.0",
     "lodash-es": "^4.18.1",
     "monaco-editor": "^0.33.0",
     "nanoid": "^6.0.0",

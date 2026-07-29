@@ -31,6 +31,7 @@ const parentEnv = readEnvFile(resolve(__dirname, '..', '.env.local'));
 const env = { ...parentEnv, ...process.env };
 const lowcodeFrameworkRoot = resolve(__dirname, '..', 'packages', 'lowcode-framework', 'src');
 const approvalWorkflowRoot = resolve(__dirname, '..', 'packages', 'approval-workflow', 'src');
+const chatWidgetRoot = resolve(__dirname, '..', 'packages', 'chat-widget', 'src');
 const triggerWorkflowEditorRoot = resolve(__dirname, '..', 'packages', 'trigger-workflow-editor', 'src');
 const workflowSchemaRoot = resolve(__dirname, '..', 'packages', 'workflow-schema', 'src');
 const lowcodeComponentNames = [
@@ -74,6 +75,7 @@ export default defineNuxtConfig({
     ...lowcodeComponentAliases,
     '@enlearn/lowcode-framework': lowcodeFrameworkRoot,
     '@enlearn/approval-workflow': approvalWorkflowRoot,
+    '@enlearn/chat-widget': chatWidgetRoot,
     '@enlearn/trigger-workflow-editor': triggerWorkflowEditorRoot,
     '@enlearn/workflow-schema': workflowSchemaRoot,
     '@vue-flow/core': resolve(
@@ -88,6 +90,8 @@ export default defineNuxtConfig({
     '@enlearn/approval-workflow/components': resolve(approvalWorkflowRoot, 'components'),
     '@enlearn/approval-workflow/hooks': resolve(approvalWorkflowRoot, 'hooks'),
     '@enlearn/approval-workflow/types': resolve(approvalWorkflowRoot, 'types'),
+    '@enlearn/chat-widget/components': resolve(chatWidgetRoot, 'components'),
+    '@enlearn/chat-widget/types': resolve(chatWidgetRoot, 'types'),
     '@enlearn/trigger-workflow-editor/components': resolve(triggerWorkflowEditorRoot, 'components'),
     '@enlearn/trigger-workflow-editor/schema': resolve(triggerWorkflowEditorRoot, 'schema'),
     '@enlearn/trigger-workflow-editor/compiler': resolve(triggerWorkflowEditorRoot, 'compiler'),

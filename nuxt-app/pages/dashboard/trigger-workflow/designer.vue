@@ -1,36 +1,17 @@
 <template>
   <section class="trigger-workflow-page">
     <header class="trigger-workflow-page__header">
-      <div>
+      <div class="trigger-workflow-page__title">
         <h2>Trigger.dev Workflow 编排器</h2>
         <p>{{ model.code }} · {{ model.kind }} · {{ statusText }}</p>
       </div>
-      <div class="trigger-workflow-page__actions">
-        <button type="button" @click="saveDraft">保存草稿</button>
-        <button type="button" @click="loadDraft">恢复草稿</button>
-        <button type="button" @click="copyModel">复制 JSON</button>
-      </div>
-    </header>
 
-    <section class="trigger-workflow-page__job-panel">
-      <div>
+      <div class="trigger-workflow-page__job">
         <strong>模拟测试：20 秒用户日志定时任务</strong>
-        <span>
-          {{ jobStatusText }}
-        </span>
+        <span>{{ jobStatusText }}</span>
       </div>
-      <div class="trigger-workflow-page__job-actions">
-        <button type="button" :disabled="isJobBusy" @click="createAndEnableUsersLogJob">
-          创建并启用
-        </button>
-        <button type="button" :disabled="isJobBusy || !demoJob" @click="runUsersLogJobOnce">
-          手动触发一次
-        </button>
-        <button type="button" :disabled="isJobBusy" @click="refreshUsersLogJob">
-          刷新运行记录
-        </button>
-      </div>
-      <dl class="trigger-workflow-page__job-runtime">
+
+      <dl class="trigger-workflow-page__runtime">
         <div>
           <dt>Job</dt>
           <dd>{{ demoJob?.code ?? '未创建' }}</dd>
@@ -48,30 +29,24 @@
           <dd>{{ latestRunText }}</dd>
         </div>
       </dl>
-    </section>
+
+      <div class="trigger-workflow-page__actions">
+        <button type="button" @click="saveDraft">保存草稿</button>
+        <button type="button" @click="loadDraft">恢复草稿</button>
+        <button type="button" @click="copyModel">复制 JSON</button>
+        <button type="button" :disabled="isJobBusy" @click="createAndEnableUsersLogJob">创建并启用</button>
+        <button type="button" :disabled="isJobBusy || !demoJob" @click="runUsersLogJobOnce">手动触发一次</button>
+        <button type="button" :disabled="isJobBusy" @click="refreshUsersLogJob">刷新运行记录</button>
+      </div>
+    </header>
 
     <TriggerWorkflowEditor
       v-model="model"
-      height="calc(100vh - 178px)"
+      height="calc(100vh - 118px)"
       @validation="issues = $event"
       @compile="compiledPlan = $event"
       @export="exportedModel = $event"
     />
-
-    <section class="trigger-workflow-page__summary">
-      <div>
-        <strong>包能力</strong>
-        <span>审批流 / 数据同步流 / AI Agent 流程</span>
-      </div>
-      <div>
-        <strong>Trigger.dev 映射</strong>
-        <span>task、triggerAndWait、batchTriggerAndWait、wait、schedule、queue、retry、idempotency</span>
-      </div>
-      <div>
-        <strong>最近编译</strong>
-        <span>{{ compiledPlan ? `${compiledPlan.operations.length} operations` : '尚未编译' }}</span>
-      </div>
-    </section>
   </section>
 </template>
 
@@ -306,113 +281,77 @@ type WorkflowJobRunRecord = {
 <style scoped>
 .trigger-workflow-page {
   display: grid;
-  gap: 14px;
+  gap: 8px;
 }
 
-.trigger-workflow-page__header,
-.trigger-workflow-page__summary,
-.trigger-workflow-page__job-panel {
-  display: flex;
+.trigger-workflow-page__header {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.95fr) minmax(280px, 1.15fr) minmax(320px, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 14px;
   border: 1px solid #d8dee8;
   border-radius: 8px;
   background: #ffffff;
-  padding: 14px 16px;
+  padding: 10px 12px;
 }
 
-.trigger-workflow-page__header h2 {
+.trigger-workflow-page__title,
+.trigger-workflow-page__job {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.trigger-workflow-page__title h2 {
+  overflow: hidden;
   margin: 0;
   color: #111827;
-  font-size: 20px;
-  line-height: 28px;
+  font-size: 18px;
+  line-height: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.trigger-workflow-page__header p {
-  margin: 2px 0 0;
-  color: #64748b;
-  font-size: 13px;
-}
-
-.trigger-workflow-page__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.trigger-workflow-page__actions button,
-.trigger-workflow-page__job-actions button {
-  min-height: 34px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #334155;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 7px 11px;
-}
-
-.trigger-workflow-page__actions button:hover,
-.trigger-workflow-page__job-actions button:hover {
-  border-color: #94a3b8;
-  background: #f8fafc;
-}
-
-.trigger-workflow-page__job-actions button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.trigger-workflow-page__job-panel {
-  align-items: stretch;
-  display: grid;
-  grid-template-columns: minmax(220px, 1.2fr) auto minmax(320px, 1fr);
-}
-
-.trigger-workflow-page__job-panel > div:first-child {
-  display: grid;
-  gap: 4px;
-}
-
-.trigger-workflow-page__job-panel strong {
-  color: #172033;
-  font-size: 14px;
-}
-
-.trigger-workflow-page__job-panel span {
+.trigger-workflow-page__title p,
+.trigger-workflow-page__job span {
+  overflow: hidden;
+  margin: 0;
   color: #64748b;
   font-size: 12px;
+  line-height: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trigger-workflow-page__job strong {
+  overflow: hidden;
+  color: #172033;
+  font-size: 13px;
   line-height: 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.trigger-workflow-page__job-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.trigger-workflow-page__job-runtime {
+.trigger-workflow-page__runtime {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   margin: 0;
 }
 
-.trigger-workflow-page__job-runtime div {
+.trigger-workflow-page__runtime div {
   min-width: 0;
 }
 
-.trigger-workflow-page__job-runtime dt {
+.trigger-workflow-page__runtime dt {
   color: #94a3b8;
   font-size: 10px;
   font-weight: 800;
 }
 
-.trigger-workflow-page__job-runtime dd {
+.trigger-workflow-page__runtime dd {
   overflow: hidden;
-  margin: 2px 0 0;
+  margin: 1px 0 0;
   color: #172033;
   font-size: 12px;
   font-weight: 700;
@@ -420,39 +359,55 @@ type WorkflowJobRunRecord = {
   white-space: nowrap;
 }
 
-.trigger-workflow-page__summary {
-  align-items: stretch;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.trigger-workflow-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  max-width: 430px;
 }
 
-.trigger-workflow-page__summary div {
-  display: grid;
-  gap: 4px;
-}
-
-.trigger-workflow-page__summary strong {
-  color: #172033;
-  font-size: 13px;
-}
-
-.trigger-workflow-page__summary span {
-  color: #64748b;
+.trigger-workflow-page__actions button {
+  min-height: 30px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
   font-size: 12px;
-  line-height: 18px;
+  font-weight: 700;
+  padding: 5px 9px;
+}
+
+.trigger-workflow-page__actions button:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.trigger-workflow-page__actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (max-width: 1320px) {
+  .trigger-workflow-page__header {
+    grid-template-columns: minmax(230px, 1fr) minmax(280px, 1.3fr) auto;
+  }
+
+  .trigger-workflow-page__runtime {
+    display: none;
+  }
 }
 
 @media (max-width: 900px) {
-  .trigger-workflow-page__header,
-  .trigger-workflow-page__summary,
-  .trigger-workflow-page__job-panel {
+  .trigger-workflow-page__header {
     align-items: stretch;
     grid-template-columns: 1fr;
-    flex-direction: column;
   }
 
-  .trigger-workflow-page__job-runtime {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .trigger-workflow-page__actions {
+    justify-content: flex-start;
+    max-width: none;
   }
 }
 </style>

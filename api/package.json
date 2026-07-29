@@ -8,6 +8,7 @@
     "db:test": "tsx scripts/test-db-connection.ts",
     "db:apply-permissions": "tsx scripts/apply-permission-schema.ts",
     "db:apply-file-storage": "tsx scripts/apply-file-storage-system.ts",
+    "db:apply-chat-socket": "tsx scripts/apply-chat-socket-system.ts",
     "db:apply-trigger-workflow-route": "tsx scripts/apply-trigger-workflow-route.ts",
     "db:generate-lowcode-table-page": "tsx scripts/generate-lowcode-table-page.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"

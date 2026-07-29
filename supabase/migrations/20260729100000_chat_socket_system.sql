@@ -73,6 +73,33 @@ create table if not exists public.chat_messages (
   deleted_at timestamp with time zone
 );
 
+alter table public.chat_messages
+  add column if not exists tenant_id text not null default 'default';
+
+alter table public.chat_messages
+  add column if not exists conversation_id uuid references public.chat_conversations(id) on delete cascade;
+
+alter table public.chat_messages
+  add column if not exists attachment_ids uuid[] not null default array[]::uuid[];
+
+alter table public.chat_messages
+  add column if not exists reply_to_id uuid references public.chat_messages(id) on delete set null;
+
+alter table public.chat_messages
+  add column if not exists status text not null default 'sent';
+
+alter table public.chat_messages
+  add column if not exists metadata jsonb not null default '{}'::jsonb;
+
+alter table public.chat_messages
+  add column if not exists updated_at timestamp with time zone not null default timezone('utc'::text, now());
+
+alter table public.chat_messages
+  add column if not exists edited_at timestamp with time zone;
+
+alter table public.chat_messages
+  add column if not exists deleted_at timestamp with time zone;
+
 alter table public.chat_conversations
   drop constraint if exists chat_conversations_last_message_id_fkey;
 

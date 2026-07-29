@@ -68,13 +68,14 @@ const kindOptions: Array<{ value: TriggerWorkflowKind; label: string }> = [
 ];
 
 const flowId = `trigger-workflow-editor-${Math.random().toString(36).slice(2)}`;
-const { fitView } = useVueFlow(flowId);
+const { fitView, screenToFlowCoordinate } = useVueFlow(flowId);
 const fallbackModel = createApprovalTriggerWorkflow();
 const currentModel = ref(normalizeTriggerWorkflow(props.modelValue ?? fallbackModel));
 const flowNodes = ref<TriggerCanvasNode[]>(triggerWorkflowToFlowNodes(currentModel.value));
 const flowEdges = ref<TriggerFlowEdge[]>(triggerWorkflowToFlowEdges(currentModel.value));
 const selectedNodeId = ref<string | null>(null);
 const selectedEdgeId = ref<string | null>(null);
+const nodeContextMenu = ref<{ nodeId: string; x: number; y: number } | null>(null);
 const activeInspectorTab = ref<'config' | 'compiled'>('config');
 const configDraft = ref('{}');
 const configError = ref('');
@@ -84,6 +85,11 @@ let sequence = 0;
 const palette = computed(() => getTriggerNodeDefinitionsForKind(currentModel.value.kind));
 const selectedNode = computed(() => currentModel.value.nodes.find((node) => node.id === selectedNodeId.value));
 const selectedEdge = computed(() => currentModel.value.edges.find((edge) => edge.id === selectedEdgeId.value));
+const contextNode = computed(() =>
+  nodeContextMenu.value
+    ? currentModel.value.nodes.find((node) => node.id === nodeContextMenu.value?.nodeId)
+    : undefined
+);
 const issues = computed(() => validateTriggerWorkflow(currentModel.value));
 const errorCount = computed(() => issues.value.filter((issue) => issue.level === 'error').length);
 const compiledPlan = computed(() => {
@@ -177,23 +183,50 @@ function loadTemplate(kind: Exclude<TriggerWorkflowKind, 'custom'>) {
 }
 
 function onNodeClick(event: NodeMouseEvent) {
+  closeNodeContextMenu();
   selectedNodeId.value = event.node.id;
   selectedEdgeId.value = null;
   activeInspectorTab.value = 'config';
 }
 
 function onEdgeClick(event: EdgeMouseEvent) {
+  closeNodeContextMenu();
   selectedEdgeId.value = event.edge.id;
   selectedNodeId.value = null;
   activeInspectorTab.value = 'config';
 }
 
 function onPaneClick() {
+  closeNodeContextMenu();
   selectedNodeId.value = null;
   selectedEdgeId.value = null;
 }
 
+function onNodeContextMenu(event: NodeMouseEvent) {
+  event.event.preventDefault();
+  event.event.stopPropagation();
+  const point = getClientPoint(event.event);
+  const menuWidth = 176;
+  const menuHeight = 190;
+  selectedNodeId.value = event.node.id;
+  selectedEdgeId.value = null;
+  activeInspectorTab.value = 'config';
+  nodeContextMenu.value = {
+    nodeId: event.node.id,
+    x: Math.min(point.x, window.innerWidth - menuWidth - 8),
+    y: Math.min(point.y, window.innerHeight - menuHeight - 8)
+  };
+}
+
+function closeNodeContextMenu() {
+  nodeContextMenu.value = null;
+}
+
 function addNode(type: TriggerNodeType) {
+  addNodeAt(type);
+}
+
+function addNodeAt(type: TriggerNodeType, position?: { x: number; y: number }) {
   if (props.readonly) return;
   const definition = getTriggerNodeDefinition(type);
   if (!definition) return;
@@ -203,8 +236,8 @@ function addNode(type: TriggerNodeType) {
   const selected = selectedNode.value;
   const sourceFlowNode = flowNodes.value.find((node) => node.id === selected?.id);
   const nextNode = createConfiguredNode(type, id, definition.label, {
-    x: sourceFlowNode?.position.x ?? 380,
-    y: (sourceFlowNode?.position.y ?? 40) + 160
+    x: position?.x ?? sourceFlowNode?.position.x ?? 380,
+    y: position?.y ?? (sourceFlowNode?.position.y ?? 40) + 160
   });
 
   const nextNodes = [...currentModel.value.nodes, nextNode];
@@ -232,6 +265,34 @@ function addNode(type: TriggerNodeType) {
   });
 }
 
+function onPaletteDragStart(event: DragEvent, type: TriggerNodeType) {
+  if (props.readonly || !event.dataTransfer) return;
+  const target = event.currentTarget as HTMLElement | null;
+  const bounds = target?.getBoundingClientRect();
+  const offsetX = bounds ? event.clientX - bounds.left : 119;
+  const offsetY = bounds ? event.clientY - bounds.top : 24;
+  event.dataTransfer.effectAllowed = 'copy';
+  event.dataTransfer.setData('application/x-trigger-node', type);
+  event.dataTransfer.setData('text/plain', type);
+  event.dataTransfer.setData('application/x-trigger-node-offset', JSON.stringify({ x: offsetX, y: offsetY }));
+}
+
+function onCanvasDragOver(event: DragEvent) {
+  if (props.readonly) return;
+  event.preventDefault();
+  if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+}
+
+function onCanvasDrop(event: DragEvent) {
+  if (props.readonly) return;
+  const type = event.dataTransfer?.getData('application/x-trigger-node') as TriggerNodeType | undefined;
+  if (!type) return;
+  event.preventDefault();
+  const position = screenToFlowCoordinate({ x: event.clientX, y: event.clientY });
+  const offset = readDragOffset(event.dataTransfer?.getData('application/x-trigger-node-offset'));
+  addNodeAt(type, { x: position.x - offset.x, y: position.y - offset.y });
+}
+
 function onConnect(connection: Connection) {
   if (props.readonly || !connection.source || !connection.target) return;
   if (flowEdges.value.some((edge) => edge.source === connection.source && edge.target === connection.target)) return;
@@ -252,13 +313,71 @@ function deleteSelection() {
     return;
   }
   const node = selectedNode.value;
-  if (!node || node.type === 'start' || node.type === 'schedule' || node.type === 'webhook' || node.type === 'end') return;
+  if (!node || !canDeleteNode(node)) return;
+  deleteNodeById(node.id);
+}
+
+function inspectContextNode() {
+  const node = contextNode.value;
+  if (!node) return;
+  selectedNodeId.value = node.id;
+  selectedEdgeId.value = null;
+  activeInspectorTab.value = 'config';
+  closeNodeContextMenu();
+}
+
+function duplicateContextNode() {
+  const node = contextNode.value;
+  if (!node || props.readonly) return;
+  const definition = getTriggerNodeDefinition(node.type);
+  if (!definition) return;
+
+  sequence += 1;
+  const id = `${node.type}_${Date.now().toString(36)}_${sequence}`;
+  const nextNode: TriggerWorkflowNode = {
+    ...cloneTriggerWorkflowNode(node),
+    id,
+    name: `${node.name} Copy`,
+    position: {
+      x: (node.position?.x ?? 380) + 36,
+      y: (node.position?.y ?? 40) + 36
+    }
+  };
+
+  selectedNodeId.value = id;
+  selectedEdgeId.value = null;
+  closeNodeContextMenu();
   replaceModel({
     ...currentModel.value,
-    nodes: currentModel.value.nodes.filter((item) => item.id !== node.id),
-    edges: currentModel.value.edges.filter((edge) => edge.source !== node.id && edge.target !== node.id)
+    nodes: [...currentModel.value.nodes, nextNode]
+  });
+}
+
+async function copyContextNodeId() {
+  const node = contextNode.value;
+  if (!node) return;
+  await navigator.clipboard?.writeText(node.id);
+  closeNodeContextMenu();
+}
+
+function deleteContextNode() {
+  const node = contextNode.value;
+  if (!node || props.readonly || !canDeleteNode(node)) return;
+  closeNodeContextMenu();
+  deleteNodeById(node.id);
+}
+
+function deleteNodeById(nodeId: string) {
+  replaceModel({
+    ...currentModel.value,
+    nodes: currentModel.value.nodes.filter((item) => item.id !== nodeId),
+    edges: currentModel.value.edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
   });
   selectedNodeId.value = null;
+}
+
+function canDeleteNode(node: TriggerWorkflowNode) {
+  return !['start', 'schedule', 'webhook', 'end'].includes(node.type);
 }
 
 function updateWorkflowField(field: 'code' | 'name', event: Event) {
@@ -404,8 +523,34 @@ function cloneRecord(value: Record<string, unknown>) {
   return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
 }
 
+function cloneTriggerWorkflowNode(node: TriggerWorkflowNode) {
+  return JSON.parse(JSON.stringify(node)) as TriggerWorkflowNode;
+}
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readDragOffset(value: string | undefined) {
+  if (!value) return { x: 119, y: 41 };
+  try {
+    const parsed = JSON.parse(value) as { x?: unknown; y?: unknown };
+    return {
+      x: typeof parsed.x === 'number' ? parsed.x : 119,
+      y: typeof parsed.y === 'number' ? parsed.y : 41
+    };
+  } catch {
+    return { x: 119, y: 41 };
+  }
+}
+
+function getClientPoint(event: MouseEvent | TouchEvent) {
+  if ('clientX' in event) return { x: event.clientX, y: event.clientY };
+  const touch = event.touches[0] ?? event.changedTouches[0];
+  return {
+    x: touch?.clientX ?? 0,
+    y: touch?.clientY ?? 0
+  };
 }
 </script>
 
@@ -474,13 +619,16 @@ function isObject(value: unknown): value is Record<string, unknown> {
             :key="item.type"
             type="button"
             class="trigger-editor__palette-item"
+            :data-node-type="item.type"
             :style="{
               '--palette-accent': item.accent,
               '--palette-soft': item.accentSoft,
               '--palette-border': item.accentBorder
             }"
             :disabled="readonly"
+            draggable="true"
             :title="item.description"
+            @dragstart="onPaletteDragStart($event, item.type)"
             @click="addNode(item.type)"
           >
             <span>{{ item.icon }}</span>
@@ -490,7 +638,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
         </div>
       </aside>
 
-      <main class="trigger-editor__canvas">
+      <main class="trigger-editor__canvas" @dragover="onCanvasDragOver" @drop="onCanvasDrop">
         <div class="trigger-editor__canvas-status">
           <span :class="{ 'trigger-editor__status-dot--error': errorCount }" class="trigger-editor__status-dot" />
           <strong>{{ errorCount ? `${errorCount} errors` : 'Ready' }}</strong>
@@ -509,6 +657,7 @@ function isObject(value: unknown): value is Record<string, unknown> {
           fit-view-on-init
           @connect="onConnect"
           @node-click="onNodeClick"
+          @node-context-menu="onNodeContextMenu"
           @edge-click="onEdgeClick"
           @pane-click="onPaneClick"
         >
@@ -516,6 +665,32 @@ function isObject(value: unknown): value is Record<string, unknown> {
             <TriggerFlowNode v-bind="nodeProps" />
           </template>
         </VueFlow>
+
+        <div
+          v-if="nodeContextMenu && contextNode"
+          class="trigger-editor__node-menu"
+          :style="{ left: `${nodeContextMenu.x}px`, top: `${nodeContextMenu.y}px` }"
+          role="menu"
+          @click.stop
+          @contextmenu.prevent.stop
+        >
+          <div class="trigger-editor__node-menu-head">
+            <strong>{{ contextNode.name }}</strong>
+            <span>{{ contextNode.type }}</span>
+          </div>
+          <button type="button" role="menuitem" @click="inspectContextNode">打开配置</button>
+          <button type="button" role="menuitem" :disabled="readonly" @click="duplicateContextNode">复制节点</button>
+          <button type="button" role="menuitem" @click="copyContextNodeId">复制节点 ID</button>
+          <button
+            type="button"
+            role="menuitem"
+            class="trigger-editor__node-menu-danger"
+            :disabled="readonly || !canDeleteNode(contextNode)"
+            @click="deleteContextNode"
+          >
+            删除节点
+          </button>
+        </div>
       </main>
 
       <aside class="trigger-editor__inspector">
@@ -841,9 +1016,10 @@ function isObject(value: unknown): value is Record<string, unknown> {
 }
 
 .trigger-editor__palette-item {
+  position: relative;
   display: grid;
   min-height: 48px;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
+  grid-template-columns: 36px minmax(0, 1fr) auto 10px;
   align-items: center;
   gap: 8px;
   border: 1px solid var(--palette-border);
@@ -853,6 +1029,30 @@ function isObject(value: unknown): value is Record<string, unknown> {
   cursor: pointer;
   padding: 7px 8px;
   text-align: left;
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease;
+}
+
+.trigger-editor__palette-item::after {
+  width: 8px;
+  height: 24px;
+  border-right: 2px dotted color-mix(in srgb, var(--palette-accent) 46%, #cbd5e1);
+  border-left: 2px dotted color-mix(in srgb, var(--palette-accent) 46%, #cbd5e1);
+  content: '';
+  opacity: 0.65;
+}
+
+.trigger-editor__palette-item:hover {
+  border-color: var(--palette-accent);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+  transform: translateY(-1px);
+}
+
+.trigger-editor__palette-item:active {
+  cursor: grabbing;
+  transform: translateY(0);
 }
 
 .trigger-editor__palette-item > span {
@@ -927,6 +1127,85 @@ function isObject(value: unknown): value is Record<string, unknown> {
 .trigger-editor__flow {
   width: 100%;
   height: 100%;
+}
+
+.trigger-editor__node-menu {
+  position: fixed;
+  z-index: 20;
+  display: grid;
+  width: 176px;
+  overflow: hidden;
+  border: 1px solid #d5dce7;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow:
+    0 18px 38px rgba(15, 23, 42, 0.18),
+    0 2px 8px rgba(15, 23, 42, 0.08);
+  padding: 5px;
+}
+
+.trigger-editor__node-menu-head {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+  border-bottom: 1px solid #eef2f7;
+  margin-bottom: 4px;
+  padding: 7px 8px 8px;
+}
+
+.trigger-editor__node-menu-head strong,
+.trigger-editor__node-menu-head span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trigger-editor__node-menu-head strong {
+  color: #111827;
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.trigger-editor__node-menu-head span {
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.trigger-editor__node-menu button {
+  display: flex;
+  width: 100%;
+  min-height: 30px;
+  align-items: center;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #334155;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.trigger-editor__node-menu button:hover:not(:disabled) {
+  background: #f1f5f9;
+  color: #111827;
+}
+
+.trigger-editor__node-menu button:disabled {
+  cursor: not-allowed;
+  opacity: 0.46;
+}
+
+.trigger-editor__node-menu-danger {
+  color: #b91c1c !important;
+}
+
+.trigger-editor__node-menu-danger:hover:not(:disabled) {
+  background: #fef2f2 !important;
+  color: #991b1b !important;
 }
 
 .trigger-editor__tabs {

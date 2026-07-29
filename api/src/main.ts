@@ -2,7 +2,9 @@ import 'reflect-metadata';
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
+import { registerChatSocket } from './chat/chat.socket';
 import { responseCompressionMiddleware } from './common/middleware/compression.middleware';
 import { getEnv } from './common/utils/env';
 
@@ -15,6 +17,7 @@ async function bootstrap() {
     origin: true,
     credentials: true
   });
+  app.useWebSocketAdapter(new IoAdapter(app));
   app.use(responseCompressionMiddleware);
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
@@ -26,6 +29,7 @@ async function bootstrap() {
 
   const env = getEnv();
   const port = Number(env.API_PORT ?? env.PORT ?? 3002);
+  registerChatSocket(app);
   await app.listen(port);
 
   console.log(`Nest API listening on http://localhost:${port}/api/service`);
