@@ -1,0 +1,1 @@
+import{A as e,E as t,U as n,_ as r,h as i,ot as a,xt as o}from"./vue.runtime.esm-bundler-DiFArcxW.js";import{g as s,p as c}from"./index-B6kvp4eu.js";e(),a();var l=t({__name:`[code]`,setup(e){let t=s(),a=i(()=>String(t.params.code??``));return(e,t)=>{let i=c;return n(),r(i,{key:o(a),code:o(a)},null,8,[`code`])}}});export{l as default};

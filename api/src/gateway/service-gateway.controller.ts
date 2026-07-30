@@ -4,7 +4,8 @@ import {
   Controller,
   Headers,
   Inject,
-  Post
+  Post,
+  UnauthorizedException
 } from '@nestjs/common';
 import { ServiceInvokeDto } from '../common/dto/service-invoke.dto';
 import { ServiceRouterService } from './service-router.service';
@@ -69,6 +70,48 @@ function normalizeBody(body: ServiceInvokeDto): NormalizedServiceInvoke {
   return { serviceName, serviceMethod, postData };
 }
 
+function stringifyErrorMessage(value: unknown): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.map(stringifyErrorMessage).filter(Boolean).join(' ');
+
+  if (isRecord(value)) {
+    return [
+      stringifyErrorMessage(value.message),
+      stringifyErrorMessage(value.error),
+      stringifyErrorMessage(value.statusMessage)
+    ]
+      .filter(Boolean)
+      .join(' ');
+  }
+
+  return '';
+}
+
+function readErrorMessage(error: unknown) {
+  const response =
+    isRecord(error) && typeof error.getResponse === 'function'
+      ? error.getResponse()
+      : undefined;
+
+  return [
+    error instanceof Error ? error.message : '',
+    stringifyErrorMessage(response)
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+function isAuthTokenError(error: unknown) {
+  const message = readErrorMessage(error).toLowerCase();
+  return (
+    message.includes('jwt expired') ||
+    message.includes('invalid jwt') ||
+    message.includes('invalid token') ||
+    message.includes('authentication required')
+  );
+}
+
 @Controller()
 export class ServiceGatewayController {
   constructor(
@@ -87,15 +130,24 @@ export class ServiceGatewayController {
       typeof postData.accessToken === 'string' ? postData.accessToken : undefined;
     const contextAuthorization = authorization ?? (accessToken ? `Bearer ${accessToken}` : undefined);
 
-    const data = await this.router.invoke(
-      serviceName,
-      serviceMethod,
-      postData,
-      {
-        authorization: contextAuthorization,
-        requestId
+    let data: unknown;
+    try {
+      data = await this.router.invoke(
+        serviceName,
+        serviceMethod,
+        postData,
+        {
+          authorization: contextAuthorization,
+          requestId
+        }
+      );
+    } catch (error) {
+      if (isAuthTokenError(error)) {
+        throw new UnauthorizedException('Authentication required.');
       }
-    );
+
+      throw error;
+    }
 
     return {
       success: true,

@@ -1,12 +1,16 @@
 param(
-  [string]$ApiUrl = "http://localhost:8030",
-  [string]$OrgSlug = "enlearn-792d",
+  [string]$ApiUrl = "",
+  [string]$OrgSlug = "Engine",
   [string]$ProjectName = "enlearn-workflow-local",
   [string]$EnvName = "dev",
   [string]$Profile = "default",
   [string]$EnvFile = ".env",
+  [string]$TriggerRepoPath = "",
+  [string]$EngineUserEmail = "engine@local.dev",
+  [string]$EnginePatName = "enlearn-engine-bootstrap",
   [int]$WaitSeconds = 120,
-  [switch]$EngineOnly
+  [switch]$EngineOnly,
+  [switch]$UseCliBootstrap
 )
 
 $ErrorActionPreference = "Stop"
@@ -61,6 +65,76 @@ function Set-DotEnvValue([string]$Path, [string]$Key, [string]$Value) {
   }
 
   Set-Content -LiteralPath $Path -Value $next -Encoding UTF8
+}
+
+function Remove-DotEnvValue([string]$Path, [string]$Key) {
+  if (-not (Test-Path -LiteralPath $Path)) { return }
+
+  $pattern = "^\s*$([regex]::Escape($Key))\s*="
+  $next = @(Get-Content -LiteralPath $Path | Where-Object { $_ -notmatch $pattern })
+  Set-Content -LiteralPath $Path -Value $next -Encoding UTF8
+}
+
+function Resolve-NodeCommand() {
+  $node = Get-Command node -ErrorAction SilentlyContinue
+  if ($node) { return $node.Source }
+
+  $candidates = @(
+    (Join-Path $env:ProgramFiles "nodejs\node.exe"),
+    (Join-Path ${env:ProgramFiles(x86)} "nodejs\node.exe"),
+    (Join-Path $env:LOCALAPPDATA "Programs\nodejs\node.exe")
+  )
+
+  foreach ($candidate in $candidates) {
+    if ($candidate -and (Test-Path -LiteralPath $candidate)) {
+      return $candidate
+    }
+  }
+
+  throw "Node.js was not found in PATH. Install Node or run this script from a shell where pnpm/node are available."
+}
+
+function Resolve-TriggerRepoPath() {
+  if (-not [string]::IsNullOrWhiteSpace($TriggerRepoPath)) {
+    return (Resolve-Path -LiteralPath $TriggerRepoPath).Path
+  }
+
+  $candidate = Resolve-Path (Join-Path $repoRoot "..\trigger.dev-main") -ErrorAction SilentlyContinue
+  if ($candidate) {
+    return $candidate.Path
+  }
+
+  throw "Unable to find trigger.dev-main. Pass -TriggerRepoPath C:\path\to\trigger.dev-main."
+}
+
+function Invoke-EngineBootstrap() {
+  $triggerRepo = Resolve-TriggerRepoPath
+  $bootstrapScript = Join-Path $triggerRepo "scripts\bootstrap-engine-project.js"
+  if (-not (Test-Path -LiteralPath $bootstrapScript)) {
+    throw "Missing Trigger.dev engine bootstrap script: $bootstrapScript"
+  }
+
+  $node = Resolve-NodeCommand
+  $args = @(
+    $bootstrapScript,
+    "--user-email", $EngineUserEmail,
+    "--org-title", $OrgSlug,
+    "--project-name", $ProjectName,
+    "--pat-name", $EnginePatName
+  )
+
+  Write-Host "Bootstrapping Trigger.dev engine data from $triggerRepo ..."
+  $output = & $node @args
+  if ($LASTEXITCODE -ne 0) {
+    throw "Trigger.dev engine bootstrap failed."
+  }
+
+  try {
+    return ($output -join "`n") | ConvertFrom-Json
+  } catch {
+    Write-Host ($output -join "`n")
+    throw "Trigger.dev engine bootstrap did not return valid JSON."
+  }
 }
 
 function Invoke-TriggerApi(
@@ -167,9 +241,37 @@ if (-not [System.IO.Path]::IsPathRooted($EnvFile)) {
   $EnvFile = Join-Path $repoRoot $EnvFile
 }
 
+$envMap = Read-DotEnv $EnvFile
+
+if ([string]::IsNullOrWhiteSpace($ApiUrl)) {
+  $ApiUrl = $envMap["TRIGGER_API_URL"]
+}
+if ([string]::IsNullOrWhiteSpace($ApiUrl)) {
+  $ApiUrl = "http://localhost:3030"
+}
+
 Wait-TriggerDev
 
-$envMap = Read-DotEnv $EnvFile
+if (-not $UseCliBootstrap -and -not $EngineOnly) {
+  $bootstrap = Invoke-EngineBootstrap
+  $secretKey = $bootstrap.environments.$EnvName.apiKey
+  if (-not $secretKey) {
+    throw "Trigger.dev bootstrap did not return an API key for environment '$EnvName'."
+  }
+
+  Set-DotEnvValue -Path $EnvFile -Key "TRIGGER_API_URL" -Value (Normalize-Url $ApiUrl)
+  Set-DotEnvValue -Path $EnvFile -Key "TRIGGER_PROJECT_REF" -Value $bootstrap.project.ref
+  Set-DotEnvValue -Path $EnvFile -Key "TRIGGER_SECRET_KEY" -Value $secretKey
+  Remove-DotEnvValue -Path $EnvFile -Key "TRIGGER_ACCESS_TOKEN"
+
+  Write-Host ""
+  Write-Host "Trigger.dev engine values have been written to $EnvFile"
+  Write-Host "TRIGGER_API_URL=$(Normalize-Url $ApiUrl)"
+  Write-Host "TRIGGER_PROJECT_REF=$($bootstrap.project.ref)"
+  Write-Host "TRIGGER_SECRET_KEY=$(Mask-Secret $secretKey)"
+  Write-Host "TRIGGER_ACCESS_TOKEN is not used by the enLearn backend runtime."
+  exit 0
+}
 
 if ($EngineOnly) {
   if ([string]::IsNullOrWhiteSpace($envMap["TRIGGER_PROJECT_REF"])) {

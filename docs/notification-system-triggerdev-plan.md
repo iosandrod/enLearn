@@ -6,7 +6,7 @@
 
 本方案基于当前系统架构：
 
-- 前端：`nuxt-app`，Nuxt 3，后台菜单由 `admin_routes` 动态驱动，业务页面可通过低代码页面渲染。
+- 前端：`frontend`，Nuxt 3，后台菜单由 `admin_routes` 动态驱动，业务页面可通过低代码页面渲染。
 - 主业务后端：`api`，NestJS，统一服务入口为 `/api/service`。
 - 审批后端：`services/workflow-api`，NestJS，审批流执行由 Trigger.dev 驱动。
 - 数据层：Supabase/PostgreSQL，权限体系由 `admin_permissions`、`admin_routes`、`lowcode_pages` 和 RLS 共同承担。
@@ -42,7 +42,7 @@ flowchart LR
 | `services/workflow-api` | 在审批任务、抄送、转交、加签、通过、驳回等节点产生通知事件 |
 | Trigger.dev | 消费事件，创建消息，投递邮件/短信，延迟提醒，失败重试，摘要发送 |
 | PostgreSQL | 保存事件、站内信、投递记录、模板、用户偏好和审计数据 |
-| `nuxt-app` | 消息中心页面、顶部铃铛、未读角标、最近消息弹层 |
+| `frontend` | 消息中心页面、顶部铃铛、未读角标、最近消息弹层 |
 
 ## 3. 核心数据模型
 
@@ -341,7 +341,7 @@ await serviceApi.invoke('notification', 'markRead', {
 
 ### 7.2 顶部铃铛
 
-在 `nuxt-app/layouts/dashboard.vue` 增加原生组件：
+在 `frontend/layouts/dashboard.vue` 增加原生组件：
 
 - 展示未读角标。
 - 点击打开最近消息弹层。
@@ -352,8 +352,8 @@ await serviceApi.invoke('notification', 'markRead', {
 建议封装：
 
 ```text
-nuxt-app/composables/useNotificationApi.ts
-nuxt-app/components/NotificationBell.vue
+frontend/composables/useNotificationApi.ts
+frontend/components/NotificationBell.vue
 ```
 
 ### 7.3 实时策略
@@ -581,7 +581,7 @@ RLS 和服务权限建议：
 - [ ] 新增 `/dashboard/messages` 动态路由菜单。
 - [ ] 新增 `useNotificationApi.ts`。
 - [ ] 新增 `NotificationBell.vue`。
-- [ ] 在 `nuxt-app/layouts/dashboard.vue` 接入铃铛。
+- [ ] 在 `frontend/layouts/dashboard.vue` 接入铃铛。
 - [ ] 未读数量初期使用轮询。
 - [ ] 支持从消息跳转到来源页面。
 
@@ -596,7 +596,7 @@ RLS 和服务权限建议：
 
 完成指标：
 
-- `pnpm --dir nuxt-app typecheck` 通过。
+- `pnpm --dir frontend typecheck` 通过。
 - 桌面端主要视口下消息中心可用。
 - 顶部铃铛不影响现有菜单、退出和用户信息操作。
 
@@ -937,14 +937,14 @@ services/workflow-api/src/integration/notification.integration.ts
 建议新增：
 
 ```text
-nuxt-app/composables/useNotificationApi.ts
-nuxt-app/components/NotificationBell.vue
+frontend/composables/useNotificationApi.ts
+frontend/components/NotificationBell.vue
 ```
 
 需要修改：
 
 ```text
-nuxt-app/layouts/dashboard.vue
+frontend/layouts/dashboard.vue
 ```
 
 低代码消息中心通过数据库 seed 注入，前端不需要新增专门页面文件。
@@ -952,7 +952,7 @@ nuxt-app/layouts/dashboard.vue
 如果低代码列表能力不足，再新增原生页面：
 
 ```text
-nuxt-app/pages/dashboard/messages.vue
+frontend/pages/dashboard/messages.vue
 ```
 
 第一期优先走低代码页面，保持和当前后台模块风格一致。
@@ -964,7 +964,7 @@ nuxt-app/pages/dashboard/messages.vue
 ```bash
 pnpm --dir api typecheck
 pnpm --dir services/workflow-api typecheck
-pnpm --dir nuxt-app typecheck
+pnpm --dir frontend typecheck
 ```
 
 ### 16.2 审批流现有测试
@@ -1157,7 +1157,7 @@ pnpm workflow-api:dev
 - [ ] 通知失败不阻塞审批主流程。
 - [ ] 消息中心菜单可见并可进入。
 - [ ] 顶部铃铛能显示未读角标。
-- [ ] `api`、`workflow-api`、`nuxt-app` 类型检查通过。
+- [ ] `api`、`workflow-api`、`frontend` 类型检查通过。
 - [ ] 现有审批流测试通过。
 
 ## 19. 当前开发完成记录
@@ -1178,7 +1178,7 @@ pnpm workflow-api:dev
 
 - `pnpm --dir services/workflow-api typecheck` 通过。
 - `pnpm --dir api typecheck` 通过。
-- `pnpm --dir nuxt-app typecheck` 通过。
+- `pnpm --dir frontend typecheck` 通过。
 - `pnpm --dir services/workflow-api exec tsx src/runtime/runtime.service.spec.ts` 通过。
 
 剩余生产增强：

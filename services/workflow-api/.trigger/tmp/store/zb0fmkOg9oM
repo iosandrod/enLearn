@@ -1,0 +1,90 @@
+import {
+  assertTriggerEngineConfigured
+} from "../../../../chunk-KX7EBUUK.mjs";
+import "../../../../chunk-M6THF6GN.mjs";
+import {
+  WORKFLOW_INSTANCE_TASK_ID,
+  require_common
+} from "../../../../chunk-7LPHRYZP.mjs";
+import {
+  runs,
+  tasks,
+  wait
+} from "../../../../chunk-XZEMTCXJ.mjs";
+import "../../../../chunk-GIEEPZH6.mjs";
+import "../../../../chunk-ESM3ZAKX.mjs";
+import "../../../../chunk-PCODUAPY.mjs";
+import "../../../../chunk-DCZJKOR4.mjs";
+import "../../../../chunk-OVVJCK53.mjs";
+import {
+  __decorateClass,
+  __name,
+  __toESM,
+  init_esm
+} from "../../../../chunk-65XIAWWW.mjs";
+
+// src/trigger/trigger-dev.client.ts
+init_esm();
+var import_common = __toESM(require_common());
+var TriggerDevClient = class {
+  async triggerWorkflow(payload) {
+    this.assertTriggerDevConfigured();
+    return tasks.trigger(
+      WORKFLOW_INSTANCE_TASK_ID,
+      payload,
+      {
+        idempotencyKey: `workflow-instance:${payload.instanceId}`,
+        tags: [
+          `tenant:${payload.tenantId}`,
+          `workflow-instance:${payload.instanceId}`,
+          `definition:${payload.definitionId}`
+        ]
+      }
+    );
+  }
+  async triggerTask(taskId, payload, options = {}) {
+    this.assertTriggerDevConfigured();
+    return tasks.trigger(taskId, payload, options);
+  }
+  async createWaitpoint(options) {
+    this.assertTriggerDevConfigured();
+    return wait.createToken(options);
+  }
+  async completeWaitpoint(tokenId, decision) {
+    this.assertTriggerDevConfigured();
+    await this.completeTriggerWaitpoint(tokenId, decision);
+  }
+  async cancelRun(runId) {
+    this.assertTriggerDevConfigured();
+    await runs.cancel(runId);
+  }
+  assertTriggerDevConfigured() {
+    assertTriggerEngineConfigured();
+  }
+  async completeTriggerWaitpoint(tokenId, decision) {
+    try {
+      const token = await wait.retrieveToken(tokenId);
+      const response = await fetch(token.url, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(decision)
+      });
+      if (!response.ok) {
+        throw new Error(`Trigger.dev waitpoint callback failed with HTTP ${response.status}.`);
+      }
+      return;
+    } catch {
+      await wait.completeToken(tokenId, decision);
+    }
+  }
+};
+__name(TriggerDevClient, "TriggerDevClient");
+TriggerDevClient = __decorateClass([
+  (0, import_common.Injectable)()
+], TriggerDevClient);
+export {
+  TriggerDevClient
+};
+//# sourceMappingURL=trigger-dev.client.mjs.map

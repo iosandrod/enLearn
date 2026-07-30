@@ -7,3 +7,5 @@
   [32m➜[39m  [1mNetwork[22m: [36mhttp://172.24.112.1:[1m3003[22m/[39m
 [2m01:14:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
 [2m01:14:55[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mdependency optimized: [33msocket.io-client[32m[39m
+undefined
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command "vite" not found

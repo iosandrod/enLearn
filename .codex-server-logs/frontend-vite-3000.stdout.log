@@ -1,0 +1,25 @@
+
+> @ dev C:\Users\11516\Desktop\project\enLearn
+> pnpm --dir frontend dev
+
+
+> @ dev C:\Users\11516\Desktop\project\enLearn\frontend
+> vite --host 0.0.0.0 --port 3000
+
+[2m01:24:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+
+  [32m[1mVITE[22m v8.1.5[39m  [2mready in [0m[1m3094[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://100.101.158.119:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.5.47:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.24.112.1:[1m3000[22m/[39m
+[2m01:24:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m01:25:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m01:25:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mdependency optimized: [33msocket.io-client[32m[39m
+[2m01:28:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/app.vue[22m
+[2m01:30:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/app.vue[22m
+[2m01:30:38[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/app.vue[22m
+[2m01:32:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/app.vue[22m
+[2m01:36:12[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m
+[2m01:37:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m

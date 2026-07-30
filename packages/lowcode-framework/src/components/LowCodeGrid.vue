@@ -129,6 +129,10 @@ const gridConfig = computed(() => {
     };
   }
 
+  if (isRecord(nextConfig.treeConfig)) {
+    delete nextConfig.stripe;
+  }
+
   return nextConfig;
 });
 

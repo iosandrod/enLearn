@@ -1,0 +1,78 @@
+{
+  "configPath": "C:\\Users\\11516\\Desktop\\project\\enLearn\\services\\workflow-api\\.trigger\\tmp\\build-jxf0zz\\services\\workflow-api\\trigger.config.mjs",
+  "customConditions": [
+  ],
+  "prompts": [
+  ],
+  "queues": [
+  ],
+  "runtime": "node",
+  "runtimeVersion": "22.20.0",
+  "skills": [
+  ],
+  "tasks": [
+    {
+      "entryPoint": "C:\\Users\\11516\\Desktop\\project\\enLearn\\services\\workflow-api\\.trigger\\tmp\\build-jxf0zz\\services\\workflow-api\\src\\trigger\\workflow-job.task.mjs",
+      "filePath": "src/trigger/workflow-job.task.ts",
+      "id": "workflow.job.run",
+      "maxDuration": 3600
+    },
+    {
+      "entryPoint": "C:\\Users\\11516\\Desktop\\project\\enLearn\\services\\workflow-api\\.trigger\\tmp\\build-jxf0zz\\services\\workflow-api\\src\\trigger\\workflow-job.task.mjs",
+      "filePath": "src/trigger/workflow-job.task.ts",
+      "id": "workflow.timer.fire",
+      "maxDuration": 3600
+    },
+    {
+      "entryPoint": "C:\\Users\\11516\\Desktop\\project\\enLearn\\services\\workflow-api\\.trigger\\tmp\\build-jxf0zz\\services\\workflow-api\\src\\trigger\\notification.task.mjs",
+      "filePath": "src/trigger/notification.task.ts",
+      "id": "notification.dispatch",
+      "maxDuration": 3600
+    },
+    {
+      "entryPoint": "C:\\Users\\11516\\Desktop\\project\\enLearn\\services\\workflow-api\\.trigger\\tmp\\build-jxf0zz\\services\\workflow-api\\src\\trigger\\notification.task.mjs",
+      "filePath": "src/trigger/notification.task.ts",
+      "id": "notification.retryDelivery",
+      "maxDuration": 3600
+    },
+    {
+      "entryPoint": "C:\\Users\\11516\\Desktop\\project\\enLearn\\services\\workflow-api\\.trigger\\tmp\\build-jxf0zz\\services\\workflow-api\\src\\trigger\\notification.task.mjs",
+      "filePath": "src/trigger/notification.task.ts",
+      "id": "notification.remindUnread",
+      "maxDuration": 3600
+    },
+    {
+      "entryPoint": "C:\\Users\\11516\\Desktop\\project\\enLearn\\services\\workflow-api\\.trigger\\tmp\\build-jxf0zz\\services\\workflow-api\\src\\trigger\\notification.task.mjs",
+      "filePath": "src/trigger/notification.task.ts",
+      "id": "notification.digest",
+      "maxDuration": 3600
+    },
+    {
+      "entryPoint": "C:\\Users\\11516\\Desktop\\project\\enLearn\\services\\workflow-api\\.trigger\\tmp\\build-jxf0zz\\services\\workflow-api\\src\\trigger\\notification.task.mjs",
+      "filePath": "src/trigger/notification.task.ts",
+      "id": "notification.cleanup",
+      "maxDuration": 3600
+    },
+    {
+      "entryPoint": "C:\\Users\\11516\\Desktop\\project\\enLearn\\services\\workflow-api\\.trigger\\tmp\\build-jxf0zz\\services\\workflow-api\\src\\trigger\\waitpoint-diagnostic.task.mjs",
+      "filePath": "src/trigger/waitpoint-diagnostic.task.ts",
+      "id": "trigger-waitpoint-diagnostic",
+      "maxDuration": 3600
+    },
+    {
+      "entryPoint": "C:\\Users\\11516\\Desktop\\project\\enLearn\\services\\workflow-api\\.trigger\\tmp\\build-jxf0zz\\services\\workflow-api\\src\\trigger\\workflow-instance.task.mjs",
+      "filePath": "src/trigger/workflow-instance.task.ts",
+      "id": "workflow.instance.run",
+      "maxDuration": 3600
+    }
+  ],
+  "timings": {
+    "src/trigger/notification.task.ts": 3.8202999999999747,
+    "src/trigger/trigger-dev.client.ts": 76.03710000000001,
+    "src/trigger/trigger-engine.config.ts": 0.9783999999999651,
+    "src/trigger/waitpoint-diagnostic.task.ts": 1.8932999999999538,
+    "src/trigger/workflow-instance.task.ts": 3.252800000000093,
+    "src/trigger/workflow-job.task.ts": 22.86239999999998
+  },
+  "workerEntryPoint": "C:\\Users\\11516\\Desktop\\project\\enLearn\\services\\workflow-api\\.trigger\\tmp\\build-jxf0zz\\node_modules\\.pnpm\\trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3\\node_modules\\trigger.dev\\dist\\esm\\entryPoints\\dev-run-worker.mjs"
+}

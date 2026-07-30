@@ -170,3 +170,271 @@ More info and automated migrator: https://sass-lang.com/d/import
 [36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x5)[22m
 [36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x6)[22m
 [36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m[2m (x7)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue, /pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m .nuxt/dist directory has been removed. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 256ms
+[32m√[39m Vite server built in 5668ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 18765ms
+[36mi[39m Vite server warmed up in 14ms
+[36mi[39m Vite client warmed up in 41ms
+[36mi[39m .nuxt/dist directory has been removed. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 96ms
+[32m√[39m Vite server built in 1448ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 7649ms
+[36mi[39m Vite server warmed up in 4ms
+[36mi[39m Vite client warmed up in 11ms
+[36mi[39m [32mpage reload [39m[2mplugins/vxe.client.ts[22m
+[36mi[39m nuxt.config.ts updated. Restarting Nuxt...
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/entity-design.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 78ms
+[32m√[39m Vite server built in 2084ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 5947ms
+[36mi[39m Vite server warmed up in 4ms
+[36mi[39m Vite client warmed up in 15ms
+[90m[[90mnuxt[90m][39m [36mi[39m Directory [36mutils/[39m removed
+[36mi[39m Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 63ms
+[32m√[39m Vite server built in 4093ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 2030ms
+[36mi[39m Vite server warmed up in 1ms
+[36mi[39m Vite client warmed up in 5ms
+[36mi[39m .nuxt/dist directory has been removed. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[36mi[39m Re-optimizing dependencies because vite config has changed
+[32m√[39m Vite client built in 491ms
+[32m√[39m Vite server built in 472ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 26100ms
+[36mi[39m Vite server warmed up in 3ms
+[36mi[39m Vite client warmed up in 9ms
+[36mi[39m .nuxt/dist directory has been removed. Restarting Nuxt...
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[32m√[39m Vite client built in 238ms
+[32m√[39m Vite server built in 3725ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 3947ms
+[36mi[39m Vite server warmed up in 3ms
+[36mi[39m Vite client warmed up in 6ms
+[36mi[39m [32mpage reload [39m[2mindex.html[22m
+[36mi[39m [32mpage reload [39m[2mindex.html[22m[2m (x2)[22m
+[36mi[39m changed tsconfig file detected: C:/Users/11516/Desktop/project/enLearn/nuxt-app/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[36mi[39m changed tsconfig file detected: C:/Users/11516/Desktop/project/enLearn/nuxt-app/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/app.vue[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x2)[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x3)[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x4)[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x5)[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x6)[22m
+[36mi[39m nuxt.config.ts updated. Restarting Nuxt...
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer.vue?macro=true[22m
+[36mi[39m [32mpage reload [39m[2mplugins/vant.client.ts[22m
+[36mi[39m [32mpage reload [39m[2mplugins/visual-editor.client.ts[22m
+[36mi[39m [32mpage reload [39m[2mplugins/vxe.client.ts[22m
+[33m  ➜ DevTools: [39m[2mpress [22m[32mShift[39m[2m + [22m[32mAlt[39m[2m + [22m[32mD[39m[2m in the browser (v3.3.1)[22m
+
+[36mi[39m Re-optimizing dependencies because vite config has changed
+[32m√[39m Vite client built in 205ms
+[32m√[39m Vite server built in 146ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 5447ms
+[90m[[90mnitro[90m][39m [32m√[39m Nuxt Nitro server built in 3534ms
+[36mi[39m Vite server warmed up in 2ms
+[36mi[39m Vite client warmed up in 4ms
+[36mi[39m [32mhmr update [39m[2m/components/SiteHeader.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/SiteFooter.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/NotificationBell.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/signup.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/signin.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/blog/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/pricing.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/blog/[slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/components/SiteFooter.vue, /components/SiteHeader.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/auth/callback.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print/logs.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/account.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/settings.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/signin.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/signup.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /components/SiteHeader.vue, /components/ChatPopup.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /components/ChatPopup.vue, /components/NotificationBell.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /components/SiteHeader.vue, /components/ChatPopup.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/ChatPopup.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/ChatPopup.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/components/NotificationBell.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /components/ChatPopup.vue, /components/NotificationBell.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/NotificationBell.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/SiteFooter.vue, /components/SiteHeader.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/SiteFooter.vue, /components/SiteHeader.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /components/ChatPopup.vue, /components/NotificationBell.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/NotificationBell.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/ChatPopup.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/ChatPopup.vue[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /components/SiteHeader.vue, /components/ChatPopup.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /components/ChatPopup.vue, /components/NotificationBell.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /components/SiteHeader.vue, /components/ChatPopup.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/signup.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/docs/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print/logs.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/blog/[slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/auth/callback.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/signup.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/pricing.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/signin.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/docs/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/docs/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/settings.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/account.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print/logs.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/blog/[slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/blog/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/auth/callback.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 622.85ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 715.41ms
+[36mi[39m [32mpage reload [39m[2mvirtual:nuxt:.nuxt%2Fmiddleware.mjs[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 734.89ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 877.4ms
+[36mi[39m [32mpage reload [39m[2mvirtual:nuxt:.nuxt%2Fmiddleware.mjs[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /components/SiteHeader.vue, /components/ChatPopup.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/ChatPopup.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/NotificationBell.vue, /components/NotificationBell.vue?vue&type=style&index=0&scoped=3c740528&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /components/SiteHeader.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /components/SiteHeader.vue[22m[2m (x2)[22m
+[36mi[39m [32mpage reload [39m[2mcomposables/useAuthenticatedFetch.ts[22m
+[36mi[39m [32mpage reload [39m[2mcomposables/useChatApi.ts[22m
+[36mi[39m [32mpage reload [39m[2mcomposables/useChatSocket.ts[22m
+[36mi[39m [32mpage reload [39m[2mcomposables/useNotificationApi.ts[22m
+[36mi[39m [32mpage reload [39m[2mcomposables/useServiceApi.ts[22m
+[36mi[39m [32mhmr update [39m[2m/components/ChatPopup.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/NotificationBell.vue, /components/NotificationBell.vue?vue&type=style&index=0&scoped=3c740528&lang.css[22m
+[36mi[39m [32mhmr update [39m[2m/components/SiteFooter.vue, /components/SiteHeader.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/SiteFooter.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/SiteHeader.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/auth/callback.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/blog/[slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print/logs.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/trigger-workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/tasks/[taskId].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/docs/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/auth/callback.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/pricing.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/signin.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/signup.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/blog/[slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/blog/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/account.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/entity-design.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/files.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/messages.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/notification-deliveries.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/settings.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print/logs.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/trigger-workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/tasks/[taskId].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/docs/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/docs/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/components/SiteFooter.vue, /components/SiteHeader.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/SiteHeader.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/SiteFooter.vue[22m
+[36mi[39m [32mhmr update [39m[2m/components/NotificationBell.vue[22m
+[36mi[39m [32mhmr update [39m[2m/layouts/dashboard.vue[22m
+[36mi[39m [32mhmr update [39m[2m/pages/auth/callback.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/blog/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/account.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print/logs.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/trigger-workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/workflow/tasks/[taskId].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/blog/[slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/entity-design.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/files.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/messages.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/notification-deliveries.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/print-designer.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/settings.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/designer/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/signin.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/pricing.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/signup.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/pricing.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/entity-design.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/index.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/messages.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/pricing.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/low-code/[code].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/notification-deliveries.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mplugins.client.mjs[39m in 698.71ms
+[90m[[90mnuxt[90m][39m [36mi[39m Compiled [36mtypes/plugins.d.ts[39m in 793.14ms
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/entity-design.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m .nuxt/dist directory has been removed. Restarting Nuxt...
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x2)[22m
+[36mi[39m [32mhmr update [39m[2m/pages/dashboard/entity-design.vue?macro=true, /@id/virtual:nuxt:.nuxt%2Froutes.mjs[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x2)[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x3)[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x4)[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x5)[22m
+[36mi[39m [32mpage reload [39m[2mdist/index.html[22m[2m (x6)[22m

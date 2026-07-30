@@ -14,7 +14,7 @@
 | `@enlearn/workflow-schema` | `packages/workflow-schema` | 对外 npm 包 | 流程 DSL 类型、标准化、校验、编译和节点注册表，供前后端共享 |
 | `@enlearn/workflow-api` | `services/workflow-api` | 内部微服务 | NestJS REST API，统一前缀 `/api/workflow`，使用 PostgreSQL 业务投影和 Trigger.dev 持久化运行时 |
 
-当前 Nuxt 示例页在 `nuxt-app/pages/dashboard/workflow/designer.vue`，可作为接入参考。
+当前 Nuxt 示例页在 `frontend/pages/dashboard/workflow/designer.vue`，可作为接入参考。
 
 运行时架构详见 [approval-workflow-triggerdev-runtime.md](./approval-workflow-triggerdev-runtime.md)。
 

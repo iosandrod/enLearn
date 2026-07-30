@@ -1,0 +1,134 @@
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[2m01:26:47[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Component "RouterView" has already been registered in target app.
+[2m01:26:53[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Authentication required.
+[39m > createError src/spa-compat.ts:141:16
+    139 |  
+    140 |  export function createError(input: { statusCode?: number; statusMessage?: string; message?: string }) {
+    141 |    const error = new Error(input.statusMessage ?? input.message ?? 'Application error') as Error & {
+        |                  ^
+    142 |      statusCode?: number;
+    143 |      statusMessage?: string;
+ > fetchBackend src/spa-compat.ts:82:10
+ > Object.init composables/useAuth.ts:47:20
+
+[2m01:26:53[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue Router warn]: uncaught error during route navigation:
+[2m01:26:53[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mError: Authentication required.
+    at createError (http://localhost:3000/src/spa-compat.ts:123:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:56:9)
+    at async Object.init (http://localhost:3000/composables/useAuth.ts:36:19)
+    at async http://localhost:3000/src/router.ts:212:3
+[2m01:26:53[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue Router warn]: Unexpected error when starting the router: Error: Authentication required.
+    at createError (http://localhost:3000/src/spa-compat.ts:123:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:56:9)
+    at async Object.init (http://localhost:3000/composables/useAuth.ts:36:19)
+    at async http://localhost:3000/src/router.ts:212:3
+[2m01:26:55[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue Router warn]: uncaught error during route navigation:
+[2m01:26:55[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mError: Authentication required.
+    at createError (http://localhost:3000/src/spa-compat.ts:123:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:56:9)
+    at async Object.init (http://localhost:3000/composables/useAuth.ts:36:19)
+    at async http://localhost:3000/src/router.ts:216:3
+[2m01:26:57[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue Router warn]: uncaught error during route navigation:
+[2m01:26:57[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mError: Authentication required.
+    at createError (http://localhost:3000/src/spa-compat.ts:123:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:56:9)
+    at async Object.init (http://localhost:3000/composables/useAuth.ts:36:19)
+    at async http://localhost:3000/src/router.ts:216:3
+[2m01:26:58[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue Router warn]: uncaught error during route navigation:
+[2m01:26:58[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mError: Authentication required.
+    at createError (http://localhost:3000/src/spa-compat.ts:123:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:56:9)
+    at async Object.init (http://localhost:3000/composables/useAuth.ts:36:19)
+    at async http://localhost:3000/src/router.ts:216:3
+[2m01:26:58[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue Router warn]: uncaught error during route navigation:
+[2m01:26:58[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mError: Authentication required.
+    at createError (http://localhost:3000/src/spa-compat.ts:123:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:56:9)
+    at async Object.init (http://localhost:3000/composables/useAuth.ts:36:19)
+    at async http://localhost:3000/src/router.ts:216:3
+[2m01:26:58[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue Router warn]: uncaught error during route navigation:
+[2m01:26:58[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mError: Authentication required.
+    at createError (http://localhost:3000/src/spa-compat.ts:123:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:56:9)
+    at async Object.init (http://localhost:3000/composables/useAuth.ts:36:19)
+    at async http://localhost:3000/src/router.ts:216:3
+[2m01:27:01[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Component <Index>: setup function returned a promise, but no <Suspense> boundary was found in the parent component tree. A component with async setup() must be nested in a <Suspense> in order to be rendered. 
+  at <Index onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< undefined > key="/blog" > 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m01:30:22[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Component "RouterView" has already been registered in target app.
+[2m01:30:22[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m01:30:23[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Authentication required.
+[39m > createError src/spa-compat.ts:141:16
+    139 |  
+    140 |  export function createError(input: { statusCode?: number; statusMessage?: string; message?: string }) {
+    141 |    const error = new Error(input.statusMessage ?? input.message ?? 'Application error') as Error & {
+        |                  ^
+    142 |      statusCode?: number;
+    143 |      statusMessage?: string;
+ > fetchBackend src/spa-compat.ts:82:10
+ > Object.init composables/useAuth.ts:47:20
+
+[2m01:32:35[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Component "RouterView" has already been registered in target app.
+[2m01:32:35[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m01:32:35[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mError[22m: Authentication required.
+[39m > createError src/spa-compat.ts:141:16
+    139 |  
+    140 |  export function createError(input: { statusCode?: number; statusMessage?: string; message?: string }) {
+    141 |    const error = new Error(input.statusMessage ?? input.message ?? 'Application error') as Error & {
+        |                  ^
+    142 |      statusCode?: number;
+    143 |      statusMessage?: string;
+ > fetchBackend src/spa-compat.ts:82:10
+ > Object.init composables/useAuth.ts:47:20
+
+[2m01:36:15[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Component "RouterView" has already been registered in target app.
+[2m01:36:15[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m01:37:31[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Component "RouterView" has already been registered in target app.
+[2m01:37:31[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
