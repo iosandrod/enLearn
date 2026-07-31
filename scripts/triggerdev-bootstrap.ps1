@@ -302,7 +302,7 @@ if (-not (Test-TriggerToken $accessToken)) {
 if (-not (Test-TriggerToken $accessToken)) {
   Write-Host "No valid Trigger.dev personal access token found."
   Write-Host "Starting Trigger.dev CLI login. Complete the printed login URL, then this script will continue."
-  pnpm --dir services/workflow-api exec trigger login -a $ApiUrl --no-browser --profile $Profile
+  pnpm --dir api exec trigger login -a $ApiUrl --no-browser --profile $Profile
   if ($LASTEXITCODE -ne 0) {
     throw "Trigger.dev CLI login failed."
   }

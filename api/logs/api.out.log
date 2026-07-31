@@ -1,0 +1,25 @@
+
+> hikari-api@ dev C:\Users\11516\Desktop\project\enLearn\api
+> tsx watch src/main.ts
+
+[32m[Nest] 21576  - [39m2026/07/31 08:17:11 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +131ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +6ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +6ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +6ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:15 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +4274ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +14ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:16 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +4ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +9ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:16 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 21576  - [39m2026/07/31 08:17:16 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +22ms[39m
+Nest API listening on http://localhost:3002/api/service
+ ELIFECYCLE  Command failed with exit code 4294967295.

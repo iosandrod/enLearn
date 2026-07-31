@@ -1,24 +1,16 @@
-import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
+
 import type { ServiceContext, ServiceExecutor } from '../common/interfaces/service-executor';
-import { getEnv } from '../common/utils/env';
+import {
+  WORKFLOW_REQUEST_PATTERN,
+  WORKFLOW_SERVICE_CLIENT,
+  type WorkflowApiEnvelope,
+  type WorkflowRequest
+} from './workflow.transport';
 
-type HttpMethod = 'GET' | 'POST' | 'PUT';
 type PostData = Record<string, unknown>;
-
-type WorkflowApiEnvelope<T = unknown> = {
-  success?: boolean;
-  data?: T;
-  error?: {
-    message?: string;
-  };
-};
-
-type WorkflowRequest = {
-  method: HttpMethod;
-  path: string;
-  query?: Record<string, unknown>;
-  body?: Record<string, unknown>;
-};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -39,34 +31,16 @@ function stripUndefined(input: Record<string, unknown>) {
   return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
 }
 
-function buildQueryString(query: Record<string, unknown> | undefined) {
-  if (!query) return '';
-
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
-    if (value === undefined || value === null || value === '') continue;
-    params.set(key, String(value));
-  }
-
-  const value = params.toString();
-  return value ? `?${value}` : '';
-}
-
 @Injectable()
 export class WorkflowService implements ServiceExecutor {
-  private readonly workflowApiBaseUrl: string;
-
-  constructor() {
-    const env = getEnv();
-    this.workflowApiBaseUrl = String(
-      env.WORKFLOW_API_BASE_URL ??
-        `http://localhost:${env.WORKFLOW_API_PORT ?? '3010'}/api/workflow`
-    ).replace(/\/+$/, '');
-  }
+  constructor(
+    @Inject(WORKFLOW_SERVICE_CLIENT)
+    private readonly workflowClient: ClientProxy
+  ) {}
 
   async execute(method: string, postData: PostData, context: ServiceContext) {
     const request = this.resolveRequest(method, postData);
-    return this.invokeWorkflowApi(request, postData, context);
+    return this.invokeWorkflowService(request, postData, context);
   }
 
   private resolveRequest(method: string, postData: PostData): WorkflowRequest {
@@ -105,7 +79,10 @@ export class WorkflowService implements ServiceExecutor {
       case 'getInstance':
         return { method: 'GET', path: `/instances/${readString(postData.instanceId, 'instanceId')}` };
       case 'getInstanceTimeline':
-        return { method: 'GET', path: `/instances/${readString(postData.instanceId, 'instanceId')}/timeline` };
+        return {
+          method: 'GET',
+          path: `/instances/${readString(postData.instanceId, 'instanceId')}/timeline`
+        };
       case 'startInstance':
         return { method: 'POST', path: '/instances', body: postData };
       case 'withdrawInstance':
@@ -151,7 +128,11 @@ export class WorkflowService implements ServiceExecutor {
       case 'getTask':
         return { method: 'GET', path: `/tasks/${readString(postData.taskId, 'taskId')}` };
       case 'claimTask':
-        return { method: 'POST', path: `/tasks/${readString(postData.taskId, 'taskId')}/claim`, body: {} };
+        return {
+          method: 'POST',
+          path: `/tasks/${readString(postData.taskId, 'taskId')}/claim`,
+          body: {}
+        };
       case 'approveTask':
         return {
           method: 'POST',
@@ -177,13 +158,27 @@ export class WorkflowService implements ServiceExecutor {
           body: stripUndefined({ targetUserId: postData.targetUserId, comment: postData.comment })
         };
       case 'getHistoryTimeline':
-        return { method: 'GET', path: `/history/instances/${readString(postData.instanceId, 'instanceId')}/timeline` };
+        return {
+          method: 'GET',
+          path: `/history/instances/${readString(postData.instanceId, 'instanceId')}/timeline`
+        };
+      case 'runApprovalFlowTest':
+        return {
+          method: 'POST',
+          path: '/tests/approval-flow/run',
+          body: stripUndefined({
+            tenantId: postData.tenantId,
+            userId: postData.userId,
+            timeoutMs: postData.timeoutMs,
+            intervalMs: postData.intervalMs
+          })
+        };
       default:
         throw new BadRequestException(`Unsupported workflow method: ${method}`);
     }
   }
 
-  private async invokeWorkflowApi(
+  private async invokeWorkflowService(
     request: WorkflowRequest,
     postData: PostData,
     context: ServiceContext
@@ -198,19 +193,25 @@ export class WorkflowService implements ServiceExecutor {
     if (context.authorization) headers.authorization = context.authorization;
     if (context.requestId) headers['x-request-id'] = context.requestId;
 
-    const response = await fetch(
-      `${this.workflowApiBaseUrl}${request.path}${buildQueryString(request.query)}`,
-      {
-        method: request.method,
-        headers,
-        ...(request.method === 'GET' ? {} : { body: JSON.stringify(request.body ?? {}) })
-      }
-    );
-    const payload = (await response.json().catch(() => ({}))) as WorkflowApiEnvelope;
-
-    if (!response.ok || payload.success === false) {
+    let payload: WorkflowApiEnvelope;
+    try {
+      payload = await firstValueFrom(
+        this.workflowClient.send<WorkflowApiEnvelope>(WORKFLOW_REQUEST_PATTERN, {
+          ...request,
+          headers
+        })
+      );
+    } catch (error) {
       throw new BadGatewayException(
-        payload.error?.message ?? `Workflow API request failed: ${response.status}`
+        error instanceof Error && error.message
+          ? error.message
+          : 'Workflow service request failed.'
+      );
+    }
+
+    if (!payload || payload.success === false) {
+      throw new BadGatewayException(
+        payload?.error?.message ?? 'Workflow service request failed.'
       );
     }
 

@@ -4,14 +4,23 @@ import { basename, resolve } from 'node:path';
 export type WorkflowApiEnv = {
   DATABASE_URL?: string;
   DIRECT_URL?: string;
+  REDIS_DB?: string;
+  REDIS_HOST?: string;
+  REDIS_PASSWORD?: string;
+  REDIS_PORT?: string;
+  REDIS_URL?: string;
   NEXT_PUBLIC_SUPABASE_ANON_KEY?: string;
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?: string;
   NEXT_PUBLIC_SUPABASE_URL?: string;
+  WORKFLOW_REDIS_DB?: string;
+  WORKFLOW_REDIS_HOST?: string;
+  WORKFLOW_REDIS_PASSWORD?: string;
+  WORKFLOW_REDIS_PORT?: string;
+  WORKFLOW_REDIS_URL?: string;
   SUPABASE_ANON_KEY?: string;
   SUPABASE_PROJECT_URL?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
   SUPABASE_URL?: string;
-  WORKFLOW_API_PORT?: string;
   WORKFLOW_INTERVAL_SCHEDULER_ENABLED?: string;
   WORKFLOW_TRIGGER_LOCAL_FALLBACK_ENABLED?: string;
   TRIGGER_PROJECT_REF?: string;
@@ -28,17 +37,15 @@ export function getWorkflowEnv(): WorkflowApiEnv {
   if (cachedEnv) return cachedEnv;
 
   const cwd = process.cwd();
-  const runningFromWorkflowApi = basename(cwd) === 'workflow-api';
-  const repoRoot = runningFromWorkflowApi ? resolve(cwd, '..', '..') : cwd;
-  const workflowApiRoot = runningFromWorkflowApi
-    ? cwd
-    : resolve(repoRoot, 'services', 'workflow-api');
+  const runningFromApi = basename(cwd) === 'api';
+  const repoRoot = runningFromApi ? resolve(cwd, '..') : cwd;
+  const apiRoot = runningFromApi ? cwd : resolve(repoRoot, 'api');
 
   const fileEnv = {
     ...parseEnvFile(resolve(repoRoot, '.env')),
     ...parseEnvFile(resolve(repoRoot, '.env.local')),
-    ...parseEnvFile(resolve(workflowApiRoot, '.env')),
-    ...parseEnvFile(resolve(workflowApiRoot, '.env.local'))
+    ...parseEnvFile(resolve(apiRoot, '.env')),
+    ...parseEnvFile(resolve(apiRoot, '.env.local'))
   };
 
   for (const [key, value] of Object.entries(fileEnv)) {

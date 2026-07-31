@@ -15,11 +15,15 @@
     "api:dev": "pnpm --dir api dev",
     "api:build": "pnpm --dir api build",
     "api:start": "pnpm --dir api start",
-    "workflow-api:dev": "pnpm --dir services/workflow-api dev",
-    "workflow-api:build": "pnpm --dir services/workflow-api build",
-    "workflow-api:start": "pnpm --dir services/workflow-api start",
-    "workflow-api:typecheck": "pnpm --dir services/workflow-api typecheck",
-    "workflow-api:test": "pnpm --dir services/workflow-api test",
+    "domain-service:dev": "pnpm --dir api domain:dev",
+    "domain-service:build": "pnpm --dir api domain:build",
+    "domain-service:start": "pnpm --dir api domain:start",
+    "domain-service:typecheck": "pnpm --dir api domain:typecheck",
+    "workflow-api:dev": "pnpm --dir api workflow:dev",
+    "workflow-api:build": "pnpm --dir api workflow:build",
+    "workflow-api:start": "pnpm --dir api workflow:start",
+    "workflow-api:typecheck": "pnpm --dir api workflow:typecheck",
+    "workflow-api:test": "pnpm --dir api workflow:test",
     "triggerdev:up": "docker compose --env-file infra/triggerdev/.env -f infra/triggerdev/docker-compose.yml up -d",
     "triggerdev:down": "docker compose --env-file infra/triggerdev/.env -f infra/triggerdev/docker-compose.yml down",
     "triggerdev:logs": "docker compose --env-file infra/triggerdev/.env -f infra/triggerdev/docker-compose.yml logs -f webapp supervisor",
@@ -27,8 +31,8 @@
     "triggerdev:bootstrap:cli": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/triggerdev-bootstrap.ps1 -UseCliBootstrap",
     "triggerdev:up:bootstrap": "pnpm triggerdev:up && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/triggerdev-bootstrap.ps1 -ApiUrl http://localhost:8030 -UseCliBootstrap",
     "triggerdev:engine": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/triggerdev-bootstrap.ps1 -ApiUrl http://localhost:3030",
-    "workflow-api:trigger:dev": "pnpm --dir services/workflow-api exec trigger dev start -a http://localhost:3030 --env-file %INIT_CWD%\\.env",
-    "workflow-api:trigger:deploy": "pnpm --dir services/workflow-api exec trigger deploy -a http://localhost:3030 --env-file %INIT_CWD%\\.env"
+    "workflow-api:trigger:dev": "pnpm --dir api workflow:trigger:dev",
+    "workflow-api:trigger:deploy": "pnpm --dir api workflow:trigger:deploy"
   },
   "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
 }

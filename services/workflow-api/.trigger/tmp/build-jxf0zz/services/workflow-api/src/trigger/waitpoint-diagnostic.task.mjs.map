@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../../../../../src/trigger/waitpoint-diagnostic.task.ts"],
-  "sourcesContent": ["import { task, wait } from '@trigger.dev/sdk';\n\nexport const TRIGGER_WAITPOINT_DIAGNOSTIC_TASK_ID = 'trigger-waitpoint-diagnostic';\n\ntype WaitpointDiagnosticPayload = {\n  tokenId: string;\n  testId: string;\n};\n\ntype WaitpointDiagnosticOutput = {\n  testId: string;\n  tokenId: string;\n  data: Record<string, unknown>;\n};\n\nexport const waitpointDiagnosticTask = task({\n  id: TRIGGER_WAITPOINT_DIAGNOSTIC_TASK_ID,\n  run: async (payload: WaitpointDiagnosticPayload): Promise<WaitpointDiagnosticOutput> => {\n    const result = await wait.forToken<Record<string, unknown>>(payload.tokenId);\n    if (!result.ok) throw result.error;\n\n    return {\n      testId: payload.testId,\n      tokenId: payload.tokenId,\n      data: result.output\n    };\n  }\n});\n"],
-  "mappings": ";;;;;;;;;;;;;;;AAAA;AAEO,IAAM,uCAAuC;AAa7C,IAAM,0BAA0B,KAAK;AAAA,EAC1C,IAAI;AAAA,EACJ,KAAK,8BAAO,YAA4E;AACtF,UAAM,SAAS,MAAM,KAAK,SAAkC,QAAQ,OAAO;AAC3E,QAAI,CAAC,OAAO,GAAI,OAAM,OAAO;AAE7B,WAAO;AAAA,MACL,QAAQ,QAAQ;AAAA,MAChB,SAAS,QAAQ;AAAA,MACjB,MAAM,OAAO;AAAA,IACf;AAAA,EACF,GATK;AAUP,CAAC;",
-  "names": []
-}
