@@ -172,6 +172,41 @@ a {
   white-space: nowrap;
 }
 
+.admin-user-switcher {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  min-width: 0;
+  gap: 5px;
+  border: 1px solid rgb(255 255 255 / 36%);
+  border-radius: 4px;
+  background: rgb(255 255 255 / 12%);
+  color: #ffffff;
+  padding: 0 6px;
+}
+
+.admin-user-switcher i {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.admin-user-switcher select {
+  width: 176px;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  outline: 0;
+  padding: 0;
+}
+
+.admin-user-switcher select option {
+  color: #111827;
+}
+
 .admin-body {
   display: grid;
   height: calc(100vh - 32px);
@@ -1429,6 +1464,10 @@ a {
     min-height: 36px;
     flex-wrap: wrap;
     padding: 6px 10px;
+  }
+
+  .admin-user-switcher select {
+    width: 150px;
   }
 
   .admin-sidebar {

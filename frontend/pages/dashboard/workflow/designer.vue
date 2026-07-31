@@ -7,17 +7,24 @@
           <span>名称</span>
           <input v-model="workflowModel.name" />
         </label>
-       </div>
+      </div>
 
       <div class="workflow-designer-page__actions">
+        <button type="button" class="workflow-button workflow-button--test" :disabled="isApiBusy" @click="loadTriggerApprovalTestWorkflow">
+          <i class="ri-flask-line" aria-hidden="true" />
+          加载测试流程
+        </button>
         <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="saveAndPublish">
+          <i class="ri-save-3-line" aria-hidden="true" />
           保存并发布
         </button>
         <button type="button" class="workflow-button" :disabled="isApiBusy" @click="runMinimalApprovalOneClickTest">
+          <i class="ri-play-circle-line" aria-hidden="true" />
           一键测试
         </button>
         <div class="workflow-action-menu" @click.stop>
           <button type="button" class="workflow-button workflow-button--ghost" @click="toggleActionMenu">
+            <i class="ri-more-line" aria-hidden="true" />
             更多
           </button>
           <div v-if="actionsMenuOpen" class="workflow-action-menu__panel">
@@ -45,7 +52,7 @@
       <aside class="workflow-designer-page__side">
         <section class="workflow-panel">
           <div class="workflow-panel__header">
-            <strong>订单测试覆盖</strong>
+            <strong>节点覆盖</strong>
             <span>{{ coveredNodeTypeCount }}/{{ coverageItems.length }}</span>
           </div>
 
@@ -135,6 +142,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
   ApprovalDesigner,
   ORDER_APPROVAL_TEST_VARIABLES,
+  createTriggerApprovalTestWorkflow,
   createOrderApprovalWorkflow,
   createSimpleApprovalWorkflow,
   parseWorkflowModelJson,
@@ -362,6 +370,31 @@ function createBlankModel() {
   messageClass.value = 'workflow-help';
 }
 
+function loadTriggerApprovalTestWorkflow() {
+  const currentUserId = auth.user.value?.id ?? 'approval-test-user';
+  const approverIds = auth.devTestUsers
+    .map((user) => user.id)
+    .filter((userId) => userId !== currentUserId && userId !== 'u_alice')
+    .slice(0, 3);
+  const model = createTriggerApprovalTestWorkflow({
+    code: 'trigger_approval_test',
+    name: 'Trigger.dev 测试审批流',
+    documentType: 'approval_flow_test',
+    requesterId: currentUserId,
+    approverIds
+  });
+
+  savedModelId.value = '';
+  publishedDefinitionId.value = '';
+  resetRuntimeState();
+  workflowModel.value = model;
+  designerRef.value?.loadSchema(model);
+  schemaText.value = serializeWorkflowModel(model);
+  void nextTick(() => designerRef.value?.autoLayout());
+  message.value = `已加载测试流程，发起人：${auth.user.value?.email ?? currentUserId}`;
+  messageClass.value = 'workflow-success';
+}
+
 async function simulateOrderWorkflow() {
   const orderWorkflow = createOrderApprovalWorkflow();
 
@@ -497,7 +530,8 @@ async function runMinimalApprovalOneClickTest() {
     testRunSummary.value = '后端创建测试数据';
     const result = await invokeWorkflowService<ApprovalFlowTestResult>('runApprovalFlowTest', {
       timeoutMs: 90000,
-      intervalMs: 2000
+      intervalMs: 2000,
+      userId: auth.user.value?.id
     });
 
     workflowModel.value = result.testData.schema;
@@ -663,8 +697,8 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
 <style scoped>
 .workflow-designer-page {
   display: grid;
-  gap: 8px;
-  min-height: calc(100vh - 66px);
+  gap: 6px;
+  min-height: calc(100vh - 62px);
   color: #172033;
 }
 
@@ -675,24 +709,24 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   align-items: center;
   gap: 12px;
   border: 1px solid #d5deea;
-  border-radius: 6px 6px 0 0;
+  border-radius: 5px 5px 0 0;
   background: #ffffff;
   box-shadow: none;
-  padding: 8px 12px;
+  padding: 5px 10px;
 }
 
 .workflow-designer-page__identity {
   display: grid;
   min-width: 0;
-  gap: 5px;
+  gap: 2px;
 }
 
 .workflow-designer-page__kicker {
   color: #5b6b85;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   letter-spacing: 0;
-  line-height: 14px;
+  line-height: 12px;
 }
 
 .workflow-title-field {
@@ -713,9 +747,9 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   background: transparent;
   color: #0f172a;
   font: inherit;
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 900;
-  line-height: 24px;
+  line-height: 21px;
   outline: none;
   padding: 0;
 }
@@ -766,20 +800,29 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 5px;
 }
 
 .workflow-button {
-  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 26px;
+  gap: 4px;
   border: 1px solid #c6d0df;
-  border-radius: 6px;
+  border-radius: 5px;
   background: #ffffff;
   color: #1f2937;
   cursor: pointer;
   font-size: 12px;
   font-weight: 800;
-  line-height: 16px;
-  padding: 0 10px;
+  line-height: 14px;
+  padding: 0 8px;
+}
+
+.workflow-button i {
+  font-size: 14px;
+  line-height: 1;
 }
 
 .workflow-button:hover:not(:disabled) {
@@ -805,6 +848,17 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
 
 .workflow-button--ghost {
   background: #f8fafc;
+}
+
+.workflow-button--test {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.workflow-button--test:hover:not(:disabled) {
+  border-color: #6ee7b7;
+  background: #d1fae5;
 }
 
 .workflow-action-menu {
@@ -852,30 +906,30 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
 .workflow-designer-page__main {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 318px;
-  gap: 8px;
+  gap: 6px;
   align-items: start;
 }
 
 .workflow-designer-page__designer {
-  min-height: calc(100vh - 124px);
+  min-height: calc(100vh - 112px);
   border-top: 0;
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 6px 6px;
 }
 
 .workflow-designer-page__side {
   display: grid;
-  gap: 10px;
+  gap: 7px;
 }
 
 .workflow-panel {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   border: 1px solid #d5deea;
-  border-radius: 6px;
+  border-radius: 5px;
   background: #ffffff;
-  box-shadow: 0 4px 12px rgba(31, 41, 55, 0.03);
+  box-shadow: none;
   color: #1f2937;
-  padding: 10px;
+  padding: 8px;
 }
 
 .workflow-panel__header {
@@ -887,8 +941,8 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
 
 .workflow-panel__header strong {
   color: #0f172a;
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 12px;
+  line-height: 16px;
 }
 
 .workflow-badge {
@@ -1003,17 +1057,17 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
 }
 
 .workflow-panel--json textarea {
-  min-height: 170px;
+  min-height: 150px;
   width: 100%;
   resize: vertical;
   border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  border-radius: 5px;
   background: #0f172a;
   color: #e2e8f0;
   font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
   font-size: 12px;
   line-height: 1.55;
-  padding: 12px;
+  padding: 10px;
 }
 
 .workflow-link-button {

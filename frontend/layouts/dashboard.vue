@@ -9,7 +9,15 @@
       <div class="admin-top-actions">
         <ChatPopup />
         <NotificationBell />
-        <span class="admin-user">{{ auth.user.value?.email ?? '已登录' }}</span>
+        <label v-if="isDev" class="admin-user-switcher">
+          <i class="ri-user-line" aria-hidden="true" />
+          <select v-model="activeDevUserId" aria-label="快速切换用户">
+            <option v-for="user in auth.devTestUsers" :key="user.id" :value="user.id">
+              {{ user.name }} · {{ user.title }}
+            </option>
+          </select>
+        </label>
+        <span v-else class="admin-user">{{ auth.user.value?.email ?? '已登录' }}</span>
         <vxe-button size="mini" mode="text" status="primary" @click="reloadRoutes">
           刷新菜单
         </vxe-button>
@@ -123,6 +131,16 @@ const auth = useAuth();
 const serviceApi = useServiceApi();
 const route = useRoute();
 const router = useRouter();
+const isDev = import.meta.env.DEV;
+const activeDevUserId = computed({
+  get: () =>
+    auth.devTestUsers.find((user) => user.id === auth.user.value?.id)?.id ??
+    auth.devTestUsers[0]?.id ??
+    '',
+  set: (userId: string) => {
+    auth.switchDevTestUser(userId);
+  }
+});
 const routeError = ref('');
 const routes = ref<AdminRouteNode[]>([]);
 const expandedGroups = reactive<Record<string, boolean>>({});
@@ -139,6 +157,13 @@ const menuContext = reactive<{
   y: 0,
   item: null
 });
+
+function ensureDevTestUserSelected() {
+  if (!isDev) return;
+  if (auth.devTestUsers.some((user) => user.id === auth.user.value?.id)) return;
+  const defaultUserId = auth.devTestUsers[0]?.id;
+  if (defaultUserId) auth.switchDevTestUser(defaultUserId);
+}
 
 const fallbackRoutes: AdminRouteNode[] = [
   {
@@ -595,6 +620,7 @@ function handleMenuContextKeydown(event: KeyboardEvent) {
 
 onMounted(async () => {
   await auth.init();
+  ensureDevTestUserSelected();
   await reloadRoutes();
   rememberTab();
   window.addEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);

@@ -112,6 +112,122 @@ export const ORDER_APPROVAL_TEST_VARIABLES = {
   orderNo: 'ORDER-20260726-0001'
 };
 
+export const TRIGGER_APPROVAL_TEST_VARIABLES = {
+  amount: 68000,
+  title: '年度供应商合同审批',
+  summary: '市场活动物料和线下执行供应商年度框架合同。',
+  testSource: 'approval-flow-trigger-vue'
+};
+
+export type CreateTriggerApprovalTestWorkflowOptions = CreateWorkflowModelOptions & {
+  requesterId?: string;
+  approverIds?: string[];
+};
+
+export function createTriggerApprovalTestWorkflow(
+  options: CreateTriggerApprovalTestWorkflowOptions = {}
+): WorkflowModel {
+  const route = Array.from(
+    new Set(
+      (options.approverIds?.length ? options.approverIds : ['u_ben', 'u_chen', 'u_dana'])
+        .map((userId) => userId.trim())
+        .filter(Boolean)
+    )
+  );
+  const fallbackApproverId = route[0] ?? 'approval-test-user';
+  const normalizedRoute = [...route];
+  while (normalizedRoute.length < 3) normalizedRoute.push(fallbackApproverId);
+  const [financeApproverId, managerApproverId, legalApproverId] = normalizedRoute;
+
+  return normalizeWorkflowModel({
+    schemaVersion: WORKFLOW_SCHEMA_VERSION,
+    code: options.code ?? 'trigger_approval_test',
+    name: options.name ?? 'Trigger.dev 测试审批流',
+    description: `基于 approval-flow-trigger-vue 示例生成，默认发起人：${options.requesterId ?? 'u_alice'}。`,
+    documentType: options.documentType ?? 'approval_flow_test',
+    status: 'draft',
+    nodes: [
+      {
+        id: 'start',
+        type: 'start',
+        name: '开始',
+        description: '提交单据后进入审批',
+        position: { x: 360, y: 40 }
+      },
+      {
+        id: 'finance_approval',
+        type: 'approval',
+        name: '财务审批',
+        description: '参考 Trigger.dev 示例的 Ben 财务审批。',
+        position: { x: 360, y: 210 },
+        config: {
+          assigneeStrategy: {
+            type: 'users',
+            userIds: [financeApproverId]
+          },
+          allowReject: true,
+          allowTransfer: true
+        }
+      },
+      {
+        id: 'manager_approval',
+        type: 'approval',
+        name: '部门经理审批',
+        description: '参考 Trigger.dev 示例的 Chen 部门经理审批。',
+        position: { x: 360, y: 380 },
+        config: {
+          assigneeStrategy: {
+            type: 'users',
+            userIds: [managerApproverId]
+          },
+          allowReject: true,
+          allowTransfer: true
+        }
+      },
+      {
+        id: 'legal_approval',
+        type: 'approval',
+        name: '法务复核',
+        description: '参考 Trigger.dev 示例的 Dana 法务复核。',
+        position: { x: 360, y: 550 },
+        config: {
+          assigneeStrategy: {
+            type: 'users',
+            userIds: [legalApproverId]
+          },
+          allowReject: true
+        }
+      },
+      {
+        id: 'end',
+        type: 'end',
+        name: '结束',
+        description: '所有审批节点通过后流程结束。',
+        position: { x: 360, y: 720 }
+      }
+    ],
+    edges: [
+      { id: 'edge_start_finance', source: 'start', target: 'finance_approval' },
+      { id: 'edge_finance_manager', source: 'finance_approval', target: 'manager_approval' },
+      { id: 'edge_manager_legal', source: 'manager_approval', target: 'legal_approval' },
+      { id: 'edge_legal_end', source: 'legal_approval', target: 'end' }
+    ],
+    variables: [
+      { key: 'title', label: '标题', type: 'string', source: 'document', path: 'title', required: true },
+      { key: 'amount', label: '金额', type: 'number', source: 'document', path: 'amount', required: true },
+      { key: 'summary', label: '摘要', type: 'string', source: 'document', path: 'summary' },
+      { key: 'requesterId', label: '发起人', type: 'string', source: 'manual' },
+      { key: 'approverIds', label: '审批路线', type: 'json', source: 'manual' }
+    ],
+    settings: {
+      allowCancel: true,
+      allowWithdraw: true,
+      duplicateSubmitPolicy: 'reject',
+      historyLevel: 'full'
+    }
+  });
+}
+
 export function createOrderApprovalWorkflow(options: CreateWorkflowModelOptions = {}): WorkflowModel {
   const nodes: WorkflowNode[] = [
     {

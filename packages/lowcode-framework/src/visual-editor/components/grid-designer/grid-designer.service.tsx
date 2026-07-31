@@ -1,8 +1,8 @@
 import {
-  computed,
   createApp,
   defineComponent,
   getCurrentInstance,
+  h,
   nextTick,
   onMounted,
   PropType,
@@ -26,6 +26,11 @@ import DesignerUI, {
 import { ArrowDown, ArrowUp, CopyDocument, Delete, Plus } from '../common/remix-icons';
 import { cloneDeep } from 'lodash-es';
 import LowCodeForm from '../../../components/LowCodeForm.vue';
+import {
+  findGlobalDialog,
+  openGlobalDialog,
+  type GlobalDialogContentNode,
+} from '../../../runtime/global-dialog';
 import type {
   LowCodeField,
   LowCodeFormSchema,
@@ -1318,14 +1323,6 @@ const ServiceComponent = defineComponent({
         return dfd.promise;
       })(),
     });
-    const objectEditor = reactive({
-      showFlag: false,
-      title: '编辑对象',
-      model: {} as Record<string, unknown>,
-      schema: createObjectSchema({}),
-      onConfirm: null as null | ((value: Record<string, unknown>) => void),
-    });
-
     const methods = {
       service: async (option: GridDesignerServiceOption) => {
         const nextGridOptions = normalizeGridOptions(option.gridOptions);
@@ -1350,26 +1347,8 @@ const ServiceComponent = defineComponent({
       },
     };
 
-    const selectedColumn = computed(
-      () =>
-        state.columns.find((column) => column.__id === state.selectedColumnId) ??
-        state.columns[0] ??
-        null,
-    );
-
-    const selectedColumnIndex = computed(() =>
-      selectedColumn.value
-        ? state.columns.findIndex((column) => column.__id === selectedColumn.value?.__id)
-        : -1,
-    );
-
     const selectColumn = (column: GridDesignerColumn) => {
       state.selectedColumnId = readString(column.__id);
-    };
-
-    const syncSelectedColumn = (value: Record<string, unknown>) => {
-      if (!selectedColumn.value) return;
-      Object.assign(selectedColumn.value, value);
     };
 
     const columnActions = {
@@ -1447,6 +1426,51 @@ const ServiceComponent = defineComponent({
         <ElOption key={String(option.value)} label={option.label} value={option.value} />
       ));
 
+    const openSchemaDialog = <TValues extends Record<string, unknown>>(
+      config: {
+        id: string;
+        title: string;
+        model: TValues;
+        width?: string | number;
+        height?: string | number;
+        className?: unknown;
+        schema?: LowCodeFormSchema;
+        content?: GlobalDialogContentNode | GlobalDialogContentNode[];
+        onConfirm: (value: TValues) => void;
+      },
+    ) => {
+      if (findGlobalDialog(config.id)) return;
+
+      void openGlobalDialog<TValues>({
+        id: config.id,
+        title: config.title,
+        width: config.width,
+        height: config.height,
+        className: config.className,
+        showFooter: true,
+        model: config.model,
+        actions: [
+          {
+            code: 'cancel',
+            label: '取消',
+            role: 'cancel',
+          },
+          {
+            code: 'confirm',
+            label: '确定',
+            role: 'confirm',
+            status: 'primary',
+          },
+        ],
+        ...(config.content
+          ? { content: config.content }
+          : { form: { schema: config.schema ?? createObjectSchema({}) } }),
+        onConfirm: ({ model }) => {
+          config.onConfirm(cloneDeep(model));
+        },
+      });
+    };
+
     const openObjectEditor = (
       title: string,
       value: unknown,
@@ -1454,11 +1478,15 @@ const ServiceComponent = defineComponent({
       onConfirm: (value: Record<string, unknown>) => void,
     ) => {
       const model = isPlainRecord(value) ? cloneDeep(value) : {};
-      objectEditor.title = title;
-      resetReactiveObject(objectEditor.model, model);
-      objectEditor.schema = createObjectSchema(model, fields);
-      objectEditor.onConfirm = onConfirm;
-      objectEditor.showFlag = true;
+      openSchemaDialog({
+        id: `grid-designer-object-${generateNanoid()}`,
+        title,
+        width: 'min(720px, calc(100vw - 48px))',
+        className: 'grid-designer-object-dialog',
+        model,
+        schema: createObjectSchema(model, fields),
+        onConfirm,
+      });
     };
 
     const openArrayEditor = (
@@ -1468,13 +1496,79 @@ const ServiceComponent = defineComponent({
       onConfirm: (value: unknown[]) => void,
     ) => {
       const items = Array.isArray(value) ? cloneDeep(value) : [];
-      objectEditor.title = title;
-      resetReactiveObject(objectEditor.model, { items });
-      objectEditor.schema = createArraySchema(items, columns);
-      objectEditor.onConfirm = (nextValue) => {
-        onConfirm(Array.isArray(nextValue.items) ? cloneDeep(nextValue.items) : []);
-      };
-      objectEditor.showFlag = true;
+      openSchemaDialog({
+        id: `grid-designer-array-${generateNanoid()}`,
+        title,
+        width: 'min(840px, calc(100vw - 48px))',
+        className: 'grid-designer-object-dialog',
+        model: { items },
+        schema: createArraySchema(items, columns),
+        onConfirm: (nextValue) => {
+          onConfirm(Array.isArray(nextValue.items) ? cloneDeep(nextValue.items) : []);
+        },
+      });
+    };
+
+    const createColumnAdvancedDialogContent = (
+      column: GridDesignerColumn,
+    ): GlobalDialogContentNode => ({
+      type: 'container',
+      className: 'grid-designer-column-dialog__content',
+      style: {
+        display: 'grid',
+        gap: '12px',
+        maxHeight: 'calc(80vh - 160px)',
+        overflow: 'auto',
+        paddingRight: '4px',
+      },
+      children: columnAdvancedFormSections.map((section, index) => ({
+        type: 'container',
+        key: `${readString(column.__id, 'column')}-section-${index}`,
+        className: 'grid-designer-column-dialog__section',
+        children: [
+          {
+            type: 'render',
+            key: `${readString(column.__id, 'column')}-section-title-${index}`,
+            render: () =>
+              h('div', { class: 'grid-designer-column-dialog__section-title' }, section.title),
+          },
+          {
+            type: 'form',
+            key: `${readString(column.__id, 'column')}-section-form-${index}`,
+            form: {
+              schema: {
+                fields: section.fields,
+                actions: [],
+              },
+            },
+          },
+        ],
+      })),
+    });
+
+    const openColumnAdvancedDialog = (column: GridDesignerColumn) => {
+      const dialogId = `grid-designer-column-${readString(column.__id, generateNanoid())}`;
+      if (findGlobalDialog(dialogId)) return;
+
+      const columnIndex = state.columns.findIndex((item) => item.__id === column.__id);
+      const columnTitle = readString(
+        column.title,
+        readString(column.field, columnIndex >= 0 ? `Column ${columnIndex + 1}` : 'Column'),
+      );
+
+      openSchemaDialog({
+        id: dialogId,
+        title: `${columnTitle} 列配置`,
+        width: 'min(960px, calc(100vw - 48px))',
+        height: 'min(80vh, calc(100vh - 64px))',
+        className: 'grid-designer-column-dialog',
+        model: cloneDeep(column),
+        content: createColumnAdvancedDialogContent(column),
+        onConfirm: (nextValue) => {
+          Object.assign(column, nextValue);
+          selectColumn(column);
+        },
+      });
     };
 
     const renderObjectBoundInput = (
@@ -1628,10 +1722,7 @@ const ServiceComponent = defineComponent({
       <div class="grid-designer-column-toolbar">
         <div class="grid-designer-column-toolbar__meta">
           <strong>列配置</strong>
-          <span>
-            {state.columns.length} 列
-            {selectedColumnIndex.value >= 0 ? ` · 当前第 ${selectedColumnIndex.value + 1} 列` : ''}
-          </span>
+          <span>{state.columns.length} 列</span>
         </div>
         <ElButton type="primary" icon={Plus} onClick={columnActions.add}>
           新增列
@@ -1683,104 +1774,7 @@ const ServiceComponent = defineComponent({
       </div>
     );
 
-    const renderColumnDesigner = () => (
-      <div class="grid-designer-panel">
-        {renderColumnToolbar()}
-        <ElTable data={state.columns} border height="460" rowKey="__id" class="grid-designer-table">
-          <ElTableColumn type="index" width={48} label="#" />
-          <ElTableColumn label="field" minWidth={150}>
-            {{
-              default: ({ row }: { row: GridDesignerColumn }) => (
-                <ElInput v-model={row.field} placeholder="field" />
-              ),
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="title" minWidth={150}>
-            {{
-              default: ({ row }: { row: GridDesignerColumn }) => (
-                <ElInput v-model={row.title} placeholder="title" />
-              ),
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="type" width={132}>
-            {{
-              default: ({ row }: { row: GridDesignerColumn }) => (
-                <ElSelect v-model={row.type}>{renderSelectOptions(columnTypeOptions)}</ElSelect>
-              ),
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="width" width={108}>
-            {{
-              default: ({ row }: { row: GridDesignerColumn }) => (
-                <ElInput v-model={row.width} placeholder="auto" />
-              ),
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="minWidth" width={118}>
-            {{
-              default: ({ row }: { row: GridDesignerColumn }) => (
-                <ElInput v-model={row.minWidth} placeholder="minWidth" />
-              ),
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="fixed" width={116}>
-            {{
-              default: ({ row }: { row: GridDesignerColumn }) => (
-                <ElSelect v-model={row.fixed}>{renderSelectOptions(fixedOptions)}</ElSelect>
-              ),
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="align" width={124}>
-            {{
-              default: ({ row }: { row: GridDesignerColumn }) => (
-                <ElSelect v-model={row.align}>{renderSelectOptions(alignOptions)}</ElSelect>
-              ),
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="sortable" width={96} align="center">
-            {{
-              default: ({ row }: { row: GridDesignerColumn }) => <ElSwitch v-model={row.sortable} />,
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="visible" width={92} align="center">
-            {{
-              default: ({ row }: { row: GridDesignerColumn }) => <ElSwitch v-model={row.visible} />,
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="showOverflow" width={138}>
-            {{
-              default: ({ row }: { row: GridDesignerColumn }) => (
-                <ElSelect v-model={row.showOverflow}>{renderSelectOptions(overflowOptions)}</ElSelect>
-              ),
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="formatter" minWidth={210}>
-            {{
-              default: ({ row }: { row: GridDesignerColumn }) => (
-                renderObjectBoundInput(
-                  row,
-                  'formatter',
-                  `${readString(row.title, readString(row.field, '列'))} formatter`,
-                  '{"type":"text"} 或格式化器名',
-                  formatterObjectFields,
-                )
-              ),
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="操作" width={144} align="center">
-            {{
-              default: ({ $index }: { $index: number }) => renderColumnRowActions($index),
-            }}
-          </ElTableColumn>
-        </ElTable>
-      </div>
-    );
-
     const renderColumnDesignerWorkbench = () => {
-      const column = selectedColumn.value;
-      const fallbackTitle =
-        selectedColumnIndex.value >= 0 ? `Column ${selectedColumnIndex.value + 1}` : 'Column';
-
       return (
         <div class="grid-designer-panel">
           <div class="grid-designer-column-layout">
@@ -1796,6 +1790,10 @@ const ServiceComponent = defineComponent({
                   rowClassName: ({ row }: { row: GridDesignerColumn }) =>
                     row.__id === state.selectedColumnId ? 'is-selected' : '',
                   onCellClick: ({ row }: { row: GridDesignerColumn }) => selectColumn(row),
+                  onRowDblclick: ({ row }: { row: GridDesignerColumn }) => {
+                    selectColumn(row);
+                    openColumnAdvancedDialog(row);
+                  },
                 } as any)}
               >
                 <ElTableColumn type="index" width={48} label="#" />
@@ -1892,37 +1890,6 @@ const ServiceComponent = defineComponent({
               </ElTable>
             </section>
 
-            <aside class="grid-designer-column-form-panel">
-              <div class="grid-designer-card is-compact grid-designer-column-form-card">
-                <div class="grid-designer-column-form-header">
-                  <div>
-                    <span>当前列</span>
-                    <h3>{readString(column?.title, readString(column?.field, fallbackTitle))}</h3>
-                  </div>
-                  {selectedColumnIndex.value >= 0 ? (
-                    <b>{selectedColumnIndex.value + 1}</b>
-                  ) : null}
-                </div>
-                {column ? (
-                  <div class="grid-designer-column-form-sections">
-                    {columnAdvancedFormSections.map((section) => (
-                      <section key={section.title} class="grid-designer-column-form-section">
-                        <div class="grid-designer-column-form-section__title">{section.title}</div>
-                        <LowCodeForm
-                          key={`${column.__id}-${section.title}`}
-                          class="grid-designer-column-sub-form"
-                          schema={{ fields: section.fields, actions: [] }}
-                          modelValue={column as Record<string, unknown>}
-                          onUpdate:modelValue={syncSelectedColumn}
-                        />
-                      </section>
-                    ))}
-                  </div>
-                ) : (
-                  <div class="grid-designer-empty">请选择左侧表格中的列</div>
-                )}
-              </div>
-            </aside>
           </div>
         </div>
       );
@@ -2143,40 +2110,6 @@ const ServiceComponent = defineComponent({
           }}
         </ElDialog>
 
-        <ElDialog
-          v-model={objectEditor.showFlag}
-          title={objectEditor.title}
-          width="min(720px, calc(100vw - 48px))"
-          top="8vh"
-          class="grid-designer-object-dialog"
-          destroyOnClose={true}
-        >
-          {{
-            default: () => (
-              <LowCodeForm
-                schema={objectEditor.schema}
-                modelValue={objectEditor.model}
-                onUpdate:modelValue={(value: Record<string, unknown>) => {
-                  resetReactiveObject(objectEditor.model, value);
-                }}
-              />
-            ),
-            footer: () => (
-              <div class="form-workbench-footer">
-                <ElButton onClick={() => (objectEditor.showFlag = false)}>取消</ElButton>
-                <ElButton
-                  type="primary"
-                  onClick={() => {
-                    objectEditor.onConfirm?.(cloneDeep(objectEditor.model));
-                    objectEditor.showFlag = false;
-                  }}
-                >
-                  确定
-                </ElButton>
-              </div>
-            ),
-          }}
-        </ElDialog>
       </>
     );
   },
