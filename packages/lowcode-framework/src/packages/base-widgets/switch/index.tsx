@@ -1,12 +1,12 @@
-/*
- * @Author: 卜启缘
+﻿/*
+ * @Author: 鍗滃惎缂?
  * @Date: 2021-06-01 09:45:21
  * @LastEditTime: 2021-07-13 18:20:55
- * @LastEditors: 卜启缘
- * @Description: 表单项类型 - 开关
+ * @LastEditors: 鍗滃惎缂?
+ * @Description: 琛ㄥ崟椤圭被鍨?- 寮€鍏?
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\switch\index.tsx
  */
-import { Field, Switch } from 'vant';
+import { Field, Switch } from '../../../components/VantFree';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -20,9 +20,9 @@ import {
 export default {
   key: 'switch',
   moduleName: 'baseWidgets',
-  label: '表单项类型 - 开关',
+  label: '琛ㄥ崟椤圭被鍨?- 寮€鍏?,
   preview: () => (
-    <Field name="switch" label="开关" v-slots={{ input: () => <Switch size={20} /> }} />
+    <Field name="switch" label="寮€鍏? v-slots={{ input: () => <Switch size={20} /> }} />
   ),
   render: ({ styles, block, props }) => {
     const { registerRef } = useGlobalProperties();
@@ -47,26 +47,26 @@ export default {
     );
   },
   props: {
-    modelValue: createEditorInputProp({ label: '默认值', defaultValue: 'false' }),
-    name: createEditorModelBindProp({ label: '字段绑定', defaultValue: '' }),
-    label: createEditorInputProp({ label: '输入框左侧文本', defaultValue: '开关' }),
-    activeColor: createEditorColorProp({ label: '打开时的背景色' }),
-    activeValue: createEditorInputProp({ label: '打开时对应的值', defaultValue: 'true' }),
-    inactiveColor: createEditorColorProp({ label: '关闭时的背景色' }),
-    inactiveValue: createEditorInputProp({ label: '关闭时对应的值', defaultValue: 'false' }),
-    disabled: createEditorSwitchProp({ label: '是否为禁用状态' }),
-    loading: createEditorSwitchProp({ label: '是否为加载状态' }),
-    size: createEditorInputProp({ label: '开关尺寸', defaultValue: '20px' }),
+    modelValue: createEditorInputProp({ label: '榛樿鍊?, defaultValue: 'false' }),
+    name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
+    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '寮€鍏? }),
+    activeColor: createEditorColorProp({ label: '鎵撳紑鏃剁殑鑳屾櫙鑹? }),
+    activeValue: createEditorInputProp({ label: '鎵撳紑鏃跺搴旂殑鍊?, defaultValue: 'true' }),
+    inactiveColor: createEditorColorProp({ label: '鍏抽棴鏃剁殑鑳屾櫙鑹? }),
+    inactiveValue: createEditorInputProp({ label: '鍏抽棴鏃跺搴旂殑鍊?, defaultValue: 'false' }),
+    disabled: createEditorSwitchProp({ label: '鏄惁涓虹鐢ㄧ姸鎬? }),
+    loading: createEditorSwitchProp({ label: '鏄惁涓哄姞杞界姸鎬? }),
+    size: createEditorInputProp({ label: '寮€鍏冲昂瀵?, defaultValue: '20px' }),
     ...createFieldProps(),
   },
   events: [
-    { label: '开关状态切换时触发', value: 'change' },
-    { label: '点击时触发', value: 'click' },
+    { label: '寮€鍏崇姸鎬佸垏鎹㈡椂瑙﹀彂', value: 'change' },
+    { label: '鐐瑰嚮鏃惰Е鍙?, value: 'click' },
   ],
   resize: {
     width: true,
   },
   model: {
-    default: '绑定字段',
+    default: '缁戝畾瀛楁',
   },
 } as VisualEditorComponent;

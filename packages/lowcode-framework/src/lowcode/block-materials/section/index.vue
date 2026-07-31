@@ -1,9 +1,5 @@
 <template>
   <section :class="['lc-node-section', { 'content-panel': block.panel !== false }]">
-    <header v-if="block.title || block.description" class="lc-node-header">
-      <h2 v-if="block.title">{{ block.title }}</h2>
-      <p v-if="block.description">{{ block.description }}</p>
-    </header>
     <div class="lc-node-stack">
       <LowCodeBlockChildren
         :blocks="block.blocks"

@@ -20,13 +20,16 @@ export function createNewBlock(component) {
             ...(component.styles || {}),
         },
         hasResize: false,
-        props: Object.entries(component.props || {}).reduce((prev, [propName, propSchema]) => {
-            const { propObj, prop } = useDotProp(prev, propName);
-            if (propSchema?.defaultValue) {
-                propObj[prop] = prev[propName] = propSchema?.defaultValue;
+    props: Object.entries(component.props || {}).reduce((prev, [propName, propSchema]) => {
+        const { propObj, prop, isDotProp } = useDotProp(prev, propName);
+        if (propSchema?.defaultValue) {
+            propObj[prop] = propSchema?.defaultValue;
+            if (!isDotProp) {
+                prev[propName] = propSchema?.defaultValue;
             }
-            return prev;
-        }, {}),
+        }
+        return prev;
+    }, {}),
         draggable: component.draggable ?? true, // 是否可以拖拽
         showStyleConfig: component.showStyleConfig ?? true, // 是否显示组件样式配置
         animations: [], // 动画集

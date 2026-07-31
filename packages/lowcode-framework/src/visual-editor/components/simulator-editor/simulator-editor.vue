@@ -401,6 +401,50 @@
     gridDesignComponentKeys.has(block.componentKey) ||
     (Array.isArray(block.props?.columns) && !isFormDesignBlock(block));
 
+  const vxeGridPropKeys = [
+    'border',
+    'stripe',
+    'showOverflow',
+    'showHeaderOverflow',
+    'showFooterOverflow',
+    'height',
+    'maxHeight',
+    'size',
+    'loading',
+    'round',
+    'showHeader',
+    'showFooter',
+    'autoResize',
+    'syncResize',
+    'rowConfig',
+    'columnConfig',
+    'sortConfig',
+    'filterConfig',
+    'pagerConfig',
+    'toolbarConfig',
+    'proxyConfig',
+    'editConfig',
+    'checkboxConfig',
+    'radioConfig',
+    'treeConfig',
+    'expandConfig',
+  ];
+
+  const readVxeGridOptions = (props: Record<string, unknown> = {}) => {
+    const legacyOptions =
+      typeof props.gridOptions === 'object' && props.gridOptions !== null
+        ? cloneDeep(props.gridOptions as Record<string, unknown>)
+        : {};
+
+    vxeGridPropKeys.forEach((key) => {
+      if (typeof props[key] !== 'undefined') {
+        legacyOptions[key] = cloneDeep(props[key]);
+      }
+    });
+
+    return legacyOptions;
+  };
+
   const isButtonGroupDesignBlock = (block: VisualEditorBlockData) =>
     buttonGroupDesignComponentKeys.has(block.componentKey) || Array.isArray(block.props?.buttons);
 
@@ -429,7 +473,8 @@
   ) => {
     Object.assign(block.props, cloneDeep(result.business));
     block.props.columns = cloneDeep(result.columns);
-    block.props.gridOptions = cloneDeep(result.gridOptions);
+    Object.assign(block.props, cloneDeep(result.gridOptions));
+    delete block.props.gridOptions;
     block.props.gridEvents = cloneDeep(result.gridEvents);
     block.props.gridDesignerUpdatedAt = Date.now();
     selectComp(block);
@@ -497,10 +542,7 @@
         showRowActions: block.props?.showRowActions,
       },
       columns: Array.isArray(block.props?.columns) ? block.props.columns : [],
-      gridOptions:
-        typeof block.props?.gridOptions === 'object' && block.props?.gridOptions !== null
-          ? block.props.gridOptions
-          : {},
+      gridOptions: readVxeGridOptions(block.props),
       gridEvents: Array.isArray(block.props?.gridEvents) ? block.props.gridEvents : [],
     });
 

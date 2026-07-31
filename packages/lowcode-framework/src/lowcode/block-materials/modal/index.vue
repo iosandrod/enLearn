@@ -9,14 +9,9 @@
       class="content-panel lc-modal-node"
       role="dialog"
       aria-modal="true"
-      :aria-labelledby="block.title ? `${block.id}-title` : undefined"
       :style="widthStyle(block.width)"
     >
       <header class="lc-modal-node__header">
-        <div v-if="block.title || block.description" class="lc-node-header">
-          <h2 v-if="block.title" :id="`${block.id}-title`">{{ block.title }}</h2>
-          <p v-if="block.description">{{ block.description }}</p>
-        </div>
         <button
           type="button"
           class="lc-modal-node__close"
@@ -101,10 +96,6 @@ function requestClose() {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-}
-
-.lc-modal-node__header .lc-node-header {
-  margin-bottom: 8px;
 }
 
 .lc-modal-node__close {

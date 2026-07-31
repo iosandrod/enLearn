@@ -1,4 +1,4 @@
-import { arrayTablePropField, defineMaterialPropForms, jsonPropField, option, propField, subFormPropField, switchPropField, } from '../helpers';
+import { arrayTablePropField, defineMaterialPropForms, jsonPropField, option, propField, switchPropField, } from '../helpers';
 const formComponentOptions = [
     option('输入框', 'vxe-input'),
     option('多行文本', 'vxe-textarea'),
@@ -310,35 +310,17 @@ export default defineMaterialPropForms([
                 ],
                 help: '维护表格列配置。复杂 formatter 仍可填 JSON 字符串。',
             }),
-            subFormPropField({
-                field: 'gridOptions',
-                path: 'gridOptions',
-                label: 'VxeGrid 配置',
-                defaultValue: {
-                    border: true,
-                    stripe: true,
-                    showOverflow: true,
-                    rowConfig: { keyField: 'id' },
-                },
-                fields: [
-                    switchPropField({ field: 'border', label: '边框', defaultValue: true }),
-                    switchPropField({ field: 'stripe', label: '斑马纹', defaultValue: true }),
-                    propField({
-                        field: 'showOverflow',
-                        label: '单元格溢出',
-                        component: 'lc-option-select',
-                        valueKind: 'raw',
-                        defaultValue: true,
-                        options: [option('开启', true), ...gridOverflowOptions],
-                    }),
-                    propField({
-                        field: 'rowConfig.keyField',
-                        label: '行主键字段',
-                        defaultValue: 'id',
-                    }),
-                    switchPropField({ field: 'columnConfig.resizable', label: '列宽可拖拽', defaultValue: true }),
-                ],
-                help: '维护常用 VxeGrid 对象配置。',
+            propField({
+                field: 'rowConfig.keyField',
+                path: 'rowConfig.keyField',
+                label: 'rowConfig.keyField',
+                defaultValue: 'id',
+            }),
+            switchPropField({
+                field: 'columnConfig.resizable',
+                path: 'columnConfig.resizable',
+                label: 'columnConfig.resizable',
+                defaultValue: true,
             }),
             arrayTablePropField({
                 field: 'gridEvents',

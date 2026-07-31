@@ -8,12 +8,14 @@
 
     <div class="lc-array-table__viewport">
       <vxe-table
+      ref="tableRef"
       border
       show-overflow
+      auto-resize
       size="mini"
       class="lc-array-table__grid"
       :data="rows"
-      :row-config="{ keyField: rowKey }"
+      :row-config="rowConfig"
       :height="tableHeight"
       @cell-click="handleCellClick"
       @row-dblclick="handleRowDblclick"
@@ -152,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import type { LowCodeField, LowCodeFieldComponent, LowCodeOption } from '../../../types/lowcode';
 import { openGlobalDialog } from '../../../runtime/global-dialog';
 import LcJsonEditor from '../lc-json-editor/index.vue';
@@ -179,6 +181,10 @@ const emit = defineEmits<{
 }>();
 
 const rows = ref<Record<string, unknown>[]>([]);
+const tableRef = ref<{
+  recalculate?: (refull?: boolean) => Promise<unknown> | void;
+  refreshColumn?: () => Promise<unknown> | void;
+}>();
 
 const fieldProps = computed(() => props.field.props ?? {});
 const valueMode = computed<ArrayTableValueMode>(() =>
@@ -201,7 +207,16 @@ const columns = computed(() => {
 
   return normalizedColumns;
 });
-const rowKey = computed(() => readString(fieldProps.value.rowKey, '__rowKey'));
+const rowConfig = computed(() => {
+  const config = isRecord(fieldProps.value.rowConfig) ? fieldProps.value.rowConfig : {};
+  const keyField = readString(config.keyField, readString(fieldProps.value.rowKey, '__rowKey'));
+
+  return {
+    ...config,
+    keyField,
+  };
+});
+const rowKey = computed(() => readString(rowConfig.value.keyField, '__rowKey'));
 const addText = computed(() => readString(fieldProps.value.addText, '新增'));
 const tableHeight = computed(() => readSize(fieldProps.value.height));
 const showToolbar = computed(() => fieldProps.value.showToolbar !== false);
@@ -227,9 +242,30 @@ watch(
   () => props.modelValue,
   (value) => {
     rows.value = normalizeRows(value);
+    resizeTable();
   },
   { immediate: true, deep: true }
 );
+
+watch(
+  () => [
+    columns.value,
+    tableHeight.value,
+    showActions.value,
+    actionWidth.value,
+  ],
+  () => resizeTable(),
+  { deep: true }
+);
+
+onMounted(() => resizeTable());
+
+function resizeTable() {
+  nextTick(() => {
+    tableRef.value?.refreshColumn?.();
+    tableRef.value?.recalculate?.(true);
+  });
+}
 
 function normalizeColumns(value: unknown): ArrayTableColumn[] {
   if (!Array.isArray(value)) return [];
@@ -673,9 +709,11 @@ function cloneValue(value: unknown) {
 }
 
 .lc-array-table__viewport {
+  display: grid;
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  min-height: 0;
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -684,6 +722,7 @@ function cloneValue(value: unknown) {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  min-height: 0;
 }
 
 .lc-array-table__grid :deep(.vxe-table--render-wrapper),

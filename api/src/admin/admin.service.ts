@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import type { ServiceContext, ServiceExecutor } from '../common/interfaces/service-executor';
 import {
   createSupabaseClient,
@@ -7,6 +7,13 @@ import {
   hasRequiredPermission,
   requireAdmin
 } from '../common/utils/supabase';
+import { withPostgresClient } from '../common/utils/database';
+import {
+  listItemsFromEntity,
+  readEntityPermissionCodes,
+  readEntityReadPermissions,
+  resolveListItemsEntity
+} from '../common/utils/list-items';
 
 type PostData = Record<string, unknown>;
 type OptionSourceType = 'dict' | 'table' | 'view' | 'rpc' | 'sql';
@@ -368,8 +375,10 @@ function buildTree<T extends Record<string, unknown>>(
 export class AdminService implements ServiceExecutor {
   async execute(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
+      case 'listItems':
+        return this.listItems(postData, context);
       case 'listRoles':
-        return this.listRoles(context);
+        return this.listItems({ ...postData, entityCode: 'admin_roles' }, context);
       case 'getRole':
         return this.getRole(postData, context);
       case 'saveRole':
@@ -377,13 +386,13 @@ export class AdminService implements ServiceExecutor {
       case 'deleteRole':
         return this.deleteRole(postData, context);
       case 'listPermissions':
-        return this.listPermissions(context);
+        return this.listItems({ ...postData, entityCode: 'admin_permissions' }, context);
       case 'savePermission':
         return this.savePermission(postData, context);
       case 'deletePermission':
         return this.deletePermission(postData, context);
       case 'listRoutes':
-        return this.listRoutes(context);
+        return this.listItems({ ...postData, entityCode: 'admin_routes' }, context);
       case 'listRouteTree':
         return this.listRouteTree(context);
       case 'listRouteManageTree':
@@ -395,7 +404,7 @@ export class AdminService implements ServiceExecutor {
       case 'deleteRoute':
         return this.deleteRoute(postData, context);
       case 'listEntities':
-        return this.listEntities(context);
+        return this.listItems({ ...postData, entityCode: 'admin_entities' }, context);
       case 'saveEntity':
         return this.saveEntity(postData, context);
       case 'deleteEntity':
@@ -414,7 +423,7 @@ export class AdminService implements ServiceExecutor {
       case 'deleteOptionItem':
         return this.deleteOptionItem(postData, context);
       case 'listUsers':
-        return this.listUsers(context);
+        return this.listItems({ ...postData, entityCode: 'users' }, context);
       case 'saveUserRoles':
         return this.saveUserRoles(postData, context);
       case 'listSystemExecutionTasks':
@@ -427,6 +436,37 @@ export class AdminService implements ServiceExecutor {
         return this.listWorkflowTimerJobs(postData, context);
       default:
         throw new BadRequestException(`Unsupported admin method: ${method}`);
+    }
+  }
+
+  private async listItems(postData: PostData, context: ServiceContext) {
+    const { client: userClient, user } = await getCurrentUser(context);
+    const authorization = await getUserAuthorization(userClient, user.id);
+
+    try {
+      return await withPostgresClient(async (client) => {
+        const entity = await resolveListItemsEntity(client, postData);
+        const entityPermissionCodes = await readEntityPermissionCodes(client, entity);
+        const readPermissions = readEntityReadPermissions(entity, [
+          ...entityPermissionCodes,
+          'admin.entities.manage',
+          'lowcode.pages.manage'
+        ]);
+
+        if (!hasRequiredPermission(authorization, readPermissions)) {
+          throw new ForbiddenException('Entity list permission required.');
+        }
+
+        return listItemsFromEntity(client, entity, postData);
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException || error instanceof ForbiddenException) {
+        throw error;
+      }
+
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Could not load entity items.'
+      );
     }
   }
 
@@ -513,7 +553,8 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async getRole(postData: PostData, context: ServiceContext) {
-    const roles = await this.listRoles(context);
+    const roleResult = await this.listItems({ entityCode: 'admin_roles', limit: 1000 }, context);
+    const roles = Array.isArray(roleResult) ? roleResult : [];
     const id = readOptionalString(postData.id);
     const code = readOptionalString(postData.code);
 
@@ -1188,6 +1229,7 @@ export class AdminService implements ServiceExecutor {
     const icon = readOptionalString(postData.icon);
     const description = readOptionalString(postData.description);
     const primaryKey = readString(postData.primary_key ?? postData.primaryKey, 'primary_key', 'id');
+    const querySql = readOptionalString(postData.query_sql ?? postData.querySql);
     const status = normalizeStatus(postData.status, ['active', 'inactive'], 'active') as 'active' | 'inactive';
     const sortOrder = readNumber(postData.sort_order ?? postData.sortOrder, 0);
     const schema = readJsonObject(postData.schema_json ?? postData.schema);
@@ -1201,6 +1243,7 @@ export class AdminService implements ServiceExecutor {
       icon: icon || null,
       description: description || null,
       primary_key: primaryKey,
+      query_sql: querySql || null,
       status,
       sort_order: sortOrder,
       schema,

@@ -1,13 +1,10 @@
 <template>
   <article class="content-panel">
-    <header v-if="block.title || block.description" class="lc-node-header">
-      <h2 v-if="block.title">{{ block.title }}</h2>
-      <p v-if="block.description">{{ block.description }}</p>
-    </header>
     <LowCodeGrid
       :schema="block.schema"
       :rows="resolveGridRows(block, resolvedData, searchFilters)"
       :loading="loadingGridId === block.id"
+      :fill="block.layout?.fillRemaining === true"
       @edit="handleEdit"
       @delete="handleDelete"
       @row-action="handleRowAction"

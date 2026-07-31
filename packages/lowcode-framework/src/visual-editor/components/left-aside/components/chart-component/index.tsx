@@ -3,6 +3,7 @@ import { cloneDeep } from 'lodash-es';
 import Draggable from 'vuedraggable';
 import { BarChart } from '../../../common/remix-icons';
 import styles from '../base-widgets/index.module.scss';
+import chartComponent from '../../../../../packages/chart-component';
 import type { VisualEditorComponent } from '../../../../visual-editor.utils';
 import { visualConfig } from '../../../../../visual.config';
 import { createNewBlock } from '../../../../visual-editor.utils';
@@ -15,6 +16,18 @@ export default defineComponent({
   icon: BarChart,
   order: 4.5,
   setup() {
+    const registeredKeys = new Set(
+      visualConfig.componentModules.chartComponents.map((component) => component.key),
+    );
+
+    Object.entries(chartComponent).forEach(([name, widget]) => {
+      if (!registeredKeys.has(name)) {
+        visualConfig.registry('chartComponents', name, widget);
+      }
+    });
+
+    const chartComponents = visualConfig.componentModules.chartComponents;
+
     const cloneComponent = (comp: VisualEditorComponent) => {
       const newComp = cloneDeep(comp);
       return createNewBlock(newComp);
@@ -25,7 +38,7 @@ export default defineComponent({
         class={styles.listGroup}
         sort={false}
         forceFallback={false}
-        list={visualConfig.componentModules.chartComponents}
+        list={chartComponents}
         group={{ name: 'components', pull: 'clone', put: false }}
         clone={cloneComponent}
         item-key="key"

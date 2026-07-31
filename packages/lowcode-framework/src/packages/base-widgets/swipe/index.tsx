@@ -1,12 +1,12 @@
-/*
- * @Author: 卜启缘
+﻿/*
+ * @Author: 鍗滃惎缂?
  * @Date: 2021-06-14 12:24:12
  * @LastEditTime: 2021-07-13 17:12:11
- * @LastEditors: 卜启缘
- * @Description: 轮播图组件
+ * @LastEditors: 鍗滃惎缂?
+ * @Description: 杞挱鍥剧粍浠?
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\swipe\index.tsx
  */
-import { Swipe, SwipeItem } from 'vant';
+import { Swipe, SwipeItem } from '../../../components/VantFree';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -20,7 +20,7 @@ background-color: #39a9ed;`;
 export default {
   key: 'swipe',
   moduleName: 'baseWidgets',
-  label: '轮播图',
+  label: '杞挱鍥?,
   preview: () => (
     <Swipe style={{ width: '180px', height: '80%' }} indicatorColor={'white'}>
       <SwipeItem style={swipeItemStyle}>1</SwipeItem>
@@ -51,12 +51,12 @@ export default {
     );
   },
   props: createFieldProps(),
-  events: [{ label: '每一页轮播结束后触发', value: 'change' }],
+  events: [{ label: '姣忎竴椤佃疆鎾粨鏉熷悗瑙﹀彂', value: 'change' }],
   showStyleConfig: false,
   resize: {
     width: true,
   },
   model: {
-    default: '绑定字段',
+    default: '缁戝畾瀛楁',
   },
 } as VisualEditorComponent;

@@ -23,7 +23,15 @@ const columns = computed(() => {
     }
     return normalizedColumns;
 });
-const rowKey = computed(() => readString(fieldProps.value.rowKey, '__rowKey'));
+const rowConfig = computed(() => {
+    const config = isRecord(fieldProps.value.rowConfig) ? fieldProps.value.rowConfig : {};
+    const keyField = readString(config.keyField, readString(fieldProps.value.rowKey, '__rowKey'));
+    return {
+        ...config,
+        keyField,
+    };
+});
+const rowKey = computed(() => readString(rowConfig.value.keyField, '__rowKey'));
 const addText = computed(() => readString(fieldProps.value.addText, '新增'));
 watch(() => props.modelValue, (value) => {
     rows.value = normalizeRows(value);
@@ -408,7 +416,7 @@ const __VLS_9 = __VLS_asFunctionalComponent1(__VLS_8, new __VLS_8({
     size: "mini",
     ...{ class: "lc-array-table__grid" },
     data: (__VLS_ctx.rows),
-    rowConfig: ({ keyField: __VLS_ctx.rowKey }),
+    rowConfig: (__VLS_ctx.rowConfig),
 }));
 const __VLS_10 = __VLS_9({
     border: true,
@@ -416,7 +424,7 @@ const __VLS_10 = __VLS_9({
     size: "mini",
     ...{ class: "lc-array-table__grid" },
     data: (__VLS_ctx.rows),
-    rowConfig: ({ keyField: __VLS_ctx.rowKey }),
+    rowConfig: (__VLS_ctx.rowConfig),
 }, ...__VLS_functionalComponentArgsRest(__VLS_9));
 /** @type {__VLS_StyleScopedClasses['lc-array-table__grid']} */ ;
 const { default: __VLS_13 } = __VLS_11.slots;

@@ -1,0 +1,231 @@
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[2m05:33:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:33:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:34:10[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:34:47[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:34:48[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev user switcher could not load admin users. TypeError: Failed to fetch
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785533674588:105:25)
+    at $fetch (http://localhost:3000/src/spa-compat.ts?t=1785533674588:241:9)
+    at request (http://localhost:3000/composables/useAuthenticatedFetch.ts?t=1785533674588:4:10)
+    at Object.invoke (http://localhost:3000/composables/useServiceApi.ts?t=1785533674588:8:26)
+    at loadDevTestUsers (http://localhost:3000/layouts/dashboard.vue?t=1785533674588:47:36)
+    at http://localhost:3000/layouts/dashboard.vue?t=1785533674588:586:10
+[2m05:34:52[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:35:23[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. TypeError: Failed to fetch
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785533721360:105:25)
+    at $fetch (http://localhost:3000/src/spa-compat.ts?t=1785533721360:241:9)
+    at signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785533721360:170:25)
+    at runInit (http://localhost:3000/composables/useAuth.ts?t=1785533721360:136:11)
+    at Object.init (http://localhost:3000/composables/useAuth.ts?t=1785533721360:164:17)
+    at http://localhost:3000/layouts/dashboard.vue?t=1785533718995:585:15
+    at http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=c9671ac1:7043:88
+    at callWithErrorHandling (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=c9671ac1:2097:17)
+    at callWithAsyncErrorHandling (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=c9671ac1:2104:15)
+    at hook.__weh.hook.__weh (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=c9671ac1:3530:16)
+[2m05:35:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:35:57[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:35:57[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:35:59[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:35:59[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:35:59[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:35:59[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:00[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:00[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:01[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:01[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:02[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:02[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:02[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:02[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:03[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:03[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:04[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:36:04[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:37:53[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:40:37[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:40:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:41:35[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:41:54[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:44:04[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:44:40[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:40[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:46[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:46[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:47[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:44:47[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:45:07[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m05:45:50[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:45:50[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:45:51[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:45:51[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:45:52[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:45:52[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:46:04[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:46:25[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m05:56:57[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled error] [1mError[22m: ResizeObserver loop completed with undelivered notifications.
+[39m > ../../../../../../@vite/client:531:50
+
+[2m05:59:17[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:11:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:12:17[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:13:33[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:13:56[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:16:18[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:16:22[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev user switcher could not load admin users. Error: column "query_sql" does not exist
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785536163518:189:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785536163518:122:9)
+    at async Object.invoke (http://localhost:3000/composables/useServiceApi.ts?t=1785536163518:8:20)
+    at async loadDevTestUsers (http://localhost:3000/layouts/dashboard.vue?t=1785536163518:47:19)
+    at async http://localhost:3000/layouts/dashboard.vue?t=1785536163518:639:4
+[2m06:16:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:16:46[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev user switcher could not load admin users. Error: column "query_sql" does not exist
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785536192397:189:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785536192397:122:9)
+    at async Object.invoke (http://localhost:3000/composables/useServiceApi.ts?t=1785536192397:8:20)
+    at async loadDevTestUsers (http://localhost:3000/layouts/dashboard.vue?t=1785536192397:47:19)
+    at async http://localhost:3000/layouts/dashboard.vue?t=1785536192397:639:4
+[2m06:17:10[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:17:11[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev user switcher could not load admin users. Error: column "query_sql" does not exist
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785536223236:189:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785536223236:122:9)
+    at async Object.invoke (http://localhost:3000/composables/useServiceApi.ts?t=1785536223236:8:20)
+    at async loadDevTestUsers (http://localhost:3000/layouts/dashboard.vue?t=1785536223236:47:19)
+    at async http://localhost:3000/layouts/dashboard.vue?t=1785536223236:639:4
+[2m06:18:38[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:18:45[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:18:53[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:18:55[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev user switcher could not load admin users. Error: column "query_sql" does not exist
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785536324655:189:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785536324655:122:9)
+    at async Object.invoke (http://localhost:3000/composables/useServiceApi.ts?t=1785536324655:8:20)
+    at async loadDevTestUsers (http://localhost:3000/layouts/dashboard.vue?t=1785536324655:47:19)
+    at async http://localhost:3000/layouts/dashboard.vue?t=1785536324655:639:4
+[2m06:19:46[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m06:19:48[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev user switcher could not load admin users. Error: column "query_sql" does not exist
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785536374605:189:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785536374605:122:9)
+    at async Object.invoke (http://localhost:3000/composables/useServiceApi.ts?t=1785536374605:8:20)
+    at async loadDevTestUsers (http://localhost:3000/layouts/dashboard.vue?t=1785536374605:47:19)
+    at async http://localhost:3000/layouts/dashboard.vue?t=1785536374605:639:4

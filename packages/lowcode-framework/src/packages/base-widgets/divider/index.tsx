@@ -1,13 +1,13 @@
-/*
- * @Author: 卜启缘
+﻿/*
+ * @Author: 鍗滃惎缂?
  * @Date: 2021-06-01 09:45:21
  * @LastEditTime: 2021-07-13 18:51:58
- * @LastEditors: 卜启缘
- * @Description: 分割线
+ * @LastEditors: 鍗滃惎缂?
+ * @Description: 鍒嗗壊绾?
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\divider\index.tsx
  */
 import { computed } from 'vue';
-import { Divider } from 'vant';
+import { Divider } from '../../../components/VantFree';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
   createEditorColorProp,
@@ -20,8 +20,8 @@ import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 export default {
   key: 'divider',
   moduleName: 'baseWidgets',
-  label: '分割线',
-  preview: () => <Divider style="width:190px">文本</Divider>,
+  label: '鍒嗗壊绾?,
+  preview: () => <Divider style="width:190px">鏂囨湰</Divider>,
   render: ({ props, block, styles }) => {
     const { registerRef } = useGlobalProperties();
 
@@ -42,18 +42,18 @@ export default {
     );
   },
   props: {
-    text: createEditorInputProp({ label: '展示文本', defaultValue: '文本' }),
+    text: createEditorInputProp({ label: '灞曠ず鏂囨湰', defaultValue: '鏂囨湰' }),
     'content-position': createEditorSelectProp({
-      label: '文本位置',
+      label: '鏂囨湰浣嶇疆',
       options: [
-        { label: '左边', value: 'left' },
-        { label: '中间', value: 'center' },
-        { label: '右边', value: 'right' },
+        { label: '宸﹁竟', value: 'left' },
+        { label: '涓棿', value: 'center' },
+        { label: '鍙宠竟', value: 'right' },
       ],
       defaultValue: 'center',
     }),
-    dashed: createEditorSwitchProp({ label: '是否为虚线' }),
-    'text-color': createEditorColorProp({ label: '文本颜色' }),
-    'divider-color': createEditorColorProp({ label: '分割线颜色' }),
+    dashed: createEditorSwitchProp({ label: '鏄惁涓鸿櫄绾? }),
+    'text-color': createEditorColorProp({ label: '鏂囨湰棰滆壊' }),
+    'divider-color': createEditorColorProp({ label: '鍒嗗壊绾块鑹? }),
   },
 } as VisualEditorComponent;

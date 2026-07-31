@@ -281,10 +281,13 @@ type ArrayTableColumnOption = {
 
 const booleanColumnFields = new Set([
   'disabled',
+  'circle',
   'plain',
   'preload',
   'required',
   'resizable',
+  'round',
+  'showDropdownIcon',
   'sortable',
   'text',
   'visible',

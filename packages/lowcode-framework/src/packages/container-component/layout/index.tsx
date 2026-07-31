@@ -1,5 +1,5 @@
-import { renderSlot, useSlots, watchEffect } from 'vue';
-import { Col, Row } from 'vant';
+﻿import { renderSlot, useSlots, watchEffect } from 'vue';
+import { Col, Row } from '../../../components/VantFree';
 import styleModule from './index.module.scss';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { createEditorInputProp, createEditorSelectProp } from '../../../visual-editor/visual-editor.props';
@@ -38,7 +38,7 @@ const parseRatio = (value: unknown, fallback: number[] = [12, 12]) => {
   }
 
   const spans = String(value || '')
-    .split(/[:：,\s]+/)
+    .split(/[:锛?\s]+/)
     .map((span) => clampSpan(span, 0))
     .filter((span) => span > 0)
     .slice(0, MAX_COLUMNS);
@@ -98,7 +98,7 @@ const getSlotRatioText = (slots: unknown, fallbackItems: SlotItem[]) => {
 export default {
   key: 'layout',
   moduleName: 'containerComponents',
-  label: '布局容器',
+  label: '甯冨眬瀹瑰櫒',
   preview: () => (
     <Row gutter="20">
       <Col span="8">span: 8</Col>
@@ -285,7 +285,7 @@ export default {
                       <span class={styleModule.layoutColumnSpan}>span {spanItem.span}</span>
                       <button
                         type="button"
-                        title="添加列"
+                        title="娣诲姞鍒?
                         class={styleModule.layoutColumnAction}
                         onClick={(event) => addSlotAfter(event, spanIndex)}
                       >
@@ -293,7 +293,7 @@ export default {
                       </button>
                       <button
                         type="button"
-                        title="删除列"
+                        title="鍒犻櫎鍒?
                         class={styleModule.layoutColumnAction}
                         disabled={slotItems.length <= 1}
                         onClick={(event) => removeSlot(event, spanIndex)}
@@ -306,7 +306,7 @@ export default {
                   {spanIndex < slotItems.length - 1 && (
                     <span
                       class={styleModule.layoutResizeHandle}
-                      title="拖动调整列宽"
+                      title="鎷栧姩璋冩暣鍒楀"
                       onMousedown={(event) => startResize(event, spanIndex)}
                     />
                   )}
@@ -323,28 +323,28 @@ export default {
     width: true,
   },
   props: {
-    gutter: createEditorInputProp({ label: '列间隔' }),
+    gutter: createEditorInputProp({ label: '鍒楅棿闅? }),
     slots: createEditorInputProp({
-      label: '列比例',
-      tips: '可在右侧输入 5:7:12 等任意 span，也可在画布上拖动列间手柄调整。',
+      label: '鍒楁瘮渚?,
+      tips: '鍙湪鍙充晶杈撳叆 5:7:12 绛変换鎰?span锛屼篃鍙湪鐢诲竷涓婃嫋鍔ㄥ垪闂存墜鏌勮皟鏁淬€?,
       defaultValue: createSlots(DEFAULT_RATIO),
     }),
     justify: createEditorSelectProp({
-      label: '主轴对齐方式',
+      label: '涓昏酱瀵归綈鏂瑰紡',
       options: [
-        { label: '左对齐', value: 'start' },
-        { label: '居中排列', value: 'center' },
-        { label: '均匀对齐', value: 'space-around' },
-        { label: '两端对齐', value: 'space-between' },
-        { label: '右对齐', value: 'end' },
+        { label: '宸﹀榻?, value: 'start' },
+        { label: '灞呬腑鎺掑垪', value: 'center' },
+        { label: '鍧囧寑瀵归綈', value: 'space-around' },
+        { label: '涓ょ瀵归綈', value: 'space-between' },
+        { label: '鍙冲榻?, value: 'end' },
       ],
     }),
     align: createEditorSelectProp({
-      label: '交叉轴对齐方式',
+      label: '浜ゅ弶杞村榻愭柟寮?,
       options: [
-        { label: '顶部对齐', value: 'top' },
-        { label: '垂直居中', value: 'center' },
-        { label: '底部对齐', value: 'bottom' },
+        { label: '椤堕儴瀵归綈', value: 'top' },
+        { label: '鍨傜洿灞呬腑', value: 'center' },
+        { label: '搴曢儴瀵归綈', value: 'bottom' },
       ],
     }),
   },

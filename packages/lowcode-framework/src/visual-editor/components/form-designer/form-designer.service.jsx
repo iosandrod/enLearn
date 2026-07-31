@@ -176,6 +176,14 @@ function normalizeArrayTableColumns(value) {
 function readArrayTableProps(value) {
     return isRecord(value) ? value : {};
 }
+function readArrayTableRowConfig(props) {
+    const rowConfig = isRecord(props.rowConfig) ? cloneDeep(props.rowConfig) : {};
+    const keyField = readString(rowConfig.keyField, readString(props.rowKey, '__rowKey'));
+    return {
+        ...rowConfig,
+        keyField,
+    };
+}
 function readFieldProps(row) {
     const objectProps = isRecord(row.props) ? cloneDeep(row.props) : {};
     const jsonProps = parseJsonObject(row.propsJson) ?? {};
@@ -231,7 +239,7 @@ function createFieldBlock(field, index) {
         block.props.__lowcodeComponent = 'lc-array-table';
         block.props.columns = normalizeArrayTableColumns(fieldProps.columns);
         block.props.addText = readString(fieldProps.addText, '新增行');
-        block.props.rowKey = readString(fieldProps.rowKey, '__rowKey');
+        block.props.rowConfig = readArrayTableRowConfig(fieldProps);
         if (isRecord(fieldProps.defaultRow)) {
             block.props.defaultRow = cloneDeep(fieldProps.defaultRow);
         }
@@ -361,7 +369,7 @@ function blockToField(block, index) {
         result.props = {
             columns: normalizeArrayTableColumns(props.columns),
             addText: readString(props.addText, '新增行'),
-            rowKey: readString(props.rowKey, '__rowKey'),
+            rowConfig: readArrayTableRowConfig(props),
             ...(isRecord(props.defaultRow) ? { defaultRow: cloneDeep(props.defaultRow) } : {}),
         };
         result.propsJson = stringifyFieldProps(result.props);

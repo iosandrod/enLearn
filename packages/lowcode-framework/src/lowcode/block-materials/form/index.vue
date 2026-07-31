@@ -1,9 +1,5 @@
 <template>
   <article class="content-panel">
-    <header v-if="block.title || block.description" class="lc-node-header">
-      <h2 v-if="block.title">{{ block.title }}</h2>
-      <p v-if="block.description">{{ block.description }}</p>
-    </header>
     <LowCodeForm
       v-model="formModels[block.id]"
       :schema="block.schema"

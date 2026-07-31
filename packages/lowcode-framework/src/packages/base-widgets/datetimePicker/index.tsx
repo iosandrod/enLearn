@@ -1,5 +1,5 @@
-import { useAttrs, reactive } from 'vue';
-import { Field, Popup, DatetimePicker } from 'vant';
+﻿import { useAttrs, reactive } from 'vue';
+import { Field, Popup, DatetimePicker } from '../../../components/VantFree';
 import dayjs from 'dayjs';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
@@ -24,8 +24,8 @@ const dateType = {
 export default {
   key: 'datetimePicker',
   moduleName: 'baseWidgets',
-  label: '表单项类型 - 时间选择器',
-  preview: () => <Field name="datetimePicker" label="时间选择器" placeholder={'点击选择'}></Field>,
+  label: '琛ㄥ崟椤圭被鍨?- 鏃堕棿閫夋嫨鍣?,
+  preview: () => <Field name="datetimePicker" label="鏃堕棿閫夋嫨鍣? placeholder={'鐐瑰嚮閫夋嫨'}></Field>,
   render: ({ styles, block, props }) => {
     const { registerRef } = useGlobalProperties();
 
@@ -79,12 +79,12 @@ export default {
     );
   },
   props: {
-    modelValue: createEditorInputProp({ label: '默认值' }),
-    name: createEditorModelBindProp({ label: '字段绑定', defaultValue: '' }),
-    label: createEditorInputProp({ label: '输入框左侧文本', defaultValue: '时间选择器' }),
-    title: createEditorInputProp({ label: '顶部栏标题', defaultValue: '选择时间' }),
+    modelValue: createEditorInputProp({ label: '榛樿鍊? }),
+    name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
+    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '鏃堕棿閫夋嫨鍣? }),
+    title: createEditorInputProp({ label: '椤堕儴鏍忔爣棰?, defaultValue: '閫夋嫨鏃堕棿' }),
     type: createEditorSelectProp({
-      label: '时间类型',
+      label: '鏃堕棿绫诲瀷',
       options: [
         {
           label: 'date',
@@ -110,38 +110,38 @@ export default {
       defaultValue: 'datetime',
     }),
     format: createEditorInputProp({
-      label: '自定义日期格式化值',
+      label: '鑷畾涔夋棩鏈熸牸寮忓寲鍊?,
       tips: 'YYYY-MM-DD HH:mm:ss',
       defaultValue: '',
     }),
-    cancelButtonText: createEditorInputProp({ label: '取消按钮文字' }),
+    cancelButtonText: createEditorInputProp({ label: '鍙栨秷鎸夐挳鏂囧瓧' }),
     columnsOrder: createEditorInputProp({
-      label: '自定义列排序数组',
-      tips: '可选值为：year、month、day、hour、minute，传多个值以英文逗号隔开',
+      label: '鑷畾涔夊垪鎺掑簭鏁扮粍',
+      tips: '鍙€夊€间负锛歽ear銆乵onth銆乨ay銆乭our銆乵inute锛屼紶澶氫釜鍊间互鑻辨枃閫楀彿闅斿紑',
     }),
-    confirmButtonText: createEditorInputProp({ label: '确认按钮文字' }),
-    filter: createEditorInputProp({ label: '选项过滤函数' }),
-    formatter: createEditorInputProp({ label: '选项格式化函数' }),
+    confirmButtonText: createEditorInputProp({ label: '纭鎸夐挳鏂囧瓧' }),
+    filter: createEditorInputProp({ label: '閫夐」杩囨护鍑芥暟' }),
+    formatter: createEditorInputProp({ label: '閫夐」鏍煎紡鍖栧嚱鏁? }),
     itemHeight: createEditorInputProp({
-      label: '选项高度',
-      tips: '支持 px vw vh rem 单位，默认 px',
+      label: '閫夐」楂樺害',
+      tips: '鏀寔 px vw vh rem 鍗曚綅锛岄粯璁?px',
     }),
-    loading: createEditorSwitchProp({ label: '是否显示加载状态' }),
-    showToolbar: createEditorSwitchProp({ label: '是否显示顶部栏' }),
-    swipeDuration: createEditorInputProp({ label: '快速滑动时惯性滚动的时长，单位ms' }),
-    visibleItemCount: createEditorInputNumberProp({ label: '可见的选项个数', defaultValue: 6 }),
-    placeholder: createEditorInputProp({ label: '占位符', defaultValue: '请选择' }),
+    loading: createEditorSwitchProp({ label: '鏄惁鏄剧ず鍔犺浇鐘舵€? }),
+    showToolbar: createEditorSwitchProp({ label: '鏄惁鏄剧ず椤堕儴鏍? }),
+    swipeDuration: createEditorInputProp({ label: '蹇€熸粦鍔ㄦ椂鎯€ф粴鍔ㄧ殑鏃堕暱锛屽崟浣峬s' }),
+    visibleItemCount: createEditorInputNumberProp({ label: '鍙鐨勯€夐」涓暟', defaultValue: 6 }),
+    placeholder: createEditorInputProp({ label: '鍗犱綅绗?, defaultValue: '璇烽€夋嫨' }),
     ...createFieldProps(),
   },
   events: [
-    { label: '当值变化时触发的事件', value: 'change' },
-    { label: '点击完成按钮时触发的事件', value: 'confirm' },
-    { label: '点击取消按钮时触发的事件', value: 'cancel' },
+    { label: '褰撳€煎彉鍖栨椂瑙﹀彂鐨勪簨浠?, value: 'change' },
+    { label: '鐐瑰嚮瀹屾垚鎸夐挳鏃惰Е鍙戠殑浜嬩欢', value: 'confirm' },
+    { label: '鐐瑰嚮鍙栨秷鎸夐挳鏃惰Е鍙戠殑浜嬩欢', value: 'cancel' },
   ],
   resize: {
     width: true,
   },
   model: {
-    default: '绑定字段',
+    default: '缁戝畾瀛楁',
   },
 } as VisualEditorComponent;

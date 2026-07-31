@@ -1,13 +1,13 @@
-/*
- * @Author: 卜启缘
+﻿/*
+ * @Author: 鍗滃惎缂?
  * @Date: 2021-06-01 09:45:21
  * @LastEditTime: 2021-07-13 20:26:04
- * @LastEditors: 卜启缘
- * @Description: 表单项类型 - 复选框
+ * @LastEditors: 鍗滃惎缂?
+ * @Description: 琛ㄥ崟椤圭被鍨?- 澶嶉€夋
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\checkbox\index.tsx
  */
 import { computed } from 'vue';
-import { Field, Checkbox, CheckboxGroup } from 'vant';
+import { Field, Checkbox, CheckboxGroup } from '../../../components/VantFree';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -21,7 +21,7 @@ import {
 export default {
   key: 'checkbox',
   moduleName: 'baseWidgets',
-  label: '表单项类型 - 复选框',
+  label: '琛ㄥ崟椤圭被鍨?- 澶嶉€夋',
   preview: () => (
     <CheckboxGroup modelValue={['1']} direction={'horizontal'}>
       <Checkbox name="1" shape="square">
@@ -71,30 +71,30 @@ export default {
   },
   props: {
     modelValue: createEditorInputProp({
-      label: '默认值',
+      label: '榛樿鍊?,
       defaultValue: [],
     }),
-    name: createEditorModelBindProp({ label: '字段绑定', defaultValue: '' }),
-    label: createEditorInputProp({ label: '输入框左侧文本', defaultValue: '复选框' }),
+    name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
+    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '澶嶉€夋' }),
     options: createEditorCrossSortableProp({
-      label: '默认选项',
+      label: '榛樿閫夐」',
       labelPosition: 'top',
       multiple: true,
       defaultValue: [
-        { label: '胡萝卜', value: 'carrot' },
-        { label: '白菜', value: 'cabbage' },
-        { label: '猪', value: 'pig' },
+        { label: '鑳¤悵鍗?, value: 'carrot' },
+        { label: '鐧借彍', value: 'cabbage' },
+        { label: '鐚?, value: 'pig' },
       ],
     }),
     direction: createEditorSelectProp({
-      label: '排列方向',
+      label: '鎺掑垪鏂瑰悜',
       options: [
         {
-          label: '水平',
+          label: '姘村钩',
           value: 'horizontal',
         },
         {
-          label: '垂直',
+          label: '鍨傜洿',
           value: 'vertical',
         },
       ],
@@ -103,13 +103,13 @@ export default {
     ...createFieldProps(),
   },
   events: [
-    { label: '当绑定值变化时触发的事件', value: 'change' },
-    { label: '点击复选框时触发', value: 'click' },
+    { label: '褰撶粦瀹氬€煎彉鍖栨椂瑙﹀彂鐨勪簨浠?, value: 'change' },
+    { label: '鐐瑰嚮澶嶉€夋鏃惰Е鍙?, value: 'click' },
   ],
   resize: {
     width: true,
   },
   model: {
-    default: '绑定字段',
+    default: '缁戝畾瀛楁',
   },
 } as VisualEditorComponent;

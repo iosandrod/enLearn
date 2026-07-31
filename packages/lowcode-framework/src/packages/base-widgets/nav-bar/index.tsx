@@ -1,13 +1,13 @@
-/*
- * @Author: 卜启缘
+﻿/*
+ * @Author: 鍗滃惎缂?
  * @Date: 2021-05-04 05:36:58
  * @LastEditTime: 2021-07-13 20:34:53
- * @LastEditors: 卜启缘
- * @Description: 导航栏
+ * @LastEditors: 鍗滃惎缂?
+ * @Description: 瀵艰埅鏍?
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\nav-bar\index.tsx
  */
 import { onBeforeUnmount, onMounted } from 'vue';
-import { NavBar } from 'vant';
+import { NavBar } from '../../../components/VantFree';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { createEditorInputProp, createEditorSwitchProp } from '../../../visual-editor/visual-editor.props';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -15,9 +15,9 @@ import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 export default {
   key: 'nav-bar',
   moduleName: 'baseWidgets',
-  label: '导航栏',
+  label: '瀵艰埅鏍?,
   preview: () => (
-    <NavBar title="标题" left-text="返回" right-text="按钮" left-arrow style={{ width: '100%' }} />
+    <NavBar title="鏍囬" left-text="杩斿洖" right-text="鎸夐挳" left-arrow style={{ width: '100%' }} />
   ),
   render: ({ props, block }) => {
     const { registerRef } = useGlobalProperties();
@@ -58,22 +58,22 @@ export default {
     return () => <NavBar ref={(el) => registerRef(el, block._vid)} {...props} />;
   },
   props: {
-    title: createEditorInputProp({ label: '标题', defaultValue: '标题' }),
-    fixed: createEditorSwitchProp({ label: '是否固定', defaultValue: true }),
+    title: createEditorInputProp({ label: '鏍囬', defaultValue: '鏍囬' }),
+    fixed: createEditorSwitchProp({ label: '鏄惁鍥哄畾', defaultValue: true }),
     // placeholder: createEditorSwitchProp({
-    //   label: '是否生成占位元素',
+    //   label: '鏄惁鐢熸垚鍗犱綅鍏冪礌',
     //   defaultValue: true,
-    //   tips: '固定在顶部时，是否在标签位置生成一个等高的占位元素'
+    //   tips: '鍥哄畾鍦ㄩ《閮ㄦ椂锛屾槸鍚﹀湪鏍囩浣嶇疆鐢熸垚涓€涓瓑楂樼殑鍗犱綅鍏冪礌'
     // }),
     zIndex: createEditorInputProp({ label: 'z-index' }),
-    border: createEditorSwitchProp({ label: '是否显示下边框', defaultValue: false }),
-    leftText: createEditorInputProp({ label: '左侧文案', defaultValue: '返回' }),
-    rightText: createEditorInputProp({ label: '右侧文案', defaultValue: '按钮' }),
-    leftArrow: createEditorSwitchProp({ label: '是否显示左侧箭头', defaultValue: true }),
+    border: createEditorSwitchProp({ label: '鏄惁鏄剧ず涓嬭竟妗?, defaultValue: false }),
+    leftText: createEditorInputProp({ label: '宸︿晶鏂囨', defaultValue: '杩斿洖' }),
+    rightText: createEditorInputProp({ label: '鍙充晶鏂囨', defaultValue: '鎸夐挳' }),
+    leftArrow: createEditorSwitchProp({ label: '鏄惁鏄剧ず宸︿晶绠ご', defaultValue: true }),
   },
   events: [
-    { label: '点击左侧按钮时触发', value: 'click-left' },
-    { label: '点击右侧按钮时触发', value: 'click-right' },
+    { label: '鐐瑰嚮宸︿晶鎸夐挳鏃惰Е鍙?, value: 'click-left' },
+    { label: '鐐瑰嚮鍙充晶鎸夐挳鏃惰Е鍙?, value: 'click-right' },
   ],
   showStyleConfig: false,
   draggable: false,

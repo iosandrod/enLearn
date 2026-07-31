@@ -249,9 +249,12 @@ export function createNewBlock(component: VisualEditorComponent): VisualEditorBl
     },
     hasResize: false,
     props: Object.entries(component.props || {}).reduce((prev, [propName, propSchema]) => {
-      const { propObj, prop } = useDotProp(prev, propName);
+      const { propObj, prop, isDotProp } = useDotProp(prev, propName);
       if (propSchema?.defaultValue) {
-        propObj[prop] = prev[propName] = propSchema?.defaultValue;
+        propObj[prop] = propSchema?.defaultValue;
+        if (!isDotProp) {
+          prev[propName] = propSchema?.defaultValue;
+        }
       }
       return prev;
     }, {}),

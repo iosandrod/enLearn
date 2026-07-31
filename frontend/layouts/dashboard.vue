@@ -102,7 +102,7 @@
           <button
             v-if="contextLowCodePageCode"
             type="button"
-            @click="openLowCodePage"
+            @click="openLowCodeEditPage"
           >
             进入编辑页面
           </button>
@@ -133,6 +133,10 @@
 import { defineComponent, h, resolveComponent } from 'vue';
 import type { PropType } from 'vue';
 import { useServiceApi } from '../composables/useServiceApi';
+import type {
+  LowCodePageRecord,
+  LowCodePageSchema,
+} from '@enlearn/lowcode-framework/types/lowcode';
 
 type AdminRouteNode = {
   id?: string;
@@ -203,7 +207,9 @@ async function loadDevTestUsers() {
   if (!isDev) return;
 
   try {
-    const users = await serviceApi.invoke<Record<string, unknown>[]>('admin', 'listUsers');
+    const users = await serviceApi.invoke<Record<string, unknown>[]>('admin', 'listItems', {
+      entityCode: 'users'
+    });
     auth.setDevTestUsers(Array.isArray(users) ? users : []);
   } catch (error) {
     auth.setDevTestUsers([]);
@@ -701,6 +707,46 @@ function resolveLowCodePageCode(item: AdminRouteNode) {
   return '';
 }
 
+function buildEmptyEditPageSchema(
+  page: LowCodePageRecord,
+  item: AdminRouteNode | null
+): LowCodePageSchema {
+  const routePath = page.route.replace(/\/+$/, '');
+  const editCode = `${page.code}-edit`;
+  const editRoute = `${routePath}/edit`;
+  const editTitle = `${page.title || item?.title || page.code}编辑`;
+
+  return {
+    schemaVersion: 1,
+    code: editCode,
+    route: editRoute,
+    title: editTitle,
+    pageType: 'edit',
+    description: '',
+    layout: 'dashboard',
+    status: 'published',
+    keepAlive: true,
+    blocks: [],
+    dataSources: {}
+  };
+}
+
+async function resolveExistingEditPageRoute(page: LowCodePageRecord) {
+  const relation = page.relations?.outgoing?.find(
+    (item) => item.actionKey === 'edit'
+  );
+  if (!relation) return '';
+  if (relation.targetPageRoute) return relation.targetPageRoute;
+  if (!relation.targetPageCode) return '';
+
+  const editPage = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'getPage', {
+    code: relation.targetPageCode,
+    includeData: false
+  });
+
+  return editPage.route;
+}
+
 async function openLowCodeDesigner() {
   const pageCode = contextLowCodePageCode.value;
   closeMenuContext();
@@ -709,11 +755,39 @@ async function openLowCodeDesigner() {
   publishLowCodeDesignerLoadPage(pageCode);
 }
 
-async function openLowCodePage() {
+async function openLowCodeEditPage() {
   const pageCode = contextLowCodePageCode.value;
+  const item = menuContext.item;
   closeMenuContext();
   if (!pageCode) return;
-  await router.push(`/dashboard/low-code/${pageCode}`);
+
+  routeError.value = '';
+
+  try {
+    const page = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'getPage', {
+      code: pageCode,
+      includeData: false
+    });
+    const existingEditRoute = await resolveExistingEditPageRoute(page);
+    if (existingEditRoute) {
+      await router.push(existingEditRoute);
+      return;
+    }
+
+    const schema = buildEmptyEditPageSchema(page, item);
+    const saved = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'savePage', {
+      code: schema.code,
+      schema,
+      parentListPageCode: page.code,
+      editOpenType: 'page'
+    });
+
+    await router.push(saved.route);
+    await reloadRoutes();
+  } catch (error) {
+    routeError.value =
+      error instanceof Error ? error.message : '编辑页面打开失败。';
+  }
 }
 
 function rememberTab() {

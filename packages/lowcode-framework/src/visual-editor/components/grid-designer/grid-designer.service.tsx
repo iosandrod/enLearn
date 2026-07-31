@@ -838,10 +838,10 @@ function createDefaultBusiness(): GridDesignerBusinessInfo {
     title: '数据列表',
     sourceKey: 'records',
     serviceName: 'admin',
-    serviceMethod: 'listUsers',
+    serviceMethod: 'listItems',
     saveMethod: '',
     deleteMethod: '',
-    postDataJson: '{}',
+    postDataJson: '{\n  "entityCode": "users"\n}',
     showRowActions: true,
   };
 }
@@ -1571,7 +1571,7 @@ const ServiceComponent = defineComponent({
       { field: 'minWidth', label: 'minWidth', component: 'vxe-input' },
     ];
 
-    const rowColumnConfigSchema = createSchema(
+    const rowConfigSchema = createSchema(
       [
         {
           field: 'rowConfig',
@@ -1579,6 +1579,12 @@ const ServiceComponent = defineComponent({
           component: 'lc-sub-form',
           props: { fields: rowConfigSubFields },
         },
+      ],
+      1,
+    );
+
+    const columnConfigSchema = createSchema(
+      [
         {
           field: 'columnConfig',
           label: 'columnConfig',
@@ -1586,7 +1592,7 @@ const ServiceComponent = defineComponent({
           props: { fields: columnConfigSubFields },
         },
       ],
-      2,
+      1,
     );
 
     const syncAdvancedConfigModel = (
@@ -1702,7 +1708,8 @@ const ServiceComponent = defineComponent({
     const columnDesignerBlockId = 'grid-designer-columns-form';
     const businessInfoBlockId = 'grid-designer-business-info-form';
     const gridOptionsBlockId = 'grid-designer-grid-options-form';
-    const rowColumnConfigBlockId = 'grid-designer-row-column-config-form';
+    const rowConfigBlockId = 'grid-designer-row-config-form';
+    const columnConfigBlockId = 'grid-designer-column-config-form';
     const eventDesignerBlockId = 'grid-designer-events-form';
     const extraPropsBlockId = 'grid-designer-extra-props-form';
     const advancedBlockId = (field: string) => `grid-designer-advanced-${field}-form`;
@@ -1821,42 +1828,185 @@ const ServiceComponent = defineComponent({
       state.business.postDataJson = JSON.stringify(nextValue, null, 2);
     };
 
-    const createBaseInfoBlocks = (): LowCodePageBlock[] => [
-      createContainerBlock('grid-designer-info-panel', 'grid-designer-panel', [
-        createFormBlock(businessInfoBlockId, '业务信息', businessInfoSchema),
-        createFormBlock(gridOptionsBlockId, 'VxeGrid 表格入参', gridOptionsSchema),
-        createFormBlock(rowColumnConfigBlockId, 'rowConfig / columnConfig', rowColumnConfigSchema),
-        createContainerBlock(
-          'grid-designer-advanced-panel',
-          'grid-designer-advanced-grid',
-          [
-            ...advancedGridConfigDefinitions.map((config) =>
-              createFormBlock(
-                advancedBlockId(config.field),
-                config.label,
-                createSchema(config.fields, 2),
-                'grid-designer-advanced-item grid-designer-schema-form-block',
-              ),
-            ),
-            createFormBlock(
-              extraPropsBlockId,
-              'extraProps',
-              createSchema(
-                [
-                  {
-                    field: 'value',
-                    label: 'extraProps',
-                    component: 'lc-json-editor',
-                    props: { rows: 5 },
-                  },
+    const createInfoTabPanelBlock = (
+      id: string,
+      blocks: LowCodePageBlock[],
+    ): LowCodePageBlock =>
+      createContainerBlock(id, 'grid-designer-info-tab-panel', blocks);
+
+    const createAdvancedConfigFormBlock = (
+      config: AdvancedGridConfigDefinition,
+      className = 'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-advanced-item',
+    ) =>
+      createFormBlock(
+        advancedBlockId(config.field),
+        config.label,
+        createSchema(config.fields, 2),
+        className,
+      );
+
+    const advancedConfigByField = advancedGridConfigDefinitions.reduce<
+      Record<string, AdvancedGridConfigDefinition>
+    >((prev, config) => {
+      prev[config.field] = config;
+      return prev;
+    }, {});
+
+    const createTabbedBaseInfoBlocks = (): LowCodePageBlock[] => [
+      createContainerBlock(
+        'grid-designer-info-panel',
+        'grid-designer-panel grid-designer-info-panel',
+        [
+          {
+            id: 'grid-designer-info-tabs',
+            kind: 'tabs',
+            className: 'grid-designer-info-tabs',
+            defaultKey: 'business',
+            layout: { fillRemaining: true },
+            tabs: [
+              {
+                key: 'business',
+                label: '基础信息',
+                blocks: [
+                  createInfoTabPanelBlock('grid-designer-business-info-panel', [
+                    createFormBlock(
+                      businessInfoBlockId,
+                      '业务信息',
+                      businessInfoSchema,
+                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-business-card',
+                    ),
+                  ]),
                 ],
-                1,
-              ),
-              'grid-designer-advanced-item grid-designer-advanced-item--wide grid-designer-schema-form-block',
-            ),
-          ],
-        ),
-      ]),
+              },
+              {
+                key: 'options',
+                label: '表格参数',
+                blocks: [
+                  createInfoTabPanelBlock('grid-designer-grid-options-panel', [
+                    createFormBlock(
+                      gridOptionsBlockId,
+                      'VxeGrid 表格入参',
+                      gridOptionsSchema,
+                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-options-card',
+                    ),
+                  ]),
+                ],
+              },
+              {
+                key: 'row-config',
+                label: '行配置',
+                blocks: [
+                  createInfoTabPanelBlock('grid-designer-row-config-panel', [
+                    createFormBlock(
+                      rowConfigBlockId,
+                      'rowConfig',
+                      rowConfigSchema,
+                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-row-column-card',
+                    ),
+                  ]),
+                ],
+              },
+              {
+                key: 'column-config',
+                label: '列配置',
+                blocks: [
+                  createInfoTabPanelBlock('grid-designer-column-config-panel', [
+                    createFormBlock(
+                      columnConfigBlockId,
+                      'columnConfig',
+                      columnConfigSchema,
+                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-row-column-card',
+                    ),
+                  ]),
+                ],
+              },
+              {
+                key: 'pager',
+                label: '分页',
+                blocks: [
+                  createInfoTabPanelBlock('grid-designer-pager-config-panel', [
+                    createAdvancedConfigFormBlock(advancedConfigByField.pagerConfigJson),
+                  ]),
+                ],
+              },
+              {
+                key: 'toolbar',
+                label: '工具栏',
+                blocks: [
+                  createInfoTabPanelBlock('grid-designer-toolbar-config-panel', [
+                    createAdvancedConfigFormBlock(advancedConfigByField.toolbarConfigJson),
+                  ]),
+                ],
+              },
+              {
+                key: 'proxy',
+                label: '数据代理',
+                blocks: [
+                  createInfoTabPanelBlock('grid-designer-proxy-config-panel', [
+                    createAdvancedConfigFormBlock(advancedConfigByField.proxyConfigJson),
+                  ]),
+                ],
+              },
+              {
+                key: 'edit',
+                label: '编辑',
+                blocks: [
+                  createInfoTabPanelBlock('grid-designer-edit-config-panel', [
+                    createAdvancedConfigFormBlock(advancedConfigByField.editConfigJson),
+                  ]),
+                ],
+              },
+              {
+                key: 'more',
+                label: '更多配置',
+                blocks: [
+                  createInfoTabPanelBlock('grid-designer-more-config-panel', [
+                    createContainerBlock(
+                      'grid-designer-more-config-grid',
+                      'grid-designer-advanced-grid',
+                      advancedGridConfigDefinitions
+                        .filter(
+                          (config) =>
+                            ![
+                              'pagerConfigJson',
+                              'toolbarConfigJson',
+                              'proxyConfigJson',
+                              'editConfigJson',
+                            ].includes(config.field),
+                        )
+                        .map((config) => createAdvancedConfigFormBlock(config)),
+                    ),
+                  ]),
+                ],
+              },
+              {
+                key: 'extra',
+                label: '扩展属性',
+                blocks: [
+                  createInfoTabPanelBlock('grid-designer-extra-props-panel', [
+                    createFormBlock(
+                      extraPropsBlockId,
+                      'extraProps',
+                      createSchema(
+                        [
+                          {
+                            field: 'value',
+                            label: 'extraProps',
+                            component: 'lc-json-editor',
+                            props: { rows: 12 },
+                          },
+                        ],
+                        1,
+                      ),
+                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-advanced-item grid-designer-advanced-item--wide',
+                    ),
+                  ]),
+                ],
+              },
+            ],
+          },
+        ],
+      ),
     ];
 
     const createEventDesignerBlocks = (): LowCodePageBlock[] => [
@@ -1894,8 +2044,12 @@ const ServiceComponent = defineComponent({
           gridOptionsSchema,
           state.gridOptions as Record<string, unknown>,
         ),
-        [rowColumnConfigBlockId]: createSchemaModel(
-          rowColumnConfigSchema,
+        [rowConfigBlockId]: createSchemaModel(
+          rowConfigSchema,
+          state.gridOptions as Record<string, unknown>,
+        ),
+        [columnConfigBlockId]: createSchemaModel(
+          columnConfigSchema,
           state.gridOptions as Record<string, unknown>,
         ),
         [eventDesignerBlockId]: {
@@ -1943,7 +2097,11 @@ const ServiceComponent = defineComponent({
         return;
       }
 
-      if (event.blockId === gridOptionsBlockId || event.blockId === rowColumnConfigBlockId) {
+      if (
+        event.blockId === gridOptionsBlockId ||
+        event.blockId === rowConfigBlockId ||
+        event.blockId === columnConfigBlockId
+      ) {
         Object.assign(state.gridOptions, values);
         return;
       }
@@ -1982,7 +2140,7 @@ const ServiceComponent = defineComponent({
             {
               key: 'info',
               label: '表格信息设计',
-              blocks: createBaseInfoBlocks(),
+              blocks: createTabbedBaseInfoBlocks(),
             },
             {
               key: 'events',

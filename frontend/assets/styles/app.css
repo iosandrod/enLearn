@@ -69,6 +69,8 @@ a {
 .stack {
   display: grid;
   gap: 18px;
+  flex:1;
+  overflow: hidden;
 }
 
 .dashboard-layout {
@@ -616,6 +618,8 @@ a {
   max-width: 100%;
   overflow: hidden;
   padding: 8px;
+  height: 100%;
+  overflow: hidden;
 }
 
 .lowcode-runtime-page > *,
@@ -757,6 +761,8 @@ a {
 .lc-tab-pane-stack {
   min-height: 80px;
   padding: 4px 0 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .lc-tab-list {

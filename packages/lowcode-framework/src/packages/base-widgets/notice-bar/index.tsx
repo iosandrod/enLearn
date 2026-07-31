@@ -1,12 +1,12 @@
-/*
- * @Author: 卜启缘
+﻿/*
+ * @Author: 鍗滃惎缂?
  * @Date: 2021-06-14 12:24:12
  * @LastEditTime: 2021-07-13 17:14:20
- * @LastEditors: 卜启缘
+ * @LastEditors: 鍗滃惎缂?
  * @Description:
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\notice-bar\index.tsx
  */
-import { NoticeBar } from 'vant';
+import { NoticeBar } from '../../../components/VantFree';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -14,12 +14,12 @@ import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 export default {
   key: 'NoticeBar',
   moduleName: 'baseWidgets',
-  label: '通知栏',
+  label: '閫氱煡鏍?,
   preview: () => (
     <NoticeBar
       style={{ width: '180px' }}
       leftIcon={'volume-o'}
-      text={'在代码阅读过程中人们说脏话的频率是衡量代码质量的唯一标准。'}
+      text={'鍦ㄤ唬鐮侀槄璇昏繃绋嬩腑浜轰滑璇磋剰璇濈殑棰戠巼鏄　閲忎唬鐮佽川閲忕殑鍞竴鏍囧噯銆?}
     />
   ),
   render: ({ block, props, styles }) => {
@@ -32,15 +32,15 @@ export default {
     );
   },
   events: [
-    { label: '点击通知栏时触发', value: 'click' },
-    { label: '关闭通知栏时触发', value: 'close' },
-    { label: '每当滚动栏重新开始滚动时触发', value: 'replay' },
+    { label: '鐐瑰嚮閫氱煡鏍忔椂瑙﹀彂', value: 'click' },
+    { label: '鍏抽棴閫氱煡鏍忔椂瑙﹀彂', value: 'close' },
+    { label: '姣忓綋婊氬姩鏍忛噸鏂板紑濮嬫粴鍔ㄦ椂瑙﹀彂', value: 'replay' },
   ],
   props: createFieldProps(),
   resize: {
     width: true,
   },
   model: {
-    default: '绑定字段',
+    default: '缁戝畾瀛楁',
   },
 } as VisualEditorComponent;

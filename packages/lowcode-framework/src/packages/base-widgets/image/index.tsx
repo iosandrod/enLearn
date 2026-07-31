@@ -1,12 +1,12 @@
-/*
- * @Author: 卜启缘
+﻿/*
+ * @Author: 鍗滃惎缂?
  * @Date: 2021-06-01 09:45:21
  * @LastEditTime: 2021-07-13 17:14:05
- * @LastEditors: 卜启缘
- * @Description: 图片组件
+ * @LastEditors: 鍗滃惎缂?
+ * @Description: 鍥剧墖缁勪欢
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\image\index.tsx
  */
-import { Image } from 'vant';
+import { Image } from '../../../components/VantFree';
 import { Picture } from '../../../visual-editor/components/common/remix-icons';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
@@ -19,7 +19,7 @@ import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 export default {
   key: 'image',
   moduleName: 'baseWidgets',
-  label: '图片',
+  label: '鍥剧墖',
   resize: {
     width: true,
     height: true,
@@ -44,57 +44,57 @@ export default {
   },
   props: {
     src: createEditorInputProp({
-      label: '图片链接',
+      label: '鍥剧墖閾炬帴',
       defaultValue: 'https://img.yzcdn.cn/vant/cat.jpeg',
     }),
-    width: createEditorInputProp({ label: '宽度', defaultValue: 100 }),
-    height: createEditorInputProp({ label: '高度', defaultValue: 100 }),
-    errorIcon: createEditorInputProp({ label: '失败时提示的图标名称或图片链接' }),
+    width: createEditorInputProp({ label: '瀹藉害', defaultValue: 100 }),
+    height: createEditorInputProp({ label: '楂樺害', defaultValue: 100 }),
+    errorIcon: createEditorInputProp({ label: '澶辫触鏃舵彁绀虹殑鍥炬爣鍚嶇О鎴栧浘鐗囬摼鎺? }),
     fit: createEditorSelectProp({
-      label: '图片填充模式',
+      label: '鍥剧墖濉厖妯″紡',
       options: [
         {
-          label: '保持宽高缩放图片，使图片的长边能完全显示出来',
+          label: '淇濇寔瀹介珮缂╂斁鍥剧墖锛屼娇鍥剧墖鐨勯暱杈硅兘瀹屽叏鏄剧ず鍑烘潵',
           value: 'contain',
         },
         {
-          label: '保持宽高缩放图片，使图片的短边能完全显示出来，裁剪长边',
+          label: '淇濇寔瀹介珮缂╂斁鍥剧墖锛屼娇鍥剧墖鐨勭煭杈硅兘瀹屽叏鏄剧ず鍑烘潵锛岃鍓暱杈?,
           value: 'cover',
         },
         {
-          label: '拉伸图片，使图片填满元素',
+          label: '鎷変几鍥剧墖锛屼娇鍥剧墖濉弧鍏冪礌',
           value: 'fill',
         },
         {
-          label: '保持图片原有尺寸',
+          label: '淇濇寔鍥剧墖鍘熸湁灏哄',
           value: 'none',
         },
         {
-          label: '取 none 或 contain 中较小的一个',
+          label: '鍙?none 鎴?contain 涓緝灏忕殑涓€涓?,
           value: 'scale-down',
         },
       ],
       defaultValue: 'fill',
     }),
     iconPrefix: createEditorInputProp({
-      label: '图标类名前缀',
-      tips: '图标类名前缀，同 Icon 组件的 class-prefix 属性',
+      label: '鍥炬爣绫诲悕鍓嶇紑',
+      tips: '鍥炬爣绫诲悕鍓嶇紑锛屽悓 Icon 缁勪欢鐨?class-prefix 灞炴€?,
     }),
-    iconSize: createEditorInputProp({ label: '加载图标和失败图标的大小' }),
+    iconSize: createEditorInputProp({ label: '鍔犺浇鍥炬爣鍜屽け璐ュ浘鏍囩殑澶у皬' }),
     lazyLoad: createEditorSwitchProp({
-      label: '是否开启图片懒加载',
-      tips: '须配合 Lazyload 组件使用',
+      label: '鏄惁寮€鍚浘鐗囨噿鍔犺浇',
+      tips: '椤婚厤鍚?Lazyload 缁勪欢浣跨敤',
     }),
-    loadingIcon: createEditorInputProp({ label: '加载时提示的图标名称或图片链接' }),
-    radius: createEditorInputProp({ label: '圆角大小', tips: '默认单位为 px' }),
-    round: createEditorSwitchProp({ label: '是否显示为圆形' }),
-    'show-error': createEditorSwitchProp({ label: '是否展示图片加载失败提示' }),
-    'show-loading': createEditorSwitchProp({ label: '是否展示图片加载中提示' }),
-    alt: createEditorInputProp({ label: '替代文本' }),
+    loadingIcon: createEditorInputProp({ label: '鍔犺浇鏃舵彁绀虹殑鍥炬爣鍚嶇О鎴栧浘鐗囬摼鎺? }),
+    radius: createEditorInputProp({ label: '鍦嗚澶у皬', tips: '榛樿鍗曚綅涓?px' }),
+    round: createEditorSwitchProp({ label: '鏄惁鏄剧ず涓哄渾褰? }),
+    'show-error': createEditorSwitchProp({ label: '鏄惁灞曠ず鍥剧墖鍔犺浇澶辫触鎻愮ず' }),
+    'show-loading': createEditorSwitchProp({ label: '鏄惁灞曠ず鍥剧墖鍔犺浇涓彁绀? }),
+    alt: createEditorInputProp({ label: '鏇夸唬鏂囨湰' }),
   },
   events: [
-    { label: '点击图片时触发', value: 'click' },
-    { label: '图片加载完毕时触发', value: 'load' },
-    { label: '图片加载失败时触发', value: 'error' },
+    { label: '鐐瑰嚮鍥剧墖鏃惰Е鍙?, value: 'click' },
+    { label: '鍥剧墖鍔犺浇瀹屾瘯鏃惰Е鍙?, value: 'load' },
+    { label: '鍥剧墖鍔犺浇澶辫触鏃惰Е鍙?, value: 'error' },
   ],
 } as VisualEditorComponent;

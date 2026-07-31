@@ -85,6 +85,7 @@ const props = defineProps<{
   schema: LowCodeGridSchema;
   rows: Record<string, unknown>[];
   loading?: boolean;
+  fill?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -108,6 +109,8 @@ type LowCodeGridEventPayload = {
 const customRowActions = computed(() => props.schema.rowActions?.actions ?? []);
 
 const tableScrollStyle = computed(() => {
+  if (props.fill) return undefined;
+
   const height = props.schema.grid.height;
   if (typeof height === 'number') {
     return { minHeight: `${height}px` };
@@ -144,6 +147,10 @@ const gridConfig = computed(() => {
 
   if (isRecord(nextConfig.treeConfig)) {
     delete nextConfig.stripe;
+  }
+
+  if (props.fill) {
+    nextConfig.height = '100%';
   }
 
   return nextConfig;

@@ -1,12 +1,12 @@
-/*
- * @Author: 卜启缘
+﻿/*
+ * @Author: 鍗滃惎缂?
  * @Date: 2021-06-01 09:45:21
  * @LastEditTime: 2021-07-13 17:15:15
- * @LastEditors: 卜启缘
- * @Description: 表单项类型 - 滑块
+ * @LastEditors: 鍗滃惎缂?
+ * @Description: 琛ㄥ崟椤圭被鍨?- 婊戝潡
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\slider\index.tsx
  */
-import { Field, Slider } from 'vant';
+import { Field, Slider } from '../../../components/VantFree';
 import { omit } from 'lodash-es';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
@@ -21,11 +21,11 @@ import {
 export default {
   key: 'slider',
   moduleName: 'baseWidgets',
-  label: '表单项类型 - 滑块',
+  label: '琛ㄥ崟椤圭被鍨?- 婊戝潡',
   preview: () => (
     <Field
       name="rate"
-      label="滑块"
+      label="婊戝潡"
       labelWidth={50}
       v-slots={{ input: () => <Slider modelValue={3} /> }}
     ></Field>
@@ -52,19 +52,19 @@ export default {
     );
   },
   props: {
-    modelValue: createEditorInputNumberProp({ label: '默认值', defaultValue: 0 }),
-    name: createEditorModelBindProp({ label: '字段绑定', defaultValue: '' }),
-    label: createEditorInputProp({ label: '输入框左侧文本', defaultValue: '滑块' }),
-    min: createEditorInputNumberProp({ label: '最小值' }),
-    max: createEditorInputNumberProp({ label: '最大值', defaultValue: 10 }),
-    size: createEditorInputNumberProp({ label: '图标大小' }),
-    range: createEditorSwitchProp({ label: '是否开启双滑块模式' }),
+    modelValue: createEditorInputNumberProp({ label: '榛樿鍊?, defaultValue: 0 }),
+    name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
+    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '婊戝潡' }),
+    min: createEditorInputNumberProp({ label: '鏈€灏忓€? }),
+    max: createEditorInputNumberProp({ label: '鏈€澶у€?, defaultValue: 10 }),
+    size: createEditorInputNumberProp({ label: '鍥炬爣澶у皬' }),
+    range: createEditorSwitchProp({ label: '鏄惁寮€鍚弻婊戝潡妯″紡' }),
     ...createFieldProps(),
   },
   resize: {
     width: true,
   },
   model: {
-    default: '绑定字段',
+    default: '缁戝畾瀛楁',
   },
 } as VisualEditorComponent;

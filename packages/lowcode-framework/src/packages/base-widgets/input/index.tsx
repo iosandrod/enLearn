@@ -1,12 +1,12 @@
-/*
- * @Author: 卜启缘
+﻿/*
+ * @Author: 鍗滃惎缂?
  * @Date: 2021-05-04 05:36:58
  * @LastEditTime: 2021-07-14 10:31:10
- * @LastEditors: 卜启缘
- * @Description: 表单项类型 - 输入框
+ * @LastEditors: 鍗滃惎缂?
+ * @Description: 琛ㄥ崟椤圭被鍨?- 杈撳叆妗?
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\input\index.tsx
  */
-import { Field } from 'vant';
+import { Field } from '../../../components/VantFree';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -14,9 +14,9 @@ import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 export default {
   key: 'input',
   moduleName: 'baseWidgets',
-  label: '表单项类型 - 输入框',
+  label: '琛ㄥ崟椤圭被鍨?- 杈撳叆妗?,
   preview: () => (
-    <Field name="用户名" label="用户名" labelWidth={50} colon placeholder="请输入用户名" />
+    <Field name="鐢ㄦ埛鍚? label="鐢ㄦ埛鍚? labelWidth={50} colon placeholder="璇疯緭鍏ョ敤鎴峰悕" />
   ),
   render: ({ styles, block, props }) => {
     const { registerRef } = useGlobalProperties();
@@ -39,20 +39,20 @@ export default {
     );
   },
   events: [
-    { label: '输入框内容变化时触发', value: 'update:model-value' },
-    { label: '输入框获得焦点时触发', value: 'focus' },
-    { label: '输入框失去焦点时触发', value: 'blur' },
-    { label: '点击清除按钮时触发', value: 'clear' },
-    { label: '点击组件时触发', value: 'click' },
-    { label: '点击输入区域时触发', value: 'click-input' },
-    { label: '点击左侧图标时触发', value: 'click-left-icon' },
-    { label: '点击右侧图标时触发', value: 'click-right-icon' },
+    { label: '杈撳叆妗嗗唴瀹瑰彉鍖栨椂瑙﹀彂', value: 'update:model-value' },
+    { label: '杈撳叆妗嗚幏寰楃劍鐐规椂瑙﹀彂', value: 'focus' },
+    { label: '杈撳叆妗嗗け鍘荤劍鐐规椂瑙﹀彂', value: 'blur' },
+    { label: '鐐瑰嚮娓呴櫎鎸夐挳鏃惰Е鍙?, value: 'clear' },
+    { label: '鐐瑰嚮缁勪欢鏃惰Е鍙?, value: 'click' },
+    { label: '鐐瑰嚮杈撳叆鍖哄煙鏃惰Е鍙?, value: 'click-input' },
+    { label: '鐐瑰嚮宸︿晶鍥炬爣鏃惰Е鍙?, value: 'click-left-icon' },
+    { label: '鐐瑰嚮鍙充晶鍥炬爣鏃惰Е鍙?, value: 'click-right-icon' },
   ],
   props: createFieldProps(),
   resize: {
     width: true,
   },
   model: {
-    default: '绑定字段',
+    default: '缁戝畾瀛楁',
   },
 } as VisualEditorComponent;

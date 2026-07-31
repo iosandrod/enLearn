@@ -1,5 +1,5 @@
-import { renderSlot, useSlots } from 'vue';
-import { Button, Field, Form } from 'vant';
+﻿import { renderSlot, useSlots } from 'vue';
+import { Button, Field, Form } from '../../../components/VantFree';
 import { compProps } from './compProps';
 import type {
   VisualEditorBlockData,
@@ -29,14 +29,14 @@ function readDesignedBlocks(value: unknown) {
 export default {
   key: 'form',
   moduleName: 'businessComponents',
-  label: '普通表单',
+  label: '鏅€氳〃鍗?,
   preview: () => (
     <Form>
-      <Field name="username" label="用户名" placeholder="用户名" />
-      <Field type="password" name="password" label="密码" placeholder="密码" />
+      <Field name="username" label="鐢ㄦ埛鍚? placeholder="鐢ㄦ埛鍚? />
+      <Field type="password" name="password" label="瀵嗙爜" placeholder="瀵嗙爜" />
       <div style="margin: 16px;">
         <Button round size="small" block type="primary">
-          提交
+          鎻愪氦
         </Button>
       </div>
     </Form>
@@ -81,7 +81,7 @@ export default {
                   <div key={String(field.field || index)}>
                     <Field
                       name={String(field.field || '')}
-                      label={String(field.label || field.field || '字段')}
+                      label={String(field.label || field.field || '瀛楁')}
                       placeholder={String(field.placeholder || '')}
                       type={resolveFieldType(field.component)}
                       required={isRequired(field.required)}
@@ -106,7 +106,7 @@ export default {
             {fields.length ? (
               <div style="margin: 16px;">
                 <Button round size="small" block type="primary">
-                  提交
+                  鎻愪氦
                 </Button>
               </div>
             ) : null}
@@ -120,8 +120,8 @@ export default {
     width: true,
   },
   events: [
-    { label: '提交表单且验证通过后触发', value: 'submit' },
-    { label: '提交表单且验证不通过后触发', value: 'failed' },
+    { label: '鎻愪氦琛ㄥ崟涓旈獙璇侀€氳繃鍚庤Е鍙?, value: 'submit' },
+    { label: '鎻愪氦琛ㄥ崟涓旈獙璇佷笉閫氳繃鍚庤Е鍙?, value: 'failed' },
   ],
   props: compProps,
 } as VisualEditorComponent;

@@ -5,25 +5,30 @@ type __VLS_Props = {
     modelValue: any;
     options?: LowCodeResolvedOption[];
     error?: string;
+    showLabel?: boolean;
+    disabled?: boolean;
+    readonly?: boolean;
 };
 declare const __VLS_export: import("vue").DefineComponent<__VLS_Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {
+    "update:modelValue": (value: any) => any;
     change: (payload: {
         field: LowCodeField;
         value: any;
         previousValue: any;
     }) => any;
-    "update:modelValue": (value: any) => any;
 }, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{
-    onChange?: ((payload: {
+    "onUpdate:modelValue"?: (value: any) => any;
+    onChange?: (payload: {
         field: LowCodeField;
         value: any;
         previousValue: any;
-    }) => any) | undefined;
-    "onUpdate:modelValue"?: ((value: any) => any) | undefined;
+    }) => any;
 }>, {
     error: string;
+    disabled: boolean;
     options: LowCodeResolvedOption[];
+    showLabel: boolean;
+    readonly: boolean;
 }, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
 declare const _default: typeof __VLS_export;
 export default _default;
-//# sourceMappingURL=LowCodeFormField.vue.d.ts.map

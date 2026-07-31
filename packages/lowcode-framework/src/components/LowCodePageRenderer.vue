@@ -133,7 +133,7 @@ const themeStyle = computed(() =>
   )
 );
 const layoutBlocks = computed(() =>
-  props.page.schema.blocks.filter((block) => !isOverlayBlock(block))
+  markLastBlockFill(props.page.schema.blocks.filter((block) => !isOverlayBlock(block)))
 );
 const pageOverlays = computed<LowCodePageOverlayBlock[]>(() => [
   ...props.page.schema.blocks.filter(isOverlayBlock),
@@ -146,6 +146,21 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isOverlayBlock(block: LowCodePageBlock): block is LowCodePageOverlayBlock {
   return block.kind === 'modal' || block.kind === 'drawer';
+}
+
+function markLastBlockFill<T extends LowCodePageBlock>(blocks: T[]) {
+  const lastIndex = blocks.length - 1;
+  return blocks.map((block, index) =>
+    index === lastIndex
+      ? {
+          ...block,
+          layout: {
+            ...(block.layout ?? {}),
+            fillRemaining: true,
+          },
+        }
+      : block
+  );
 }
 
 function clearObject(target: Record<string, unknown>) {

@@ -135,11 +135,18 @@ function normalizeArrayTableColumns(value: unknown) {
 }
 
 function normalizeArrayTableProps(rawProps: Record<string, unknown>) {
+  const rowConfig = isPlainRecord(rawProps.rowConfig) ? cloneJson(rawProps.rowConfig) : {};
+  const keyField = readString(rowConfig.keyField, readString(rawProps.rowKey, '__rowKey'));
+  const { rowKey: _rowKey, rowConfig: _rowConfig, ...restProps } = rawProps;
+
   return {
-    ...rawProps,
+    ...restProps,
     columns: normalizeArrayTableColumns(rawProps.columns),
     addText: readString(rawProps.addText, '新增行'),
-    rowKey: readString(rawProps.rowKey, '__rowKey'),
+    rowConfig: {
+      ...rowConfig,
+      keyField,
+    },
     ...(isPlainRecord(rawProps.defaultRow)
       ? { defaultRow: cloneJson(rawProps.defaultRow) }
       : {}),

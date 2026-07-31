@@ -49,6 +49,7 @@ type TablePageSchemaOptions = {
   description?: string;
   status?: 'draft' | 'published' | 'archived';
   primaryKey?: string;
+  entityCode?: string;
 };
 
 type ListRowsOptions = {
@@ -465,6 +466,16 @@ export async function inspectTablePage(
   const columns = await readTableColumns(client, table);
   const childRelations = await readChildRelations(client, table);
   const comment = await readTableComment(client, table);
+  const { rows: entityRows } = await client.query<{ code: string }>(
+    `
+      select code
+      from public.admin_entities
+      where table_name in ($1, $2)
+      order by sort_order asc, created_at asc
+      limit 1
+    `,
+    [table.fullName, table.name]
+  );
   const children: Array<
     DatabaseChildRelation & { columns: DatabaseColumn[]; title: string }
   > = [];
@@ -482,7 +493,8 @@ export async function inspectTablePage(
     columns,
     childRelations: children,
     title: tableTitle(table, comment),
-    comment
+    comment,
+    entityCode: entityRows[0]?.code
   };
 }
 
@@ -508,9 +520,10 @@ export function buildTableListPageSchema(options: TablePageSchemaOptions): LowCo
     [mainSourceKey]: {
       key: mainSourceKey,
       label: `${title}列表`,
-      serviceName: 'lowcode',
-      serviceMethod: 'listTableRows',
+      serviceName: 'admin',
+      serviceMethod: 'listItems',
       postData: {
+        ...(options.entityCode ? { entityCode: options.entityCode } : {}),
         tableName: options.table.fullName,
         limit: 300,
         orderBy: options.columns.some((column) => column.name === 'updated_at')
@@ -526,8 +539,8 @@ export function buildTableListPageSchema(options: TablePageSchemaOptions): LowCo
     dataSources[sourceKey] = {
       key: sourceKey,
       label: relation.title,
-      serviceName: 'lowcode',
-      serviceMethod: 'listTableRows',
+      serviceName: 'admin',
+      serviceMethod: 'listItems',
       postData: {
         tableName: relation.childTable.fullName,
         filters: Object.fromEntries(
@@ -552,9 +565,10 @@ export function buildTableListPageSchema(options: TablePageSchemaOptions): LowCo
     dataSources[selectedRowsSourceKey] = {
       key: selectedRowsSourceKey,
       label: '当前记录',
-      serviceName: 'lowcode',
-      serviceMethod: 'listTableRows',
+      serviceName: 'admin',
+      serviceMethod: 'listItems',
       postData: {
+        ...(options.entityCode ? { entityCode: options.entityCode } : {}),
         tableName: options.table.fullName,
         filters: { [primaryKey]: `{{ data.${selectedSourceKey}.${primaryKey} }}` },
         requiredFilters: [primaryKey],
@@ -684,7 +698,8 @@ export async function buildTableListPageSchemaFromDatabase(
     columns: inspection.columns,
     childRelations: inspection.childRelations,
     title: options.title ?? inspection.title,
-    description: options.description ?? inspection.comment
+    description: options.description ?? inspection.comment,
+    entityCode: options.entityCode ?? inspection.entityCode
   });
 }
 

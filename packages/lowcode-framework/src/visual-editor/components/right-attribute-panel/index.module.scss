@@ -121,6 +121,7 @@ $primary: #1d73d8;
   :global {
     .material-prop-form,
     .lc-form,
+    .lc-form > .vxe-form--wrapper,
     .lc-form-grid,
     .lc-form-layout {
       display: grid;

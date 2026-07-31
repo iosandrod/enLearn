@@ -17,7 +17,7 @@ import {
 
 function normalizeStatus(value: unknown) {
   const status = readString(value);
-  return ['primary', 'success', 'warning', 'danger', 'info'].includes(status)
+  return ['primary', 'success', 'warning', 'error', 'danger', 'info'].includes(status)
     ? (status as LowCodeButtonGroupAction['status'])
     : undefined;
 }
@@ -27,6 +27,13 @@ function normalizeType(value: unknown) {
   return ['submit', 'reset', 'button'].includes(type)
     ? (type as LowCodeButtonGroupAction['type'])
     : 'button';
+}
+
+function normalizeMode(value: unknown) {
+  const mode = readString(value);
+  return mode === 'text' || mode === 'button'
+    ? (mode as LowCodeButtonGroupAction['mode'])
+    : undefined;
 }
 
 function normalizeDirectives(value: unknown): LowCodeRuntimeDirective[] {
@@ -62,17 +69,27 @@ function normalizeButton(
   const route = readString(row.route);
   const eventName = readString(row.eventName);
   const icon = readString(row.icon);
+  const prefixIcon = readString(row.prefixIcon);
+  const suffixIcon = readString(row.suffixIcon);
+  const mode = normalizeMode(row.mode) ?? (readBoolean(row.text, false) ? 'text' : undefined);
 
   return {
     code,
     label,
     type: normalizeType(row.type),
     ...(status ? { status } : {}),
+    ...(mode ? { mode } : {}),
     ...(route ? { route } : {}),
     ...(eventName ? { eventName } : {}),
     ...(icon ? { icon } : {}),
+    ...(prefixIcon ? { prefixIcon } : {}),
+    ...(suffixIcon ? { suffixIcon } : {}),
     ...(typeof row.disabled !== 'undefined' ? { disabled: readBoolean(row.disabled, false) } : {}),
-    ...(typeof row.plain !== 'undefined' ? { plain: readBoolean(row.plain, false) } : {}),
+    ...(typeof row.round !== 'undefined' ? { round: readBoolean(row.round, false) } : {}),
+    ...(typeof row.circle !== 'undefined' ? { circle: readBoolean(row.circle, false) } : {}),
+    ...(typeof row.showDropdownIcon !== 'undefined'
+      ? { showDropdownIcon: readBoolean(row.showDropdownIcon, true) }
+      : {}),
     ...(typeof row.text !== 'undefined' ? { text: readBoolean(row.text, false) } : {}),
     ...(directives.length ? { directives } : {}),
     ...(children.length ? { children } : {}),

@@ -1,3 +1,5 @@
+import type { VxeButtonProps } from 'vxe-pc-ui';
+
 export type LowCodeOption = {
   label: string;
   value: string | number;
@@ -191,9 +193,36 @@ export type LowCodeAction = {
   directives?: LowCodeRuntimeDirective[];
 };
 
-export type LowCodeButtonGroupAction = LowCodeAction & {
-  icon?: string;
-  plain?: boolean;
+export type LowCodeButtonGroupAction = Omit<LowCodeAction, 'status' | 'type'> &
+  Pick<
+    Partial<VxeButtonProps>,
+    | 'size'
+    | 'type'
+    | 'mode'
+    | 'className'
+    | 'name'
+    | 'routerLink'
+    | 'permissionCode'
+    | 'title'
+    | 'content'
+    | 'placement'
+    | 'status'
+    | 'icon'
+    | 'prefixIcon'
+    | 'suffixIcon'
+    | 'round'
+    | 'circle'
+    | 'disabled'
+    | 'loading'
+    | 'trigger'
+    | 'align'
+    | 'showDropdownIcon'
+    | 'destroyOnClose'
+    | 'transfer'
+    | 'popupConfig'
+  > & {
+  type?: LowCodeAction['type'] | VxeButtonProps['type'];
+  status?: LowCodeAction['status'] | VxeButtonProps['status'];
   text?: boolean;
   children?: LowCodeButtonGroupAction[];
 };

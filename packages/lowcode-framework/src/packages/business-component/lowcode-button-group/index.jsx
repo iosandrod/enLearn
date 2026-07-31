@@ -1,3 +1,5 @@
+import { h } from 'vue';
+import { VxeButton } from 'vxe-pc-ui';
 import { createEditorInputProp, createEditorSelectProp, createEditorTableProp, } from '../../../visual-editor/visual-editor.props';
 const defaultButtons = [
     {
@@ -43,6 +45,7 @@ const buttonStatusOptions = [
     { label: '主要', value: 'primary' },
     { label: '成功', value: 'success' },
     { label: '警告', value: 'warning' },
+    { label: '错误', value: 'error' },
     { label: '危险', value: 'danger' },
     { label: '信息', value: 'info' },
 ];
@@ -51,56 +54,94 @@ const buttonTypeOptions = [
     { label: '提交', value: 'submit' },
     { label: '重置', value: 'reset' },
 ];
+const buttonModeOptions = [
+    { label: '按钮', value: 'button' },
+    { label: '文本', value: 'text' },
+];
+const vxeButtonPropKeys = [
+    'size',
+    'type',
+    'mode',
+    'className',
+    'name',
+    'routerLink',
+    'permissionCode',
+    'title',
+    'content',
+    'placement',
+    'status',
+    'icon',
+    'prefixIcon',
+    'suffixIcon',
+    'round',
+    'circle',
+    'disabled',
+    'loading',
+    'trigger',
+    'align',
+    'showDropdownIcon',
+    'destroyOnClose',
+    'transfer',
+    'popupConfig',
+];
 function readButtons(value) {
     return Array.isArray(value) && value.length ? value : defaultButtons;
 }
 function readRootButtons(value) {
     return readButtons(value).filter(Boolean);
 }
-function buttonTone(status) {
-    if (status === 'primary')
-        return { background: '#1d73d8', borderColor: '#1d73d8', color: '#fff' };
-    if (status === 'success')
-        return { background: '#16a34a', borderColor: '#16a34a', color: '#fff' };
-    if (status === 'warning')
-        return { background: '#d97706', borderColor: '#d97706', color: '#fff' };
-    if (status === 'danger')
-        return { background: '#dc2626', borderColor: '#dc2626', color: '#fff' };
-    return { background: '#fff', borderColor: '#cbd5e1', color: '#334155' };
+function readButtonContent(button) {
+    return button.content ?? button.label ?? button.code ?? '按钮';
+}
+function resolveDropdownOptions(children) {
+    return children.map((child, index) => ({
+        ...resolveButtonProps(child),
+        name: child.name ?? child.code ?? index,
+        content: readButtonContent(child),
+    }));
+}
+function resolveButtonProps(button) {
+    const buttonProps = {};
+    vxeButtonPropKeys.forEach((key) => {
+        const value = button[key];
+        if (typeof value !== 'undefined' && value !== '') {
+            buttonProps[key] = value;
+        }
+    });
+    buttonProps.name = button.name ?? button.code;
+    buttonProps.content = readButtonContent(button);
+    buttonProps.mode = button.mode ?? (button.text ? 'text' : 'button');
+    if (button.icon && !button.prefixIcon) {
+        buttonProps.prefixIcon = button.icon;
+    }
+    const children = Array.isArray(button.children) ? button.children : [];
+    if (children.length) {
+        buttonProps.options = resolveDropdownOptions(children);
+        buttonProps.showDropdownIcon = button.showDropdownIcon ?? true;
+    }
+    return buttonProps;
 }
 function renderButton(button, index) {
-    const children = Array.isArray(button.children) ? button.children : [];
-    return (<span key={button.code || index} style={{
-            display: 'inline-flex',
-            minHeight: '30px',
-            padding: '0 11px',
-            border: `1px solid ${buttonTone(button.status).borderColor}`,
-            borderRadius: '4px',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '12px',
-            opacity: button.disabled ? 0.48 : 1,
-            ...buttonTone(button.status),
-        }}>
-      {button.label || button.code || '按钮'}
-      {children.length ? <i class="ri-arrow-down-s-line" aria-hidden="true"/> : null}
-    </span>);
+    return h(VxeButton, {
+        key: button.code || index,
+        ...resolveButtonProps(button),
+    });
 }
 export default {
     key: 'lowcode-button-group',
     moduleName: 'businessComponents',
     label: '按钮组',
     preview: () => (<div style={{
-            width: '230px',
-            border: '1px solid #dcdfe6',
-            borderRadius: '6px',
-            padding: '10px',
-            background: '#fff',
-        }}>
-      <div style={{ fontWeight: 600, marginBottom: '8px' }}>按钮组</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-        {defaultButtons.map(renderButton)}
-      </div>
+        width: '230px',
+        border: '1px solid #dcdfe6',
+        borderRadius: '6px',
+        padding: '10px',
+        background: '#fff',
+    }}>
+        <div style={{ fontWeight: 600, marginBottom: '8px' }}>按钮组</div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {defaultButtons.map(renderButton)}
+        </div>
     </div>),
     render({ props, styles }) {
         return () => {
@@ -113,27 +154,23 @@ export default {
                         ? 'space-between'
                         : 'flex-start';
             return (<div style={{
-                    ...styles,
-                    width: '100%',
-                    display: 'block',
-                    border: '1px solid #dcdfe6',
-                    borderRadius: '6px',
-                    background: '#fff',
-                    padding: '12px',
-                }}>
-          {props.title ? (<div style={{ fontWeight: 600, marginBottom: '8px' }}>{props.title}</div>) : null}
-          {props.description ? (<div style={{ color: '#64748b', fontSize: '12px', marginBottom: '10px' }}>
-              {props.description}
-            </div>) : null}
-          <div style={{
+                ...styles,
+                width: '100%',
+                display: 'block',
+                border: '1px solid #dcdfe6',
+                borderRadius: '6px',
+                background: '#fff',
+                padding: '12px',
+            }}>
+                <div style={{
                     display: 'flex',
                     flexWrap: 'wrap',
                     gap: `${props.gap || 8}px`,
                     justifyContent,
                 }}>
-            {buttons.map(renderButton)}
-          </div>
-        </div>);
+                    {buttons.map(renderButton)}
+                </div>
+            </div>);
         };
     },
     showStyleConfig: true,
@@ -181,12 +218,22 @@ export default {
                         width: 96,
                         options: buttonTypeOptions,
                     },
+                    {
+                        label: '模式',
+                        field: 'mode',
+                        component: 'vxe-select',
+                        width: 96,
+                        options: buttonModeOptions,
+                    },
                     { label: '路由', field: 'route' },
                     { label: '事件名', field: 'eventName' },
                     { label: '图标', field: 'icon' },
+                    { label: '前缀图标', field: 'prefixIcon' },
+                    { label: '后缀图标', field: 'suffixIcon' },
                     { label: '禁用', field: 'disabled', component: 'vxe-switch', width: 72 },
-                    { label: '朴素', field: 'plain', component: 'vxe-switch', width: 72 },
-                    { label: '文本', field: 'text', component: 'vxe-switch', width: 72 },
+                    { label: '圆角', field: 'round', component: 'vxe-switch', width: 72 },
+                    { label: '圆形', field: 'circle', component: 'vxe-switch', width: 72 },
+                    { label: '下拉图标', field: 'showDropdownIcon', component: 'vxe-switch', width: 92 },
                     {
                         label: '指令 JSON',
                         field: 'directivesJson',

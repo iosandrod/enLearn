@@ -1,3 +1,6 @@
+import { h } from 'vue';
+import { VxeButton } from 'vxe-pc-ui';
+import type { VxeButtonProps } from 'vxe-pc-ui';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
   createEditorInputProp,
@@ -5,16 +8,14 @@ import {
   createEditorTableProp,
 } from '../../../visual-editor/visual-editor.props';
 
-type ButtonGroupItem = {
+type ButtonGroupItem = Omit<Partial<VxeButtonProps>, 'options'> & {
   code?: string;
   label?: string;
-  status?: string;
-  type?: string;
   route?: string;
   eventName?: string;
-  disabled?: boolean;
   directivesJson?: string;
   children?: ButtonGroupItem[];
+  text?: boolean;
 };
 
 const defaultButtons: ButtonGroupItem[] = [
@@ -49,7 +50,7 @@ const defaultButtons: ButtonGroupItem[] = [
       },
     ],
   },
-] as unknown as ButtonGroupItem[];
+];
 
 const alignOptions = [
   { label: '左对齐', value: 'left' },
@@ -63,6 +64,7 @@ const buttonStatusOptions = [
   { label: '主要', value: 'primary' },
   { label: '成功', value: 'success' },
   { label: '警告', value: 'warning' },
+  { label: '错误', value: 'error' },
   { label: '危险', value: 'danger' },
   { label: '信息', value: 'info' },
 ];
@@ -73,6 +75,38 @@ const buttonTypeOptions = [
   { label: '重置', value: 'reset' },
 ];
 
+const buttonModeOptions = [
+  { label: '按钮', value: 'button' },
+  { label: '文本', value: 'text' },
+];
+
+const vxeButtonPropKeys = [
+  'size',
+  'type',
+  'mode',
+  'className',
+  'name',
+  'routerLink',
+  'permissionCode',
+  'title',
+  'content',
+  'placement',
+  'status',
+  'icon',
+  'prefixIcon',
+  'suffixIcon',
+  'round',
+  'circle',
+  'disabled',
+  'loading',
+  'trigger',
+  'align',
+  'showDropdownIcon',
+  'destroyOnClose',
+  'transfer',
+  'popupConfig',
+] as const satisfies readonly (keyof VxeButtonProps)[];
+
 function readButtons(value: unknown) {
   return Array.isArray(value) && value.length ? (value as ButtonGroupItem[]) : defaultButtons;
 }
@@ -81,36 +115,50 @@ function readRootButtons(value: unknown) {
   return readButtons(value).filter(Boolean);
 }
 
-function buttonTone(status?: string) {
-  if (status === 'primary') return { background: '#1d73d8', borderColor: '#1d73d8', color: '#fff' };
-  if (status === 'success') return { background: '#16a34a', borderColor: '#16a34a', color: '#fff' };
-  if (status === 'warning') return { background: '#d97706', borderColor: '#d97706', color: '#fff' };
-  if (status === 'danger') return { background: '#dc2626', borderColor: '#dc2626', color: '#fff' };
-  return { background: '#fff', borderColor: '#cbd5e1', color: '#334155' };
+function readButtonContent(button: ButtonGroupItem) {
+  return button.content ?? button.label ?? button.code ?? '按钮';
+}
+
+function resolveDropdownOptions(children: ButtonGroupItem[]) {
+  return children.map((child, index) => ({
+    ...resolveButtonProps(child),
+    name: child.name ?? child.code ?? index,
+    content: readButtonContent(child),
+  }));
+}
+
+function resolveButtonProps(button: ButtonGroupItem): VxeButtonProps {
+  const buttonProps: Partial<VxeButtonProps> = {};
+
+  vxeButtonPropKeys.forEach((key) => {
+    const value = button[key];
+    if (typeof value !== 'undefined' && value !== '') {
+      (buttonProps as Record<string, unknown>)[key] = value;
+    }
+  });
+
+  buttonProps.name = button.name ?? button.code;
+  buttonProps.content = readButtonContent(button);
+  buttonProps.mode = button.mode ?? (button.text ? 'text' : 'button');
+
+  if (button.icon && !button.prefixIcon) {
+    buttonProps.prefixIcon = button.icon;
+  }
+
+  const children = Array.isArray(button.children) ? button.children : [];
+  if (children.length) {
+    buttonProps.options = resolveDropdownOptions(children);
+    buttonProps.showDropdownIcon = button.showDropdownIcon ?? true;
+  }
+
+  return buttonProps;
 }
 
 function renderButton(button: ButtonGroupItem, index: number) {
-  const children = Array.isArray(button.children) ? button.children : [];
-  return (
-    <span
-      key={button.code || index}
-      style={{
-        display: 'inline-flex',
-        minHeight: '30px',
-        padding: '0 11px',
-        border: `1px solid ${buttonTone(button.status).borderColor}`,
-        borderRadius: '4px',
-        alignItems: 'center',
-        gap: '6px',
-        fontSize: '12px',
-        opacity: button.disabled ? 0.48 : 1,
-        ...buttonTone(button.status),
-      }}
-    >
-      {button.label || button.code || '按钮'}
-      {children.length ? <i class="ri-arrow-down-s-line" aria-hidden="true" /> : null}
-    </span>
-  );
+  return h(VxeButton as any, {
+    key: button.code || index,
+    ...resolveButtonProps(button),
+  });
 }
 
 export default {
@@ -157,14 +205,6 @@ export default {
             padding: '12px',
           }}
         >
-          {props.title ? (
-            <div style={{ fontWeight: 600, marginBottom: '8px' }}>{props.title}</div>
-          ) : null}
-          {props.description ? (
-            <div style={{ color: '#64748b', fontSize: '12px', marginBottom: '10px' }}>
-              {props.description}
-            </div>
-          ) : null}
           <div
             style={{
               display: 'flex',
@@ -224,12 +264,22 @@ export default {
             width: 96,
             options: buttonTypeOptions,
           },
+          {
+            label: '模式',
+            field: 'mode',
+            component: 'vxe-select',
+            width: 96,
+            options: buttonModeOptions,
+          },
           { label: '路由', field: 'route' },
           { label: '事件名', field: 'eventName' },
           { label: '图标', field: 'icon' },
+          { label: '前缀图标', field: 'prefixIcon' },
+          { label: '后缀图标', field: 'suffixIcon' },
           { label: '禁用', field: 'disabled', component: 'vxe-switch', width: 72 },
-          { label: '朴素', field: 'plain', component: 'vxe-switch', width: 72 },
-          { label: '文本', field: 'text', component: 'vxe-switch', width: 72 },
+          { label: '圆角', field: 'round', component: 'vxe-switch', width: 72 },
+          { label: '圆形', field: 'circle', component: 'vxe-switch', width: 72 },
+          { label: '下拉图标', field: 'showDropdownIcon', component: 'vxe-switch', width: 92 },
           {
             label: '指令 JSON',
             field: 'directivesJson',

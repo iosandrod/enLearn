@@ -4,7 +4,6 @@ import {
   jsonPropField,
   option,
   propField,
-  subFormPropField,
   switchPropField,
 } from '../helpers';
 
@@ -84,6 +83,7 @@ const buttonStatusOptions = [
   option('主要', 'primary'),
   option('成功', 'success'),
   option('警告', 'warning'),
+  option('错误', 'error'),
   option('危险', 'danger'),
   option('信息', 'info'),
 ];
@@ -92,6 +92,11 @@ const buttonTypeOptions = [
   option('普通按钮', 'button'),
   option('提交', 'submit'),
   option('重置', 'reset'),
+];
+
+const buttonModeOptions = [
+  option('按钮', 'button'),
+  option('文本', 'text'),
 ];
 
 const runtimeContainerOptions = [
@@ -220,12 +225,22 @@ const buttonColumns = [
     width: 96,
     options: buttonTypeOptions,
   },
+  {
+    field: 'mode',
+    title: '模式',
+    component: 'vxe-select' as const,
+    width: 96,
+    options: buttonModeOptions,
+  },
   { field: 'route', title: '路由', minWidth: 140, placeholder: '/dashboard/users' },
   { field: 'eventName', title: '事件名', minWidth: 160, placeholder: 'buttonGroup.click' },
   { field: 'icon', title: '图标', minWidth: 110, placeholder: 'ri-add-line' },
+  { field: 'prefixIcon', title: '前缀图标', minWidth: 120, placeholder: 'ri-add-line' },
+  { field: 'suffixIcon', title: '后缀图标', minWidth: 120, placeholder: 'ri-arrow-down-s-line' },
   { field: 'disabled', title: '禁用', component: 'vxe-switch' as const, width: 72 },
-  { field: 'plain', title: '朴素', component: 'vxe-switch' as const, width: 72 },
-  { field: 'text', title: '文本', component: 'vxe-switch' as const, width: 72 },
+  { field: 'round', title: '圆角', component: 'vxe-switch' as const, width: 72 },
+  { field: 'circle', title: '圆形', component: 'vxe-switch' as const, width: 72 },
+  { field: 'showDropdownIcon', title: '下拉图标', component: 'vxe-switch' as const, width: 92 },
   {
     field: 'directivesJson',
     title: '指令 JSON',
@@ -336,35 +351,17 @@ export default defineMaterialPropForms([
         ],
         help: '维护表格列配置。复杂 formatter 仍可填 JSON 字符串。',
       }),
-      subFormPropField({
-        field: 'gridOptions',
-        path: 'gridOptions',
-        label: 'VxeGrid 配置',
-        defaultValue: {
-          border: true,
-          stripe: true,
-          showOverflow: true,
-          rowConfig: { keyField: 'id' },
-        },
-        fields: [
-          switchPropField({ field: 'border', label: '边框', defaultValue: true }),
-          switchPropField({ field: 'stripe', label: '斑马纹', defaultValue: true }),
-          propField({
-            field: 'showOverflow',
-            label: '单元格溢出',
-            component: 'lc-option-select',
-            valueKind: 'raw',
-            defaultValue: true,
-            options: [option('开启', true), ...gridOverflowOptions],
-          }),
-          propField({
-            field: 'rowConfig.keyField',
-            label: '行主键字段',
-            defaultValue: 'id',
-          }),
-          switchPropField({ field: 'columnConfig.resizable', label: '列宽可拖拽', defaultValue: true }),
-        ],
-        help: '维护常用 VxeGrid 对象配置。',
+      propField({
+        field: 'rowConfig.keyField',
+        path: 'rowConfig.keyField',
+        label: 'rowConfig.keyField',
+        defaultValue: 'id',
+      }),
+      switchPropField({
+        field: 'columnConfig.resizable',
+        path: 'columnConfig.resizable',
+        label: 'columnConfig.resizable',
+        defaultValue: true,
       }),
       arrayTablePropField({
         field: 'gridEvents',
@@ -406,8 +403,10 @@ export default defineMaterialPropForms([
           eventName: '',
           icon: '',
           disabled: false,
-          plain: false,
-          text: false,
+          mode: 'button',
+          round: false,
+          circle: false,
+          showDropdownIcon: true,
           directivesJson: [],
         },
         columns: buttonColumns,
@@ -435,8 +434,10 @@ export default defineMaterialPropForms([
           eventName: '',
           icon: '',
           disabled: false,
-          plain: false,
-          text: false,
+          mode: 'button',
+          round: false,
+          circle: false,
+          showDropdownIcon: true,
           directivesJson: [],
           children: [],
         },
@@ -593,6 +594,8 @@ export default defineMaterialPropForms([
           { field: 'title', title: '标题', minWidth: 110, placeholder: '基础信息' },
           { field: 'name', title: '标识', minWidth: 96, placeholder: 'basic' },
           { field: 'icon', title: '图标', minWidth: 96, placeholder: 'ri-user-line' },
+  { field: 'prefixIcon', title: '前缀图标', minWidth: 120, placeholder: 'ri-add-line' },
+  { field: 'suffixIcon', title: '后缀图标', minWidth: 120, placeholder: 'ri-arrow-down-s-line' },
           { field: 'titleWidth', title: '标题宽度', width: 88, placeholder: '120' },
           { field: 'preload', title: '预加载', component: 'vxe-switch', width: 72 },
         ],

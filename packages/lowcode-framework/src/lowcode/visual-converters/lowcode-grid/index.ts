@@ -21,6 +21,55 @@ function normalizeGridOptions(value: unknown) {
   return isPlainRecord(value) ? value : {};
 }
 
+const vxeGridOptionKeys = [
+  'border',
+  'stripe',
+  'showOverflow',
+  'showHeaderOverflow',
+  'showFooterOverflow',
+  'height',
+  'maxHeight',
+  'size',
+  'loading',
+  'round',
+  'showHeader',
+  'showFooter',
+  'autoResize',
+  'syncResize',
+  'rowConfig',
+  'columnConfig',
+  'sortConfig',
+  'filterConfig',
+  'pagerConfig',
+  'toolbarConfig',
+  'proxyConfig',
+  'editConfig',
+  'checkboxConfig',
+  'radioConfig',
+  'treeConfig',
+  'expandConfig',
+] as const;
+
+function normalizeVisualGridProps(props: Record<string, unknown>) {
+  const legacyOptions = normalizeGridOptions(props.gridOptions);
+  const gridProps: Record<string, unknown> = { ...legacyOptions };
+
+  vxeGridOptionKeys.forEach((key) => {
+    if (typeof props[key] !== 'undefined') {
+      gridProps[key] = props[key];
+    }
+  });
+
+  gridProps.columns = props.columns ?? legacyOptions.columns ?? [];
+
+  return gridProps;
+}
+
+function toRuntimeGridOptions(gridProps: Record<string, unknown>) {
+  const { columns: _columns, data: _data, gridOptions: _gridOptions, ...options } = gridProps;
+  return options;
+}
+
 function normalizeRuntimeDirectives(value: unknown): LowCodeRuntimeDirective[] {
   const rows = Array.isArray(value)
     ? value
@@ -97,30 +146,35 @@ const converter: VisualToLowCodeConverter = {
     title: '数据列表',
     sourceKey: 'records',
     serviceName: 'admin',
-    serviceMethod: 'listUsers',
-    postDataJson: '{}',
+    serviceMethod: 'listItems',
+    postDataJson: '{\n  "entityCode": "users"\n}',
     showRowActions: true,
     columns: [],
-    gridOptions: {},
+    border: true,
+    stripe: true,
+    showOverflow: true,
+    height: 360,
     gridEvents: [],
     rowActions: [],
   },
   validate(block) {
     const props = readVisualBlockProps(block);
-    return normalizeRows(props.columns).length ? [] : ['grid requires at least one column'];
+    const gridProps = normalizeVisualGridProps(props);
+    return normalizeRows(gridProps.columns).length ? [] : ['grid requires at least one column'];
   },
   toRuntimeBlock(block, context) {
     const props = readVisualBlockProps(block);
+    const gridProps = normalizeVisualGridProps(props);
     const sourceKey = readString(props.sourceKey, 'records');
     const serviceName = readString(props.serviceName, 'admin');
-    const serviceMethod = readString(props.serviceMethod, 'listUsers');
+    const serviceMethod = readString(props.serviceMethod, 'listItems');
     const saveMethod = readString(props.saveMethod);
     const deleteMethod = readString(props.deleteMethod);
     const postData = readJsonObject(props.postDataJson, {});
-    const columns = normalizeRows(props.columns).map(normalizeColumn).filter(isDefined);
+    const columns = normalizeRows(gridProps.columns).map(normalizeColumn).filter(isDefined);
     const showRowActions = readBoolean(props.showRowActions, true);
     const rowActions = normalizeGridRowActions(props.rowActions);
-    const gridOptions = normalizeGridOptions(props.gridOptions);
+    const gridOptions = toRuntimeGridOptions(gridProps);
     const rowConfig = isPlainRecord(gridOptions.rowConfig) ? gridOptions.rowConfig : {};
     const columnConfig = isPlainRecord(gridOptions.columnConfig) ? gridOptions.columnConfig : {};
     const { events, eventNames } = normalizeGridEvents(props.gridEvents);

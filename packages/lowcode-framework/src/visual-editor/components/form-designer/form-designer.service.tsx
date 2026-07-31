@@ -239,6 +239,16 @@ function readArrayTableProps(value: unknown) {
   return isRecord(value) ? value : {};
 }
 
+function readArrayTableRowConfig(props: Record<string, unknown>) {
+  const rowConfig = isRecord(props.rowConfig) ? cloneDeep(props.rowConfig) : {};
+  const keyField = readString(rowConfig.keyField, readString(props.rowKey, '__rowKey'));
+
+  return {
+    ...rowConfig,
+    keyField,
+  };
+}
+
 function readFieldProps(row: Record<string, unknown>) {
   const objectProps = isRecord(row.props) ? cloneDeep(row.props) : {};
   const jsonProps = parseJsonObject(row.propsJson) ?? {};
@@ -307,7 +317,7 @@ function createFieldBlock(field: FormDesignerField, index: number) {
     block.props.__lowcodeComponent = 'lc-array-table';
     block.props.columns = normalizeArrayTableColumns(fieldProps.columns);
     block.props.addText = readString(fieldProps.addText, '新增行');
-    block.props.rowKey = readString(fieldProps.rowKey, '__rowKey');
+    block.props.rowConfig = readArrayTableRowConfig(fieldProps);
 
     if (isRecord(fieldProps.defaultRow)) {
       block.props.defaultRow = cloneDeep(fieldProps.defaultRow);
@@ -461,7 +471,7 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
     result.props = {
       columns: normalizeArrayTableColumns(props.columns),
       addText: readString(props.addText, '新增行'),
-      rowKey: readString(props.rowKey, '__rowKey'),
+      rowConfig: readArrayTableRowConfig(props),
       ...(isRecord(props.defaultRow) ? { defaultRow: cloneDeep(props.defaultRow) } : {}),
     };
     result.propsJson = stringifyFieldProps(result.props);
