@@ -1,53 +1,32 @@
 import type { AppAuthPayload } from './useAuthState';
 
 type OAuthProvider = 'github';
+export type DevTestUser = {
+  id: string;
+  name: string;
+  role: string;
+  title: string;
+  email: string;
+};
+
+type AdminUserRow = {
+  id?: unknown;
+  user_id?: unknown;
+  email?: unknown;
+  full_name?: unknown;
+  nickname?: unknown;
+  name?: unknown;
+  app_role_names?: unknown;
+  role_names?: unknown;
+};
 
 const DEV_AUTO_LOGIN_CREDENTIALS = {
-  email: '1151685410@qq.com',
-  password: 'Admin123456!'
+  email: 'admin',
+  password: '123456'
 } as const;
-const ACCESS_TOKEN_KEY = 'enlearn_access_token';
+const ADMIN_LOGIN_ALIAS = 'admin';
+const ADMIN_LOGIN_EMAIL = '1151685410@qq.com';
 const DEV_TEST_USER_KEY = 'enlearn_dev_test_user';
-
-export const DEV_TEST_USERS = [
-  {
-    id: 'u_alice',
-    name: 'Alice',
-    role: '申请人',
-    title: '市场负责人',
-    email: 'alice.approval.test@enlearn.local'
-  },
-  {
-    id: 'u_ben',
-    name: 'Ben',
-    role: '财务',
-    title: '财务审批',
-    email: 'ben.approval.test@enlearn.local'
-  },
-  {
-    id: 'u_chen',
-    name: 'Chen',
-    role: '经理',
-    title: '部门经理',
-    email: 'chen.approval.test@enlearn.local'
-  },
-  {
-    id: 'u_dana',
-    name: 'Dana',
-    role: '法务',
-    title: '法务复核',
-    email: 'dana.approval.test@enlearn.local'
-  },
-  {
-    id: 'u_evan',
-    name: 'Evan',
-    role: '运营',
-    title: '运营负责人',
-    email: 'evan.approval.test@enlearn.local'
-  }
-] as const;
-
-export type DevTestUser = (typeof DEV_TEST_USERS)[number];
 
 let initPromise: Promise<void> | null = null;
 
@@ -55,9 +34,12 @@ function shouldUseDevAutoLogin() {
   return import.meta.env.DEV;
 }
 
-function hasStoredAccessToken() {
-  if (import.meta.server) return false;
-  return Boolean(localStorage.getItem(ACCESS_TOKEN_KEY));
+function normalizeLoginEmail(email: string) {
+  return email.trim().toLowerCase() === ADMIN_LOGIN_ALIAS ? ADMIN_LOGIN_EMAIL : email.trim();
+}
+
+function isDevAutoLoginUser(email?: string | null) {
+  return email?.trim().toLowerCase() === ADMIN_LOGIN_EMAIL;
 }
 
 function applyAuthPayload(payload: AppAuthPayload) {
@@ -68,6 +50,7 @@ function applyAuthPayload(payload: AppAuthPayload) {
   accounts.value = Array.isArray(payload.accounts) ? payload.accounts : [];
   session.value = payload.session;
   ready.value = true;
+  ensureCurrentUserTestOption();
 }
 
 function applyDevTestUser(testUser: DevTestUser) {
@@ -96,10 +79,61 @@ function applyDevTestUser(testUser: DevTestUser) {
   ready.value = true;
 }
 
+function toDevTestUser(row: AdminUserRow, index: number): DevTestUser | null {
+  const id = readOptionalString(row.user_id ?? row.id);
+  if (!isUuid(id)) return null;
+
+  const email = readOptionalString(row.email);
+  const name =
+    readOptionalString(row.full_name ?? row.nickname ?? row.name) ||
+    (email ? email.split('@')[0] : `用户 ${index + 1}`);
+  const role = readOptionalString(row.role_names ?? row.app_role_names) || '审批用户';
+
+  return {
+    id,
+    name,
+    role,
+    title: role,
+    email: email || `${id}@local`
+  };
+}
+
+function currentUserAsTestOption(): DevTestUser | null {
+  const { user, profile } = useAuthState();
+  if (!user.value?.id || !isUuid(user.value.id)) return null;
+
+  const profileRecord = profile.value ?? {};
+  const email = user.value.email ?? readOptionalString(profileRecord.email);
+  const name =
+    readOptionalString(profileRecord.name ?? profileRecord.full_name ?? user.value.user_metadata?.name) ||
+    (email ? email.split('@')[0] : '当前用户');
+  const title =
+    readOptionalString(profileRecord.title ?? profileRecord.role ?? user.value.role) ||
+    '当前登录用户';
+
+  return {
+    id: user.value.id,
+    name,
+    role: title,
+    title,
+    email: email || `${user.value.id}@local`
+  };
+}
+
+function ensureCurrentUserTestOption() {
+  if (import.meta.server || !shouldUseDevAutoLogin()) return;
+  const devTestUsers = useState<DevTestUser[]>('auth-dev-test-users', () => []);
+  const current = currentUserAsTestOption();
+  if (!current) return;
+  if (devTestUsers.value.some((item) => item.id === current.id)) return;
+  devTestUsers.value = [current, ...devTestUsers.value];
+}
+
 function restoreDevTestUser() {
   if (import.meta.server || !shouldUseDevAutoLogin()) return;
   const savedUserId = window.localStorage.getItem(DEV_TEST_USER_KEY);
-  const testUser = DEV_TEST_USERS.find((item) => item.id === savedUserId);
+  const devTestUsers = useState<DevTestUser[]>('auth-dev-test-users', () => []);
+  const testUser = devTestUsers.value.find((item) => item.id === savedUserId);
   if (testUser) applyDevTestUser(testUser);
 }
 
@@ -144,12 +178,16 @@ function readOAuthHash() {
 
 export function useAuth() {
   const { user, profile, permissions, accounts, session, ready } = useAuthState();
+  const devTestUsers = useState<DevTestUser[]>('auth-dev-test-users', () => []);
 
   async function runInit(force = false) {
     if (import.meta.server) return;
-    if (ready.value && !force && (user.value || !shouldUseDevAutoLogin())) return;
+    if (ready.value && !force) {
+      if (!shouldUseDevAutoLogin() && user.value) return;
+      if (shouldUseDevAutoLogin() && isDevAutoLoginUser(user.value?.email)) return;
+    }
 
-    if (!user.value && shouldUseDevAutoLogin() && !hasStoredAccessToken()) {
+    if (shouldUseDevAutoLogin() && !isDevAutoLoginUser(user.value?.email)) {
       try {
         await signInWithPassword(DEV_AUTO_LOGIN_CREDENTIALS);
         restoreDevTestUser();
@@ -196,7 +234,10 @@ export function useAuth() {
   }) {
     const payload = await $fetch<AppAuthPayload>('/api/auth/signin', {
       method: 'POST',
-      body: credentials
+      body: {
+        ...credentials,
+        email: normalizeLoginEmail(credentials.email)
+      }
     });
     applyAuthPayload(payload);
     restoreDevTestUser();
@@ -244,10 +285,27 @@ export function useAuth() {
 
   function switchDevTestUser(userId: string) {
     if (!shouldUseDevAutoLogin()) return;
-    const testUser = DEV_TEST_USERS.find((item) => item.id === userId);
+    const testUser = devTestUsers.value.find((item) => item.id === userId);
     if (!testUser) return;
     window.localStorage.setItem(DEV_TEST_USER_KEY, testUser.id);
     applyDevTestUser(testUser);
+  }
+
+  function setDevTestUsers(rows: AdminUserRow[]) {
+    if (!shouldUseDevAutoLogin()) return;
+    const normalized = rows
+      .map((row, index) => toDevTestUser(row, index))
+      .filter((row): row is DevTestUser => Boolean(row));
+    const current = currentUserAsTestOption();
+    const byId = new Map<string, DevTestUser>();
+    for (const item of [...(current ? [current] : []), ...normalized]) {
+      byId.set(item.id, item);
+    }
+
+    devTestUsers.value = Array.from(byId.values());
+    const savedUserId = import.meta.server ? '' : window.localStorage.getItem(DEV_TEST_USER_KEY);
+    const savedUser = devTestUsers.value.find((item) => item.id === savedUserId);
+    if (savedUser) applyDevTestUser(savedUser);
   }
 
   async function signOut() {
@@ -274,8 +332,17 @@ export function useAuth() {
     signUp,
     signInWithOAuth,
     completeOAuthRedirect,
-    devTestUsers: DEV_TEST_USERS,
+    devTestUsers,
+    setDevTestUsers,
     switchDevTestUser,
     signOut
   };
+}
+
+function readOptionalString(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value.trim() : '';
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }

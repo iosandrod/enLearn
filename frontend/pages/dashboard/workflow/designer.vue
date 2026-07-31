@@ -221,6 +221,7 @@ type WorkflowRuntimeInstance = {
 
 type ApprovalFlowTestResult = {
   passed: boolean;
+  started?: boolean;
   modelId: string;
   definitionId: string;
   instanceId: string;
@@ -233,6 +234,9 @@ type ApprovalFlowTestResult = {
     status: string;
     comment: string;
   }>;
+  pendingTasks?: WorkflowRuntimeTask[];
+  nextTask?: WorkflowRuntimeTask;
+  nextTaskRoute?: string;
   finalTasks: WorkflowRuntimeTask[];
   testData: {
     businessKey: string;
@@ -372,9 +376,9 @@ function createBlankModel() {
 
 function loadTriggerApprovalTestWorkflow() {
   const currentUserId = auth.user.value?.id ?? 'approval-test-user';
-  const approverIds = auth.devTestUsers
+  const approverIds = auth.devTestUsers.value
     .map((user) => user.id)
-    .filter((userId) => userId !== currentUserId && userId !== 'u_alice')
+    .filter((userId) => userId !== currentUserId)
     .slice(0, 3);
   const model = createTriggerApprovalTestWorkflow({
     code: 'trigger_approval_test',
@@ -523,15 +527,22 @@ async function startOrderWorkflow() {
 async function runMinimalApprovalOneClickTest() {
   isApiBusy.value = true;
   resetRuntimeState();
-  message.value = '正在运行审批流一键测试...';
+  message.value = '正在发起审批一键测试...';
   messageClass.value = 'workflow-help';
 
   try {
-    testRunSummary.value = '后端创建测试数据';
+    testRunSummary.value = '后端保存并发起测试审批';
+    const schema = designerRef.value?.getSchema() ?? workflowModel.value;
+    const approverIds = auth.devTestUsers.value
+      .map((user) => user.id)
+      .filter((userId) => userId && userId !== auth.user.value?.id)
+      .slice(0, 3);
     const result = await invokeWorkflowService<ApprovalFlowTestResult>('runApprovalFlowTest', {
       timeoutMs: 90000,
       intervalMs: 2000,
-      userId: auth.user.value?.id
+      userId: auth.user.value?.id,
+      approverIds,
+      schema
     });
 
     workflowModel.value = result.testData.schema;
@@ -541,19 +552,25 @@ async function runMinimalApprovalOneClickTest() {
     publishedDefinitionId.value = result.definitionId;
     startedInstanceId.value = result.instanceId;
     startedTaskId.value =
-      result.approvedSteps.at(-1)?.taskId ??
-      result.finalTasks.at(-1)?.id ??
+      result.nextTask?.id ??
+      result.pendingTasks?.[0]?.id ??
+      result.finalTasks.find((task) => task.status === 'pending' || task.status === 'claimed')?.id ??
       '';
     const displayedTaskStatus = result.finalTasks.find((task) => task.id === startedTaskId.value)?.status;
     startedTaskStatus.value =
       displayedTaskStatus ? workflowStatusLabel(displayedTaskStatus) : workflowStatusLabel(result.instanceStatus);
 
-    if (!result.passed) {
-      throw new Error(`审批流测试未通过，实例状态：${workflowStatusLabel(result.instanceStatus)}`);
+    if (result.instanceStatus === 'running' && startedTaskId.value) {
+      const assigneeId = result.nextTask?.assigneeId ?? result.pendingTasks?.[0]?.assigneeId ?? '';
+      const approverLabel = auth.devTestUsers.value.find((user) => user.id === assigneeId)?.name ?? assigneeId;
+      testRunSummary.value = `已发起审批，待 ${approverLabel || '审批人'} 处理`;
+      message.value = `测试审批已发起。请切换到审批人 ${approverLabel || assigneeId}，从消息提醒进入审批页面处理。`;
+    } else if (result.passed || result.instanceStatus === 'approved') {
+      testRunSummary.value = '流程已自动结束';
+      message.value = `测试审批已完成：实例 ${result.instanceId} 已${workflowStatusLabel(result.instanceStatus)}。`;
+    } else {
+      throw new Error(`测试审批已发起但未生成待办，实例状态：${workflowStatusLabel(result.instanceStatus)}`);
     }
-
-    testRunSummary.value = `已自动通过 ${result.approvedSteps.length} 个审批节点`;
-    message.value = `一键测试通过：实例 ${result.instanceId} 已${workflowStatusLabel(result.instanceStatus)}。`;
     messageClass.value = 'workflow-success';
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : '审批流一键测试失败';

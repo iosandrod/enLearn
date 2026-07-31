@@ -1,7 +1,47 @@
 .lc-global-dialog__body {
   display: grid;
   min-width: 0;
+  min-height: 0;
   gap: 12px;
+}
+
+.lc-global-dialog__lowcode {
+  min-width: 0;
+  min-height: 0;
+}
+
+.lc-global-dialog__lowcode > .lc-runtime-block {
+  min-width: 0;
+  min-height: 0;
+}
+
+.lc-global-dialog__empty {
+  padding: 28px 12px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 13px;
+  text-align: center;
+  background: #f8fafc;
+}
+
+.lc-global-dialog__page-reference {
+  height: min(760px, calc(100vh - 154px));
+  min-height: 520px;
+  min-width: 0;
+  overflow: auto;
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  background: #f1f5f9;
+}
+
+.lc-global-dialog__page-reference .lowcode-runtime-page {
+  min-height: 100%;
+}
+
+.lowcode-reference-dialog .vxe-modal--body {
+  padding: 12px;
+  background: #f5f7fb;
 }
 
 .lc-global-dialog__toolbar,

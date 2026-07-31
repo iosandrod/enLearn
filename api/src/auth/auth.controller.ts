@@ -4,7 +4,8 @@ import {
   EmailPasswordAuthDto,
   OAuthUrlDto,
   RefreshSessionDto,
-  SetSessionDto
+  SetSessionDto,
+  SignInPasswordAuthDto
 } from './auth.dto';
 
 @Controller('auth')
@@ -12,7 +13,7 @@ export class AuthController {
   constructor(@Inject(AuthService) private readonly authService: AuthService) {}
 
   @Post('signin')
-  signInWithPassword(@Body() dto: EmailPasswordAuthDto) {
+  signInWithPassword(@Body() dto: SignInPasswordAuthDto) {
     return this.authService.signInWithPassword(dto);
   }
 

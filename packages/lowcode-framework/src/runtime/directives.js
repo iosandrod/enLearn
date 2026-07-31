@@ -64,5 +64,6 @@ export function registerDefaultLowCodeRuntimeDirectives() {
         context.toggleBlockOpen(blockId);
     });
     registerLowCodeRuntimeDirectiveAliases(['openGlobalDialog', 'openDialog'], (directive, event, context) => context.openGlobalDialog?.(directive, event));
+    registerLowCodeRuntimeDirectiveAliases(['openPageReferenceDialog', 'openLowCodePageReferenceDialog', 'openReferenceDialog'], (directive, event, context) => context.openPageReferenceDialog?.(directive, event));
 }
 registerDefaultLowCodeRuntimeDirectives();

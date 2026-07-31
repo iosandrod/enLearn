@@ -2,31 +2,17 @@ import {
   createApp,
   defineComponent,
   getCurrentInstance,
-  h,
   nextTick,
   onMounted,
   PropType,
   reactive,
 } from 'vue';
 import DesignerUI, {
-  ElButton,
-  ElDialog,
-  ElForm,
-  ElFormItem,
-  ElInput,
   ElMessage,
-  ElOption,
-  ElSelect,
-  ElSwitch,
-  ElTabPane,
-  ElTable,
-  ElTableColumn,
-  ElTabs,
 } from '../common/designer-ui';
-import { ArrowDown, ArrowUp, CopyDocument, Delete, Plus } from '../common/remix-icons';
 import { cloneDeep } from 'lodash-es';
-import LowCodeForm from '../../../components/LowCodeForm.vue';
 import {
+  closeGlobalDialog,
   findGlobalDialog,
   openGlobalDialog,
   type GlobalDialogContentNode,
@@ -34,7 +20,9 @@ import {
 import type {
   LowCodeField,
   LowCodeFormSchema,
+  LowCodePageBlock,
   LowCodeRuntimeDirective,
+  LowCodeRuntimeEvent,
 } from '../../../types/lowcode';
 import { defer } from '../../utils/defer';
 import { generateNanoid } from '../../utils';
@@ -1075,6 +1063,8 @@ type ArrayEditorColumn = {
   minWidth?: number | string;
   defaultValue?: unknown;
   props?: Record<string, unknown>;
+  options?: Array<{ label: string; value: unknown; rawValue?: unknown; disabled?: boolean }>;
+  readonly?: boolean;
 };
 
 const directiveArrayColumns: ArrayEditorColumn[] = [
@@ -1139,22 +1129,6 @@ function createArraySchema(
     ],
     actions: [],
   };
-}
-
-function formatArraySummary(value: unknown) {
-  const items = Array.isArray(value) ? value : [];
-  return `${items.length} 项`;
-}
-
-function formatObjectSummary(value: unknown) {
-  if (!isPlainRecord(value)) return '{}';
-  if (!Object.keys(value).length) return '{}';
-
-  try {
-    return JSON.stringify(value);
-  } catch {
-    return '[object]';
-  }
 }
 
 function normalizeColumnForResult(column: GridDesignerColumn, index: number): GridDesignerColumn {
@@ -1308,7 +1282,7 @@ const ServiceComponent = defineComponent({
 
     const state = reactive({
       option: props.option,
-      showFlag: false,
+      activeDialogId: '',
       activeTab: 'columns',
       business: normalizeBusiness(props.option.business),
       columns: initialColumns,
@@ -1339,49 +1313,60 @@ const ServiceComponent = defineComponent({
       },
       show: async () => {
         await state.mounted;
-        state.showFlag = true;
         await nextTick();
+        const dialogId = `grid-designer-${generateNanoid()}`;
+        state.activeDialogId = dialogId;
+
+        void openGlobalDialog({
+          id: dialogId,
+          title: state.option.title || '表格设计',
+          width: 'min(1360px, calc(100vw - 40px))',
+          className: 'grid-designer-dialog form-workbench-dialog',
+          props: {
+            top: '4vh',
+            destroyOnClose: true,
+          },
+          showFooter: true,
+          content: createGridDesignerDialogSchema(),
+          actions: [
+            {
+              code: 'cancel',
+              label: '取消',
+              role: 'cancel',
+            },
+            {
+              code: 'confirm',
+              label: '确定',
+              role: 'custom',
+              status: 'primary',
+              onClick: () =>
+                handler.onConfirm()
+                  ? {
+                      close: true,
+                      action: 'confirm',
+                    }
+                  : false,
+            },
+          ],
+          onCancel: handler.onCancel,
+          onClose: () => {
+            if (state.activeDialogId === dialogId) {
+              state.activeDialogId = '';
+            }
+          },
+        });
       },
       hide: () => {
-        state.showFlag = false;
+        const dialogId = state.activeDialogId;
+        state.activeDialogId = '';
+        if (dialogId) {
+          void closeGlobalDialog(dialogId, { action: 'close' });
+        }
       },
     };
 
     const selectColumn = (column: GridDesignerColumn) => {
       state.selectedColumnId = readString(column.__id);
-    };
-
-    const columnActions = {
-      add: () => {
-        const column = createDefaultColumn(state.columns.length);
-        state.columns.push(column);
-        selectColumn(column);
-      },
-      copy: (index: number) => {
-        const copy = {
-          ...cloneDeep(state.columns[index]),
-          __id: `column_${generateNanoid()}`,
-        };
-        state.columns.splice(index + 1, 0, copy);
-        selectColumn(copy);
-      },
-      remove: (index: number) => {
-        if (state.columns.length <= 1) {
-          ElMessage.warning('至少保留一列');
-          return;
-        }
-        const removed = state.columns[index];
-        state.columns.splice(index, 1);
-        if (removed?.__id === state.selectedColumnId) {
-          selectColumn(state.columns[Math.min(index, state.columns.length - 1)]);
-        }
-      },
-      move: (index: number, offset: number) => {
-        const targetIndex = index + offset;
-        if (targetIndex < 0 || targetIndex >= state.columns.length) return;
-        const [column] = state.columns.splice(index, 1);
-        state.columns.splice(targetIndex, 0, column);
-      },
     };
 
     const handler = {
@@ -1395,7 +1380,7 @@ const ServiceComponent = defineComponent({
           );
           if (invalidColumn) {
             ElMessage.error('列设计中 field、title、type 至少填写一个');
-            return;
+            return false;
           }
 
           for (let index = 0; index < state.columns.length; index += 1) {
@@ -1409,22 +1394,18 @@ const ServiceComponent = defineComponent({
             gridOptions: buildGridOptions(state.gridOptions, state.advanced),
             gridEvents: buildEvents(state.gridEvents),
           });
-          methods.hide();
+          return true;
         } catch (error) {
           ElMessage.error(error instanceof Error ? error.message : '表格配置格式不正确');
+          return false;
         }
       },
       onCancel: () => {
-        methods.hide();
+        state.activeDialogId = '';
       },
     };
 
     Object.assign(ctx.proxy!, methods);
-
-    const renderSelectOptions = (options: { label: string; value: unknown }[]) =>
-      options.map((option) => (
-        <ElOption key={String(option.value)} label={option.label} value={option.value} />
-      ));
 
     const openSchemaDialog = <TValues extends Record<string, unknown>>(
       config: {
@@ -1471,48 +1452,10 @@ const ServiceComponent = defineComponent({
       });
     };
 
-    const openObjectEditor = (
-      title: string,
-      value: unknown,
-      fields: LowCodeField[] | undefined,
-      onConfirm: (value: Record<string, unknown>) => void,
-    ) => {
-      const model = isPlainRecord(value) ? cloneDeep(value) : {};
-      openSchemaDialog({
-        id: `grid-designer-object-${generateNanoid()}`,
-        title,
-        width: 'min(720px, calc(100vw - 48px))',
-        className: 'grid-designer-object-dialog',
-        model,
-        schema: createObjectSchema(model, fields),
-        onConfirm,
-      });
-    };
-
-    const openArrayEditor = (
-      title: string,
-      value: unknown,
-      columns: ArrayEditorColumn[] | undefined,
-      onConfirm: (value: unknown[]) => void,
-    ) => {
-      const items = Array.isArray(value) ? cloneDeep(value) : [];
-      openSchemaDialog({
-        id: `grid-designer-array-${generateNanoid()}`,
-        title,
-        width: 'min(840px, calc(100vw - 48px))',
-        className: 'grid-designer-object-dialog',
-        model: { items },
-        schema: createArraySchema(items, columns),
-        onConfirm: (nextValue) => {
-          onConfirm(Array.isArray(nextValue.items) ? cloneDeep(nextValue.items) : []);
-        },
-      });
-    };
-
     const createColumnAdvancedDialogContent = (
       column: GridDesignerColumn,
     ): GlobalDialogContentNode => ({
-      type: 'container',
+      type: 'lowcodeBlocks',
       className: 'grid-designer-column-dialog__content',
       style: {
         display: 'grid',
@@ -1521,32 +1464,24 @@ const ServiceComponent = defineComponent({
         overflow: 'auto',
         paddingRight: '4px',
       },
-      children: columnAdvancedFormSections.map((section, index) => ({
-        type: 'container',
-        key: `${readString(column.__id, 'column')}-section-${index}`,
-        className: 'grid-designer-column-dialog__section',
-        children: [
-          {
-            type: 'render',
-            key: `${readString(column.__id, 'column')}-section-title-${index}`,
-            render: () =>
-              h('div', { class: 'grid-designer-column-dialog__section-title' }, section.title),
+      lowcode: {
+        blocks: columnAdvancedFormSections.map((section, index) => ({
+          id: `${readString(column.__id, 'column')}-section-${index}`,
+          kind: 'form',
+          title: section.title,
+          className: 'grid-designer-column-dialog__section grid-designer-schema-form-block',
+          schema: {
+            fields: section.fields,
+            actions: [],
           },
-          {
-            type: 'form',
-            key: `${readString(column.__id, 'column')}-section-form-${index}`,
-            form: {
-              schema: {
-                fields: section.fields,
-                actions: [],
-              },
-            },
-          },
-        ],
-      })),
+        })),
+      },
     });
 
-    const openColumnAdvancedDialog = (column: GridDesignerColumn) => {
+    const openColumnAdvancedDialog = (
+      column: GridDesignerColumn,
+      onApply?: (nextColumn: GridDesignerColumn) => void,
+    ) => {
       const dialogId = `grid-designer-column-${readString(column.__id, generateNanoid())}`;
       if (findGlobalDialog(dialogId)) return;
 
@@ -1566,74 +1501,92 @@ const ServiceComponent = defineComponent({
         content: createColumnAdvancedDialogContent(column),
         onConfirm: (nextValue) => {
           Object.assign(column, nextValue);
+          onApply?.(column);
           selectColumn(column);
         },
       });
     };
 
-    const renderObjectBoundInput = (
-      row: Record<string, unknown>,
-      field: string,
-      title: string,
-      placeholder: string,
-      fields?: LowCodeField[],
-    ) => {
-      const value = row[field];
+    const createSchema = (fields: LowCodeField[], columns = 4): LowCodeFormSchema => ({
+      columns,
+      fields,
+      actions: [],
+    });
 
-      if (!isPlainRecord(value)) {
-        return (
-          <ElInput
-            modelValue={readString(value)}
-            placeholder={placeholder}
-            {...({
-              'onUpdate:modelValue': (nextValue: unknown) => {
-                row[field] = nextValue;
-              },
-            } as any)}
-          />
-        );
-      }
+    const businessInfoSchema = createSchema([
+      { field: 'blockId', label: 'blockId', component: 'vxe-input' },
+      { field: 'title', label: 'title', component: 'vxe-input' },
+      { field: 'sourceKey', label: 'sourceKey', component: 'vxe-input' },
+      { field: 'serviceName', label: 'serviceName', component: 'vxe-input' },
+      { field: 'serviceMethod', label: 'serviceMethod', component: 'vxe-input' },
+      { field: 'saveMethod', label: 'saveMethod', component: 'vxe-input' },
+      { field: 'deleteMethod', label: 'deleteMethod', component: 'vxe-input' },
+      { field: 'showRowActions', label: 'showRowActions', component: 'vxe-switch' },
+      {
+        field: 'postDataJson',
+        label: 'postDataJson',
+        component: 'lc-json-editor',
+        props: { rows: 4 },
+      },
+    ]);
 
-      return (
-        <div class="grid-designer-object-cell">
-          <ElInput modelValue={formatObjectSummary(value)} placeholder={placeholder} readonly />
-          <ElButton
-            text
-            type="primary"
-            onClick={(event?: Event) => {
-              event?.stopPropagation?.();
-              openObjectEditor(title, value, fields, (nextValue) => {
-                row[field] = cloneDeep(nextValue);
-              });
-            }}
-          >
-            编辑
-          </ElButton>
-        </div>
-      );
-    };
+    const gridOptionsSchema = createSchema([
+      { field: 'id', label: 'id', component: 'vxe-input' },
+      { field: 'size', label: 'size', component: 'vxe-select', options: sizeOptions },
+      { field: 'height', label: 'height', component: 'vxe-input', props: { placeholder: 'auto / 480' } },
+      { field: 'maxHeight', label: 'maxHeight', component: 'vxe-input' },
+      { field: 'border', label: 'border', component: 'vxe-select', options: borderOptions as any },
+      { field: 'stripe', label: 'stripe', component: 'vxe-switch' },
+      { field: 'round', label: 'round', component: 'vxe-switch' },
+      { field: 'showHeader', label: 'showHeader', component: 'vxe-switch' },
+      { field: 'showFooter', label: 'showFooter', component: 'vxe-switch' },
+      { field: 'showOverflow', label: 'showOverflow', component: 'vxe-select', options: overflowOptions as any },
+      {
+        field: 'showHeaderOverflow',
+        label: 'showHeaderOverflow',
+        component: 'vxe-select',
+        options: overflowOptions as any,
+      },
+      { field: 'align', label: 'align', component: 'vxe-select', options: alignOptions },
+      { field: 'headerAlign', label: 'headerAlign', component: 'vxe-select', options: alignOptions },
+      { field: 'autoResize', label: 'autoResize', component: 'vxe-switch' },
+      { field: 'keepSource', label: 'keepSource', component: 'vxe-switch' },
+    ]);
 
-    const renderArrayEditorInput = (
-      row: Record<string, unknown>,
-      field: string,
-      title: string,
-      columns?: ArrayEditorColumn[],
-    ) => (
-      <div class="grid-designer-object-cell">
-        <ElInput modelValue={formatArraySummary(row[field])} readonly />
-        <ElButton
-          text
-          type="primary"
-          onClick={(event?: Event) => {
-            event?.stopPropagation?.();
-            openArrayEditor(title, row[field], columns, (nextValue) => {
-              row[field] = nextValue;
-            });
-          }}
-        >
-          编辑
-        </ElButton>
-      </div>
+    const rowConfigSubFields: LowCodeField[] = [
+      { field: 'keyField', label: 'keyField', component: 'vxe-input' },
+      { field: 'useKey', label: 'useKey', component: 'vxe-switch' },
+      { field: 'isCurrent', label: 'isCurrent', component: 'vxe-switch' },
+      { field: 'isHover', label: 'isHover', component: 'vxe-switch' },
+      { field: 'resizable', label: 'resizable', component: 'vxe-switch' },
+      { field: 'drag', label: 'drag', component: 'vxe-switch' },
+    ];
+
+    const columnConfigSubFields: LowCodeField[] = [
+      { field: 'useKey', label: 'useKey', component: 'vxe-switch' },
+      { field: 'resizable', label: 'resizable', component: 'vxe-switch' },
+      { field: 'isCurrent', label: 'isCurrent', component: 'vxe-switch' },
+      { field: 'isHover', label: 'isHover', component: 'vxe-switch' },
+      { field: 'drag', label: 'drag', component: 'vxe-switch' },
+      { field: 'minWidth', label: 'minWidth', component: 'vxe-input' },
+    ];
+
+    const rowColumnConfigSchema = createSchema(
+      [
+        {
+          field: 'rowConfig',
+          label: 'rowConfig',
+          component: 'lc-sub-form',
+          props: { fields: rowConfigSubFields },
+        },
+        {
+          field: 'columnConfig',
+          label: 'columnConfig',
+          component: 'lc-sub-form',
+          props: { fields: columnConfigSubFields },
+        },
+      ],
+      2,
     );
 
     const syncAdvancedConfigModel = (
@@ -1645,473 +1598,419 @@ const ServiceComponent = defineComponent({
       state.advanced[field] = JSON.stringify(compactObject(cloneDeep(nextValue)), null, 2);
     };
 
-    const renderAdvancedConfigEditor = (config: AdvancedGridConfigDefinition) => {
-      const model =
-        (state.advancedModels as Record<string, Record<string, unknown>>)[config.field] ?? {};
-
-      return (
-        <section key={config.field} class="grid-designer-advanced-item">
-          <div class="grid-designer-advanced-item__header">
-            <strong>{config.label}</strong>
-          </div>
-          <LowCodeForm
-            class="grid-designer-advanced-sub-form"
-            schema={{ fields: config.fields, actions: [] }}
-            modelValue={model}
-            onUpdate:modelValue={(value: Record<string, unknown>) => {
-              syncAdvancedConfigModel(config.field, value);
-            }}
-          />
-        </section>
-      );
-    };
-
-    const renderExtraPropsEditor = () => {
-      const model =
-        (state.advancedModels as Record<string, Record<string, unknown>>).extraPropsJson ?? {};
-
-      return (
-        <section class="grid-designer-advanced-item grid-designer-advanced-item--wide">
-          <div class="grid-designer-advanced-item__header">
-            <strong>extraProps</strong>
-          </div>
-          <div class="grid-designer-object-cell">
-            <ElInput modelValue={formatObjectSummary(model)} readonly />
-            <ElButton
-              text
-              type="primary"
-              onClick={() => {
-                openObjectEditor('extraProps', model, undefined, (nextValue) => {
-                  syncAdvancedConfigModel('extraPropsJson', nextValue);
-                });
-              }}
-            >
-              编辑
-            </ElButton>
-          </div>
-        </section>
-      );
-    };
-
-    const renderBusinessPostDataEditor = () => (
-      <div class="grid-designer-object-cell">
-        <ElInput modelValue={readString(state.business.postDataJson, '{}')} readonly />
-        <ElButton
-          text
-          type="primary"
-          onClick={() => {
-            const parsed = parseJsonObject(state.business.postDataJson, 'postDataJson');
-
-            if (parsed.ok === false) {
-              ElMessage.error(parsed.message);
-              return;
+    const toArrayTableOptions = (options: Array<{ label: string; value: unknown }>) =>
+      options.map((option) =>
+        typeof option.value === 'boolean'
+          ? {
+              label: option.label,
+              value: String(option.value),
+              rawValue: option.value,
             }
-
-            const value = isPlainRecord(parsed.value) ? parsed.value : {};
-            openObjectEditor('postDataJson', value, undefined, (nextValue) => {
-              state.business.postDataJson = JSON.stringify(compactObject(nextValue), null, 2);
-            });
-          }}
-        >
-          编辑
-        </ElButton>
-      </div>
-    );
-
-    const renderColumnToolbar = () => (
-      <div class="grid-designer-column-toolbar">
-        <div class="grid-designer-column-toolbar__meta">
-          <strong>列配置</strong>
-          <span>{state.columns.length} 列</span>
-        </div>
-        <ElButton type="primary" icon={Plus} onClick={columnActions.add}>
-          新增列
-        </ElButton>
-      </div>
-    );
-
-    const renderColumnRowActions = (index: number) => (
-      <div class="grid-designer-row-actions">
-        <span title="上移">
-          <ElButton
-            circle
-            text
-            type="primary"
-            icon={ArrowUp}
-            disabled={index <= 0}
-            onClick={() => columnActions.move(index, -1)}
-          />
-        </span>
-        <span title="下移">
-          <ElButton
-            circle
-            text
-            type="primary"
-            icon={ArrowDown}
-            disabled={index >= state.columns.length - 1}
-            onClick={() => columnActions.move(index, 1)}
-          />
-        </span>
-        <span title="复制">
-          <ElButton
-            circle
-            text
-            type="primary"
-            icon={CopyDocument}
-            onClick={() => columnActions.copy(index)}
-          />
-        </span>
-        <span title="删除">
-          <ElButton
-            circle
-            text
-            type="danger"
-            icon={Delete}
-            disabled={state.columns.length <= 1}
-            onClick={() => columnActions.remove(index)}
-          />
-        </span>
-      </div>
-    );
-
-    const renderColumnDesignerWorkbench = () => {
-      return (
-        <div class="grid-designer-panel">
-          <div class="grid-designer-column-layout">
-            <section class="grid-designer-column-table-panel">
-              {renderColumnToolbar()}
-              <ElTable
-                data={state.columns}
-                border
-                height="100%"
-                rowKey="__id"
-                class="grid-designer-table"
-                {...({
-                  rowClassName: ({ row }: { row: GridDesignerColumn }) =>
-                    row.__id === state.selectedColumnId ? 'is-selected' : '',
-                  onCellClick: ({ row }: { row: GridDesignerColumn }) => selectColumn(row),
-                  onRowDblclick: ({ row }: { row: GridDesignerColumn }) => {
-                    selectColumn(row);
-                    openColumnAdvancedDialog(row);
-                  },
-                } as any)}
-              >
-                <ElTableColumn type="index" width={48} label="#" />
-                <ElTableColumn label="field" minWidth={150}>
-                  {{
-                    default: ({ row }: { row: GridDesignerColumn }) => (
-                      <ElInput v-model={row.field} placeholder="field" />
-                    ),
-                  }}
-                </ElTableColumn>
-                <ElTableColumn label="title" minWidth={150}>
-                  {{
-                    default: ({ row }: { row: GridDesignerColumn }) => (
-                      <ElInput v-model={row.title} placeholder="title" />
-                    ),
-                  }}
-                </ElTableColumn>
-                <ElTableColumn label="type" width={132}>
-                  {{
-                    default: ({ row }: { row: GridDesignerColumn }) => (
-                      <ElSelect v-model={row.type}>{renderSelectOptions(columnTypeOptions)}</ElSelect>
-                    ),
-                  }}
-                </ElTableColumn>
-                <ElTableColumn label="width" width={108}>
-                  {{
-                    default: ({ row }: { row: GridDesignerColumn }) => (
-                      <ElInput v-model={row.width} placeholder="auto" />
-                    ),
-                  }}
-                </ElTableColumn>
-                <ElTableColumn label="minWidth" width={118}>
-                  {{
-                    default: ({ row }: { row: GridDesignerColumn }) => (
-                      <ElInput v-model={row.minWidth} placeholder="minWidth" />
-                    ),
-                  }}
-                </ElTableColumn>
-                <ElTableColumn label="fixed" width={116}>
-                  {{
-                    default: ({ row }: { row: GridDesignerColumn }) => (
-                      <ElSelect v-model={row.fixed}>{renderSelectOptions(fixedOptions)}</ElSelect>
-                    ),
-                  }}
-                </ElTableColumn>
-                <ElTableColumn label="align" width={124}>
-                  {{
-                    default: ({ row }: { row: GridDesignerColumn }) => (
-                      <ElSelect v-model={row.align}>{renderSelectOptions(alignOptions)}</ElSelect>
-                    ),
-                  }}
-                </ElTableColumn>
-                <ElTableColumn label="sortable" width={96} align="center">
-                  {{
-                    default: ({ row }: { row: GridDesignerColumn }) => (
-                      <ElSwitch v-model={row.sortable} />
-                    ),
-                  }}
-                </ElTableColumn>
-                <ElTableColumn label="visible" width={92} align="center">
-                  {{
-                    default: ({ row }: { row: GridDesignerColumn }) => (
-                      <ElSwitch v-model={row.visible} />
-                    ),
-                  }}
-                </ElTableColumn>
-                <ElTableColumn label="showOverflow" width={138}>
-                  {{
-                    default: ({ row }: { row: GridDesignerColumn }) => (
-                      <ElSelect v-model={row.showOverflow}>
-                        {renderSelectOptions(overflowOptions)}
-                      </ElSelect>
-                    ),
-                  }}
-                </ElTableColumn>
-                <ElTableColumn label="formatter" minWidth={210}>
-                  {{
-                    default: ({ row }: { row: GridDesignerColumn }) => (
-                      renderObjectBoundInput(
-                        row,
-                        'formatter',
-                        `${readString(row.title, readString(row.field, '列'))} formatter`,
-                        '{"type":"text"} 或格式化器名',
-                        formatterObjectFields,
-                      )
-                    ),
-                  }}
-                </ElTableColumn>
-                <ElTableColumn label="操作" width={144} align="center">
-                  {{
-                    default: ({ $index }: { $index: number }) => renderColumnRowActions($index),
-                  }}
-                </ElTableColumn>
-              </ElTable>
-            </section>
-
-          </div>
-        </div>
+          : option,
       );
+
+    const createColumnArrayDefaultRow = () => {
+      const { __id, ...row } = createDefaultColumn(0);
+      return {
+        ...row,
+        field: 'field_{{ index }}',
+        title: '列 {{ index }}',
+      };
     };
 
-    const renderBaseInfo = () => (
-      <ElForm labelPosition="top" class="grid-designer-panel">
-        <div class="grid-designer-card">
-          <h3>业务信息</h3>
-          <div class="grid-designer-form-grid">
-            <ElFormItem label="blockId">
-              <ElInput v-model={state.business.blockId} />
-            </ElFormItem>
-            <ElFormItem label="title">
-              <ElInput v-model={state.business.title} />
-            </ElFormItem>
-            <ElFormItem label="sourceKey">
-              <ElInput v-model={state.business.sourceKey} />
-            </ElFormItem>
-            <ElFormItem label="serviceName">
-              <ElInput v-model={state.business.serviceName} />
-            </ElFormItem>
-            <ElFormItem label="serviceMethod">
-              <ElInput v-model={state.business.serviceMethod} />
-            </ElFormItem>
-            <ElFormItem label="saveMethod">
-              <ElInput v-model={state.business.saveMethod} />
-            </ElFormItem>
-            <ElFormItem label="deleteMethod">
-              <ElInput v-model={state.business.deleteMethod} />
-            </ElFormItem>
-            <ElFormItem label="showRowActions">
-              <ElSwitch v-model={state.business.showRowActions} />
-            </ElFormItem>
-            <ElFormItem label="postDataJson" class="grid-designer-col-span-2">
-              {renderBusinessPostDataEditor()}
-            </ElFormItem>
-          </div>
-        </div>
+    const createColumnDesignerArrayColumns = (): ArrayEditorColumn[] => [
+      { field: 'field', title: 'field', minWidth: 150 },
+      { field: 'title', title: 'title', minWidth: 150 },
+      {
+        field: 'type',
+        title: 'type',
+        component: 'vxe-select',
+        width: 132,
+        options: toArrayTableOptions(columnTypeOptions),
+      },
+      { field: 'width', title: 'width', width: 108, props: { placeholder: 'auto' } },
+      { field: 'minWidth', title: 'minWidth', width: 118 },
+      {
+        field: 'fixed',
+        title: 'fixed',
+        component: 'vxe-select',
+        width: 116,
+        options: toArrayTableOptions(fixedOptions),
+      },
+      {
+        field: 'align',
+        title: 'align',
+        component: 'vxe-select',
+        width: 124,
+        options: toArrayTableOptions(alignOptions),
+      },
+      {
+        field: 'sortable',
+        title: 'sortable',
+        component: 'vxe-switch',
+        width: 96,
+      },
+      {
+        field: 'visible',
+        title: 'visible',
+        component: 'vxe-switch',
+        width: 92,
+      },
+      {
+        field: 'showOverflow',
+        title: 'showOverflow',
+        component: 'vxe-select',
+        width: 138,
+        options: toArrayTableOptions(overflowOptions),
+      },
+      {
+        field: 'formatter',
+        title: 'formatter',
+        minWidth: 210,
+        props: {
+          placeholder: '{"type":"text"} 或格式化器名',
+          fields: formatterObjectFields,
+        },
+      },
+    ];
 
-        <div class="grid-designer-card">
-          <h3>VxeGrid 表格入参</h3>
-          <div class="grid-designer-form-grid">
-            <ElFormItem label="id">
-              <ElInput v-model={state.gridOptions.id} />
-            </ElFormItem>
-            <ElFormItem label="size">
-              <ElSelect v-model={state.gridOptions.size}>{renderSelectOptions(sizeOptions)}</ElSelect>
-            </ElFormItem>
-            <ElFormItem label="height">
-              <ElInput v-model={state.gridOptions.height} placeholder="auto / 480" />
-            </ElFormItem>
-            <ElFormItem label="maxHeight">
-              <ElInput v-model={state.gridOptions.maxHeight} />
-            </ElFormItem>
-            <ElFormItem label="border">
-              <ElSelect v-model={state.gridOptions.border}>{renderSelectOptions(borderOptions)}</ElSelect>
-            </ElFormItem>
-            <ElFormItem label="stripe">
-              <ElSwitch v-model={state.gridOptions.stripe} />
-            </ElFormItem>
-            <ElFormItem label="round">
-              <ElSwitch v-model={state.gridOptions.round} />
-            </ElFormItem>
-            <ElFormItem label="showHeader">
-              <ElSwitch v-model={state.gridOptions.showHeader} />
-            </ElFormItem>
-            <ElFormItem label="showFooter">
-              <ElSwitch v-model={state.gridOptions.showFooter} />
-            </ElFormItem>
-            <ElFormItem label="showOverflow">
-              <ElSelect v-model={state.gridOptions.showOverflow}>
-                {renderSelectOptions(overflowOptions)}
-              </ElSelect>
-            </ElFormItem>
-            <ElFormItem label="showHeaderOverflow">
-              <ElSelect v-model={state.gridOptions.showHeaderOverflow}>
-                {renderSelectOptions(overflowOptions)}
-              </ElSelect>
-            </ElFormItem>
-            <ElFormItem label="align">
-              <ElSelect v-model={state.gridOptions.align}>{renderSelectOptions(alignOptions)}</ElSelect>
-            </ElFormItem>
-            <ElFormItem label="headerAlign">
-              <ElSelect v-model={state.gridOptions.headerAlign}>
-                {renderSelectOptions(alignOptions)}
-              </ElSelect>
-            </ElFormItem>
-            <ElFormItem label="autoResize">
-              <ElSwitch v-model={state.gridOptions.autoResize} />
-            </ElFormItem>
-            <ElFormItem label="keepSource">
-              <ElSwitch v-model={state.gridOptions.keepSource} />
-            </ElFormItem>
-          </div>
-        </div>
+    const createEventDesignerArrayColumns = (): ArrayEditorColumn[] => [
+      {
+        field: 'enabled',
+        title: '启用',
+        component: 'vxe-switch',
+        width: 78,
+      },
+      { field: 'label', title: '事件说明', width: 130, readonly: true },
+      { field: 'vxeName', title: 'VxeGrid 事件属性', width: 170, readonly: true },
+      { field: 'nativeName', title: '原生事件名', width: 190, readonly: true },
+      {
+        field: 'eventName',
+        title: '运行事件名 eventName',
+        minWidth: 220,
+        props: { placeholder: 'grid.rowDblclick' },
+      },
+      {
+        field: 'directives',
+        title: '指令',
+        component: 'lc-json-editor',
+        minWidth: 260,
+        props: { rows: 3, placeholder: JSON.stringify([createArrayDefaultRow(directiveArrayColumns)], null, 2) },
+      },
+    ];
 
-        <div class="grid-designer-card">
-          <h3>rowConfig / columnConfig</h3>
-          <div class="grid-designer-form-grid">
-            <ElFormItem label="rowConfig.keyField">
-              <ElInput v-model={(state.gridOptions.rowConfig as Record<string, unknown>).keyField} />
-            </ElFormItem>
-            <ElFormItem label="rowConfig.useKey">
-              <ElSwitch v-model={(state.gridOptions.rowConfig as Record<string, unknown>).useKey} />
-            </ElFormItem>
-            <ElFormItem label="rowConfig.isCurrent">
-              <ElSwitch v-model={(state.gridOptions.rowConfig as Record<string, unknown>).isCurrent} />
-            </ElFormItem>
-            <ElFormItem label="rowConfig.isHover">
-              <ElSwitch v-model={(state.gridOptions.rowConfig as Record<string, unknown>).isHover} />
-            </ElFormItem>
-            <ElFormItem label="rowConfig.resizable">
-              <ElSwitch v-model={(state.gridOptions.rowConfig as Record<string, unknown>).resizable} />
-            </ElFormItem>
-            <ElFormItem label="rowConfig.drag">
-              <ElSwitch v-model={(state.gridOptions.rowConfig as Record<string, unknown>).drag} />
-            </ElFormItem>
-            <ElFormItem label="columnConfig.useKey">
-              <ElSwitch v-model={(state.gridOptions.columnConfig as Record<string, unknown>).useKey} />
-            </ElFormItem>
-            <ElFormItem label="columnConfig.resizable">
-              <ElSwitch v-model={(state.gridOptions.columnConfig as Record<string, unknown>).resizable} />
-            </ElFormItem>
-            <ElFormItem label="columnConfig.isCurrent">
-              <ElSwitch v-model={(state.gridOptions.columnConfig as Record<string, unknown>).isCurrent} />
-            </ElFormItem>
-            <ElFormItem label="columnConfig.isHover">
-              <ElSwitch v-model={(state.gridOptions.columnConfig as Record<string, unknown>).isHover} />
-            </ElFormItem>
-            <ElFormItem label="columnConfig.drag">
-              <ElSwitch v-model={(state.gridOptions.columnConfig as Record<string, unknown>).drag} />
-            </ElFormItem>
-            <ElFormItem label="columnConfig.minWidth">
-              <ElInput v-model={(state.gridOptions.columnConfig as Record<string, unknown>).minWidth} />
-            </ElFormItem>
-          </div>
-        </div>
+    const columnDesignerBlockId = 'grid-designer-columns-form';
+    const businessInfoBlockId = 'grid-designer-business-info-form';
+    const gridOptionsBlockId = 'grid-designer-grid-options-form';
+    const rowColumnConfigBlockId = 'grid-designer-row-column-config-form';
+    const eventDesignerBlockId = 'grid-designer-events-form';
+    const extraPropsBlockId = 'grid-designer-extra-props-form';
+    const advancedBlockId = (field: string) => `grid-designer-advanced-${field}-form`;
 
-        <div class="grid-designer-card">
-          <h3>高级 VxeGrid 配置</h3>
-          <div class="grid-designer-advanced-grid">
-            {advancedGridConfigDefinitions.map(renderAdvancedConfigEditor)}
-            {renderExtraPropsEditor()}
-          </div>
-        </div>
-      </ElForm>
-    );
+    const syncColumnsFromRows = (rows: unknown) => {
+      const selectedId = state.selectedColumnId;
+      state.columns = normalizeColumns(rows);
 
-    const renderEventDesigner = () => (
-      <div class="grid-designer-panel">
-        <ElTable data={state.gridEvents} border height="560" rowKey="key" class="grid-designer-table">
-          <ElTableColumn label="启用" width={78} align="center">
-            {{
-              default: ({ row }: { row: GridDesignerEvent }) => <ElSwitch v-model={row.enabled} />,
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="事件说明" prop="label" width={130} />
-          <ElTableColumn label="VxeGrid 事件属性" prop="vxeName" width={170} />
-          <ElTableColumn label="原生事件名" prop="nativeName" width={190} />
-          <ElTableColumn label="运行事件名 eventName" minWidth={220}>
-            {{
-              default: ({ row }: { row: GridDesignerEvent }) => (
-                <ElInput v-model={row.eventName} placeholder={`grid.${row.key}`} />
+      if (!state.columns.some((column) => column.__id === selectedId)) {
+        selectColumn(state.columns[0]);
+      }
+    };
+
+    const syncEventsFromRows = (rows: unknown) => {
+      state.gridEvents = normalizeEvents(rows);
+    };
+
+    const createColumnDesignerSchema = (): LowCodeFormSchema =>
+      createSchema(
+        [
+          {
+            field: 'columns',
+            label: '列配置',
+            component: 'lc-array-table',
+            props: {
+              addText: '新增列',
+              rowKey: '__id',
+              preserveRowKey: true,
+              copyable: true,
+              minRows: 1,
+              actionWidth: 120,
+              height: 520,
+              toolbarAlign: 'left',
+              columns: createColumnDesignerArrayColumns(),
+              defaultRow: createColumnArrayDefaultRow(),
+              onRowClick: ({ row }: { row: GridDesignerColumn }) => selectColumn(row),
+              onRowDblclick: ({
+                row,
+                rows,
+              }: {
+                row: GridDesignerColumn;
+                rows: GridDesignerColumn[];
+              }) => {
+                selectColumn(row);
+                openColumnAdvancedDialog(row, () => syncColumnsFromRows(rows));
+              },
+            },
+          },
+        ],
+        1,
+      );
+
+    const createEventDesignerSchema = (): LowCodeFormSchema =>
+      createSchema(
+        [
+          {
+            field: 'gridEvents',
+            label: '事件配置',
+            component: 'lc-array-table',
+            props: {
+              showToolbar: false,
+              showActions: false,
+              rowKey: 'key',
+              preserveRowKey: true,
+              height: 560,
+              columns: createEventDesignerArrayColumns(),
+            },
+          },
+        ],
+        1,
+      );
+
+    const createFormBlock = (
+      id: string,
+      title: string,
+      schema: LowCodeFormSchema,
+      className = 'grid-designer-card grid-designer-schema-form-block',
+    ): LowCodePageBlock => ({
+      id,
+      kind: 'form',
+      title,
+      className,
+      schema,
+    });
+
+    const createContainerBlock = (
+      id: string,
+      className: unknown,
+      blocks: LowCodePageBlock[],
+      extra: Partial<LowCodePageBlock> = {},
+    ): LowCodePageBlock =>
+      ({
+        id,
+        kind: 'container',
+        className,
+        panel: false,
+        blocks,
+        ...extra,
+      }) as LowCodePageBlock;
+
+    const createColumnDesignerBlocks = (): LowCodePageBlock[] => [
+      createContainerBlock('grid-designer-columns-panel', 'grid-designer-panel', [
+        createFormBlock(
+          columnDesignerBlockId,
+          '列配置',
+          createColumnDesignerSchema(),
+          'grid-designer-array-table-card grid-designer-column-table-panel',
+        ),
+      ]),
+    ];
+
+    const normalizePostDataJsonField = (value: unknown) => {
+      if (typeof value === 'string') return;
+
+      const nextValue = isPlainRecord(value) ? compactObject(value) : {};
+      state.business.postDataJson = JSON.stringify(nextValue, null, 2);
+    };
+
+    const createBaseInfoBlocks = (): LowCodePageBlock[] => [
+      createContainerBlock('grid-designer-info-panel', 'grid-designer-panel', [
+        createFormBlock(businessInfoBlockId, '业务信息', businessInfoSchema),
+        createFormBlock(gridOptionsBlockId, 'VxeGrid 表格入参', gridOptionsSchema),
+        createFormBlock(rowColumnConfigBlockId, 'rowConfig / columnConfig', rowColumnConfigSchema),
+        createContainerBlock(
+          'grid-designer-advanced-panel',
+          'grid-designer-advanced-grid',
+          [
+            ...advancedGridConfigDefinitions.map((config) =>
+              createFormBlock(
+                advancedBlockId(config.field),
+                config.label,
+                createSchema(config.fields, 2),
+                'grid-designer-advanced-item grid-designer-schema-form-block',
               ),
-            }}
-          </ElTableColumn>
-          <ElTableColumn label="指令" minWidth={220}>
-            {{
-              default: ({ row }: { row: GridDesignerEvent }) => (
-                renderArrayEditorInput(
-                  row as unknown as Record<string, unknown>,
-                  'directives',
-                  `${row.vxeName} 指令`,
-                  directiveArrayColumns,
-                )
+            ),
+            createFormBlock(
+              extraPropsBlockId,
+              'extraProps',
+              createSchema(
+                [
+                  {
+                    field: 'value',
+                    label: 'extraProps',
+                    component: 'lc-json-editor',
+                    props: { rows: 5 },
+                  },
+                ],
+                1,
               ),
-            }}
-          </ElTableColumn>
-        </ElTable>
-      </div>
-    );
-
-    return () => (
-      <>
-        <ElDialog
-          v-model={state.showFlag}
-          title={state.option.title || '表格设计'}
-          width="min(1360px, calc(100vw - 40px))"
-          top="4vh"
-          class="grid-designer-dialog form-workbench-dialog"
-          destroyOnClose={true}
-        >
-          {{
-            default: () => (
-              <div class="grid-designer-workbench">
-                <ElTabs v-model={state.activeTab} class="grid-designer-tabs">
-                  <ElTabPane label="列设计" name="columns">
-                    {renderColumnDesignerWorkbench()}
-                  </ElTabPane>
-                  <ElTabPane label="表格信息设计" name="info">
-                    {renderBaseInfo()}
-                  </ElTabPane>
-                  <ElTabPane label="事件属性" name="events">
-                    {renderEventDesigner()}
-                  </ElTabPane>
-                </ElTabs>
-              </div>
+              'grid-designer-advanced-item grid-designer-advanced-item--wide grid-designer-schema-form-block',
             ),
-            footer: () => (
-              <div class="form-workbench-footer">
-                <ElButton onClick={handler.onCancel}>取消</ElButton>
-                <ElButton type="primary" onClick={handler.onConfirm}>
-                  确定
-                </ElButton>
-              </div>
-            ),
-          }}
-        </ElDialog>
+          ],
+        ),
+      ]),
+    ];
 
-      </>
-    );
+    const createEventDesignerBlocks = (): LowCodePageBlock[] => [
+      createContainerBlock('grid-designer-events-panel', 'grid-designer-panel', [
+        createFormBlock(
+          eventDesignerBlockId,
+          '事件配置',
+          createEventDesignerSchema(),
+          'grid-designer-array-table-card',
+        ),
+      ]),
+    ];
+
+    const createSchemaModel = (
+      schema: LowCodeFormSchema,
+      source: Record<string, unknown>,
+    ) =>
+      schema.fields.reduce<Record<string, unknown>>((model, field) => {
+        model[field.field] = cloneDeep(source[field.field]);
+        return model;
+      }, {});
+
+    const createGridDesignerFormModels = () => {
+      const advancedModels = state.advancedModels as Record<string, Record<string, unknown>>;
+
+      return {
+        [columnDesignerBlockId]: {
+          columns: state.columns as unknown as Record<string, unknown>[],
+        },
+        [businessInfoBlockId]: createSchemaModel(
+          businessInfoSchema,
+          state.business as unknown as Record<string, unknown>,
+        ),
+        [gridOptionsBlockId]: createSchemaModel(
+          gridOptionsSchema,
+          state.gridOptions as Record<string, unknown>,
+        ),
+        [rowColumnConfigBlockId]: createSchemaModel(
+          rowColumnConfigSchema,
+          state.gridOptions as Record<string, unknown>,
+        ),
+        [eventDesignerBlockId]: {
+          gridEvents: state.gridEvents as unknown as Record<string, unknown>[],
+        },
+        ...advancedGridConfigDefinitions.reduce<Record<string, Record<string, unknown>>>(
+          (models, config) => {
+            models[advancedBlockId(config.field)] = advancedModels[config.field] ?? {};
+            return models;
+          },
+          {},
+        ),
+        [extraPropsBlockId]: {
+          value: advancedModels.extraPropsJson ?? {},
+        },
+      };
+    };
+
+    const readRuntimeFormValues = (event: LowCodeRuntimeEvent) =>
+      isPlainRecord(event.payload) && isPlainRecord(event.payload.values)
+        ? event.payload.values
+        : null;
+
+    const syncGridDesignerRuntimeEvent = (event: LowCodeRuntimeEvent) => {
+      if (event.name !== 'form.fieldChange') return;
+
+      const values = readRuntimeFormValues(event);
+      if (!values) return;
+
+      if (event.blockId === columnDesignerBlockId) {
+        syncColumnsFromRows(values.columns);
+        return;
+      }
+
+      if (event.blockId === eventDesignerBlockId) {
+        syncEventsFromRows(values.gridEvents);
+        return;
+      }
+
+      if (event.blockId === businessInfoBlockId) {
+        Object.assign(state.business, values);
+        if (event.payload?.field === 'postDataJson') {
+          normalizePostDataJsonField(event.payload.value);
+        }
+        return;
+      }
+
+      if (event.blockId === gridOptionsBlockId || event.blockId === rowColumnConfigBlockId) {
+        Object.assign(state.gridOptions, values);
+        return;
+      }
+
+      const advancedConfig = advancedGridConfigDefinitions.find(
+        (config) => event.blockId === advancedBlockId(config.field),
+      );
+
+      if (advancedConfig) {
+        syncAdvancedConfigModel(advancedConfig.field, values);
+        return;
+      }
+
+      if (event.blockId === extraPropsBlockId) {
+        syncAdvancedConfigModel(
+          'extraPropsJson',
+          isPlainRecord(values.value) ? values.value : {},
+        );
+      }
+    };
+
+    const createGridDesignerDialogBlocks = (): LowCodePageBlock[] => [
+      createContainerBlock('grid-designer-workbench', 'grid-designer-workbench', [
+        {
+          id: 'grid-designer-tabs',
+          kind: 'tabs',
+          className: 'grid-designer-tabs',
+          defaultKey: state.activeTab,
+          layout: { fillRemaining: true },
+          tabs: [
+            {
+              key: 'columns',
+              label: '列设计',
+              blocks: createColumnDesignerBlocks(),
+            },
+            {
+              key: 'info',
+              label: '表格信息设计',
+              blocks: createBaseInfoBlocks(),
+            },
+            {
+              key: 'events',
+              label: '事件属性',
+              blocks: createEventDesignerBlocks(),
+            },
+          ],
+        },
+      ]),
+    ];
+
+    const createGridDesignerDialogSchema = (): GlobalDialogContentNode[] => [
+      {
+        type: 'lowcodeBlocks',
+        className: 'grid-designer-lowcode-dialog',
+        style: {
+          height: 'min(760px, calc(100vh - 154px))',
+          minHeight: '560px',
+        },
+        lowcode: {
+          blocks: createGridDesignerDialogBlocks(),
+          formModels: createGridDesignerFormModels(),
+          onRuntimeEvent: syncGridDesignerRuntimeEvent,
+        },
+      },
+    ];
+
+    return () => null;
   },
 });
 

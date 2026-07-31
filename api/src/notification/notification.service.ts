@@ -224,7 +224,7 @@ export class NotificationService implements ServiceExecutor {
   }
 
   private async listMessages(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
+    const { client, targetUserId } = await this.resolveMessageTarget(postData, context);
     const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
     const page = Math.max(1, Math.floor(readNumber(postData.page, 1)));
     const pageSize = Math.min(100, Math.max(1, Math.floor(readNumber(postData.pageSize ?? postData.page_size, 20))));
@@ -237,7 +237,7 @@ export class NotificationService implements ServiceExecutor {
       .from('notification_messages')
       .select('*')
       .eq('tenant_id', tenantId)
-      .eq('recipient_id', user.id);
+      .eq('recipient_id', targetUserId);
 
     if (category) {
       query = query.eq('category', category);
@@ -268,14 +268,14 @@ export class NotificationService implements ServiceExecutor {
   }
 
   private async getUnreadCount(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
+    const { client, targetUserId } = await this.resolveMessageTarget(postData, context);
     const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
 
     const totalResult = await client
       .from('notification_messages')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
-      .eq('recipient_id', user.id)
+      .eq('recipient_id', targetUserId)
       .is('read_at', null)
       .is('archived_at', null);
 
@@ -288,7 +288,7 @@ export class NotificationService implements ServiceExecutor {
       .from('notification_messages')
       .select('category')
       .eq('tenant_id', tenantId)
-      .eq('recipient_id', user.id)
+      .eq('recipient_id', targetUserId)
       .is('read_at', null)
       .is('archived_at', null);
 
@@ -310,7 +310,7 @@ export class NotificationService implements ServiceExecutor {
   }
 
   private async markRead(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
+    const { client, targetUserId } = await this.resolveMessageTarget(postData, context);
     const ids = [
       ...readStringArray(postData.ids),
       ...readStringArray(postData.messageIds ?? postData.message_ids),
@@ -325,7 +325,7 @@ export class NotificationService implements ServiceExecutor {
       .from('notification_messages')
       .update({ read_at: new Date().toISOString() })
       .in('id', [...new Set(ids)])
-      .eq('recipient_id', user.id)
+      .eq('recipient_id', targetUserId)
       .select('id');
 
     if (error) {
@@ -339,7 +339,7 @@ export class NotificationService implements ServiceExecutor {
   }
 
   private async markAllRead(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
+    const { client, targetUserId } = await this.resolveMessageTarget(postData, context);
     const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
     const category = readCategory(postData.category);
 
@@ -347,7 +347,7 @@ export class NotificationService implements ServiceExecutor {
       .from('notification_messages')
       .update({ read_at: new Date().toISOString() })
       .eq('tenant_id', tenantId)
-      .eq('recipient_id', user.id)
+      .eq('recipient_id', targetUserId)
       .is('read_at', null)
       .is('archived_at', null);
 
@@ -368,7 +368,7 @@ export class NotificationService implements ServiceExecutor {
   }
 
   private async archiveMessage(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
+    const { client, targetUserId } = await this.resolveMessageTarget(postData, context);
     const now = new Date().toISOString();
     const ids = [
       ...readStringArray(postData.ids),
@@ -387,7 +387,7 @@ export class NotificationService implements ServiceExecutor {
         archived_at: now
       })
       .in('id', [...new Set(ids)])
-      .eq('recipient_id', user.id)
+      .eq('recipient_id', targetUserId)
       .select('id');
 
     if (error) {
@@ -397,6 +397,21 @@ export class NotificationService implements ServiceExecutor {
     return {
       success: true,
       count: data?.length ?? 0
+    };
+  }
+
+  private async resolveMessageTarget(postData: PostData, context: ServiceContext) {
+    const { client, user } = await getCurrentUser(context);
+    const targetUserId = readOptionalString(postData.userId ?? postData.user_id) || user.id;
+    if (targetUserId === user.id) {
+      return { client, user, targetUserId };
+    }
+
+    const admin = await requireAdmin(context, ['notification.messages.manage', 'admin.users.manage']);
+    return {
+      client: resolveAdminClient(admin.client),
+      user: admin.user,
+      targetUserId
     };
   }
 

@@ -69,6 +69,7 @@ import type { NotificationMessage } from '~/composables/useNotificationApi';
 
 const notificationApi = useNotificationApi();
 const route = useRoute();
+const auth = useAuth();
 
 const rootEl = ref<HTMLElement | null>(null);
 const open = ref(false);
@@ -175,6 +176,15 @@ watch(
   () => route.fullPath,
   () => {
     open.value = false;
+    void loadCount();
+  }
+);
+
+watch(
+  () => auth.user.value?.id,
+  () => {
+    open.value = false;
+    messages.value = [];
     void loadCount();
   }
 );

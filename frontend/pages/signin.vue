@@ -3,7 +3,7 @@
     <section class="auth-panel">
       <h1 class="page-title">Sign In</h1>
       <p class="page-description">
-        Enter your email and password to access your account.
+        Enter your username and password to access your account.
       </p>
 
       <LowCodeForm

@@ -354,3 +354,27 @@ Require stack:
 }
 [WARN] Redis server does not require a password, but a password was supplied.
 [WARN] Redis server does not require a password, but a password was supplied.
+[WARN] Redis server does not require a password, but a password was supplied.
+[WARN] Redis server does not require a password, but a password was supplied.
+(node:64332) DeprecationWarning: Calling client.query() when the client is already executing a query is deprecated and will be removed in pg@9.0. Use async/await or an external async flow control mechanism instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+node:internal/modules/cjs/loader:1419
+  const err = new Error(`Cannot find module '${request}'`);
+              ^
+
+Error: Cannot find module 'C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_reflect-metadata@0.2.2_rxjs@7.8.2\node_modules\rxjs\dist\cjs\operators\index.js'
+    at createEsmNotFoundErr (node:internal/modules/cjs/loader:1419:15)
+    at finalizeEsmResolution (node:internal/modules/cjs/loader:1408:15)
+    at resolveExports (node:internal/modules/cjs/loader:650:14)
+    at Function._findPath (node:internal/modules/cjs/loader:717:31)
+    at node:internal/modules/cjs/loader:1369:27
+    at nextResolveSimple (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171 {
+  code: 'MODULE_NOT_FOUND',
+  path: 'C:\\Users\\11516\\Desktop\\project\\enLearn\\node_modules\\.pnpm\\@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_reflect-metadata@0.2.2_rxjs@7.8.2\\node_modules\\rxjs'
+}
+
+Node.js v22.20.0

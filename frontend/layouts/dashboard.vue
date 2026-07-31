@@ -6,13 +6,45 @@
         <span>工厂制造管理平台</span>
       </RouterLink>
 
+      <div v-if="advancedTools.length" class="admin-tool-launcher" @click.stop>
+        <button
+          class="admin-tool-launcher__trigger"
+          type="button"
+          :aria-expanded="advancedToolsOpen"
+          aria-haspopup="menu"
+          @click="advancedToolsOpen = !advancedToolsOpen"
+        >
+          <i class="ri-tools-line" aria-hidden="true" />
+          <span>高级功能</span>
+          <i
+            :class="advancedToolsOpen ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
+            aria-hidden="true"
+          />
+        </button>
+
+        <div v-if="advancedToolsOpen" class="admin-tool-panel" role="menu">
+          <RouterLink
+            v-for="tool in advancedTools"
+            :key="tool.code"
+            class="admin-tool-panel__item"
+            :class="{ 'is-active': isAdvancedToolActive(tool) }"
+            :to="tool.path"
+            role="menuitem"
+            @click="advancedToolsOpen = false"
+          >
+            <i :class="resolveAdvancedToolIcon(tool)" aria-hidden="true" />
+            <span>{{ tool.title }}</span>
+          </RouterLink>
+        </div>
+      </div>
+
       <div class="admin-top-actions">
         <ChatPopup />
         <NotificationBell />
         <label v-if="isDev" class="admin-user-switcher">
           <i class="ri-user-line" aria-hidden="true" />
           <select v-model="activeDevUserId" aria-label="快速切换用户">
-            <option v-for="user in auth.devTestUsers" :key="user.id" :value="user.id">
+            <option v-for="user in devTestUsers" :key="user.id" :value="user.id">
               {{ user.name }} · {{ user.title }}
             </option>
           </select>
@@ -132,10 +164,11 @@ const serviceApi = useServiceApi();
 const route = useRoute();
 const router = useRouter();
 const isDev = import.meta.env.DEV;
+const devTestUsers = computed(() => auth.devTestUsers.value);
 const activeDevUserId = computed({
   get: () =>
-    auth.devTestUsers.find((user) => user.id === auth.user.value?.id)?.id ??
-    auth.devTestUsers[0]?.id ??
+    devTestUsers.value.find((user) => user.id === auth.user.value?.id)?.id ??
+    devTestUsers.value[0]?.id ??
     '',
   set: (userId: string) => {
     auth.switchDevTestUser(userId);
@@ -146,6 +179,7 @@ const routes = ref<AdminRouteNode[]>([]);
 const expandedGroups = reactive<Record<string, boolean>>({});
 const visitedTabs = ref<Array<{ title: string; path: string }>>([]);
 const menuFilter = ref('');
+const advancedToolsOpen = ref(false);
 const menuContext = reactive<{
   visible: boolean;
   x: number;
@@ -160,9 +194,23 @@ const menuContext = reactive<{
 
 function ensureDevTestUserSelected() {
   if (!isDev) return;
-  if (auth.devTestUsers.some((user) => user.id === auth.user.value?.id)) return;
-  const defaultUserId = auth.devTestUsers[0]?.id;
+  if (devTestUsers.value.some((user) => user.id === auth.user.value?.id)) return;
+  const defaultUserId = devTestUsers.value[0]?.id;
   if (defaultUserId) auth.switchDevTestUser(defaultUserId);
+}
+
+async function loadDevTestUsers() {
+  if (!isDev) return;
+
+  try {
+    const users = await serviceApi.invoke<Record<string, unknown>[]>('admin', 'listUsers');
+    auth.setDevTestUsers(Array.isArray(users) ? users : []);
+  } catch (error) {
+    auth.setDevTestUsers([]);
+    console.warn('Dev user switcher could not load admin users.', error);
+  }
+
+  ensureDevTestUserSelected();
 }
 
 const fallbackRoutes: AdminRouteNode[] = [
@@ -173,14 +221,14 @@ const fallbackRoutes: AdminRouteNode[] = [
     children: [
       { code: 'dashboard-home', title: '工作台', path: '/dashboard' },
       { code: 'lowcode-pages', title: '低代码页面管理', path: '/dashboard/low-code', permission_code: 'lowcode.pages.manage' },
-      { code: 'file-management', title: '文件管理', path: '/dashboard/files' },
-      { code: 'entity-design', title: '实体设计器', path: '/dashboard/entity-design', permission_code: 'entity.design.manage' },
-      { code: 'lowcode-visual-designer', title: '可视化设计器', path: '/dashboard/low-code/designer', permission_code: 'lowcode.pages.manage' },
-      { code: 'workflow-designer', title: '审批流设计器', path: '/dashboard/workflow/designer', permission_code: 'workflow.definitions.manage' },
-      { code: 'trigger-workflow-designer', title: '触发器编排器', path: '/dashboard/trigger-workflow/designer', permission_code: 'workflow.definitions.manage' },
-      { code: 'advanced-print-designer', title: '打印设计器', path: '/dashboard/advanced/print-designer', permission_code: 'print.templates.manage' },
-      { code: 'print-designer', title: '打印模板', path: '/dashboard/print-designer', permission_code: 'print.templates.manage' },
-      { code: 'print-logs', title: '打印日志', path: '/dashboard/print/logs', permission_code: 'print.logs.view' }
+      { code: 'file-management', title: '文件管理', path: '/dashboard/files', icon: 'ri-folder-3-line' },
+      { code: 'entity-design', title: '实体设计器', path: '/dashboard/entity-design', icon: 'ri-database-2-line', permission_code: 'entity.design.manage' },
+      { code: 'lowcode-visual-designer', title: '可视化设计器', path: '/dashboard/low-code/designer', icon: 'ri-layout-masonry-line', permission_code: 'lowcode.pages.manage' },
+      { code: 'workflow-designer', title: '审批流设计器', path: '/dashboard/workflow/designer', icon: 'ri-git-merge-line', permission_code: 'workflow.definitions.manage' },
+      { code: 'trigger-workflow-designer', title: '触发器编排器', path: '/dashboard/trigger-workflow/designer', icon: 'ri-node-tree', permission_code: 'workflow.definitions.manage' },
+      { code: 'advanced-print-designer', title: '打印设计器', path: '/dashboard/advanced/print-designer', icon: 'ri-printer-line', permission_code: 'print.templates.manage' },
+      { code: 'print-designer', title: '打印模板', path: '/dashboard/print-designer', metadata: { group: 'lowcode-app' }, permission_code: 'print.templates.manage' },
+      { code: 'print-logs', title: '打印日志', path: '/dashboard/print/logs', metadata: { group: 'lowcode-app' }, permission_code: 'print.logs.view' }
     ]
   },
   {
@@ -188,13 +236,13 @@ const fallbackRoutes: AdminRouteNode[] = [
     title: '系统设置',
     path: '/dashboard/system',
     children: [
-      { code: 'system-users', title: '用户权限档案', path: '/dashboard/system/users', permission_code: 'admin.users.manage' },
-      { code: 'system-roles', title: '角色管理', path: '/dashboard/system/roles', permission_code: 'admin.roles.manage' },
-      { code: 'system-permissions', title: '权限管理', path: '/dashboard/system/permissions', permission_code: 'admin.permissions.manage' },
-      { code: 'system-routes', title: '动态路由', path: '/dashboard/system/routes', permission_code: 'admin.routes.manage' },
-      { code: 'system-entities', title: '实体管理', path: '/dashboard/system/entities', permission_code: 'admin.entities.manage' },
-      { code: 'system-file-entities', title: '文件存储实体', path: '/dashboard/system/file-entities', permission_code: 'admin.entities.manage' },
-      { code: 'system-execution-tasks', title: '系统执行任务', path: '/dashboard/system/execution-tasks', permission_code: 'workflow.runtime.manage' }
+      { code: 'system-users', title: '用户权限档案', path: '/dashboard/system/users', page_code: 'admin-system-users', permission_code: 'admin.users.manage' },
+      { code: 'system-roles', title: '角色管理', path: '/dashboard/system/roles', page_code: 'admin-system-roles', permission_code: 'admin.roles.manage' },
+      { code: 'system-permissions', title: '权限管理', path: '/dashboard/system/permissions', page_code: 'admin-system-permissions', permission_code: 'admin.permissions.manage' },
+      { code: 'system-routes', title: '动态路由', path: '/dashboard/system/routes', page_code: 'admin-system-routes', permission_code: 'admin.routes.manage' },
+      { code: 'system-entities', title: '实体管理', path: '/dashboard/system/entities', page_code: 'admin-system-entities', permission_code: 'admin.entities.manage' },
+      { code: 'system-file-entities', title: '文件存储实体', path: '/dashboard/system/file-entities', page_code: 'admin-system-file-entities', permission_code: 'admin.entities.manage' },
+      { code: 'system-execution-tasks', title: '系统执行任务', path: '/dashboard/system/execution-tasks', page_code: 'admin-system-execution-tasks', permission_code: 'workflow.runtime.manage' }
     ]
   }
 ];
@@ -212,7 +260,6 @@ const menuTitleOverrides: Record<string, string> = {
   'workflow-timer-jobs': '定时器任务'
 };
 
-const productionRouteCodes = new Set(['dashboard-home']);
 const advancedRouteCodes = new Set([
   'file-management',
   'entity-design',
@@ -222,6 +269,23 @@ const advancedRouteCodes = new Set([
   'workflow-designer',
   'trigger-workflow-designer'
 ]);
+const advancedToolOrder = [
+  'trigger-workflow-designer',
+  'advanced-print-designer',
+  'lowcode-visual-designer',
+  'workflow-designer',
+  'entity-design',
+  'file-management'
+];
+const advancedToolIconOverrides: Record<string, string> = {
+  'file-management': 'ri-folder-3-line',
+  'entity-design': 'ri-database-2-line',
+  'low-code-designer': 'ri-layout-masonry-line',
+  'lowcode-visual-designer': 'ri-layout-masonry-line',
+  'advanced-print-designer': 'ri-printer-line',
+  'workflow-designer': 'ri-git-merge-line',
+  'trigger-workflow-designer': 'ri-node-tree'
+};
 const hiddenRouteCodes = new Set(['business-root', 'system-root']);
 function getLowCodeDesignerLoadPageBus() {
   const scope = globalThis as any;
@@ -443,21 +507,40 @@ function buildLowCodeMenuGroups(pages: AdminRouteNode[]) {
   return groups;
 }
 
-function regroupMenuTree(nodes: AdminRouteNode[]) {
-  const pages = flattenMenuPages(nodes);
-  const productionPages = pages.filter((item) => productionRouteCodes.has(item.code));
-  const advancedPages = pages.filter((item) => advancedRouteCodes.has(item.code));
-  const lowCodePages = pages.filter(
-    (item) =>
-      !productionRouteCodes.has(item.code) &&
-      !advancedRouteCodes.has(item.code)
-  );
+function readRouteMetadata(item: AdminRouteNode) {
+  if (item.metadata && typeof item.metadata === 'object') return item.metadata;
+  if (!item.metadata_json) return {};
 
-  return [
-    buildMenuGroup('production-root', '生产运营', productionPages),
-    buildMenuGroup('lowcode-app-root', '低代码应用', buildLowCodeMenuGroups(lowCodePages)),
-    buildMenuGroup('advanced-root', '高级功能', advancedPages)
-  ].filter((group) => group.children.length);
+  try {
+    return JSON.parse(item.metadata_json) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
+function isAdvancedRoute(item: AdminRouteNode) {
+  const metadata = readRouteMetadata(item);
+  return (
+    advancedRouteCodes.has(item.code) ||
+    metadata.group === 'advanced' ||
+    metadata.navigation === 'top-tool'
+  );
+}
+
+function isLowCodeMenuRoute(item: AdminRouteNode) {
+  const metadata = readRouteMetadata(item);
+  return (
+    Boolean(item.page_code) ||
+    item.code === 'lowcode-pages' ||
+    metadata.group === 'lowcode-app'
+  );
+}
+
+function buildSidebarMenu(nodes: AdminRouteNode[]) {
+  const pages = flattenMenuPages(nodes).filter(
+    (item) => !isAdvancedRoute(item) && isLowCodeMenuRoute(item)
+  );
+  return buildLowCodeMenuGroups(pages);
 }
 
 function canViewRoute(node: AdminRouteNode) {
@@ -469,15 +552,42 @@ function flattenNodes(nodes: AdminRouteNode[]): AdminRouteNode[] {
   return nodes.flatMap((node) => [node, ...flattenNodes(node.children ?? [])]);
 }
 
-const menuTree = computed<AdminRouteNode[]>(() =>
-  regroupMenuTree(normalizeNodes(routes.value.length ? routes.value : fallbackRoutes))
+const normalizedRoutes = computed<AdminRouteNode[]>(() =>
+  normalizeNodes(routes.value.length ? routes.value : fallbackRoutes)
 );
+const allRoutePages = computed<AdminRouteNode[]>(() =>
+  flattenMenuPages(normalizedRoutes.value)
+);
+const advancedTools = computed<AdminRouteNode[]>(() => {
+  const byPath = new Map<string, AdminRouteNode>();
+  for (const item of allRoutePages.value.filter(isAdvancedRoute)) {
+    const current = byPath.get(item.path);
+    if (!current || item.code === 'advanced-print-designer') {
+      byPath.set(item.path, item);
+    }
+  }
+
+  return [...byPath.values()].sort((left, right) => {
+    const leftIndex = advancedToolOrder.indexOf(left.code);
+    const rightIndex = advancedToolOrder.indexOf(right.code);
+    if (leftIndex !== rightIndex) {
+      const normalizedLeftIndex = leftIndex < 0 ? Number.MAX_SAFE_INTEGER : leftIndex;
+      const normalizedRightIndex = rightIndex < 0 ? Number.MAX_SAFE_INTEGER : rightIndex;
+      return normalizedLeftIndex - normalizedRightIndex;
+    }
+    return (left.sort_order ?? 0) - (right.sort_order ?? 0);
+  });
+});
+const menuTree = computed<AdminRouteNode[]>(() => buildSidebarMenu(normalizedRoutes.value));
 const normalizedMenuFilter = computed(() => menuFilter.value.trim().toLowerCase());
 const filteredMenuTree = computed(() => filterMenuNodes(menuTree.value, normalizedMenuFilter.value));
 const flatMenu = computed<AdminRouteNode[]>(() => flattenNodes(menuTree.value));
 const activeTitle = computed<string>(
   () =>
-    flatMenu.value.find((item: AdminRouteNode) => item.path === route.path)?.title ??
+    [...flatMenu.value, ...advancedTools.value].find(
+      (item: AdminRouteNode) =>
+        item.path === route.path || route.path.startsWith(`${item.path}/`)
+    )?.title ??
     '工作台'
 );
 const contextLowCodePageCode = computed(() =>
@@ -528,6 +638,15 @@ function openMenuContext(payload: MenuContextPayload) {
 function closeMenuContext() {
   menuContext.visible = false;
   menuContext.item = null;
+}
+
+function resolveAdvancedToolIcon(item: AdminRouteNode) {
+  if (item.icon?.startsWith('ri-')) return item.icon;
+  return advancedToolIconOverrides[item.code] ?? 'ri-tools-line';
+}
+
+function isAdvancedToolActive(item: AdminRouteNode) {
+  return route.path === item.path || route.path.startsWith(`${item.path}/`);
 }
 
 function buildRouteSavePayload(item: AdminRouteNode, title: string) {
@@ -615,22 +734,29 @@ function handleAdminRoutesUpdated() {
 function handleMenuContextKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     closeMenuContext();
+    advancedToolsOpen.value = false;
   }
+}
+
+function closeFloatingPanels() {
+  closeMenuContext();
+  advancedToolsOpen.value = false;
 }
 
 onMounted(async () => {
   await auth.init();
+  await loadDevTestUsers();
   ensureDevTestUserSelected();
   await reloadRoutes();
   rememberTab();
   window.addEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
-  window.addEventListener('click', closeMenuContext);
+  window.addEventListener('click', closeFloatingPanels);
   window.addEventListener('keydown', handleMenuContextKeydown);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
-  window.removeEventListener('click', closeMenuContext);
+  window.removeEventListener('click', closeFloatingPanels);
   window.removeEventListener('keydown', handleMenuContextKeydown);
 });
 
@@ -638,6 +764,7 @@ watch(
   () => route.path,
   () => {
     closeMenuContext();
+    advancedToolsOpen.value = false;
     rememberTab();
   }
 );

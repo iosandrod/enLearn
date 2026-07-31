@@ -22,8 +22,11 @@
     "./designer": "./src/designer/index.ts",
     "./materials": "./src/materials/index.ts",
     "./runtime/global-dialog": "./src/runtime/global-dialog.ts",
+    "./runtime/page-reference-dialog": "./src/runtime/page-reference-dialog.ts",
     "./runtime/directives": "./src/runtime/directives.ts",
     "./core/host": "./src/core/host.ts",
+    "./types/lowcode": "./src/types/lowcode.ts",
+    "./lowcode/schema": "./src/lowcode/schema.ts",
     "./styles/visual-editor-utilities.scss": "./src/styles/visual-editor-utilities.scss"
   },
   "peerDependencies": {

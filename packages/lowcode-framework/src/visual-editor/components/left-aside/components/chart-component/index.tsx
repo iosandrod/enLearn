@@ -28,7 +28,7 @@ export default defineComponent({
         list={visualConfig.componentModules.chartComponents}
         group={{ name: 'components', pull: 'clone', put: false }}
         clone={cloneComponent}
-        item-key="_vid"
+        item-key="key"
       >
         {{
           item: ({ element }: { element: VisualEditorComponent }) => (

@@ -129,7 +129,7 @@ export function createTriggerApprovalTestWorkflow(
 ): WorkflowModel {
   const route = Array.from(
     new Set(
-      (options.approverIds?.length ? options.approverIds : ['u_ben', 'u_chen', 'u_dana'])
+      (options.approverIds?.length ? options.approverIds : [options.requesterId ?? 'approval-test-user'])
         .map((userId) => userId.trim())
         .filter(Boolean)
     )
@@ -143,7 +143,7 @@ export function createTriggerApprovalTestWorkflow(
     schemaVersion: WORKFLOW_SCHEMA_VERSION,
     code: options.code ?? 'trigger_approval_test',
     name: options.name ?? 'Trigger.dev 测试审批流',
-    description: `基于 approval-flow-trigger-vue 示例生成，默认发起人：${options.requesterId ?? 'u_alice'}。`,
+    description: `基于 approval-flow-trigger-vue 示例生成，默认发起人：${options.requesterId ?? 'approval-test-user'}。`,
     documentType: options.documentType ?? 'approval_flow_test',
     status: 'draft',
     nodes: [

@@ -15,6 +15,7 @@ export type {
 } from '../components/LcVxeModalRenderer';
 
 export * from './global-dialog';
+export * from './page-reference-dialog';
 export * from '../core';
 export * from './directives';
 export * from '../lowcode/builtin-pages';

@@ -10,6 +10,7 @@ export { default as LowCodeOverlayHost } from '../components/LowCodeOverlayHost.
 export { default as LowCodePageRenderer } from '../components/LowCodePageRenderer.vue';
 export { default as LowCodeTreeItem } from '../components/LowCodeTreeItem.vue';
 export * from './global-dialog';
+export * from './page-reference-dialog';
 export * from '../core';
 export * from './directives';
 export * from '../lowcode/builtin-pages';

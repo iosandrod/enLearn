@@ -46,7 +46,7 @@
     />
 
     <p v-if="message" :class="messageClass">{{ message }}</p>
-    <GlobalDialogHost />
+    <GlobalDialogHost v-if="showGlobalDialogHost" />
   </div>
 </template>
 
@@ -89,8 +89,12 @@ import {
   openGlobalDialog as openLowCodeGlobalDialog,
   type GlobalDialogConfig,
 } from '../runtime/global-dialog';
+import {
+  openLowCodePageReferenceDialog,
+  type LowCodePageReferenceDialogConfig,
+} from '../runtime/page-reference-dialog';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   page: LowCodePageRecord & {
     resolvedData?: Record<string, unknown>;
   };
@@ -100,7 +104,11 @@ const props = defineProps<{
   locale?: string;
   messages?: LowCodeMessages;
   theme?: LowCodeTheme;
-}>();
+  onRuntimeEvent?: (event: LowCodeRuntimeEvent) => Promise<void> | void;
+  showGlobalDialogHost?: boolean;
+}>(), {
+  showGlobalDialogHost: true,
+});
 
 const host = useLowCodeHost(() => ({
   serviceApi: props.serviceApi,
@@ -558,6 +566,7 @@ onBeforeUnmount(unsubscribeRuntimeEvents);
 async function publishRuntimeEvent(event: LowCodeRuntimeEvent) {
   try {
     await runtimeEventBus.publish(event);
+    await props.onRuntimeEvent?.(event);
   } catch (error) {
     reportRuntimeDirectiveError(error);
   }
@@ -605,6 +614,23 @@ function resolveDirectiveString(value: unknown, event: LowCodeRuntimeEvent, fall
 function resolveDirectiveRecord(value: unknown, event: LowCodeRuntimeEvent) {
   const resolved = resolveRuntimeValue(value, directiveScope(event));
   return isRecord(resolved) ? resolved : {};
+}
+
+function isLowCodePageRecordLike(value: unknown): value is LowCodePageRecord {
+  return isRecord(value) && isRecord(value.schema) && typeof value.code === 'string';
+}
+
+function resolvePageReferenceConfig(value: unknown, event: LowCodeRuntimeEvent) {
+  const resolved = resolveRuntimeValue(value, directiveScope(event));
+
+  if (isRecord(resolved) && isRecord(value) && isLowCodePageRecordLike(value.page)) {
+    return {
+      ...resolved,
+      page: value.page,
+    };
+  }
+
+  return resolved;
 }
 
 function resolveDirectiveData(directive: LowCodeRuntimeDirective, event: LowCodeRuntimeEvent) {
@@ -935,6 +961,75 @@ async function openGlobalDialogDirective(
   });
 }
 
+function getOptionalServiceApi() {
+  if (props.serviceApi) return props.serviceApi;
+
+  try {
+    return host.getServiceApi();
+  } catch {
+    return undefined;
+  }
+}
+
+function getOptionalRouter() {
+  return props.router ?? host.getRouter();
+}
+
+function getCurrentRoute() {
+  return props.route ?? host.getRoute();
+}
+
+async function openPageReferenceDialogDirective(
+  directive: LowCodeRuntimeDirective,
+  event: LowCodeRuntimeEvent
+) {
+  const rawConfig = resolvePageReferenceConfig(
+    directive.config ?? directive.value ?? {},
+    event
+  );
+  if (!isRecord(rawConfig)) return;
+
+  const result = await openLowCodePageReferenceDialog({
+    ...(rawConfig as LowCodePageReferenceDialogConfig),
+    serviceApi:
+      (rawConfig as LowCodePageReferenceDialogConfig).serviceApi ?? getOptionalServiceApi(),
+    router: (rawConfig as LowCodePageReferenceDialogConfig).router ?? getOptionalRouter(),
+    route: (rawConfig as LowCodePageReferenceDialogConfig).route ?? getCurrentRoute(),
+    locale: (rawConfig as LowCodePageReferenceDialogConfig).locale ?? props.locale,
+    messages: (rawConfig as LowCodePageReferenceDialogConfig).messages ?? props.messages,
+    theme: (rawConfig as LowCodePageReferenceDialogConfig).theme ?? props.theme,
+  });
+  const resultPayload = isRecord(result.payload) ? result.payload : {};
+  const row = isRecord(resultPayload.row) ? resultPayload.row : undefined;
+  const followUpDirectives = resolveDialogFollowUpDirectives(directive, result.action);
+  const resultEvent = resolveDirectiveString(
+    directive.resultEvent ?? directive.event,
+    event,
+    `reference.${result.action}`
+  );
+
+  if (!resultEvent && !followUpDirectives.length) return;
+
+  await publishRuntimeEvent({
+    name: resultEvent,
+    blockId: event.blockId,
+    blockKind: event.blockKind,
+    timestamp: Date.now(),
+    payload: {
+      action: result.action,
+      values: result.values,
+      payload: result.payload,
+      ...(row ? { row } : {}),
+      value: resultPayload.value,
+      label: resultPayload.label,
+      page: resultPayload.page,
+      referenceBlockId: resultPayload.blockId,
+      referenceBlockKind: resultPayload.blockKind,
+      directives: followUpDirectives,
+    },
+  });
+}
+
 function setBlockOpen(blockId: string, open: boolean) {
   const target = findRuntimeBlock(blockId);
   if (target && 'open' in target) {
@@ -982,6 +1077,7 @@ async function executeRuntimeDirective(
     setBlockOpen,
     toggleBlockOpen,
     openGlobalDialog: openGlobalDialogDirective,
+    openPageReferenceDialog: openPageReferenceDialogDirective,
   };
 
   await executeLowCodeRuntimeDirective(directive, event, directiveContext);

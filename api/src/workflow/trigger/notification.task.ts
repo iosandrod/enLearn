@@ -1082,6 +1082,14 @@ function localInboxTemplate(eventType: string): NotificationTemplateRow {
     };
   }
 
+  if (eventType === 'approval.instance.approved') {
+    return {
+      code: 'approval_instance_approved_local_inbox',
+      title_template: '流程已通过：{{title}}',
+      content_template: '审批流程已全部完成。'
+    };
+  }
+
   return fallbackTemplate('inbox');
 }
 

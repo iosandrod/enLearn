@@ -41,25 +41,33 @@ export type NotificationDelivery = {
 
 export function useNotificationApi() {
   const serviceApi = useServiceApi();
+  const auth = useAuth();
+
+  function withCurrentUser(postData: Record<string, unknown> = {}) {
+    return {
+      ...postData,
+      ...(auth.user.value?.id ? { userId: auth.user.value.id } : {})
+    };
+  }
 
   function listMessages(postData: Record<string, unknown> = {}) {
-    return serviceApi.invoke<NotificationMessage[]>('notification', 'listMessages', postData);
+    return serviceApi.invoke<NotificationMessage[]>('notification', 'listMessages', withCurrentUser(postData));
   }
 
   function getUnreadCount(postData: Record<string, unknown> = {}) {
-    return serviceApi.invoke<NotificationUnreadCount>('notification', 'getUnreadCount', postData);
+    return serviceApi.invoke<NotificationUnreadCount>('notification', 'getUnreadCount', withCurrentUser(postData));
   }
 
   function markRead(ids: string[]) {
-    return serviceApi.invoke<{ success: boolean; count: number }>('notification', 'markRead', { ids });
+    return serviceApi.invoke<{ success: boolean; count: number }>('notification', 'markRead', withCurrentUser({ ids }));
   }
 
   function markAllRead(postData: Record<string, unknown> = {}) {
-    return serviceApi.invoke<{ success: boolean; count: number }>('notification', 'markAllRead', postData);
+    return serviceApi.invoke<{ success: boolean; count: number }>('notification', 'markAllRead', withCurrentUser(postData));
   }
 
   function archiveMessage(ids: string[]) {
-    return serviceApi.invoke<{ success: boolean; count: number }>('notification', 'archiveMessage', { ids });
+    return serviceApi.invoke<{ success: boolean; count: number }>('notification', 'archiveMessage', withCurrentUser({ ids }));
   }
 
   function getPreferences(postData: Record<string, unknown> = {}) {

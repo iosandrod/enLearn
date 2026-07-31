@@ -10,7 +10,8 @@ import type {
   EmailPasswordAuthDto,
   OAuthUrlDto,
   RefreshSessionDto,
-  SetSessionDto
+  SetSessionDto,
+  SignInPasswordAuthDto
 } from './auth.dto';
 
 type PublicUser = Pick<
@@ -35,6 +36,14 @@ type PublicSession = Pick<
 
 function throwAuthError(error: AuthError | null, fallback: string): never {
   throw new UnauthorizedException(error?.message ?? fallback);
+}
+
+const ADMIN_LOGIN_ALIAS = 'admin';
+const ADMIN_LOGIN_EMAIL = '1151685410@qq.com';
+
+function normalizeLoginEmail(email: string) {
+  const trimmedEmail = email.trim();
+  return trimmedEmail.toLowerCase() === ADMIN_LOGIN_ALIAS ? ADMIN_LOGIN_EMAIL : trimmedEmail;
 }
 
 function toPublicUser(user: User): PublicUser {
@@ -64,10 +73,10 @@ function toPublicSession(session: Session): PublicSession {
 
 @Injectable()
 export class AuthService {
-  async signInWithPassword(dto: EmailPasswordAuthDto) {
+  async signInWithPassword(dto: SignInPasswordAuthDto) {
     const supabase = createSupabaseClient('public');
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: dto.email.trim(),
+      email: normalizeLoginEmail(dto.email),
       password: dto.password
     });
 

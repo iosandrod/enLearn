@@ -169,6 +169,8 @@ export class WorkflowService implements ServiceExecutor {
           body: stripUndefined({
             tenantId: postData.tenantId,
             userId: postData.userId,
+            approverIds: postData.approverIds,
+            schema: postData.schema,
             timeoutMs: postData.timeoutMs,
             intervalMs: postData.intervalMs
           })

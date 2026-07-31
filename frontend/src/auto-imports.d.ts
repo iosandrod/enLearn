@@ -7,7 +7,6 @@
 export {}
 declare global {
   const $fetch: typeof import('@/src/spa-compat').$fetch
-  const DEV_TEST_USERS: typeof import('../composables/useAuth').DEV_TEST_USERS
   const EffectScope: typeof import('vue').EffectScope
   const computed: typeof import('vue').computed
   const createApp: typeof import('vue').createApp
@@ -114,7 +113,6 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly $fetch: UnwrapRef<typeof import('@/src/spa-compat')['$fetch']>
-    readonly DEV_TEST_USERS: UnwrapRef<typeof import('../composables/useAuth')['DEV_TEST_USERS']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>

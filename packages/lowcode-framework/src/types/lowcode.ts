@@ -279,6 +279,8 @@ export type LowCodePageRelations = {
 
 export type LowCodeMaterialVersionedBlock = {
   materialVersion?: string;
+  className?: unknown;
+  style?: unknown;
   layout?: {
     fillRemaining?: boolean;
   };

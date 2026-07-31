@@ -56,6 +56,10 @@ export type LowCodeRuntimeDirectiveContext = {
     directive: LowCodeRuntimeDirective,
     event: LowCodeRuntimeEvent
   ): Promise<void> | void;
+  openPageReferenceDialog?(
+    directive: LowCodeRuntimeDirective,
+    event: LowCodeRuntimeEvent
+  ): Promise<void> | void;
 };
 
 export type LowCodeRuntimeDirectiveHandler = (
@@ -204,6 +208,11 @@ export function registerDefaultLowCodeRuntimeDirectives() {
   registerLowCodeRuntimeDirectiveAliases(
     ['openGlobalDialog', 'openDialog'],
     (directive, event, context) => context.openGlobalDialog?.(directive, event)
+  );
+
+  registerLowCodeRuntimeDirectiveAliases(
+    ['openPageReferenceDialog', 'openLowCodePageReferenceDialog', 'openReferenceDialog'],
+    (directive, event, context) => context.openPageReferenceDialog?.(directive, event)
   );
 }
 

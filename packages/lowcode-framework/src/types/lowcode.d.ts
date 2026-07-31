@@ -201,6 +201,8 @@ export type LowCodePageDataSource = {
 };
 export type LowCodeMaterialVersionedBlock = {
     materialVersion?: string;
+    className?: unknown;
+    style?: unknown;
 };
 export type LowCodePageTextBlock = LowCodeMaterialVersionedBlock & {
     id: string;

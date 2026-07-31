@@ -3,6 +3,7 @@
     :is="materialComponent"
     v-if="materialComponent"
     :class="blockClass"
+    :style="blockStyle"
     :block="block"
     :resolved-data="resolvedData"
     :form-models="formModels"
@@ -37,8 +38,12 @@ const props = defineProps<LowCodeBlockMaterialProps>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 
 const materialComponent = computed(() => getLowCodeBlockMaterial(props.block.kind)?.component);
-const blockClass = computed(() => ({
-  'lc-runtime-block': true,
-  'lc-runtime-block--fill': props.block.layout?.fillRemaining === true,
-}));
+const blockClass = computed(() => [
+  {
+    'lc-runtime-block': true,
+    'lc-runtime-block--fill': props.block.layout?.fillRemaining === true,
+  },
+  props.block.className,
+]);
+const blockStyle = computed(() => props.block.style);
 </script>

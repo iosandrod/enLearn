@@ -15,6 +15,7 @@ import type {
   WorkflowTaskCandidateRecord,
   WorkflowTaskRecord
 } from './runtime.types';
+import { runLocalNotificationDispatchTask } from '../trigger/notification.task';
 
 const NOTIFICATION_DISPATCH_TASK_ID = 'notification.dispatch';
 
@@ -66,6 +67,7 @@ export async function executeWorkflowInstance(
     await store.setInstanceStatus(payload.instanceId, 'approved', {
       status: 'approved'
     });
+    await emitWorkflowApprovedNotification(payload, store, waits, actor);
   }
 
   return {
@@ -528,6 +530,35 @@ async function triggerNotificationEvent(
       }
     );
   } catch (error) {
+    try {
+      await runLocalNotificationDispatchTask({
+        tenantId: payload.tenantId,
+        event: {
+          tenantId: payload.tenantId,
+          eventType: input.eventType,
+          sourceType: input.sourceType,
+          sourceId: input.sourceId,
+          actorId: actor.userId,
+          payload: input.payload,
+          idempotencyKey: input.idempotencyKey
+        }
+      });
+    } catch (fallbackError) {
+      await store.recordHistory(
+        payload.tenantId,
+        payload.instanceId,
+        'NOTIFICATION_LOCAL_DISPATCH_FAILED',
+        actor.userId,
+        {
+          eventType: input.eventType,
+          sourceType: input.sourceType,
+          sourceId: input.sourceId,
+          message: fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
+        },
+        `notification:${input.idempotencyKey}:local-dispatch-failed`
+      );
+    }
+
     await store.recordHistory(
       payload.tenantId,
       payload.instanceId,
@@ -542,6 +573,30 @@ async function triggerNotificationEvent(
       `notification:${input.idempotencyKey}:trigger-failed`
     );
   }
+}
+
+async function emitWorkflowApprovedNotification(
+  payload: WorkflowInstanceTaskPayload,
+  store: WorkflowRuntimeStore,
+  waits: WorkflowWaitDriver,
+  actor: RuntimeActor
+) {
+  if (!payload.initiatorId?.trim()) return;
+
+  await triggerNotificationEvent(payload, store, waits, actor, {
+    eventType: 'approval.instance.approved',
+    sourceType: 'workflow_instance',
+    sourceId: payload.instanceId,
+    idempotencyKey: `approval-instance:${payload.instanceId}:approved`,
+    payload: {
+      title: payload.title,
+      instanceId: payload.instanceId,
+      definitionId: payload.definitionId,
+      recipientIds: [payload.initiatorId],
+      linkUrl: `/dashboard/workflow/instances/${payload.instanceId}`,
+      priority: 'normal'
+    }
+  });
 }
 
 function recipientIdsForTask(

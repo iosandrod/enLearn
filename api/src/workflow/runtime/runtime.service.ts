@@ -54,24 +54,54 @@ export class RuntimeService {
       variables
     });
 
+    const triggerPayload = {
+      instanceId: instance.id,
+      tenantId: instance.tenantId,
+      definitionId: definition.id,
+      definitionVersion: definition.version,
+      title: instance.title,
+      ...(actor.userId ? { initiatorId: actor.userId } : {}),
+      schema: definition.schema,
+      variables
+    };
+
     try {
-      const run = await this.triggerClient.triggerWorkflow({
-        instanceId: instance.id,
-        tenantId: instance.tenantId,
-        definitionId: definition.id,
-        definitionVersion: definition.version,
-        title: instance.title,
-        ...(actor.userId ? { initiatorId: actor.userId } : {}),
-        schema: definition.schema,
-        variables
-      });
+      const run = await this.triggerClient.triggerWorkflow(triggerPayload);
       await this.store.setTriggerRun(instance.id, run.id);
     } catch (error) {
-      await this.store.setInstanceStatus(instance.id, 'failed', {
-        message: error instanceof Error ? error.message : String(error),
-        phase: 'triggerWorkflow'
-      });
-      throw error;
+      const localTriggerClient = this.triggerClient as WorkflowTriggerClient & {
+        startLocalWorkflowExecution?: (
+          payload: typeof triggerPayload,
+          store: WorkflowRuntimeStore,
+          originalError: unknown
+        ) => { id: string };
+      };
+
+      if (localTriggerClient.startLocalWorkflowExecution) {
+        const run = localTriggerClient.startLocalWorkflowExecution(
+          triggerPayload,
+          this.store,
+          error
+        );
+        await this.store.setTriggerRun(instance.id, run.id);
+        await this.store.recordHistory(
+          instance.tenantId,
+          instance.id,
+          'LOCAL_WORKFLOW_EXECUTION_STARTED',
+          actor.userId,
+          {
+            triggerRunId: run.id,
+            triggerError: error instanceof Error ? error.message : String(error)
+          },
+          `workflow:${instance.id}:local-execution-started`
+        );
+      } else {
+        await this.store.setInstanceStatus(instance.id, 'failed', {
+          message: error instanceof Error ? error.message : String(error),
+          phase: 'triggerWorkflow'
+        });
+        throw error;
+      }
     }
 
     return this.store.getInstance(instance.id);

@@ -68,6 +68,7 @@ function hasGridEventConfig(key: string) {
 }
 
 function shouldPublishDesignedGridEvent(key: string) {
+  if (['rowCurrentChange', 'rowDblclick', 'cellDblclick'].includes(key)) return true;
   if (!props.block.schema.events && !props.block.schema.eventNames) return true;
   return hasGridEventConfig(key);
 }
@@ -119,6 +120,7 @@ function handleRowCurrentChange(payload: {
   if (!shouldPublishDesignedGridEvent('rowCurrentChange')) return;
 
   emitRuntimeEvent(getGridEventName('rowCurrentChange', 'grid.rowCurrentChange'), {
+    key: 'rowCurrentChange',
     ...payload,
     directives: getGridEventDirectives('rowCurrentChange'),
   });
@@ -131,6 +133,7 @@ function handleRowDblclick(payload: {
   if (!shouldPublishDesignedGridEvent('rowDblclick')) return;
 
   emitRuntimeEvent(getGridEventName('rowDblclick', 'grid.rowDblclick'), {
+    key: 'rowDblclick',
     ...payload,
     directives: getGridEventDirectives('rowDblclick'),
   });
@@ -143,6 +146,7 @@ function handleCellDblclick(payload: {
   if (!shouldPublishDesignedGridEvent('cellDblclick')) return;
 
   emitRuntimeEvent(getGridEventName('cellDblclick', 'grid.cellDblclick'), {
+    key: 'cellDblclick',
     ...payload,
     directives: getGridEventDirectives('cellDblclick'),
   });

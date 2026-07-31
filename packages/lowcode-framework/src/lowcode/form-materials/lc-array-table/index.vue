@@ -1,6 +1,6 @@
 <template>
   <div class="lc-array-table">
-    <div class="lc-array-table__toolbar">
+    <div v-if="showToolbar" :class="['lc-array-table__toolbar', `is-${toolbarAlign}`]">
       <vxe-button size="mini" status="primary" @click="addRow">
         {{ addText }}
       </vxe-button>
@@ -14,6 +14,9 @@
       class="lc-array-table__grid"
       :data="rows"
       :row-config="{ keyField: rowKey }"
+      :height="tableHeight"
+      @cell-click="handleCellClick"
+      @row-dblclick="handleRowDblclick"
     >
       <vxe-column type="seq" width="42" />
       <vxe-column
@@ -29,6 +32,7 @@
           <vxe-switch
             v-if="column.component === 'vxe-switch'"
             :model-value="Boolean(scope.row[column.field])"
+            :disabled="column.readonly || Boolean(column.props?.disabled)"
             @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
           <vxe-select
@@ -37,6 +41,7 @@
             v-bind="column.props"
             transfer
             clearable
+            :disabled="column.readonly || Boolean(column.props?.disabled)"
             @update:model-value="(value) => setCell(scope.row, column.field, readSelectValue(column, value))"
           >
             <vxe-option
@@ -56,13 +61,20 @@
               :placeholder="column.placeholder"
               readonly
             />
-            <button type="button" @click="openObjectEditor(scope.row, column)">编辑</button>
+            <button
+              type="button"
+              :disabled="column.readonly"
+              @click="openObjectEditor(scope.row, column)"
+            >
+              编辑
+            </button>
           </div>
           <vxe-textarea
             v-else-if="column.component === 'vxe-textarea'"
             :model-value="readString(scope.row[column.field])"
             :placeholder="column.placeholder"
             v-bind="column.props"
+            :readonly="column.readonly || Boolean(column.props?.readonly)"
             @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
           <vxe-password-input
@@ -71,6 +83,7 @@
             :placeholder="column.placeholder"
             v-bind="column.props"
             clearable
+            :readonly="column.readonly || Boolean(column.props?.readonly)"
             @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
           <vxe-number-input
@@ -78,6 +91,7 @@
             :model-value="toNumber(scope.row[column.field])"
             :placeholder="column.placeholder"
             v-bind="column.props"
+            :readonly="column.readonly || Boolean(column.props?.readonly)"
             @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
           <LcJsonEditor
@@ -92,15 +106,17 @@
             :placeholder="column.placeholder"
             v-bind="column.props"
             clearable
+            :readonly="column.readonly || Boolean(column.props?.readonly)"
             @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
           </template>
         </template>
       </vxe-column>
-      <vxe-column title="操作" width="96" fixed="right">
+      <vxe-column v-if="showActions" title="操作" :width="actionWidth" fixed="right">
         <template #default="scope">
           <div v-if="isRecord(scope?.row)" class="lc-array-table__actions">
             <button
+              v-if="movable"
               type="button"
               :disabled="getRowIndex(scope.row) <= 0"
               @click="moveRow(scope.row, -1)"
@@ -108,13 +124,25 @@
               上
             </button>
             <button
+              v-if="movable"
               type="button"
               :disabled="getRowIndex(scope.row) >= rows.length - 1"
               @click="moveRow(scope.row, 1)"
             >
               下
             </button>
-            <button type="button" class="is-danger" @click="removeRow(scope.row)">删</button>
+            <button v-if="copyable" type="button" @click="copyRow(scope.row)">
+              复
+            </button>
+            <button
+              v-if="removable"
+              type="button"
+              class="is-danger"
+              :disabled="rows.length <= minRows"
+              @click="removeRow(scope.row)"
+            >
+              删
+            </button>
           </div>
         </template>
       </vxe-column>
@@ -140,6 +168,7 @@ type ArrayTableColumn = {
   defaultValue?: unknown;
   props?: Record<string, unknown>;
   options?: LowCodeOption[];
+  readonly?: boolean;
 };
 
 type ArrayTableValueMode = 'object' | 'primitive';
@@ -174,6 +203,25 @@ const columns = computed(() => {
 });
 const rowKey = computed(() => readString(fieldProps.value.rowKey, '__rowKey'));
 const addText = computed(() => readString(fieldProps.value.addText, '新增'));
+const tableHeight = computed(() => readSize(fieldProps.value.height));
+const showToolbar = computed(() => fieldProps.value.showToolbar !== false);
+const showActions = computed(() => fieldProps.value.showActions !== false);
+const toolbarAlign = computed(() => readToolbarAlign(fieldProps.value.toolbarAlign));
+const copyable = computed(() => fieldProps.value.copyable === true);
+const movable = computed(() => fieldProps.value.movable !== false);
+const removable = computed(() => fieldProps.value.removable !== false);
+const preserveRowKey = computed(() => fieldProps.value.preserveRowKey === true);
+const minRows = computed(() => {
+  const numeric = Number(fieldProps.value.minRows);
+  return Number.isFinite(numeric) && numeric >= 0 ? numeric : 0;
+});
+const actionWidth = computed(() => {
+  const width = readSize(fieldProps.value.actionWidth);
+  if (width) return width;
+  if (copyable.value && movable.value && removable.value) return 120;
+  if (!movable.value || !removable.value) return 72;
+  return 96;
+});
 
 watch(
   () => props.modelValue,
@@ -198,6 +246,7 @@ function normalizeColumns(value: unknown): ArrayTableColumn[] {
         minWidth: readSize(column.minWidth),
         placeholder: readString(column.placeholder),
         defaultValue: column.defaultValue,
+        readonly: readBoolean(column.readonly),
         props: {
           ...(isRecord(column.props) ? cloneRecord(column.props) : {}),
           ...readJsonObject(column.propsJson),
@@ -257,6 +306,8 @@ function setCell(row: Record<string, unknown>, field: string, value: unknown) {
 }
 
 async function openObjectEditor(row: Record<string, unknown>, column: ArrayTableColumn) {
+  if (column.readonly) return;
+
   const value = createObjectEditorValue(row[column.field], column);
   const result = await openGlobalDialog({
     title: `编辑 ${column.title || column.field}`,
@@ -290,10 +341,23 @@ async function openObjectEditor(row: Record<string, unknown>, column: ArrayTable
 }
 
 function removeRow(row: Record<string, unknown>) {
+  if (rows.value.length <= minRows.value) return;
+
   const index = getRowIndex(row);
   if (index < 0) return;
   rows.value.splice(index, 1);
   commitRows();
+}
+
+function copyRow(row: Record<string, unknown>) {
+  const index = getRowIndex(row);
+  if (index < 0) return;
+
+  const copy = cloneRecord(row);
+  assignRowKey(copy, rows.value.length);
+  rows.value.splice(index + 1, 0, copy);
+  commitRows();
+  emitConfiguredEvent('onRowCopy', rowEventPayload(copy));
 }
 
 function moveRow(row: Record<string, unknown>, offset: number) {
@@ -317,20 +381,35 @@ function commitRows() {
       ? rows.value.map((row) => cloneValue(row[valueField.value]))
       : rows.value.map((row) => {
           const next = cloneRecord(row);
-          if (key.startsWith('__')) {
+          if (key.startsWith('__') && !preserveRowKey.value) {
             delete next[key];
           }
           return next;
         });
 
   emit('update:modelValue', value);
+  emitConfiguredEvent('onRowsChange', {
+    rows: cloneValue(value),
+    field: props.field,
+  });
 }
 
 function ensureRowKey(row: Record<string, unknown>, index: number) {
   const key = rowKey.value;
   if (row[key] === undefined || row[key] === '') {
-    row[key] = `${key.startsWith('__') ? 'row' : key}_${index + 1}`;
+    assignRowKey(row, index);
   }
+}
+
+function assignRowKey(row: Record<string, unknown>, index: number) {
+  const key = rowKey.value;
+  const prefix = key.startsWith('__') ? 'row' : key;
+  let seed = index + 1;
+
+  do {
+    row[key] = `${prefix}_${seed}`;
+    seed += 1;
+  } while (rows.value.some((item) => item !== row && item[key] === row[key]));
 }
 
 function getEmptyValue(column: ArrayTableColumn) {
@@ -453,6 +532,23 @@ function readSize(value: unknown) {
   return typeof value === 'number' || typeof value === 'string' ? value : undefined;
 }
 
+function readToolbarAlign(value: unknown) {
+  const align = readString(value, 'left');
+  return ['left', 'center', 'right', 'space-between'].includes(align) ? align : 'left';
+}
+
+function readBoolean(value: unknown, fallback = false) {
+  if (typeof value === 'boolean') return value;
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'y'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'n'].includes(normalized)) return false;
+  }
+
+  return fallback;
+}
+
 function readString(value: unknown, fallback = '') {
   if (typeof value === 'string') return value.trim() || fallback;
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
@@ -490,6 +586,37 @@ function resolveTemplate(value: unknown, index: number) {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function rowEventPayload(row: Record<string, unknown>, rawEvent: Record<string, unknown> = {}) {
+  return {
+    row,
+    index: getRowIndex(row),
+    rows: rows.value,
+    field: props.field,
+    rawEvent,
+  };
+}
+
+function emitConfiguredEvent(name: string, payload: Record<string, unknown>) {
+  const directHandler = fieldProps.value[name];
+  const events = isRecord(fieldProps.value.events) ? fieldProps.value.events : {};
+  const eventHandler = events[name];
+  const handler = typeof directHandler === 'function' ? directHandler : eventHandler;
+
+  if (typeof handler === 'function') {
+    handler(payload);
+  }
+}
+
+function handleCellClick(payload: unknown) {
+  if (!isRecord(payload) || !isRecord(payload.row)) return;
+  emitConfiguredEvent('onRowClick', rowEventPayload(payload.row, payload));
+}
+
+function handleRowDblclick(payload: unknown) {
+  if (!isRecord(payload) || !isRecord(payload.row)) return;
+  emitConfiguredEvent('onRowDblclick', rowEventPayload(payload.row, payload));
 }
 
 function isSameValue(prev: unknown, next: unknown) {
@@ -530,7 +657,19 @@ function cloneValue(value: unknown) {
 .lc-array-table__toolbar {
   display: flex;
   min-width: 0;
+  justify-content: flex-start;
+}
+
+.lc-array-table__toolbar.is-center {
+  justify-content: center;
+}
+
+.lc-array-table__toolbar.is-right {
   justify-content: flex-end;
+}
+
+.lc-array-table__toolbar.is-space-between {
+  justify-content: space-between;
 }
 
 .lc-array-table__viewport {

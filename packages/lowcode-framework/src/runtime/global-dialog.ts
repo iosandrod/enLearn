@@ -10,6 +10,10 @@ import type {
   LowCodeField,
   LowCodeFormSchema,
   LowCodeGridSchema,
+  LowCodePageBlock,
+  LowCodePageGridBlock,
+  LowCodePageSearchFormBlock,
+  LowCodeRuntimeEvent,
 } from '../types/lowcode';
 
 export type GlobalDialogMaybeRef<T> = T | Ref<T>;
@@ -75,17 +79,21 @@ export type GlobalDialogFormConfig<
   TValues extends Record<string, unknown> = Record<string, unknown>,
 > = {
   schema: GlobalDialogMaybeRef<LowCodeFormSchema>;
-  model?: TValues;
+  model?: GlobalDialogMaybeRef<Record<string, unknown>>;
   optionSources?: GlobalDialogMaybeRef<Record<string, unknown>>;
   loading?: GlobalDialogMaybeRef<boolean>;
   props?: Record<string, unknown>;
+  onUpdateModel?: (
+    values: Record<string, unknown>,
+    context: GlobalDialogContext<TValues>,
+  ) => Promise<void> | void;
   onSubmit?: (
-    values: TValues,
+    values: Record<string, unknown>,
     context: GlobalDialogContext<TValues>,
   ) => Promise<void> | void;
   onAction?: (
     action: LowCodeAction,
-    values: TValues,
+    values: Record<string, unknown>,
     context: GlobalDialogContext<TValues>,
   ) => Promise<void> | void;
   onFieldChange?: (
@@ -108,6 +116,70 @@ export type GlobalDialogGridConfig = {
   events?: Record<string, (...args: unknown[]) => void>;
 };
 
+export type GlobalDialogLowCodeBlocksConfig<
+  TValues extends Record<string, unknown> = Record<string, unknown>,
+> = {
+  blocks: GlobalDialogMaybeRef<LowCodePageBlock[]>;
+  resolvedData?: GlobalDialogMaybeRef<Record<string, unknown>>;
+  formModels?: GlobalDialogMaybeRef<Record<string, Record<string, unknown>>>;
+  searchFilters?: GlobalDialogMaybeRef<Record<string, Record<string, unknown>>>;
+  loadingBlockId?: GlobalDialogMaybeRef<string>;
+  loadingGridId?: GlobalDialogMaybeRef<string>;
+  props?: Record<string, unknown>;
+  onFormSubmit?: (
+    payload: { block: LowCodePageBlock; values: Record<string, unknown> },
+    context: GlobalDialogContext<TValues>,
+  ) => Promise<void> | void;
+  onFormAction?: (
+    payload: {
+      block: LowCodePageBlock;
+      action: LowCodeAction;
+      values: Record<string, unknown>;
+    },
+    context: GlobalDialogContext<TValues>,
+  ) => Promise<void> | void;
+  onGridEdit?: (
+    payload: { block: LowCodePageGridBlock; row: Record<string, unknown> },
+    context: GlobalDialogContext<TValues>,
+  ) => Promise<void> | void;
+  onGridDelete?: (
+    payload: { block: LowCodePageGridBlock; row: Record<string, unknown> },
+    context: GlobalDialogContext<TValues>,
+  ) => Promise<void> | void;
+  onToolbarAction?: (
+    payload: { block: LowCodePageBlock; action: LowCodeAction },
+    context: GlobalDialogContext<TValues>,
+  ) => Promise<void> | void;
+  onSearchSubmit?: (
+    payload: { block: LowCodePageSearchFormBlock; values: Record<string, unknown> },
+    context: GlobalDialogContext<TValues>,
+  ) => Promise<void> | void;
+  onSearchAction?: (
+    payload: {
+      block: LowCodePageSearchFormBlock;
+      action: LowCodeAction;
+      values: Record<string, unknown>;
+    },
+    context: GlobalDialogContext<TValues>,
+  ) => Promise<void> | void;
+  onRuntimeEvent?: (
+    event: LowCodeRuntimeEvent,
+    context: GlobalDialogContext<TValues>,
+  ) => Promise<void> | void;
+};
+
+export type GlobalDialogTabsPane<
+  TValues extends Record<string, unknown> = Record<string, unknown>,
+> = {
+  key?: string;
+  name: string | number;
+  label: GlobalDialogMaybeRef<string>;
+  className?: unknown;
+  style?: unknown;
+  props?: Record<string, unknown>;
+  children?: GlobalDialogContentNode<TValues>[];
+};
+
 export type GlobalDialogContentNode<
   TValues extends Record<string, unknown> = Record<string, unknown>,
 > =
@@ -128,6 +200,19 @@ export type GlobalDialogContentNode<
       actions: GlobalDialogActionConfig<TValues>[];
     }
   | {
+      type: 'tabs';
+      key?: string;
+      className?: unknown;
+      style?: unknown;
+      activeName?: GlobalDialogMaybeRef<string | number>;
+      props?: Record<string, unknown>;
+      panes: GlobalDialogTabsPane<TValues>[];
+      onChange?: (
+        name: string | number,
+        context: GlobalDialogContext<TValues>,
+      ) => Promise<void> | void;
+    }
+  | {
       type: 'form';
       key?: string;
       className?: unknown;
@@ -140,6 +225,13 @@ export type GlobalDialogContentNode<
       className?: unknown;
       style?: unknown;
       grid: GlobalDialogGridConfig;
+    }
+  | {
+      type: 'lowcodeBlocks';
+      key?: string;
+      className?: unknown;
+      style?: unknown;
+      lowcode: GlobalDialogLowCodeBlocksConfig<TValues>;
     }
   | {
       type: 'render';
