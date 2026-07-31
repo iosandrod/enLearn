@@ -92,6 +92,7 @@
 <script setup lang="ts">
 import { defineComponent, h, resolveComponent } from 'vue';
 import type { PropType } from 'vue';
+import { useServiceApi } from '../composables/useServiceApi';
 
 type AdminRouteNode = {
   id?: string;

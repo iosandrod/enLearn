@@ -8,3 +8,236 @@
 [WARN] Redis server does not require a password, but a password was supplied.
 [WARN] Redis server does not require a password, but a password was supplied.
 [WARN] Redis server does not require a password, but a password was supplied.
+[31m[Nest] 67456  - [39m2026/07/31 13:28:25 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated unexpectedly[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:28:46 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:29:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:29:26 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:29:46 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:30:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:30:07 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:30:27 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:30:47 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:31:07 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:31:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:31:48 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:32:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:32:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:32:48 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:33:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:33:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:33:49 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:34:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:34:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 67456  - [39m2026/07/31 13:34:49 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[WARN] Redis server does not require a password, but a password was supplied.
+[WARN] Redis server does not require a password, but a password was supplied.
+[31m[Nest] 62676  - [39m2026/07/31 13:35:22 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 13:35:42 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 13:36:02 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 13:36:22 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 13:36:42 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 14:33:44 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 62676  - [39m2026/07/31 14:33:47 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 14:34:07 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 62676  - [39m2026/07/31 14:34:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 14:34:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 14:34:48 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 14:35:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 14:35:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 14:35:48 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 14:36:09 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 62676  - [39m2026/07/31 14:36:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+node:internal/modules/cjs/loader:1383
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'reflect-metadata'
+Require stack:
+- C:\Users\11516\Desktop\project\enLearn\api\src\workflow-service\main.ts
+    at node:internal/modules/cjs/loader:1383:15
+    at nextResolveSimple (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171
+    at T._resolveFilename (file:///C:/Users/11516/Desktop/project/enLearn/api/node_modules/.pnpm/tsx@4.23.1/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\11516\\Desktop\\project\\enLearn\\api\\src\\workflow-service\\main.ts'
+  ]
+}
+
+Node.js v22.20.0
+node:internal/modules/cjs/loader:1383
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'reflect-metadata'
+Require stack:
+- C:\Users\11516\Desktop\project\enLearn\api\src\workflow-service\main.ts
+    at node:internal/modules/cjs/loader:1383:15
+    at nextResolveSimple (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171
+    at T._resolveFilename (file:///C:/Users/11516/Desktop/project/enLearn/api/node_modules/.pnpm/tsx@4.23.1/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\11516\\Desktop\\project\\enLearn\\api\\src\\workflow-service\\main.ts'
+  ]
+}
+
+Node.js v22.20.0
+node:internal/modules/cjs/loader:1383
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'reflect-metadata'
+Require stack:
+- C:\Users\11516\Desktop\project\enLearn\api\src\workflow-service\main.ts
+    at node:internal/modules/cjs/loader:1383:15
+    at nextResolveSimple (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171
+    at T._resolveFilename (file:///C:/Users/11516/Desktop/project/enLearn/api/node_modules/.pnpm/tsx@4.23.1/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\11516\\Desktop\\project\\enLearn\\api\\src\\workflow-service\\main.ts'
+  ]
+}
+
+Node.js v22.20.0
+node:internal/modules/cjs/loader:1383
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'reflect-metadata'
+Require stack:
+- C:\Users\11516\Desktop\project\enLearn\api\src\workflow-service\main.ts
+    at node:internal/modules/cjs/loader:1383:15
+    at nextResolveSimple (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171
+    at T._resolveFilename (file:///C:/Users/11516/Desktop/project/enLearn/api/node_modules/.pnpm/tsx@4.23.1/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\11516\\Desktop\\project\\enLearn\\api\\src\\workflow-service\\main.ts'
+  ]
+}
+
+Node.js v22.20.0
+node:internal/modules/cjs/loader:1383
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'reflect-metadata'
+Require stack:
+- C:\Users\11516\Desktop\project\enLearn\api\src\workflow-service\main.ts
+    at node:internal/modules/cjs/loader:1383:15
+    at nextResolveSimple (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171
+    at T._resolveFilename (file:///C:/Users/11516/Desktop/project/enLearn/api/node_modules/.pnpm/tsx@4.23.1/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\11516\\Desktop\\project\\enLearn\\api\\src\\workflow-service\\main.ts'
+  ]
+}
+
+Node.js v22.20.0
+node:internal/modules/cjs/loader:1383
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'reflect-metadata'
+Require stack:
+- C:\Users\11516\Desktop\project\enLearn\api\src\workflow-service\main.ts
+    at node:internal/modules/cjs/loader:1383:15
+    at nextResolveSimple (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171
+    at T._resolveFilename (file:///C:/Users/11516/Desktop/project/enLearn/api/node_modules/.pnpm/tsx@4.23.1/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\11516\\Desktop\\project\\enLearn\\api\\src\\workflow-service\\main.ts'
+  ]
+}
+
+Node.js v22.20.0
+node:internal/modules/cjs/loader:1383
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'reflect-metadata'
+Require stack:
+- C:\Users\11516\Desktop\project\enLearn\api\src\workflow-service\main.ts
+    at node:internal/modules/cjs/loader:1383:15
+    at nextResolveSimple (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171
+    at T._resolveFilename (file:///C:/Users/11516/Desktop/project/enLearn/api/node_modules/.pnpm/tsx@4.23.1/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\11516\\Desktop\\project\\enLearn\\api\\src\\workflow-service\\main.ts'
+  ]
+}
+
+Node.js v22.20.0
+node:internal/modules/cjs/loader:1383
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module 'reflect-metadata'
+Require stack:
+- C:\Users\11516\Desktop\project\enLearn\api\src\workflow-service\main.ts
+    at node:internal/modules/cjs/loader:1383:15
+    at nextResolveSimple (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at C:\Users\11516\Desktop\project\enLearn\api\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171
+    at T._resolveFilename (file:///C:/Users/11516/Desktop/project/enLearn/api/node_modules/.pnpm/tsx@4.23.1/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1030:22)
+    at Function._load (node:internal/modules/cjs/loader:1192:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\11516\\Desktop\\project\\enLearn\\api\\src\\workflow-service\\main.ts'
+  ]
+}
+
+Node.js v22.20.0
+[WARN] Redis server does not require a password, but a password was supplied.
+[WARN] Redis server does not require a password, but a password was supplied.

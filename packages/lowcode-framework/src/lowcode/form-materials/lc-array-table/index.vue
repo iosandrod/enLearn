@@ -120,38 +120,15 @@
       </vxe-column>
       </vxe-table>
     </div>
-
-    <vxe-modal
-      v-model="objectEditor.visible"
-      :title="objectEditor.title"
-      width="min(720px, calc(100vw - 48px))"
-      show-footer
-      transfer
-      @close="closeObjectEditor"
-    >
-      <LowCodeForm
-        :key="objectEditor.key"
-        :schema="objectEditorSchema"
-        :model-value="objectEditor.value"
-        @update:model-value="updateObjectEditorValue"
-      />
-      <template #footer>
-        <div class="lc-array-table__object-footer">
-          <vxe-button @click="closeObjectEditor">取消</vxe-button>
-          <vxe-button status="primary" @click="confirmObjectEditor">确定</vxe-button>
-        </div>
-      </template>
-    </vxe-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { LowCodeField, LowCodeFieldComponent, LowCodeOption } from '../../../types/lowcode';
+import { openGlobalDialog } from '../../../runtime/global-dialog';
 import LcJsonEditor from '../lc-json-editor/index.vue';
 import type { LowCodeFormMaterialProps } from '../types';
-
-const LowCodeForm = defineAsyncComponent(() => import('../../../components/LowCodeForm.vue'));
 
 type ArrayTableColumn = {
   field: string;
@@ -173,14 +150,6 @@ const emit = defineEmits<{
 }>();
 
 const rows = ref<Record<string, unknown>[]>([]);
-const objectEditor = reactive({
-  visible: false,
-  title: '编辑对象',
-  row: null as Record<string, unknown> | null,
-  column: null as ArrayTableColumn | null,
-  value: {} as Record<string, unknown>,
-  key: 0,
-});
 
 const fieldProps = computed(() => props.field.props ?? {});
 const valueMode = computed<ArrayTableValueMode>(() =>
@@ -205,10 +174,6 @@ const columns = computed(() => {
 });
 const rowKey = computed(() => readString(fieldProps.value.rowKey, '__rowKey'));
 const addText = computed(() => readString(fieldProps.value.addText, '新增'));
-const objectEditorSchema = computed(() => ({
-  fields: resolveObjectEditorFields(objectEditor.column, objectEditor.value),
-  actions: [],
-}));
 
 watch(
   () => props.modelValue,
@@ -291,29 +256,37 @@ function setCell(row: Record<string, unknown>, field: string, value: unknown) {
   commitRows();
 }
 
-function openObjectEditor(row: Record<string, unknown>, column: ArrayTableColumn) {
-  objectEditor.row = row;
-  objectEditor.column = column;
-  objectEditor.title = `编辑 ${column.title || column.field}`;
-  objectEditor.value = createObjectEditorValue(row[column.field], column);
-  objectEditor.key += 1;
-  objectEditor.visible = true;
-}
+async function openObjectEditor(row: Record<string, unknown>, column: ArrayTableColumn) {
+  const value = createObjectEditorValue(row[column.field], column);
+  const result = await openGlobalDialog({
+    title: `编辑 ${column.title || column.field}`,
+    width: 'min(720px, calc(100vw - 48px))',
+    showFooter: true,
+    model: value,
+    form: {
+      schema: {
+        fields: resolveObjectEditorFields(column, value),
+        actions: [],
+      },
+    },
+    actions: [
+      {
+        code: 'cancel',
+        label: '取消',
+        role: 'cancel',
+      },
+      {
+        code: 'confirm',
+        label: '确定',
+        role: 'confirm',
+        status: 'primary',
+      },
+    ],
+  });
 
-function updateObjectEditorValue(value: Record<string, unknown>) {
-  objectEditor.value = isRecord(value) ? cloneRecord(value) : {};
-}
-
-function confirmObjectEditor() {
-  if (objectEditor.row && objectEditor.column) {
-    setCell(objectEditor.row, objectEditor.column.field, cloneRecord(objectEditor.value));
+  if (result.action === 'confirm' && isRecord(result.values)) {
+    setCell(row, column.field, cloneRecord(result.values));
   }
-
-  closeObjectEditor();
-}
-
-function closeObjectEditor() {
-  objectEditor.visible = false;
 }
 
 function removeRow(row: Record<string, unknown>) {

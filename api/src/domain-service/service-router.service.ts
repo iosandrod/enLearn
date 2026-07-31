@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
 import { AccountService } from '../account/account.service';
 import { AdminService } from '../admin/admin.service';
@@ -15,15 +15,25 @@ import { UserService } from '../user/user.service';
 @Injectable()
 export class DomainServiceRouter {
   constructor(
+    @Inject(AccountService)
     private readonly accountService: AccountService,
+    @Inject(AdminService)
     private readonly adminService: AdminService,
+    @Inject(PaymentService)
     private readonly paymentService: PaymentService,
+    @Inject(UserService)
     private readonly userService: UserService,
+    @Inject(LowCodeService)
     private readonly lowCodeService: LowCodeService,
+    @Inject(PostsService)
     private readonly postsService: PostsService,
+    @Inject(NotificationService)
     private readonly notificationService: NotificationService,
+    @Inject(EntityDesignService)
     private readonly entityDesignService: EntityDesignService,
+    @Inject(FilesService)
     private readonly filesService: FilesService,
+    @Inject(ChatService)
     private readonly chatService: ChatService
   ) {}
 

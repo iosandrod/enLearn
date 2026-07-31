@@ -4,6 +4,7 @@ export { default as LowCodeForm } from '../components/LowCodeForm.vue';
 export { default as LowCodeFormField } from '../components/LowCodeFormField.vue';
 export { default as LowCodeFormLayout } from '../components/LowCodeFormLayout.vue';
 export { default as LowCodeGrid } from '../components/LowCodeGrid.vue';
+export { default as GlobalDialogHost } from '../components/GlobalDialogHost';
 export { default as LcVxeModalRenderer } from '../components/LcVxeModalRenderer';
 export { default as LowCodeOverlayHost } from '../components/LowCodeOverlayHost.vue';
 export { default as LowCodePageRenderer } from '../components/LowCodePageRenderer.vue';
@@ -13,6 +14,7 @@ export type {
   LcVxeModalRender,
 } from '../components/LcVxeModalRenderer';
 
+export * from './global-dialog';
 export * from '../core';
 export * from './directives';
 export * from '../lowcode/builtin-pages';

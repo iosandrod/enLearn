@@ -1,4 +1,4 @@
-import { defineComponent, h, type PropType, type VNodeChild } from 'vue';
+import { defineComponent, h, resolveComponent, type PropType, type VNodeChild } from 'vue';
 
 export type LcVxeModalRender = () => VNodeChild;
 
@@ -24,6 +24,8 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const VxeModal = resolveComponent('vxe-modal');
+
     return () =>
       props.modals.map((modal) => {
         const slots: Record<string, LcVxeModalRender> = {};
@@ -31,7 +33,7 @@ export default defineComponent({
         if (modal.footer) slots.footer = modal.footer;
 
         return h(
-          'vxe-modal',
+          VxeModal as any,
           {
             key: modal.id,
             modelValue: modal.visible,

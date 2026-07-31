@@ -21,6 +21,7 @@
     "./runtime": "./src/runtime/index.ts",
     "./designer": "./src/designer/index.ts",
     "./materials": "./src/materials/index.ts",
+    "./runtime/global-dialog": "./src/runtime/global-dialog.ts",
     "./runtime/directives": "./src/runtime/directives.ts",
     "./core/host": "./src/core/host.ts",
     "./styles/visual-editor-utilities.scss": "./src/styles/visual-editor-utilities.scss"

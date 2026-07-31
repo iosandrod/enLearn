@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Inject } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 
 import {
@@ -25,7 +25,10 @@ function readErrorMessage(error: unknown) {
 
 @Controller()
 export class ServiceRpcController {
-  constructor(private readonly router: DomainServiceRouter) {}
+  constructor(
+    @Inject(DomainServiceRouter)
+    private readonly router: DomainServiceRouter
+  ) {}
 
   @MessagePattern(SERVICE_EXECUTE_PATTERN)
   async execute(@Payload() request: ServiceBusRequest): Promise<ServiceBusResponse> {

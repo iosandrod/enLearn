@@ -1,75 +1,48 @@
 <template>
   <section class="workflow-designer-page">
-    <div class="workflow-designer-page__toolbar">
-      <div>
-        <h2 class="page-title">审批流设计器</h2>
-        <p class="page-description">
-          {{ workflowModel.code }} · {{ workflowModel.documentType || '未绑定单据' }}
-        </p>
-      </div>
+    <header class="workflow-designer-page__toolbar">
+      <div class="workflow-designer-page__identity">
+        <span class="workflow-designer-page__kicker">审批流设计器</span>
+        <label class="workflow-title-field">
+          <span>名称</span>
+          <input v-model="workflowModel.name" />
+        </label>
+       </div>
 
       <div class="workflow-designer-page__actions">
-        <button type="button" class="workflow-button" @click="createBlankModel">
-          新建
-        </button>
-        <button type="button" class="workflow-button" :disabled="isApiBusy" @click="simulateOrderWorkflow">
-          订单审批流测试
-        </button>
-        <button type="button" class="workflow-button" @click="applyDesignerLayout">
-          自动布局
-        </button>
-        <button type="button" class="workflow-button" @click="saveLocalDraft">
-          保存
-        </button>
         <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="saveAndPublish">
           保存并发布
         </button>
-        <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="startOrderWorkflow">
-          启动订单流程
-        </button>
-        <button type="button" class="workflow-button workflow-button--primary" :disabled="isApiBusy" @click="runMinimalApprovalOneClickTest">
+        <button type="button" class="workflow-button" :disabled="isApiBusy" @click="runMinimalApprovalOneClickTest">
           一键测试
         </button>
-        <button type="button" class="workflow-button workflow-button--primary" @click="exportSchema">
-          导出
-        </button>
+        <div class="workflow-action-menu" @click.stop>
+          <button type="button" class="workflow-button workflow-button--ghost" @click="toggleActionMenu">
+            更多
+          </button>
+          <div v-if="actionsMenuOpen" class="workflow-action-menu__panel">
+            <button type="button" @click="runWorkflowAction(createBlankModel)">新建草稿</button>
+            <button type="button" :disabled="isApiBusy" @click="runWorkflowAction(simulateOrderWorkflow)">生成订单测试流</button>
+            <button type="button" @click="runWorkflowAction(applyDesignerLayout)">自动布局</button>
+            <button type="button" @click="runWorkflowAction(saveLocalDraft)">保存本地草稿</button>
+            <button type="button" :disabled="isApiBusy" @click="runWorkflowAction(startOrderWorkflow)">启动订单流程</button>
+            <button type="button" @click="runWorkflowAction(exportSchema)">导出 JSON</button>
+          </div>
+        </div>
       </div>
-    </div>
+    </header>
 
     <div class="workflow-designer-page__main">
       <ApprovalDesigner
         ref="designerRef"
         v-model="workflowModel"
         class="workflow-designer-page__designer"
+        :show-header="false"
         @export="handleDesignerExport"
         @validation="handleValidation"
       />
 
       <aside class="workflow-designer-page__side">
-        <section class="workflow-panel">
-          <div class="workflow-panel__header">
-            <strong>流程信息</strong>
-            <span :class="validationErrors.length ? 'workflow-badge workflow-badge--danger' : 'workflow-badge'">
-              {{ validationErrors.length ? '未通过' : '可发布' }}
-            </span>
-          </div>
-
-          <label class="workflow-field">
-            <span>编码</span>
-            <input v-model="workflowModel.code" />
-          </label>
-          <label class="workflow-field">
-            <span>名称</span>
-            <input v-model="workflowModel.name" />
-          </label>
-          <label class="workflow-field">
-            <span>单据类型</span>
-            <input v-model="documentTypeInput" />
-          </label>
-
-          <p v-if="message" :class="messageClass">{{ message }}</p>
-        </section>
-
         <section class="workflow-panel">
           <div class="workflow-panel__header">
             <strong>订单测试覆盖</strong>
@@ -158,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
   ApprovalDesigner,
   ORDER_APPROVAL_TEST_VARIABLES,
@@ -274,6 +247,7 @@ const startedInstanceId = ref('');
 const startedTaskId = ref('');
 const startedTaskStatus = ref('');
 const testRunSummary = ref('');
+const actionsMenuOpen = ref(false);
 
 const nodeTypeCoverageLabels = [
   { type: 'start', label: '开始' },
@@ -326,6 +300,8 @@ watch(
 );
 
 onMounted(() => {
+  window.addEventListener('click', closeActionMenu);
+
   const saved = window.localStorage.getItem(activeStorageKey.value);
   if (!saved) return;
 
@@ -338,6 +314,24 @@ onMounted(() => {
     window.localStorage.removeItem(localStorageKey);
   }
 });
+
+onBeforeUnmount(() => {
+  window.removeEventListener('click', closeActionMenu);
+});
+
+function toggleActionMenu(event: MouseEvent) {
+  event.stopPropagation();
+  actionsMenuOpen.value = !actionsMenuOpen.value;
+}
+
+function closeActionMenu() {
+  actionsMenuOpen.value = false;
+}
+
+function runWorkflowAction(action: () => void | Promise<void>) {
+  actionsMenuOpen.value = false;
+  void action();
+}
 
 function handleValidation(issues: WorkflowSchemaIssue[]) {
   validationIssues.value = issues;
@@ -669,34 +663,128 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
 <style scoped>
 .workflow-designer-page {
   display: grid;
-  gap: 14px;
+  gap: 8px;
+  min-height: calc(100vh - 66px);
+  color: #172033;
 }
 
 .workflow-designer-page__toolbar {
-  display: flex;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  border: 1px solid #d9dee8;
-  border-radius: 8px;
+  gap: 12px;
+  border: 1px solid #d5deea;
+  border-radius: 6px 6px 0 0;
   background: #ffffff;
-  padding: 16px 18px;
+  box-shadow: none;
+  padding: 8px 12px;
+}
+
+.workflow-designer-page__identity {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.workflow-designer-page__kicker {
+  color: #5b6b85;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 14px;
+}
+
+.workflow-title-field {
+  display: grid;
+  grid-template-columns: 0 minmax(0, 520px);
+  gap: 0;
+}
+
+.workflow-title-field span {
+  overflow: hidden;
+  width: 0;
+  height: 0;
+}
+
+.workflow-title-field input {
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 24px;
+  outline: none;
+  padding: 0;
+}
+
+.workflow-designer-page__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 8px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.workflow-inline-field {
+  display: inline-grid;
+  grid-template-columns: auto minmax(112px, 170px);
+  align-items: center;
+  gap: 5px;
+}
+
+.workflow-inline-field span {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.workflow-inline-field input {
+  width: 100%;
+  min-height: 26px;
+  border: 1px solid #d5deea;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #172033;
+  font: inherit;
+  font-size: 11px;
+  outline: none;
+  padding: 0 8px;
+}
+
+.workflow-inline-field input:focus,
+.workflow-title-field input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.11);
 }
 
 .workflow-designer-page__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .workflow-button {
-  min-height: 34px;
-  border: 1px solid #cbd5e1;
+  min-height: 30px;
+  border: 1px solid #c6d0df;
   border-radius: 6px;
   background: #ffffff;
   color: #1f2937;
   cursor: pointer;
-  padding: 0 13px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 16px;
+  padding: 0 10px;
+}
+
+.workflow-button:hover:not(:disabled) {
+  border-color: #96a4b8;
+  background: #f8fafc;
 }
 
 .workflow-button:disabled {
@@ -710,30 +798,84 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   color: #ffffff;
 }
 
+.workflow-button--primary:hover:not(:disabled) {
+  border-color: #115e59;
+  background: #115e59;
+}
+
+.workflow-button--ghost {
+  background: #f8fafc;
+}
+
+.workflow-action-menu {
+  position: relative;
+}
+
+.workflow-action-menu__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 50;
+  display: grid;
+  width: 178px;
+  gap: 3px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+  padding: 5px;
+}
+
+.workflow-action-menu__panel button {
+  min-height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #243044;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 8px;
+  text-align: left;
+}
+
+.workflow-action-menu__panel button:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.workflow-action-menu__panel button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
 .workflow-designer-page__main {
   display: grid;
-  grid-template-columns: minmax(520px, 1fr) 360px;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) 318px;
+  gap: 8px;
   align-items: start;
 }
 
 .workflow-designer-page__designer {
-  min-height: calc(100vh - 150px);
+  min-height: calc(100vh - 124px);
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
 }
 
 .workflow-designer-page__side {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .workflow-panel {
   display: grid;
-  gap: 12px;
-  border: 1px solid #d9dee8;
-  border-radius: 8px;
+  gap: 8px;
+  border: 1px solid #d5deea;
+  border-radius: 6px;
   background: #ffffff;
+  box-shadow: 0 4px 12px rgba(31, 41, 55, 0.03);
   color: #1f2937;
-  padding: 14px;
+  padding: 10px;
 }
 
 .workflow-panel__header {
@@ -743,12 +885,22 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   gap: 8px;
 }
 
+.workflow-panel__header strong {
+  color: #0f172a;
+  font-size: 13px;
+  line-height: 18px;
+}
+
 .workflow-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
   border-radius: 999px;
   background: #ecfdf5;
   color: #047857;
-  font-size: 12px;
-  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 0 7px;
 }
 
 .workflow-badge--danger {
@@ -789,8 +941,9 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   border-left: 3px solid #f59e0b;
   background: #fffbeb;
   color: #78350f;
-  font-size: 12px;
-  padding: 8px;
+  font-size: 11px;
+  line-height: 16px;
+  padding: 7px 8px;
 }
 
 .workflow-issues span {
@@ -802,7 +955,7 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
 .workflow-coverage {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 6px;
 }
 
 .workflow-chip {
@@ -810,10 +963,10 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   border-radius: 999px;
   background: #f8fafc;
   color: #64748b;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
-  line-height: 18px;
-  padding: 3px 8px;
+  line-height: 15px;
+  padding: 1px 7px;
 }
 
 .workflow-chip--ok {
@@ -824,19 +977,19 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
 
 .workflow-runtime {
   display: grid;
-  gap: 8px;
+  gap: 7px;
   margin: 0;
 }
 
 .workflow-runtime div {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-columns: 40px minmax(0, 1fr);
   gap: 8px;
 }
 
 .workflow-runtime dt {
   color: #64748b;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
 }
 
@@ -844,13 +997,13 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   overflow: hidden;
   margin: 0;
   color: #111827;
-  font-size: 12px;
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .workflow-panel--json textarea {
-  min-height: 260px;
+  min-height: 170px;
   width: 100%;
   resize: vertical;
   border: 1px solid #cbd5e1;
@@ -869,7 +1022,7 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   color: #0f766e;
   cursor: pointer;
   font: inherit;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .workflow-inline-link {
@@ -886,7 +1039,8 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
 .workflow-success,
 .workflow-error {
   margin: 0;
-  font-size: 13px;
+  font-size: 11px;
+  line-height: 16px;
 }
 
 .workflow-help {
@@ -907,18 +1061,27 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   }
 
   .workflow-designer-page__designer {
-    min-height: 560px;
+    min-height: 520px;
   }
 }
 
 @media (max-width: 760px) {
   .workflow-designer-page__toolbar {
+    grid-template-columns: 1fr;
     align-items: stretch;
-    flex-direction: column;
   }
 
   .workflow-designer-page__actions {
     justify-content: flex-start;
+  }
+
+  .workflow-title-field {
+    grid-template-columns: 0 minmax(0, 1fr);
+  }
+
+  .workflow-inline-field {
+    grid-template-columns: 42px minmax(0, 1fr);
+    width: 100%;
   }
 }
 </style>

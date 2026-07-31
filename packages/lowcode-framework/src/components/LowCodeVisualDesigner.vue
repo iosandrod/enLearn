@@ -48,90 +48,17 @@
         </VisualEditorProvider>
       </ClientOnly>
     </div>
-
-    <vxe-modal
-      v-model="pagePickerVisible"
-      title="加载页面"
-      width="min(1040px, calc(100vw - 48px))"
-      height="min(680px, calc(100vh - 96px))"
-      show-footer
-      resize
-    >
-      <div class="visual-designer-dialog">
-        <div class="visual-designer-dialog-toolbar lc-actions">
-          <vxe-button status="primary" :loading="pagePickerLoading" @click="fetchPageRows">
-            刷新列表
-          </vxe-button>
-        </div>
-        <vxe-grid
-          border
-          height="500"
-          :loading="pagePickerLoading"
-          :data="pagePickerRows"
-          :columns="pagePickerColumns"
-          :row-config="{ isCurrent: true, keyField: 'id' }"
-          @current-row-change="handlePagePickerCurrentChange"
-          @row-dblclick="handlePagePickerDblclick"
-        />
-      </div>
-      <template #footer>
-        <div class="visual-designer-dialog-footer">
-          <vxe-button @click="pagePickerVisible = false">取消</vxe-button>
-          <vxe-button
-            status="primary"
-            :disabled="!selectedPickerPage"
-            :loading="loading"
-            @click="confirmLoadSelectedPage"
-          >
-            加载
-          </vxe-button>
-        </div>
-      </template>
-    </vxe-modal>
-
-    <vxe-modal
-      v-model="pageInfoVisible"
-      title="页面信息"
-      width="min(760px, calc(100vw - 48px))"
-      show-footer
-      resize
-    >
-      <div class="visual-designer-info-form">
-        <label>
-          <span>页面编码</span>
-          <vxe-input v-model="pageInfoDraft.code" clearable />
-        </label>
-        <label>
-          <span>后台路由</span>
-          <vxe-input v-model="pageInfoDraft.route" clearable />
-        </label>
-        <label>
-          <span>页面标题</span>
-          <vxe-input v-model="pageInfoDraft.title" clearable />
-        </label>
-        <label>
-          <span>状态</span>
-          <vxe-select v-model="pageInfoDraft.status" :options="statusOptions" />
-        </label>
-        <label class="visual-designer-info-form__wide">
-          <span>描述</span>
-          <vxe-textarea v-model="pageInfoDraft.description" rows="3" />
-        </label>
-      </div>
-      <template #footer>
-        <div class="visual-designer-dialog-footer">
-          <vxe-button @click="pageInfoVisible = false">取消</vxe-button>
-          <vxe-button status="primary" @click="confirmPageInfo">确定</vxe-button>
-        </div>
-      </template>
-    </vxe-modal>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import VisualEditorProvider from './VisualEditorProvider.vue';
-import type { LowCodePageRecord, LowCodePageSchema } from '../types/lowcode';
+import type {
+  LowCodeFormSchema,
+  LowCodePageRecord,
+  LowCodePageSchema,
+} from '../types/lowcode';
 import type {
   VisualEditorModelValue,
   VisualEditorPage
@@ -139,6 +66,11 @@ import type {
 import { convertLowCodePageSchemaToVisualEditor } from '../lowcode/visual-converters';
 import { prepareLowCodePageSchema } from '../lowcode/schema';
 import { convertVisualEditorToLowCode } from '../utils/visual-to-lowcode';
+import {
+  closeGlobalDialog,
+  findGlobalDialog,
+  openGlobalDialog,
+} from '../runtime/global-dialog';
 import {
   useLowCodeHost,
   type LowCodeHostRouter,
@@ -218,11 +150,9 @@ const message = ref('');
 const messageType = ref<'success' | 'error'>('success');
 const visualModel = ref<VisualEditorModelValue | null>(null);
 const loadingPageCode = ref('');
-const pagePickerVisible = ref(false);
 const pagePickerLoading = ref(false);
 const pagePickerRows = ref<LowCodePageRecord[]>([]);
 const selectedPickerPage = ref<LowCodePageRecord | null>(null);
-const pageInfoVisible = ref(false);
 
 const designerThemeClass = computed(() => host.getTheme().className);
 const designerThemeStyle = computed(() =>
@@ -238,19 +168,46 @@ const form = ref<DesignerPageForm>({
   description: '',
   status: 'draft'
 });
-const pageInfoDraft = ref<DesignerPageForm>({
-  code: '',
-  route: '',
-  title: '',
-  description: '',
-  status: 'draft'
-});
-
 const statusOptions = [
   { label: '草稿', value: 'draft' },
   { label: '发布', value: 'published' },
   { label: '归档', value: 'archived' }
 ];
+const pageInfoSchema: LowCodeFormSchema = {
+  fields: [
+    {
+      field: 'code',
+      label: '页面编码',
+      component: 'vxe-input',
+      props: { clearable: true },
+    },
+    {
+      field: 'route',
+      label: '后台路由',
+      component: 'vxe-input',
+      props: { clearable: true },
+    },
+    {
+      field: 'title',
+      label: '页面标题',
+      component: 'vxe-input',
+      props: { clearable: true },
+    },
+    {
+      field: 'status',
+      label: '状态',
+      component: 'vxe-select',
+      options: statusOptions,
+    },
+    {
+      field: 'description',
+      label: '描述',
+      component: 'vxe-textarea',
+      props: { rows: 3 },
+    },
+  ],
+  actions: [],
+};
 const pagePickerColumns: Record<string, unknown>[] = [
   { type: 'seq', title: '#', width: 56 },
   { field: 'title', title: '标题', minWidth: 180 },
@@ -556,8 +513,72 @@ async function fetchPageRows() {
 }
 
 async function openPagePicker() {
+  if (findGlobalDialog('lowcode-page-picker')) return;
+
   selectedPickerPage.value = null;
-  pagePickerVisible.value = true;
+  void openGlobalDialog({
+    id: 'lowcode-page-picker',
+    title: '加载页面',
+    width: 'min(1040px, calc(100vw - 48px))',
+    height: 'min(680px, calc(100vh - 96px))',
+    showFooter: true,
+    content: {
+      className: 'visual-designer-dialog',
+      children: [
+        {
+          type: 'toolbar',
+          className: 'visual-designer-dialog-toolbar lc-actions',
+          actions: [
+            {
+              code: 'refresh',
+              label: '刷新列表',
+              status: 'primary',
+              loading: pagePickerLoading,
+              onClick: () => {
+                void fetchPageRows();
+              },
+            },
+          ],
+        },
+        {
+          type: 'grid',
+          grid: {
+            rows: pagePickerRows,
+            columns: pagePickerColumns,
+            loading: pagePickerLoading,
+            props: {
+              border: true,
+              height: 500,
+              rowConfig: { isCurrent: true, keyField: 'id' },
+            },
+            events: {
+              'current-row-change': handlePagePickerCurrentChange,
+              'row-dblclick': handlePagePickerDblclick,
+            },
+          },
+        },
+      ],
+    },
+    actions: [
+      {
+        code: 'cancel',
+        label: '取消',
+        role: 'cancel',
+      },
+      {
+        code: 'confirm',
+        label: '加载',
+        role: 'confirm',
+        status: 'primary',
+        disabled: computed(() => !selectedPickerPage.value),
+        loading,
+        onClick: () => {
+          if (!selectedPickerPage.value) return false;
+          void confirmLoadSelectedPage();
+        },
+      },
+    ],
+  });
   await fetchPageRows();
 }
 
@@ -581,20 +602,58 @@ function handlePagePickerDblclick(payload: unknown) {
 async function confirmLoadSelectedPage() {
   if (!selectedPickerPage.value) return;
   const code = selectedPickerPage.value.code;
-  pagePickerVisible.value = false;
+  await closeGlobalDialog('lowcode-page-picker', {
+    action: 'confirm',
+    values: {},
+  });
   await loadPageByCode(code);
 }
 
-function openPageInfo() {
-  pageInfoDraft.value = { ...form.value };
-  pageInfoVisible.value = true;
+function normalizePageInfoForm(value: Record<string, unknown>): DesignerPageForm {
+  const status = String(value.status ?? 'draft');
+
+  return {
+    code: String(value.code ?? ''),
+    route: String(value.route ?? ''),
+    title: String(value.title ?? ''),
+    description: String(value.description ?? ''),
+    status: ['draft', 'published', 'archived'].includes(status)
+      ? (status as DesignerPageStatus)
+      : 'draft',
+  };
 }
 
-function confirmPageInfo() {
-  form.value = { ...pageInfoDraft.value };
-  pageInfoVisible.value = false;
-  message.value = '页面信息已更新。';
-  messageType.value = 'success';
+function openPageInfo() {
+  if (findGlobalDialog('lowcode-page-info')) return;
+
+  void openGlobalDialog<DesignerPageForm>({
+    id: 'lowcode-page-info',
+    title: '页面信息',
+    width: 'min(760px, calc(100vw - 48px))',
+    showFooter: true,
+    model: { ...form.value },
+    form: {
+      schema: pageInfoSchema,
+    },
+    actions: [
+      {
+        code: 'cancel',
+        label: '取消',
+        role: 'cancel',
+      },
+      {
+        code: 'confirm',
+        label: '确定',
+        role: 'confirm',
+        status: 'primary',
+      },
+    ],
+    onConfirm: ({ model }) => {
+      form.value = normalizePageInfoForm(model);
+      message.value = '页面信息已更新。';
+      messageType.value = 'success';
+    },
+  });
 }
 
 async function goBackToList() {

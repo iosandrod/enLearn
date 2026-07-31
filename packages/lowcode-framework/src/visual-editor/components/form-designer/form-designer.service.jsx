@@ -1,0 +1,503 @@
+import { createApp, defineComponent, getCurrentInstance, nextTick, onMounted, reactive, ref } from 'vue';
+import DesignerUI, { ElButton, ElDialog, ElMessage } from '../common/designer-ui';
+import { cloneDeep } from 'lodash-es';
+import VisualEditorProvider from '../../../components/VisualEditorProvider.vue';
+import { visualConfig } from '../../../visual.config';
+import { createNewBlock, } from '../../visual-editor.utils';
+import { defer } from '../../utils/defer';
+const defaultActions = {
+    fetch: {
+        name: '接口请求',
+        apis: [],
+    },
+    dialog: {
+        name: '对话框',
+        handlers: [],
+    },
+};
+const runtimeToEditorComponent = {
+    'vxe-input': 'input',
+    'vxe-textarea': 'input',
+    'vxe-password-input': 'input',
+    'vxe-select': 'picker',
+    'vxe-tree-select': 'picker',
+    'vxe-switch': 'switch',
+    'vxe-radio-group': 'radio',
+    'vxe-checkbox-group': 'checkbox',
+    'lc-json-editor': 'input',
+    'lc-number-input': 'input',
+    'lc-array-table': 'array-table',
+    'lc-sub-form': 'sub-form',
+};
+const editorToRuntimeComponent = {
+    input: 'vxe-input',
+    picker: 'vxe-select',
+    switch: 'vxe-switch',
+    radio: 'vxe-radio-group',
+    checkbox: 'vxe-checkbox-group',
+    'array-table': 'lc-array-table',
+    'sub-form': 'lc-sub-form',
+};
+const optionComponents = new Set([
+    'vxe-select',
+    'vxe-tree-select',
+    'vxe-radio-group',
+    'vxe-checkbox-group',
+]);
+function normalizeRequired(value) {
+    if (typeof value === 'boolean')
+        return value;
+    if (typeof value === 'string') {
+        return ['true', '1', 'yes', 'y'].includes(value.trim().toLowerCase());
+    }
+    return false;
+}
+function normalizeSpan(value) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) && numeric > 0 ? numeric : undefined;
+}
+function readString(value, fallback = '') {
+    if (Array.isArray(value)) {
+        return readString(value[value.length - 1], fallback);
+    }
+    if (typeof value === 'string') {
+        return value.trim() || fallback;
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+        return String(value);
+    }
+    return fallback;
+}
+function isRecord(value) {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+function normalizeFieldName(label, index = 0) {
+    const normalized = label
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9_]/g, '');
+    return normalized || `field_${index + 1}`;
+}
+function isVisualEditorModel(value) {
+    return (typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value) &&
+        typeof value.pages === 'object' &&
+        value.pages !== null);
+}
+function parseJsonArray(value) {
+    if (Array.isArray(value))
+        return value;
+    if (typeof value !== 'string' || !value.trim())
+        return undefined;
+    try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : undefined;
+    }
+    catch {
+        return undefined;
+    }
+}
+function parseJsonObject(value) {
+    if (isRecord(value))
+        return cloneDeep(value);
+    if (typeof value !== 'string' || !value.trim())
+        return undefined;
+    try {
+        const parsed = JSON.parse(value);
+        return isRecord(parsed) ? parsed : undefined;
+    }
+    catch {
+        return undefined;
+    }
+}
+function stringifyOptions(value) {
+    const options = parseJsonArray(value);
+    return options?.length ? JSON.stringify(options) : '';
+}
+function stringifyFieldProps(value) {
+    if (!isRecord(value) || !Object.keys(value).length)
+        return '';
+    return JSON.stringify(value);
+}
+function createDefaultField(index = 0) {
+    return {
+        field: `field_${index + 1}`,
+        label: `字段${index + 1}`,
+        component: 'vxe-input',
+        placeholder: '请输入',
+        required: false,
+        span: 1,
+        help: '',
+        optionsJson: '',
+        propsJson: '',
+    };
+}
+function createDefaultSubFormFields() {
+    return [
+        {
+            field: 'name',
+            label: '名称',
+            component: 'vxe-input',
+            placeholder: '请输入名称',
+            required: false,
+            span: 1,
+            help: '',
+            optionsJson: '',
+            propsJson: '',
+        },
+        {
+            field: 'remark',
+            label: '备注',
+            component: 'vxe-textarea',
+            placeholder: '请输入备注',
+            required: false,
+            span: 1,
+            help: '',
+            optionsJson: '',
+            propsJson: '',
+        },
+    ];
+}
+function createDefaultArrayTableColumns() {
+    return [
+        { field: 'name', title: '名称', minWidth: 120, placeholder: '请输入名称' },
+        { field: 'quantity', title: '数量', width: 88, placeholder: '0' },
+        { field: 'remark', title: '备注', minWidth: 140, placeholder: '备注' },
+    ];
+}
+function normalizeArrayTableColumns(value) {
+    const rows = Array.isArray(value)
+        ? value.filter(isRecord).map((column) => cloneDeep(column))
+        : [];
+    return rows.length ? rows : createDefaultArrayTableColumns();
+}
+function readArrayTableProps(value) {
+    return isRecord(value) ? value : {};
+}
+function readFieldProps(row) {
+    const objectProps = isRecord(row.props) ? cloneDeep(row.props) : {};
+    const jsonProps = parseJsonObject(row.propsJson) ?? {};
+    const props = {
+        ...objectProps,
+        ...jsonProps,
+    };
+    return Object.keys(props).length ? props : undefined;
+}
+function applyCommonFieldProps(block, field, index) {
+    const fieldName = readString(field.field, normalizeFieldName(field.label || '', index));
+    const label = readString(field.label, fieldName || `字段${index + 1}`);
+    block.props.name = fieldName;
+    block.props.label = label;
+    block.props.placeholder = readString(field.placeholder, '请输入');
+    block.props.required = normalizeRequired(field.required);
+    block.props.__formSpan = normalizeSpan(field.span) || 1;
+    block.props.__formHelp = readString(field.help);
+}
+function createFieldBlock(field, index) {
+    const runtimeComponent = readString(field.component, 'vxe-input');
+    const componentKey = runtimeToEditorComponent[runtimeComponent] || 'input';
+    const component = visualConfig.componentMap[componentKey];
+    if (!component)
+        return null;
+    const block = createNewBlock(cloneDeep(component));
+    block.focus = index === 0;
+    applyCommonFieldProps(block, field, index);
+    if (runtimeComponent === 'vxe-textarea') {
+        block.props.type = 'textarea';
+    }
+    if (runtimeComponent === 'vxe-password-input') {
+        block.props.type = 'password';
+    }
+    if (runtimeComponent === 'vxe-tree-select') {
+        block.props.__lowcodeComponent = 'vxe-tree-select';
+    }
+    if (runtimeComponent === 'lc-json-editor' || runtimeComponent === 'lc-number-input') {
+        block.props.__lowcodeComponent = runtimeComponent;
+    }
+    if (runtimeComponent === 'lc-sub-form') {
+        const fieldProps = isRecord(field.props) ? field.props : {};
+        const subFields = normalizeFields(fieldProps.fields);
+        const subFormDesignerModel = fieldProps.formDesignerModel;
+        block.props.__lowcodeComponent = 'lc-sub-form';
+        block.props.fields = subFields.length ? subFields : createDefaultSubFormFields();
+        block.props.subFormDesignerModel = isVisualEditorModel(subFormDesignerModel)
+            ? cloneDeep(subFormDesignerModel)
+            : createFormModel(block.props.fields, `${block.props.label || '子表单'}设计`);
+    }
+    if (runtimeComponent === 'lc-array-table') {
+        const fieldProps = readArrayTableProps(field.props);
+        block.props.__lowcodeComponent = 'lc-array-table';
+        block.props.columns = normalizeArrayTableColumns(fieldProps.columns);
+        block.props.addText = readString(fieldProps.addText, '新增行');
+        block.props.rowKey = readString(fieldProps.rowKey, '__rowKey');
+        if (isRecord(fieldProps.defaultRow)) {
+            block.props.defaultRow = cloneDeep(fieldProps.defaultRow);
+        }
+    }
+    const options = parseJsonArray(field.optionsJson);
+    if (options?.length) {
+        if (componentKey === 'picker') {
+            block.props.columns = options;
+        }
+        if (componentKey === 'radio' || componentKey === 'checkbox') {
+            block.props.options = options;
+        }
+    }
+    return block;
+}
+function normalizeFields(fields) {
+    if (!Array.isArray(fields))
+        return [];
+    return fields.map((field, index) => {
+        const row = typeof field === 'object' && field !== null ? field : {};
+        const fallback = createDefaultField(index);
+        const props = readFieldProps(row);
+        return {
+            field: readString(row.field, fallback.field),
+            label: readString(row.label, fallback.label),
+            component: readString(row.component, fallback.component),
+            placeholder: readString(row.placeholder, fallback.placeholder),
+            required: normalizeRequired(row.required),
+            span: normalizeSpan(row.span) || 1,
+            help: readString(row.help),
+            optionsJson: stringifyOptions(row.optionsJson) || readString(row.optionsJson),
+            propsJson: stringifyFieldProps(props) || readString(row.propsJson),
+            props,
+        };
+    });
+}
+function createFormModel(fields, title = '表单设计') {
+    const normalizedFields = fields.length ? fields : [createDefaultField()];
+    const blocks = normalizedFields
+        .map((field, index) => createFieldBlock(field, index))
+        .filter(Boolean);
+    return {
+        pages: {
+            '/': {
+                title,
+                path: '/',
+                config: {
+                    bgColor: '',
+                    bgImage: '',
+                    keepAlive: false,
+                },
+                blocks,
+            },
+        },
+        models: [],
+        actions: cloneDeep(defaultActions),
+    };
+}
+function resolveInitialModel(option) {
+    if (isVisualEditorModel(option.designerModel)) {
+        return cloneDeep(option.designerModel);
+    }
+    return createFormModel(normalizeFields(cloneDeep(option.fields)), option.title || '表单设计');
+}
+function flattenBlocks(blocks = []) {
+    const result = [];
+    blocks.forEach((block) => {
+        result.push(block);
+        const slots = block.props?.slots || {};
+        Object.keys(slots).forEach((slotKey) => {
+            result.push(...flattenBlocks(slots[slotKey]?.children || []));
+        });
+    });
+    return result;
+}
+function getRuntimeComponent(block) {
+    const overrideComponent = readString(block.props?.__lowcodeComponent);
+    if (overrideComponent)
+        return overrideComponent;
+    if (block.componentKey === 'input') {
+        if (block.props?.type === 'textarea')
+            return 'vxe-textarea';
+        if (block.props?.type === 'password')
+            return 'vxe-password-input';
+    }
+    return editorToRuntimeComponent[block.componentKey] || '';
+}
+function getOptionsJson(block, runtimeComponent) {
+    if (!optionComponents.has(runtimeComponent))
+        return '';
+    if (block.componentKey === 'picker') {
+        return stringifyOptions(block.props?.columns);
+    }
+    return stringifyOptions(block.props?.options);
+}
+function blockToField(block, index) {
+    const runtimeComponent = getRuntimeComponent(block);
+    if (!runtimeComponent)
+        return null;
+    const label = readString(block.props?.label, block.label || `字段${index + 1}`);
+    const field = readString(block.props?.name, normalizeFieldName(label, index));
+    if (!field || !label)
+        return null;
+    const result = {
+        field,
+        label,
+        component: runtimeComponent,
+        placeholder: readString(block.props?.placeholder),
+        required: normalizeRequired(block.props?.required),
+        span: normalizeSpan(block.props?.__formSpan) || normalizeSpan(block.props?.span),
+        help: readString(block.props?.__formHelp || block.props?.help),
+        optionsJson: getOptionsJson(block, runtimeComponent),
+    };
+    if (runtimeComponent === 'lc-sub-form') {
+        const subFields = normalizeFields(block.props?.fields);
+        const subFormDesignerModel = block.props?.subFormDesignerModel;
+        result.props = {
+            fields: subFields.length ? subFields : createDefaultSubFormFields(),
+            ...(isVisualEditorModel(subFormDesignerModel)
+                ? { formDesignerModel: cloneDeep(subFormDesignerModel) }
+                : {}),
+        };
+        result.propsJson = stringifyFieldProps(result.props);
+    }
+    if (runtimeComponent === 'lc-array-table') {
+        const props = readArrayTableProps(block.props);
+        result.props = {
+            columns: normalizeArrayTableColumns(props.columns),
+            addText: readString(props.addText, '新增行'),
+            rowKey: readString(props.rowKey, '__rowKey'),
+            ...(isRecord(props.defaultRow) ? { defaultRow: cloneDeep(props.defaultRow) } : {}),
+        };
+        result.propsJson = stringifyFieldProps(result.props);
+    }
+    return result;
+}
+function extractFields(page) {
+    return flattenBlocks(page.blocks)
+        .map((block, index) => blockToField(block, index))
+        .filter(Boolean);
+}
+function validateFields(fields) {
+    if (!fields.length) {
+        ElMessage.error('请至少拖入一个表单项控件');
+        return false;
+    }
+    const invalidField = fields.find((field) => !field.field || !field.label);
+    if (invalidField) {
+        ElMessage.error('字段绑定和标签不能为空');
+        return false;
+    }
+    const duplicateField = fields.find((field, index) => fields.findIndex((item) => item.field === field.field) !== index);
+    if (duplicateField) {
+        ElMessage.error(`字段 ${duplicateField.field} 重复`);
+        return false;
+    }
+    return true;
+}
+const ServiceComponent = defineComponent({
+    props: {
+        option: { type: Object, required: true },
+    },
+    setup(props) {
+        const ctx = getCurrentInstance();
+        const providerRef = ref(null);
+        const state = reactive({
+            option: props.option,
+            showFlag: false,
+            providerKey: 0,
+            initialData: createFormModel([], props.option.title || '表单设计'),
+            mounted: (() => {
+                const dfd = defer();
+                onMounted(() => setTimeout(() => dfd.resolve(), 0));
+                return dfd.promise;
+            })(),
+        });
+        const methods = {
+            service: async (option) => {
+                state.option = option;
+                state.initialData = resolveInitialModel(option);
+                state.providerKey += 1;
+                providerRef.value = null;
+                await methods.show();
+            },
+            show: async () => {
+                await state.mounted;
+                state.showFlag = true;
+                await nextTick();
+            },
+            hide: () => {
+                state.showFlag = false;
+            },
+        };
+        const handler = {
+            onConfirm: () => {
+                const snapshot = providerRef.value?.getSnapshot();
+                if (!snapshot) {
+                    ElMessage.error('表单设计器还未初始化完成');
+                    return;
+                }
+                const fields = extractFields(snapshot.currentPage);
+                if (!validateFields(fields))
+                    return;
+                state.option.onConfirm({
+                    fields,
+                    designerModel: snapshot.model,
+                });
+                methods.hide();
+            },
+            onCancel: () => {
+                state.option.onCancel?.();
+                methods.hide();
+            },
+        };
+        Object.assign(ctx.proxy, methods);
+        return () => (<ElDialog v-model={state.showFlag} title={state.option.title || '表单设计'} width="min(1280px, calc(100vw - 40px))" top="4vh" class="form-designer-dialog form-workbench-dialog" destroyOnClose={true}>
+        {{
+                default: () => (<div class="form-workbench">
+              <div class="form-workbench-toolbar">
+                <div>
+                  <strong>表单拖拽设计</strong>
+                  <span>拖入表单项控件，选中后在右侧配置字段绑定、标签和校验</span>
+                </div>
+                {false ? (<label>
+                  <span>表单列数</span>
+                  <input value={1} min={1} max={6} type="number" onInput={() => undefined}/>
+                </label>) : null}
+              </div>
+              <VisualEditorProvider key={state.providerKey} ref={providerRef} initialData={state.initialData} initialPath="/" showHeader={false} leftExcludeLabels={['页面', '数据源']} leftWidth="300px" allowFormDesign={false} showPageSetting={false} workbenchMode="form" persistToSession={false}/>
+            </div>),
+                footer: () => (<div class="form-workbench-footer">
+              <ElButton onClick={handler.onCancel}>取消</ElButton>
+              <ElButton type="primary" onClick={handler.onConfirm}>
+                确定
+              </ElButton>
+            </div>),
+            }}
+      </ElDialog>);
+    },
+});
+export const $$formDesigner = (option) => {
+    const dfd = defer();
+    const el = document.createElement('div');
+    document.body.appendChild(el);
+    const app = createApp(ServiceComponent, {
+        option: {
+            ...option,
+            onConfirm: () => undefined,
+        },
+    });
+    app.use(DesignerUI);
+    app.config.globalProperties.$$refs = {};
+    const cleanup = () => {
+        window.setTimeout(() => {
+            app.unmount();
+            el.remove();
+        }, 0);
+    };
+    const ins = app.mount(el);
+    ins.service({
+        ...option,
+        onCancel: cleanup,
+        onConfirm: (value) => {
+            dfd.resolve(value);
+            cleanup();
+        },
+    });
+    return dfd.promise;
+};

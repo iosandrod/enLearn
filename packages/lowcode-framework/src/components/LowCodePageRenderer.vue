@@ -46,6 +46,7 @@
     />
 
     <p v-if="message" :class="messageClass">{{ message }}</p>
+    <GlobalDialogHost />
   </div>
 </template>
 
@@ -65,9 +66,11 @@ import type {
   LowCodeRuntimeEvent
 } from '../types/lowcode';
 import type { LowCodeRuntimeBlock } from '../lowcode/block-materials';
+import GlobalDialogHost from './GlobalDialogHost';
 import LowCodeOverlayHost from './LowCodeOverlayHost.vue';
 import {
   createLowCodeEventBus,
+  normalizeLowCodeDirectives,
   resolveEventDirectives
 } from '../lowcode/event-system';
 import {
@@ -82,6 +85,10 @@ import {
   executeLowCodeRuntimeDirective,
   type LowCodeRuntimeDirectiveContext,
 } from '../runtime/directives';
+import {
+  openGlobalDialog as openLowCodeGlobalDialog,
+  type GlobalDialogConfig,
+} from '../runtime/global-dialog';
 
 const props = defineProps<{
   page: LowCodePageRecord & {
@@ -863,6 +870,71 @@ async function invokeServiceDirective(
   }
 }
 
+function resolveDialogFollowUpDirectives(
+  directive: LowCodeRuntimeDirective,
+  action: string
+) {
+  const actionKey = `${action}Directives`;
+  const actionDirectives = directive[actionKey];
+
+  return normalizeLowCodeDirectives(
+    actionDirectives ??
+      (action === 'confirm'
+        ? directive.confirmDirectives
+        : action === 'cancel'
+          ? directive.cancelDirectives
+          : directive.closeDirectives)
+  );
+}
+
+async function openGlobalDialogDirective(
+  directive: LowCodeRuntimeDirective,
+  event: LowCodeRuntimeEvent
+) {
+  const rawConfig = resolveRuntimeValue(
+    directive.config ?? directive.value ?? {},
+    directiveScope(event)
+  );
+  if (!isRecord(rawConfig)) return;
+
+  const config = rawConfig as GlobalDialogConfig;
+  const model = resolveDirectiveRecord(
+    directive.model ?? config.model ?? config.form?.model ?? {},
+    event
+  );
+  const result = await openLowCodeGlobalDialog({
+    ...config,
+    model,
+    form: config.form
+      ? {
+          ...config.form,
+          model,
+        }
+      : config.form,
+  });
+  const followUpDirectives = resolveDialogFollowUpDirectives(directive, result.action);
+  const resultEvent = resolveDirectiveString(
+    directive.resultEvent ?? directive.event,
+    event,
+    `dialog.${result.action}`
+  );
+
+  if (!resultEvent && !followUpDirectives.length) return;
+
+  await publishRuntimeEvent({
+    name: resultEvent,
+    blockId: event.blockId,
+    blockKind: event.blockKind,
+    timestamp: Date.now(),
+    payload: {
+      action: result.action,
+      values: result.values,
+      payload: result.payload,
+      directives: followUpDirectives,
+    },
+  });
+}
+
 function setBlockOpen(blockId: string, open: boolean) {
   const target = findRuntimeBlock(blockId);
   if (target && 'open' in target) {
@@ -909,6 +981,7 @@ async function executeRuntimeDirective(
     emitRuntimeEvent: publishRuntimeEvent,
     setBlockOpen,
     toggleBlockOpen,
+    openGlobalDialog: openGlobalDialogDirective,
   };
 
   await executeLowCodeRuntimeDirective(directive, event, directiveContext);

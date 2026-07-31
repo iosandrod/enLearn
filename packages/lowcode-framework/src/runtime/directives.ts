@@ -52,6 +52,10 @@ export type LowCodeRuntimeDirectiveContext = {
   emitRuntimeEvent(event: LowCodeRuntimeEvent): Promise<void> | void;
   setBlockOpen(blockId: string, open: boolean): void;
   toggleBlockOpen(blockId: string): void;
+  openGlobalDialog?(
+    directive: LowCodeRuntimeDirective,
+    event: LowCodeRuntimeEvent
+  ): Promise<void> | void;
 };
 
 export type LowCodeRuntimeDirectiveHandler = (
@@ -196,6 +200,11 @@ export function registerDefaultLowCodeRuntimeDirectives() {
 
     context.toggleBlockOpen(blockId);
   });
+
+  registerLowCodeRuntimeDirectiveAliases(
+    ['openGlobalDialog', 'openDialog'],
+    (directive, event, context) => context.openGlobalDialog?.(directive, event)
+  );
 }
 
 registerDefaultLowCodeRuntimeDirectives();

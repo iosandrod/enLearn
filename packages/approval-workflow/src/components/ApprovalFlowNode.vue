@@ -130,24 +130,22 @@ const badgeText = computed(() => {
 .approval-flow-card {
   position: relative;
   display: grid;
-  width: 236px;
-  min-height: 86px;
-  grid-template-columns: 42px minmax(0, 1fr);
+  width: 224px;
+  min-height: 76px;
+  grid-template-columns: 36px minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   border: 1px solid var(--approval-node-border);
-  border-radius: 8px;
-  background:
-    linear-gradient(90deg, var(--approval-node-soft) 0, #ffffff 42%),
-    #ffffff;
-  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
   color: #0f172a;
-  padding: 12px 12px 12px 14px;
+  padding: 9px 10px 9px 12px;
 }
 
 .approval-flow-card::before {
   position: absolute;
-  inset: 10px auto 10px 0;
+  inset: 8px auto 8px 0;
   width: 3px;
   border-radius: 0 999px 999px 0;
   background: var(--approval-node-accent);
@@ -155,36 +153,36 @@ const badgeText = computed(() => {
 }
 
 .approval-flow-card--event {
-  width: 236px;
-  min-height: 86px;
-  grid-template-columns: 36px minmax(0, 1fr);
-  padding: 11px 12px;
+  width: 224px;
+  min-height: 76px;
+  grid-template-columns: 32px minmax(0, 1fr);
+  padding: 8px 10px 8px 12px;
 }
 
 .approval-flow-card--selected {
   border-color: var(--approval-node-accent);
   box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--approval-node-accent) 16%, transparent),
-    0 14px 30px rgba(15, 23, 42, 0.16);
+    0 0 0 3px color-mix(in srgb, var(--approval-node-accent) 14%, transparent),
+    0 10px 20px rgba(15, 23, 42, 0.1);
 }
 
 .approval-flow-card__icon {
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   place-items: center;
   border: 1px solid var(--approval-node-border);
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--approval-node-soft);
   color: var(--approval-node-accent);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   line-height: 1;
 }
 
 .approval-flow-card--event .approval-flow-card__icon {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 999px;
 }
 
@@ -197,15 +195,15 @@ const badgeText = computed(() => {
   min-width: 0;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .approval-flow-card__title {
   overflow: hidden;
   color: #111827;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
-  line-height: 20px;
+  line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -216,29 +214,29 @@ const badgeText = computed(() => {
   border-radius: 999px;
   background: #ffffff;
   color: #475569;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  line-height: 18px;
-  padding: 0 7px;
+  line-height: 16px;
+  padding: 0 6px;
 }
 
 .approval-flow-card__summary {
   display: -webkit-box;
   overflow: hidden;
-  margin: 4px 0 0;
+  margin: 3px 0 0;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   color: #64748b;
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 11px;
+  line-height: 16px;
 }
 
 .approval-flow-card__category {
   position: absolute;
-  right: 10px;
-  bottom: 7px;
+  right: 8px;
+  bottom: 6px;
   color: #94a3b8;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   line-height: 1;
   text-transform: uppercase;
@@ -250,8 +248,8 @@ const badgeText = computed(() => {
 
 .approval-flow-card__quick-actions {
   position: absolute;
-  right: -16px;
-  bottom: -19px;
+  right: -14px;
+  bottom: -16px;
   display: flex;
   gap: 6px;
   align-items: center;
@@ -259,19 +257,19 @@ const badgeText = computed(() => {
 
 .approval-flow-card__quick-actions button {
   display: grid;
-  min-width: 30px;
-  height: 30px;
+  min-width: 28px;
+  height: 28px;
   place-items: center;
   border: 1px solid var(--approval-node-accent);
   border-radius: 999px;
   background: #ffffff;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
   color: var(--approval-node-accent);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
   line-height: 1;
-  padding: 0 8px;
+  padding: 0 7px;
 }
 
 .approval-flow-card__quick-actions button:hover {

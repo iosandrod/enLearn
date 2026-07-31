@@ -14,11 +14,13 @@
       <slot name="actions" />
     </template>
   </VisualEditor>
+  <GlobalDialogHost />
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, provide, useSlots } from 'vue';
 import VisualEditor from '../visual-editor/index.vue';
+import GlobalDialogHost from './GlobalDialogHost';
 import type {
   VisualEditorModelValue,
   VisualEditorPage

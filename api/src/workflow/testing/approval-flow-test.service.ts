@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { DefinitionService } from '../definition/definition.service';
 import type { WorkflowRequestActor } from '../definition/definition.types';
 import { RuntimeService } from '../runtime/runtime.service';
@@ -22,7 +22,9 @@ type ApprovalFlowTestStep = {
 @Injectable()
 export class ApprovalFlowTestService {
   constructor(
+    @Inject(DefinitionService)
     private readonly definitionService: DefinitionService,
+    @Inject(RuntimeService)
     private readonly runtimeService: RuntimeService
   ) {}
 

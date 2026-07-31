@@ -71,18 +71,16 @@
         </div>
       </div>
     </div>
-
-    <LcVxeModalRenderer :modals="modalConfigs" />
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, h, ref } from 'vue';
+import { computed, h, ref, resolveComponent } from 'vue';
 import { cloneDeep } from 'lodash-es';
-import LcVxeModalRenderer, { type LcVxeModalConfig } from '../../../../../components/LcVxeModalRenderer';
 import { ElMessage } from '../../../common/designer-ui';
 import { useVisualData } from '../../../../hooks/useVisualData';
 import { useLowCodeHost } from '../../../../../core/host';
+import { findGlobalDialog, openGlobalDialog } from '../../../../../runtime/global-dialog';
 
 type EntityTable = Record<string, any>;
 type EntitySource = Record<string, any>;
@@ -92,7 +90,6 @@ const host = useLowCodeHost();
 
 const keyword = ref('');
 const selectedKey = ref('');
-const pickerVisible = ref(false);
 const pickerLoading = ref(false);
 const pickerKeyword = ref('');
 const pickedEntityIds = ref<string[]>([]);
@@ -137,40 +134,6 @@ const filteredTables = computed(() => {
       .some((value) => String(value).toLowerCase().includes(text)),
   );
 });
-
-const modalConfigs = computed<LcVxeModalConfig[]>(() => [
-  {
-    id: 'entity-picker',
-    visible: pickerVisible.value,
-    title: '关联实体表',
-    width: 'min(720px, calc(100vw - 48px))',
-    height: 'min(560px, calc(100vh - 80px))',
-    props: {
-      showFooter: true,
-      resize: true,
-      transfer: true,
-    },
-    onVisibleChange: (visible) => {
-      pickerVisible.value = visible;
-    },
-    body: () =>
-      h('div', { class: 'eds-picker' }, [
-        h('vxe-input', {
-          modelValue: pickerKeyword.value,
-          placeholder: '搜索实体名称 / 表名',
-          clearable: true,
-          'onUpdate:modelValue': (value: string) => {
-            pickerKeyword.value = value;
-          },
-        }),
-        renderEntityPickerContent(),
-      ]),
-    footer: () => [
-      h('vxe-button', { onClick: () => (pickerVisible.value = false) }, { default: () => '取消' }),
-      h('vxe-button', { status: 'primary', onClick: confirmLinkEntities }, { default: () => '确认关联' }),
-    ],
-  },
-]);
 
 function renderEntityPickerContent() {
   if (pickerLoading.value) {
@@ -243,9 +206,43 @@ async function loadEntityTables() {
 }
 
 function openEntityPicker() {
+  if (findGlobalDialog('entity-picker')) return;
+
   pickedEntityIds.value = [];
   pickerKeyword.value = '';
-  pickerVisible.value = true;
+  void openGlobalDialog({
+    id: 'entity-picker',
+    title: '关联实体表',
+    width: 'min(720px, calc(100vw - 48px))',
+    height: 'min(560px, calc(100vh - 80px))',
+    showFooter: true,
+    body: () =>
+      h('div', { class: 'eds-picker' }, [
+        h(resolveComponent('vxe-input') as any, {
+          modelValue: pickerKeyword.value,
+          placeholder: '搜索实体名称 / 表名',
+          clearable: true,
+          'onUpdate:modelValue': (value: string) => {
+            pickerKeyword.value = value;
+          },
+        }),
+        renderEntityPickerContent(),
+      ]),
+    actions: [
+      {
+        code: 'cancel',
+        label: '取消',
+        role: 'cancel',
+      },
+      {
+        code: 'confirm',
+        label: '确认关联',
+        role: 'confirm',
+        status: 'primary',
+        onClick: confirmLinkEntities,
+      },
+    ],
+  });
   void loadEntityTables();
 }
 
@@ -328,7 +325,6 @@ function confirmLinkEntities() {
     selectedKey.value = `entity:${selectedTables[0].id}`;
     ElMessage.success('实体数据源已关联');
   }
-  pickerVisible.value = false;
 }
 
 function saveSelectedSource() {
