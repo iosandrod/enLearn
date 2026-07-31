@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import AutoImport from 'unplugin-auto-import/vite';
@@ -88,6 +89,7 @@ export default defineConfig({
   },
   plugins: [
     transformTldrawVueTsxPlugin(),
+    tailwindcss(),
     vue(),
     vueJsx({
       include: [`${toVitePath(__dirname)}/**/*.{jsx,tsx}`, `${toVitePath(lowcodeFrameworkRoot)}/**/*.{jsx,tsx}`],

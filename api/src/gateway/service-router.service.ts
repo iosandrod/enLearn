@@ -1,6 +1,11 @@
-import { BadGatewayException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadGatewayException,
+  GatewayTimeoutException,
+  Inject,
+  Injectable
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 
 import { WorkflowService } from '../workflow/workflow.service';
 import {
@@ -9,6 +14,8 @@ import {
   type ServiceBusResponse
 } from '../common/service-bus';
 import type { ServiceContext } from '../common/interfaces/service-executor';
+
+const DOMAIN_SERVICE_TIMEOUT_MS = 20_000;
 
 @Injectable()
 export class ServiceRouterService {
@@ -30,13 +37,21 @@ export class ServiceRouterService {
     }
 
     const response = await firstValueFrom(
-      this.domainClient.send<ServiceBusResponse>(SERVICE_EXECUTE_PATTERN, {
-        serviceName,
-        serviceMethod,
-        postData,
-        context
-      })
+      this.domainClient
+        .send<ServiceBusResponse>(SERVICE_EXECUTE_PATTERN, {
+          serviceName,
+          serviceMethod,
+          postData,
+          context
+        })
+        .pipe(timeout(DOMAIN_SERVICE_TIMEOUT_MS))
     ).catch((error: unknown) => {
+      if (error instanceof TimeoutError) {
+        throw new GatewayTimeoutException(
+          `Domain service did not respond within ${DOMAIN_SERVICE_TIMEOUT_MS}ms.`
+        );
+      }
+
       throw new BadGatewayException(
         error instanceof Error && error.message
           ? error.message

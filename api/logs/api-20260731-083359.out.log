@@ -193,3 +193,906 @@ Nest API listening on http://localhost:3002/api/service
 22:30:30 [tsx] unlink in ./..\node_modules\.pnpm\rxjs@7.8.2\node_modules\rxjs\dist\cjs\internal\operators\mergeAll.js Process hasn't exited. Killing process...
 22:30:31 [tsx] unlink in ./..\node_modules\.pnpm\rxjs@7.8.2\node_modules\rxjs\dist\cjs\internal\symbol\iterator.js Restarting...
 22:30:32 [tsx] unlink in ./..\node_modules\.pnpm\rxjs@7.8.2\node_modules\rxjs\dist\cjs\operators\index.js Restarting...
+00:06:15 [tsx] change in ./src\gateway\service-router.service.ts Rerunning...
+[32m[Nest] 51020  - [39m2026/08/01 00:06:35 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +43ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:35 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:40 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +4814ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:40 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +10ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:40 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:40 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:40 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:40 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:40 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:40 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:40 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:40 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 51020  - [39m2026/08/01 00:06:40 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +7ms[39m
+Nest API listening on http://localhost:3002/api/service
+00:06:52 [tsx] change in ./src\gateway\service-gateway.controller.ts Restarting...
+[32m[Nest] 3288  - [39m2026/08/01 00:07:07 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +33ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:09 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +2460ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +8ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:09 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:09 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:07:09 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +6ms[39m
+Nest API listening on http://localhost:3002/api/service
+[33m[Nest] 3288  - [39m2026/08/01 00:07:59 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getUnreadCount failed 20031ms: Domain service did not respond within 20000ms. Domain service did not respond within 20000ms. Gateway Timeout[39m
+[33m[Nest] 3288  - [39m2026/08/01 00:08:01 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listUsers failed 20017ms: Domain service did not respond within 20000ms. Domain service did not respond within 20000ms. Gateway Timeout[39m
+[33m[Nest] 3288  - [39m2026/08/01 00:11:06 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listUsers failed 71ms: Authentication required. Authentication required. Bad Gateway[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:11:34 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 3326ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:13:00 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 3434ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:13:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 1059ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:13:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 556ms[39m
+[32m[Nest] 3288  - [39m2026/08/01 00:13:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 589ms[39m
+00:15:17 [tsx] change in ./src\gateway\service-gateway.controller.ts Restarting...
+[32m[Nest] 68580  - [39m2026/08/01 00:15:33 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +35ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:35 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +2814ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:35 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +16ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:35 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +5ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:35 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +9ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:35 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +10ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:35 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +6ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:35 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:35 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:35 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:35 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +7ms[39m
+[32m[Nest] 68580  - [39m2026/08/01 00:15:35 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +9ms[39m
+00:15:46 [tsx] change in ./src\gateway\service-gateway.controller.ts Rerunning...
+[32m[Nest] 43228  - [39m2026/08/01 00:15:56 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 43228  - [39m2026/08/01 00:15:56 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +60ms[39m
+[32m[Nest] 43228  - [39m2026/08/01 00:15:56 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +8ms[39m
+[32m[Nest] 43228  - [39m2026/08/01 00:15:56 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 43228  - [39m2026/08/01 00:15:56 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 43228  - [39m2026/08/01 00:15:56 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 43228  - [39m2026/08/01 00:15:56 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 43228  - [39m2026/08/01 00:15:56 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+00:16:01 [tsx] change in ./src\gateway\service-gateway.controller.ts Restarting...
+[32m[Nest] 71460  - [39m2026/08/01 00:16:16 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:16 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +39ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:16 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:16 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:16 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:16 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:16 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:16 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:19 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +2270ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:19 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +12ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:19 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +6ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:19 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +5ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:19 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:19 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:19 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:19 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:19 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:19 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 71460  - [39m2026/08/01 00:16:19 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +9ms[39m
+00:16:57 [tsx] change in ./src\gateway\service-gateway.controller.ts Rerunning...
+[32m[Nest] 67484  - [39m2026/08/01 00:17:15 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +48ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:15 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:18 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +3021ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:18 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +9ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:18 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +2ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:18 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:18 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:18 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:18 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:18 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:18 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:18 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 67484  - [39m2026/08/01 00:17:18 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +10ms[39m
+00:17:21 [tsx] change in ./src\gateway\service-gateway.controller.ts Rerunning...
+[32m[Nest] 8700  - [39m2026/08/01 00:17:32 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 8700  - [39m2026/08/01 00:17:32 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +70ms[39m
+[32m[Nest] 8700  - [39m2026/08/01 00:17:32 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 8700  - [39m2026/08/01 00:17:32 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 8700  - [39m2026/08/01 00:17:32 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 8700  - [39m2026/08/01 00:17:32 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 8700  - [39m2026/08/01 00:17:32 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +6ms[39m
+[32m[Nest] 8700  - [39m2026/08/01 00:17:32 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+00:17:33 [tsx] change in ./src\gateway\service-gateway.controller.ts Restarting...
+[32m[Nest] 28936  - [39m2026/08/01 00:17:42 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 28936  - [39m2026/08/01 00:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +157ms[39m
+[32m[Nest] 28936  - [39m2026/08/01 00:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +9ms[39m
+[32m[Nest] 28936  - [39m2026/08/01 00:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 28936  - [39m2026/08/01 00:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +4ms[39m
+[32m[Nest] 28936  - [39m2026/08/01 00:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 28936  - [39m2026/08/01 00:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 28936  - [39m2026/08/01 00:17:42 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +5ms[39m
+00:17:43 [tsx] change in ./src\gateway\service-gateway.controller.ts Restarting...
+[32m[Nest] 46364  - [39m2026/08/01 00:17:51 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:52 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +39ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:52 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:52 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:52 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:52 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:52 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:52 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:54 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +2033ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +9ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:54 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +2ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 46364  - [39m2026/08/01 00:17:54 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +6ms[39m
+00:17:55 [tsx] change in ./src\gateway\service-gateway.controller.ts Rerunning...
+[32m[Nest] 564  - [39m2026/08/01 00:18:13 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +123ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:20 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +7122ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:20 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +9ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:20 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:20 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:20 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:20 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:20 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:20 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:20 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:20 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 564  - [39m2026/08/01 00:18:20 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +8ms[39m
+00:18:35 [tsx] change in ./src\gateway\service-gateway.controller.ts Rerunning...
+[32m[Nest] 11436  - [39m2026/08/01 00:18:40 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:40 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +91ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:40 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:40 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:40 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:40 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:40 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:40 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:43 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +2856ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +10ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:43 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:43 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 11436  - [39m2026/08/01 00:18:43 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +4ms[39m
+00:18:48 [tsx] change in ./src\gateway\service-gateway.controller.ts Rerunning...
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +11ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +496ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 70376  - [39m2026/08/01 00:18:51 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +2ms[39m
+00:18:59 [tsx] change in ./src\gateway\service-gateway.controller.ts Rerunning...
+[32m[Nest] 67548  - [39m2026/08/01 00:19:00 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +10ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:01 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +324ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:01 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 67548  - [39m2026/08/01 00:19:01 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +2ms[39m
+00:19:09 [tsx] change in ./src\gateway\service-gateway.controller.ts Rerunning...
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +11ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +351ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 56952  - [39m2026/08/01 00:19:11 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +2ms[39m
+00:19:20 [tsx] change in ./src\gateway\service-gateway.controller.ts Rerunning...
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +11ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +343ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 21984  - [39m2026/08/01 00:19:22 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +2ms[39m
+00:19:31 [tsx] change in ./src\gateway\service-gateway.controller.ts Rerunning...
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +11ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +344ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 37844  - [39m2026/08/01 00:19:33 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +2ms[39m
+00:20:01 [tsx] change in ./src\gateway\service-gateway.controller.ts Rerunning...
+[32m[Nest] 57148  - [39m2026/08/01 00:20:02 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:02 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +14ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:02 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:02 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:02 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:02 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:02 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:02 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:03 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +355ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:03 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:20:03 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +2ms[39m
+Nest API listening on http://localhost:3002/api/service
+[32m[Nest] 57148  - [39m2026/08/01 00:25:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2170ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:15 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 1314ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3909ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 686ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1044ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 4531ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1288ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 284ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 623ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 958ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 1274ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 404ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 654ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 913ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 950ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 449ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listEntities ok 230ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listEntities ok 821ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 827ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listEntities ok 530ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 252ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1062ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1187ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 627ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1272ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listMessages ok 333ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 6542ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getPreferences ok 237ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1050ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listMessages ok 342ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getPreferences ok 214ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listPages ok 4135ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listMessages ok 257ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listMessages ok 220ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listPages ok 4593ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getPreferences ok 244ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getPreferences ok 775ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 453ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 495ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 785ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listDeliveries ok 283ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1000ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 479ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listDeliveries ok 247ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listDeliveries ok 255ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listDeliveries ok 259ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1740ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listDeliveries ok 384ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 418ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 641ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 641ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listPages ok 8294ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 684ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 698ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 372ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 574ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 776ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 706ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 745ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 809ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 972ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 841ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:33 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 551ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:33 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 559ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:33 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 638ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:33 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 226ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:33 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 222ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 896ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:33 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 1204ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 833ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:35 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 2676ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 881ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 915ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 976ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 312ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 484ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 643ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1629ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 800ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 573ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 686ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:37 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 651ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 854ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 1522ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:37 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 252ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:37 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 605ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:37 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 257ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 2201ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:37 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 264ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:37 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 252ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:38 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 1158ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 2597ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.listStorageEntities ok 1448ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:39 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 239ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:39 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 244ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:39 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 243ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:39 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 238ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:39 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 524ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:39 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 533ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:39 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 578ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:25:40 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 219ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 776ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 958ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1172ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1181ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1189ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 510ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 305ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1685ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 279ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 276ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 280ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 800ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 275ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 265ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 479ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1540ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 453ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 485ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 819ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 457ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 474ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 612ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1248ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 253ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 440ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 427ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 458ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 489ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:46 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 672ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:46 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 821ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:46 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4584ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:46 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 868ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1134ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1109ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 979ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 2442ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1396ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 460ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1054ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1283ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 946ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1165ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 568ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 544ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 2405ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 468ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 775ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1290ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1130ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 847ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 401ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1245ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 261ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1034ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1000ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 414ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 471ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 507ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 398ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 685ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 341ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 362ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 371ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 230ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 386ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 469ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 453ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 779ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 635ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 788ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1230ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 470ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 474ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 479ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 660ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 480ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 803ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 979ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 946ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 590ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 852ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 808ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 467ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 486ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1591ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1413ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 483ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 520ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 715ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1032ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1039ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 960ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 318ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1061ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 326ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 277ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 282ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 287ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 970ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 276ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1619ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 625ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 276ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 768ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 902ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 772ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 943ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1038ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 406ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 287ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1529ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 260ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 284ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1070ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 313ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 276ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 244ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 281ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1572ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 483ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 518ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 712ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 531ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1038ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 516ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1151ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 943ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 945ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 538ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 541ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 540ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 523ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1185ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 533ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1153ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:25:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 529ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:00 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1158ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:00 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 554ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:00 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 763ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:00 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 538ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1110ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 452ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 419ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1630ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 854ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 2132ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 957ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1612ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 313ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1317ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 321ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1024ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 1215ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 301ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 304ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 296ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:04 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 313ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:04 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 635ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:04 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 623ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:04 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 861ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:04 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 821ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:05 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 681ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:05 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 630ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:05 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 591ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:05 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 552ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:06 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 807ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:06 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 535ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:06 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1581ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:07 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobRuns ok 6284ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:07 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 789ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:07 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 2158ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:08 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1177ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:08 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 488ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:08 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 772ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:08 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 3325ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:08 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1182ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:08 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 531ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:09 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 925ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:09 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 574ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:09 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 882ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:09 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 516ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:09 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1427ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:09 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 613ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:09 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteManageTree ok 248ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:09 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 264ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1649ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 307ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteManageTree ok 578ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 12625ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteManageTree ok 864ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 498ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 809ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 769ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 2270ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1005ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listPages ok 2831ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 648ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1036ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 530ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteManageTree ok 283ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 575ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 286ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1530ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteManageTree ok 293ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listPages ok 4973ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 1075ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteManageTree ok 801ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 897ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listPages ok 2030ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteManageTree ok 277ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 286ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteManageTree ok 271ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 275ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listPages ok 7917ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listPages ok 4094ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 657ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 987ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listPages ok 3150ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listPages ok 2307ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 1015ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 807ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 1245ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 568ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 320ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 787ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 734ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 753ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1074ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 1311ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listPages ok 7138ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 679ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 525ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 518ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 492ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 437ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 530ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 502ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 488ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 475ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1091ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1120ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 211ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1820ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 636ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 586ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1465ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 924ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 698ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 458ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 633ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 652ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 489ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 819ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 290ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 282ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 282ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 262ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 262ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:26:24 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 226ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1179ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 457ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1082ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:26:24 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 241ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:26:24 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 231ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:26:24 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 237ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 768ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:26:24 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 238ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:26:24 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 231ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:26:25 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 734ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:26:25 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 609ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 468ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 853ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 676ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1069ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 689ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1373ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 484ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 524ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1053ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 581ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 880ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 557ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 522ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 487ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 961ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 689ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 521ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 511ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 718ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 533ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 728ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 568ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 288ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1822ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 561ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 255ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 266ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listSystemExecutionTasks ok 1001ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 266ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 409ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowTimerJobs ok 263ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 283ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 276ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 255ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 478ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 264ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 225ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 297ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 238ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 218ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 951ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listWorkflowJobs ok 869ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 297ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 414ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 503ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 525ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 855ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 705ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 972ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 227ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 508ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 499ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 746ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 319ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 186ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 703ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 180ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 865ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 485ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 153ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 324ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 164ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 393ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 1244ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 5219ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 949ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1038ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1409ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 479ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1224ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1400ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 455ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 359ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 2702ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 255ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 684ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 1194ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 334ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 900ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:26:40 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 20028ms: Domain service did not respond within 20000ms. Domain service did not respond within 20000ms. Gateway Timeout[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 259ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 4155ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 462ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 649ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 904ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 1364ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 2464ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 2653ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 2817ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 5565ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:26:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 5043ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:27:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3074ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:28:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3893ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2691ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 1378ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1704ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 725ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2277ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 965ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 1404ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:34 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 981ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1417ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1417ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 293ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 1142ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 7708ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1314ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 1207ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:29:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 2336ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:30:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 882ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:30:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1593ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:30:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 2722ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:30:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 302ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:30:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 3338ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:30:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1802ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:30:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 1996ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:30:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2287ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:30:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 2306ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:30:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 323ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:30:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 722ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:31:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2473ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:31:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 800ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:32:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1693ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:33:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1442ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:34:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1421ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:35:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6209ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:36:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1187ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2221ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1007ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1015ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 306ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 705ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:34 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 2628ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listPermissions ok 542ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 818ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRoles ok 1070ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 551ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 954ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1990ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 905ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:40:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1395ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:41:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2708ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:42:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2802ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:43:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1365ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:45:00 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6469ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:45:45 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 10827ms: Authentication required. Authentication required. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:45:45 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getUnreadCount failed 10834ms: Authentication required. Authentication required. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 00:45:45 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listUsers failed 10831ms: Authentication required. Authentication required. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:45:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 4740ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:45:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 4824ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:45:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 345ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:45:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 1247ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:45:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 10673ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:46:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 1714ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:46:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2128ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:46:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 2247ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:46:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 567ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:46:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 227ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:47:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 815ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:48:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1094ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:49:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 737ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:50:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 846ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:51:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3457ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:52:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1133ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:54:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 977ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:55:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 701ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 00:56:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2070ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:14:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6678ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:14:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 5950ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:14:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6134ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:14:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 7038ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:14:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 1189ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:14:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 10173ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:15:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2577ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:16:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 2607ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:16:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 2922ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:16:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3065ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:16:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 612ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:16:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 1052ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:17:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2499ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:18:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3223ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:19:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3326ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:20:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1892ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:47:07 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2489ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:47:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1033ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:47:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 1092ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:47:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 1292ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:47:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 259ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:47:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 411ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:48:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 797ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:49:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1008ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:50:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 883ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:50:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 374ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:51:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 679ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:52:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1341ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:53:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 886ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:54:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 683ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:54:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 702ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:54:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 862ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:54:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.getPage ok 907ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:54:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listUsers ok 183ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:54:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 1286ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:55:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1132ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:56:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3261ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:57:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 7601ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:58:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2680ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 01:59:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3334ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 02:00:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5634ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 02:01:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2289ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 02:02:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4305ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 02:03:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3097ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 02:04:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4640ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 02:05:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1791ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 02:07:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2393ms[39m

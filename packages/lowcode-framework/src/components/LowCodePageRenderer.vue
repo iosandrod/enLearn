@@ -1,16 +1,13 @@
 <template>
   <div class="lowcode-runtime-page" :class="themeClass" :style="themeStyle">
-    <section class="page-intro">
-      <h1>{{ page.schema.title }}</h1>
-    </section>
-
-    <section v-if="dataLoading" class="content-panel">
-      <p class="page-description">{{ loadingText }}</p>
-    </section>
+    <div v-if="dataLoading" class="lc-page-loading-overlay" aria-live="polite">
+      <span>{{ loadingText }}</span>
+    </div>
 
     <LowCodeBlockRenderer
-      v-for="block in layoutBlocks"
+      v-for="(block, index) in layoutBlocks"
       :key="block.id"
+      :class="{ 'lc-runtime-block--fill': index === layoutBlocks.length - 1 }"
       :block="block"
       :resolved-data="resolvedData"
       :form-models="formModels"
@@ -999,7 +996,9 @@ async function openPageReferenceDialogDirective(
     messages: (rawConfig as LowCodePageReferenceDialogConfig).messages ?? props.messages,
     theme: (rawConfig as LowCodePageReferenceDialogConfig).theme ?? props.theme,
   });
-  const resultPayload = isRecord(result.payload) ? result.payload : {};
+  const resultPayload: Record<string, unknown> = isRecord(result.payload)
+    ? result.payload
+    : {};
   const row = isRecord(resultPayload.row) ? resultPayload.row : undefined;
   const followUpDirectives = resolveDialogFollowUpDirectives(directive, result.action);
   const resultEvent = resolveDirectiveString(
@@ -1222,3 +1221,31 @@ async function handleGridDelete(
   }
 }
 </script>
+
+<style scoped>
+.lowcode-runtime-page {
+  position: relative;
+}
+
+.lc-page-loading-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.lc-page-loading-overlay span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 6px 18px rgb(15 23 42 / 8%);
+  color: #475467;
+  font-size: 12px;
+  line-height: 18px;
+  padding: 4px 10px;
+}
+</style>

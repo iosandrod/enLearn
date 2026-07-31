@@ -3,7 +3,6 @@ import path from 'node:path';
 
 import { createClient } from '@supabase/supabase-js';
 
-import { builtinLowCodePages } from '../../packages/lowcode-framework/src/lowcode/builtin-pages/index.ts';
 import { migrateLowCodePageSchema } from '../src/lowcode/lowcode.schema.ts';
 
 type JsonRecord = Record<string, any>;
@@ -408,7 +407,6 @@ async function main() {
   const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const builtinByCode = new Map(builtinLowCodePages.map((page) => [page.code, page]));
   const { data: pages, error } = await supabase
     .from('lowcode_pages')
     .select('*')
@@ -421,12 +419,7 @@ async function main() {
   const skipped = [];
 
   for (const page of pages ?? []) {
-    const builtinPage = builtinByCode.get(page.code);
-    const nextSchema = builtinPage
-      ? builtinPage.schema
-      : hasGrid(page.schema)
-        ? normalizeListPageSchema(page)
-        : null;
+    const nextSchema = hasGrid(page.schema) ? normalizeListPageSchema(page) : null;
 
     if (!nextSchema) {
       skipped.push(page.code);

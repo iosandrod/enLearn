@@ -1,9 +1,4 @@
-import { userRoleManagementPage } from './user-role-management';
-import { permissionSystemPages } from './permission-system';
-export const builtinLowCodePages = [
-    userRoleManagementPage,
-    ...permissionSystemPages,
-];
+export const builtinLowCodePages = [];
 function normalizeRoutePath(route) {
     const normalized = route.trim().replace(/\/+$/, '');
     return normalized || '/';

@@ -4,8 +4,6 @@ import { fileURLToPath } from 'node:url';
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-import { builtinLowCodePages } from '../../packages/lowcode-framework/src/lowcode/builtin-pages/index.ts';
-
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const workspaceRoot = path.resolve(scriptDir, '../..');
 
@@ -34,63 +32,6 @@ function readDotEnv(filePath: string) {
   }
 
   return env;
-}
-
-function getBuiltinPage(code: string) {
-  const page = builtinLowCodePages.find((item) => item.code === code);
-  if (!page) throw new Error(`Missing built-in low-code page: ${code}`);
-  return page;
-}
-
-async function syncBuiltinPage(supabase: SupabaseClient, now: string, code: string) {
-  const builtinPage = getBuiltinPage(code);
-  const { data: existingPage, error: existingPageError } = await supabase
-    .from('lowcode_pages')
-    .select('id, version')
-    .eq('code', code)
-    .maybeSingle();
-
-  if (existingPageError) throw existingPageError;
-
-  const nextVersion = Math.max(Number(existingPage?.version ?? 1) + 1, 2);
-  const { data: page, error: pageError } = await supabase
-    .from('lowcode_pages')
-    .upsert(
-      {
-        code: builtinPage.code,
-        route: builtinPage.route,
-        title: builtinPage.title,
-        description: builtinPage.description ?? null,
-        layout: builtinPage.layout,
-        status: 'published',
-        keep_alive: builtinPage.keep_alive,
-        schema: builtinPage.schema,
-        version: nextVersion,
-        published_at: now,
-        updated_at: now,
-      },
-      { onConflict: 'code' }
-    )
-    .select('id, code, route, title, version, schema')
-    .single();
-
-  if (pageError) throw pageError;
-
-  const { error: versionError } = await supabase
-    .from('lowcode_page_versions')
-    .upsert(
-      {
-        page_id: page.id,
-        version: page.version,
-        schema: builtinPage.schema,
-        published_at: now,
-      },
-      { onConflict: 'page_id,version' }
-    );
-
-  if (versionError) throw versionError;
-
-  return page;
 }
 
 async function syncAdminRoutes(supabase: SupabaseClient, now: string) {
@@ -222,7 +163,7 @@ async function syncAdminRoutes(supabase: SupabaseClient, now: string) {
     },
     {
       code: 'system-users',
-      title: getBuiltinPage('admin-system-users').title,
+      title: '用户权限档案',
       path: '/dashboard/system/users',
       parent_id: systemRoot.id,
       route_type: 'page',
@@ -310,27 +251,11 @@ async function main() {
   });
 
   const now = new Date().toISOString();
-  const syncedPages = [];
-  for (const builtinPage of builtinLowCodePages) {
-    syncedPages.push(await syncBuiltinPage(supabase, now, builtinPage.code));
-  }
-
   const routeResult = await syncAdminRoutes(supabase, now);
 
   console.log(
     JSON.stringify(
       {
-        pages: syncedPages.map((page: any) => ({
-          code: page.code,
-          route: page.route,
-          title: page.title,
-          version: page.version,
-          blocks: page.schema?.blocks?.map((block: any) => ({
-            id: block.id,
-            kind: block.kind,
-            title: block.title ?? null,
-          })),
-        })),
         routes: routeResult,
       },
       null,

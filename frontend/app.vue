@@ -1,16 +1,12 @@
 <template>
   <component :is="layoutComponent" v-if="layoutComponent">
     <RouterView v-slot="{ Component, route: viewRoute }">
-      <KeepAlive v-if="isDashboardRoute(viewRoute.path)" :max="8">
-        <Suspense>
-          <template #default>
-            <component :is="Component" :key="viewRoute.fullPath" />
-          </template>
-        </Suspense>
-      </KeepAlive>
-      <Suspense v-else>
+      <Suspense>
         <template #default>
-          <component :is="Component" :key="viewRoute.fullPath" />
+          <KeepAlive v-if="shouldKeepAliveRoute(viewRoute)" :max="dashboardKeepAliveMax">
+            <component :is="Component" :key="resolveRouteCacheKey(viewRoute)" />
+          </KeepAlive>
+          <component v-else :is="Component" :key="viewRoute.fullPath" />
         </template>
       </Suspense>
     </RouterView>
@@ -26,11 +22,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router';
 import DashboardLayout from './layouts/dashboard.vue';
 import DefaultLayout from './layouts/default.vue';
 
 const route = useRoute();
+const dashboardKeepAliveMax = 8;
 
 const layoutComponent = computed(() => {
   if (route.meta.layout === false) return null;
@@ -38,7 +35,11 @@ const layoutComponent = computed(() => {
   return DefaultLayout;
 });
 
-function isDashboardRoute(path: string) {
-  return path.startsWith('/dashboard');
+function shouldKeepAliveRoute(viewRoute: RouteLocationNormalizedLoaded) {
+  return viewRoute.meta.keepAlive === true;
+}
+
+function resolveRouteCacheKey(viewRoute: RouteLocationNormalizedLoaded) {
+  return viewRoute.path;
 }
 </script>

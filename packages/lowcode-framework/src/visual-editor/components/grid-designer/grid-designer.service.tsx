@@ -1416,7 +1416,7 @@ const ServiceComponent = defineComponent({
         height?: string | number;
         className?: unknown;
         schema?: LowCodeFormSchema;
-        content?: GlobalDialogContentNode | GlobalDialogContentNode[];
+        content?: GlobalDialogContentNode<TValues> | GlobalDialogContentNode<TValues>[];
         onConfirm: (value: TValues) => void;
       },
     ) => {

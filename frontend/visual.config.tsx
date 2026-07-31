@@ -1,6 +1,7 @@
 import { createVisualEditorConfig } from '@enlearn/lowcode-framework/designer';
 import baseWidgets from '@enlearn/lowcode-framework/packages/base-widgets';
 import containerComponent from '@enlearn/lowcode-framework/packages/container-component';
+import chartComponent from '@enlearn/lowcode-framework/packages/chart-component';
 import businessComponent from '@enlearn/lowcode-framework/packages/business-component';
 
 export const visualConfig = createVisualEditorConfig();
@@ -24,6 +25,9 @@ Object.entries(baseWidgets).forEach(([name, widget]) =>
 // 注册容器组件
 Object.entries(containerComponent).forEach(([name, widget]) =>
   visualConfig.registry('containerComponents', name, widget),
+);
+Object.entries(chartComponent).forEach(([name, widget]) =>
+  visualConfig.registry('chartComponents', name, widget),
 );
 // 注册业务组件
 Object.entries(businessComponent).forEach(([name, widget]) =>

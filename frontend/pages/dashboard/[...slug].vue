@@ -14,24 +14,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { getBuiltinLowCodePageByRoute } from '@enlearn/lowcode-framework/runtime';
 import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
 
-const route = useRoute();
+const props = defineProps<{
+  routePath: string;
+}>();
+
 const serviceApi = useServiceApi();
 const page = ref<LowCodePageRecord & { resolvedData?: Record<string, unknown> } | null>(
   null
 );
 const loading = ref(true);
 const errorMessage = ref('');
-
-const routePath = computed(() => {
-  const raw = Array.isArray(route.params.slug)
-    ? route.params.slug.join('/')
-    : String(route.params.slug ?? '');
-  return `/dashboard/${raw}`.replace(/\/+$/, '');
-});
 
 function isMissingLowCodePageError(error: unknown) {
   const fetchError = error as {
@@ -60,11 +56,11 @@ async function loadPage() {
 
   try {
     page.value = await serviceApi.invoke('lowcode', 'getPage', {
-      route: routePath.value,
+      route: props.routePath,
       includeData: true
     });
   } catch (error) {
-    const builtinPage = getBuiltinLowCodePageByRoute(routePath.value);
+    const builtinPage = getBuiltinLowCodePageByRoute(props.routePath);
     if (builtinPage && isMissingLowCodePageError(error)) {
       page.value = builtinPage;
       loading.value = false;
@@ -79,7 +75,7 @@ async function loadPage() {
   }
 }
 
-watch(routePath, () => {
+watch(() => props.routePath, () => {
   loadPage();
 });
 

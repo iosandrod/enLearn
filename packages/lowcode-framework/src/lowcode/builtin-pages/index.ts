@@ -1,11 +1,6 @@
 import type { LowCodePageRecord } from '../../types/lowcode';
-import { userRoleManagementPage } from './user-role-management';
-import { permissionSystemPages } from './permission-system';
 
-export const builtinLowCodePages: LowCodePageRecord[] = [
-  userRoleManagementPage,
-  ...permissionSystemPages,
-];
+export const builtinLowCodePages: LowCodePageRecord[] = [];
 
 function normalizeRoutePath(route: string) {
   const normalized = route.trim().replace(/\/+$/, '');

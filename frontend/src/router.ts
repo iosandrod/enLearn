@@ -1,7 +1,20 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import { useAuth } from '../composables/useAuth';
 
-const routes: RouteRecordRaw[] = [
+const dashboardRouteMeta = { layout: 'dashboard', auth: true };
+const dashboardLowCodeRouteMeta = { ...dashboardRouteMeta, keepAlive: true };
+
+function resolveDashboardLowCodeRouteProps(route: { params: Record<string, unknown> }) {
+  const raw = Array.isArray(route.params.slug)
+    ? route.params.slug.join('/')
+    : String(route.params.slug ?? '');
+
+  return {
+    routePath: `/dashboard/${raw}`.replace(/\/+$/, ''),
+  };
+}
+
+const publicRoutes: RouteRecordRaw[] = [
   { path: '/', component: () => import('../pages/index.vue') },
   { path: '/pricing', component: () => import('../pages/pricing.vue') },
   { path: '/signin', component: () => import('../pages/signin.vue'), meta: { layout: false, guest: true } },
@@ -11,26 +24,24 @@ const routes: RouteRecordRaw[] = [
   { path: '/blog/:slug', component: () => import('../pages/blog/[slug].vue') },
   { path: '/docs', component: () => import('../pages/docs/index.vue') },
   { path: '/docs/:slug(.*)*', component: () => import('../pages/docs/[...slug].vue') },
-  { path: '/dashboard', component: () => import('../pages/dashboard/index.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/account', component: () => import('../pages/dashboard/account.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/advanced/print-designer', component: () => import('../pages/dashboard/advanced/print-designer.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/entity-design', component: () => import('../pages/dashboard/entity-design.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/files', component: () => import('../pages/dashboard/files.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/low-code', component: () => import('../pages/dashboard/low-code/index.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/low-code/designer', component: () => import('../pages/dashboard/low-code/designer/index.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/low-code/designer/:code', component: () => import('../pages/dashboard/low-code/designer/[code].vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/low-code/:code', component: () => import('../pages/dashboard/low-code/[code].vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/messages', component: () => import('../pages/dashboard/messages.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/notification-deliveries', component: () => import('../pages/dashboard/notification-deliveries.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/print/logs', component: () => import('../pages/dashboard/print/logs.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/print-designer', component: () => import('../pages/dashboard/print-designer.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/settings', component: () => import('../pages/dashboard/settings.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/trigger-workflow/designer', component: () => import('../pages/dashboard/trigger-workflow/designer.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/workflow/designer', component: () => import('../pages/dashboard/workflow/designer.vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/workflow/designer/:code', component: () => import('../pages/dashboard/workflow/designer/[code].vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/workflow/tasks/:taskId', component: () => import('../pages/dashboard/workflow/tasks/[taskId].vue'), meta: { layout: 'dashboard', auth: true } },
-  { path: '/dashboard/:slug(.*)*', component: () => import('../pages/dashboard/[...slug].vue'), meta: { layout: 'dashboard', auth: true } },
 ];
+
+const dashboardRoutes: RouteRecordRaw[] = [
+  { path: '/dashboard/trigger-workflow/designer', component: () => import('../pages/dashboard/trigger-workflow/designer.vue'), meta: dashboardRouteMeta },
+  { path: '/dashboard/advanced/print-designer', component: () => import('../pages/dashboard/advanced/print-designer.vue'), meta: dashboardRouteMeta },
+  { path: '/dashboard/low-code/designer/:code?', component: () => import('../pages/dashboard/low-code/designer/[code].vue'), meta: dashboardRouteMeta },
+  { path: '/dashboard/workflow/designer/:code?', component: () => import('../pages/dashboard/workflow/designer.vue'), meta: dashboardRouteMeta },
+  { path: '/dashboard/entity-design', component: () => import('../pages/dashboard/entity-design.vue'), meta: dashboardRouteMeta },
+  { path: '/dashboard/files', component: () => import('../pages/dashboard/files.vue'), meta: dashboardRouteMeta },
+  {
+    path: '/dashboard/:slug(.*)*',
+    component: () => import('../pages/dashboard/[...slug].vue'),
+    meta: dashboardLowCodeRouteMeta,
+    props: resolveDashboardLowCodeRouteProps,
+  },
+];
+
+const routes: RouteRecordRaw[] = [...publicRoutes, ...dashboardRoutes];
 
 export const router = createRouter({
   history: createWebHistory(),

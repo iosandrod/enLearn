@@ -11,7 +11,7 @@
       </vxe-button>
     </div>
 
-    <div class="lc-grid__table-scroll">
+    <div class="lc-grid__table-scroll" :style="tableScrollStyle">
       <vxe-grid
         class="lc-grid__table"
         v-bind="gridConfig"
@@ -106,6 +106,19 @@ type LowCodeGridEventPayload = {
 };
 
 const customRowActions = computed(() => props.schema.rowActions?.actions ?? []);
+
+const tableScrollStyle = computed(() => {
+  const height = props.schema.grid.height;
+  if (typeof height === 'number') {
+    return { minHeight: `${height}px` };
+  }
+
+  if (typeof height === 'string' && height.trim() && height.trim() !== '100%') {
+    return { minHeight: height.trim() };
+  }
+
+  return undefined;
+});
 
 const gridConfig = computed(() => {
   const baseGrid = props.schema.grid as Record<string, unknown>;

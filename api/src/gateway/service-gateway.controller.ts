@@ -4,6 +4,7 @@ import {
   Controller,
   Headers,
   Inject,
+  Logger,
   Post,
   UnauthorizedException
 } from '@nestjs/common';
@@ -114,6 +115,8 @@ function isAuthTokenError(error: unknown) {
 
 @Controller()
 export class ServiceGatewayController {
+  private readonly logger = new Logger(ServiceGatewayController.name);
+
   constructor(
     @Inject(ServiceRouterService)
     private readonly router: ServiceRouterService
@@ -126,6 +129,8 @@ export class ServiceGatewayController {
     @Headers('x-request-id') requestId?: string
   ) {
     const { serviceName, serviceMethod, postData } = normalizeBody(body);
+    const serviceLabel = `${serviceName}.${serviceMethod}`;
+    const startedAt = Date.now();
     const accessToken =
       typeof postData.accessToken === 'string' ? postData.accessToken : undefined;
     const contextAuthorization = authorization ?? (accessToken ? `Bearer ${accessToken}` : undefined);
@@ -142,12 +147,28 @@ export class ServiceGatewayController {
         }
       );
     } catch (error) {
+      const elapsedMs = Date.now() - startedAt;
+      const requestIdSuffix = requestId
+        ? ` requestId=${requestId}`
+        : '';
+      this.logger.warn(
+        `[service] ${serviceLabel} failed ${elapsedMs}ms${requestIdSuffix}: ${
+          readErrorMessage(error) || 'Unknown error'
+        }`
+      );
+
       if (isAuthTokenError(error)) {
         throw new UnauthorizedException('Authentication required.');
       }
 
       throw error;
     }
+
+    const elapsedMs = Date.now() - startedAt;
+    const requestIdSuffix = requestId
+      ? ` requestId=${requestId}`
+      : '';
+    this.logger.log(`[service] ${serviceLabel} ok ${elapsedMs}ms${requestIdSuffix}`);
 
     return {
       success: true,

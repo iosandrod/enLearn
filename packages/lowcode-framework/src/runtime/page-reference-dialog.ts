@@ -145,7 +145,7 @@ function normalizeSelectEvents(
   selectOn: LowCodePageReferenceDialogConfig['selectOn'],
 ) {
   const events = Array.isArray(selectOn) ? selectOn : [selectOn ?? 'rowDblclick'];
-  return new Set(events.filter(Boolean));
+  return new Set<string>(events.filter(Boolean));
 }
 
 function readEventKey(event: LowCodeRuntimeEvent) {
