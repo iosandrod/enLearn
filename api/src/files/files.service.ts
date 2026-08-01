@@ -336,11 +336,8 @@ export class FilesService implements ServiceExecutor {
         return this.confirmUpload(postData, context);
       case 'getDownloadUrl':
         return this.getDownloadUrl(postData, context);
-      case 'list':
-      case 'listFiles':
-        return this.list(postData, context);
-      case 'listFolders':
-        return this.listFolders(context);
+      case 'listItems':
+        return this.listItems(postData, context);
       case 'createFolder':
         return this.createFolder(postData, context);
       case 'deleteFolder':
@@ -348,8 +345,6 @@ export class FilesService implements ServiceExecutor {
       case 'setFileLocked':
       case 'lockFile':
         return this.setFileLocked(postData, context);
-      case 'listStorageEntities':
-        return this.listStorageEntities(context);
       case 'attachToEntity':
         return this.attachToEntity(postData, context);
       case 'delete':
@@ -357,6 +352,19 @@ export class FilesService implements ServiceExecutor {
         return this.deleteFile(postData, context);
       default:
         throw new BadRequestException(`Unsupported files method: ${method}`);
+    }
+  }
+
+  private async listItems(postData: PostData, context: ServiceContext) {
+    switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type) || 'files') {
+      case 'files':
+        return this.list(postData, context);
+      case 'folders':
+        return this.listFolders(context);
+      case 'storageEntities':
+        return this.listStorageEntities(context);
+      default:
+        throw new BadRequestException('Unsupported files listItems itemType.');
     }
   }
 

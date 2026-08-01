@@ -202,7 +202,7 @@ async function fetchPosts<T>(url: string, options: FetchOptions = {}) {
   if (method === 'GET' && path === '/posts') {
     return fetchBackend<T>('/api/service', {
       method: 'POST',
-      body: { serviceName: 'posts', serviceMethod: 'list', postData: {} },
+      body: { serviceName: 'posts', serviceMethod: 'listItems', postData: {} },
     });
   }
 

@@ -21,6 +21,10 @@ function readString(value: unknown, name: string) {
   throw new BadRequestException(`Missing required field: ${name}`);
 }
 
+function readOptionalString(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value.trim() : '';
+}
+
 function readOptionalRecord(value: unknown, name: string) {
   if (value === undefined || value === null) return undefined;
   if (isRecord(value)) return value;
@@ -45,8 +49,8 @@ export class WorkflowService implements ServiceExecutor {
 
   private resolveRequest(method: string, postData: PostData): WorkflowRequest {
     switch (method) {
-      case 'listModels':
-        return { method: 'GET', path: '/models', query: postData };
+      case 'listItems':
+        return this.resolveListItemsRequest(postData);
       case 'getModel':
         return { method: 'GET', path: `/models/${readString(postData.modelId, 'modelId')}` };
       case 'saveModel':
@@ -62,8 +66,6 @@ export class WorkflowService implements ServiceExecutor {
           path: `/models/${readString(postData.modelId, 'modelId')}/publish`,
           body: readOptionalRecord(postData.body, 'body') ?? stripUndefined({ remark: postData.remark })
         };
-      case 'listDefinitions':
-        return { method: 'GET', path: '/definitions', query: postData };
       case 'getDefinitionCapabilities':
         return { method: 'GET', path: '/definitions/capabilities' };
       case 'disableDefinition':
@@ -72,10 +74,6 @@ export class WorkflowService implements ServiceExecutor {
           path: `/definitions/${readString(postData.definitionId, 'definitionId')}/disable`,
           body: {}
         };
-      case 'listInstances':
-        return { method: 'GET', path: '/instances', query: postData };
-      case 'listStartedInstances':
-        return { method: 'GET', path: '/instances/started', query: postData };
       case 'getInstance':
         return { method: 'GET', path: `/instances/${readString(postData.instanceId, 'instanceId')}` };
       case 'getInstanceTimeline':
@@ -97,8 +95,6 @@ export class WorkflowService implements ServiceExecutor {
           path: `/instances/${readString(postData.instanceId, 'instanceId')}/terminate`,
           body: stripUndefined({ comment: postData.comment })
         };
-      case 'listJobs':
-        return { method: 'GET', path: '/jobs', query: postData };
       case 'createJob':
         return { method: 'POST', path: '/jobs', body: postData };
       case 'getJob':
@@ -115,16 +111,6 @@ export class WorkflowService implements ServiceExecutor {
           path: `/jobs/${readString(postData.jobId, 'jobId')}/run`,
           body: readOptionalRecord(postData.body, 'body') ?? stripUndefined({ payload: postData.payload })
         };
-      case 'listJobRuns':
-        return { method: 'GET', path: '/jobs/runs', query: postData };
-      case 'listTodoTasks':
-        return { method: 'GET', path: '/tasks/todo', query: postData };
-      case 'listDoneTasks':
-        return { method: 'GET', path: '/tasks/done', query: postData };
-      case 'listCcTasks':
-        return { method: 'GET', path: '/tasks/cc', query: postData };
-      case 'listStartedTasks':
-        return { method: 'GET', path: '/tasks/started', query: postData };
       case 'getTask':
         return { method: 'GET', path: `/tasks/${readString(postData.taskId, 'taskId')}` };
       case 'claimTask':
@@ -177,6 +163,33 @@ export class WorkflowService implements ServiceExecutor {
         };
       default:
         throw new BadRequestException(`Unsupported workflow method: ${method}`);
+    }
+  }
+
+  private resolveListItemsRequest(postData: PostData): WorkflowRequest {
+    switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type)) {
+      case 'models':
+        return { method: 'GET', path: '/models', query: postData };
+      case 'definitions':
+        return { method: 'GET', path: '/definitions', query: postData };
+      case 'instances':
+        return { method: 'GET', path: '/instances', query: postData };
+      case 'startedInstances':
+        return { method: 'GET', path: '/instances/started', query: postData };
+      case 'jobs':
+        return { method: 'GET', path: '/jobs', query: postData };
+      case 'jobRuns':
+        return { method: 'GET', path: '/jobs/runs', query: postData };
+      case 'todoTasks':
+        return { method: 'GET', path: '/tasks/todo', query: postData };
+      case 'doneTasks':
+        return { method: 'GET', path: '/tasks/done', query: postData };
+      case 'ccTasks':
+        return { method: 'GET', path: '/tasks/cc', query: postData };
+      case 'startedTasks':
+        return { method: 'GET', path: '/tasks/started', query: postData };
+      default:
+        throw new BadRequestException('Unsupported workflow listItems itemType.');
     }
   }
 

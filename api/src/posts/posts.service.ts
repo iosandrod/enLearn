@@ -42,7 +42,7 @@ function isMissingPostsTable(error: { code?: string; message?: string }) {
 export class PostsService implements ServiceExecutor {
   async execute(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
-      case 'list':
+      case 'listItems':
         return this.list(context);
       case 'create':
         return this.create(postData, context);

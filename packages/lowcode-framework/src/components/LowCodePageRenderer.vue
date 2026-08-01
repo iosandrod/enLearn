@@ -347,10 +347,7 @@ function resolveDataSourceRequest(
   );
   const service = resolveDataSourceService(source, postData);
 
-  return {
-    ...service,
-    postData,
-  };
+  return normalizeLegacyListRequest(service.serviceName, service.serviceMethod, postData);
 }
 
 function resolveDataSourcePostData(key: string, source: LowCodePageDataSource) {
@@ -363,6 +360,37 @@ function resolveRuntimeRoute(path: string, row: Record<string, unknown> = {}) {
 
 function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+const legacyListMethodEntityCodes: Record<string, string> = {
+  listUsers: 'users',
+  listRoles: 'admin_roles',
+  listPermissions: 'admin_permissions',
+  listRoutes: 'admin_routes',
+  listEntities: 'admin_entities',
+  listPages: 'lowcode_pages',
+};
+
+function normalizeLegacyListRequest(
+  serviceName: string,
+  serviceMethod: string,
+  postData: Record<string, unknown>
+) {
+  const entityCode = legacyListMethodEntityCodes[serviceMethod];
+  const isLegacyTableRowsRequest = serviceMethod === 'listTableRows';
+
+  if (!entityCode && !isLegacyTableRowsRequest) {
+    return { serviceName, serviceMethod, postData };
+  }
+
+  return {
+    serviceName: 'admin',
+    serviceMethod: 'listItems',
+    postData: {
+      ...postData,
+      ...(entityCode && !postData.entityCode && !postData.entity_code ? { entityCode } : {}),
+    },
+  };
 }
 
 function readRelationMetadataString(
@@ -978,8 +1006,10 @@ async function invokeServiceDirective(
 
   if (!serviceName || !serviceMethod) return;
 
-  const postData = request.postData;
-  const result = await host.getServiceApi().invoke(serviceName, serviceMethod, postData);
+  const normalizedRequest = normalizeLegacyListRequest(serviceName, serviceMethod, request.postData);
+  const result = await host
+    .getServiceApi()
+    .invoke(normalizedRequest.serviceName, normalizedRequest.serviceMethod, normalizedRequest.postData);
   const assignTo = resolveDirectiveString(directive.assignTo, event);
 
   if (assignTo) {

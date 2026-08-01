@@ -51,7 +51,10 @@ export function useNotificationApi() {
   }
 
   function listMessages(postData: Record<string, unknown> = {}) {
-    return serviceApi.invoke<NotificationMessage[]>('notification', 'listMessages', withCurrentUser(postData));
+    return serviceApi.invoke<NotificationMessage[]>('notification', 'listItems', withCurrentUser({
+      ...postData,
+      itemType: 'messages'
+    }));
   }
 
   function getUnreadCount(postData: Record<string, unknown> = {}) {
@@ -79,7 +82,10 @@ export function useNotificationApi() {
   }
 
   function listDeliveries(postData: Record<string, unknown> = {}) {
-    return serviceApi.invoke<NotificationDelivery[]>('notification', 'listDeliveries', postData);
+    return serviceApi.invoke<NotificationDelivery[]>('notification', 'listItems', {
+      ...postData,
+      itemType: 'deliveries'
+    });
   }
 
   function retryDelivery(id: string) {

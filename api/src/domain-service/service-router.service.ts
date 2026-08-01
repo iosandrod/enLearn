@@ -12,6 +12,15 @@ import { PaymentService } from '../payment/payment.service';
 import { PostsService } from '../posts/posts.service';
 import { UserService } from '../user/user.service';
 
+function hasListItemsEntityTarget(postData: Record<string, unknown>) {
+  return Boolean(
+    typeof postData.entityCode === 'string' ||
+      typeof postData.entity_code === 'string' ||
+      typeof postData.tableName === 'string' ||
+      typeof postData.table_name === 'string'
+  );
+}
+
 @Injectable()
 export class DomainServiceRouter {
   constructor(
@@ -43,6 +52,10 @@ export class DomainServiceRouter {
     postData: Record<string, unknown>,
     context: ServiceContext
   ) {
+    if (serviceMethod === 'listItems' && (serviceName === 'admin' || hasListItemsEntityTarget(postData))) {
+      return this.adminService.listItems(postData, context);
+    }
+
     const executor = this.resolveExecutor(serviceName);
     return executor.execute(serviceMethod, postData, context);
   }

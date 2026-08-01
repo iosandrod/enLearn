@@ -285,10 +285,8 @@ export class EntityDesignService implements ServiceExecutor {
   async execute(method: string, postData: JsonRecord, context: ServiceContext) {
     try {
       switch (method) {
-        case 'listDesign':
-          return this.listDesign(context);
-        case 'listPhysicalTables':
-          return this.listPhysicalTables(context);
+        case 'listItems':
+          return this.listItems(postData, context);
         case 'syncPhysicalColumns':
           return this.syncPhysicalColumns(postData, context);
         case 'syncPhysicalTables':
@@ -316,6 +314,17 @@ export class EntityDesignService implements ServiceExecutor {
         throw new BadRequestException(entityMetadataRequiredMessage());
       }
       throw error;
+    }
+  }
+
+  private async listItems(postData: JsonRecord, context: ServiceContext) {
+    switch (readString(postData.itemType ?? postData.item_type ?? postData.type, 'itemType')) {
+      case 'design':
+        return this.listDesign(context);
+      case 'physicalTables':
+        return this.listPhysicalTables(context);
+      default:
+        throw new BadRequestException('Unsupported entityDesign listItems itemType.');
     }
   }
 

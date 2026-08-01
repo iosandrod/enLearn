@@ -52,7 +52,10 @@ export function useChatApi() {
   const { invoke } = useServiceApi();
 
   function listConversations(params: Record<string, unknown> = {}) {
-    return invoke<ChatConversation[]>('chat', 'listConversations', params);
+    return invoke<ChatConversation[]>('chat', 'listItems', {
+      ...params,
+      itemType: 'conversations'
+    });
   }
 
   function listMessages(params: {
@@ -61,7 +64,10 @@ export function useChatApi() {
     page?: number;
     pageSize?: number;
   }) {
-    return invoke<ChatMessage[]>('chat', 'listMessages', params);
+    return invoke<ChatMessage[]>('chat', 'listItems', {
+      ...params,
+      itemType: 'messages'
+    });
   }
 
   function createDirectConversation(params: {

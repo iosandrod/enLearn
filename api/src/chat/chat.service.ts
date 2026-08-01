@@ -136,10 +136,8 @@ function normalizeMessage(row: ChatMessageRow) {
 export class ChatService implements ServiceExecutor {
   async execute(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
-      case 'listConversations':
-        return this.listConversations(postData, context);
-      case 'listMessages':
-        return this.listMessages(postData, context);
+      case 'listItems':
+        return this.listItems(postData, context);
       case 'createDirectConversation':
         return this.createDirectConversation(postData, context);
       case 'createGroupConversation':
@@ -154,6 +152,17 @@ export class ChatService implements ServiceExecutor {
         return this.deleteMessage(postData, context);
       default:
         throw new BadRequestException(`Unsupported chat method: ${method}`);
+    }
+  }
+
+  private async listItems(postData: PostData, context: ServiceContext) {
+    switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type) || 'conversations') {
+      case 'conversations':
+        return this.listConversations(postData, context);
+      case 'messages':
+        return this.listMessages(postData, context);
+      default:
+        throw new BadRequestException('Unsupported chat listItems itemType.');
     }
   }
 
@@ -588,4 +597,3 @@ export class ChatService implements ServiceExecutor {
     if (error) throw new BadRequestException(error.message);
   }
 }
-

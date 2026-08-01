@@ -179,10 +179,17 @@ async function runUsersLogJobOnce() {
 
 async function refreshUsersLogJob() {
   try {
-    const jobs = await workflowApi<WorkflowJobRecord[]>('listJobs', { type: 'interval' });
+    const jobs = await workflowApi<WorkflowJobRecord[]>('listItems', {
+      itemType: 'jobs',
+      type: 'interval'
+    });
     demoJob.value = jobs.find((job) => job.code === demoJobCode);
     demoRuns.value = demoJob.value
-      ? await workflowApi<WorkflowJobRunRecord[]>('listJobRuns', { jobId: demoJob.value.id, limit: 20 })
+      ? await workflowApi<WorkflowJobRunRecord[]>('listItems', {
+          itemType: 'jobRuns',
+          jobId: demoJob.value.id,
+          limit: 20
+        })
       : [];
   } catch (error) {
     jobMessage.value = error instanceof Error ? error.message : String(error);

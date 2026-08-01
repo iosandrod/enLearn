@@ -42,8 +42,8 @@ function readNumber(value: unknown, name: string, fallback?: number) {
 export class PaymentService implements ServiceExecutor {
   async execute(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
-      case 'listPlans':
-        return this.listPlans();
+      case 'listItems':
+        return this.listItems(postData);
       case 'getSubscription':
         return this.getSubscription(context);
       case 'createCheckoutSession':
@@ -53,6 +53,22 @@ export class PaymentService implements ServiceExecutor {
       default:
         throw new BadRequestException(`Unsupported payment method: ${method}`);
     }
+  }
+
+  private async listItems(postData: PostData) {
+    const itemType = typeof postData.itemType === 'string' && postData.itemType.trim()
+      ? postData.itemType.trim()
+      : typeof postData.item_type === 'string' && postData.item_type.trim()
+        ? postData.item_type.trim()
+        : typeof postData.type === 'string' && postData.type.trim()
+          ? postData.type.trim()
+          : 'plans';
+
+    if (itemType === 'plans') {
+      return this.listPlans();
+    }
+
+    throw new BadRequestException('Unsupported payment listItems itemType.');
   }
 
   private async listPlans() {

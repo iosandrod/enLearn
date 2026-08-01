@@ -1017,7 +1017,9 @@ async function openLoadTablesModal() {
   loadingPhysicalTables.value = true;
   message.value = '';
   try {
-    const rows = await serviceApi.invoke<PhysicalTableOption[]>('entityDesign', 'listPhysicalTables');
+    const rows = await serviceApi.invoke<PhysicalTableOption[]>('entityDesign', 'listItems', {
+      itemType: 'physicalTables'
+    });
     physicalTables.value = (rows ?? []).map((row) => ({
       ...row,
       checked: false
@@ -1080,7 +1082,9 @@ async function loadDesign() {
   loading.value = true;
   message.value = '';
   try {
-    const graph = await serviceApi.invoke<DesignGraph>('entityDesign', 'listDesign');
+    const graph = await serviceApi.invoke<DesignGraph>('entityDesign', 'listItems', {
+      itemType: 'design'
+    });
     tables.value = graph.tables ?? [];
     relations.value = graph.relations ?? [];
     const tableIds = new Set(tables.value.map((table) => table.id));

@@ -206,11 +206,16 @@ export function useFilesApi() {
   }
 
   async function list(input: ListFilesInput = {}) {
-    return serviceApi.invoke<ListFilesResponse>('files', 'list', input);
+    return serviceApi.invoke<ListFilesResponse>('files', 'listItems', {
+      ...input,
+      itemType: 'files'
+    });
   }
 
   async function listFolders() {
-    return serviceApi.invoke<ListFoldersResponse>('files', 'listFolders');
+    return serviceApi.invoke<ListFoldersResponse>('files', 'listItems', {
+      itemType: 'folders'
+    });
   }
 
   async function createFolder(input: {

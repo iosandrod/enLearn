@@ -605,7 +605,9 @@ async function reloadRoutes() {
   routeError.value = '';
 
   try {
-    const data = await serviceApi.invoke<AdminRouteNode[]>('admin', 'listRouteTree');
+    const data = await serviceApi.invoke<AdminRouteNode[]>('admin', 'listItems', {
+      itemType: 'routeTree'
+    });
     routes.value = Array.isArray(data) ? data : [];
   } catch (error) {
     routes.value = [];

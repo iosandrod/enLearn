@@ -198,8 +198,8 @@ function resolveAdminClient(fallback: SupabaseClient) {
 export class NotificationService implements ServiceExecutor {
   async execute(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
-      case 'listMessages':
-        return this.listMessages(postData, context);
+      case 'listItems':
+        return this.listItems(postData, context);
       case 'getUnreadCount':
         return this.getUnreadCount(postData, context);
       case 'markRead':
@@ -212,14 +212,23 @@ export class NotificationService implements ServiceExecutor {
         return this.getPreferences(postData, context);
       case 'updatePreference':
         return this.updatePreference(postData, context);
-      case 'listDeliveries':
-        return this.listDeliveries(postData, context);
       case 'retryDelivery':
         return this.retryDelivery(postData, context);
       case 'createSystemNotice':
         return this.createSystemNotice(postData, context);
       default:
         throw new BadRequestException(`Unsupported notification method: ${method}`);
+    }
+  }
+
+  private async listItems(postData: PostData, context: ServiceContext) {
+    switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type) || 'messages') {
+      case 'messages':
+        return this.listMessages(postData, context);
+      case 'deliveries':
+        return this.listDeliveries(postData, context);
+      default:
+        throw new BadRequestException('Unsupported notification listItems itemType.');
     }
   }
 

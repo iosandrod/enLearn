@@ -69,6 +69,30 @@ function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
+const legacyListMethodEntityCodes: Record<string, string> = {
+  listUsers: 'users',
+  listRoles: 'admin_roles',
+  listPermissions: 'admin_permissions',
+  listRoutes: 'admin_routes',
+  listEntities: 'admin_entities',
+  listPages: 'lowcode_pages',
+};
+
+function readPostDataObject(value: unknown) {
+  if (isRecord(value)) return value;
+
+  if (typeof value === 'string' && value.trim()) {
+    try {
+      const parsed = JSON.parse(value);
+      return isRecord(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  return {};
+}
+
 function readSchemaVersion(value: unknown) {
   return typeof value === 'number' && Number.isFinite(value) && value > 0
     ? value
@@ -86,12 +110,12 @@ function normalizeBlockKind(kind: string) {
 }
 
 function readDataSourceEntityCode(source: Record<string, unknown>) {
-  const postData = isRecord(source.postData) ? source.postData : {};
+  const postData = readPostDataObject(source.postData);
   return readString(source.entityCode ?? source.entity_code ?? postData.entityCode ?? postData.entity_code);
 }
 
 function readDataSourceTableName(source: Record<string, unknown>) {
-  const postData = isRecord(source.postData) ? source.postData : {};
+  const postData = readPostDataObject(source.postData);
   return readString(source.tableName ?? source.table_name ?? postData.tableName ?? postData.table_name);
 }
 
@@ -106,22 +130,32 @@ function normalizeDataSource(
   const source = isRecord(value) ? value : {};
   const sourceKey = readString(source.key, key);
   const label = readString(source.label);
-  const entityCode = readDataSourceEntityCode(source);
+  const sourcePostData = readPostDataObject(source.postData);
+  const sourceServiceName = readString(source.serviceName);
+  const sourceServiceMethod = readString(source.serviceMethod);
+  const legacyEntityCode = legacyListMethodEntityCodes[sourceServiceMethod];
+  const entityCode = legacyEntityCode || readDataSourceEntityCode(source);
   const tableName = readDataSourceTableName(source);
-  const hasTableTarget = Boolean(entityCode || tableName);
+  const usesListItems = Boolean(entityCode || tableName || sourceServiceMethod === 'listTableRows');
   const saveMethod = readString(source.saveMethod);
   const deleteMethod = readString(source.deleteMethod);
+  const postData = {
+    ...sourcePostData,
+    ...(legacyEntityCode ? { entityCode: legacyEntityCode } : {}),
+    ...(entityCode && !sourcePostData.entityCode && !sourcePostData.entity_code ? { entityCode } : {}),
+    ...(tableName && !sourcePostData.tableName && !sourcePostData.table_name ? { tableName } : {}),
+  };
 
   return {
     key: sourceKey,
     ...(label ? { label } : {}),
-    serviceName: readString(source.serviceName, hasTableTarget ? 'admin' : ''),
-    serviceMethod: readString(source.serviceMethod, hasTableTarget ? 'listItems' : ''),
+    serviceName: usesListItems ? 'admin' : sourceServiceName,
+    serviceMethod: usesListItems ? 'listItems' : sourceServiceMethod,
     ...(saveMethod ? { saveMethod } : {}),
     ...(deleteMethod ? { deleteMethod } : {}),
     ...(entityCode ? { entityCode } : {}),
     ...(tableName ? { tableName } : {}),
-    ...(isRecord(source.postData) ? { postData: source.postData } : {}),
+    ...(Object.keys(postData).length ? { postData } : {}),
     autoLoad: source.autoLoad !== false,
   };
 }

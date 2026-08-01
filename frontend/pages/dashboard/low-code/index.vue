@@ -253,7 +253,8 @@ async function loadGeneratorOptions() {
   try {
     generatorOptions.value = await serviceApi.invoke<TablePageOption[]>(
       'lowcode',
-      'listTablePageOptions'
+      'listItems',
+      { itemType: 'tablePageOptions' }
     );
 
     if (!generatorForm.value.tableName && generatorOptions.value.length) {

@@ -71,8 +71,8 @@ function assertRpcSucceeded<T>(
 export class AccountService implements ServiceExecutor {
   async execute(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
-      case 'listAccounts':
-        return this.listAccounts(context);
+      case 'listItems':
+        return this.listItems(postData, context);
       case 'getAccount':
         return this.getAccount(postData, context);
       case 'getPersonalAccount':
@@ -81,8 +81,6 @@ export class AccountService implements ServiceExecutor {
         return this.createAccount(postData, context);
       case 'updateAccount':
         return this.updateAccount(postData, context);
-      case 'listMembers':
-        return this.listMembers(postData, context);
       case 'addMember':
         return this.addMember(postData, context);
       case 'updateMemberRole':
@@ -91,6 +89,17 @@ export class AccountService implements ServiceExecutor {
         return this.removeMember(postData, context);
       default:
         throw new BadRequestException(`Unsupported account method: ${method}`);
+    }
+  }
+
+  private async listItems(postData: PostData, context: ServiceContext) {
+    switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type) || 'accounts') {
+      case 'accounts':
+        return this.listAccounts(context);
+      case 'members':
+        return this.listMembers(postData, context);
+      default:
+        throw new BadRequestException('Unsupported account listItems itemType.');
     }
   }
 

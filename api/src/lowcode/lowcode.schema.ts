@@ -20,11 +20,15 @@ export type LowCodePageSchema = {
     {
       key: string;
       label?: string;
-      serviceName: string;
-      serviceMethod: string;
+      serviceName?: string;
+      serviceMethod?: string;
       saveMethod?: string;
       deleteMethod?: string;
-  postData?: Record<string, unknown> | string;
+      entityCode?: string;
+      entity_code?: string;
+      tableName?: string;
+      table_name?: string;
+      postData?: Record<string, unknown>;
       autoLoad?: boolean;
     }
   >;
@@ -89,6 +93,30 @@ function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
+const legacyListMethodEntityCodes: Record<string, string> = {
+  listUsers: 'users',
+  listRoles: 'admin_roles',
+  listPermissions: 'admin_permissions',
+  listRoutes: 'admin_routes',
+  listEntities: 'admin_entities',
+  listPages: 'lowcode_pages',
+};
+
+function readPostDataObject(value: unknown) {
+  if (isRecord(value)) return value;
+
+  if (typeof value === 'string' && value.trim()) {
+    try {
+      const parsed = JSON.parse(value);
+      return isRecord(parsed) ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+
+  return {};
+}
+
 function readSchemaVersion(value: unknown) {
   return typeof value === 'number' && Number.isFinite(value) && value > 0
     ? value
@@ -105,21 +133,55 @@ function normalizeBlockKind(kind: string) {
   return kind === 'search-form' ? 'searchForm' : kind;
 }
 
+function readDataSourceEntityCode(source: Record<string, unknown>) {
+  const postData = readPostDataObject(source.postData);
+  return readString(source.entityCode ?? source.entity_code ?? postData.entityCode ?? postData.entity_code);
+}
+
+function readDataSourceTableName(source: Record<string, unknown>) {
+  const postData = readPostDataObject(source.postData);
+  return readString(source.tableName ?? source.table_name ?? postData.tableName ?? postData.table_name);
+}
+
+function hasDataSourceTableTarget(source: {
+  entityCode?: string;
+  entity_code?: string;
+  tableName?: string;
+  table_name?: string;
+}) {
+  return Boolean(source.entityCode || source.entity_code || source.tableName || source.table_name);
+}
+
 function normalizeDataSource(key: string, value: unknown) {
   const source = isRecord(value) ? value : {};
   const sourceKey = readString(source.key, key);
   const label = readString(source.label);
+  const sourcePostData = readPostDataObject(source.postData);
+  const sourceServiceName = readString(source.serviceName);
+  const sourceServiceMethod = readString(source.serviceMethod);
+  const legacyEntityCode = legacyListMethodEntityCodes[sourceServiceMethod];
+  const entityCode = legacyEntityCode || readDataSourceEntityCode(source);
+  const tableName = readDataSourceTableName(source);
+  const usesListItems = Boolean(entityCode || tableName || sourceServiceMethod === 'listTableRows');
   const saveMethod = readString(source.saveMethod);
   const deleteMethod = readString(source.deleteMethod);
+  const postData = {
+    ...sourcePostData,
+    ...(legacyEntityCode ? { entityCode: legacyEntityCode } : {}),
+    ...(entityCode && !sourcePostData.entityCode && !sourcePostData.entity_code ? { entityCode } : {}),
+    ...(tableName && !sourcePostData.tableName && !sourcePostData.table_name ? { tableName } : {}),
+  };
 
   return {
     key: sourceKey,
     ...(label ? { label } : {}),
-    serviceName: readString(source.serviceName),
-    serviceMethod: readString(source.serviceMethod),
+    serviceName: usesListItems ? 'admin' : sourceServiceName,
+    serviceMethod: usesListItems ? 'listItems' : sourceServiceMethod,
     ...(saveMethod ? { saveMethod } : {}),
     ...(deleteMethod ? { deleteMethod } : {}),
-    ...(isRecord(source.postData) ? { postData: source.postData } : {}),
+    ...(entityCode ? { entityCode } : {}),
+    ...(tableName ? { tableName } : {}),
+    ...(Object.keys(postData).length ? { postData } : {}),
     autoLoad: source.autoLoad !== false,
   };
 }
@@ -303,16 +365,17 @@ function dataSourceExists(schema: LowCodePageSchema, key?: unknown) {
 function validateDataSources(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
   Object.entries(schema.dataSources ?? {}).forEach(([key, source]) => {
     const path = `dataSources.${key}`;
+    const hasTableTarget = hasDataSourceTableTarget(source);
 
     if (!source.key) {
       pushIssue(issues, 'error', `${path}.key`, 'Data source key is required.');
     }
 
-    if (!source.serviceName) {
+    if (!source.serviceName && !hasTableTarget) {
       pushIssue(issues, 'error', `${path}.serviceName`, 'Service name is required.');
     }
 
-    if (!source.serviceMethod) {
+    if (!source.serviceMethod && !hasTableTarget) {
       pushIssue(issues, 'error', `${path}.serviceMethod`, 'Service method is required.');
     }
   });

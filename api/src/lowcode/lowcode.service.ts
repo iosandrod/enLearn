@@ -194,14 +194,10 @@ function normalizeGeneratedStatus(value: unknown): 'draft' | 'published' | 'arch
 export class LowCodeService implements ServiceExecutor {
   async execute(method: string, postData: Record<string, unknown>, context: ServiceContext) {
     switch (method) {
-      case 'listPages':
-        return this.listPages(context);
+      case 'listItems':
+        return this.listItems(postData, context);
       case 'getPage':
         return this.getPage(postData, context);
-      case 'listPageRelations':
-        return this.listPageRelations(postData, context);
-      case 'listTablePageOptions':
-        return this.listTablePageOptions(context);
       case 'generateTableListPageSchema':
         return this.generateTableListPageSchema(postData, context);
       case 'saveGeneratedTableListPage':
@@ -214,6 +210,19 @@ export class LowCodeService implements ServiceExecutor {
         return this.archivePage(postData, context);
       default:
         throw new BadRequestException(`Unsupported lowcode method: ${method}`);
+    }
+  }
+
+  private async listItems(postData: Record<string, unknown>, context: ServiceContext) {
+    switch (readString(postData.itemType ?? postData.item_type ?? postData.type, 'pages')) {
+      case 'pages':
+        return this.listPages(context);
+      case 'pageRelations':
+        return this.listPageRelations(postData, context);
+      case 'tablePageOptions':
+        return this.listTablePageOptions(context);
+      default:
+        throw new BadRequestException('Unsupported lowcode listItems itemType.');
     }
   }
 

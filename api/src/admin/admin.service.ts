@@ -200,6 +200,10 @@ function readListItemsFilterString(postData: PostData, field: string) {
   return readOptionalString(postData[field] ?? filters[field]);
 }
 
+function readListItemsType(postData: PostData) {
+  return readOptionalString(postData.itemType ?? postData.item_type ?? postData.type);
+}
+
 function isLowCodePagesListItems(postData: PostData) {
   const entityCode = readListItemsEntityCode(postData);
   const tableName = readListItemsTableName(postData);
@@ -531,10 +535,6 @@ export class AdminService implements ServiceExecutor {
         return this.savePermission(postData, context);
       case 'deletePermission':
         return this.deletePermission(postData, context);
-      case 'listRouteTree':
-        return this.listRouteTree(context);
-      case 'listRouteManageTree':
-        return this.listRouteManageTree(context);
       case 'saveRoute':
         return this.saveRoute(postData, context);
       case 'hideRoute':
@@ -545,35 +545,44 @@ export class AdminService implements ServiceExecutor {
         return this.saveEntity(postData, context);
       case 'deleteEntity':
         return this.deleteEntity(postData, context);
-      case 'listOptionSources':
-        return this.listOptionSources(context);
       case 'saveOptionSource':
         return this.saveOptionSource(postData, context);
       case 'deleteOptionSource':
         return this.deleteOptionSource(postData, context);
-      case 'listOptionItems':
-      case 'listDropdownOptions':
-        return this.listOptionItems(postData, context);
       case 'saveOptionItem':
         return this.saveOptionItem(postData, context);
       case 'deleteOptionItem':
         return this.deleteOptionItem(postData, context);
       case 'saveUserRoles':
         return this.saveUserRoles(postData, context);
-      case 'listSystemExecutionTasks':
-        return this.listSystemExecutionTasks(context);
-      case 'listWorkflowJobs':
-        return this.listWorkflowJobs(postData, context);
-      case 'listWorkflowJobRuns':
-        return this.listWorkflowJobRuns(postData, context);
-      case 'listWorkflowTimerJobs':
-        return this.listWorkflowTimerJobs(postData, context);
       default:
         throw new BadRequestException(`Unsupported admin method: ${method}`);
     }
   }
 
-  private async listItems(postData: PostData, context: ServiceContext) {
+  async listItems(postData: PostData, context: ServiceContext) {
+    switch (readListItemsType(postData)) {
+      case 'routeTree':
+        return this.listRouteTree(context);
+      case 'routeManageTree':
+        return this.listRouteManageTree(context);
+      case 'optionSources':
+        return this.listOptionSources(context);
+      case 'optionItems':
+      case 'dropdownOptions':
+        return this.listOptionItems(postData, context);
+      case 'systemExecutionTasks':
+        return this.listSystemExecutionTasks(context);
+      case 'workflowJobs':
+        return this.listWorkflowJobs(postData, context);
+      case 'workflowJobRuns':
+        return this.listWorkflowJobRuns(postData, context);
+      case 'workflowTimerJobs':
+        return this.listWorkflowTimerJobs(postData, context);
+      default:
+        break;
+    }
+
     if (isLowCodePagesListItems(postData)) {
       return this.listLowCodePageItems(postData, context);
     }
