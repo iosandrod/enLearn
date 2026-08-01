@@ -265,6 +265,19 @@ function resolveRuntimePostData(postData?: Record<string, unknown>) {
   return resolveRuntimeValue(postData ?? {}) as Record<string, unknown>;
 }
 
+function tableNameFromEntityCode(entityCode: string) {
+  const knownTables: Record<string, string> = {
+    users: 'profiles',
+    admin_roles: 'admin_roles',
+    admin_permissions: 'admin_permissions',
+    admin_routes: 'admin_routes',
+    admin_entities: 'admin_entities',
+    lowcode_pages: 'lowcode_pages',
+  };
+
+  return knownTables[entityCode] ?? entityCode;
+}
+
 function readDataSourceTargetValue(
   source: LowCodePageDataSource,
   postData: Record<string, unknown>,
@@ -280,11 +293,11 @@ function withDataSourceTargetPostData(
 ) {
   const entityCode = readDataSourceTargetValue(source, postData, 'entityCode', 'entity_code');
   const tableName = readDataSourceTargetValue(source, postData, 'tableName', 'table_name');
+  const resolvedTableName = tableName || (entityCode ? tableNameFromEntityCode(entityCode) : '');
 
   return {
     ...postData,
-    ...(entityCode && !postData.entityCode && !postData.entity_code ? { entityCode } : {}),
-    ...(tableName && !postData.tableName && !postData.table_name ? { tableName } : {}),
+    ...(resolvedTableName ? { tableName: resolvedTableName } : {}),
   };
 }
 
@@ -347,7 +360,7 @@ function resolveDataSourceRequest(
   );
   const service = resolveDataSourceService(source, postData);
 
-  return normalizeLegacyListRequest(service.serviceName, service.serviceMethod, postData);
+  return { serviceName: service.serviceName, serviceMethod: service.serviceMethod, postData };
 }
 
 function resolveDataSourcePostData(key: string, source: LowCodePageDataSource) {
@@ -360,37 +373,6 @@ function resolveRuntimeRoute(path: string, row: Record<string, unknown> = {}) {
 
 function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
-}
-
-const legacyListMethodEntityCodes: Record<string, string> = {
-  listUsers: 'users',
-  listRoles: 'admin_roles',
-  listPermissions: 'admin_permissions',
-  listRoutes: 'admin_routes',
-  listEntities: 'admin_entities',
-  listPages: 'lowcode_pages',
-};
-
-function normalizeLegacyListRequest(
-  serviceName: string,
-  serviceMethod: string,
-  postData: Record<string, unknown>
-) {
-  const entityCode = legacyListMethodEntityCodes[serviceMethod];
-  const isLegacyTableRowsRequest = serviceMethod === 'listTableRows';
-
-  if (!entityCode && !isLegacyTableRowsRequest) {
-    return { serviceName, serviceMethod, postData };
-  }
-
-  return {
-    serviceName: 'admin',
-    serviceMethod: 'listItems',
-    postData: {
-      ...postData,
-      ...(entityCode && !postData.entityCode && !postData.entity_code ? { entityCode } : {}),
-    },
-  };
 }
 
 function readRelationMetadataString(
@@ -1006,10 +988,9 @@ async function invokeServiceDirective(
 
   if (!serviceName || !serviceMethod) return;
 
-  const normalizedRequest = normalizeLegacyListRequest(serviceName, serviceMethod, request.postData);
   const result = await host
     .getServiceApi()
-    .invoke(normalizedRequest.serviceName, normalizedRequest.serviceMethod, normalizedRequest.postData);
+    .invoke(serviceName, serviceMethod, request.postData);
   const assignTo = resolveDirectiveString(directive.assignTo, event);
 
   if (assignTo) {

@@ -6,10 +6,8 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type {
-  ServiceContext,
-  ServiceExecutor
-} from '../common/interfaces/service-executor';
+import { BaseService } from '../common/base.service';
+import type { ServiceContext } from '../common/interfaces/service-executor';
 import {
   createSupabaseClient,
   getCurrentUser,
@@ -326,8 +324,8 @@ function fileMetadataRequiredMessage() {
 }
 
 @Injectable()
-export class FilesService implements ServiceExecutor {
-  async execute(method: string, postData: PostData, context: ServiceContext) {
+export class FilesService extends BaseService {
+  protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
       case 'createUploadIntent':
       case 'createUploadUrl':
@@ -336,8 +334,6 @@ export class FilesService implements ServiceExecutor {
         return this.confirmUpload(postData, context);
       case 'getDownloadUrl':
         return this.getDownloadUrl(postData, context);
-      case 'listItems':
-        return this.listItems(postData, context);
       case 'createFolder':
         return this.createFolder(postData, context);
       case 'deleteFolder':
@@ -355,7 +351,7 @@ export class FilesService implements ServiceExecutor {
     }
   }
 
-  private async listItems(postData: PostData, context: ServiceContext) {
+  protected override async handleListItems(postData: PostData, context: ServiceContext) {
     switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type) || 'files') {
       case 'files':
         return this.list(postData, context);

@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { ServiceContext, ServiceExecutor } from '../common/interfaces/service-executor';
+import { BaseService } from '../common/base.service';
+import type { ServiceContext } from '../common/interfaces/service-executor';
 import { createSupabaseClient, getCurrentUser } from '../common/utils/supabase';
 import type {
   ChatConversationMemberRow,
@@ -133,11 +134,9 @@ function normalizeMessage(row: ChatMessageRow) {
 }
 
 @Injectable()
-export class ChatService implements ServiceExecutor {
-  async execute(method: string, postData: PostData, context: ServiceContext) {
+export class ChatService extends BaseService {
+  protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
-      case 'listItems':
-        return this.listItems(postData, context);
       case 'createDirectConversation':
         return this.createDirectConversation(postData, context);
       case 'createGroupConversation':
@@ -155,7 +154,7 @@ export class ChatService implements ServiceExecutor {
     }
   }
 
-  private async listItems(postData: PostData, context: ServiceContext) {
+  protected override async handleListItems(postData: PostData, context: ServiceContext) {
     switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type) || 'conversations') {
       case 'conversations':
         return this.listConversations(postData, context);

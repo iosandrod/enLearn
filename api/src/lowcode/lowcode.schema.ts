@@ -93,15 +93,6 @@ function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
-const legacyListMethodEntityCodes: Record<string, string> = {
-  listUsers: 'users',
-  listRoles: 'admin_roles',
-  listPermissions: 'admin_permissions',
-  listRoutes: 'admin_routes',
-  listEntities: 'admin_entities',
-  listPages: 'lowcode_pages',
-};
-
 function readPostDataObject(value: unknown) {
   if (isRecord(value)) return value;
 
@@ -143,6 +134,19 @@ function readDataSourceTableName(source: Record<string, unknown>) {
   return readString(source.tableName ?? source.table_name ?? postData.tableName ?? postData.table_name);
 }
 
+function tableNameFromEntityCode(entityCode: string) {
+  const knownTables: Record<string, string> = {
+    users: 'profiles',
+    admin_roles: 'admin_roles',
+    admin_permissions: 'admin_permissions',
+    admin_routes: 'admin_routes',
+    admin_entities: 'admin_entities',
+    lowcode_pages: 'lowcode_pages',
+  };
+
+  return knownTables[entityCode] ?? entityCode;
+}
+
 function hasDataSourceTableTarget(source: {
   entityCode?: string;
   entity_code?: string;
@@ -159,16 +163,13 @@ function normalizeDataSource(key: string, value: unknown) {
   const sourcePostData = readPostDataObject(source.postData);
   const sourceServiceName = readString(source.serviceName);
   const sourceServiceMethod = readString(source.serviceMethod);
-  const legacyEntityCode = legacyListMethodEntityCodes[sourceServiceMethod];
-  const entityCode = legacyEntityCode || readDataSourceEntityCode(source);
-  const tableName = readDataSourceTableName(source);
-  const usesListItems = Boolean(entityCode || tableName || sourceServiceMethod === 'listTableRows');
+  const entityCode = readDataSourceEntityCode(source);
+  const tableName = readDataSourceTableName(source) || (entityCode ? tableNameFromEntityCode(entityCode) : '');
+  const usesListItems = Boolean(entityCode || tableName);
   const saveMethod = readString(source.saveMethod);
   const deleteMethod = readString(source.deleteMethod);
   const postData = {
     ...sourcePostData,
-    ...(legacyEntityCode ? { entityCode: legacyEntityCode } : {}),
-    ...(entityCode && !sourcePostData.entityCode && !sourcePostData.entity_code ? { entityCode } : {}),
     ...(tableName && !sourcePostData.tableName && !sourcePostData.table_name ? { tableName } : {}),
   };
 
@@ -179,7 +180,6 @@ function normalizeDataSource(key: string, value: unknown) {
     serviceMethod: usesListItems ? 'listItems' : sourceServiceMethod,
     ...(saveMethod ? { saveMethod } : {}),
     ...(deleteMethod ? { deleteMethod } : {}),
-    ...(entityCode ? { entityCode } : {}),
     ...(tableName ? { tableName } : {}),
     ...(Object.keys(postData).length ? { postData } : {}),
     autoLoad: source.autoLoad !== false,

@@ -208,8 +208,9 @@ async function loadDevTestUsers() {
   if (!isDev) return;
 
   try {
-    const users = await serviceApi.invoke<Record<string, unknown>[]>('admin', 'listItems', {
-      entityCode: 'users'
+    const users = await serviceApi.listItems<Record<string, unknown>[]>('admin', {
+      tableName: 'profiles',
+      limit: 1000,
     });
     auth.setDevTestUsers(Array.isArray(users) ? users : []);
   } catch (error) {
@@ -559,6 +560,30 @@ function flattenNodes(nodes: AdminRouteNode[]): AdminRouteNode[] {
   return nodes.flatMap((node) => [node, ...flattenNodes(node.children ?? [])]);
 }
 
+function buildRouteTree(rows: AdminRouteNode[]) {
+  const byId = new Map<string, AdminRouteNode & { children: AdminRouteNode[] }>();
+  const roots: Array<AdminRouteNode & { children: AdminRouteNode[] }> = [];
+
+  for (const row of rows) {
+    const id = row.id;
+    if (!id) continue;
+    byId.set(id, {
+      ...row,
+      title: row.title ?? row.code ?? row.path,
+      children: [],
+    });
+  }
+
+  for (const node of byId.values()) {
+    const parentId = node.parent_id ?? '';
+    const parent = parentId ? byId.get(parentId) : undefined;
+    if (parent) parent.children.push(node);
+    else roots.push(node);
+  }
+
+  return roots;
+}
+
 const normalizedRoutes = computed<AdminRouteNode[]>(() =>
   normalizeNodes(routes.value.length ? routes.value : fallbackRoutes)
 );
@@ -605,10 +630,16 @@ async function reloadRoutes() {
   routeError.value = '';
 
   try {
-    const data = await serviceApi.invoke<AdminRouteNode[]>('admin', 'listItems', {
-      itemType: 'routeTree'
+    const data = await serviceApi.listItems<AdminRouteNode[]>('admin', {
+      tableName: 'admin_routes',
+      clientMode: 'admin',
+      sorts: [
+        { field: 'sort_order', direction: 'asc' },
+        { field: 'created_at', direction: 'asc' },
+      ],
+      limit: 1000,
     });
-    routes.value = Array.isArray(data) ? data : [];
+    routes.value = Array.isArray(data) ? buildRouteTree(data) : [];
   } catch (error) {
     routes.value = [];
     routeError.value =
@@ -694,7 +725,10 @@ async function renameMenuItem() {
   routeError.value = '';
 
   try {
-    await serviceApi.invoke('admin', 'saveRoute', buildRouteSavePayload(item, nextTitle));
+    await serviceApi.invoke('admin', 'saveItem', {
+      resource: 'routes',
+      ...buildRouteSavePayload(item, nextTitle)
+    });
     await reloadRoutes();
   } catch (error) {
     routeError.value =

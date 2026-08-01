@@ -1,0 +1,160 @@
+Date : 2026-08-02 05:31:01
+Directory : e:\enLearn\api\src
+Total : 102 files,  18240 codes, 1 comments, 2358 blanks, all 20599 lines
+
+Languages
++------------+------------+------------+------------+------------+------------+
+| language   | files      | code       | comment    | blank      | total      |
++------------+------------+------------+------------+------------+------------+
+| TypeScript |        102 |     18,240 |          1 |      2,358 |     20,599 |
++------------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                              | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                 |        102 |     18,240 |          1 |      2,358 |     20,599 |
+| . (Files)                                                         |          2 |         48 |          0 |          9 |         57 |
+| account                                                           |          2 |        199 |          0 |         37 |        236 |
+| admin                                                             |          2 |      1,957 |          0 |        356 |      2,313 |
+| auth                                                              |          4 |        294 |          0 |         58 |        352 |
+| chat                                                              |          5 |        960 |          0 |        142 |      1,102 |
+| common                                                            |         10 |      1,099 |          0 |        205 |      1,304 |
+| common (Files)                                                    |          1 |         16 |          0 |          4 |         20 |
+| common\dto                                                        |          1 |         13 |          0 |          4 |         17 |
+| common\interfaces                                                 |          1 |         11 |          0 |          2 |         13 |
+| common\middleware                                                 |          1 |        114 |          0 |         22 |        136 |
+| common\utils                                                      |          6 |        945 |          0 |        173 |      1,118 |
+| domain-service                                                    |          4 |        175 |          0 |         23 |        198 |
+| entity-design                                                     |          2 |        970 |          0 |         87 |      1,057 |
+| files                                                             |          5 |        978 |          0 |        132 |      1,110 |
+| gateway                                                           |          3 |        242 |          0 |         34 |        276 |
+| lowcode                                                           |          4 |      1,866 |          0 |        259 |      2,125 |
+| notification                                                      |          3 |        705 |          0 |        101 |        806 |
+| payment                                                           |          2 |        257 |          0 |         43 |        300 |
+| posts                                                             |          2 |        123 |          0 |         27 |        150 |
+| user                                                              |          2 |        114 |          0 |         26 |        140 |
+| workflow                                                          |         47 |      7,968 |          1 |        790 |      8,759 |
+| workflow (Files)                                                  |          3 |        257 |          0 |         24 |        281 |
+| workflow-service                                                  |          3 |        285 |          0 |         29 |        314 |
+| workflow\common                                                   |          4 |        148 |          0 |         31 |        179 |
+| workflow\definition                                               |          7 |        864 |          0 |         72 |        936 |
+| workflow\health                                                   |          2 |         21 |          0 |          4 |         25 |
+| workflow\history                                                  |          2 |         19 |          0 |          5 |         24 |
+| workflow\integration                                              |          1 |          3 |          0 |          2 |          5 |
+| workflow\job                                                      |          7 |        674 |          0 |         96 |        770 |
+| workflow\rule                                                     |          1 |          3 |          0 |          2 |          5 |
+| workflow\runtime                                                  |         11 |      4,149 |          0 |        357 |      4,506 |
+| workflow\task                                                     |          2 |         90 |          0 |         16 |        106 |
+| workflow\testing                                                  |          1 |        309 |          0 |         31 |        340 |
+| workflow\trigger                                                  |          6 |      1,431 |          1 |        150 |      1,582 |
++-------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| filename                                                          | language   | code       | comment    | blank      | total      |
++-------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| e:\enLearn\api\src\account\account.module.ts                      | TypeScript |          7 |          0 |          2 |          9 |
+| e:\enLearn\api\src\account\account.service.ts                     | TypeScript |        192 |          0 |         35 |        227 |
+| e:\enLearn\api\src\admin\admin.module.ts                          | TypeScript |          7 |          0 |          2 |          9 |
+| e:\enLearn\api\src\admin\admin.service.ts                         | TypeScript |      1,950 |          0 |        354 |      2,304 |
+| e:\enLearn\api\src\app.module.ts                                  | TypeScript |         16 |          0 |          2 |         18 |
+| e:\enLearn\api\src\auth\auth.controller.ts                        | TypeScript |         47 |          0 |          9 |         56 |
+| e:\enLearn\api\src\auth\auth.dto.ts                               | TypeScript |         40 |          0 |         11 |         51 |
+| e:\enLearn\api\src\auth\auth.module.ts                            | TypeScript |          9 |          0 |          2 |         11 |
+| e:\enLearn\api\src\auth\auth.service.ts                           | TypeScript |        198 |          0 |         36 |        234 |
+| e:\enLearn\api\src\chat\chat.gateway.ts                           | TypeScript |        212 |          0 |         25 |        237 |
+| e:\enLearn\api\src\chat\chat.module.ts                            | TypeScript |          7 |          0 |          2 |          9 |
+| e:\enLearn\api\src\chat\chat.service.ts                           | TypeScript |        514 |          0 |         86 |        600 |
+| e:\enLearn\api\src\chat\chat.socket.ts                            | TypeScript |        175 |          0 |         23 |        198 |
+| e:\enLearn\api\src\chat\chat.types.ts                             | TypeScript |         52 |          0 |          6 |         58 |
+| e:\enLearn\api\src\common\dto\service-invoke.dto.ts               | TypeScript |         13 |          0 |          4 |         17 |
+| e:\enLearn\api\src\common\interfaces\service-executor.ts          | TypeScript |         11 |          0 |          2 |         13 |
+| e:\enLearn\api\src\common\middleware\compression.middleware.ts    | TypeScript |        114 |          0 |         22 |        136 |
+| e:\enLearn\api\src\common\service-bus.ts                          | TypeScript |         16 |          0 |          4 |         20 |
+| e:\enLearn\api\src\common\utils\database.ts                       | TypeScript |         30 |          0 |          9 |         39 |
+| e:\enLearn\api\src\common\utils\env.ts                            | TypeScript |         47 |          0 |         12 |         59 |
+| e:\enLearn\api\src\common\utils\list-items.ts                     | TypeScript |        435 |          0 |         62 |        497 |
+| e:\enLearn\api\src\common\utils\redis.ts                          | TypeScript |         32 |          0 |          8 |         40 |
+| e:\enLearn\api\src\common\utils\stripe.ts                         | TypeScript |         47 |          0 |         12 |         59 |
+| e:\enLearn\api\src\common\utils\supabase.ts                       | TypeScript |        354 |          0 |         70 |        424 |
+| e:\enLearn\api\src\domain-service\app.module.ts                   | TypeScript |         30 |          0 |          3 |         33 |
+| e:\enLearn\api\src\domain-service\main.ts                         | TypeScript |         14 |          0 |          6 |         20 |
+| e:\enLearn\api\src\domain-service\service-router.service.ts       | TypeScript |         83 |          0 |          7 |         90 |
+| e:\enLearn\api\src\domain-service\service.rpc.controller.ts       | TypeScript |         48 |          0 |          7 |         55 |
+| e:\enLearn\api\src\entity-design\entity-design.module.ts          | TypeScript |          7 |          0 |          2 |          9 |
+| e:\enLearn\api\src\entity-design\entity-design.service.ts         | TypeScript |        963 |          0 |         85 |      1,048 |
+| e:\enLearn\api\src\files\files.module.ts                          | TypeScript |          7 |          0 |          2 |          9 |
+| e:\enLearn\api\src\files\files.service.ts                         | TypeScript |        770 |          0 |         99 |        869 |
+| e:\enLearn\api\src\files\files.types.ts                           | TypeScript |         39 |          0 |          4 |         43 |
+| e:\enLearn\api\src\files\storage-driver.ts                        | TypeScript |         39 |          0 |          6 |         45 |
+| e:\enLearn\api\src\files\supabase-storage.driver.ts               | TypeScript |        123 |          0 |         21 |        144 |
+| e:\enLearn\api\src\gateway\domain-client.module.ts                | TypeScript |         21 |          0 |          3 |         24 |
+| e:\enLearn\api\src\gateway\service-gateway.controller.ts          | TypeScript |        159 |          0 |         22 |        181 |
+| e:\enLearn\api\src\gateway\service-router.service.ts              | TypeScript |         62 |          0 |          9 |         71 |
+| e:\enLearn\api\src\lowcode\lowcode.module.ts                      | TypeScript |          7 |          0 |          2 |          9 |
+| e:\enLearn\api\src\lowcode\lowcode.schema.ts                      | TypeScript |        574 |          0 |         94 |        668 |
+| e:\enLearn\api\src\lowcode\lowcode.service.ts                     | TypeScript |        665 |          0 |        109 |        774 |
+| e:\enLearn\api\src\lowcode\table-page-generator.ts                | TypeScript |        620 |          0 |         54 |        674 |
+| e:\enLearn\api\src\main.ts                                        | TypeScript |         32 |          0 |          7 |         39 |
+| e:\enLearn\api\src\notification\notification.module.ts            | TypeScript |          7 |          0 |          2 |          9 |
+| e:\enLearn\api\src\notification\notification.service.ts           | TypeScript |        631 |          0 |         94 |        725 |
+| e:\enLearn\api\src\notification\notification.types.ts             | TypeScript |         67 |          0 |          5 |         72 |
+| e:\enLearn\api\src\payment\payment.module.ts                      | TypeScript |          7 |          0 |          2 |          9 |
+| e:\enLearn\api\src\payment\payment.service.ts                     | TypeScript |        250 |          0 |         41 |        291 |
+| e:\enLearn\api\src\posts\posts.module.ts                          | TypeScript |          7 |          0 |          2 |          9 |
+| e:\enLearn\api\src\posts\posts.service.ts                         | TypeScript |        116 |          0 |         25 |        141 |
+| e:\enLearn\api\src\user\user.module.ts                            | TypeScript |          7 |          0 |          2 |          9 |
+| e:\enLearn\api\src\user\user.service.ts                           | TypeScript |        107 |          0 |         24 |        131 |
+| e:\enLearn\api\src\workflow-service\app.module.ts                 | TypeScript |         28 |          0 |          3 |         31 |
+| e:\enLearn\api\src\workflow-service\main.ts                       | TypeScript |         21 |          0 |          7 |         28 |
+| e:\enLearn\api\src\workflow-service\workflow.rpc.controller.ts    | TypeScript |        236 |          0 |         19 |        255 |
+| e:\enLearn\api\src\workflow\common\api-response.ts                | TypeScript |         15 |          0 |          2 |         17 |
+| e:\enLearn\api\src\workflow\common\database.module.ts             | TypeScript |          8 |          0 |          3 |         11 |
+| e:\enLearn\api\src\workflow\common\database.service.ts            | TypeScript |         50 |          0 |         11 |         61 |
+| e:\enLearn\api\src\workflow\common\env.ts                         | TypeScript |         75 |          0 |         15 |         90 |
+| e:\enLearn\api\src\workflow\definition\definition.controller.ts   | TypeScript |         20 |          0 |          5 |         25 |
+| e:\enLearn\api\src\workflow\definition\definition.dto.ts          | TypeScript |         30 |          0 |          9 |         39 |
+| e:\enLearn\api\src\workflow\definition\definition.module.ts       | TypeScript |         10 |          0 |          2 |         12 |
+| e:\enLearn\api\src\workflow\definition\definition.service.spec.ts | TypeScript |         79 |          0 |         10 |         89 |
+| e:\enLearn\api\src\workflow\definition\definition.service.ts      | TypeScript |        631 |          0 |         30 |        661 |
+| e:\enLearn\api\src\workflow\definition\definition.types.ts        | TypeScript |         43 |          0 |          6 |         49 |
+| e:\enLearn\api\src\workflow\definition\model.controller.ts        | TypeScript |         51 |          0 |         10 |         61 |
+| e:\enLearn\api\src\workflow\health\health.controller.ts           | TypeScript |         15 |          0 |          2 |         17 |
+| e:\enLearn\api\src\workflow\health\health.module.ts               | TypeScript |          6 |          0 |          2 |          8 |
+| e:\enLearn\api\src\workflow\history\history.controller.ts         | TypeScript |         11 |          0 |          3 |         14 |
+| e:\enLearn\api\src\workflow\history\history.module.ts             | TypeScript |          8 |          0 |          2 |         10 |
+| e:\enLearn\api\src\workflow\integration\integration.module.ts     | TypeScript |          3 |          0 |          2 |          5 |
+| e:\enLearn\api\src\workflow\job\job-local-executor.service.ts     | TypeScript |         67 |          0 |         14 |         81 |
+| e:\enLearn\api\src\workflow\job\job-scheduler.service.ts          | TypeScript |        105 |          0 |         12 |        117 |
+| e:\enLearn\api\src\workflow\job\job.controller.ts                 | TypeScript |         53 |          0 |         10 |         63 |
+| e:\enLearn\api\src\workflow\job\job.dto.ts                        | TypeScript |         75 |          0 |         21 |         96 |
+| e:\enLearn\api\src\workflow\job\job.module.ts                     | TypeScript |         12 |          0 |          2 |         14 |
+| e:\enLearn\api\src\workflow\job\job.service.ts                    | TypeScript |        321 |          0 |         33 |        354 |
+| e:\enLearn\api\src\workflow\job\job.types.ts                      | TypeScript |         41 |          0 |          4 |         45 |
+| e:\enLearn\api\src\workflow\rule\rule.module.ts                   | TypeScript |          3 |          0 |          2 |          5 |
+| e:\enLearn\api\src\workflow\runtime\runtime.controller.ts         | TypeScript |         64 |          0 |         11 |         75 |
+| e:\enLearn\api\src\workflow\runtime\runtime.dto.ts                | TypeScript |         68 |          0 |         19 |         87 |
+| e:\enLearn\api\src\workflow\runtime\runtime.engine.types.ts       | TypeScript |        185 |          0 |         14 |        199 |
+| e:\enLearn\api\src\workflow\runtime\runtime.helpers.ts            | TypeScript |         46 |          0 |         10 |         56 |
+| e:\enLearn\api\src\workflow\runtime\runtime.memory-store.ts       | TypeScript |        708 |          0 |         47 |        755 |
+| e:\enLearn\api\src\workflow\runtime\runtime.module.ts             | TypeScript |         23 |          0 |          2 |         25 |
+| e:\enLearn\api\src\workflow\runtime\runtime.postgres-store.ts     | TypeScript |      1,209 |          0 |         86 |      1,295 |
+| e:\enLearn\api\src\workflow\runtime\runtime.service.spec.ts       | TypeScript |        383 |          0 |         38 |        421 |
+| e:\enLearn\api\src\workflow\runtime\runtime.service.ts            | TypeScript |        365 |          0 |         38 |        403 |
+| e:\enLearn\api\src\workflow\runtime\runtime.types.ts              | TypeScript |        125 |          0 |         15 |        140 |
+| e:\enLearn\api\src\workflow\runtime\workflow.executor.ts          | TypeScript |        973 |          0 |         77 |      1,050 |
+| e:\enLearn\api\src\workflow\task\task.controller.ts               | TypeScript |         82 |          0 |         14 |         96 |
+| e:\enLearn\api\src\workflow\task\task.module.ts                   | TypeScript |          8 |          0 |          2 |         10 |
+| e:\enLearn\api\src\workflow\testing\approval-flow-test.service.ts | TypeScript |        309 |          0 |         31 |        340 |
+| e:\enLearn\api\src\workflow\trigger\notification.task.ts          | TypeScript |      1,100 |          1 |        109 |      1,210 |
+| e:\enLearn\api\src\workflow\trigger\trigger-dev.client.ts         | TypeScript |        170 |          0 |         20 |        190 |
+| e:\enLearn\api\src\workflow\trigger\trigger-engine.config.ts      | TypeScript |         41 |          0 |          7 |         48 |
+| e:\enLearn\api\src\workflow\trigger\waitpoint-diagnostic.task.ts  | TypeScript |         23 |          0 |          6 |         29 |
+| e:\enLearn\api\src\workflow\trigger\workflow-instance.task.ts     | TypeScript |         39 |          0 |          4 |         43 |
+| e:\enLearn\api\src\workflow\trigger\workflow-job.task.ts          | TypeScript |         58 |          0 |          4 |         62 |
+| e:\enLearn\api\src\workflow\workflow.module.ts                    | TypeScript |         19 |          0 |          3 |         22 |
+| e:\enLearn\api\src\workflow\workflow.service.ts                   | TypeScript |        219 |          0 |         17 |        236 |
+| e:\enLearn\api\src\workflow\workflow.transport.ts                 | TypeScript |         19 |          0 |          4 |         23 |
+| Total                                                             |            |     18,240 |          1 |      2,358 |     20,599 |
++-------------------------------------------------------------------+------------+------------+------------+------------+------------+

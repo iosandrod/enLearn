@@ -24,11 +24,10 @@ node:internal/modules/cjs/loader:1401
 
 Error: Cannot find module '../common/base.service'
 Require stack:
-- E:\enLearn\api\src\workflow\workflow.service.ts
-- E:\enLearn\api\src\gateway\service-router.service.ts
-- E:\enLearn\api\src\gateway\service-gateway.controller.ts
-- E:\enLearn\api\src\app.module.ts
-- E:\enLearn\api\src\main.ts
+- E:\enLearn\api\src\account\account.service.ts
+- E:\enLearn\api\src\account\account.module.ts
+- E:\enLearn\api\src\domain-service\app.module.ts
+- E:\enLearn\api\src\domain-service\main.ts
     at node:internal/modules/cjs/loader:1401:15
     at nextResolveSimple (E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
     at E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
@@ -41,11 +40,38 @@ Require stack:
     at Function._load (node:internal/modules/cjs/loader:1211:37) {
   code: 'MODULE_NOT_FOUND',
   requireStack: [
-    'E:\\enLearn\\api\\src\\workflow\\workflow.service.ts',
-    'E:\\enLearn\\api\\src\\gateway\\service-router.service.ts',
-    'E:\\enLearn\\api\\src\\gateway\\service-gateway.controller.ts',
-    'E:\\enLearn\\api\\src\\app.module.ts',
-    'E:\\enLearn\\api\\src\\main.ts'
+    'E:\\enLearn\\api\\src\\account\\account.service.ts',
+    'E:\\enLearn\\api\\src\\account\\account.module.ts',
+    'E:\\enLearn\\api\\src\\domain-service\\app.module.ts',
+    'E:\\enLearn\\api\\src\\domain-service\\main.ts'
+  ]
+}
+
+Node.js v22.17.0
+node:internal/modules/cjs/loader:1401
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module './posts.service'
+Require stack:
+- E:\enLearn\api\src\posts\posts.module.ts
+- E:\enLearn\api\src\domain-service\app.module.ts
+- E:\enLearn\api\src\domain-service\main.ts
+    at node:internal/modules/cjs/loader:1401:15
+    at nextResolveSimple (E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171
+    at T._resolveFilename (file:///E:/enLearn/node_modules/.pnpm/tsx@4.23.1/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\enLearn\\api\\src\\posts\\posts.module.ts',
+    'E:\\enLearn\\api\\src\\domain-service\\app.module.ts',
+    'E:\\enLearn\\api\\src\\domain-service\\main.ts'
   ]
 }
 

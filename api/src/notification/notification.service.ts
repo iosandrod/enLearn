@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { ServiceContext, ServiceExecutor } from '../common/interfaces/service-executor';
+import { BaseService } from '../common/base.service';
+import type { ServiceContext } from '../common/interfaces/service-executor';
 import {
   createSupabaseClient,
   getCurrentUser,
@@ -195,11 +196,9 @@ function resolveAdminClient(fallback: SupabaseClient) {
 }
 
 @Injectable()
-export class NotificationService implements ServiceExecutor {
-  async execute(method: string, postData: PostData, context: ServiceContext) {
+export class NotificationService extends BaseService {
+  protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
-      case 'listItems':
-        return this.listItems(postData, context);
       case 'getUnreadCount':
         return this.getUnreadCount(postData, context);
       case 'markRead':
@@ -221,7 +220,7 @@ export class NotificationService implements ServiceExecutor {
     }
   }
 
-  private async listItems(postData: PostData, context: ServiceContext) {
+  protected override async handleListItems(postData: PostData, context: ServiceContext) {
     switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type) || 'messages') {
       case 'messages':
         return this.listMessages(postData, context);

@@ -1,19 +1,9 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  NotFoundException
-} from '@nestjs/common';
-import type {
-  ServiceContext,
-  ServiceExecutor
-} from '../common/interfaces/service-executor';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BaseService } from '../common/base.service';
+import type { ServiceContext } from '../common/interfaces/service-executor';
 import { withPostgresClient } from '../common/utils/database';
 import {
   createSupabaseClient,
-  getCurrentUser,
-  getUserAuthorization,
-  hasRequiredPermission,
   requireAdmin
 } from '../common/utils/supabase';
 import {
@@ -191,13 +181,9 @@ function normalizeGeneratedStatus(value: unknown): 'draft' | 'published' | 'arch
 }
 
 @Injectable()
-export class LowCodeService implements ServiceExecutor {
-  async execute(method: string, postData: Record<string, unknown>, context: ServiceContext) {
+export class LowCodeService extends BaseService {
+  protected override async executeAction(method: string, postData: Record<string, unknown>, context: ServiceContext) {
     switch (method) {
-      case 'listItems':
-        return this.listItems(postData, context);
-      case 'getPage':
-        return this.getPage(postData, context);
       case 'generateTableListPageSchema':
         return this.generateTableListPageSchema(postData, context);
       case 'saveGeneratedTableListPage':
@@ -213,7 +199,7 @@ export class LowCodeService implements ServiceExecutor {
     }
   }
 
-  private async listItems(postData: Record<string, unknown>, context: ServiceContext) {
+  protected override async handleListItems(postData: Record<string, unknown>, context: ServiceContext) {
     switch (readString(postData.itemType ?? postData.item_type ?? postData.type, 'pages')) {
       case 'pages':
         return this.listPages(context);
@@ -248,107 +234,6 @@ export class LowCodeService implements ServiceExecutor {
         return normalizePageRow(page, await this.getRelationsForPage(client, page.id));
       })
     );
-  }
-
-  private async getPage(postData: Record<string, unknown>, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const code = readString(postData.code);
-    const route = readString(postData.route);
-    const includeData = postData.includeData !== false;
-
-    if (!code && !route) {
-      throw new BadRequestException('code or route is required.');
-    }
-
-    let query = client.from('lowcode_pages').select('*');
-
-    if (code) {
-      query = query.eq('code', code);
-    } else {
-      query = query.eq('route', route);
-    }
-
-    const { data, error } = await query.maybeSingle();
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    if (!data) {
-      throw new NotFoundException('Low-code page not found.');
-    }
-
-    await this.assertCanReadPage(client, user.id, data as LowCodePageRow, route);
-
-    const pageRow = data as LowCodePageRow;
-    const page = normalizePageRow(pageRow, await this.getRelationsForPage(client, pageRow.id));
-    return {
-      ...page,
-      resolvedData: includeData ? {} : {}
-    };
-  }
-
-  private async assertCanReadPage(
-    client: ReturnType<typeof createSupabaseClient>,
-    userId: string,
-    page: LowCodePageRow,
-    requestedRoute: string
-  ) {
-    const authorization = await getUserAuthorization(client, userId);
-
-    if (hasRequiredPermission(authorization, 'lowcode.pages.manage')) {
-      return;
-    }
-
-    let routeClient = client;
-    try {
-      routeClient = createSupabaseClient('admin');
-    } catch {
-      routeClient = client;
-    }
-
-    const candidatePaths = [...new Set([requestedRoute, page.route].filter(Boolean))];
-    const routePermissions = new Set<string>();
-
-    if (candidatePaths.length) {
-      const { data: pathRows, error: pathError } = await routeClient
-        .from('admin_routes')
-        .select('permission_code')
-        .in('path', candidatePaths);
-
-      if (pathError) {
-        throw new ForbiddenException(pathError.message);
-      }
-
-      for (const row of pathRows ?? []) {
-        const permissionCode = (row as Record<string, unknown>).permission_code;
-        if (typeof permissionCode === 'string' && permissionCode.trim()) {
-          routePermissions.add(permissionCode.trim());
-        }
-      }
-    }
-
-    const { data: pageRows, error: pageError } = await routeClient
-      .from('admin_routes')
-      .select('permission_code')
-      .eq('page_code', page.code);
-
-    if (pageError) {
-      throw new ForbiddenException(pageError.message);
-    }
-
-    for (const row of pageRows ?? []) {
-      const permissionCode = (row as Record<string, unknown>).permission_code;
-      if (typeof permissionCode === 'string' && permissionCode.trim()) {
-        routePermissions.add(permissionCode.trim());
-      }
-    }
-
-    if (routePermissions.size && hasRequiredPermission(authorization, [...routePermissions])) {
-      return;
-    }
-
-    throw new ForbiddenException('Low-code page permission required.');
   }
 
   private relationSelect() {

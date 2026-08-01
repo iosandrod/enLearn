@@ -16,7 +16,8 @@ export async function listLowCodePages(
   postData: Record<string, unknown> = {},
 ) {
   const rows = await serviceApi.invoke<LowCodePageRecord[]>('admin', 'listItems', {
-    entityCode: 'lowcode_pages',
+    tableName: 'lowcode_pages',
+    sorts: [{ field: 'updated_at', direction: 'desc' }],
     ...postData,
   });
 
@@ -35,8 +36,10 @@ export async function getLowCodePage(
   }
 
   const rows = await listLowCodePages(serviceApi, {
-    ...(code ? { code } : {}),
-    ...(route ? { route } : {}),
+    filters: {
+      ...(code ? { code } : {}),
+      ...(route ? { route } : {}),
+    },
     includeData: lookup.includeData !== false,
     limit: 1,
   });

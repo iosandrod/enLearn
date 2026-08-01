@@ -59,16 +59,17 @@ async function loadAccount() {
 
   try {
     await auth.init(true);
-    const account = await serviceApi.invoke<{
+    const account = await serviceApi.firstItem<{
       user: {
         id: string;
         email?: string;
         user_metadata?: Record<string, unknown>;
       };
       profile: Record<string, unknown> | null;
-    }>('user', 'me');
+    }>('user', { itemType: 'me' });
+    if (!account?.user) return;
+
     const user = account.user;
-    if (!user) return;
 
     emailForm.value = { email: user.email ?? '' };
     profileForm.value = {
@@ -79,7 +80,7 @@ async function loadAccount() {
       profileForm.value = { fullName: String(account.profile.full_name) };
     }
 
-    const subscription = await serviceApi.invoke<{
+    const subscription = await serviceApi.firstItem<{
       status?: string | null;
       current_period_end?: string | null;
       prices?: {
@@ -89,7 +90,7 @@ async function loadAccount() {
           name?: string | null;
         } | null;
       } | null;
-    } | null>('payment', 'getSubscription');
+    }>('payment', { itemType: 'subscription' });
 
     if (subscription) {
       const productName =
