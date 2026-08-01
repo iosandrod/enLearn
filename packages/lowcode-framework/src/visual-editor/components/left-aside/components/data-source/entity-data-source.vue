@@ -337,6 +337,26 @@ function fieldsByUsage(usageKey: string) {
   return (selectedSource.value?.entitys || []).filter((field: any) => field.usage?.[usageKey]);
 }
 
+function buildListItemsPostData(source: EntitySource) {
+  const postData: Record<string, unknown> = {};
+  if (source.entityCode) postData.entityCode = source.entityCode;
+  if (source.tableName) postData.tableName = source.tableName;
+  return postData;
+}
+
+function applyListItemsSourceProps(block: any, source: EntitySource) {
+  const postData = buildListItemsPostData(source);
+
+  block.props ||= {};
+  block.props.entitySourceKey = source.key;
+  block.props.sourceKey = source.key;
+  block.props.serviceName = 'admin';
+  block.props.serviceMethod = 'listItems';
+  block.props.entityCode = source.entityCode || '';
+  block.props.tableName = source.tableName || '';
+  block.props.postDataJson = JSON.stringify(postData, null, 2);
+}
+
 function applyToCurrentBlock() {
   const block = currentBlock.value as any;
   const source = selectedSource.value;
@@ -345,9 +365,7 @@ function applyToCurrentBlock() {
     return;
   }
 
-  block.props ||= {};
-  block.props.entitySourceKey = source.key;
-  block.props.sourceKey = source.key;
+  applyListItemsSourceProps(block, source);
 
   if (block.componentKey === 'lowcode-grid') {
     block.props.title ||= `${source.name}列表`;

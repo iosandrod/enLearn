@@ -1,5 +1,6 @@
 import type {
   LowCodeField,
+  LowCodeFormSchema,
   LowCodeFormLayoutNode,
   LowCodeGridColumn,
   LowCodeGridFormatter,
@@ -92,6 +93,35 @@ export function isPlainRecord(value: unknown): value is Record<string, unknown> 
 
 export function normalizeRows(value: unknown) {
   return Array.isArray(value) ? value.filter(isPlainRecord) : [];
+}
+
+export function readLowCodeFormSchema(value: unknown): LowCodeFormSchema | undefined {
+  if (!isPlainRecord(value) || !Array.isArray(value.fields)) return undefined;
+
+  return {
+    ...(cloneJson(value) as LowCodeFormSchema),
+    fields: normalizeRows(value.fields).map((field) => cloneJson(field) as LowCodeField),
+    layout: Array.isArray(value.layout)
+      ? (cloneJson(value.layout) as LowCodeFormLayoutNode[])
+      : undefined,
+    actions: Array.isArray(value.actions)
+      ? (cloneJson(value.actions) as LowCodeFormSchema['actions'])
+      : [],
+  };
+}
+
+export function createLowCodeFormSchema(
+  fields: unknown,
+  designerModel?: unknown,
+): LowCodeFormSchema {
+  const normalizedFields = normalizeRows(fields).map(normalizeField).filter(isDefined);
+  const layout = readFormDesignerLayout(designerModel);
+
+  return {
+    fields: normalizedFields,
+    ...(layout ? { layout } : {}),
+    actions: [],
+  };
 }
 
 const defaultArrayTableColumns = [
@@ -189,15 +219,13 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
   };
 
   if (component === 'lc-sub-form') {
-    const nestedFields = normalizeRows(rawProps.fields).map(normalizeField).filter(isDefined);
-    props.fields = nestedFields;
-
-    const layout = readFormDesignerLayout(rawProps.formDesignerModel);
-    if (layout) {
-      props.layout = layout;
-    }
-
+    props.schema =
+      readLowCodeFormSchema(rawProps.schema) ??
+      createLowCodeFormSchema(rawProps.fields, rawProps.formDesignerModel);
+    delete props.fields;
+    delete props.layout;
     delete props.formDesignerModel;
+    delete props.subFormDesignerModel;
   }
 
   if (component === 'lc-array-table') {
@@ -355,6 +383,8 @@ export function upsertFormDataSource(
   const serviceMethod = readString(props.serviceMethod, readString(props.saveMethod, 'save'));
   const saveMethod = readString(props.saveMethod);
   const postData = readJsonObject(props.postDataJson, {});
+  const entityCode = readString(props.entityCode, readString(postData.entityCode ?? postData.entity_code));
+  const tableName = readString(props.tableName, readString(postData.tableName ?? postData.table_name));
 
   dataSources[key] = {
     key,
@@ -362,6 +392,8 @@ export function upsertFormDataSource(
     serviceName,
     serviceMethod,
     ...(saveMethod ? { saveMethod } : {}),
+    ...(entityCode ? { entityCode } : {}),
+    ...(tableName ? { tableName } : {}),
     ...(Object.keys(postData).length ? { postData } : {}),
     autoLoad,
   };

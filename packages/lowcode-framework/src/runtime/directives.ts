@@ -37,7 +37,7 @@ export type LowCodeRuntimeDirectiveContext = {
   applySearchFiltersDirective(
     directive: LowCodeRuntimeDirective,
     event: LowCodeRuntimeEvent
-  ): void;
+  ): Promise<void> | void;
   refreshDataSources(sourceKeys?: string[]): Promise<string[]> | string[];
   refreshPage(): Promise<void> | void;
   invokeServiceDirective(

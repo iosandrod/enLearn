@@ -206,6 +206,14 @@ function stringifyJson(value: unknown, fallback: unknown = []) {
   return JSON.stringify(value);
 }
 
+function readDataSourceEntityCode(source?: LowCodePageDataSource) {
+  return readString(source?.entityCode ?? source?.entity_code ?? source?.postData?.entityCode ?? source?.postData?.entity_code);
+}
+
+function readDataSourceTableName(source?: LowCodePageDataSource) {
+  return readString(source?.tableName ?? source?.table_name ?? source?.postData?.tableName ?? source?.postData?.table_name);
+}
+
 function getDataSource(
   dataSources: Record<string, LowCodePageDataSource>,
   key: unknown,
@@ -220,14 +228,7 @@ function runtimeFieldToVisualField(field: LowCodeField) {
     ? field.rules.some((rule) => rule?.required)
     : false;
   const editableProps =
-    field.component === 'lc-sub-form'
-      ? {
-          ...cloneJson(props),
-          fields: Array.isArray(props.fields)
-            ? (props.fields as LowCodeField[]).map(runtimeFieldToVisualField)
-            : [],
-        }
-      : field.component === 'lc-array-table'
+    field.component === 'lc-sub-form' || field.component === 'lc-array-table'
         ? cloneJson(props)
         : undefined;
   const optionProps = isPlainRecord(field.optionProps) ? field.optionProps : {};
@@ -266,9 +267,13 @@ function runtimeActionToVisualButton(action: LowCodeButtonGroupAction): Record<s
     route: action.route ?? '',
     eventName: action.eventName ?? '',
     icon: action.icon ?? '',
+    mode: action.mode ?? (action.text ? 'text' : 'button'),
+    prefixIcon: action.prefixIcon ?? '',
+    suffixIcon: action.suffixIcon ?? '',
+    round: action.round ?? false,
+    circle: action.circle ?? false,
+    showDropdownIcon: action.showDropdownIcon ?? true,
     disabled: action.disabled ?? false,
-    plain: action.plain ?? false,
-    text: action.text ?? false,
     directivesJson: stringifyJson(action.directives),
     children: Array.isArray(action.children)
       ? action.children.map(runtimeActionToVisualButton)
@@ -378,6 +383,8 @@ function convertRuntimeBlockToVisual(
         serviceMethod: source?.serviceMethod ?? 'listItems',
         saveMethod: source?.saveMethod ?? '',
         deleteMethod: source?.deleteMethod ?? '',
+        entityCode: readDataSourceEntityCode(source),
+        tableName: readDataSourceTableName(source),
         postDataJson: stringifyJson(source?.postData, {}),
         showRowActions: hasRuntimeRowActions(schema, columns),
         rowActions: runtimeGridRowActionsToVisualRows(schema),
@@ -419,6 +426,8 @@ function convertRuntimeBlockToVisual(
         serviceName: source?.serviceName ?? 'admin',
         serviceMethod: source?.serviceMethod ?? '',
         saveMethod: source?.saveMethod ?? '',
+        entityCode: readDataSourceEntityCode(source),
+        tableName: readDataSourceTableName(source),
         postDataJson: stringifyJson(source?.postData, {}),
         initialValuesJson:
           block.kind === 'form' ? stringifyJson(block.initialValues, {}) : undefined,

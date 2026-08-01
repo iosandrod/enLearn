@@ -7,7 +7,7 @@
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\divider\index.tsx
  */
 import { computed } from 'vue';
-import { Divider } from '../../../components/VantFree';
+import { Divider } from '../../../components/LegacyWidgets';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
   createEditorColorProp,
@@ -20,7 +20,7 @@ import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 export default {
   key: 'divider',
   moduleName: 'baseWidgets',
-  label: '鍒嗗壊绾?,
+  label: 'Divider',
   preview: () => <Divider style="width:190px">鏂囨湰</Divider>,
   render: ({ props, block, styles }) => {
     const { registerRef } = useGlobalProperties();
@@ -52,8 +52,8 @@ export default {
       ],
       defaultValue: 'center',
     }),
-    dashed: createEditorSwitchProp({ label: '鏄惁涓鸿櫄绾? }),
+    dashed: createEditorSwitchProp({ label: 'Dashed' }),
     'text-color': createEditorColorProp({ label: '鏂囨湰棰滆壊' }),
-    'divider-color': createEditorColorProp({ label: '鍒嗗壊绾块鑹? }),
+    'divider-color': createEditorColorProp({ label: 'Divider color' }),
   },
 } as VisualEditorComponent;

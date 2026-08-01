@@ -16,6 +16,7 @@ export type {
 
 export * from './global-dialog';
 export * from './page-reference-dialog';
+export * from './lowcode-pages';
 export * from '../core';
 export * from './directives';
 export * from '../lowcode/builtin-pages';

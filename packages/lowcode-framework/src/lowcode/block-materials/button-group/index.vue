@@ -105,8 +105,8 @@ function handleRootClick(action: LowCodeButtonGroupAction) {
   handleAction(action);
 }
 
-function handleDropdownClick(params: { option?: { action?: LowCodeButtonGroupAction } }) {
-  const action = params.option?.action;
+function handleDropdownClick(params: { option?: Record<string, unknown> }) {
+  const action = (params.option as { action?: LowCodeButtonGroupAction } | undefined)?.action;
   if (action) handleAction(action);
 }
 

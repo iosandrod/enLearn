@@ -24,6 +24,7 @@ const defaultButtons: ButtonGroupItem[] = [
     label: '新增',
     status: 'primary',
     type: 'button',
+    mode: 'button',
     eventName: 'buttonGroup.create',
     directivesJson: '[]',
   },
@@ -31,13 +32,16 @@ const defaultButtons: ButtonGroupItem[] = [
     code: 'more',
     label: '更多',
     type: 'button',
+    mode: 'button',
     eventName: 'buttonGroup.more',
     directivesJson: '[]',
+    showDropdownIcon: true,
     children: [
       {
         code: 'import',
         label: '导入',
         type: 'button',
+        mode: 'button',
         eventName: 'buttonGroup.import',
         directivesJson: '[]',
       },
@@ -45,6 +49,7 @@ const defaultButtons: ButtonGroupItem[] = [
         code: 'export',
         label: '导出',
         type: 'button',
+        mode: 'button',
         eventName: 'buttonGroup.export',
         directivesJson: '[]',
       },
@@ -151,7 +156,7 @@ function resolveButtonProps(button: ButtonGroupItem): VxeButtonProps {
     buttonProps.showDropdownIcon = button.showDropdownIcon ?? true;
   }
 
-  return buttonProps;
+  return buttonProps as VxeButtonProps;
 }
 
 function renderButton(button: ButtonGroupItem, index: number) {

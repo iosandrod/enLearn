@@ -265,6 +265,98 @@ function resolveRuntimePostData(postData?: Record<string, unknown>) {
   return resolveRuntimeValue(postData ?? {}) as Record<string, unknown>;
 }
 
+function readDataSourceTargetValue(
+  source: LowCodePageDataSource,
+  postData: Record<string, unknown>,
+  camelKey: 'entityCode' | 'tableName',
+  snakeKey: 'entity_code' | 'table_name'
+) {
+  return readString(postData[camelKey] ?? postData[snakeKey], readString(source[camelKey] ?? source[snakeKey]));
+}
+
+function withDataSourceTargetPostData(
+  source: LowCodePageDataSource,
+  postData: Record<string, unknown>
+) {
+  const entityCode = readDataSourceTargetValue(source, postData, 'entityCode', 'entity_code');
+  const tableName = readDataSourceTargetValue(source, postData, 'tableName', 'table_name');
+
+  return {
+    ...postData,
+    ...(entityCode && !postData.entityCode && !postData.entity_code ? { entityCode } : {}),
+    ...(tableName && !postData.tableName && !postData.table_name ? { tableName } : {}),
+  };
+}
+
+function hasDataSourceTableTarget(
+  source: LowCodePageDataSource,
+  postData: Record<string, unknown>
+) {
+  return Boolean(
+    readDataSourceTargetValue(source, postData, 'entityCode', 'entity_code') ||
+    readDataSourceTargetValue(source, postData, 'tableName', 'table_name')
+  );
+}
+
+function resolveDataSourceService(
+  source: LowCodePageDataSource,
+  postData: Record<string, unknown>
+) {
+  const isListItemsSource = hasDataSourceTableTarget(source, postData);
+
+  return {
+    serviceName: readString(source.serviceName, isListItemsSource ? 'admin' : ''),
+    serviceMethod: readString(source.serviceMethod, isListItemsSource ? 'listItems' : ''),
+  };
+}
+
+function isListItemsRequest(serviceName: string, serviceMethod: string) {
+  return serviceName === 'admin' && serviceMethod === 'listItems';
+}
+
+function mergeDataSourceSearchFilters(
+  key: string,
+  postData: Record<string, unknown>
+) {
+  const sourceFilters = searchFilters[key];
+
+  if (!sourceFilters || !Object.keys(sourceFilters).length) {
+    return postData;
+  }
+
+  const currentFilters = isRecord(postData.filters) ? postData.filters : {};
+
+  return {
+    ...postData,
+    filters: {
+      ...currentFilters,
+      ...sourceFilters,
+    },
+  };
+}
+
+function resolveDataSourceRequest(
+  key: string,
+  source: LowCodePageDataSource,
+  postDataOverride?: Record<string, unknown>
+) {
+  const basePostData = resolveRuntimePostData(postDataOverride ?? source.postData);
+  const postData = mergeDataSourceSearchFilters(
+    key,
+    withDataSourceTargetPostData(source, basePostData)
+  );
+  const service = resolveDataSourceService(source, postData);
+
+  return {
+    ...service,
+    postData,
+  };
+}
+
+function resolveDataSourcePostData(key: string, source: LowCodePageDataSource) {
+  return resolveDataSourceRequest(key, source).postData;
+}
+
 function resolveRuntimeRoute(path: string, row: Record<string, unknown> = {}) {
   return resolveRuntimeValue(path, row) as string;
 }
@@ -350,10 +442,16 @@ async function invokeDataSource(
     return [key, undefined] as const;
   }
 
+  const { serviceName, serviceMethod, postData } = resolveDataSourceRequest(key, source);
+
+  if (!serviceName || !serviceMethod) {
+    throw new Error(`Data source ${key} is missing serviceName or serviceMethod.`);
+  }
+
   const data = await host.getServiceApi().invoke(
-    source.serviceName,
-    source.serviceMethod,
-    resolveRuntimePostData(source.postData)
+    serviceName,
+    serviceMethod,
+    postData
   );
 
   return [key, data] as const;
@@ -483,19 +581,7 @@ async function loadPageData(nextPage: LowCodePageRecord) {
   }
 
   const results = await Promise.allSettled(
-    entries.map(async ([key, source]) => {
-      if (source.autoLoad === false) {
-        return [key, undefined] as const;
-      }
-
-      const data = await host.getServiceApi().invoke(
-        source.serviceName,
-        source.serviceMethod,
-        resolveRuntimePostData(source.postData)
-      );
-
-      return [key, data] as const;
-    })
+    entries.map(([key, source]) => invokeDataSource(key, source))
   );
 
   const errors: string[] = [];
@@ -837,7 +923,7 @@ function applyFormFieldDirective(
   };
 }
 
-function applySearchFiltersDirective(
+async function applySearchFiltersDirective(
   directive: LowCodeRuntimeDirective,
   event: LowCodeRuntimeEvent
 ) {
@@ -855,6 +941,8 @@ function applySearchFiltersDirective(
           ...(searchFilters[sourceKey] ?? {}),
           ...values,
         };
+
+  await refreshDataSources([sourceKey]);
 }
 
 function setRuntimeMessage(
@@ -874,19 +962,23 @@ async function invokeServiceDirective(
 ) {
   const sourceKey = resolveDirectiveString(directive.sourceKey, event);
   const source = getDataSource(sourceKey);
-  const serviceName = resolveDirectiveString(directive.serviceName, event, source?.serviceName);
+  const directivePostData = resolveRuntimeValue(
+    directive.postData ?? source?.postData ?? {},
+    directiveScope(event)
+  ) as Record<string, unknown>;
+  const request = source
+    ? resolveDataSourceRequest(sourceKey, source, directivePostData)
+    : { serviceName: '', serviceMethod: '', postData: directivePostData };
+  const serviceName = resolveDirectiveString(directive.serviceName, event, request.serviceName);
   const serviceMethod = resolveDirectiveString(
     directive.serviceMethod,
     event,
-    source?.serviceMethod
+    request.serviceMethod
   );
 
   if (!serviceName || !serviceMethod) return;
 
-  const postData = resolveRuntimeValue(
-    directive.postData ?? source?.postData ?? {},
-    directiveScope(event)
-  ) as Record<string, unknown>;
+  const postData = request.postData;
   const result = await host.getServiceApi().invoke(serviceName, serviceMethod, postData);
   const assignTo = resolveDirectiveString(directive.assignTo, event);
 
@@ -1112,7 +1204,15 @@ async function handleFormSubmit(
   message.value = '';
 
   try {
-    await host.getServiceApi().invoke(source.serviceName, source.saveMethod ?? source.serviceMethod, {
+    const request = resolveDataSourceRequest(source.key, source);
+    const serviceName = request.serviceName;
+    const serviceMethod = source.saveMethod ?? request.serviceMethod;
+
+    if (!serviceName || !serviceMethod || (!source.saveMethod && isListItemsRequest(serviceName, serviceMethod))) {
+      throw new Error(`Data source ${source.key} is missing save service.`);
+    }
+
+    await host.getServiceApi().invoke(serviceName, serviceMethod, {
       ...(source.postData ?? {}),
       ...values
     });
@@ -1154,26 +1254,28 @@ async function handleToolbarAction(action: LowCodeAction) {
   }
 }
 
-function handleSearchSubmit(
+async function handleSearchSubmit(
   block: LowCodePageSearchFormBlock,
   values: Record<string, unknown>
 ) {
   if (!block.targetSourceKey) return;
   searchFilters[block.targetSourceKey] = { ...values };
+  await refreshDataSources([block.targetSourceKey]);
 }
 
-function handleSearchAction(
+async function handleSearchAction(
   block: LowCodePageSearchFormBlock,
   action: LowCodeAction,
   values: Record<string, unknown>
 ) {
   if (action.type === 'reset' && block.targetSourceKey) {
     searchFilters[block.targetSourceKey] = {};
+    await refreshDataSources([block.targetSourceKey]);
     return;
   }
 
   if (action.code === 'submit') {
-    handleSearchSubmit(block, values);
+    await handleSearchSubmit(block, values);
   }
 }
 
@@ -1220,7 +1322,15 @@ async function handleGridDelete(
   message.value = '';
 
   try {
-    await host.getServiceApi().invoke(source.serviceName, source.deleteMethod ?? source.serviceMethod, {
+    const request = resolveDataSourceRequest(source.key, source);
+    const serviceName = request.serviceName;
+    const serviceMethod = source.deleteMethod ?? request.serviceMethod;
+
+    if (!serviceName || !serviceMethod || (!source.deleteMethod && isListItemsRequest(serviceName, serviceMethod))) {
+      throw new Error(`Data source ${source.key} is missing delete service.`);
+    }
+
+    await host.getServiceApi().invoke(serviceName, serviceMethod, {
       ...(source.postData ?? {}),
       ...row
     });

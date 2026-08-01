@@ -14,9 +14,40 @@ import {
   readEntityReadPermissions,
   resolveListItemsEntity
 } from '../common/utils/list-items';
+import { migrateLowCodePageSchema } from '../lowcode/lowcode.schema';
 
 type PostData = Record<string, unknown>;
 type OptionSourceType = 'dict' | 'table' | 'view' | 'rpc' | 'sql';
+type LowCodePageOpenType = 'page' | 'drawer' | 'modal';
+
+type LowCodePageRelationPageRow = {
+  id: string;
+  code: string;
+  route: string;
+  title: string;
+  status: string;
+};
+
+type LowCodePageRelationRow = {
+  id: string;
+  source_page_id: string;
+  action_key: string;
+  target_page_id: string;
+  open_type: LowCodePageOpenType;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+  source_page?: LowCodePageRelationPageRow | LowCodePageRelationPageRow[] | null;
+  target_page?: LowCodePageRelationPageRow | LowCodePageRelationPageRow[] | null;
+};
+
+type LowCodePageRow = Record<string, unknown> & {
+  id: string;
+  code: string;
+  route: string;
+  title: string;
+  schema: unknown;
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -154,6 +185,119 @@ function readBooleanLike(value: unknown, fallback = false) {
     if (['false', '0', 'no', 'off'].includes(normalized)) return false;
   }
   return fallback;
+}
+
+function readListItemsEntityCode(postData: PostData) {
+  return readOptionalString(postData.entityCode ?? postData.entity_code);
+}
+
+function readListItemsTableName(postData: PostData) {
+  return readOptionalString(postData.tableName ?? postData.table_name);
+}
+
+function readListItemsFilterString(postData: PostData, field: string) {
+  const filters = readJsonObject(postData.filters, {});
+  return readOptionalString(postData[field] ?? filters[field]);
+}
+
+function isLowCodePagesListItems(postData: PostData) {
+  const entityCode = readListItemsEntityCode(postData);
+  const tableName = readListItemsTableName(postData);
+  return entityCode === 'lowcode_pages' || tableName === 'lowcode_pages' || tableName === 'public.lowcode_pages';
+}
+
+function normalizeLowCodeOpenType(value: unknown): LowCodePageOpenType {
+  return value === 'drawer' || value === 'modal' || value === 'page' ? value : 'page';
+}
+
+function readRelationPage(value?: LowCodePageRelationPageRow | LowCodePageRelationPageRow[] | null) {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
+}
+
+function normalizeLowCodeRelationRow(row: LowCodePageRelationRow) {
+  const sourcePage = readRelationPage(row.source_page);
+  const targetPage = readRelationPage(row.target_page);
+
+  return {
+    id: row.id,
+    sourcePageId: row.source_page_id,
+    sourcePageCode: sourcePage?.code ?? '',
+    ...(sourcePage?.route ? { sourcePageRoute: sourcePage.route } : {}),
+    ...(sourcePage?.title ? { sourcePageTitle: sourcePage.title } : {}),
+    actionKey: row.action_key,
+    targetPageId: row.target_page_id,
+    targetPageCode: targetPage?.code ?? '',
+    ...(targetPage?.route ? { targetPageRoute: targetPage.route } : {}),
+    ...(targetPage?.title ? { targetPageTitle: targetPage.title } : {}),
+    openType: normalizeLowCodeOpenType(row.open_type),
+    metadata: readJsonObject(row.metadata, {}),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
+
+function isMissingLowCodeRelationTableError(error: { code?: string; message?: string } | null | undefined) {
+  const message = error?.message ?? '';
+  return (
+    error?.code === '42P01' ||
+    error?.code === 'PGRST205' ||
+    message.includes("Could not find the table 'public.lowcode_page_relations'") ||
+    (message.includes('lowcode_page_relations') && message.includes('schema cache'))
+  );
+}
+
+function relationSelect() {
+  return `
+    id,
+    source_page_id,
+    action_key,
+    target_page_id,
+    open_type,
+    metadata,
+    created_at,
+    updated_at,
+    source_page:lowcode_pages!lowcode_page_relations_source_page_id_fkey(id, code, route, title, status),
+    target_page:lowcode_pages!lowcode_page_relations_target_page_id_fkey(id, code, route, title, status)
+  `;
+}
+
+function normalizeListItemsRowsResult(rows: Record<string, unknown>[], postData: PostData) {
+  const filters = readJsonObject(postData.filters, {});
+  const offset = Math.max(Math.trunc(readNumber(postData.offset, 0)), 0);
+  const pageSizeInput = postData.pageSize ?? postData.page_size ?? postData.limit;
+  const limit = readPositiveLimit(pageSizeInput, 300, 1000);
+
+  const filteredRows = rows.filter((row) =>
+    Object.entries(filters).every(([field, value]) => {
+      if (value === undefined || value === null || value === '') return true;
+      const rowValue = row[field];
+
+      if (Array.isArray(value)) {
+        return value.includes(rowValue);
+      }
+
+      if (isRecord(value)) {
+        const op = readOptionalString(value.op).toLowerCase();
+        const operand = value.value;
+        if (operand === undefined || operand === null || operand === '') return true;
+
+        if (op === 'like' || op === 'ilike') {
+          return String(rowValue ?? '').toLowerCase().includes(String(operand).toLowerCase());
+        }
+
+        if (op === 'in') {
+          return Array.isArray(operand) && operand.includes(rowValue);
+        }
+
+        return rowValue === operand;
+      }
+
+      return rowValue === value;
+    })
+  );
+
+  return filteredRows.slice(offset, offset + limit);
 }
 
 function readPositiveLimit(value: unknown, fallback = 200, max = 1000) {
@@ -377,22 +521,16 @@ export class AdminService implements ServiceExecutor {
     switch (method) {
       case 'listItems':
         return this.listItems(postData, context);
-      case 'listRoles':
-        return this.listItems({ ...postData, entityCode: 'admin_roles' }, context);
       case 'getRole':
         return this.getRole(postData, context);
       case 'saveRole':
         return this.saveRole(postData, context);
       case 'deleteRole':
         return this.deleteRole(postData, context);
-      case 'listPermissions':
-        return this.listItems({ ...postData, entityCode: 'admin_permissions' }, context);
       case 'savePermission':
         return this.savePermission(postData, context);
       case 'deletePermission':
         return this.deletePermission(postData, context);
-      case 'listRoutes':
-        return this.listItems({ ...postData, entityCode: 'admin_routes' }, context);
       case 'listRouteTree':
         return this.listRouteTree(context);
       case 'listRouteManageTree':
@@ -403,8 +541,6 @@ export class AdminService implements ServiceExecutor {
         return this.hideRoute(postData, context);
       case 'deleteRoute':
         return this.deleteRoute(postData, context);
-      case 'listEntities':
-        return this.listItems({ ...postData, entityCode: 'admin_entities' }, context);
       case 'saveEntity':
         return this.saveEntity(postData, context);
       case 'deleteEntity':
@@ -422,8 +558,6 @@ export class AdminService implements ServiceExecutor {
         return this.saveOptionItem(postData, context);
       case 'deleteOptionItem':
         return this.deleteOptionItem(postData, context);
-      case 'listUsers':
-        return this.listItems({ ...postData, entityCode: 'users' }, context);
       case 'saveUserRoles':
         return this.saveUserRoles(postData, context);
       case 'listSystemExecutionTasks':
@@ -440,21 +574,34 @@ export class AdminService implements ServiceExecutor {
   }
 
   private async listItems(postData: PostData, context: ServiceContext) {
+    if (isLowCodePagesListItems(postData)) {
+      return this.listLowCodePageItems(postData, context);
+    }
+
+    const entityCode = readListItemsEntityCode(postData);
+    const tableName = readListItemsTableName(postData);
+
+    if (entityCode === 'users' || tableName === 'users' || tableName === 'public.users') {
+      return this.listUserItems(postData, context);
+    }
+
     const { client: userClient, user } = await getCurrentUser(context);
-    const authorization = await getUserAuthorization(userClient, user.id);
 
     try {
       return await withPostgresClient(async (client) => {
         const entity = await resolveListItemsEntity(client, postData);
         const entityPermissionCodes = await readEntityPermissionCodes(client, entity);
-        const readPermissions = readEntityReadPermissions(entity, [
-          ...entityPermissionCodes,
-          'admin.entities.manage',
-          'lowcode.pages.manage'
-        ]);
+        const readPermissions = readEntityReadPermissions(entity, entityPermissionCodes);
+        let authorization = await getUserAuthorization(userClient, user.id);
 
         if (!hasRequiredPermission(authorization, readPermissions)) {
-          throw new ForbiddenException('Entity list permission required.');
+          authorization = await getUserAuthorization(userClient, user.id, { refresh: true });
+        }
+
+        if (!hasRequiredPermission(authorization, readPermissions)) {
+          throw new ForbiddenException(
+            `Entity list permission required: ${readPermissions.join(', ')}`
+          );
         }
 
         return listItemsFromEntity(client, entity, postData);
@@ -470,86 +617,174 @@ export class AdminService implements ServiceExecutor {
     }
   }
 
-  private async listRoles(context: ServiceContext) {
-    const { client } = await requireAdmin(context, ['admin.roles.manage', 'admin.users.manage']);
-    const [{ data: roles, error: roleError }, { data: permissions, error: permissionError }, { data: rolePermissions, error: mappingError }] = await Promise.all([
-      client.from('admin_roles').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true }),
-      client.from('admin_permissions').select('*').order('sort_order', { ascending: true }).order('created_at', { ascending: true }),
-      client.from('admin_role_permissions').select('*')
-    ]);
+  private async listUserItems(postData: PostData, context: ServiceContext) {
+    const { client, user } = await getCurrentUser(context);
+    let authorization = await getUserAuthorization(client, user.id);
 
-    if (roleError) {
-      if (isMissingTableError(roleError)) return [];
-      throw new BadRequestException(roleError.message);
+    if (!hasRequiredPermission(authorization, 'admin.users.manage')) {
+      authorization = await getUserAuthorization(client, user.id, { refresh: true });
     }
 
-    if (permissionError) {
-      if (isMissingTableError(permissionError)) return [];
-      throw new BadRequestException(permissionError.message);
+    if (!hasRequiredPermission(authorization, 'admin.users.manage')) {
+      throw new ForbiddenException('Entity list permission required: admin.users.manage');
     }
 
-    if (mappingError) {
-      if (isMissingTableError(mappingError)) return [];
-      throw new BadRequestException(mappingError.message);
+    const { data, error } = await client.rpc('get_admin_user_permission_rows');
+
+    if (error) {
+      if (isMissingFunctionError(error)) {
+        throw new BadRequestException(
+          'User permission profile function is not created yet. Run supabase/migrations/20260727010000_switch_user_table_to_permission_fields.sql first.'
+        );
+      }
+
+      throw new BadRequestException(error.message);
     }
 
-    const permissionsById = new Map(
-      (permissions ?? []).map((permission: Record<string, unknown>) => [
-        String(permission.id),
-        permission
-      ])
-    );
+    const rows = ((data ?? []) as Record<string, unknown>[]).map((userRow) => ({
+      ...userRow,
+      id: userRow.id ?? userRow.user_id,
+      user_id: userRow.user_id ?? userRow.id,
+      app_role_codes: readStringArray(userRow.app_role_codes ?? userRow.role_codes),
+      app_role_names: readOptionalString(userRow.app_role_names ?? userRow.role_names),
+      role_codes: readStringArray(userRow.role_codes ?? userRow.app_role_codes),
+      role_names: readOptionalString(userRow.role_names ?? userRow.app_role_names),
+      permission_codes: readStringArray(userRow.permission_codes),
+      permission_names: readOptionalString(userRow.permission_names),
+      account_ids: Array.isArray(userRow.account_ids) ? userRow.account_ids : [],
+      account_roles: readStringArray(userRow.account_roles),
+      account_names: readOptionalString(userRow.account_names),
+      account_count: readNumber(userRow.account_count, 0),
+      permission_count: readNumber(userRow.permission_count, 0),
+      is_primary_account_owner: readBoolean(userRow.is_primary_account_owner, false)
+    }));
 
-    const permissionsByRoleId = new Map<string, string[]>();
-    const permissionRowsByRoleId = new Map<string, Record<string, unknown>[]>();
-    for (const mapping of rolePermissions ?? []) {
-      const roleId = String((mapping as Record<string, unknown>).role_id ?? '');
-      const permissionId = String((mapping as Record<string, unknown>).permission_id ?? '');
-      if (!roleId || !permissionId) continue;
-      const permission = permissionsById.get(permissionId);
-      const codes = permissionsByRoleId.get(roleId) ?? [];
-      if (permission?.code) {
-        codes.push(String(permission.code));
-        permissionsByRoleId.set(roleId, codes);
+    return normalizeListItemsRowsResult(rows, postData);
+  }
 
-        const rows = permissionRowsByRoleId.get(roleId) ?? [];
-        rows.push({
-          id: (mapping as Record<string, unknown>).id,
-          role_id: roleId,
-          permission_id: permissionId,
-          permission_code: permission.code,
-          permission_name: permission.name,
-          resource_type: permission.resource_type,
-          resource_key: permission.resource_key,
-          action_code: permission.action_code,
-          route_path: permission.route_path,
-          page_code: permission.page_code,
-          entity_code: permission.entity_code,
-          status: permission.status,
-          sort_order: permission.sort_order,
-          created_at: (mapping as Record<string, unknown>).created_at
-        });
-        permissionRowsByRoleId.set(roleId, rows);
+  private async listLowCodePageItems(postData: PostData, context: ServiceContext) {
+    const { client, user } = await getCurrentUser(context);
+    const code = readListItemsFilterString(postData, 'code');
+    const route = readListItemsFilterString(postData, 'route');
+    const includeData = postData.includeData !== false;
+
+    let query = client.from('lowcode_pages').select('*');
+
+    if (code) {
+      query = query.eq('code', code);
+    }
+
+    if (route) {
+      query = query.eq('route', route);
+    }
+
+    const { data, error } = await query.order('updated_at', { ascending: false });
+
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+
+    const rows = data ?? [];
+    const visiblePages: LowCodePageRow[] = [];
+
+    for (const row of rows as LowCodePageRow[]) {
+      if (await this.canReadLowCodePage(client, user.id, row, route || readOptionalString(row.route))) {
+        visiblePages.push(row);
       }
     }
 
-    return (roles ?? []).map((role: Record<string, unknown>) => {
-      const permissionCodes = permissionsByRoleId.get(String(role.id)) ?? [];
-      const permissionNames = permissionCodes
-        .map((code) =>
-          (permissions ?? []).find((permission: Record<string, unknown>) => String(permission.code) === code)?.name
-        )
-        .filter(Boolean)
-        .join(', ');
+    const limitedPages = normalizeListItemsRowsResult(visiblePages, postData) as LowCodePageRow[];
 
-      return {
-        ...role,
-        permission_codes: permissionCodes,
-        permission_count: permissionCodes.length,
-        permission_names: permissionNames,
-        permission_rows: permissionRowsByRoleId.get(String(role.id)) ?? []
-      };
-    });
+    return Promise.all(
+      limitedPages.map(async (row) => ({
+        ...row,
+        schema: migrateLowCodePageSchema(row.schema),
+        relations: await this.getLowCodePageRelations(client, row.id),
+        resolvedData: includeData ? {} : {}
+      }))
+    );
+  }
+
+  private async canReadLowCodePage(
+    client: ReturnType<typeof createSupabaseClient>,
+    userId: string,
+    page: LowCodePageRow,
+    requestedRoute: string
+  ) {
+    const authorization = await getUserAuthorization(client, userId);
+
+    if (hasRequiredPermission(authorization, 'lowcode.pages.manage')) {
+      return true;
+    }
+
+    let routeClient = client;
+    try {
+      routeClient = createSupabaseClient('admin');
+    } catch {
+      routeClient = client;
+    }
+
+    const candidatePaths = [...new Set([requestedRoute, readOptionalString(page.route)].filter(Boolean))];
+    if (!candidatePaths.length) return false;
+
+    const { data, error } = await routeClient
+      .from('admin_routes')
+      .select('permission_code')
+      .in('path', candidatePaths);
+
+    if (error) {
+      return false;
+    }
+
+    const routePermissions = (data ?? [])
+      .map((row: Record<string, unknown>) => readOptionalString(row.permission_code))
+      .filter(Boolean);
+
+    return !routePermissions.length || hasRequiredPermission(authorization, routePermissions);
+  }
+
+  private async getLowCodePageRelations(
+    client: ReturnType<typeof createSupabaseClient>,
+    pageId: string
+  ) {
+    const select = relationSelect();
+    const [outgoingResult, incomingResult] = await Promise.all([
+      client
+        .from('lowcode_page_relations')
+        .select(select)
+        .eq('source_page_id', pageId)
+        .order('action_key', { ascending: true }),
+      client
+        .from('lowcode_page_relations')
+        .select(select)
+        .eq('target_page_id', pageId)
+        .order('action_key', { ascending: true })
+    ]);
+
+    if (outgoingResult.error) {
+      if (isMissingLowCodeRelationTableError(outgoingResult.error)) {
+        return { outgoing: [], incoming: [] };
+      }
+
+      throw new BadRequestException(outgoingResult.error.message);
+    }
+
+    if (incomingResult.error) {
+      if (isMissingLowCodeRelationTableError(incomingResult.error)) {
+        return { outgoing: [], incoming: [] };
+      }
+
+      throw new BadRequestException(incomingResult.error.message);
+    }
+
+    return {
+      outgoing: ((outgoingResult.data ?? []) as unknown as LowCodePageRelationRow[]).map(
+        normalizeLowCodeRelationRow
+      ),
+      incoming: ((incomingResult.data ?? []) as unknown as LowCodePageRelationRow[]).map(
+        normalizeLowCodeRelationRow
+      )
+    };
   }
 
   private async getRole(postData: PostData, context: ServiceContext) {
@@ -703,88 +938,6 @@ export class AdminService implements ServiceExecutor {
     return { success: true };
   }
 
-  private async listPermissions(context: ServiceContext) {
-    const { client } = await requireAdmin(context, [
-      'admin.permissions.manage',
-      'admin.roles.manage',
-      'admin.routes.manage',
-      'admin.entities.manage',
-      'admin.users.manage',
-      'lowcode.pages.manage'
-    ]);
-    const [
-      { data: permissions, error },
-      { data: roles, error: roleError },
-      { data: rolePermissions, error: mappingError }
-    ] = await Promise.all([
-      client
-        .from('admin_permissions')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true }),
-      client
-        .from('admin_roles')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true }),
-      client.from('admin_role_permissions').select('*')
-    ]);
-
-    if (error) {
-      if (isMissingTableError(error)) return [];
-      throw new BadRequestException(error.message);
-    }
-
-    if (roleError) {
-      if (isMissingTableError(roleError)) return permissions ?? [];
-      throw new BadRequestException(roleError.message);
-    }
-
-    if (mappingError) {
-      if (isMissingTableError(mappingError)) return permissions ?? [];
-      throw new BadRequestException(mappingError.message);
-    }
-
-    const rolesById = new Map(
-      (roles ?? []).map((role: Record<string, unknown>) => [String(role.id), role])
-    );
-    const roleRowsByPermissionId = new Map<string, Record<string, unknown>[]>();
-
-    for (const mapping of rolePermissions ?? []) {
-      const roleId = String((mapping as Record<string, unknown>).role_id ?? '');
-      const permissionId = String((mapping as Record<string, unknown>).permission_id ?? '');
-      if (!roleId || !permissionId) continue;
-
-      const role = rolesById.get(roleId);
-      if (!role) continue;
-
-      const rows = roleRowsByPermissionId.get(permissionId) ?? [];
-      rows.push({
-        id: (mapping as Record<string, unknown>).id,
-        role_id: roleId,
-        permission_id: permissionId,
-        role_code: role.code,
-        role_name: role.name,
-        role_status: role.status,
-        is_system: role.is_system,
-        sort_order: role.sort_order,
-        created_at: (mapping as Record<string, unknown>).created_at
-      });
-      roleRowsByPermissionId.set(permissionId, rows);
-    }
-
-    return (permissions ?? []).map((permission: Record<string, unknown>) => {
-      const roleRows = roleRowsByPermissionId.get(String(permission.id)) ?? [];
-      return {
-        ...permission,
-        role_codes: roleRows.map((row) => String(row.role_code ?? '')).filter(Boolean),
-        role_names: roleRows.map((row) => String(row.role_name ?? '')).filter(Boolean).join(', '),
-        role_count: roleRows.length,
-        role_rows: roleRows
-      };
-    });
-  }
-
   private async savePermission(postData: PostData, context: ServiceContext) {
     const { client, user } = await requireAdmin(context, 'admin.permissions.manage');
     const id = readOptionalString(postData.id);
@@ -869,25 +1022,6 @@ export class AdminService implements ServiceExecutor {
     }
 
     return { success: true };
-  }
-
-  private async listRoutes(context: ServiceContext) {
-    const { client } = await requireAdmin(context, 'admin.routes.manage');
-    const { data, error } = await client
-      .from('admin_routes')
-      .select('*')
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      if (isMissingTableError(error)) return [];
-      throw new BadRequestException(error.message);
-    }
-
-    return (data ?? []).map((route) => ({
-      ...route,
-      metadata_json: toPrettyJson((route as Record<string, unknown>).metadata ?? {})
-    }));
   }
 
   private async listRouteTree(context: ServiceContext) {
@@ -1114,108 +1248,6 @@ export class AdminService implements ServiceExecutor {
     }
 
     return { success: true };
-  }
-
-  private async listEntities(context: ServiceContext) {
-    const { client } = await requireAdmin(context, ['admin.entities.manage', 'lowcode.pages.manage']);
-    const [
-      { data: entities, error },
-      { data: permissions, error: permissionError },
-      { data: routes, error: routeError }
-    ] = await Promise.all([
-      client
-        .from('admin_entities')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true }),
-      client
-        .from('admin_permissions')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true }),
-      client
-        .from('admin_routes')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true })
-    ]);
-
-    if (error) {
-      if (isMissingTableError(error)) return [];
-      throw new BadRequestException(error.message);
-    }
-
-    if (permissionError) {
-      if (!isMissingTableError(permissionError)) {
-        throw new BadRequestException(permissionError.message);
-      }
-    }
-
-    if (routeError) {
-      if (!isMissingTableError(routeError)) {
-        throw new BadRequestException(routeError.message);
-      }
-    }
-
-    return (entities ?? []).map((entity) => {
-      const entityRecord = entity as Record<string, unknown>;
-      const entityCode = String(entityRecord.code ?? '');
-      const tableName = String(entityRecord.table_name ?? '');
-      const routePath = String(entityRecord.route_path ?? '');
-      const pageCode = String(entityRecord.page_code ?? '');
-      const permissionRows = (permissions ?? [])
-        .filter((permission: Record<string, unknown>) => {
-          const resourceType = String(permission.resource_type ?? '');
-          const resourceKey = String(permission.resource_key ?? '');
-          const linkedEntityCode = String(permission.entity_code ?? '');
-          return (
-            resourceType === 'entity' &&
-            [entityCode, tableName].includes(resourceKey)
-          ) || linkedEntityCode === entityCode;
-        })
-        .map((permission: Record<string, unknown>) => ({
-          id: permission.id,
-          permission_id: permission.id,
-          permission_code: permission.code,
-          permission_name: permission.name,
-          resource_type: permission.resource_type,
-          resource_key: permission.resource_key,
-          action_code: permission.action_code,
-          route_path: permission.route_path,
-          page_code: permission.page_code,
-          entity_code: permission.entity_code,
-          status: permission.status,
-          sort_order: permission.sort_order,
-        }));
-      const routeRows = (routes ?? [])
-        .filter((route: Record<string, unknown>) => {
-          const linkedPageCode = String(route.page_code ?? '');
-          const linkedPath = String(route.path ?? '');
-          return (pageCode && linkedPageCode === pageCode) || (routePath && linkedPath === routePath);
-        })
-        .map((route: Record<string, unknown>) => ({
-          id: route.id,
-          route_id: route.id,
-          route_code: route.code,
-          route_title: route.title,
-          route_path: route.path,
-          route_type: route.route_type,
-          page_code: route.page_code,
-          permission_code: route.permission_code,
-          visible: route.visible,
-          status: route.status,
-          sort_order: route.sort_order,
-        }));
-
-      return {
-        ...entityRecord,
-        schema_json: toPrettyJson(entityRecord.schema ?? {}),
-        permission_count: permissionRows.length,
-        permission_rows: permissionRows,
-        route_count: routeRows.length,
-        route_rows: routeRows
-      };
-    });
   }
 
   private async saveEntity(postData: PostData, context: ServiceContext) {
@@ -1800,38 +1832,6 @@ export class AdminService implements ServiceExecutor {
     }
 
     return { success: true };
-  }
-
-  private async listUsers(context: ServiceContext) {
-    const { client } = await requireAdmin(context, 'admin.users.manage');
-    const { data, error } = await client.rpc('get_admin_user_permission_rows');
-
-    if (error) {
-      if (isMissingFunctionError(error)) {
-        throw new BadRequestException(
-          'User permission profile function is not created yet. Run supabase/migrations/20260727010000_switch_user_table_to_permission_fields.sql first.'
-        );
-      }
-      throw new BadRequestException(error.message);
-    }
-
-    return (data ?? []).map((userRow: Record<string, unknown>) => ({
-      ...userRow,
-      id: userRow.id ?? userRow.user_id,
-      user_id: userRow.user_id ?? userRow.id,
-      app_role_codes: readStringArray(userRow.app_role_codes ?? userRow.role_codes),
-      app_role_names: readOptionalString(userRow.app_role_names ?? userRow.role_names),
-      role_codes: readStringArray(userRow.role_codes ?? userRow.app_role_codes),
-      role_names: readOptionalString(userRow.role_names ?? userRow.app_role_names),
-      permission_codes: readStringArray(userRow.permission_codes),
-      permission_names: readOptionalString(userRow.permission_names),
-      account_ids: Array.isArray(userRow.account_ids) ? userRow.account_ids : [],
-      account_roles: readStringArray(userRow.account_roles),
-      account_names: readOptionalString(userRow.account_names),
-      account_count: readNumber(userRow.account_count, 0),
-      permission_count: readNumber(userRow.permission_count, 0),
-      is_primary_account_owner: readBoolean(userRow.is_primary_account_owner, false)
-    }));
   }
 
   private async saveUserRoles(postData: PostData, context: ServiceContext) {

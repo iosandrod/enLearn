@@ -6,7 +6,7 @@
  * @Description:
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\notice-bar\index.tsx
  */
-import { NoticeBar } from '../../../components/VantFree';
+import { NoticeBar } from '../../../components/LegacyWidgets';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -14,12 +14,12 @@ import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 export default {
   key: 'NoticeBar',
   moduleName: 'baseWidgets',
-  label: '閫氱煡鏍?,
+  label: 'Notice bar',
   preview: () => (
     <NoticeBar
       style={{ width: '180px' }}
       leftIcon={'volume-o'}
-      text={'鍦ㄤ唬鐮侀槄璇昏繃绋嬩腑浜轰滑璇磋剰璇濈殑棰戠巼鏄　閲忎唬鐮佽川閲忕殑鍞竴鏍囧噯銆?}
+      text={'Notice content'}
     />
   ),
   render: ({ block, props, styles }) => {

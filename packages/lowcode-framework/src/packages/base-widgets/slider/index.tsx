@@ -6,7 +6,7 @@
  * @Description: 琛ㄥ崟椤圭被鍨?- 婊戝潡
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\slider\index.tsx
  */
-import { Field, Slider } from '../../../components/VantFree';
+import { Field, Slider } from '../../../components/LegacyWidgets';
 import { omit } from 'lodash-es';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
@@ -52,11 +52,11 @@ export default {
     );
   },
   props: {
-    modelValue: createEditorInputNumberProp({ label: '榛樿鍊?, defaultValue: 0 }),
+    modelValue: createEditorInputNumberProp({ label: 'Default value', defaultValue: 0 }),
     name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
-    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '婊戝潡' }),
-    min: createEditorInputNumberProp({ label: '鏈€灏忓€? }),
-    max: createEditorInputNumberProp({ label: '鏈€澶у€?, defaultValue: 10 }),
+    label: createEditorInputProp({ label: 'Label', defaultValue: 'Slider' }),
+    min: createEditorInputNumberProp({ label: 'Min value' }),
+    max: createEditorInputNumberProp({ label: 'Max value', defaultValue: 10 }),
     size: createEditorInputNumberProp({ label: '鍥炬爣澶у皬' }),
     range: createEditorSwitchProp({ label: '鏄惁寮€鍚弻婊戝潡妯″紡' }),
     ...createFieldProps(),

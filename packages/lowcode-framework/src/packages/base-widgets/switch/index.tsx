@@ -6,7 +6,7 @@
  * @Description: 琛ㄥ崟椤圭被鍨?- 寮€鍏?
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\switch\index.tsx
  */
-import { Field, Switch } from '../../../components/VantFree';
+import { Field, Switch } from '../../../components/LegacyWidgets';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -20,9 +20,9 @@ import {
 export default {
   key: 'switch',
   moduleName: 'baseWidgets',
-  label: '琛ㄥ崟椤圭被鍨?- 寮€鍏?,
+  label: 'Switch',
   preview: () => (
-    <Field name="switch" label="寮€鍏? v-slots={{ input: () => <Switch size={20} /> }} />
+    <Field name="switch" label="Switch" v-slots={{ input: () => <Switch size={20} /> }} />
   ),
   render: ({ styles, block, props }) => {
     const { registerRef } = useGlobalProperties();
@@ -47,21 +47,21 @@ export default {
     );
   },
   props: {
-    modelValue: createEditorInputProp({ label: '榛樿鍊?, defaultValue: 'false' }),
+    modelValue: createEditorInputProp({ label: 'Default value', defaultValue: 'false' }),
     name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
-    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '寮€鍏? }),
-    activeColor: createEditorColorProp({ label: '鎵撳紑鏃剁殑鑳屾櫙鑹? }),
-    activeValue: createEditorInputProp({ label: '鎵撳紑鏃跺搴旂殑鍊?, defaultValue: 'true' }),
-    inactiveColor: createEditorColorProp({ label: '鍏抽棴鏃剁殑鑳屾櫙鑹? }),
-    inactiveValue: createEditorInputProp({ label: '鍏抽棴鏃跺搴旂殑鍊?, defaultValue: 'false' }),
-    disabled: createEditorSwitchProp({ label: '鏄惁涓虹鐢ㄧ姸鎬? }),
-    loading: createEditorSwitchProp({ label: '鏄惁涓哄姞杞界姸鎬? }),
-    size: createEditorInputProp({ label: '寮€鍏冲昂瀵?, defaultValue: '20px' }),
+    label: createEditorInputProp({ label: 'Label', defaultValue: 'Switch' }),
+    activeColor: createEditorColorProp({ label: 'Active color' }),
+    activeValue: createEditorInputProp({ label: 'Active value', defaultValue: 'true' }),
+    inactiveColor: createEditorColorProp({ label: 'Inactive color' }),
+    inactiveValue: createEditorInputProp({ label: 'Inactive value', defaultValue: 'false' }),
+    disabled: createEditorSwitchProp({ label: 'Disabled' }),
+    loading: createEditorSwitchProp({ label: 'Loading' }),
+    size: createEditorInputProp({ label: 'Size', defaultValue: '20px' }),
     ...createFieldProps(),
   },
   events: [
     { label: '寮€鍏崇姸鎬佸垏鎹㈡椂瑙﹀彂', value: 'change' },
-    { label: '鐐瑰嚮鏃惰Е鍙?, value: 'click' },
+    { label: 'Click', value: 'click' },
   ],
   resize: {
     width: true,

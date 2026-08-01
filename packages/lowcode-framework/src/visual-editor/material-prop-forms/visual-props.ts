@@ -205,6 +205,18 @@ function createFieldFromVisualProp(
     };
   }
 
+  if (propConfig.type === VisualEditorPropsType.json) {
+    return {
+      ...baseField,
+      component: 'lc-json-editor',
+      valueKind: 'raw',
+      props: {
+        rows: 8,
+        resize: 'vertical',
+      },
+    };
+  }
+
   if (propConfig.type === VisualEditorPropsType.switch) {
     return {
       ...baseField,

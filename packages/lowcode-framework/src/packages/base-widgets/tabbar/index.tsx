@@ -7,7 +7,7 @@
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\tabbar\index.tsx
  */
 import { onMounted, onBeforeUnmount } from 'vue';
-import { Tabbar, TabbarItem } from '../../../components/VantFree';
+import { Tabbar, TabbarItem } from '../../../components/LegacyWidgets';
 import { getTabbarItem } from './tabbar-item';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
@@ -38,7 +38,7 @@ const defaultTabbarItems = [
 export default {
   key: 'tabbar',
   moduleName: 'baseWidgets',
-  label: '搴曢儴鏍囩鏍?,
+  label: 'Tabbar',
   preview: () => (
     <Tabbar>
       {defaultTabbarItems.map((item) => (
@@ -99,7 +99,7 @@ export default {
   },
   props: {
     modelValue: createEditorInputProp({
-      label: '褰撳墠閫変腑鏍囩鐨勫悕绉版垨绱㈠紩鍊?,
+      label: 'Active tab name or index',
       defaultValue: '',
     }),
     tabs: createEditorCrossSortableProp({
@@ -113,25 +113,25 @@ export default {
         return { label: item.title, value: item.icon, component: getTabbarItem(), block };
       }),
     }),
-    fixed: createEditorSwitchProp({ label: '鏄惁鍥哄畾鍦ㄥ簳閮?, defaultValue: true }),
-    border: createEditorSwitchProp({ label: '鏄惁鏄剧ず澶栬竟妗?, defaultValue: true }),
+    fixed: createEditorSwitchProp({ label: 'Fixed bottom', defaultValue: true }),
+    border: createEditorSwitchProp({ label: 'Show border', defaultValue: true }),
     zIndex: createEditorInputProp({ label: '鍏冪礌 z-index', defaultValue: '1' }),
     baseUrl: createEditorInputProp({ label: '璺敱璺緞鍓嶇紑', defaultValue: '/preview/#/' }),
-    activeColor: createEditorColorProp({ label: '閫変腑鏍囩鐨勯鑹?, defaultValue: '#1989fa' }),
-    inactiveColor: createEditorColorProp({ label: '鏈€変腑鏍囩鐨勯鑹?, defaultValue: '#7d7e80' }),
-    route: createEditorSwitchProp({ label: '鏄惁寮€鍚矾鐢辨ā寮?, defaultValue: false }),
+    activeColor: createEditorColorProp({ label: 'Active color', defaultValue: '#1989fa' }),
+    inactiveColor: createEditorColorProp({ label: 'Inactive color', defaultValue: '#7d7e80' }),
+    route: createEditorSwitchProp({ label: 'Route mode', defaultValue: false }),
     // placeholder: createEditorSwitchProp({
     //   label: '鍥哄畾鍦ㄥ簳閮ㄦ椂锛屾槸鍚﹀湪鏍囩浣嶇疆鐢熸垚涓€涓瓑楂樼殑鍗犱綅鍏冪礌',
     //   defaultValue: true
     // }),
     safeAreaInsetBottom: createEditorSwitchProp({
-      label: '鏄惁寮€鍚簳閮ㄥ畨鍏ㄥ尯閫傞厤锛岃缃?fixed 鏃堕粯璁ゅ紑鍚?,
+      label: 'Enable bottom safe area inset',
       defaultValue: false,
     }),
   },
   events: [
-    { label: '鐐瑰嚮宸︿晶鎸夐挳鏃惰Е鍙?, value: 'click-left' },
-    { label: '鐐瑰嚮鍙充晶鎸夐挳鏃惰Е鍙?, value: 'click-right' },
+    { label: 'Click left', value: 'click-left' },
+    { label: 'Click right', value: 'click-right' },
   ],
   draggable: false,
   resize: {

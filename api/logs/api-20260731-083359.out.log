@@ -1385,3 +1385,45 @@ Nest API listening on http://localhost:3002/api/service
 [32m[Nest] 57148  - [39m2026/08/01 06:19:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 370ms[39m
 [32m[Nest] 57148  - [39m2026/08/01 06:20:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1135ms[39m
 [32m[Nest] 57148  - [39m2026/08/01 06:21:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1481ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 15:10:23 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 3661ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:10:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4389ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 15:10:25 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 5964ms: column "query_sql" does not exist column "query_sql" does not exist Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:10:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 524ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 15:12:58 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 2577ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[33m[Nest] 57148  - [39m2026/08/01 15:12:59 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 3735ms: Entity list permission required. Entity list permission required. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:12:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4055ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:13:00 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 713ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 15:34:00 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.getPage failed 1213ms: Low-code page not found. Low-code page not found. Bad Gateway[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:34:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2088ms[39m
+[33m[Nest] 57148  - [39m2026/08/01 15:34:19 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 20054ms: Domain service did not respond within 20000ms. Domain service did not respond within 20000ms. Gateway Timeout[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:34:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listRouteTree ok 806ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:35:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3196ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:36:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1307ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:37:00 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 813ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:38:00 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 974ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:39:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1221ms[39m
+[32m[Nest] 57148  - [39m2026/08/01 15:40:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1492ms[39m
+15:40:45 [tsx] change in ./src\common\utils\supabase.ts Restarting...
+[32m[Nest] 36156  - [39m2026/08/01 15:40:53 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +46ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:57 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +3456ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:57 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +8ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:57 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:57 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:57 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:57 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:57 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:57 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:57 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:57 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:40:57 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +5ms[39m
+Nest API listening on http://localhost:3002/api/service
+[33m[Nest] 36156  - [39m2026/08/01 15:41:19 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getUnreadCount failed 20063ms: Domain service did not respond within 20000ms. Domain service did not respond within 20000ms. Gateway Timeout[39m
+[32m[Nest] 36156  - [39m2026/08/01 15:42:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1397ms[39m
+ ELIFECYCLE  Command failed with exit code 4294967295.

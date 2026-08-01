@@ -6,7 +6,7 @@
  * @Description: 琛ㄥ崟椤圭被鍨?- 璇勫垎
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\rate\index.tsx
  */
-import { Field, Rate } from '../../../components/VantFree';
+import { Field, Rate } from '../../../components/LegacyWidgets';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -52,12 +52,12 @@ export default {
     );
   },
   props: {
-    modelValue: createEditorInputNumberProp({ label: '榛樿鍊?, defaultValue: 0 }),
+    modelValue: createEditorInputNumberProp({ label: 'Default value', defaultValue: 0 }),
     name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
-    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '璇勫垎' }),
+    label: createEditorInputProp({ label: 'Label', defaultValue: 'Rate' }),
     count: createEditorInputNumberProp({ label: '鍥炬爣鎬绘暟', defaultValue: 5 }),
     size: createEditorInputProp({ label: '鍥炬爣澶у皬' }),
-    'allow-half': createEditorSwitchProp({ label: '鏄惁鍏佽鍗婇€? }),
+    'allow-half': createEditorSwitchProp({ label: 'Allow half' }),
     ...createFieldProps(),
   },
   resize: {

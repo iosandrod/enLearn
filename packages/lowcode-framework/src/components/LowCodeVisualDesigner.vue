@@ -78,6 +78,7 @@ import {
   type LowCodeMessages,
   type LowCodeTheme,
 } from '../core/host';
+import { getLowCodePage, listLowCodePages } from '../runtime/lowcode-pages';
 
 const props = defineProps<{
   code?: string;
@@ -323,7 +324,7 @@ async function loadPageByCode(code: string) {
   resetDesignerFrame();
 
   try {
-    const nextPage = await host.getServiceApi().invoke<LowCodePageRecord>('lowcode', 'getPage', {
+    const nextPage = await getLowCodePage(host.getServiceApi(), {
       code: nextCode,
       includeData: false
     });
@@ -499,10 +500,7 @@ async function fetchPageRows() {
   pagePickerLoading.value = true;
 
   try {
-    pagePickerRows.value = await host.getServiceApi().invoke<LowCodePageRecord[]>(
-      'lowcode',
-      'listPages'
-    );
+    pagePickerRows.value = await listLowCodePages(host.getServiceApi(), { includeData: false });
     selectedPickerPage.value = null;
   } catch (error) {
     message.value = error instanceof Error ? error.message : '页面列表加载失败。';

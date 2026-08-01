@@ -17,6 +17,7 @@
 import { onMounted, ref, watch } from 'vue';
 import { getBuiltinLowCodePageByRoute } from '@enlearn/lowcode-framework/runtime';
 import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
+import { getLowCodePage } from '../../utils/lowCodePages';
 
 const props = defineProps<{
   routePath: string;
@@ -55,7 +56,7 @@ async function loadPage() {
   errorMessage.value = '';
 
   try {
-    page.value = await serviceApi.invoke('lowcode', 'getPage', {
+    page.value = await getLowCodePage(serviceApi, {
       route: props.routePath,
       includeData: true
     });

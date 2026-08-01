@@ -68,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, useAttrs, watch } from 'vue';
+import { computed, reactive, ref, useAttrs, watch, type PropType } from 'vue';
 import type {
   VxeFormDefines,
   VxeFormInstance,
@@ -78,8 +78,8 @@ import type {
 import type {
   LowCodeAction,
   LowCodeField,
+  LowCodeFormModel,
   LowCodeFormLayoutNode,
-  LowCodeFormSchema,
   LowCodeOption,
   LowCodeRule
 } from '../types/lowcode';
@@ -90,43 +90,58 @@ defineOptions({
   inheritAttrs: false,
 });
 
-type LowCodeFormModel = Record<string, unknown>;
 type VxeLowCodeFormProps = VxeFormProps<LowCodeFormModel>;
 type VxeLowCodeFormRules = NonNullable<VxeLowCodeFormProps['rules']>;
 type VxeLowCodeFormRule = VxeFormDefines.FormRule<LowCodeFormModel>;
 
-type LowCodeFormProps = {
-  schema: LowCodeFormSchema;
-  modelValue: LowCodeFormModel;
-  optionSources?: Record<string, unknown>;
-  loading?: VxeLowCodeFormProps['loading'];
-  size?: VxeLowCodeFormProps['size'];
-  collapseStatus?: VxeLowCodeFormProps['collapseStatus'];
-  span?: VxeLowCodeFormProps['span'];
-  align?: VxeLowCodeFormProps['align'];
-  verticalAlign?: VxeLowCodeFormProps['verticalAlign'];
-  border?: VxeLowCodeFormProps['border'];
-  titleBackground?: VxeLowCodeFormProps['titleBackground'];
-  titleBold?: VxeLowCodeFormProps['titleBold'];
-  titleAlign?: VxeLowCodeFormProps['titleAlign'];
-  titleWidth?: VxeLowCodeFormProps['titleWidth'];
-  titleColon?: VxeLowCodeFormProps['titleColon'];
-  titleAsterisk?: VxeLowCodeFormProps['titleAsterisk'];
-  titleOverflow?: VxeLowCodeFormProps['titleOverflow'];
-  vertical?: VxeLowCodeFormProps['vertical'];
-  padding?: VxeLowCodeFormProps['padding'];
-  className?: VxeLowCodeFormProps['className'];
-  readonly?: VxeLowCodeFormProps['readonly'];
-  disabled?: VxeLowCodeFormProps['disabled'];
-  rules?: VxeLowCodeFormProps['rules'];
-  preventSubmit?: VxeLowCodeFormProps['preventSubmit'];
-  validConfig?: VxeLowCodeFormProps['validConfig'];
-  tooltipConfig?: VxeLowCodeFormProps['tooltipConfig'];
-  collapseConfig?: VxeLowCodeFormProps['collapseConfig'];
-  params?: VxeLowCodeFormProps['params'];
-};
-
-const props = defineProps<LowCodeFormProps>();
+const props = defineProps({
+  schema: {
+    type: Object as PropType<{
+      fields: LowCodeField[];
+      layout?: LowCodeFormLayoutNode[];
+      actions?: LowCodeAction[];
+      columns?: number;
+      title?: string;
+    }>,
+    required: true,
+  },
+  modelValue: {
+    type: Object as PropType<LowCodeFormModel>,
+    required: true,
+  },
+  optionSources: {
+    type: Object as PropType<Record<string, unknown>>,
+    default: () => ({}),
+  },
+  loading: Boolean,
+  size: String,
+  collapseStatus: Boolean,
+  span: [Number, String],
+  align: String as PropType<'left' | 'center' | 'right'>,
+  verticalAlign: String as PropType<'top' | 'middle' | 'bottom'>,
+  border: Boolean,
+  titleBackground: Boolean,
+  titleBold: Boolean,
+  titleAlign: String as PropType<'left' | 'center' | 'right'>,
+  titleWidth: [Number, String],
+  titleColon: Boolean,
+  titleAsterisk: Boolean,
+  titleOverflow: [Boolean, String] as PropType<boolean | 'ellipsis' | 'title' | 'tooltip'>,
+  vertical: Boolean,
+  padding: {
+    type: Boolean,
+    default: false,
+  },
+  className: String,
+  readonly: Boolean,
+  disabled: Boolean,
+  rules: Object as PropType<Record<string, VxeLowCodeFormRule[]>>,
+  preventSubmit: Boolean,
+  validConfig: Object as PropType<Record<string, unknown>>,
+  tooltipConfig: Object as PropType<Record<string, unknown>>,
+  collapseConfig: Object as PropType<Record<string, unknown>>,
+  params: Object as PropType<Record<string, unknown>>,
+});
 
 const emit = defineEmits<{
   'update:modelValue': [value: Record<string, unknown>];

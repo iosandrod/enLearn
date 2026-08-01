@@ -6,7 +6,7 @@
  * @Description: 杞挱鍥剧粍浠?
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\swipe\index.tsx
  */
-import { Swipe, SwipeItem } from '../../../components/VantFree';
+import { Swipe, SwipeItem } from '../../../components/LegacyWidgets';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -20,7 +20,7 @@ background-color: #39a9ed;`;
 export default {
   key: 'swipe',
   moduleName: 'baseWidgets',
-  label: '杞挱鍥?,
+  label: 'Swipe',
   preview: () => (
     <Swipe style={{ width: '180px', height: '80%' }} indicatorColor={'white'}>
       <SwipeItem style={swipeItemStyle}>1</SwipeItem>

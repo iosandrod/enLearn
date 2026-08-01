@@ -17,8 +17,8 @@ export const createFieldProps = () => ({
     label: '图片列表',
     labelPosition: 'top',
     defaultValue: [
-      'https://img.yzcdn.cn/vant/apple-1.jpg',
-      'https://img.yzcdn.cn/vant/apple-2.jpg',
+      'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?auto=format&fit=crop&w=600&q=80',
     ],
   }),
   // width: createEditorInputProp({ label: '滑块宽度，单位为 px', defaultValue: 'auto' }),

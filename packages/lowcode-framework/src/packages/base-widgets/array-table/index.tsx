@@ -1,5 +1,5 @@
 ﻿import { resolveComponent } from 'vue';
-import { Field } from '../../../components/VantFree';
+import { Field } from '../../../components/LegacyWidgets';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
   createEditorInputNumberProp,
@@ -14,40 +14,40 @@ import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 export const defaultArrayTableColumns: Record<string, unknown>[] = [
   {
     field: 'name',
-    title: '鍚嶇О',
+    title: 'Name',
     minWidth: 120,
-    placeholder: '璇疯緭鍏ュ悕绉?,
+    placeholder: 'Enter name',
     defaultValue: '',
   },
   {
     field: 'quantity',
-    title: '鏁伴噺',
+    title: 'Quantity',
     width: 88,
     placeholder: '0',
     defaultValue: '',
   },
   {
     field: 'remark',
-    title: '澶囨敞',
+    title: 'Remark',
     minWidth: 140,
-    placeholder: '澶囨敞',
+    placeholder: 'Remark',
     defaultValue: '',
   },
 ];
 
 const defaultArrayTableData: Record<string, unknown>[] = [
-  { name: '椤圭洰 A', quantity: 1, remark: '绀轰緥' },
-  { name: '椤圭洰 B', quantity: 2, remark: '绀轰緥' },
+  { name: 'Item A', quantity: 1, remark: 'Example' },
+  { name: 'Item B', quantity: 2, remark: 'Example' },
 ];
 
 const formComponentOptions = [
-  { label: '杈撳叆妗?, value: 'vxe-input' },
-  { label: '澶氳鏂囨湰', value: 'vxe-textarea' },
-  { label: '涓嬫媺閫夋嫨', value: 'vxe-select' },
-  { label: '寮€鍏?, value: 'vxe-switch' },
-  { label: '瀵嗙爜妗?, value: 'vxe-password-input' },
-  { label: '鏁板瓧杈撳叆', value: 'lc-number-input' },
-  { label: 'JSON 缂栬緫鍣?, value: 'lc-json-editor' },
+  { label: 'Input', value: 'vxe-input' },
+  { label: 'Textarea', value: 'vxe-textarea' },
+  { label: 'Select', value: 'vxe-select' },
+  { label: 'Switch', value: 'vxe-switch' },
+  { label: 'Password', value: 'vxe-password-input' },
+  { label: 'Number', value: 'lc-number-input' },
+  { label: 'JSON Editor', value: 'lc-json-editor' },
 ];
 
 const gridOverflowOptions = [
@@ -250,11 +250,11 @@ export default {
   },
   props: {
     modelValue: createEditorInputProp({
-      label: '榛樿鍊?,
+      label: 'Default value',
       defaultValue: [],
     }),
     name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
-    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '琛ㄦ牸杈撳叆' }),
+    label: createEditorInputProp({ label: 'Label', defaultValue: 'Array table' }),
     __formSpan: createEditorInputNumberProp({
       label: '琛ㄥ崟璺ㄥ垪',
       defaultValue: 1,
@@ -266,8 +266,8 @@ export default {
       defaultValue: '',
     }),
     addText: createEditorInputProp({
-      label: '鏂板鎸夐挳鏂囨',
-      defaultValue: '鏂板琛?,
+      label: 'Add button text',
+      defaultValue: 'Add row',
     }),
     'rowConfig.keyField': createEditorInputProp({
       label: 'rowConfig.keyField',
@@ -311,9 +311,9 @@ export default {
             options: formComponentOptions,
           },
           { label: '瀹藉害', field: 'width' },
-          { label: '鏈€灏忓搴?, field: 'minWidth' },
+          { label: 'Min width', field: 'minWidth' },
           { label: '鍗犱綅鎻愮ず', field: 'placeholder' },
-          { label: '榛樿鍊?, field: 'defaultValue' },
+          { label: 'Default value', field: 'defaultValue' },
           {
             label: '閫夐」 JSON',
             field: 'optionsJson',
@@ -345,7 +345,7 @@ export default {
       defaultValue: defaultArrayTableData,
     }),
   },
-  events: [{ label: '琛ㄦ牸鏁版嵁鍙樺寲鏃惰Е鍙?, value: 'update:model-value' }],
+  events: [{ label: 'Table data changed', value: 'update:model-value' }],
   resize: {
     width: true,
   },

@@ -398,6 +398,7 @@ export type AdminEntityRow = {
   icon: string | null;
   description: string | null;
   primary_key: string;
+  query_sql: string | null;
   status: 'active' | 'inactive';
   sort_order: number;
   schema: Json;

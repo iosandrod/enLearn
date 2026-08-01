@@ -3,6 +3,8 @@ import DesignerUI, { ElButton, ElDialog, ElMessage } from '../common/designer-ui
 import { cloneDeep } from 'lodash-es';
 import VisualEditorProvider from '../../../components/VisualEditorProvider.vue';
 import { visualConfig } from '../../../visual.config';
+import type { LowCodeField, LowCodeFormSchema } from '../../../types/lowcode';
+import { readFormDesignerLayout } from '../../../lowcode/visual-converters/helpers';
 import {
   createNewBlock,
   type VisualEditorBlockData,
@@ -260,6 +262,96 @@ function readFieldProps(row: Record<string, unknown>) {
   return Object.keys(props).length ? props : undefined;
 }
 
+function readLowCodeFormSchema(value: unknown): LowCodeFormSchema | undefined {
+  if (!isRecord(value) || !Array.isArray(value.fields)) return undefined;
+
+  return {
+    ...(cloneDeep(value) as LowCodeFormSchema),
+    fields: (value.fields as unknown[]).filter(isRecord).map((field) => cloneDeep(field) as LowCodeField),
+    actions: Array.isArray(value.actions)
+      ? cloneDeep(value.actions as LowCodeFormSchema['actions'])
+      : [],
+  };
+}
+
+function createLowCodeFormSchema(
+  fields: unknown,
+  designerModel?: unknown,
+): LowCodeFormSchema {
+  const normalizedFields = normalizeFields(fields)
+    .map((field, index) => designerFieldToLowCodeField(field, index))
+    .filter(Boolean) as LowCodeField[];
+  const layout = readFormDesignerLayout(designerModel);
+
+  return {
+    fields: normalizedFields,
+    ...(layout ? { layout } : {}),
+    actions: [],
+  };
+}
+
+export function createLowCodeFormSchemaFromDesignerResult(
+  result: FormDesignerResult,
+): LowCodeFormSchema {
+  return createLowCodeFormSchema(result.fields, result.designerModel);
+}
+
+function normalizeSubFormProps(props: Record<string, unknown>) {
+  const schema =
+    readLowCodeFormSchema(props.schema) ??
+    createLowCodeFormSchema(props.fields, props.formDesignerModel);
+  const {
+    fields: _legacyFields,
+    layout: _legacyLayout,
+    formDesignerModel: _legacyDesignerModel,
+    schema: _legacySchema,
+    ...restProps
+  } = props;
+
+  return {
+    ...restProps,
+    schema: schema.fields.length ? schema : cloneDeep(defaultSubFormSchema()),
+  };
+}
+
+function designerFieldToLowCodeField(field: FormDesignerField, index: number): LowCodeField | null {
+  const fieldName = readString(field.field, normalizeFieldName(field.label || '', index));
+  const label = readString(field.label, fieldName || `字段${index + 1}`);
+  if (!fieldName || !label) return null;
+
+  const component = readString(field.component, 'vxe-input') as LowCodeField['component'];
+  const rawProps = readFieldProps(field as unknown as Record<string, unknown>) ?? {};
+  const placeholder = readString(field.placeholder || rawProps.placeholder);
+  const fieldProps = {
+    ...rawProps,
+    ...(placeholder ? { placeholder } : {}),
+  };
+  const normalizedProps =
+    component === 'lc-sub-form'
+      ? normalizeSubFormProps(fieldProps)
+      : fieldProps;
+  const options = parseJsonArray(field.optionsJson);
+  const required = normalizeRequired(field.required);
+  const span = normalizeSpan(field.span);
+
+  return {
+    field: fieldName,
+    label,
+    component,
+    ...(Object.keys(normalizedProps).length ? { props: normalizedProps } : {}),
+    ...(options?.length ? { options: cloneDeep(options) as LowCodeField['options'] } : {}),
+    ...(readString(field.help) ? { help: readString(field.help) } : {}),
+    ...(span ? { span } : {}),
+    ...(required
+      ? { rules: [{ required: true, message: `${label}不能为空` }] }
+      : {}),
+  };
+}
+
+function defaultSubFormSchema(): LowCodeFormSchema {
+  return createLowCodeFormSchema(createDefaultSubFormFields(), undefined);
+}
+
 function applyCommonFieldProps(block: VisualEditorBlockData, field: FormDesignerField, index: number) {
   const fieldName = readString(field.field, normalizeFieldName(field.label || '', index));
   const label = readString(field.label, fieldName || `字段${index + 1}`);
@@ -301,14 +393,20 @@ function createFieldBlock(field: FormDesignerField, index: number) {
 
   if (runtimeComponent === 'lc-sub-form') {
     const fieldProps = isRecord(field.props) ? field.props : {};
-    const subFields = normalizeFields(fieldProps.fields);
+    const schema =
+      readLowCodeFormSchema(fieldProps.schema) ??
+      createLowCodeFormSchema(fieldProps.fields, fieldProps.formDesignerModel);
+    const subFields = normalizeFields(schema.fields);
     const subFormDesignerModel = fieldProps.formDesignerModel;
 
     block.props.__lowcodeComponent = 'lc-sub-form';
-    block.props.fields = subFields.length ? subFields : createDefaultSubFormFields();
+    block.props.schema = schema.fields.length ? schema : defaultSubFormSchema();
     block.props.subFormDesignerModel = isVisualEditorModel(subFormDesignerModel)
       ? cloneDeep(subFormDesignerModel)
-      : createFormModel(block.props.fields, `${block.props.label || '子表单'}设计`);
+      : createFormModel(
+          subFields.length ? subFields : createDefaultSubFormFields(),
+          `${block.props.label || '子表单'}设计`,
+        );
   }
 
   if (runtimeComponent === 'lc-array-table') {
@@ -350,11 +448,14 @@ function normalizeFields(fields: unknown): FormDesignerField[] {
       field: readString(row.field, fallback.field),
       label: readString(row.label, fallback.label),
       component: readString(row.component, fallback.component),
-      placeholder: readString(row.placeholder, fallback.placeholder),
+      placeholder: readString(row.placeholder, readString(props?.placeholder, fallback.placeholder)),
       required: normalizeRequired(row.required),
       span: normalizeSpan(row.span) || 1,
-      help: readString(row.help),
-      optionsJson: stringifyOptions(row.optionsJson) || readString(row.optionsJson),
+      help: readString(row.help, readString(props?.help)),
+      optionsJson:
+        stringifyOptions(row.optionsJson) ||
+        stringifyOptions(row.options) ||
+        readString(row.optionsJson),
       propsJson: stringifyFieldProps(props) || readString(row.propsJson),
       props,
     };
@@ -453,15 +554,17 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
   };
 
   if (runtimeComponent === 'lc-sub-form') {
-    const subFields = normalizeFields(block.props?.fields);
+    const schema =
+      readLowCodeFormSchema(block.props?.schema) ??
+      createLowCodeFormSchema(block.props?.fields, block.props?.subFormDesignerModel);
     const subFormDesignerModel = block.props?.subFormDesignerModel;
 
     result.props = {
-      fields: subFields.length ? subFields : createDefaultSubFormFields(),
-      ...(isVisualEditorModel(subFormDesignerModel)
-        ? { formDesignerModel: cloneDeep(subFormDesignerModel) }
-        : {}),
+      schema: schema.fields.length ? schema : defaultSubFormSchema(),
     };
+    if (isVisualEditorModel(subFormDesignerModel)) {
+      result.props.formDesignerModel = cloneDeep(subFormDesignerModel);
+    }
     result.propsJson = stringifyFieldProps(result.props);
   }
 

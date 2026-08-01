@@ -1,5 +1,5 @@
 ﻿import { renderSlot, useSlots } from 'vue';
-import { Button, Field, Form } from '../../../components/VantFree';
+import { Button, Field, Form } from '../../../components/LegacyWidgets';
 import { compProps } from './compProps';
 import type {
   VisualEditorBlockData,
@@ -29,14 +29,14 @@ function readDesignedBlocks(value: unknown) {
 export default {
   key: 'form',
   moduleName: 'businessComponents',
-  label: '鏅€氳〃鍗?,
+  label: 'Form',
   preview: () => (
     <Form>
-      <Field name="username" label="鐢ㄦ埛鍚? placeholder="鐢ㄦ埛鍚? />
-      <Field type="password" name="password" label="瀵嗙爜" placeholder="瀵嗙爜" />
+      <Field name="username" label="Username" placeholder="Username" />
+      <Field type="password" name="password" label="Password" placeholder="Password" />
       <div style="margin: 16px;">
         <Button round size="small" block type="primary">
-          鎻愪氦
+          Submit
         </Button>
       </div>
     </Form>
@@ -120,8 +120,8 @@ export default {
     width: true,
   },
   events: [
-    { label: '鎻愪氦琛ㄥ崟涓旈獙璇侀€氳繃鍚庤Е鍙?, value: 'submit' },
-    { label: '鎻愪氦琛ㄥ崟涓旈獙璇佷笉閫氳繃鍚庤Е鍙?, value: 'failed' },
+    { label: 'Submit', value: 'submit' },
+    { label: 'Validation failed', value: 'failed' },
   ],
   props: compProps,
 } as VisualEditorComponent;

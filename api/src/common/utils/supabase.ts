@@ -13,6 +13,10 @@ type CurrentUserResult = {
   user: User;
 };
 
+type UserAuthorizationOptions = {
+  refresh?: boolean;
+};
+
 type CacheEntry<T> = {
   expiresAt: number;
   value: Promise<T>;
@@ -41,6 +45,7 @@ export type UserAuthorization = {
   profile: Record<string, unknown> | null;
   permissionCodes: string[];
   accounts: AccountSummary[];
+  isLegacyAdmin: boolean;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -58,6 +63,10 @@ function isMissingFunctionError(error: { message?: string; code?: string } | nul
 function normalizeStringArray(value: unknown) {
   if (!Array.isArray(value)) return [] as string[];
   return value.map((item) => (typeof item === 'string' ? item.trim() : '')).filter(Boolean);
+}
+
+function uniqueStrings(values: string[]) {
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
 function normalizeAccounts(value: unknown): AccountSummary[] {
@@ -81,6 +90,102 @@ function normalizeAccounts(value: unknown): AccountSummary[] {
       };
     })
     .filter((account) => account.account_id);
+}
+
+function isLegacyAdminProfile(profile: Record<string, unknown> | null) {
+  return typeof profile?.role === 'string' && profile.role.trim().toLowerCase() === 'admin';
+}
+
+function isMissingPermissionTableError(error: { message?: string } | Error | null | undefined) {
+  const message = error instanceof Error ? error.message : error?.message ?? '';
+  return (
+    message.includes('admin_user_roles') ||
+    message.includes('admin_roles') ||
+    message.includes('admin_role_permissions') ||
+    message.includes('admin_permissions')
+  ) && message.includes('does not exist');
+}
+
+function isPermissionReadDenied(error: { message?: string } | null | undefined) {
+  const message = error?.message ?? '';
+  return isMissingPermissionTableError(error) || message.includes('permission denied');
+}
+
+async function readPermissionCodesFromSupabase(client: SupabaseClient, userId: string) {
+  const { data: userRoles, error: userRolesError } = await client
+    .from('admin_user_roles')
+    .select('role_id')
+    .eq('user_id', userId);
+
+  if (userRolesError) {
+    if (isPermissionReadDenied(userRolesError)) return [] as string[];
+    throw new ForbiddenException(userRolesError.message);
+  }
+
+  const roleIds = uniqueStrings(
+    (userRoles ?? []).map((row: Record<string, unknown>) => String(row.role_id ?? ''))
+  );
+  if (!roleIds.length) return [] as string[];
+
+  const { data: roles, error: rolesError } = await client
+    .from('admin_roles')
+    .select('id')
+    .in('id', roleIds)
+    .eq('status', 'active');
+
+  if (rolesError) {
+    if (isPermissionReadDenied(rolesError)) return [] as string[];
+    throw new ForbiddenException(rolesError.message);
+  }
+
+  const activeRoleIds = uniqueStrings(
+    (roles ?? []).map((row: Record<string, unknown>) => String(row.id ?? ''))
+  );
+  if (!activeRoleIds.length) return [] as string[];
+
+  const { data: rolePermissions, error: rolePermissionsError } = await client
+    .from('admin_role_permissions')
+    .select('permission_id')
+    .in('role_id', activeRoleIds);
+
+  if (rolePermissionsError) {
+    if (isPermissionReadDenied(rolePermissionsError)) return [] as string[];
+    throw new ForbiddenException(rolePermissionsError.message);
+  }
+
+  const permissionIds = uniqueStrings(
+    (rolePermissions ?? []).map((row: Record<string, unknown>) => String(row.permission_id ?? ''))
+  );
+  if (!permissionIds.length) return [] as string[];
+
+  const { data: permissions, error: permissionsError } = await client
+    .from('admin_permissions')
+    .select('code')
+    .in('id', permissionIds)
+    .eq('status', 'active');
+
+  if (permissionsError) {
+    if (isPermissionReadDenied(permissionsError)) return [] as string[];
+    throw new ForbiddenException(permissionsError.message);
+  }
+
+  return uniqueStrings(
+    (permissions ?? []).map((row: Record<string, unknown>) => String(row.code ?? ''))
+  );
+}
+
+async function readLegacyAdminPermissionCodes(client: SupabaseClient) {
+  const { data, error } = await client
+    .from('admin_permissions')
+    .select('code')
+    .eq('status', 'active');
+
+  if (error) {
+    if (isPermissionReadDenied(error)) return [] as string[];
+    throw new ForbiddenException(error.message);
+  }
+
+  return uniqueStrings((data ?? []).map((row: Record<string, unknown>) => String(row.code ?? '')));
 }
 
 function normalizeRequiredPermissions(requiredPermissions?: string | string[]) {
@@ -222,9 +327,14 @@ export async function getCurrentUser(context: ServiceContext): Promise<CurrentUs
 
 export async function getUserAuthorization(
   client: SupabaseClient,
-  userId: string
+  userId: string,
+  options: UserAuthorizationOptions = {}
 ): Promise<UserAuthorization> {
   const cacheKey = userId.trim();
+  if (options.refresh && cacheKey) {
+    userAuthorizationCache.delete(cacheKey);
+  }
+
   if (cacheKey) {
     return readCachedPromise(userAuthorizationCache, cacheKey, () =>
       loadUserAuthorization(client, userId)
@@ -259,18 +369,37 @@ async function loadUserAuthorization(
     throw new ForbiddenException(accountsError.message);
   }
 
+  const profileRecord = (profile as Record<string, unknown> | null) ?? null;
+  const isLegacyAdmin = isLegacyAdminProfile(profileRecord);
+  const rpcPermissionCodes = normalizeStringArray(permissionsResult.data);
+  const databasePermissionCodes = rpcPermissionCodes.length
+    ? []
+    : await readPermissionCodesFromSupabase(client, userId);
+  const legacyAdminPermissionCodes = isLegacyAdmin
+    ? await readLegacyAdminPermissionCodes(client)
+    : [];
+
   return {
-    profile: (profile as Record<string, unknown> | null) ?? null,
-    permissionCodes: normalizeStringArray(permissionsResult.data),
-    accounts: normalizeAccounts(accountsResult.data)
+    profile: profileRecord,
+    permissionCodes: uniqueStrings([
+      ...rpcPermissionCodes,
+      ...databasePermissionCodes,
+      ...legacyAdminPermissionCodes
+    ]),
+    accounts: normalizeAccounts(accountsResult.data),
+    isLegacyAdmin
   };
 }
 
 export function hasRequiredPermission(
-  authorization: Pick<UserAuthorization, 'permissionCodes'>,
+  authorization: Pick<UserAuthorization, 'permissionCodes'> & Partial<Pick<UserAuthorization, 'isLegacyAdmin'>>,
   requiredPermissions?: string | string[]
 ) {
   const required = normalizeRequiredPermissions(requiredPermissions);
+
+  if (authorization.isLegacyAdmin) {
+    return true;
+  }
 
   if (!required.length) {
     return false;

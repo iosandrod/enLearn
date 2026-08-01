@@ -137,6 +137,7 @@ import type {
   LowCodePageRecord,
   LowCodePageSchema,
 } from '@enlearn/lowcode-framework/types/lowcode';
+import { getLowCodePage } from '../utils/lowCodePages';
 
 type AdminRouteNode = {
   id?: string;
@@ -739,7 +740,7 @@ async function resolveExistingEditPageRoute(page: LowCodePageRecord) {
   if (relation.targetPageRoute) return relation.targetPageRoute;
   if (!relation.targetPageCode) return '';
 
-  const editPage = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'getPage', {
+  const editPage = await getLowCodePage(serviceApi, {
     code: relation.targetPageCode,
     includeData: false
   });
@@ -764,7 +765,7 @@ async function openLowCodeEditPage() {
   routeError.value = '';
 
   try {
-    const page = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'getPage', {
+    const page = await getLowCodePage(serviceApi, {
       code: pageCode,
       includeData: false
     });

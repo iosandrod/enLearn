@@ -7,7 +7,7 @@
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\checkbox\index.tsx
  */
 import { computed } from 'vue';
-import { Field, Checkbox, CheckboxGroup } from '../../../components/VantFree';
+import { Field, Checkbox, CheckboxGroup } from '../../../components/LegacyWidgets';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -71,19 +71,19 @@ export default {
   },
   props: {
     modelValue: createEditorInputProp({
-      label: '榛樿鍊?,
+      label: 'Default value',
       defaultValue: [],
     }),
     name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
-    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '澶嶉€夋' }),
+    label: createEditorInputProp({ label: 'Label', defaultValue: 'Checkbox' }),
     options: createEditorCrossSortableProp({
       label: '榛樿閫夐」',
       labelPosition: 'top',
       multiple: true,
       defaultValue: [
-        { label: '鑳¤悵鍗?, value: 'carrot' },
+        { label: 'Carrot', value: 'carrot' },
         { label: '鐧借彍', value: 'cabbage' },
-        { label: '鐚?, value: 'pig' },
+        { label: 'Pig', value: 'pig' },
       ],
     }),
     direction: createEditorSelectProp({
@@ -103,8 +103,8 @@ export default {
     ...createFieldProps(),
   },
   events: [
-    { label: '褰撶粦瀹氬€煎彉鍖栨椂瑙﹀彂鐨勪簨浠?, value: 'change' },
-    { label: '鐐瑰嚮澶嶉€夋鏃惰Е鍙?, value: 'click' },
+    { label: 'Change', value: 'change' },
+    { label: 'Click', value: 'click' },
   ],
   resize: {
     width: true,

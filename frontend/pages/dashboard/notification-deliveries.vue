@@ -16,6 +16,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
+import { getLowCodePage } from '../../utils/lowCodePages';
 
 const pageCode = 'notification-deliveries';
 const serviceApi = useServiceApi();
@@ -28,7 +29,7 @@ async function loadPage() {
   errorMessage.value = '';
 
   try {
-    page.value = await serviceApi.invoke('lowcode', 'getPage', {
+    page.value = await getLowCodePage(serviceApi, {
       code: pageCode,
       includeData: true,
     });

@@ -7,7 +7,7 @@
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\picker\index.tsx
  */
 import { reactive, useAttrs } from 'vue';
-import { Field, Popup, Picker } from '../../../components/VantFree';
+import { Field, Popup, Picker } from '../../../components/LegacyWidgets';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -20,8 +20,8 @@ import {
 export default {
   key: 'picker',
   moduleName: 'baseWidgets',
-  label: '琛ㄥ崟椤圭被鍨?- 閫夋嫨鍣?,
-  preview: () => <Field name="picker" label="閫夋嫨鍣? placeholder={'鐐瑰嚮閫夋嫨'}></Field>,
+  label: 'Picker',
+  preview: () => <Field name="picker" label="Picker" placeholder={'Select'}></Field>,
   render: ({ styles, block, props }) => {
     const { registerRef } = useGlobalProperties();
 
@@ -85,9 +85,9 @@ export default {
     };
   },
   props: {
-    modelValue: createEditorInputProp({ label: '榛樿鍊? }),
+    modelValue: createEditorInputProp({ label: 'Default value' }),
     name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
-    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '閫夋嫨鍣? }),
+    label: createEditorInputProp({ label: 'Label', defaultValue: 'Picker' }),
     columns: createEditorCrossSortableProp({
       label: '榛樿閫夐」',
       labelPosition: 'top',
@@ -97,13 +97,13 @@ export default {
         { label: '涓婃捣', value: 'shanghai' },
       ],
     }),
-    placeholder: createEditorInputProp({ label: '鍗犱綅绗?, defaultValue: '璇烽€夋嫨' }),
+    placeholder: createEditorInputProp({ label: 'Placeholder', defaultValue: 'Select' }),
     ...createFieldProps(),
   },
   events: [
-    { label: '鐐瑰嚮瀹屾垚鎸夐挳鏃惰Е鍙?, value: 'confirm' },
-    { label: '鐐瑰嚮鍙栨秷鎸夐挳鏃惰Е鍙?, value: 'cancel' },
-    { label: '閫夐」鏀瑰彉鏃惰Е鍙?, value: 'change' },
+    { label: 'Confirm', value: 'confirm' },
+    { label: 'Cancel', value: 'cancel' },
+    { label: 'Change', value: 'change' },
   ],
   resize: {
     width: true,

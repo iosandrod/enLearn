@@ -15,6 +15,8 @@ export enum VisualEditorPropsType {
   modelBind = 'ModelBind',
   /** 可拖拽项 */
   crossSortable = 'CrossSortable',
+  /** JSON / object */
+  json = 'json',
 }
 
 export type VisualEditorProps = {
@@ -96,6 +98,19 @@ export function createEditorInputProp({
 }: EditorInputProp): VisualEditorProps {
   return {
     type: VisualEditorPropsType.input,
+    label,
+    tips,
+    defaultValue,
+  };
+}
+
+export function createEditorJsonProp({
+  label,
+  defaultValue,
+  tips,
+}: EditorInputProp): VisualEditorProps {
+  return {
+    type: VisualEditorPropsType.json,
     label,
     tips,
     defaultValue,

@@ -31,6 +31,11 @@ yarn-debug.log*
 yarn-error.log*
 /.pnpm-home/
 /.pnpm-store/
+
+# generated lowcode source artifacts
+/packages/lowcode-framework/src/**/*.js
+/packages/lowcode-framework/src/**/*.jsx
+
 # local env files
 .env
 .env.local

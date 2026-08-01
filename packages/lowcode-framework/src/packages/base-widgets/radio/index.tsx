@@ -6,7 +6,7 @@
  * @Description: 琛ㄥ崟椤圭被鍨?- 鍗曢€夋
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\radio\index.tsx
  */
-import { Field, Radio, RadioGroup } from '../../../components/VantFree';
+import { Field, Radio, RadioGroup } from '../../../components/LegacyWidgets';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -56,17 +56,17 @@ export default {
     );
   },
   props: {
-    modelValue: createEditorInputProp({ label: '榛樿鍊?, defaultValue: '' }),
+    modelValue: createEditorInputProp({ label: 'Default value', defaultValue: '' }),
     name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
-    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '鍗曢€夋' }),
+    label: createEditorInputProp({ label: 'Label', defaultValue: 'Radio' }),
     options: createEditorCrossSortableProp({
       label: '榛樿閫夐」',
       labelPosition: 'top',
       multiple: false,
       defaultValue: [
-        { label: '鑳¤悵鍗?, value: 'carrot' },
+        { label: 'Carrot', value: 'carrot' },
         { label: '鐧借彍', value: 'cabbage' },
-        { label: '鐚?, value: 'pig' },
+        { label: 'Pig', value: 'pig' },
       ],
     }),
     direction: createEditorSelectProp({
@@ -85,7 +85,7 @@ export default {
     }),
     ...createFieldProps(),
   },
-  events: [{ label: '鐐瑰嚮鍗曢€夋鏃惰Е鍙?, value: 'click' }],
+  events: [{ label: 'Click', value: 'click' }],
   resize: {
     width: true,
   },

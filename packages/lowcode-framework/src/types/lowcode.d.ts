@@ -192,10 +192,14 @@ export type LowCodeGridSchema = {
 export type LowCodePageDataSource = {
     key: string;
     label?: string;
-    serviceName: string;
-    serviceMethod: string;
+    serviceName?: string;
+    serviceMethod?: string;
     saveMethod?: string;
     deleteMethod?: string;
+    entityCode?: string;
+    entity_code?: string;
+    tableName?: string;
+    table_name?: string;
     postData?: Record<string, unknown>;
     autoLoad?: boolean;
 };

@@ -1,5 +1,5 @@
 ﻿import { renderSlot, useSlots, watchEffect } from 'vue';
-import { Col, Row } from '../../../components/VantFree';
+import { Col, Row } from '../../../components/LegacyWidgets';
 import styleModule from './index.module.scss';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { createEditorInputProp, createEditorSelectProp } from '../../../visual-editor/visual-editor.props';
@@ -285,7 +285,7 @@ export default {
                       <span class={styleModule.layoutColumnSpan}>span {spanItem.span}</span>
                       <button
                         type="button"
-                        title="娣诲姞鍒?
+                        title="Add column"
                         class={styleModule.layoutColumnAction}
                         onClick={(event) => addSlotAfter(event, spanIndex)}
                       >
@@ -293,7 +293,7 @@ export default {
                       </button>
                       <button
                         type="button"
-                        title="鍒犻櫎鍒?
+                        title="Delete column"
                         class={styleModule.layoutColumnAction}
                         disabled={slotItems.length <= 1}
                         onClick={(event) => removeSlot(event, spanIndex)}
@@ -323,24 +323,24 @@ export default {
     width: true,
   },
   props: {
-    gutter: createEditorInputProp({ label: '鍒楅棿闅? }),
+    gutter: createEditorInputProp({ label: 'Gutter' }),
     slots: createEditorInputProp({
-      label: '鍒楁瘮渚?,
-      tips: '鍙湪鍙充晶杈撳叆 5:7:12 绛変换鎰?span锛屼篃鍙湪鐢诲竷涓婃嫋鍔ㄥ垪闂存墜鏌勮皟鏁淬€?,
+      label: 'Column ratio',
+      tips: 'Enter span ratios such as 5:7:12, or drag column handles on the canvas.',
       defaultValue: createSlots(DEFAULT_RATIO),
     }),
     justify: createEditorSelectProp({
       label: '涓昏酱瀵归綈鏂瑰紡',
       options: [
-        { label: '宸﹀榻?, value: 'start' },
+        { label: 'Start', value: 'start' },
         { label: '灞呬腑鎺掑垪', value: 'center' },
         { label: '鍧囧寑瀵归綈', value: 'space-around' },
         { label: '涓ょ瀵归綈', value: 'space-between' },
-        { label: '鍙冲榻?, value: 'end' },
+        { label: 'End', value: 'end' },
       ],
     }),
     align: createEditorSelectProp({
-      label: '浜ゅ弶杞村榻愭柟寮?,
+      label: 'Cross axis alignment',
       options: [
         { label: '椤堕儴瀵归綈', value: 'top' },
         { label: '鍨傜洿灞呬腑', value: 'center' },

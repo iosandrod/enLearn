@@ -3,6 +3,7 @@ import type { VisualEditorComponent } from '../../visual-editor/visual-editor.ut
 import type { VisualToLowCodeConverter } from '../visual-converters/types';
 import type {
   LowCodeAction,
+  LowCodeButtonGroupAction,
   LowCodePageBlock,
   LowCodePageGridBlock,
   LowCodePageSearchFormBlock,
@@ -38,7 +39,9 @@ export type LowCodeBlockMaterialEmits = {
   ];
   gridEdit: [payload: { block: LowCodePageGridBlock; row: Record<string, unknown> }];
   gridDelete: [payload: { block: LowCodePageGridBlock; row: Record<string, unknown> }];
-  toolbarAction: [payload: { block: LowCodeRuntimeBlock; action: LowCodeAction }];
+  toolbarAction: [
+    payload: { block: LowCodeRuntimeBlock; action: LowCodeAction | LowCodeButtonGroupAction },
+  ];
   searchSubmit: [
     payload: { block: LowCodePageSearchFormBlock; values: Record<string, unknown> },
   ];

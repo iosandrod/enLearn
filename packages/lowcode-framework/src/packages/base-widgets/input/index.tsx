@@ -6,7 +6,7 @@
  * @Description: 琛ㄥ崟椤圭被鍨?- 杈撳叆妗?
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\input\index.tsx
  */
-import { Field } from '../../../components/VantFree';
+import { Field } from '../../../components/LegacyWidgets';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -14,9 +14,9 @@ import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 export default {
   key: 'input',
   moduleName: 'baseWidgets',
-  label: '琛ㄥ崟椤圭被鍨?- 杈撳叆妗?,
+  label: 'Input',
   preview: () => (
-    <Field name="鐢ㄦ埛鍚? label="鐢ㄦ埛鍚? labelWidth={50} colon placeholder="璇疯緭鍏ョ敤鎴峰悕" />
+    <Field name="username" label="Username" labelWidth={50} colon placeholder="Enter username" />
   ),
   render: ({ styles, block, props }) => {
     const { registerRef } = useGlobalProperties();
@@ -42,11 +42,11 @@ export default {
     { label: '杈撳叆妗嗗唴瀹瑰彉鍖栨椂瑙﹀彂', value: 'update:model-value' },
     { label: '杈撳叆妗嗚幏寰楃劍鐐规椂瑙﹀彂', value: 'focus' },
     { label: '杈撳叆妗嗗け鍘荤劍鐐规椂瑙﹀彂', value: 'blur' },
-    { label: '鐐瑰嚮娓呴櫎鎸夐挳鏃惰Е鍙?, value: 'clear' },
-    { label: '鐐瑰嚮缁勪欢鏃惰Е鍙?, value: 'click' },
-    { label: '鐐瑰嚮杈撳叆鍖哄煙鏃惰Е鍙?, value: 'click-input' },
-    { label: '鐐瑰嚮宸︿晶鍥炬爣鏃惰Е鍙?, value: 'click-left-icon' },
-    { label: '鐐瑰嚮鍙充晶鍥炬爣鏃惰Е鍙?, value: 'click-right-icon' },
+    { label: 'Clear', value: 'clear' },
+    { label: 'Click', value: 'click' },
+    { label: 'Click input', value: 'click-input' },
+    { label: 'Click left icon', value: 'click-left-icon' },
+    { label: 'Click right icon', value: 'click-right-icon' },
   ],
   props: createFieldProps(),
   resize: {

@@ -17,6 +17,7 @@
 import { onMounted, ref, watch } from 'vue';
 import { getBuiltinLowCodePageByCode } from '@enlearn/lowcode-framework/runtime';
 import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
+import { getLowCodePage } from '../../../utils/lowCodePages';
 
 const route = useRoute();
 const serviceApi = useServiceApi();
@@ -52,7 +53,7 @@ async function loadPage() {
   errorMessage.value = '';
 
   try {
-    page.value = await serviceApi.invoke('lowcode', 'getPage', {
+    page.value = await getLowCodePage(serviceApi, {
       code: String(route.params.code ?? ''),
       includeData: true
     });

@@ -52,15 +52,6 @@ type TablePageSchemaOptions = {
   entityCode?: string;
 };
 
-type ListRowsOptions = {
-  tableName: string;
-  filters?: Record<string, unknown>;
-  requiredFilters?: string[];
-  limit?: number;
-  orderBy?: string;
-  orderDirection?: 'asc' | 'desc';
-};
-
 const INTERNAL_SCHEMAS = new Set([
   'auth',
   'extensions',
@@ -112,14 +103,6 @@ export function readTableRef(value: unknown, fieldName = 'tableName'): DatabaseT
     name,
     fullName: `${schema}.${name}`
   };
-}
-
-function quoteIdentifier(value: string) {
-  return `"${value.replace(/"/g, '""')}"`;
-}
-
-function quoteTable(table: DatabaseTableRef) {
-  return `${quoteIdentifier(table.schema)}.${quoteIdentifier(table.name)}`;
 }
 
 function normalizeIdentifier(value: string, fallback: string) {
@@ -213,20 +196,6 @@ function visibleGridColumns(columns: DatabaseColumn[]) {
   );
   const candidates = nonLargeColumns.length ? nonLargeColumns : columns;
   return candidates.slice(0, 12).map(gridColumn);
-}
-
-function readLimit(value: unknown, fallback = 300, max = 1000) {
-  const parsed = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(parsed)) return fallback;
-  return Math.min(Math.max(Math.trunc(parsed), 1), max);
-}
-
-function isEmptyFilterValue(value: unknown) {
-  return value === undefined || value === null || value === '';
-}
-
-function normalizeDirection(value: unknown): 'asc' | 'desc' {
-  return value === 'asc' ? 'asc' : 'desc';
 }
 
 function buildGridConfig(
@@ -701,68 +670,4 @@ export async function buildTableListPageSchemaFromDatabase(
     description: options.description ?? inspection.comment,
     entityCode: options.entityCode ?? inspection.entityCode
   });
-}
-
-export async function listTableRows(
-  client: PoolClient,
-  options: ListRowsOptions
-) {
-  const table = readTableRef(options.tableName);
-  const columns = await readTableColumns(client, table);
-  const columnNames = new Set(columns.map((column) => column.name));
-  const filters = options.filters ?? {};
-  const requiredFilters = options.requiredFilters ?? [];
-
-  for (const requiredFilter of requiredFilters) {
-    assertIdentifier(requiredFilter, 'required filter');
-    if (isEmptyFilterValue(filters[requiredFilter])) {
-      return [];
-    }
-  }
-
-  const whereParts: string[] = [];
-  const values: unknown[] = [];
-
-  for (const [field, value] of Object.entries(filters)) {
-    assertIdentifier(field, 'filter field');
-    if (!columnNames.has(field) || isEmptyFilterValue(value)) continue;
-
-    if (Array.isArray(value)) {
-      if (!value.length) {
-        whereParts.push('false');
-        continue;
-      }
-
-      values.push(value);
-      whereParts.push(`${quoteIdentifier(field)} = any($${values.length})`);
-      continue;
-    }
-
-    values.push(value);
-    whereParts.push(`${quoteIdentifier(field)} = $${values.length}`);
-  }
-
-  const preferredOrder = options.orderBy && columnNames.has(options.orderBy)
-    ? options.orderBy
-    : columnNames.has('updated_at')
-      ? 'updated_at'
-      : columnNames.has('created_at')
-        ? 'created_at'
-        : preferredPrimaryKey(columns);
-  assertIdentifier(preferredOrder, 'orderBy');
-
-  values.push(readLimit(options.limit));
-  const limitParam = `$${values.length}`;
-  const whereSql = whereParts.length ? `where ${whereParts.join(' and ')}` : '';
-  const direction = normalizeDirection(options.orderDirection);
-  const sql = `
-    select *
-    from ${quoteTable(table)}
-    ${whereSql}
-    order by ${quoteIdentifier(preferredOrder)} ${direction} nulls last
-    limit ${limitParam}
-  `;
-  const { rows } = await client.query<Record<string, unknown>>(sql, values);
-
-  return rows;
 }

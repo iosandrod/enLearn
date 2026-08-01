@@ -25,8 +25,7 @@ import {
 } from './lowcode.schema';
 import {
   buildTableListPageSchemaFromDatabase,
-  listDatabaseTableOptions,
-  listTableRows as listDatabaseRows
+  listDatabaseTableOptions
 } from './table-page-generator';
 
 type LowCodePageRow = {
@@ -146,12 +145,6 @@ function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
-function readStringArray(value: unknown) {
-  return Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
-    : [];
-}
-
 function normalizeOpenType(value: unknown): LowCodePageOpenType {
   return value === 'drawer' || value === 'modal' || value === 'page' ? value : 'page';
 }
@@ -213,8 +206,6 @@ export class LowCodeService implements ServiceExecutor {
         return this.generateTableListPageSchema(postData, context);
       case 'saveGeneratedTableListPage':
         return this.saveGeneratedTableListPage(postData, context);
-      case 'listTableRows':
-        return this.listTableRows(postData, context);
       case 'savePage':
         return this.savePage(postData, context);
       case 'publishPage':
@@ -510,43 +501,6 @@ export class LowCodeService implements ServiceExecutor {
       },
       context
     );
-  }
-
-  private async listTableRows(
-    postData: Record<string, unknown>,
-    context: ServiceContext
-  ) {
-    await requireAdmin(context, [
-      'lowcode.pages.manage',
-      'admin.entities.manage',
-      'admin.options.manage',
-      'admin.routes.manage'
-    ]);
-
-    const tableName = readString(postData.tableName ?? postData.table_name);
-    if (!tableName) {
-      throw new BadRequestException('tableName is required.');
-    }
-
-    try {
-      return await withPostgresClient((client) =>
-        listDatabaseRows(client, {
-          tableName,
-          filters: isRecord(postData.filters) ? postData.filters : {},
-          requiredFilters: readStringArray(postData.requiredFilters),
-          limit: typeof postData.limit === 'number' ? postData.limit : Number(postData.limit),
-          orderBy: readString(postData.orderBy ?? postData.order_by),
-          orderDirection:
-            postData.orderDirection === 'asc' || postData.order_direction === 'asc'
-              ? 'asc'
-              : 'desc'
-        })
-      );
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Could not load table rows.'
-      );
-    }
   }
 
   private normalizeRelationInput(

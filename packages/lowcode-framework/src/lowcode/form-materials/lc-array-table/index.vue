@@ -155,7 +155,12 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import type { LowCodeField, LowCodeFieldComponent, LowCodeOption } from '../../../types/lowcode';
+import type {
+  LowCodeField,
+  LowCodeFieldComponent,
+  LowCodeFormSchema,
+  LowCodeOption,
+} from '../../../types/lowcode';
 import { openGlobalDialog } from '../../../runtime/global-dialog';
 import LcJsonEditor from '../lc-json-editor/index.vue';
 import type { LowCodeFormMaterialProps } from '../types';
@@ -351,10 +356,7 @@ async function openObjectEditor(row: Record<string, unknown>, column: ArrayTable
     showFooter: true,
     model: value,
     form: {
-      schema: {
-        fields: resolveObjectEditorFields(column, value),
-        actions: [],
-      },
+      schema: resolveObjectEditorSchema(column, value),
     },
     actions: [
       {
@@ -516,11 +518,48 @@ function resolveObjectEditorFields(
   column: ArrayTableColumn | null,
   value: Record<string, unknown>,
 ): LowCodeField[] {
-  const configuredFields = Array.isArray(column?.props?.fields)
-    ? (column.props.fields as unknown[]).filter(isRecord).map((field) => cloneRecord(field) as LowCodeField)
-    : [];
+  const schema = isRecord(column?.props?.schema)
+    ? (column.props.schema as Record<string, unknown>)
+    : undefined;
+  const configuredFields = Array.isArray(schema?.fields)
+    ? (schema.fields as unknown[]).filter(isRecord).map((field) => cloneRecord(field) as LowCodeField)
+    : Array.isArray(column?.props?.fields)
+      ? (column.props.fields as unknown[]).filter(isRecord).map((field) => cloneRecord(field) as LowCodeField)
+      : [];
 
   return configuredFields.length ? configuredFields : inferObjectEditorFields(value);
+}
+
+function resolveObjectEditorSchema(
+  column: ArrayTableColumn | null,
+  value: Record<string, unknown>,
+): LowCodeFormSchema {
+  const schema = readLowCodeFormSchema(column?.props?.schema);
+
+  if (schema) {
+    return {
+      ...schema,
+      fields: schema.fields.length ? schema.fields : resolveObjectEditorFields(column, value),
+      actions: Array.isArray(schema.actions) ? schema.actions : [],
+    };
+  }
+
+  return {
+    fields: resolveObjectEditorFields(column, value),
+    actions: [],
+  };
+}
+
+function readLowCodeFormSchema(value: unknown): LowCodeFormSchema | undefined {
+  if (!isRecord(value) || !Array.isArray(value.fields)) return undefined;
+
+  return {
+    ...(cloneRecord(value) as LowCodeFormSchema),
+    fields: (value.fields as unknown[]).filter(isRecord).map((field) => cloneRecord(field) as LowCodeField),
+    actions: Array.isArray(value.actions)
+      ? (cloneValue(value.actions) as LowCodeFormSchema['actions'])
+      : [],
+  };
 }
 
 function inferObjectEditorFields(value: Record<string, unknown>): LowCodeField[] {
@@ -541,7 +580,10 @@ function inferObjectEditorFields(value: Record<string, unknown>): LowCodeField[]
         label: field,
         component: 'lc-sub-form',
         props: {
-          fields: inferObjectEditorFields(currentValue),
+          schema: {
+            fields: inferObjectEditorFields(currentValue),
+            actions: [],
+          },
         },
       };
     }

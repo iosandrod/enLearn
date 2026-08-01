@@ -109,8 +109,11 @@ export function subFormPropField({
     valueKind: 'raw',
     defaultValue: {},
     props: {
-      fields,
-      ...(layout?.length ? { layout } : {}),
+      schema: {
+        fields,
+        ...(layout?.length ? { layout } : {}),
+        actions: [],
+      },
       ...(props ?? {}),
     },
     ...field,

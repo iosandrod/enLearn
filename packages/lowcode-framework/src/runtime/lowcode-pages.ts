@@ -1,0 +1,50 @@
+import type { LowCodeHostServiceApi } from '../core/host';
+import type { LowCodePageRecord } from '../types/lowcode';
+
+export type LowCodePageLookup = {
+  code?: string;
+  route?: string;
+  includeData?: boolean;
+};
+
+function readString(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value.trim() : '';
+}
+
+export async function listLowCodePages(
+  serviceApi: Pick<LowCodeHostServiceApi, 'invoke'>,
+  postData: Record<string, unknown> = {},
+) {
+  const rows = await serviceApi.invoke<LowCodePageRecord[]>('admin', 'listItems', {
+    entityCode: 'lowcode_pages',
+    ...postData,
+  });
+
+  return Array.isArray(rows) ? rows : [];
+}
+
+export async function getLowCodePage(
+  serviceApi: Pick<LowCodeHostServiceApi, 'invoke'>,
+  lookup: LowCodePageLookup,
+) {
+  const code = readString(lookup.code);
+  const route = readString(lookup.route);
+
+  if (!code && !route) {
+    throw new Error('code or route is required.');
+  }
+
+  const rows = await listLowCodePages(serviceApi, {
+    ...(code ? { code } : {}),
+    ...(route ? { route } : {}),
+    includeData: lookup.includeData !== false,
+    limit: 1,
+  });
+  const page = rows[0];
+
+  if (!page) {
+    throw new Error('Low-code page not found.');
+  }
+
+  return page;
+}

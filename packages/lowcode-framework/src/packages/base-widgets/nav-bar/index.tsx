@@ -7,7 +7,7 @@
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\nav-bar\index.tsx
  */
 import { onBeforeUnmount, onMounted } from 'vue';
-import { NavBar } from '../../../components/VantFree';
+import { NavBar } from '../../../components/LegacyWidgets';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import { createEditorInputProp, createEditorSwitchProp } from '../../../visual-editor/visual-editor.props';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
@@ -15,7 +15,7 @@ import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 export default {
   key: 'nav-bar',
   moduleName: 'baseWidgets',
-  label: '瀵艰埅鏍?,
+  label: 'Nav bar',
   preview: () => (
     <NavBar title="鏍囬" left-text="杩斿洖" right-text="鎸夐挳" left-arrow style={{ width: '100%' }} />
   ),
@@ -66,14 +66,14 @@ export default {
     //   tips: '鍥哄畾鍦ㄩ《閮ㄦ椂锛屾槸鍚﹀湪鏍囩浣嶇疆鐢熸垚涓€涓瓑楂樼殑鍗犱綅鍏冪礌'
     // }),
     zIndex: createEditorInputProp({ label: 'z-index' }),
-    border: createEditorSwitchProp({ label: '鏄惁鏄剧ず涓嬭竟妗?, defaultValue: false }),
+    border: createEditorSwitchProp({ label: 'Show border', defaultValue: false }),
     leftText: createEditorInputProp({ label: '宸︿晶鏂囨', defaultValue: '杩斿洖' }),
     rightText: createEditorInputProp({ label: '鍙充晶鏂囨', defaultValue: '鎸夐挳' }),
     leftArrow: createEditorSwitchProp({ label: '鏄惁鏄剧ず宸︿晶绠ご', defaultValue: true }),
   },
   events: [
-    { label: '鐐瑰嚮宸︿晶鎸夐挳鏃惰Е鍙?, value: 'click-left' },
-    { label: '鐐瑰嚮鍙充晶鎸夐挳鏃惰Е鍙?, value: 'click-right' },
+    { label: 'Click left', value: 'click-left' },
+    { label: 'Click right', value: 'click-right' },
   ],
   showStyleConfig: false,
   draggable: false,

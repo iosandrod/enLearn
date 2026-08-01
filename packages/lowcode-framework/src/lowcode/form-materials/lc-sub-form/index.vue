@@ -1,8 +1,7 @@
 <template>
   <section class="lc-sub-form">
     <LowCodeForm
-      :schema="subSchema"
-      :model-value="objectValue"
+      v-bind="lowCodeFormProps"
       @update:model-value="handleUpdate"
     />
   </section>
@@ -10,7 +9,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
-import type { LowCodeField, LowCodeFormLayoutNode } from '../../../types/lowcode';
+import type { LowCodeFormProps } from '../../../types/lowcode';
 import type { LowCodeFormMaterialProps } from '../types';
 
 const LowCodeForm = defineAsyncComponent(() => import('../../../components/LowCodeForm.vue'));
@@ -24,105 +23,21 @@ const fieldProps = computed(() =>
   isRecord(props.field.props) ? props.field.props : {}
 );
 
-const subFields = computed(() =>
-  Array.isArray(fieldProps.value.fields)
-    ? (fieldProps.value.fields as LowCodeField[]).filter(isRecord)
-    : []
+const objectValue = computed(() =>
+  isRecord(props.modelValue) ? props.modelValue : {}
 );
 
-const subLayout = computed(() =>
-  Array.isArray(fieldProps.value.layout)
-    ? (fieldProps.value.layout as LowCodeFormLayoutNode[])
-    : undefined
-);
-
-const subSchema = computed(() => ({
-  fields: subFields.value,
-  ...(subLayout.value?.length ? { layout: subLayout.value } : {}),
-  actions: [],
+const lowCodeFormProps = computed<LowCodeFormProps>(() => ({
+  ...(fieldProps.value as Partial<LowCodeFormProps>),
+  modelValue: objectValue.value,
 }));
 
-const objectValue = computed(() =>
-  createFlatObject(
-    isRecord(props.modelValue) ? props.modelValue : {},
-    createDefaultObject(),
-  )
-);
-
 function handleUpdate(value: Record<string, unknown>) {
-  const nextValue = isRecord(props.modelValue) ? cloneRecord(props.modelValue) : {};
-
-  subFields.value.forEach((field) => {
-    setPathValue(nextValue, field.field, value[field.field]);
-  });
-
-  emit('update:modelValue', nextValue);
-}
-
-function createDefaultObject() {
-  return subFields.value.reduce<Record<string, unknown>>((model, field) => {
-    if (Object.prototype.hasOwnProperty.call(field, 'defaultValue')) {
-      setPathValue(model, field.field, cloneValue((field as { defaultValue?: unknown }).defaultValue));
-    }
-
-    return model;
-  }, {});
-}
-
-function createFlatObject(
-  value: Record<string, unknown>,
-  defaultValue: Record<string, unknown>,
-) {
-  return subFields.value.reduce<Record<string, unknown>>((model, field) => {
-    const currentValue = readPathValue(value, field.field);
-    model[field.field] =
-      typeof currentValue === 'undefined'
-        ? readPathValue(defaultValue, field.field)
-        : currentValue;
-    return model;
-  }, {});
-}
-
-function readPathValue(value: Record<string, unknown>, path: string) {
-  if (!path.includes('.')) return value[path];
-
-  return path.split('.').reduce<unknown>((result, key) => {
-    return isRecord(result) ? result[key] : undefined;
-  }, value);
-}
-
-function setPathValue(target: Record<string, unknown>, path: string, value: unknown) {
-  const keys = path.split('.').filter(Boolean);
-  if (!keys.length) return;
-
-  const lastKey = keys.pop()!;
-  const parent = keys.reduce<Record<string, unknown>>((result, key) => {
-    if (!isRecord(result[key])) {
-      result[key] = {};
-    }
-
-    return result[key] as Record<string, unknown>;
-  }, target);
-
-  parent[lastKey] = value;
-}
-
-function cloneRecord(value: Record<string, unknown>) {
-  return cloneValue(value) as Record<string, unknown>;
+  emit('update:modelValue', isRecord(value) ? value : {});
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function cloneValue(value: unknown) {
-  if (!isRecord(value) && !Array.isArray(value)) return value;
-
-  try {
-    return JSON.parse(JSON.stringify(value));
-  } catch {
-    return value;
-  }
 }
 </script>
 

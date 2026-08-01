@@ -86,6 +86,7 @@
   import { generateNanoid } from '../../utils';
   import {
     $$formDesigner,
+    createLowCodeFormSchemaFromDesignerResult,
     type FormDesignerResult,
   } from '../form-designer/form-designer.service';
   import {
@@ -495,7 +496,9 @@
     result: FormDesignerResult,
   ) => {
     block.props.__lowcodeComponent = 'lc-sub-form';
-    block.props.fields = cloneDeep(result.fields);
+    block.props.schema = createLowCodeFormSchemaFromDesignerResult(result);
+    delete block.props.fields;
+    delete block.props.layout;
     block.props.subFormDesignerModel = cloneDeep(result.designerModel);
     block.props.subFormDesignerUpdatedAt = Date.now();
     selectComp(block);
@@ -568,10 +571,12 @@
 
   const openSubFormDesigner = async (block: VisualEditorBlockData) => {
     selectComp(block);
+    const schema = isRecord(block.props?.schema) ? block.props.schema : null;
+    const schemaFields = Array.isArray(schema?.fields) ? schema.fields : block.props?.fields;
     const result = await $$formDesigner({
       title: `${block.props?.label || block.label || '子表单'}设计`,
       mode: 'edit',
-      fields: Array.isArray(block.props?.fields) ? block.props.fields : [],
+      fields: Array.isArray(schemaFields) ? schemaFields : [],
       designerModel: block.props?.subFormDesignerModel || null,
     });
 

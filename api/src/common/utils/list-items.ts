@@ -33,6 +33,14 @@ export type ListItemsEntity = {
   querySql: string;
 };
 
+type ListItemsEntityRow = {
+  code: string;
+  table_name: string;
+  primary_key: string | null;
+  schema: unknown;
+  query_sql?: string | null;
+};
+
 type TableRef = {
   schema: string;
   name: string;
@@ -141,6 +149,77 @@ function assertReadOnlySql(sql: string) {
 }
 
 function sourceSqlForEntity(entity: ListItemsEntity) {
+  if (entity.code === 'users') {
+    return `
+      with role_summary as (
+        select
+          user_roles.user_id,
+          array_agg(distinct roles.code order by roles.code) as role_codes,
+          string_agg(distinct roles.name, ', ' order by roles.name) as role_names
+        from public.admin_user_roles user_roles
+        join public.admin_roles roles on roles.id = user_roles.role_id
+        where roles.status = 'active'
+        group by user_roles.user_id
+      ),
+      permission_summary as (
+        select
+          user_roles.user_id,
+          array_agg(distinct permissions.code order by permissions.code) as permission_codes,
+          string_agg(distinct permissions.name, ', ' order by permissions.name) as permission_names,
+          count(distinct permissions.id)::integer as permission_count
+        from public.admin_user_roles user_roles
+        join public.admin_roles roles on roles.id = user_roles.role_id
+        join public.admin_role_permissions role_permissions on role_permissions.role_id = roles.id
+        join public.admin_permissions permissions on permissions.id = role_permissions.permission_id
+        where roles.status = 'active'
+          and permissions.status = 'active'
+        group by user_roles.user_id
+      ),
+      account_summary as (
+        select
+          memberships.user_id,
+          array_agg(accounts.id order by accounts.personal_account desc, accounts.created_at asc) as account_ids,
+          string_agg(
+            coalesce(accounts.name, accounts.slug, accounts.id::text),
+            ', '
+            order by accounts.personal_account desc, accounts.created_at asc
+          ) as account_names,
+          array_agg(distinct memberships.account_role::text order by memberships.account_role::text) as account_roles,
+          count(*)::integer as account_count,
+          (array_agg(accounts.id order by accounts.created_at asc) filter (where accounts.personal_account))[1] as personal_account_id,
+          (array_agg(accounts.name order by accounts.created_at asc) filter (where accounts.personal_account))[1] as personal_account_name,
+          bool_or(accounts.primary_owner_user_id = memberships.user_id) as is_primary_account_owner
+        from basejump.account_user memberships
+        join basejump.accounts accounts on accounts.id = memberships.account_id
+        group by memberships.user_id
+      )
+      select
+        users.*,
+        users.id as user_id,
+        auth_users.email::text,
+        users.role as legacy_profile_role,
+        coalesce(role_summary.role_codes, '{}'::text[]) as app_role_codes,
+        coalesce(role_summary.role_names, '') as app_role_names,
+        coalesce(role_summary.role_codes, '{}'::text[]) as role_codes,
+        coalesce(role_summary.role_names, '') as role_names,
+        coalesce(permission_summary.permission_codes, '{}'::text[]) as permission_codes,
+        coalesce(permission_summary.permission_names, '') as permission_names,
+        coalesce(permission_summary.permission_count, 0) as permission_count,
+        coalesce(account_summary.account_ids, '{}'::uuid[]) as account_ids,
+        coalesce(account_summary.account_names, '') as account_names,
+        coalesce(account_summary.account_roles, '{}'::text[]) as account_roles,
+        coalesce(account_summary.account_count, 0) as account_count,
+        account_summary.personal_account_id,
+        account_summary.personal_account_name,
+        coalesce(account_summary.is_primary_account_owner, false) as is_primary_account_owner
+      from public.users users
+      left join auth.users auth_users on auth_users.id = users.id
+      left join role_summary on role_summary.user_id = users.id
+      left join permission_summary on permission_summary.user_id = users.id
+      left join account_summary on account_summary.user_id = users.id
+    `;
+  }
+
   if (entity.querySql) {
     assertReadOnlySql(entity.querySql);
     return entity.querySql.trim();
@@ -246,16 +325,19 @@ export async function resolveListItemsEntity(
 
   const normalizedTableName = tableName ? normalizeRegisteredTableName(tableName) : '';
   const tableAlias = tableName && !tableName.includes('.') ? `public.${tableName}` : tableName;
-  const { rows } = await client.query<{
-    code: string;
-    table_name: string;
-    primary_key: string | null;
-    schema: unknown;
-    query_sql: string | null;
-  }>(
+  const hasQuerySqlColumn = await hasAdminEntitiesQuerySqlColumn(client);
+  const selectQuerySql = hasQuerySqlColumn
+    ? 'entities.query_sql'
+    : `null::text`;
+  const { rows } = await client.query<ListItemsEntityRow>(
     `
-      select code, table_name, primary_key, schema, query_sql
-      from public.admin_entities
+      select
+        entities.code,
+        entities.table_name,
+        entities.primary_key,
+        entities.schema,
+        ${selectQuerySql} as query_sql
+      from public.admin_entities entities
       where status = 'active'
         and (
           ($1 <> '' and code = $1)
@@ -282,6 +364,22 @@ export async function resolveListItemsEntity(
     schema: readEntitySchema(entity.schema),
     querySql: entity.query_sql?.trim() ?? ''
   };
+}
+
+async function hasAdminEntitiesQuerySqlColumn(client: PoolClient) {
+  const { rows } = await client.query<{ exists: boolean }>(
+    `
+      select exists (
+        select 1
+        from information_schema.columns
+        where table_schema = 'public'
+          and table_name = 'admin_entities'
+          and column_name = 'query_sql'
+      ) as exists
+    `
+  );
+
+  return rows[0]?.exists === true;
 }
 
 export function readEntityReadPermissions(entity: ListItemsEntity, extraCodes: string[] = []) {

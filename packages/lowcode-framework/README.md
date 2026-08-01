@@ -24,7 +24,7 @@ pnpm add @enlearn/lowcode-framework
 运行时依赖由宿主项目提供，建议在业务项目中安装：
 
 ```bash
-pnpm add vue vue-router vxe-pc-ui vxe-table remixicon vant vuedraggable nanoid lodash-es dayjs monaco-editor @vueuse/core @vueuse/integrations
+pnpm add vue vue-router vxe-pc-ui vxe-table remixicon vuedraggable nanoid lodash-es dayjs monaco-editor @vueuse/core @vueuse/integrations
 pnpm add -D @vitejs/plugin-vue-jsx sass vue-tsc typescript
 ```
 

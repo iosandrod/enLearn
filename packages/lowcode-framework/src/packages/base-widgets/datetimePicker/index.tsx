@@ -1,5 +1,5 @@
 ﻿import { useAttrs, reactive } from 'vue';
-import { Field, Popup, DatetimePicker } from '../../../components/VantFree';
+import { Field, Popup, DatetimePicker } from '../../../components/LegacyWidgets';
 import dayjs from 'dayjs';
 import { createFieldProps } from './createFieldProps';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
@@ -24,8 +24,8 @@ const dateType = {
 export default {
   key: 'datetimePicker',
   moduleName: 'baseWidgets',
-  label: '琛ㄥ崟椤圭被鍨?- 鏃堕棿閫夋嫨鍣?,
-  preview: () => <Field name="datetimePicker" label="鏃堕棿閫夋嫨鍣? placeholder={'鐐瑰嚮閫夋嫨'}></Field>,
+  label: 'Datetime picker',
+  preview: () => <Field name="datetimePicker" label="Datetime" placeholder={'Select datetime'}></Field>,
   render: ({ styles, block, props }) => {
     const { registerRef } = useGlobalProperties();
 
@@ -79,10 +79,10 @@ export default {
     );
   },
   props: {
-    modelValue: createEditorInputProp({ label: '榛樿鍊? }),
+    modelValue: createEditorInputProp({ label: 'Default value' }),
     name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
-    label: createEditorInputProp({ label: '杈撳叆妗嗗乏渚ф枃鏈?, defaultValue: '鏃堕棿閫夋嫨鍣? }),
-    title: createEditorInputProp({ label: '椤堕儴鏍忔爣棰?, defaultValue: '閫夋嫨鏃堕棿' }),
+    label: createEditorInputProp({ label: 'Label', defaultValue: 'Datetime picker' }),
+    title: createEditorInputProp({ label: 'Title', defaultValue: 'Select datetime' }),
     type: createEditorSelectProp({
       label: '鏃堕棿绫诲瀷',
       options: [
@@ -110,7 +110,7 @@ export default {
       defaultValue: 'datetime',
     }),
     format: createEditorInputProp({
-      label: '鑷畾涔夋棩鏈熸牸寮忓寲鍊?,
+      label: 'Custom date format',
       tips: 'YYYY-MM-DD HH:mm:ss',
       defaultValue: '',
     }),
@@ -121,20 +121,20 @@ export default {
     }),
     confirmButtonText: createEditorInputProp({ label: '纭鎸夐挳鏂囧瓧' }),
     filter: createEditorInputProp({ label: '閫夐」杩囨护鍑芥暟' }),
-    formatter: createEditorInputProp({ label: '閫夐」鏍煎紡鍖栧嚱鏁? }),
+    formatter: createEditorInputProp({ label: 'Formatter' }),
     itemHeight: createEditorInputProp({
       label: '閫夐」楂樺害',
       tips: '鏀寔 px vw vh rem 鍗曚綅锛岄粯璁?px',
     }),
-    loading: createEditorSwitchProp({ label: '鏄惁鏄剧ず鍔犺浇鐘舵€? }),
-    showToolbar: createEditorSwitchProp({ label: '鏄惁鏄剧ず椤堕儴鏍? }),
+    loading: createEditorSwitchProp({ label: 'Loading' }),
+    showToolbar: createEditorSwitchProp({ label: 'Show toolbar' }),
     swipeDuration: createEditorInputProp({ label: '蹇€熸粦鍔ㄦ椂鎯€ф粴鍔ㄧ殑鏃堕暱锛屽崟浣峬s' }),
     visibleItemCount: createEditorInputNumberProp({ label: '鍙鐨勯€夐」涓暟', defaultValue: 6 }),
-    placeholder: createEditorInputProp({ label: '鍗犱綅绗?, defaultValue: '璇烽€夋嫨' }),
+    placeholder: createEditorInputProp({ label: 'Placeholder', defaultValue: 'Select' }),
     ...createFieldProps(),
   },
   events: [
-    { label: '褰撳€煎彉鍖栨椂瑙﹀彂鐨勪簨浠?, value: 'change' },
+    { label: 'Change', value: 'change' },
     { label: '鐐瑰嚮瀹屾垚鎸夐挳鏃惰Е鍙戠殑浜嬩欢', value: 'confirm' },
     { label: '鐐瑰嚮鍙栨秷鎸夐挳鏃惰Е鍙戠殑浜嬩欢', value: 'cancel' },
   ],

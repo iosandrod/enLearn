@@ -85,6 +85,20 @@ function normalizeBlockKind(kind: string) {
   return kind === 'search-form' ? 'searchForm' : kind;
 }
 
+function readDataSourceEntityCode(source: Record<string, unknown>) {
+  const postData = isRecord(source.postData) ? source.postData : {};
+  return readString(source.entityCode ?? source.entity_code ?? postData.entityCode ?? postData.entity_code);
+}
+
+function readDataSourceTableName(source: Record<string, unknown>) {
+  const postData = isRecord(source.postData) ? source.postData : {};
+  return readString(source.tableName ?? source.table_name ?? postData.tableName ?? postData.table_name);
+}
+
+function hasDataSourceTableTarget(source: Pick<LowCodePageDataSource, 'entityCode' | 'entity_code' | 'tableName' | 'table_name'>) {
+  return Boolean(source.entityCode || source.entity_code || source.tableName || source.table_name);
+}
+
 function normalizeDataSource(
   key: string,
   value: unknown
@@ -92,16 +106,21 @@ function normalizeDataSource(
   const source = isRecord(value) ? value : {};
   const sourceKey = readString(source.key, key);
   const label = readString(source.label);
+  const entityCode = readDataSourceEntityCode(source);
+  const tableName = readDataSourceTableName(source);
+  const hasTableTarget = Boolean(entityCode || tableName);
   const saveMethod = readString(source.saveMethod);
   const deleteMethod = readString(source.deleteMethod);
 
   return {
     key: sourceKey,
     ...(label ? { label } : {}),
-    serviceName: readString(source.serviceName),
-    serviceMethod: readString(source.serviceMethod),
+    serviceName: readString(source.serviceName, hasTableTarget ? 'admin' : ''),
+    serviceMethod: readString(source.serviceMethod, hasTableTarget ? 'listItems' : ''),
     ...(saveMethod ? { saveMethod } : {}),
     ...(deleteMethod ? { deleteMethod } : {}),
+    ...(entityCode ? { entityCode } : {}),
+    ...(tableName ? { tableName } : {}),
     ...(isRecord(source.postData) ? { postData: source.postData } : {}),
     autoLoad: source.autoLoad !== false,
   };
@@ -309,16 +328,17 @@ function pushIssue(
 function validateDataSources(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
   Object.entries(schema.dataSources ?? {}).forEach(([key, source]) => {
     const path = `dataSources.${key}`;
+    const hasTableTarget = hasDataSourceTableTarget(source);
 
     if (!source.key) {
       pushIssue(issues, 'error', `${path}.key`, 'Data source key is required.');
     }
 
-    if (!source.serviceName) {
+    if (!source.serviceName && !hasTableTarget) {
       pushIssue(issues, 'error', `${path}.serviceName`, 'Service name is required.');
     }
 
-    if (!source.serviceMethod) {
+    if (!source.serviceMethod && !hasTableTarget) {
       pushIssue(issues, 'error', `${path}.serviceMethod`, 'Service method is required.');
     }
   });

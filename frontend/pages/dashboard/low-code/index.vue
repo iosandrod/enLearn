@@ -107,6 +107,7 @@ import {
 } from '~/schemas/lowcode';
 import { prepareLowCodePageSchema } from '@enlearn/lowcode-framework/lowcode/schema';
 import type { LowCodePageOpenType, LowCodePageRecord, LowCodePageType } from '@enlearn/lowcode-framework/types/lowcode';
+import { listLowCodePages } from '../../../utils/lowCodePages';
 
 type LowCodePageForm = {
   code: string;
@@ -233,10 +234,7 @@ function normalizeFormFromPage(page: LowCodePageRecord | null): LowCodePageForm 
 async function loadPages() {
   loadingPages.value = true;
   try {
-    pages.value = await serviceApi.invoke<LowCodePageRecord[]>(
-      'lowcode',
-      'listPages'
-    );
+    pages.value = await listLowCodePages(serviceApi, { includeData: false });
 
     if (!selectedCode.value && pages.value.length) {
       await selectPage(pages.value[0]);

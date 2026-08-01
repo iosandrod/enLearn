@@ -171,6 +171,8 @@ const converter: VisualToLowCodeConverter = {
     const saveMethod = readString(props.saveMethod);
     const deleteMethod = readString(props.deleteMethod);
     const postData = readJsonObject(props.postDataJson, {});
+    const entityCode = readString(props.entityCode, readString(postData.entityCode ?? postData.entity_code));
+    const tableName = readString(props.tableName, readString(postData.tableName ?? postData.table_name));
     const columns = normalizeRows(gridProps.columns).map(normalizeColumn).filter(isDefined);
     const showRowActions = readBoolean(props.showRowActions, true);
     const rowActions = normalizeGridRowActions(props.rowActions);
@@ -190,6 +192,8 @@ const converter: VisualToLowCodeConverter = {
       serviceMethod,
       ...(saveMethod ? { saveMethod } : {}),
       ...(deleteMethod ? { deleteMethod } : {}),
+      ...(entityCode ? { entityCode } : {}),
+      ...(tableName ? { tableName } : {}),
       ...(Object.keys(postData).length ? { postData } : {}),
       autoLoad: true,
     };

@@ -235,6 +235,39 @@ export type LowCodeFormSchema = {
   actions: LowCodeAction[];
 };
 
+export type LowCodeFormModel = Record<string, unknown>;
+
+export type LowCodeFormProps = {
+  schema: LowCodeFormSchema;
+  modelValue: LowCodeFormModel;
+  optionSources?: Record<string, unknown>;
+  loading?: boolean;
+  size?: string;
+  collapseStatus?: boolean;
+  span?: number | string;
+  align?: 'left' | 'center' | 'right';
+  verticalAlign?: 'top' | 'middle' | 'bottom';
+  border?: boolean;
+  titleBackground?: boolean;
+  titleBold?: boolean;
+  titleAlign?: 'left' | 'center' | 'right';
+  titleWidth?: number | string;
+  titleColon?: boolean;
+  titleAsterisk?: boolean;
+  titleOverflow?: boolean | 'ellipsis' | 'title' | 'tooltip';
+  vertical?: boolean;
+  padding?: boolean;
+  className?: string;
+  readonly?: boolean;
+  disabled?: boolean;
+  rules?: Record<string, unknown>;
+  preventSubmit?: boolean;
+  validConfig?: Record<string, unknown>;
+  tooltipConfig?: Record<string, unknown>;
+  collapseConfig?: Record<string, unknown>;
+  params?: Record<string, unknown>;
+};
+
 export type LowCodeGridAction = {
   code: string;
   label: string;
@@ -272,10 +305,14 @@ export type LowCodeGridSchema = {
 export type LowCodePageDataSource = {
   key: string;
   label?: string;
-  serviceName: string;
-  serviceMethod: string;
+  serviceName?: string;
+  serviceMethod?: string;
   saveMethod?: string;
   deleteMethod?: string;
+  entityCode?: string;
+  entity_code?: string;
+  tableName?: string;
+  table_name?: string;
   postData?: Record<string, unknown>;
   autoLoad?: boolean;
 };

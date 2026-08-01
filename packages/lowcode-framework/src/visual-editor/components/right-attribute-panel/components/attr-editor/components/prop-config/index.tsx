@@ -50,6 +50,39 @@ export const PropConfig = defineComponent({
       const { propObj, prop } = useDotProp(props.block.props, propName);
 
       propObj[prop] ??= propConfig.defaultValue;
+      const renderJsonInput = () => {
+        const jsonText = computed({
+          get: () => {
+            if (typeof propObj[prop] === 'string') return propObj[prop];
+            try {
+              return JSON.stringify(propObj[prop] ?? {}, null, 2);
+            } catch {
+              return '{}';
+            }
+          },
+          set: (value: string) => {
+            try {
+              propObj[prop] = value.trim() ? JSON.parse(value) : {};
+            } catch {
+              propObj[prop] = value;
+            }
+          },
+        });
+
+        return (
+          <ElInput
+            modelValue={jsonText.value}
+            type="textarea"
+            rows={8}
+            placeholder={propConfig.tips || propConfig.label}
+            {...{
+              'onUpdate:modelValue': (value: string) => {
+                jsonText.value = value;
+              },
+            }}
+          />
+        );
+      };
 
       return {
         [VisualEditorPropsType.input]: () => {
@@ -103,6 +136,7 @@ export const PropConfig = defineComponent({
             <ElInput v-model={propObj[prop]} placeholder={propConfig.tips || propConfig.label} />
           )
         ),
+        [VisualEditorPropsType.json]: renderJsonInput,
       }[propConfig.type]();
     };
 

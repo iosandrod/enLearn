@@ -11,6 +11,7 @@ import {
   getBuiltinLowCodePageByCode,
   getBuiltinLowCodePageByRoute,
 } from '../lowcode/builtin-pages';
+import { getLowCodePage } from './lowcode-pages';
 import type {
   LowCodePageRecord,
   LowCodeRuntimeEvent,
@@ -127,9 +128,9 @@ async function resolveReferencePage(config: LowCodePageReferenceDialogConfig) {
   }
 
   try {
-    return await serviceApi.invoke<LowCodePageRecord>('lowcode', 'getPage', {
-      ...(code ? { code } : {}),
-      ...(route ? { route } : {}),
+    return await getLowCodePage(serviceApi, {
+      code,
+      route,
       includeData: config.includeData !== false,
     });
   } catch (error) {

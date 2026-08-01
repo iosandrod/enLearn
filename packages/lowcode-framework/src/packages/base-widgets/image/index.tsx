@@ -6,7 +6,7 @@
  * @Description: 鍥剧墖缁勪欢
  * @FilePath: \vite-vue3-lowcode\src\packages\base-widgets\image\index.tsx
  */
-import { Image } from '../../../components/VantFree';
+import { Image } from '../../../components/LegacyWidgets';
 import { Picture } from '../../../visual-editor/components/common/remix-icons';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
@@ -45,11 +45,11 @@ export default {
   props: {
     src: createEditorInputProp({
       label: '鍥剧墖閾炬帴',
-      defaultValue: 'https://img.yzcdn.cn/vant/cat.jpeg',
+      defaultValue: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=600&q=80',
     }),
     width: createEditorInputProp({ label: '瀹藉害', defaultValue: 100 }),
     height: createEditorInputProp({ label: '楂樺害', defaultValue: 100 }),
-    errorIcon: createEditorInputProp({ label: '澶辫触鏃舵彁绀虹殑鍥炬爣鍚嶇О鎴栧浘鐗囬摼鎺? }),
+    errorIcon: createEditorInputProp({ label: 'Error icon' }),
     fit: createEditorSelectProp({
       label: '鍥剧墖濉厖妯″紡',
       options: [
@@ -58,7 +58,7 @@ export default {
           value: 'contain',
         },
         {
-          label: '淇濇寔瀹介珮缂╂斁鍥剧墖锛屼娇鍥剧墖鐨勭煭杈硅兘瀹屽叏鏄剧ず鍑烘潵锛岃鍓暱杈?,
+          label: 'Cover image and crop overflow',
           value: 'cover',
         },
         {
@@ -70,7 +70,7 @@ export default {
           value: 'none',
         },
         {
-          label: '鍙?none 鎴?contain 涓緝灏忕殑涓€涓?,
+          label: 'Scale down',
           value: 'scale-down',
         },
       ],
@@ -78,23 +78,23 @@ export default {
     }),
     iconPrefix: createEditorInputProp({
       label: '鍥炬爣绫诲悕鍓嶇紑',
-      tips: '鍥炬爣绫诲悕鍓嶇紑锛屽悓 Icon 缁勪欢鐨?class-prefix 灞炴€?,
+      tips: 'Icon class prefix',
     }),
     iconSize: createEditorInputProp({ label: '鍔犺浇鍥炬爣鍜屽け璐ュ浘鏍囩殑澶у皬' }),
-    lazyLoad: createEditorSwitchProp({
+    deferLoad: createEditorSwitchProp({
       label: '鏄惁寮€鍚浘鐗囨噿鍔犺浇',
-      tips: '椤婚厤鍚?Lazyload 缁勪欢浣跨敤',
+      tips: '启用图片懒加载',
     }),
-    loadingIcon: createEditorInputProp({ label: '鍔犺浇鏃舵彁绀虹殑鍥炬爣鍚嶇О鎴栧浘鐗囬摼鎺? }),
+    loadingIcon: createEditorInputProp({ label: 'Loading icon' }),
     radius: createEditorInputProp({ label: '鍦嗚澶у皬', tips: '榛樿鍗曚綅涓?px' }),
-    round: createEditorSwitchProp({ label: '鏄惁鏄剧ず涓哄渾褰? }),
+    round: createEditorSwitchProp({ label: 'Round' }),
     'show-error': createEditorSwitchProp({ label: '鏄惁灞曠ず鍥剧墖鍔犺浇澶辫触鎻愮ず' }),
-    'show-loading': createEditorSwitchProp({ label: '鏄惁灞曠ず鍥剧墖鍔犺浇涓彁绀? }),
+    'show-loading': createEditorSwitchProp({ label: 'Show loading' }),
     alt: createEditorInputProp({ label: '鏇夸唬鏂囨湰' }),
   },
   events: [
-    { label: '鐐瑰嚮鍥剧墖鏃惰Е鍙?, value: 'click' },
-    { label: '鍥剧墖鍔犺浇瀹屾瘯鏃惰Е鍙?, value: 'load' },
-    { label: '鍥剧墖鍔犺浇澶辫触鏃惰Е鍙?, value: 'error' },
+    { label: 'Click', value: 'click' },
+    { label: 'Load', value: 'load' },
+    { label: 'Error', value: 'error' },
   ],
 } as VisualEditorComponent;

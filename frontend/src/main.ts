@@ -1,12 +1,9 @@
 import { createApp, defineComponent } from 'vue';
 import VxeUI from 'vxe-pc-ui';
 import VxeUITable from 'vxe-table';
-import { Lazyload } from 'vant';
-import '@vant/touch-emulator';
 import 'normalize.css';
 import 'animate.css/animate.min.css';
 import 'remixicon/fonts/remixicon.css';
-import 'vant/lib/index.css';
 import 'vxe-pc-ui/lib/style.css';
 import 'vxe-table/lib/style.css';
 import '../assets/styles/app.css';
@@ -23,11 +20,11 @@ import {
   LowCodeOverlayHost,
   LowCodePageRenderer,
   LowCodeTreeItem,
-} from '@enlearn/lowcode-framework/runtime';
+} from '../../packages/lowcode-framework/src/runtime/index.ts';
 import {
   LowCodeVisualDesigner,
   VisualEditorProvider,
-} from '@enlearn/lowcode-framework/designer';
+} from '../../packages/lowcode-framework/src/designer/index.ts';
 import App from '../app.vue';
 import ChatPopup from '../components/ChatPopup.vue';
 import ContentRenderer from '../components/ContentRenderer.vue';
@@ -50,7 +47,6 @@ const ClientOnly = defineComponent({
 app.use(router);
 app.use(VxeUI);
 app.use(VxeUITable);
-app.use(Lazyload);
 
 app.component('ChatPopup', ChatPopup);
 app.component('ClientOnly', ClientOnly);
