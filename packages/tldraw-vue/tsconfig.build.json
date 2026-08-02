@@ -1,0 +1,37 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"declaration": true,
+		"declarationDir": "dist/types",
+		"declarationMap": true,
+		"emitDeclarationOnly": true,
+		"noEmit": false,
+		"rootDir": "."
+	},
+	"include": [
+		"src/**/*.ts",
+		"src/**/*.vue",
+		"packages/**/*.d.ts",
+		"packages/editor/src/**/*.ts",
+		"packages/editor/src/**/*.tsx",
+		"packages/state/src/**/*.ts",
+		"packages/state-react/src/**/*.ts",
+		"packages/state-react/src/**/*.tsx",
+		"packages/store/src/**/*.ts",
+		"packages/tlschema/src/**/*.ts",
+		"packages/utils/src/**/*.ts",
+		"packages/utils/src/**/*.tsx",
+		"packages/validate/src/**/*.ts"
+	],
+	"exclude": [
+		"src/App.vue",
+		"src/components/LowCodeFormPanel.vue",
+		"src/main.ts",
+		"**/*.bench.ts",
+		"**/*.test.ts",
+		"**/*.test.tsx",
+		"**/__tests__/**",
+		"packages/pro/**",
+		"packages/**/src/test/**"
+	]
+}

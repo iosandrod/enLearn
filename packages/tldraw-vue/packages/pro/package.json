@@ -1,0 +1,33 @@
+{
+  "name": "tldraw-vue-phase-one-pro",
+  "private": false,
+  "version": "0.1.1",
+  "description": "Pro feature plugin bundle for tldraw-vue-phase-one.",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  },
+  "peerDependencies": {
+    "tldraw-vue-phase-one": "^0.1.2",
+    "vue": "^3.5.17"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
