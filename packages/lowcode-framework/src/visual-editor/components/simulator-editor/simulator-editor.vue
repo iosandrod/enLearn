@@ -702,7 +702,7 @@
   };
 </script>
 <style lang="scss" scoped>
-  @import './func.scss';
+  @use './func' as *;
 
   .simulator-container {
     display: flex;

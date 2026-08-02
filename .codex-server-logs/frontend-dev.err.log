@@ -1044,3 +1044,11 @@ AggregateError [ECONNREFUSED]:
     at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785672948216:55:9)
     at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785672948216:215:19)
     at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785672948216:200:5)
+[2m21:05:46[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m21:05:48[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>

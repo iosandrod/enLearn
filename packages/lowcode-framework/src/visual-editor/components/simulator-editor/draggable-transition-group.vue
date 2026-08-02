@@ -81,7 +81,7 @@
 </script>
 
 <style lang="scss" scoped>
-  @import './func.scss';
+  @use './func' as *;
 
   .flip-list-move {
     transition: transform 0.5s;

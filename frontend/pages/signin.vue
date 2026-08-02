@@ -15,10 +15,10 @@
       />
 
       <div class="stack" style="margin-top: 18px">
-        <vxe-button status="primary" :loading="loading" @click="submitLoginForm">
+        <vxe-button type="button" status="primary" :loading="loading" @click="submitLoginForm">
           Sign in
         </vxe-button>
-        <vxe-button :loading="loading" @click="handleGithub">
+        <vxe-button type="button" :loading="loading" @click="handleGithub">
           Sign in with GitHub
         </vxe-button>
         <RouterLink class="muted" to="/signup">
@@ -37,14 +37,20 @@ import { signInSchema } from '~/schemas/auth';
 const auth = useAuth();
 const loading = ref(false);
 const message = ref('');
-const loginFormRef = ref<{ submit: () => void } | null>(null);
+const loginFormRef = ref<{
+  validate: () => Promise<boolean>;
+  snapshot: () => Record<string, unknown>;
+} | null>(null);
 const form = ref<Record<string, unknown>>({
   email: '',
   password: ''
 });
 
-function submitLoginForm() {
-  loginFormRef.value?.submit();
+async function submitLoginForm() {
+  const loginForm = loginFormRef.value;
+  if (!loginForm || loading.value) return;
+  if (!(await loginForm.validate())) return;
+  await handleSubmit(loginForm.snapshot());
 }
 
 async function handleSubmit(values: Record<string, unknown>) {

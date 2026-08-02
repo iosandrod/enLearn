@@ -6,6 +6,8 @@ import {
   createEditorSwitchProp,
   createEditorTableProp,
 } from '../../../visual-editor/visual-editor.props';
+import { normalizeLowCodeGridColumns } from '../../../utils/lowcode';
+import type { LowCodeGridColumn } from '../../../types/lowcode';
 
 const defaultColumns: Record<string, unknown>[] = [
   { field: 'email', title: '邮箱', minWidth: 220 },
@@ -126,7 +128,9 @@ function createDesignGridProps(
   fillRemaining: boolean
 ) {
   const options = pickVxeGridOptions(props);
-  const columns = normalizeRows(props.columns ?? options.columns, defaultColumns);
+  const columns = normalizeLowCodeGridColumns(
+    normalizeRows(props.columns ?? options.columns, defaultColumns) as LowCodeGridColumn[]
+  );
   const data = normalizeRows(props.data, createPreviewData(columns));
   const height = fillRemaining ? '100%' : options.height ?? styles.height ?? '360px';
 

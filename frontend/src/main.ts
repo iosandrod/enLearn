@@ -35,6 +35,37 @@ import SiteHeader from '../components/SiteHeader.vue';
 import { useAuth } from '../composables/useAuth';
 import { router } from './router';
 
+const DEV_SERVICE_WORKER_RELOAD_KEY = 'enlearn_dev_service_worker_reloaded';
+
+async function cleanupDevServiceWorkers() {
+  if (!import.meta.env.DEV || !('serviceWorker' in navigator)) return;
+
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    if (!registrations.length) return;
+
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+
+    if ('caches' in window) {
+      const cacheKeys = await window.caches.keys();
+      await Promise.all(cacheKeys.map((key) => window.caches.delete(key)));
+    }
+
+    if (
+      navigator.serviceWorker.controller &&
+      window.sessionStorage.getItem(DEV_SERVICE_WORKER_RELOAD_KEY) !== '1'
+    ) {
+      window.sessionStorage.setItem(DEV_SERVICE_WORKER_RELOAD_KEY, '1');
+      window.location.reload();
+      await new Promise<void>(() => {});
+    }
+  } catch (error) {
+    console.warn('Dev service worker cleanup failed.', error);
+  }
+}
+
+await cleanupDevServiceWorkers();
+
 const app = createApp(App);
 const refs: Record<string, unknown> = {};
 const ClientOnly = defineComponent({

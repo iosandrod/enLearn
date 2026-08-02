@@ -29,10 +29,13 @@ const ADMIN_LOGIN_EMAIL = '1151685410@qq.com';
 const DEV_TEST_USER_KEY = 'enlearn_dev_test_user';
 const ACCESS_TOKEN_KEY = 'enlearn_access_token';
 const REFRESH_TOKEN_KEY = 'enlearn_refresh_token';
+const DEV_AUTO_LOGIN_DISABLED_KEY = 'enlearn_dev_auto_login_disabled';
 
 let initPromise: Promise<void> | null = null;
 
 function shouldUseDevAutoLogin() {
+  if (!import.meta.env.DEV) return false;
+  if (!import.meta.server && window.sessionStorage.getItem(DEV_AUTO_LOGIN_DISABLED_KEY) === '1') return false;
   return import.meta.env.DEV;
 }
 
@@ -94,6 +97,16 @@ async function postAuthJson<TPayload>(path: string, body: Record<string, unknown
   }
 
   return payload as TPayload;
+}
+
+function enableDevAutoLogin() {
+  if (import.meta.server || !import.meta.env.DEV) return;
+  window.sessionStorage.removeItem(DEV_AUTO_LOGIN_DISABLED_KEY);
+}
+
+function disableDevAutoLogin() {
+  if (import.meta.server || !import.meta.env.DEV) return;
+  window.sessionStorage.setItem(DEV_AUTO_LOGIN_DISABLED_KEY, '1');
 }
 
 function isDevAutoLoginUser(email?: string | null) {
@@ -290,6 +303,7 @@ export function useAuth() {
     email: string;
     password: string;
   }) {
+    enableDevAutoLogin();
     const payload = await postAuthJson<AppAuthPayload>('/auth/signin', {
       ...credentials,
       email: normalizeLoginEmail(credentials.email)
@@ -365,6 +379,7 @@ export function useAuth() {
   }
 
   async function signOut() {
+    disableDevAutoLogin();
     await $fetch('/api/auth/signout', { method: 'POST' });
     window.localStorage.removeItem(DEV_TEST_USER_KEY);
     user.value = null;
