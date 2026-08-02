@@ -1,0 +1,45 @@
+/* The host vxe-table package already ships the cell-area overlay styles. */
+
+.vxe-table--extend-area-context-menu {
+  position: fixed;
+  min-width: 152px;
+  padding: 4px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+  color: #303133;
+  font-size: 13px;
+  line-height: 1.4;
+  z-index: 9999;
+}
+
+.vxe-table--extend-area-context-menu-item {
+  display: block;
+  width: 100%;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.vxe-table--extend-area-context-menu-item:hover,
+.vxe-table--extend-area-context-menu-item:focus {
+  background: #f2f6fc;
+  outline: none;
+}
+
+.vxe-table--extend-area-context-menu-item:disabled {
+  color: #c0c4cc;
+  cursor: not-allowed;
+}
+
+.vxe-table--extend-area-context-menu-item:disabled:hover,
+.vxe-table--extend-area-context-menu-item:disabled:focus {
+  background: transparent;
+}
