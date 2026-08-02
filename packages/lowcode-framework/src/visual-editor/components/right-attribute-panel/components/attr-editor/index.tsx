@@ -56,6 +56,7 @@ export const AttrEditor = defineComponent({
               schema={formState.value.schema}
               modelValue={formState.value.model}
               optionSources={formState.value.optionSources}
+              vertical={true}
               onFieldChange={handleFieldChange}
             />
           </div>

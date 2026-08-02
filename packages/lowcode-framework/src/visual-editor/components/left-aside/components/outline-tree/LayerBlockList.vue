@@ -35,46 +35,15 @@
             <small>{{ block.componentKey }}</small>
           </span>
 
-          <span v-if="!readonly" class="layer-row__actions" @click.stop>
-            <details class="layer-actions-menu">
-              <summary class="layer-actions-trigger" :aria-label="`${getBlockName(block)} 操作`">
-                <MoreFilled />
-              </summary>
-              <div class="layer-actions-popover">
-                <button
-                  class="layer-action-item"
-                  type="button"
-                  @click="runLayerAction($event, () => selectBlock(block))"
-                >
-                  <Aim />
-                  <span>选中</span>
-                </button>
-                <button
-                  class="layer-action-item"
-                  type="button"
-                  @click="runLayerAction($event, () => renameBlock(block))"
-                >
-                  <Edit />
-                  <span>重命名</span>
-                </button>
-                <button
-                  class="layer-action-item"
-                  type="button"
-                  @click="runLayerAction($event, () => copyBlock(block))"
-                >
-                  <CopyDocument />
-                  <span>复制</span>
-                </button>
-                <button
-                  class="layer-action-item is-danger"
-                  type="button"
-                  @click="runLayerAction($event, () => deleteBlock(block))"
-                >
-                  <Delete />
-                  <span>删除</span>
-                </button>
-              </div>
-            </details>
+          <span v-if="!readonly" class="layer-row__actions">
+            <button
+              class="layer-actions-trigger"
+              type="button"
+              :aria-label="`${getBlockName(block)} 操作`"
+              @click.stop="openLayerActionMenu($event, block)"
+            >
+              <MoreFilled />
+            </button>
           </span>
         </div>
 
@@ -140,13 +109,10 @@
   import { computed } from 'vue';
   import draggable from 'vuedraggable';
   import { cloneDeep } from 'lodash-es';
+  import { VxeUI } from 'vxe-pc-ui';
   import { ElMessage, ElMessageBox } from '../../../common/designer-ui';
   import {
-    Aim,
-    CopyDocument,
-    Delete,
     Document,
-    Edit,
     FolderOpened,
     MoreFilled,
     Rank,
@@ -407,16 +373,48 @@
     }
   }
 
-  function closeLayerActionMenu(event: Event) {
-    const details = (event.currentTarget as HTMLElement | null)?.closest('details');
-    if (details instanceof HTMLDetailsElement) {
-      details.open = false;
-    }
-  }
+  function openLayerActionMenu(event: MouseEvent, block: VisualEditorBlockData) {
+    event.preventDefault();
+    event.stopPropagation();
 
-  function runLayerAction(event: Event, action: () => void | Promise<void>) {
-    closeLayerActionMenu(event);
-    void action();
+    VxeUI.contextMenu.open({
+      x: event.clientX,
+      y: event.clientY,
+      className: 'enlearn-context-menu',
+      options: [
+        [
+          {
+            code: 'select',
+            name: '选中',
+            prefixIcon: 'ri-focus-3-line',
+          },
+          {
+            code: 'rename',
+            name: '重命名',
+            prefixIcon: 'ri-edit-line',
+          },
+          {
+            code: 'copy',
+            name: '复制',
+            prefixIcon: 'ri-file-copy-line',
+          },
+          {
+            code: 'delete',
+            name: '删除',
+            prefixIcon: 'ri-delete-bin-line',
+            className: 'enlearn-context-menu-option--danger',
+          },
+        ],
+      ],
+      events: {
+        optionClick({ option }) {
+          if (option.code === 'select') selectBlock(block);
+          if (option.code === 'rename') void renameBlock(block);
+          if (option.code === 'copy') copyBlock(block);
+          if (option.code === 'delete') deleteBlock(block);
+        },
+      },
+    });
   }
 
   function isDescendantList(block: VisualEditorBlockData, list: unknown) {
@@ -613,20 +611,8 @@
   }
 
   .layer-row--block.is-active .layer-row__actions,
-  .layer-row__actions:has(.layer-actions-menu[open]) {
+  .layer-row__actions:focus-within {
     opacity: 1;
-  }
-
-  .layer-actions-menu {
-    position: relative;
-  }
-
-  .layer-actions-menu summary {
-    list-style: none;
-  }
-
-  .layer-actions-menu summary::-webkit-details-marker {
-    display: none;
   }
 
   .layer-actions-trigger {
@@ -649,52 +635,6 @@
       border-color: #93c5fd;
       background: #eff6ff;
       color: #1d73d8;
-    }
-  }
-
-  .layer-actions-popover {
-    position: absolute;
-    top: 30px;
-    right: 0;
-    z-index: 20;
-    display: grid;
-    width: 118px;
-    padding: 6px;
-    border: 1px solid #d8e0ea;
-    border-radius: 8px;
-    background: #ffffff;
-    box-shadow: 0 14px 34px rgb(15 23 42 / 16%);
-    gap: 2px;
-  }
-
-  .layer-action-item {
-    display: flex;
-    width: 100%;
-    height: 30px;
-    padding: 0 8px;
-    border: 0;
-    border-radius: 6px;
-    background: transparent;
-    color: #334155;
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
-    align-items: center;
-    gap: 8px;
-    text-align: left;
-
-    &:hover {
-      background: #eff6ff;
-      color: #1d73d8;
-    }
-
-    &.is-danger {
-      color: #dc2626;
-
-      &:hover {
-        background: #fef2f2;
-        color: #b91c1c;
-      }
     }
   }
 

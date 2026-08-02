@@ -208,77 +208,6 @@ const pageInfoSchema: LowCodeFormSchema = {
   actions: [],
 };
 
-const pagePickerPage: LowCodePageRecord = {
-  id: 'lowcode-page-picker-page',
-  code: 'lowcode-page-picker-page',
-  route: '/__lowcode/page-picker',
-  title: '加载页面',
-  description: null,
-  layout: 'dashboard',
-  status: 'published',
-  keep_alive: false,
-  edit_page_id: null,
-  version: 1,
-  published_at: null,
-  created_at: '',
-  updated_at: '',
-  schema: {
-    schemaVersion: 1,
-    code: 'lowcode-page-picker-page',
-    route: '/__lowcode/page-picker',
-    title: '加载页面',
-    pageType: 'list',
-    layout: 'dashboard',
-    status: 'published',
-    keepAlive: false,
-    dataSources: {
-      pages: {
-        key: 'pages',
-        serviceName: 'lowcode',
-        serviceMethod: 'listItems',
-        autoLoad: true,
-        postData: {
-          tableName: 'lowcode_pages',
-          includeData: false,
-          sorts: [{ field: 'updated_at', direction: 'desc' }],
-          limit: 1000,
-        },
-      },
-    },
-    blocks: [
-      {
-        id: 'lowcode-page-picker-grid',
-        kind: 'grid',
-        sourceKey: 'pages',
-        schema: {
-          grid: {
-            border: true,
-            stripe: true,
-            showOverflow: true,
-            rowConfig: { keyField: 'id', isCurrent: true },
-            height: '100%',
-            columns: [
-              { field: 'code', title: '页面编码', minWidth: 180, fixed: 'left' },
-              { field: 'title', title: '标题', minWidth: 180 },
-              { field: 'route', title: '路由', minWidth: 260, showOverflow: 'tooltip' },
-              { field: 'status', title: '状态', width: 96, align: 'center' },
-              { field: 'version', title: '版本', width: 88, align: 'center' },
-              { field: 'updated_at', title: '更新时间', minWidth: 190 },
-            ],
-          },
-          events: {
-            rowCurrentChange: [],
-            cellClick: [],
-            rowDblclick: [],
-          },
-          rowActions: { edit: false, delete: false },
-        },
-        layout: { fillRemaining: true },
-      },
-    ],
-  },
-};
-
 const fallbackVisualModel = computed<VisualEditorModelValue>(() => ({
   pages: {
     '/': {
@@ -591,7 +520,8 @@ async function openPagePicker() {
 
   try {
     const result = await confirmLowCodePage({
-      page: pagePickerPage,
+      pageCode: 'lowcode-pages',
+      includeData: true,
       serviceApi: host.getServiceApi(),
       router: host.getRouter(),
       route: host.getRoute(),

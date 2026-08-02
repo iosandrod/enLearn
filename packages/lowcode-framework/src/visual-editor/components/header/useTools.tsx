@@ -6,6 +6,7 @@
  * @update: 2021/5/7 10:46
  */
 import { computed, reactive } from 'vue';
+import { VxeUI } from 'vxe-pc-ui';
 import { ElMessage, ElRadio, ElRadioGroup } from '../common/designer-ui';
 import { useQRCode } from '@vueuse/integrations/useQRCode';
 import { useClipboard } from '@vueuse/core';
@@ -25,15 +26,84 @@ import { useVisualData, localKey } from '../../hooks/useVisualData';
 import { useVisualEditorPersistence } from '../../hooks/useVisualPersistence';
 import { useModal } from '../../hooks/useModal';
 import MonacoEditor from '../common/monaco-editor/MonacoEditor';
-import type { VisualEditorBlockData } from '../../visual-editor.utils';
+import type {
+  VisualEditorBlockData,
+  VisualEditorModelValue,
+  VisualEditorPage,
+} from '../../visual-editor.utils';
+
+type ImportScope = 'current' | 'all';
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isVisualEditorPage(value: unknown): value is VisualEditorPage {
+  return (
+    isPlainRecord(value) &&
+    typeof value.title === 'string' &&
+    typeof value.path === 'string' &&
+    isPlainRecord(value.config) &&
+    Array.isArray(value.blocks)
+  );
+}
+
+function isVisualEditorProject(value: unknown): value is VisualEditorModelValue {
+  return (
+    isPlainRecord(value) &&
+    isPlainRecord(value.pages) &&
+    Object.keys(value.pages).length > 0 &&
+    Object.values(value.pages).every(isVisualEditorPage)
+  );
+}
+
+function parseImportJson(value: string): unknown {
+  if (!value.trim()) {
+    throw new Error('JSON 内容不能为空');
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : '无法解析 JSON';
+    throw new Error(`JSON 格式错误：${detail}`);
+  }
+}
+
+function resolveImportedPage(value: unknown, currentPath: string): VisualEditorPage {
+  if (isVisualEditorPage(value)) {
+    return value;
+  }
+
+  if (!isVisualEditorProject(value)) {
+    throw new Error('当前页面导入需要页面 JSON 或完整项目 JSON');
+  }
+
+  const matchedPage = value.pages[currentPath];
+  if (matchedPage) {
+    return matchedPage;
+  }
+
+  const pages = Object.values(value.pages);
+  if (pages.length === 1) {
+    return pages[0];
+  }
+
+  throw new Error(`导入项目中不存在当前页面 ${currentPath}`);
+}
+
+function cloneJson<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
 
 export const useTools = () => {
   const {
     jsonData,
-    updatePage,
     updatePageBlock,
+    currentPath,
     currentPage,
     overrideProject,
+    setCurrentPage,
     setCurrentBlock,
     canUndo,
     canRedo,
@@ -41,11 +111,16 @@ export const useTools = () => {
     redoHistory,
   } = useVisualData();
   const persistence = useVisualEditorPersistence();
-  const state = reactive({
+  const state = reactive<{
+    coverRadio: ImportScope;
+    importJsonValue: string;
+    importEditorVersion: number;
+  }>({
     coverRadio: 'current',
     importJsonValue: '',
+    importEditorVersion: 0,
   });
-  const importJsonChange = (value) => {
+  const importJsonChange = (value: string) => {
     state.importJsonValue = value;
   };
 
@@ -71,42 +146,69 @@ export const useTools = () => {
       title: '导入JSON',
       icon: Upload,
       onClick: () => {
-        useModal({
+        state.coverRadio = 'current';
+        state.importJsonValue = JSON.stringify(jsonData, null, 2);
+        state.importEditorVersion += 1;
+
+        void VxeUI.modal.open({
+          id: 'visual-editor-import-json',
           title: '导入JSON',
-          props: {
-            width: 642,
+          width: 642,
+          showFooter: true,
+          showCancelButton: true,
+          showConfirmButton: true,
+          confirmClosable: false,
+          destroyOnClose: true,
+          slots: {
+            default: () => (
+              <>
+                <ElRadioGroup v-model={state.coverRadio}>
+                  <ElRadio label="current">覆盖当前页面</ElRadio>
+                  <ElRadio label="all">覆盖整个项目</ElRadio>
+                </ElRadioGroup>
+                <MonacoEditor
+                  onChange={importJsonChange}
+                  code={state.importJsonValue}
+                  vid={state.importEditorVersion}
+                  layout={{ width: 600, height: 600 }}
+                />
+              </>
+            ),
           },
-          content: () => (
-            <>
-              <ElRadioGroup v-model={state.coverRadio}>
-                <ElRadio label="current">覆盖当前页面</ElRadio>
-                <ElRadio label="all">覆盖整个项目</ElRadio>
-              </ElRadioGroup>
-              <MonacoEditor
-                onChange={importJsonChange}
-                code={JSON.stringify(jsonData)}
-                layout={{ width: 600, height: 600 }}
-              />
-            </>
-          ),
-          onConfirm: () => {
-            const isCoverCurrent = state.coverRadio == 'current';
-            // 覆盖当前页面
-            if (isCoverCurrent) {
-              updatePage({
-                oldPath: currentPage.value.path,
-                page: JSON.parse(state.importJsonValue),
+          onConfirm: async ({ $modal }) => {
+            try {
+              const importedValue = parseImportJson(state.importJsonValue);
+              const isCoverCurrent = state.coverRadio === 'current';
+
+              if (isCoverCurrent) {
+                const targetPath = currentPath.value;
+                const importedPage = resolveImportedPage(importedValue, targetPath);
+                const nextProject = cloneJson(jsonData) as VisualEditorModelValue;
+
+                nextProject.pages[targetPath] = {
+                  ...cloneJson(importedPage),
+                  path: targetPath,
+                };
+                overrideProject(nextProject);
+                setCurrentPage(targetPath);
+                setCurrentBlock({} as VisualEditorBlockData);
+              } else {
+                if (!isVisualEditorProject(importedValue)) {
+                  throw new Error('覆盖整个项目需要包含 pages 的完整项目 JSON');
+                }
+                overrideProject(cloneJson(importedValue));
+              }
+
+              ElMessage({
+                showClose: true,
+                type: 'success',
+                duration: 2000,
+                message: isCoverCurrent ? '成功覆盖当前页面' : '成功覆盖整个项目',
               });
-            } else {
-              // 覆盖整个项目
-              overrideProject(JSON.parse(state.importJsonValue));
+              await $modal.close();
+            } catch (error) {
+              ElMessage.error(error instanceof Error ? error.message : '导入 JSON 失败');
             }
-            ElMessage({
-              showClose: true,
-              type: 'success',
-              duration: 2000,
-              message: isCoverCurrent ? '成功覆盖当前页面' : '成功覆盖整个项目',
-            });
           },
         });
       },

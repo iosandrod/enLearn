@@ -1,0 +1,1 @@
+import{t as e}from"./vxe-tabs-xualFWAH.js";export{e as default};

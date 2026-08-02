@@ -1,1 +1,0 @@
-import{T as e,V as t,k as n,v as r}from"./vue.runtime.esm-bundler-BmNzlVHg.js";n();var i=[`innerHTML`],a=e({__name:`ContentRenderer`,props:{html:{}},setup(e){return(n,a)=>(t(),r(`div`,{class:`markdown`,innerHTML:e.html},null,8,i))}});export{a as t};

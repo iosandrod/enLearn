@@ -444,7 +444,7 @@ export abstract class BaseService implements ServiceExecutor {
         .select(ctx.resource.select ?? '*');
 
       if (error) throw new BadRequestException(error.message);
-      return data ?? [];
+      return data ?? [];//批量新增
     }
 
     const payload = payloads[0] ?? {};

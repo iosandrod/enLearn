@@ -1,5 +1,5 @@
 import { createApp, defineComponent } from 'vue';
-import VxeUI from 'vxe-pc-ui';
+import { install as installVxeUI } from 'vxe-pc-ui';
 import VxeUITable from 'vxe-table';
 import 'normalize.css';
 import 'animate.css/animate.min.css';
@@ -76,7 +76,7 @@ const ClientOnly = defineComponent({
 });
 
 app.use(router);
-app.use(VxeUI);
+app.use(installVxeUI);
 app.use(VxeUITable);
 
 app.component('ChatPopup', ChatPopup);

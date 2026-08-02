@@ -19,7 +19,7 @@
           aria-haspopup="menu"
           @click="toggleTopTool(toolGroup.code)"
         >
-          <i :class="resolveRouteIcon(toolGroup)" aria-hidden="true" />
+          <i v-if="toolGroup.icon" :class="toolGroup.icon" aria-hidden="true" />
           <span>{{ toolGroup.title }}</span>
           <i
             :class="openTopToolCode === toolGroup.code ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
@@ -41,7 +41,7 @@
             role="menuitem"
             @click="openTopToolCode = ''"
           >
-            <i :class="resolveRouteIcon(tool)" aria-hidden="true" />
+            <i v-if="tool.icon" :class="tool.icon" aria-hidden="true" />
             <span>{{ tool.title }}</span>
           </RouterLink>
         </div>
@@ -308,98 +308,22 @@ function normalizeNodes(nodes: AdminRouteNode[]): AdminRouteNode[] {
     .filter((node) => node.visible !== false && node.status !== 'inactive' && canViewRoute(node))
     .map((node) => ({
       ...node,
-      code: node.code || node.path,
-      title: menuTitleOverrides[node.code] ?? node.title ?? node.code ?? node.path,
-      children: normalizeNodes(node.children ?? [])
+      children: sortRouteNodes(normalizeNodes(node.children ?? []))
     }));
 
   return normalized.filter((node) => {
     if (node.children?.length) return true;
-    return node.route_type !== 'group' && !node.path.endsWith('/_group');
+    return node.route_type !== 'group';
   });
 }
 
-function flattenMenuPages(nodes: AdminRouteNode[]): AdminRouteNode[] {
-  return nodes.flatMap((node) => {
-    const children = flattenMenuPages(node.children ?? []);
-    const isGroup =
-      node.route_type === 'group' ||
-      node.path.endsWith('/_group') ||
-      hiddenRouteCodes.has(node.code);
-
-    return isGroup ? children : [{ ...node, children: [] }, ...children];
-  });
-}
-
-function sortMenuPages(pages: AdminRouteNode[]) {
-  return [...pages].sort((left, right) => {
+function sortRouteNodes(nodes: AdminRouteNode[]) {
+  return [...nodes].sort((left, right) => {
     const leftSort = left.sort_order ?? 0;
     const rightSort = right.sort_order ?? 0;
     if (leftSort !== rightSort) return leftSort - rightSort;
     return left.title.localeCompare(right.title, 'zh-Hans-CN');
   });
-}
-
-function buildMenuGroup(
-  code: string,
-  title: string,
-  children: AdminRouteNode[],
-  sortOrder = 0
-) {
-  return {
-    code,
-    title,
-    path: `/dashboard/${code}/_group`,
-    route_type: 'group' as const,
-    sort_order: sortOrder,
-    children: sortMenuPages(children)
-  };
-}
-
-function buildLowCodeMenuGroups(pages: AdminRouteNode[]) {
-  const uniquePages = [...new Map(pages.map((page) => [page.code, page])).values()];
-  const databaseGroups = uniquePages
-    .filter((page) => page.children?.length && page.route_type === 'group')
-    .map((group) => ({
-      ...group,
-      children: sortMenuPages(group.children ?? [])
-    }));
-  const nestedGroupCodes = new Set(
-    databaseGroups.flatMap((group) =>
-      flattenNodes(group.children ?? [])
-        .filter((child) => child.route_type === 'group')
-        .map((child) => child.code)
-    )
-  );
-  const rootDatabaseGroups = databaseGroups.filter(
-    (group) => !nestedGroupCodes.has(group.code)
-  );
-  const byCode = new Map(uniquePages.map((page) => [page.code, page]));
-  const groupedCodes = new Set<string>(
-    rootDatabaseGroups.flatMap((group) =>
-      flattenNodes(group.children ?? []).map((child) => child.code)
-    )
-  );
-  const groups = lowCodeMenuGroups
-    .map((group, index) => {
-      const children = group.routeCodes
-        .map((code) => byCode.get(code))
-        .filter((item): item is AdminRouteNode => Boolean(item) && !groupedCodes.has(item.code));
-
-      children.forEach((child) => groupedCodes.add(child.code));
-
-      return buildMenuGroup(group.code, group.title, children, (index + 1) * 10);
-    })
-    .filter((group) => group.children.length);
-
-  const uncategorizedPages = uniquePages.filter(
-    (page) => !page.children?.length && !groupedCodes.has(page.code)
-  );
-  if (uncategorizedPages.length) {
-    groups.push(buildMenuGroup('lowcode-other-root', '其他应用', uncategorizedPages));
-  }
-
-  return [...rootDatabaseGroups, ...groups];
 }
 
 function readRouteMetadata(item: AdminRouteNode) {
@@ -413,32 +337,55 @@ function readRouteMetadata(item: AdminRouteNode) {
   }
 }
 
-function isAdvancedRoute(item: AdminRouteNode) {
-  const metadata = readRouteMetadata(item);
-  return (
-    advancedRouteCodes.has(item.code) ||
-    metadata.group === 'advanced' ||
-    metadata.navigation === 'top-tool'
-  );
+function readNavigationPlacement(item: AdminRouteNode): NavigationPlacement | '' {
+  const navigation = readRouteMetadata(item).navigation;
+  return navigation === 'sidebar' ||
+    navigation === 'top-tool' ||
+    navigation === 'container' ||
+    navigation === 'hidden'
+    ? navigation
+    : '';
 }
 
-function isLowCodeMenuRoute(item: AdminRouteNode) {
-  const metadata = readRouteMetadata(item);
-  return (
-    Boolean(item.page_code) ||
-    item.code === 'lowcode-pages' ||
-    metadata.group === 'lowcode-app'
-  );
+function projectNavigationBranch(
+  node: AdminRouteNode,
+  placement: Exclude<NavigationPlacement, 'container' | 'hidden'>
+): AdminRouteNode {
+  return {
+    ...node,
+    children: projectNavigationChildren(node.children ?? [], placement)
+  };
+}
+
+function projectNavigationChildren(
+  children: AdminRouteNode[],
+  placement: Exclude<NavigationPlacement, 'container' | 'hidden'>
+) {
+  return sortRouteNodes(children.flatMap((child) => {
+    const childPlacement = readNavigationPlacement(child);
+    if (childPlacement === 'hidden') return [];
+    if (childPlacement === 'container') {
+      return projectNavigationChildren(child.children ?? [], placement);
+    }
+    if (childPlacement && childPlacement !== placement) return [];
+    return [projectNavigationBranch(child, placement)];
+  }));
+}
+
+function collectNavigationRoots(
+  nodes: AdminRouteNode[],
+  placement: Exclude<NavigationPlacement, 'container' | 'hidden'>
+): AdminRouteNode[] {
+  return nodes.flatMap((node) => {
+    const nodePlacement = readNavigationPlacement(node);
+    if (nodePlacement === placement) return [projectNavigationBranch(node, placement)];
+    if (nodePlacement === 'hidden') return [];
+    return collectNavigationRoots(node.children ?? [], placement);
+  });
 }
 
 function buildSidebarMenu(nodes: AdminRouteNode[]) {
-  const lowCodeTree = flattenNodes(nodes).filter(
-    (item) => !isAdvancedRoute(item) && isLowCodeMenuRoute(item)
-  );
-  const pages = flattenMenuPages(nodes).filter(
-    (item) => !isAdvancedRoute(item) && isLowCodeMenuRoute(item)
-  );
-  return buildLowCodeMenuGroups([...lowCodeTree, ...pages]);
+  return sortRouteNodes(collectNavigationRoots(nodes, 'sidebar'));
 }
 
 function canViewRoute(node: AdminRouteNode) {
@@ -459,7 +406,6 @@ function buildRouteTree(rows: AdminRouteNode[]) {
     if (!id) continue;
     byId.set(id, {
       ...row,
-      title: row.title ?? row.code ?? row.path,
       children: [],
     });
   }
@@ -474,39 +420,20 @@ function buildRouteTree(rows: AdminRouteNode[]) {
   return roots;
 }
 
-const normalizedRoutes = computed<AdminRouteNode[]>(() =>
-  normalizeNodes(routes.value.length ? routes.value : fallbackRoutes)
+const normalizedRoutes = computed<AdminRouteNode[]>(() => normalizeNodes(routes.value));
+const topToolGroups = computed<TopToolGroup[]>(() =>
+  sortRouteNodes(collectNavigationRoots(normalizedRoutes.value, 'top-tool')).map((group) => ({
+    ...group,
+    tools: sortRouteNodes(group.children ?? [])
+  }))
 );
-const allRoutePages = computed<AdminRouteNode[]>(() =>
-  flattenMenuPages(normalizedRoutes.value)
-);
-const advancedTools = computed<AdminRouteNode[]>(() => {
-  const byPath = new Map<string, AdminRouteNode>();
-  for (const item of allRoutePages.value.filter(isAdvancedRoute)) {
-    const current = byPath.get(item.path);
-    if (!current || item.code === 'advanced-print-designer') {
-      byPath.set(item.path, item);
-    }
-  }
-
-  return [...byPath.values()].sort((left, right) => {
-    const leftIndex = advancedToolOrder.indexOf(left.code);
-    const rightIndex = advancedToolOrder.indexOf(right.code);
-    if (leftIndex !== rightIndex) {
-      const normalizedLeftIndex = leftIndex < 0 ? Number.MAX_SAFE_INTEGER : leftIndex;
-      const normalizedRightIndex = rightIndex < 0 ? Number.MAX_SAFE_INTEGER : rightIndex;
-      return normalizedLeftIndex - normalizedRightIndex;
-    }
-    return (left.sort_order ?? 0) - (right.sort_order ?? 0);
-  });
-});
 const menuTree = computed<AdminRouteNode[]>(() => buildSidebarMenu(normalizedRoutes.value));
 const normalizedMenuFilter = computed(() => menuFilter.value.trim().toLowerCase());
 const filteredMenuTree = computed(() => filterMenuNodes(menuTree.value, normalizedMenuFilter.value));
 const flatMenu = computed<AdminRouteNode[]>(() => flattenNodes(menuTree.value));
 const activeTitle = computed<string>(
   () =>
-    [...flatMenu.value, ...advancedTools.value].find(
+    [...flatMenu.value, ...topToolGroups.value.flatMap((group) => group.tools)].find(
       (item: AdminRouteNode) =>
         item.path === route.path || route.path.startsWith(`${item.path}/`)
     )?.title ??
@@ -529,7 +456,7 @@ async function reloadRoutes() {
   } catch (error) {
     routes.value = [];
     routeError.value =
-      error instanceof Error ? error.message : '动态菜单加载失败，已使用本地兜底菜单。';
+      error instanceof Error ? error.message : '数据库菜单加载失败。';
   }
 }
 
@@ -595,13 +522,12 @@ function closeMenuContext() {
   VxeUI.contextMenu.close();
 }
 
-function resolveAdvancedToolIcon(item: AdminRouteNode) {
-  if (item.icon?.startsWith('ri-')) return item.icon;
-  return advancedToolIconOverrides[item.code] ?? 'ri-tools-line';
+function isTopToolActive(item: AdminRouteNode) {
+  return route.path === item.path || route.path.startsWith(`${item.path}/`);
 }
 
-function isAdvancedToolActive(item: AdminRouteNode) {
-  return route.path === item.path || route.path.startsWith(`${item.path}/`);
+function toggleTopTool(code: string) {
+  openTopToolCode.value = openTopToolCode.value === code ? '' : code;
 }
 
 function buildRouteSavePayload(item: AdminRouteNode, title: string) {
@@ -648,11 +574,7 @@ async function renameMenuItem(item: AdminRouteNode) {
 }
 
 function resolveLowCodePageCode(item: AdminRouteNode) {
-  if (item.page_code) return item.page_code;
-  if (item.path.startsWith('/dashboard/low-code/') && !item.path.includes('/designer')) {
-    return item.path.split('/').filter(Boolean).at(-1) ?? '';
-  }
-  return '';
+  return item.page_code ?? '';
 }
 
 function buildEmptyEditPageSchema(
@@ -780,13 +702,13 @@ function handleAdminRoutesUpdated() {
 function handleMenuContextKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     closeMenuContext();
-    advancedToolsOpen.value = false;
+    openTopToolCode.value = '';
   }
 }
 
 function closeFloatingPanels() {
   closeMenuContext();
-  advancedToolsOpen.value = false;
+  openTopToolCode.value = '';
 }
 
 onMounted(async () => {
@@ -810,7 +732,7 @@ watch(
   () => route.path,
   () => {
     closeMenuContext();
-    advancedToolsOpen.value = false;
+    openTopToolCode.value = '';
     rememberTab();
   }
 );

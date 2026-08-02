@@ -7,6 +7,7 @@ import {
   type VNode
 } from 'vue';
 import {
+  install as installVxeUI,
   VxeUI,
   VxeAlert,
   VxeButton,
@@ -669,6 +670,6 @@ export const ElGrid = VxeGrid as any;
 
 export default {
   install(app: { use: (plugin: unknown) => void }) {
-    app.use(VxeUI as any);
+    app.use(installVxeUI);
   }
 };
