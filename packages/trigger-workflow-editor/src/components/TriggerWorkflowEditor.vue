@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
+import VxeUI from 'vxe-pc-ui';
 import {
   VueFlow,
   useVueFlow,
@@ -75,7 +76,6 @@ const flowNodes = ref<TriggerCanvasNode[]>(triggerWorkflowToFlowNodes(currentMod
 const flowEdges = ref<TriggerFlowEdge[]>(triggerWorkflowToFlowEdges(currentModel.value));
 const selectedNodeId = ref<string | null>(null);
 const selectedEdgeId = ref<string | null>(null);
-const nodeContextMenu = ref<{ nodeId: string; x: number; y: number } | null>(null);
 const activeInspectorTab = ref<'config' | 'compiled'>('config');
 const configDraft = ref('{}');
 const configError = ref('');
@@ -85,11 +85,6 @@ let sequence = 0;
 const palette = computed(() => getTriggerNodeDefinitionsForKind(currentModel.value.kind));
 const selectedNode = computed(() => currentModel.value.nodes.find((node) => node.id === selectedNodeId.value));
 const selectedEdge = computed(() => currentModel.value.edges.find((edge) => edge.id === selectedEdgeId.value));
-const contextNode = computed(() =>
-  nodeContextMenu.value
-    ? currentModel.value.nodes.find((node) => node.id === nodeContextMenu.value?.nodeId)
-    : undefined
-);
 const issues = computed(() => validateTriggerWorkflow(currentModel.value));
 const errorCount = computed(() => issues.value.filter((issue) => issue.level === 'error').length);
 const compiledPlan = computed(() => {
@@ -206,20 +201,63 @@ function onNodeContextMenu(event: NodeMouseEvent) {
   event.event.preventDefault();
   event.event.stopPropagation();
   const point = getClientPoint(event.event);
-  const menuWidth = 176;
-  const menuHeight = 190;
-  selectedNodeId.value = event.node.id;
+  const node = currentModel.value.nodes.find((item) => item.id === event.node.id);
+  if (!node) return;
+
+  selectedNodeId.value = node.id;
   selectedEdgeId.value = null;
   activeInspectorTab.value = 'config';
-  nodeContextMenu.value = {
-    nodeId: event.node.id,
-    x: Math.min(point.x, window.innerWidth - menuWidth - 8),
-    y: Math.min(point.y, window.innerHeight - menuHeight - 8)
-  };
+  VxeUI.contextMenu.open({
+    x: point.x,
+    y: point.y,
+    className: 'enlearn-context-menu',
+    options: [
+      [
+        {
+          code: 'node-summary',
+          name: `${node.name} · ${node.type}`,
+          disabled: true
+        }
+      ],
+      [
+        {
+          code: 'inspect',
+          name: '打开配置',
+          prefixIcon: 'ri-settings-3-line'
+        },
+        {
+          code: 'duplicate',
+          name: '复制节点',
+          prefixIcon: 'ri-file-copy-line',
+          disabled: props.readonly
+        },
+        {
+          code: 'copy-id',
+          name: '复制节点 ID',
+          prefixIcon: 'ri-clipboard-line'
+        },
+        {
+          code: 'delete',
+          name: '删除节点',
+          prefixIcon: 'ri-delete-bin-line',
+          className: 'enlearn-context-menu-option--danger',
+          disabled: props.readonly || !canDeleteNode(node)
+        }
+      ]
+    ],
+    events: {
+      optionClick({ option }) {
+        if (option.code === 'inspect') inspectContextNode(node);
+        if (option.code === 'duplicate') duplicateContextNode(node);
+        if (option.code === 'copy-id') void copyContextNodeId(node);
+        if (option.code === 'delete') deleteContextNode(node);
+      }
+    }
+  });
 }
 
 function closeNodeContextMenu() {
-  nodeContextMenu.value = null;
+  VxeUI.contextMenu.close();
 }
 
 function addNode(type: TriggerNodeType) {
@@ -317,18 +355,15 @@ function deleteSelection() {
   deleteNodeById(node.id);
 }
 
-function inspectContextNode() {
-  const node = contextNode.value;
-  if (!node) return;
+function inspectContextNode(node: TriggerWorkflowNode) {
   selectedNodeId.value = node.id;
   selectedEdgeId.value = null;
   activeInspectorTab.value = 'config';
   closeNodeContextMenu();
 }
 
-function duplicateContextNode() {
-  const node = contextNode.value;
-  if (!node || props.readonly) return;
+function duplicateContextNode(node: TriggerWorkflowNode) {
+  if (props.readonly) return;
   const definition = getTriggerNodeDefinition(node.type);
   if (!definition) return;
 
@@ -353,16 +388,13 @@ function duplicateContextNode() {
   });
 }
 
-async function copyContextNodeId() {
-  const node = contextNode.value;
-  if (!node) return;
+async function copyContextNodeId(node: TriggerWorkflowNode) {
   await navigator.clipboard?.writeText(node.id);
   closeNodeContextMenu();
 }
 
-function deleteContextNode() {
-  const node = contextNode.value;
-  if (!node || props.readonly || !canDeleteNode(node)) return;
+function deleteContextNode(node: TriggerWorkflowNode) {
+  if (props.readonly || !canDeleteNode(node)) return;
   closeNodeContextMenu();
   deleteNodeById(node.id);
 }
@@ -666,31 +698,6 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
           </template>
         </VueFlow>
 
-        <div
-          v-if="nodeContextMenu && contextNode"
-          class="trigger-editor__node-menu"
-          :style="{ left: `${nodeContextMenu.x}px`, top: `${nodeContextMenu.y}px` }"
-          role="menu"
-          @click.stop
-          @contextmenu.prevent.stop
-        >
-          <div class="trigger-editor__node-menu-head">
-            <strong>{{ contextNode.name }}</strong>
-            <span>{{ contextNode.type }}</span>
-          </div>
-          <button type="button" role="menuitem" @click="inspectContextNode">打开配置</button>
-          <button type="button" role="menuitem" :disabled="readonly" @click="duplicateContextNode">复制节点</button>
-          <button type="button" role="menuitem" @click="copyContextNodeId">复制节点 ID</button>
-          <button
-            type="button"
-            role="menuitem"
-            class="trigger-editor__node-menu-danger"
-            :disabled="readonly || !canDeleteNode(contextNode)"
-            @click="deleteContextNode"
-          >
-            删除节点
-          </button>
-        </div>
       </main>
 
       <aside class="trigger-editor__inspector">
@@ -1127,85 +1134,6 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
 .trigger-editor__flow {
   width: 100%;
   height: 100%;
-}
-
-.trigger-editor__node-menu {
-  position: fixed;
-  z-index: 20;
-  display: grid;
-  width: 176px;
-  overflow: hidden;
-  border: 1px solid #d5dce7;
-  border-radius: 8px;
-  background: #fff;
-  box-shadow:
-    0 18px 38px rgba(15, 23, 42, 0.18),
-    0 2px 8px rgba(15, 23, 42, 0.08);
-  padding: 5px;
-}
-
-.trigger-editor__node-menu-head {
-  display: grid;
-  min-width: 0;
-  gap: 1px;
-  border-bottom: 1px solid #eef2f7;
-  margin-bottom: 4px;
-  padding: 7px 8px 8px;
-}
-
-.trigger-editor__node-menu-head strong,
-.trigger-editor__node-menu-head span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trigger-editor__node-menu-head strong {
-  color: #111827;
-  font-size: 12px;
-  line-height: 17px;
-}
-
-.trigger-editor__node-menu-head span {
-  color: #94a3b8;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.trigger-editor__node-menu button {
-  display: flex;
-  width: 100%;
-  min-height: 30px;
-  align-items: center;
-  border: 0;
-  border-radius: 5px;
-  background: transparent;
-  color: #334155;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 8px;
-  text-align: left;
-}
-
-.trigger-editor__node-menu button:hover:not(:disabled) {
-  background: #f1f5f9;
-  color: #111827;
-}
-
-.trigger-editor__node-menu button:disabled {
-  cursor: not-allowed;
-  opacity: 0.46;
-}
-
-.trigger-editor__node-menu-danger {
-  color: #b91c1c !important;
-}
-
-.trigger-editor__node-menu-danger:hover:not(:disabled) {
-  background: #fef2f2 !important;
-  color: #991b1b !important;
 }
 
 .trigger-editor__tabs {

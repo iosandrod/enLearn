@@ -1,11 +1,6 @@
 <template>
   <section class="entity-designer">
     <header class="entity-toolbar">
-      <div class="toolbar-copy">
-        <span class="toolbar-kicker">Schema-driven ER Designer</span>
-        <h1>表格实体设计</h1>
-        <p>通过低代码表单 schema 维护真实表、真实列、虚拟列和外键关系。</p>
-      </div>
 
       <div class="toolbar-actions">
         <vxe-button :loading="loadingPhysicalTables" @click="openLoadTablesModal">
@@ -35,87 +30,46 @@
 
     <div class="entity-workspace">
       <aside class="entity-panel entity-panel-left">
-        <section class="panel-section">
+        <section
+          v-for="panel in leftPanelSchemas"
+          :key="panel.id"
+          class="panel-section"
+          :class="panel.className"
+        >
           <div class="panel-heading">
-            <div>
-              <span>Table</span>
-              <h2>{{ tableForm.id ? '编辑表' : '新建表' }}</h2>
-            </div>
-            <button type="button" title="新建表" @click="resetTableForm">
-              <i class="ri-add-line" />
+            <button
+              v-if="panel.addAction"
+              type="button"
+              :title="panel.addAction.title"
+              :disabled="panel.addAction.disabled"
+              @click="panel.addAction.onClick"
+            >
+              <i :class="panel.addAction.icon || 'ri-add-line'" />
             </button>
+            <strong v-else-if="typeof panel.badge !== 'undefined'">{{ panel.badge }}</strong>
           </div>
+
+          <p v-if="panel.hint" class="panel-hint">{{ panel.hint }}</p>
 
           <LowCodeForm
-            v-model="tableForm"
+            :model-value="panel.form.model.value"
             class="designer-form"
-            :schema="tableDesignerSchema"
-            :loading="savingTable"
-            @submit="saveTable"
-            @action="handleTableAction"
+            :class="panel.form.className"
+            :schema="panel.form.schema"
+            :option-sources="panel.form.optionSources"
+            :loading="panel.form.loading"
+            @update:model-value="(value) => updatePanelModel(panel, value)"
+            @submit="panel.form.onSubmit"
+            @action="panel.form.onAction"
+            @field-change="panel.form.onFieldChange"
           />
-        </section>
-
-        <section class="panel-section">
-          <div class="panel-heading compact">
-            <div>
-              <span>Tables</span>
-              <h2>实体列表</h2>
-            </div>
-            <strong>{{ tables.length }}</strong>
-          </div>
-
-          <vxe-table
-            border
-            show-overflow
-            size="small"
-            class="entity-table-grid"
-            :data="tables"
-            :row-config="{ keyField: 'id' }"
-          >
-            <vxe-column field="title" title="表名称" min-width="150">
-              <template #default="{ row }">
-                <button
-                  type="button"
-                  :class="['entity-table-name', { active: selectedTableId === row.id }]"
-                  @click="selectTable(row)"
-                >
-                  <span>{{ displayTableTitle(row) }}</span>
-                  <small>{{ row.full_name }}</small>
-                </button>
-              </template>
-            </vxe-column>
-            <vxe-column field="columns" title="字段" width="58" align="right">
-              <template #default="{ row }">
-                {{ row.columns.length }}
-              </template>
-            </vxe-column>
-            <vxe-column title="画布" width="70" align="center">
-              <template #default="{ row }">
-                <span :class="['canvas-pill', isTableVisible(row.id) ? 'is-visible' : 'is-hidden']">
-                  {{ isTableVisible(row.id) ? '显示' : '已移出' }}
-                </span>
-              </template>
-            </vxe-column>
-            <vxe-column title="操作" width="82" fixed="right" align="center">
-              <template #default="{ row }">
-                <button
-                  type="button"
-                  class="canvas-toggle"
-                  @click="toggleTableCanvasVisibility(row)"
-                >
-                  {{ isTableVisible(row.id) ? '移出' : '显示' }}
-                </button>
-              </template>
-            </vxe-column>
-          </vxe-table>
         </section>
 
         <p v-if="message" class="designer-message" :class="messageClass">{{ message }}</p>
       </aside>
 
       <main class="entity-flow-shell">
-        <div class="flow-topbar">
+        <!-- <div class="flow-topbar">
           <div>
             <span>{{ flowNodes.length }}/{{ tables.length }} 张表</span>
             <span>{{ totalColumnCount }} 个字段</span>
@@ -123,7 +77,7 @@
           </div>
           <p v-if="selectedTable">当前：{{ selectedTable.full_name }}</p>
           <p v-else>点击表节点或字段进行编辑，也可以拖拽节点保存布局。</p>
-        </div>
+        </div> -->
 
         <VueFlow
           :id="flowId"
@@ -193,97 +147,43 @@
       </main>
 
       <aside class="entity-panel entity-panel-right">
-        <section class="panel-section column-table-section">
+        <section
+          v-for="panel in rightPanelSchemas"
+          :key="panel.id"
+          class="panel-section"
+          :class="panel.className"
+        >
           <div class="panel-heading">
             <div>
-              <span>Column</span>
-              <h2>字段集合</h2>
+              <span>{{ panel.kicker }}</span>
+              <h2>{{ panel.title }}</h2>
             </div>
             <button
+              v-if="panel.addAction"
               type="button"
-              title="新建列"
-              :disabled="!selectedTable"
-              @click="startNewColumn"
+              :title="panel.addAction.title"
+              :disabled="panel.addAction.disabled"
+              @click="panel.addAction.onClick"
             >
-              <i class="ri-add-line" />
+              <i :class="panel.addAction.icon || 'ri-add-line'" />
             </button>
+            <strong v-else-if="typeof panel.badge !== 'undefined'">{{ panel.badge }}</strong>
           </div>
 
-          <p class="panel-hint">
-            {{ selectedTable ? `当前表：${selectedTable.full_name}` : '选择一张表后维护字段集合。' }}
-          </p>
+          <p v-if="panel.hint" class="panel-hint">{{ panel.hint }}</p>
 
           <LowCodeForm
-            v-model="columnRowsForm"
-            class="designer-form columns-table-form"
-            :schema="columnsTableDesignerSchema"
-            :loading="savingColumn"
-            @submit="saveColumnRows"
-            @field-change="handleColumnRowsFieldChange"
-          />
-        </section>
-
-        <section class="panel-section">
-          <div class="panel-heading">
-            <div>
-              <span>Column Detail</span>
-              <h2>{{ columnForm.id ? '编辑单列' : '单列绑定' }}</h2>
-            </div>
-          </div>
-
-          <p class="panel-hint">
-            {{ columnForm.columnName ? `当前列：${columnForm.columnName}` : '从字段集合或画布字段选择一列。' }}
-          </p>
-
-          <LowCodeForm
-            v-model="columnForm"
+            :model-value="panel.form.model.value"
             class="designer-form"
-            :schema="columnDesignerSchema"
-            :loading="savingColumn"
-            @submit="saveColumn"
-            @action="handleColumnAction"
+            :class="panel.form.className"
+            :schema="panel.form.schema"
+            :option-sources="panel.form.optionSources"
+            :loading="panel.form.loading"
+            @update:model-value="(value) => updatePanelModel(panel, value)"
+            @submit="panel.form.onSubmit"
+            @action="panel.form.onAction"
+            @field-change="panel.form.onFieldChange"
           />
-        </section>
-
-        <section class="panel-section relation-section">
-          <div class="panel-heading">
-            <div>
-              <span>Relation</span>
-              <h2>外键关系</h2>
-            </div>
-            <button type="button" title="新建关系" @click="resetRelationForm">
-              <i class="ri-add-line" />
-            </button>
-          </div>
-
-          <LowCodeForm
-            v-model="relationForm"
-            class="designer-form"
-            :schema="relationDesignerSchema"
-            :option-sources="relationOptionSources"
-            :loading="savingRelation"
-            @submit="saveRelation"
-            @action="handleRelationAction"
-            @field-change="handleRelationFieldChange"
-          />
-
-          <ul class="relation-list">
-            <li v-for="relation in relations" :key="relation.id">
-              <button type="button" @click="selectRelation(relation)">
-                <span>
-                  {{ tableTitle(relation.source_table_id) }}.{{ relation.source_column_name }}
-                </span>
-                <i class="ri-arrow-right-line" />
-                <span>
-                  {{ tableTitle(relation.target_table_id) }}.{{ relation.target_column_name }}
-                </span>
-                <em>{{ relationTypeLabel(relation.relation_type) }}</em>
-              </button>
-              <button type="button" title="删除关系" @click="deleteRelation(relation)">
-                <i class="ri-close-line" />
-              </button>
-            </li>
-          </ul>
         </section>
       </aside>
     </div>
@@ -303,10 +203,10 @@ import {
   type Node,
   type NodeMouseEvent
 } from '@vue-flow/core';
-import { h } from 'vue';
+import { h, type Ref } from 'vue';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
-import { LcVxeModalRenderer, type LcVxeModalConfig } from '@enlearn/lowcode-framework/runtime';
+import { LowCodeForm, LcVxeModalRenderer, type LcVxeModalConfig } from '@enlearn/lowcode-framework';
 import {
   entityColumnsTableFormSchema,
   entityColumnFormSchema,
@@ -394,6 +294,46 @@ type EntityEdge = Edge<Record<string, unknown>>;
 
 type FormValues = Record<string, unknown>;
 
+type EntityDesignerFormPanel = {
+  id: string;
+  kicker: string;
+  title: string;
+  hint?: string;
+  badge?: string | number;
+  className?: string;
+  addAction?: {
+    title: string;
+    icon?: string;
+    disabled?: boolean;
+    onClick: () => void;
+  };
+  form: {
+    model: Ref<FormValues>;
+    schema: LowCodeFormSchema;
+    optionSources?: Record<string, unknown>;
+    loading?: boolean;
+    className?: string;
+    onSubmit?: (values: FormValues) => void | Promise<void>;
+    onAction?: (action: LowCodeAction, values: FormValues) => void | Promise<void>;
+    onFieldChange?: (payload: {
+      field: LowCodeField;
+      value: unknown;
+      previousValue: unknown;
+      values: FormValues;
+    }) => void | Promise<void>;
+  };
+};
+
+type LowCodeArrayTableRowAction = {
+  code: string;
+  label?: string | ((payload: FormValues) => string);
+  title?: string | ((payload: FormValues) => string);
+  icon?: string;
+  status?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  disabled?: boolean | ((payload: FormValues) => boolean);
+  visible?: boolean | ((payload: FormValues) => boolean);
+};
+
 const serviceApi = useServiceApi();
 const flowId = 'entity-design-flow';
 const { fitView } = useVueFlow(flowId);
@@ -452,6 +392,50 @@ const relationOptionSources = computed(() => ({
   sourceColumns: sourceColumnOptions.value,
   targetColumns: targetColumnOptions.value
 }));
+
+const tableListRows = computed(() =>
+  tables.value.map((table) => ({
+    id: table.id,
+    title: displayTableTitle(table),
+    fullName: table.full_name,
+    columnCount: table.columns.length,
+    canvasStatus: isTableVisible(table.id) ? '显示' : '已移出',
+    table,
+  }))
+);
+const relationListRows = computed(() =>
+  relations.value.map((relation) => ({
+    id: relation.id,
+    source: `${tableTitle(relation.source_table_id)}.${relation.source_column_name}`,
+    target: `${tableTitle(relation.target_table_id)}.${relation.target_column_name}`,
+    relationType: relationTypeLabel(relation.relation_type),
+    relation,
+  }))
+);
+const leftPanelModel = computed<FormValues>({
+  get: () => ({
+    table: tableForm.value,
+    tables: tableListRows.value,
+  }),
+  set: (value) => {
+    if (isRecord(value.table)) tableForm.value = value.table;
+  },
+});
+const rightPanelModel = computed<FormValues>({
+  get: () => ({
+    columns: columnRowsForm.value.columns,
+    columnDetail: columnForm.value,
+    relation: relationForm.value,
+    relations: relationListRows.value,
+  }),
+  set: (value) => {
+    columnRowsForm.value = {
+      columns: Array.isArray(value.columns) ? value.columns : [],
+    };
+    if (isRecord(value.columnDetail)) columnForm.value = value.columnDetail;
+    if (isRecord(value.relation)) relationForm.value = value.relation;
+  },
+});
 const modalConfigs = computed<LcVxeModalConfig[]>(() => [
   {
     id: 'load-physical-tables',
@@ -555,6 +539,184 @@ const relationDesignerSchema = computed<LowCodeFormSchema>(() =>
     disableAction: (action) => action.code === 'save' && tables.value.length < 2
   })
 );
+const tablePanelFormSchema = computed(() => toSingleColumnSchema(tableDesignerSchema.value));
+const columnPanelFormSchema = computed(() => toSingleColumnSchema(columnDesignerSchema.value));
+const relationPanelFormSchema = computed(() => toSingleColumnSchema(relationDesignerSchema.value));
+const tableRowActions = computed<LowCodeArrayTableRowAction[]>(() => [
+  {
+    code: 'toggleCanvas',
+    label: ({ row }) => {
+      const table = isRecord(row) && isEntityTable(row.table) ? row.table : null;
+      return table && isTableVisible(table.id) ? '移出' : '显示';
+    },
+    title: ({ row }) => {
+      const table = isRecord(row) && isEntityTable(row.table) ? row.table : null;
+      return table && isTableVisible(table.id) ? '从画布移出' : '显示到画布';
+    },
+    status: 'primary',
+  },
+]);
+const relationRowActions: LowCodeArrayTableRowAction[] = [
+  { code: 'delete', label: '删', title: '删除关系', status: 'danger' },
+];
+const leftPanelSchema = computed<LowCodeFormSchema>(() => ({
+  fields: [
+    {
+      field: 'table',
+      label: '表单',
+      component: 'lc-sub-form',
+      showTitle: false,
+      props: {
+        schema: tablePanelFormSchema.value,
+        vertical: true,
+        onSubmit: saveTable,
+        onAction: handleTableAction,
+      },
+    },
+    {
+      field: 'tables',
+      label: '实体列表',
+      component: 'lc-array-table',
+      showTitle: false,
+      props: {
+        showToolbar: false,
+        movable: false,
+        removable: false,
+        rowKey: 'id',
+        height: 360,
+        actionWidth: 76,
+        columns: [
+          { field: 'title', title: '表名称', component: 'lc-text', minWidth: 150 },
+          { field: 'fullName', title: '真实表', component: 'lc-text', minWidth: 150 },
+          { field: 'columnCount', title: '字段', component: 'lc-text', width: 58 },
+          { field: 'canvasStatus', title: '画布', component: 'lc-text', width: 70 },
+        ],
+        rowActions: tableRowActions.value,
+        onRowClick: handleTableListRowClick,
+        onRowAction: handleTableListRowAction,
+      },
+    },
+  ],
+  actions: [],
+}));
+const rightPanelSchema = computed<LowCodeFormSchema>(() => ({
+  fields: [
+    {
+      field: 'columns',
+      label: selectedTable.value ? `字段集合：${selectedTable.value.full_name}` : '字段集合',
+      component: 'lc-array-table',
+      showTitle: false,
+      help: '在表格中维护字段集合；点击画布字段或编辑表格行时，下方单列绑定会同步当前字段。',
+      props: {
+        ...(columnsTableDesignerSchema.value.fields.find((field) => field.field === 'columns')?.props ?? {}),
+        height: 320,
+        disabled: !selectedTable.value,
+        onRowClick: handleColumnArrayRowClick,
+      },
+    },
+    {
+      field: 'columnDetail',
+      label: columnForm.value.columnName
+        ? `单列绑定：${columnForm.value.columnName}`
+        : '单列绑定',
+      component: 'lc-sub-form',
+      showTitle: false,
+      help: columnForm.value.columnName ? '' : '从字段集合或画布字段选择一列。',
+      props: {
+        schema: columnPanelFormSchema.value,
+        vertical: true,
+        onSubmit: saveColumn,
+        onAction: handleColumnAction,
+      },
+    },
+    {
+      field: 'relation',
+      label: '外键关系',
+      component: 'lc-sub-form',
+      showTitle: false,
+      props: {
+        schema: relationPanelFormSchema.value,
+        optionSources: relationOptionSources.value,
+        vertical: true,
+        onSubmit: saveRelation,
+        onAction: handleRelationAction,
+        onFieldChange: handleRelationFieldChange,
+      },
+    },
+    {
+      field: 'relations',
+      label: '关系列表',
+      component: 'lc-array-table',
+      showTitle: false,
+      props: {
+        showToolbar: false,
+        movable: false,
+        removable: false,
+        rowKey: 'id',
+        height: 180,
+        actionWidth: 48,
+        columns: [
+          { field: 'source', title: '来源', component: 'lc-text', minWidth: 150 },
+          { field: 'target', title: '目标', component: 'lc-text', minWidth: 150 },
+          { field: 'relationType', title: '类型', component: 'lc-text', width: 92 },
+        ],
+        rowActions: relationRowActions,
+        onRowClick: handleRelationListRowClick,
+        onRowAction: handleRelationListRowAction,
+      },
+    },
+  ],
+  actions: [
+    {
+      code: 'saveRows',
+      label: '保存字段集合',
+      type: 'button',
+      status: 'primary',
+      disabled: !selectedTable.value,
+    },
+  ],
+}));
+const leftPanelSchemas = computed<EntityDesignerFormPanel[]>(() => [
+  {
+    id: 'entity-left-schema',
+    kicker: 'Table',
+    title: tableForm.value.id ? '编辑表' : '新建表',
+    badge: tables.value.length,
+    addAction: {
+      title: '新建表',
+      icon: 'ri-add-line',
+      onClick: resetTableForm,
+    },
+    form: {
+      model: leftPanelModel,
+      schema: leftPanelSchema.value,
+      loading: savingTable.value,
+    },
+  },
+]);
+const rightPanelSchemas = computed<EntityDesignerFormPanel[]>(() => [
+  {
+    id: 'entity-right-schema',
+    kicker: 'Column / Relation',
+    title: '字段与关系',
+    hint: selectedTable.value ? `当前表：${selectedTable.value.full_name}` : '选择一张表后维护字段集合。',
+    addAction: {
+      title: '新建列',
+      icon: 'ri-add-line',
+      disabled: !selectedTable.value,
+      onClick: startNewColumn,
+    },
+    form: {
+      model: rightPanelModel,
+      schema: rightPanelSchema.value,
+      optionSources: relationOptionSources.value,
+      loading: savingColumn.value || savingRelation.value,
+      className: 'columns-table-form',
+      onAction: handleRightPanelAction,
+      onFieldChange: handleRightPanelFieldChange,
+    },
+  },
+]);
 
 function newTableForm(): FormValues {
   return {
@@ -622,12 +784,92 @@ function prepareSchema(
   };
 }
 
+function toSingleColumnSchema(schema: LowCodeFormSchema): LowCodeFormSchema {
+  return {
+    ...schema,
+    columns: 1,
+    layout: schema.fields.map((field) => ({ kind: 'field', field: field.field })),
+  };
+}
+
 function stringValue(value: unknown) {
   return typeof value === 'string' ? value : '';
 }
 
 function booleanValue(value: unknown) {
   return value === true;
+}
+
+function updatePanelModel(panel: EntityDesignerFormPanel, value: FormValues) {
+  panel.form.model.value = value;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isEntityTable(value: unknown): value is EntityTable {
+  return isRecord(value) && typeof value.id === 'string' && Array.isArray(value.columns);
+}
+
+function isEntityRelation(value: unknown): value is EntityRelation {
+  return isRecord(value) && typeof value.id === 'string' && typeof value.source_table_id === 'string';
+}
+
+function readPayloadRow(payload: unknown) {
+  return isRecord(payload) && isRecord(payload.row) ? payload.row : null;
+}
+
+function handleTableListRowClick(payload: unknown) {
+  const row = readPayloadRow(payload);
+  if (row && isEntityTable(row.table)) selectTable(row.table);
+}
+
+function handleTableListRowAction(payload: unknown) {
+  const row = readPayloadRow(payload);
+  if (!row || !isEntityTable(row.table)) return;
+  const actionCode = isRecord(payload) ? stringValue(payload.actionCode) : '';
+
+  if (actionCode === 'toggleCanvas') {
+    void toggleTableCanvasVisibility(row.table);
+  }
+}
+
+function handleColumnArrayRowClick(payload: unknown) {
+  const row = readPayloadRow(payload);
+  if (row) setColumnFormFromRow(row);
+}
+
+function handleRelationListRowClick(payload: unknown) {
+  const row = readPayloadRow(payload);
+  if (row && isEntityRelation(row.relation)) selectRelation(row.relation);
+}
+
+function handleRelationListRowAction(payload: unknown) {
+  const row = readPayloadRow(payload);
+  if (!row || !isEntityRelation(row.relation)) return;
+  const actionCode = isRecord(payload) ? stringValue(payload.actionCode) : '';
+
+  if (actionCode === 'delete') {
+    void deleteRelation(row.relation);
+  }
+}
+
+function handleRightPanelAction(action: LowCodeAction, values: FormValues) {
+  if (action.code === 'saveRows') {
+    void saveColumnRows({ columns: values.columns });
+  }
+}
+
+function handleRightPanelFieldChange(payload: {
+  field: LowCodeField;
+  value: unknown;
+  previousValue: unknown;
+  values: FormValues;
+}) {
+  if (payload.field.field === 'columns') {
+    handleColumnRowsFieldChange(payload);
+  }
 }
 
 function isBadDisplayText(value: unknown) {

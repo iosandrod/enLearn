@@ -24,10 +24,12 @@
   },
   "peerDependencies": {
     "vxe-table": "^4.0.0",
-    "vue": "^3.0.0"
+    "vue": "^3.0.0",
+    "vxe-pc-ui": "^4.16.24"
   },
   "devDependencies": {
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "vxe-pc-ui": "^4.16.24"
   },
   "license": "MIT"
 }

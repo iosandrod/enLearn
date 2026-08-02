@@ -15,6 +15,10 @@ import type {
   LowCodePageSearchFormBlock,
   LowCodeRuntimeEvent,
 } from '../types/lowcode';
+import type {
+  LowCodePageConfirmDialogConfig,
+  LowCodePageConfirmDialogResult,
+} from './page-reference-dialog';
 
 export type GlobalDialogMaybeRef<T> = T | Ref<T>;
 export type GlobalDialogActionRole = 'confirm' | 'cancel' | 'close' | 'custom';
@@ -417,6 +421,13 @@ export function closeAllGlobalDialogs(action = 'close') {
       }),
     ),
   );
+}
+
+export async function confirmLowCodePage(
+  config: LowCodePageConfirmDialogConfig,
+): Promise<LowCodePageConfirmDialogResult> {
+  const { openLowCodePageConfirmDialog } = await import('./page-reference-dialog');
+  return openLowCodePageConfirmDialog(config);
 }
 
 export function registerGlobalDialogHost() {

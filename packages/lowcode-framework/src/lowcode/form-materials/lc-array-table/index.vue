@@ -71,6 +71,13 @@
               编辑
             </button>
           </div>
+          <span
+            v-else-if="column.component === 'lc-text'"
+            class="lc-array-table__text-cell"
+            :title="formatCellText(scope.row[column.field])"
+          >
+            {{ formatCellText(scope.row[column.field]) }}
+          </span>
           <vxe-textarea
             v-else-if="column.component === 'vxe-textarea'"
             :model-value="readString(scope.row[column.field])"
@@ -117,6 +124,21 @@
       <vxe-column v-if="showActions" title="操作" :width="actionWidth" fixed="right">
         <template #default="scope">
           <div v-if="isRecord(scope?.row)" class="lc-array-table__actions">
+            <button
+              v-for="action in visibleRowActions(scope.row)"
+              :key="action.code"
+              type="button"
+              :class="[
+                action.className,
+                action.status ? `is-${action.status}` : '',
+              ]"
+              :title="rowActionTitle(action, scope.row)"
+              :disabled="isRowActionDisabled(action, scope.row)"
+              @click="handleRowAction(action, scope.row)"
+            >
+              <i v-if="action.icon" :class="action.icon" />
+              <span v-if="rowActionLabel(action, scope.row)">{{ rowActionLabel(action, scope.row) }}</span>
+            </button>
             <button
               v-if="movable"
               type="button"
@@ -180,6 +202,20 @@ type ArrayTableColumn = {
 
 type ArrayTableValueMode = 'object' | 'primitive';
 
+type RowActionPredicate = boolean | ((payload: Record<string, unknown>) => boolean);
+type RowActionText = string | ((payload: Record<string, unknown>) => string);
+
+type ArrayTableRowAction = {
+  code: string;
+  label?: RowActionText;
+  title?: RowActionText;
+  icon?: string;
+  status?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
+  className?: string;
+  disabled?: RowActionPredicate;
+  visible?: RowActionPredicate;
+};
+
 const props = defineProps<LowCodeFormMaterialProps>();
 const emit = defineEmits<{
   'update:modelValue': [value: unknown[]];
@@ -230,6 +266,7 @@ const toolbarAlign = computed(() => readToolbarAlign(fieldProps.value.toolbarAli
 const copyable = computed(() => fieldProps.value.copyable === true);
 const movable = computed(() => fieldProps.value.movable !== false);
 const removable = computed(() => fieldProps.value.removable !== false);
+const rowActions = computed(() => readRowActions(fieldProps.value.rowActions));
 const preserveRowKey = computed(() => fieldProps.value.preserveRowKey === true);
 const minRows = computed(() => {
   const numeric = Number(fieldProps.value.minRows);
@@ -238,6 +275,7 @@ const minRows = computed(() => {
 const actionWidth = computed(() => {
   const width = readSize(fieldProps.value.actionWidth);
   if (width) return width;
+  if (rowActions.value.length) return Math.max(82, rowActions.value.length * 42 + 8);
   if (copyable.value && movable.value && removable.value) return 120;
   if (!movable.value || !removable.value) return 72;
   return 96;
@@ -258,6 +296,7 @@ watch(
     tableHeight.value,
     showActions.value,
     actionWidth.value,
+    rowActions.value,
   ],
   () => resizeTable(),
   { deep: true }
@@ -463,6 +502,75 @@ function readComponent(value: unknown): ArrayTableColumn['component'] {
   return typeof value === 'string' && value.trim() ? value.trim() : 'vxe-input';
 }
 
+function readRowActions(value: unknown): ArrayTableRowAction[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(isRecord)
+    .map((action) => ({
+      code: readString(action.code),
+      label: readRowActionText(action.label),
+      title: readRowActionText(action.title),
+      icon: readString(action.icon),
+      status: readStatus(action.status),
+      className: readString(action.className),
+      disabled: action.disabled as RowActionPredicate | undefined,
+      visible: action.visible as RowActionPredicate | undefined,
+    }))
+    .filter((action) => action.code);
+}
+
+function readRowActionText(value: unknown): RowActionText | undefined {
+  if (typeof value === 'function') return value as RowActionText;
+  const text = readString(value);
+  return text || undefined;
+}
+
+function readStatus(value: unknown): ArrayTableRowAction['status'] | undefined {
+  const status = readString(value);
+  return ['primary', 'success', 'warning', 'danger', 'info'].includes(status)
+    ? (status as ArrayTableRowAction['status'])
+    : undefined;
+}
+
+function resolveRowPredicate(predicate: RowActionPredicate | undefined, row: Record<string, unknown>, fallback: boolean) {
+  if (typeof predicate === 'function') {
+    return predicate(rowEventPayload(row));
+  }
+
+  if (typeof predicate === 'boolean') return predicate;
+  return fallback;
+}
+
+function visibleRowActions(row: Record<string, unknown>) {
+  return rowActions.value.filter((action) => resolveRowPredicate(action.visible, row, true));
+}
+
+function isRowActionDisabled(action: ArrayTableRowAction, row: Record<string, unknown>) {
+  return resolveRowPredicate(action.disabled, row, false);
+}
+
+function resolveRowActionText(value: RowActionText | undefined, row: Record<string, unknown>) {
+  if (typeof value === 'function') return value(rowEventPayload(row));
+  return value ?? '';
+}
+
+function rowActionLabel(action: ArrayTableRowAction, row: Record<string, unknown>) {
+  return resolveRowActionText(action.label, row);
+}
+
+function rowActionTitle(action: ArrayTableRowAction, row: Record<string, unknown>) {
+  return resolveRowActionText(action.title, row) || rowActionLabel(action, row);
+}
+
+function handleRowAction(action: ArrayTableRowAction, row: Record<string, unknown>) {
+  emitConfiguredEvent('onRowAction', {
+    ...rowEventPayload(row),
+    action,
+    actionCode: action.code,
+  });
+}
+
 function getSelectModelValue(column: ArrayTableColumn, value: unknown): any {
   const option = column.options?.find((item) => isSameValue(readOptionRawValue(item), value));
   return option?.value ?? value;
@@ -504,6 +612,18 @@ function formatObjectPreview(value: unknown) {
     return JSON.stringify(value);
   } catch {
     return '[object]';
+  }
+}
+
+function formatCellText(value: unknown) {
+  if (value === null || typeof value === 'undefined') return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
   }
 }
 
@@ -808,6 +928,16 @@ function cloneValue(value: unknown) {
   gap: 6px;
 }
 
+.lc-array-table__text-cell {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  color: #1f2937;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .lc-array-table__actions {
   display: flex;
   align-items: center;
@@ -854,5 +984,21 @@ function cloneValue(value: unknown) {
 
 .lc-array-table__actions button.is-danger {
   color: #dc2626;
+}
+
+.lc-array-table__actions button.is-primary {
+  color: #1d73d8;
+}
+
+.lc-array-table__actions button.is-success {
+  color: #15803d;
+}
+
+.lc-array-table__actions button.is-warning {
+  color: #ca8a04;
+}
+
+.lc-array-table__actions button.is-info {
+  color: #475569;
 }
 </style>

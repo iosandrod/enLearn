@@ -83,30 +83,6 @@
             </section>
           </template>
         </nav>
-
-        <div
-          v-if="menuContext.visible"
-          class="admin-menu-context"
-          :style="{ left: `${menuContext.x}px`, top: `${menuContext.y}px` }"
-          @click.stop
-          @contextmenu.prevent.stop
-        >
-          <button type="button" @click="renameMenuItem">修改菜单名称</button>
-          <button
-            v-if="contextLowCodePageCode"
-            type="button"
-            @click="openLowCodeDesigner"
-          >
-            进入低代码设计
-          </button>
-          <button
-            v-if="contextLowCodePageCode"
-            type="button"
-            @click="openLowCodeEditPage"
-          >
-            进入编辑页面
-          </button>
-        </div>
       </aside>
 
       <main class="admin-main">
@@ -132,6 +108,7 @@
 <script setup lang="ts">
 import { defineComponent, h, resolveComponent } from 'vue';
 import type { PropType } from 'vue';
+import {VxeUI} from 'vxe-pc-ui';
 import { useServiceApi } from '../composables/useServiceApi';
 import type {
   LowCodePageRecord,
@@ -185,17 +162,6 @@ const expandedGroups = reactive<Record<string, boolean>>({});
 const visitedTabs = ref<Array<{ title: string; path: string }>>([]);
 const menuFilter = ref('');
 const advancedToolsOpen = ref(false);
-const menuContext = reactive<{
-  visible: boolean;
-  x: number;
-  y: number;
-  item: AdminRouteNode | null;
-}>({
-  visible: false,
-  x: 0,
-  y: 0,
-  item: null
-});
 
 function ensureDevTestUserSelected() {
   if (!isDev) return;
@@ -493,13 +459,21 @@ function buildMenuGroup(
 }
 
 function buildLowCodeMenuGroups(pages: AdminRouteNode[]) {
+  const databaseGroups = pages
+    .filter((page) => page.children?.length && page.route_type === 'group')
+    .map((group) => ({
+      ...group,
+      children: sortMenuPages(group.children ?? [])
+    }));
   const byCode = new Map(pages.map((page) => [page.code, page]));
-  const groupedCodes = new Set<string>();
+  const groupedCodes = new Set<string>(
+    databaseGroups.flatMap((group) => (group.children ?? []).map((child) => child.code))
+  );
   const groups = lowCodeMenuGroups
     .map((group, index) => {
       const children = group.routeCodes
         .map((code) => byCode.get(code))
-        .filter((item): item is AdminRouteNode => Boolean(item));
+        .filter((item): item is AdminRouteNode => Boolean(item) && !groupedCodes.has(item.code));
 
       children.forEach((child) => groupedCodes.add(child.code));
 
@@ -507,12 +481,14 @@ function buildLowCodeMenuGroups(pages: AdminRouteNode[]) {
     })
     .filter((group) => group.children.length);
 
-  const uncategorizedPages = pages.filter((page) => !groupedCodes.has(page.code));
+  const uncategorizedPages = pages.filter(
+    (page) => !page.children?.length && !groupedCodes.has(page.code)
+  );
   if (uncategorizedPages.length) {
     groups.push(buildMenuGroup('lowcode-other-root', '其他应用', uncategorizedPages));
   }
 
-  return groups;
+  return [...databaseGroups, ...groups];
 }
 
 function readRouteMetadata(item: AdminRouteNode) {
@@ -545,10 +521,13 @@ function isLowCodeMenuRoute(item: AdminRouteNode) {
 }
 
 function buildSidebarMenu(nodes: AdminRouteNode[]) {
+  const lowCodeTree = flattenNodes(nodes).filter(
+    (item) => !isAdvancedRoute(item) && isLowCodeMenuRoute(item)
+  );
   const pages = flattenMenuPages(nodes).filter(
     (item) => !isAdvancedRoute(item) && isLowCodeMenuRoute(item)
   );
-  return buildLowCodeMenuGroups(pages);
+  return buildLowCodeMenuGroups([...lowCodeTree, ...pages]);
 }
 
 function canViewRoute(node: AdminRouteNode) {
@@ -622,10 +601,6 @@ const activeTitle = computed<string>(
     )?.title ??
     '工作台'
 );
-const contextLowCodePageCode = computed(() =>
-  menuContext.item ? resolveLowCodePageCode(menuContext.item) : ''
-);
-
 async function reloadRoutes() {
   routeError.value = '';
 
@@ -669,15 +644,44 @@ function filterMenuNodes(nodes: AdminRouteNode[], keyword: string): AdminRouteNo
 
 function openMenuContext(payload: MenuContextPayload) {
   const { event, item } = payload;
-  menuContext.visible = true;
-  menuContext.x = event.clientX;
-  menuContext.y = event.clientY;
-  menuContext.item = item;
+  event.preventDefault();
+  event.stopPropagation();
+  const pageCode = resolveLowCodePageCode(item);
+
+  VxeUI.contextMenu.open({
+    x: event.clientX,
+    y: event.clientY,
+    className: 'enlearn-context-menu',
+    options: [
+      [
+        {
+          code: 'rename',
+          name: '修改菜单名称'
+        },
+        {
+          code: 'open-designer',
+          name: '进入低代码设计',
+          visible: Boolean(pageCode)
+        },
+        {
+          code: 'open-edit-page',
+          name: '进入编辑页面',
+          visible: Boolean(pageCode)
+        }
+      ]
+    ],
+    events: {
+      optionClick({ option }) {
+        if (option.code === 'rename') void renameMenuItem(item);
+        if (option.code === 'open-designer') void openLowCodeDesigner(item);
+        if (option.code === 'open-edit-page') void openLowCodeEditPage(item);
+      }
+    }
+  });
 }
 
 function closeMenuContext() {
-  menuContext.visible = false;
-  menuContext.item = null;
+  VxeUI.contextMenu.close();
 }
 
 function resolveAdvancedToolIcon(item: AdminRouteNode) {
@@ -709,11 +713,7 @@ function buildRouteSavePayload(item: AdminRouteNode, title: string) {
   };
 }
 
-async function renameMenuItem() {
-  const item = menuContext.item;
-  closeMenuContext();
-  if (!item) return;
-
+async function renameMenuItem(item: AdminRouteNode) {
   if (!item.id) {
     routeError.value = '当前菜单没有数据库 ID，不能直接修改名称。';
     return;
@@ -784,18 +784,15 @@ async function resolveExistingEditPageRoute(page: LowCodePageRecord) {
   return editPage.route;
 }
 
-async function openLowCodeDesigner() {
-  const pageCode = contextLowCodePageCode.value;
-  closeMenuContext();
+async function openLowCodeDesigner(item: AdminRouteNode) {
+  const pageCode = resolveLowCodePageCode(item);
   if (!pageCode) return;
   await router.push({ path: `/dashboard/low-code/designer/${pageCode}` });
   publishLowCodeDesignerLoadPage(pageCode);
 }
 
-async function openLowCodeEditPage() {
-  const pageCode = contextLowCodePageCode.value;
-  const item = menuContext.item;
-  closeMenuContext();
+async function openLowCodeEditPage(item: AdminRouteNode) {
+  const pageCode = resolveLowCodePageCode(item);
   if (!pageCode) return;
 
   routeError.value = '';

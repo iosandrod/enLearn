@@ -78,7 +78,7 @@
   import CompRender from './comp-render';
   import SlotItem from './slot-item.vue';
   import type { VisualEditorBlockData } from '../../visual-editor.utils';
-  import { $$dropdown, DropdownOption } from '../../utils/dropdown-service';
+  import VxeUI from 'vxe-pc-ui';
   import MonacoEditor from '../common/monaco-editor/MonacoEditor';
   import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
   import { useVisualData } from '../../hooks/useVisualData';
@@ -601,103 +601,113 @@
     block: VisualEditorBlockData,
     parentBlocks = currentPage.value.blocks,
   ) => {
-    $$dropdown({
-      reference: e,
-      content: () => (
-        <>
-          {props.allowFormDesign && isModalDesignBlock(block) && (
-            <DropdownOption
-              label="进入设计"
-              icon="ri-edit-line"
-              {...{
-                onClick: () => void openModalDesigner(block),
-              }}
-            />
-          )}
-          {props.allowFormDesign &&
-            (isFormDesignBlock(block) ||
-              isGridDesignBlock(block) ||
-              isButtonGroupDesignBlock(block)) && (
-            <DropdownOption
-              label="进入设计"
-              icon="ri-edit-line"
-              {...{
-                onClick: () =>
-                  void (isButtonGroupDesignBlock(block)
-                    ? openButtonGroupDesigner(block)
-                    : isGridDesignBlock(block)
-                    ? openGridDesigner(block)
-                    : openFormDesigner(block)),
-              }}
-            />
-          )}
-          {isSubFormDesignBlock(block) && (
-            <DropdownOption
-              label="进入设计"
-              icon="ri-edit-line"
-              {...{
-                onClick: () => void openSubFormDesigner(block),
-              }}
-            />
-          )}
-          <DropdownOption
-            label="复制节点"
-            icon="ri-file-copy-line"
-            {...{
-              onClick: () => {
-                const index = parentBlocks.findIndex((item) => item._vid == block._vid);
-                if (index != -1) {
-                  const setBlockVid = (block: VisualEditorBlockData) => {
-                    block._vid = `vid_${generateNanoid()}`;
-                    block.focus = false;
-                    const slots = block?.props?.slots || {};
-                    const slotKeys = Object.keys(slots);
-                    if (slotKeys.length) {
-                      slotKeys.forEach((slotKey) => {
-                        slots[slotKey]?.children?.forEach((child) => setBlockVid(child));
-                      });
-                    }
-                    if (Array.isArray(block.props?.overlays)) {
-                      block.props.overlays.forEach((child) => setBlockVid(child));
-                    }
-                  };
-                  const blockCopy = cloneDeep(parentBlocks[index]);
-                  setBlockVid(blockCopy);
-                  parentBlocks.splice(index + 1, 0, blockCopy);
+    e.preventDefault();
+    e.stopPropagation();
+    const canOpenModalDesigner = props.allowFormDesign && isModalDesignBlock(block);
+    const canOpenBlockDesigner =
+      props.allowFormDesign &&
+      (isFormDesignBlock(block) ||
+        isGridDesignBlock(block) ||
+        isButtonGroupDesignBlock(block));
+    const canOpenSubFormDesigner = isSubFormDesignBlock(block);
+
+    VxeUI.contextMenu.open({
+      x: e.clientX,
+      y: e.clientY,
+      className: 'enlearn-context-menu',
+      options: [
+        [
+          {
+            code: 'open-modal-designer',
+            name: '进入设计',
+            prefixIcon: 'ri-edit-line',
+            visible: canOpenModalDesigner,
+          },
+          {
+            code: 'open-block-designer',
+            name: '进入设计',
+            prefixIcon: 'ri-edit-line',
+            visible: canOpenBlockDesigner,
+          },
+          {
+            code: 'open-sub-form-designer',
+            name: '进入设计',
+            prefixIcon: 'ri-edit-line',
+            visible: canOpenSubFormDesigner,
+          },
+          {
+            code: 'duplicate',
+            name: '复制节点',
+            prefixIcon: 'ri-file-copy-line',
+          },
+          {
+            code: 'view',
+            name: '查看节点',
+            prefixIcon: 'ri-eye-line',
+          },
+          {
+            code: 'delete',
+            name: '删除节点',
+            prefixIcon: 'ri-delete-bin-line',
+            className: 'enlearn-context-menu-option--danger',
+          },
+        ],
+      ],
+      events: {
+        optionClick({ option }) {
+          if (option.code === 'open-modal-designer') {
+            void openModalDesigner(block);
+          }
+          if (option.code === 'open-block-designer') {
+            void (isButtonGroupDesignBlock(block)
+              ? openButtonGroupDesigner(block)
+              : isGridDesignBlock(block)
+                ? openGridDesigner(block)
+                : openFormDesigner(block));
+          }
+          if (option.code === 'open-sub-form-designer') {
+            void openSubFormDesigner(block);
+          }
+          if (option.code === 'duplicate') {
+            const index = parentBlocks.findIndex((item) => item._vid == block._vid);
+            if (index !== -1) {
+              const setBlockVid = (target: VisualEditorBlockData) => {
+                target._vid = `vid_${generateNanoid()}`;
+                target.focus = false;
+                const slots = target.props?.slots || {};
+                Object.keys(slots).forEach((slotKey) => {
+                  slots[slotKey]?.children?.forEach((child) => setBlockVid(child));
+                });
+                if (Array.isArray(target.props?.overlays)) {
+                  target.props.overlays.forEach((child) => setBlockVid(child));
                 }
+              };
+              const blockCopy = cloneDeep(parentBlocks[index]);
+              setBlockVid(blockCopy);
+              parentBlocks.splice(index + 1, 0, blockCopy);
+            }
+          }
+          if (option.code === 'view') {
+            useModal({
+              title: '节点信息',
+              footer: null,
+              props: {
+                width: 600,
               },
-            }}
-          />
-          <DropdownOption
-            label="查看节点"
-            icon="ri-eye-line"
-            {...{
-              onClick: () =>
-                useModal({
-                  title: '节点信息',
-                  footer: null,
-                  props: {
-                    width: 600,
-                  },
-                  content: () => (
-                    <MonacoEditor
-                      code={JSON.stringify(block)}
-                      layout={{ width: 530, height: 600 }}
-                      vid={block._vid}
-                    />
-                  ),
-                }),
-            }}
-          />
-          <DropdownOption
-            label="删除节点"
-            icon="ri-delete-bin-line"
-            {...{
-              onClick: () => deleteComp(block, parentBlocks),
-            }}
-          />
-        </>
-      ),
+              content: () => (
+                <MonacoEditor
+                  code={JSON.stringify(block)}
+                  layout={{ width: 530, height: 600 }}
+                  vid={block._vid}
+                />
+              ),
+            });
+          }
+          if (option.code === 'delete') {
+            deleteComp(block, parentBlocks);
+          }
+        },
+      },
     });
   };
 </script>

@@ -139,5 +139,9 @@ export interface VxeUILike {
     interceptor?: {
         add: (type: string, callback: (params: any) => any) => void;
     };
+    contextMenu?: {
+        open: (options: Record<string, any>) => void;
+        close: () => void;
+    };
 }
 //# sourceMappingURL=types.d.ts.map

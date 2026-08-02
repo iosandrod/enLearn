@@ -65,7 +65,17 @@ function hasGridEventConfig(key: string) {
 }
 
 function shouldPublishDesignedGridEvent(key: string) {
-  if (['rowCurrentChange', 'rowDblclick', 'cellDblclick'].includes(key)) return true;
+  if (
+    [
+      'rowCurrentChange',
+      'rowDblclick',
+      'cellDblclick',
+      'cellClick',
+      'radioChange',
+      'checkboxChange',
+      'checkboxAll',
+    ].includes(key)
+  ) return true;
   if (!props.block.schema.events && !props.block.schema.eventNames) return true;
   return hasGridEventConfig(key);
 }
@@ -150,7 +160,7 @@ function handleCellDblclick(payload: {
 }
 
 function handleGridEvent(payload: GridRuntimeEventPayload) {
-  if (!hasGridEventConfig(payload.key)) return;
+  if (!shouldPublishDesignedGridEvent(payload.key)) return;
 
   emitRuntimeEvent(getGridEventName(payload.key, `grid.${payload.key}`), {
     ...payload,

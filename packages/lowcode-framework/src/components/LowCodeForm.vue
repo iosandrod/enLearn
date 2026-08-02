@@ -209,6 +209,7 @@ const formItemPropsByField = computed(() =>
     prev[field.field] = {
       field: vxeField,
       title: field.label,
+      showTitle: field.showTitle,
       span,
       rules: formRules.value[vxeField],
       className: 'lc-form-item',
@@ -356,6 +357,7 @@ function resolveFormItemProps(field: LowCodeField) {
   return formItemPropsByField.value[field.field] ?? {
     field: getVxeFieldKey(field),
     title: field.label,
+    showTitle: field.showTitle,
     span: getFieldVxeSpan(field),
     className: 'lc-form-item',
     contentClassName: 'lc-form-item__content',

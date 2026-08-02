@@ -3,16 +3,23 @@
     <LowCodeForm
       v-bind="lowCodeFormProps"
       @update:model-value="handleUpdate"
+      @submit="handleSubmit"
+      @action="handleAction"
+      @field-change="handleFieldChange"
     />
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue';
-import type { LowCodeFormProps } from '../../../types/lowcode';
+import { computed } from 'vue';
+import LowCodeForm from '../../../components/LowCodeForm.vue';
+import type { LowCodeFormProps, LowCodeFormSchema } from '../../../types/lowcode';
 import type { LowCodeFormMaterialProps } from '../types';
 
-const LowCodeForm = defineAsyncComponent(() => import('../../../components/LowCodeForm.vue'));
+const fallbackSchema: LowCodeFormSchema = {
+  fields: [],
+  actions: [],
+};
 
 const props = defineProps<LowCodeFormMaterialProps>();
 const emit = defineEmits<{
@@ -27,17 +34,50 @@ const objectValue = computed(() =>
   isRecord(props.modelValue) ? props.modelValue : {}
 );
 
-const lowCodeFormProps = computed<LowCodeFormProps>(() => ({
-  ...(fieldProps.value as Partial<LowCodeFormProps>),
-  modelValue: objectValue.value,
-}));
+const lowCodeFormProps = computed<LowCodeFormProps>(() => {
+  const { onSubmit, onAction, onFieldChange, ...forwardedProps } = fieldProps.value;
+
+  return {
+    ...(forwardedProps as Partial<LowCodeFormProps>),
+    schema: isLowCodeFormSchema(forwardedProps.schema) ? forwardedProps.schema : fallbackSchema,
+    modelValue: objectValue.value,
+  };
+});
 
 function handleUpdate(value: Record<string, unknown>) {
   emit('update:modelValue', isRecord(value) ? value : {});
 }
 
+function handleSubmit(value: Record<string, unknown>) {
+  const handler = fieldProps.value.onSubmit;
+
+  if (typeof handler === 'function') {
+    handler(value);
+  }
+}
+
+function handleAction(action: unknown, value: Record<string, unknown>) {
+  const handler = fieldProps.value.onAction;
+
+  if (typeof handler === 'function') {
+    handler(action, value);
+  }
+}
+
+function handleFieldChange(payload: Record<string, unknown>) {
+  const handler = fieldProps.value.onFieldChange;
+
+  if (typeof handler === 'function') {
+    handler(payload);
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isLowCodeFormSchema(value: unknown): value is LowCodeFormSchema {
+  return isRecord(value) && Array.isArray(value.fields);
 }
 </script>
 

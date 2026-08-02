@@ -33,6 +33,7 @@ const approvalWorkflowRoot = resolve(__dirname, '..', 'packages', 'approval-work
 const chatWidgetRoot = resolve(__dirname, '..', 'packages', 'chat-widget', 'src');
 const triggerWorkflowEditorRoot = resolve(__dirname, '..', 'packages', 'trigger-workflow-editor', 'src');
 const workflowSchemaRoot = resolve(__dirname, '..', 'packages', 'workflow-schema', 'src');
+const areaPluginRoot = resolve(__dirname, '..', 'packages', 'area-plugin');
 const tldrawVueRoot = resolve(__dirname, '..', 'packages', 'tldraw-vue');
 const tldrawVueSrcRoot = resolve(tldrawVueRoot, 'src');
 const tldrawVueEntry = existsSync(resolve(tldrawVueSrcRoot, 'index.ts'))
@@ -155,6 +156,14 @@ export default defineConfig({
       { find: '@enlearn/chat-widget', replacement: chatWidgetRoot },
       { find: '@enlearn/trigger-workflow-editor', replacement: triggerWorkflowEditorRoot },
       { find: '@enlearn/workflow-schema', replacement: workflowSchemaRoot },
+      {
+        find: /^vxe-table-plugin-extend-cell-area\/style\.css$/,
+        replacement: resolve(areaPluginRoot, 'dist', 'style.css'),
+      },
+      {
+        find: /^vxe-table-plugin-extend-cell-area$/,
+        replacement: resolve(areaPluginRoot, 'dist', 'index.js'),
+      },
       { find: 'tldraw-vue-phase-one/style.css', replacement: tldrawVueStyle },
       { find: 'tldraw-vue-phase-one', replacement: tldrawVueEntry },
       { find: 'echarts', replacement: resolve(__dirname, 'node_modules', 'echarts') },

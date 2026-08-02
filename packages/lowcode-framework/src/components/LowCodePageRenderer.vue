@@ -127,6 +127,15 @@ const searchFilters = reactive<Record<string, Record<string, unknown>>>({});
 const runtimeEventBus = createLowCodeEventBus();
 let loadSequence = 0;
 
+defineExpose({
+  getSnapshot: () => ({
+    page: props.page,
+    resolvedData: cloneRuntimeValue(resolvedData),
+    formModels: cloneRuntimeValue(formModels),
+    searchFilters: cloneRuntimeValue(searchFilters),
+  }),
+});
+
 const themeClass = computed(() => host.getTheme().className);
 const themeStyle = computed(() =>
   Object.fromEntries(
@@ -166,6 +175,14 @@ function markLastBlockFill<T extends LowCodePageBlock>(blocks: T[]) {
 
 function clearObject(target: Record<string, unknown>) {
   Object.keys(target).forEach((key) => delete target[key]);
+}
+
+function cloneRuntimeValue<T>(value: T): T {
+  try {
+    return JSON.parse(JSON.stringify(value)) as T;
+  } catch {
+    return value;
+  }
 }
 
 function readPath(source: unknown, path: string) {

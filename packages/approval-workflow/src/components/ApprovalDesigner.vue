@@ -8,6 +8,7 @@ import {
   type NodeDragEvent,
   type NodeMouseEvent
 } from '@vue-flow/core';
+import VxeUI, { type VxeContextMenuDefines } from 'vxe-pc-ui';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import {
@@ -83,13 +84,6 @@ type PointerPaletteDrag = {
 
 type WorkflowBuildSimulationOptions = {
   intervalMs?: number;
-};
-
-type NodeContextMenuState = {
-  visible: boolean;
-  nodeId: string | null;
-  x: number;
-  y: number;
 };
 
 type NodeTypeMenuState = {
@@ -177,12 +171,6 @@ const draggingPaletteType = ref<WorkflowNodeType | null>(null);
 const isCanvasDragOver = ref(false);
 const pointerPaletteDrag = ref<PointerPaletteDrag | null>(null);
 const suppressNextPaletteClick = ref(false);
-const contextMenu = ref<NodeContextMenuState>({
-  visible: false,
-  nodeId: null,
-  x: 0,
-  y: 0
-});
 const nodeTypeMenu = ref<NodeTypeMenuState>({
   visible: false,
   sourceId: null,
@@ -203,7 +191,6 @@ const errors = computed(() => issues.value.filter((issue) => issue.level === 'er
 const warnings = computed(() => issues.value.filter((issue) => issue.level === 'warning'));
 const selectedNode = computed(() => currentModel.value.nodes.find((node) => node.id === selectedNodeId.value));
 const selectedFlowNode = computed(() => flowNodes.value.find((node) => node.id === selectedNodeId.value));
-const contextMenuNode = computed(() => currentModel.value.nodes.find((node) => node.id === contextMenu.value.nodeId));
 const selectedPresentation = computed(() => (selectedNode.value ? getNodePresentation(selectedNode.value) : undefined));
 const selectedOutgoingEdges = computed(() => {
   if (!selectedNode.value) return [];
@@ -242,10 +229,7 @@ const canGenerateConditionTemplate = computed(
         !props.readonly
     )
 );
-const contextMenuActions = computed<NodeContextMenuAction[]>(() => {
-  const node = contextMenuNode.value;
-  if (!node) return [];
-
+function buildContextMenuActions(node: WorkflowNode) {
   const actions: NodeContextMenuAction[] = [];
   const canExtend = node.type !== 'end' && !props.readonly;
   const canEdit = node.type !== 'start' && node.type !== 'end' && !props.readonly;
@@ -444,7 +428,7 @@ const contextMenuActions = computed<NodeContextMenuAction[]>(() => {
   );
 
   return actions;
-});
+}
 const draggingPaletteLabel = computed(() => {
   if (!draggingPaletteType.value) return '';
 
@@ -1036,17 +1020,49 @@ function openNodeContextMenu(event: MouseEvent, nodeId: string) {
 
   event.preventDefault();
   event.stopPropagation();
+  const node = currentModel.value.nodes.find((item) => item.id === nodeId);
+  if (!node) return;
+
   selectedNodeId.value = nodeId;
   closeNodeTypeMenu();
-  const menuWidth = 236;
-  const menuHeight = 520;
+  const optionGroups: VxeContextMenuDefines.MenuFirstOption[][] = [
+    [
+      {
+        code: 'node-summary',
+        name: `${node.name} · ${node.type}`,
+        disabled: true
+      }
+    ]
+  ];
 
-  contextMenu.value = {
-    visible: true,
-    nodeId,
-    x: Math.max(8, Math.min(event.clientX, window.innerWidth - menuWidth - 8)),
-    y: Math.max(8, Math.min(event.clientY, window.innerHeight - menuHeight - 8))
-  };
+  for (const action of buildContextMenuActions(node)) {
+    if (action.separated || optionGroups.length === 1) {
+      optionGroups.push([]);
+    }
+    optionGroups.at(-1)?.push({
+      code: action.key,
+      name: action.label,
+      disabled: action.disabled,
+      className: action.danger ? 'enlearn-context-menu-option--danger' : undefined,
+      prefixConfig: {
+        content: action.icon
+      },
+      params: action
+    });
+  }
+
+  VxeUI.contextMenu.open({
+    x: event.clientX,
+    y: event.clientY,
+    className: 'enlearn-context-menu',
+    options: optionGroups,
+    events: {
+      optionClick({ option }) {
+        const action = option.params as NodeContextMenuAction | undefined;
+        if (action && !action.disabled) action.run();
+      }
+    }
+  });
 }
 
 function openNodeTypeMenu(event: MouseEvent, sourceId: string) {
@@ -1071,14 +1087,7 @@ function openNodeTypeMenu(event: MouseEvent, sourceId: string) {
 }
 
 function closeContextMenu() {
-  if (!contextMenu.value.visible) return;
-
-  contextMenu.value = {
-    visible: false,
-    nodeId: null,
-    x: 0,
-    y: 0
-  };
+  VxeUI.contextMenu.close();
 }
 
 function closeNodeTypeMenu() {
@@ -1433,13 +1442,6 @@ function patchEdge(edgeId: string, patch: Partial<WorkflowEdge>, options: { layo
   if (options.layout) {
     scheduleAutoLayout();
   }
-}
-
-function runContextMenuAction(action: NodeContextMenuAction) {
-  if (action.disabled) return;
-
-  closeContextMenu();
-  action.run();
 }
 
 function chooseExtensionNodeType(type: WorkflowNodeType) {
@@ -2459,37 +2461,6 @@ defineExpose({
 
     </div>
     <div
-      v-if="contextMenu.visible"
-      class="approval-designer__context-menu"
-      :style="{
-        left: `${contextMenu.x}px`,
-        top: `${contextMenu.y}px`
-      }"
-      @click.stop
-      @contextmenu.prevent.stop
-      @pointerdown.stop
-    >
-      <div class="approval-designer__context-head">
-        <strong>{{ contextMenuNode?.name || '节点' }}</strong>
-        <span>{{ contextMenuNode?.type || '' }}</span>
-      </div>
-      <button
-        v-for="action in contextMenuActions"
-        :key="action.key"
-        type="button"
-        class="approval-designer__context-action"
-        :class="{
-          'approval-designer__context-action--danger': action.danger,
-          'approval-designer__context-action--separated': action.separated
-        }"
-        :disabled="action.disabled"
-        @click="runContextMenuAction(action)"
-      >
-        <span>{{ action.icon }}</span>
-        <strong>{{ action.label }}</strong>
-      </button>
-    </div>
-    <div
       v-if="pointerPaletteDrag?.active"
       class="approval-designer__drag-ghost"
       :style="pointerDragStyle"
@@ -2969,107 +2940,6 @@ defineExpose({
   font-size: 11px;
   font-weight: 700;
   line-height: 15px;
-}
-
-.approval-designer__context-menu {
-  position: fixed;
-  z-index: 9998;
-  display: grid;
-  width: 236px;
-  max-height: calc(100vh - 16px);
-  gap: 4px;
-  overflow: auto;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: #ffffff;
-  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.14);
-  padding: 7px;
-}
-
-.approval-designer__context-head {
-  display: grid;
-  gap: 2px;
-  border-bottom: 1px solid #edf1f7;
-  margin-bottom: 4px;
-  padding: 3px 4px 8px;
-}
-
-.approval-designer__context-head strong {
-  overflow: hidden;
-  color: #0f172a;
-  font-size: 13px;
-  line-height: 18px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.approval-designer__context-head span {
-  color: #64748b;
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 14px;
-  text-transform: uppercase;
-}
-
-.approval-designer__context-action {
-  display: grid;
-  min-height: 34px;
-  grid-template-columns: 28px minmax(0, 1fr);
-  align-items: center;
-  gap: 8px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: #1f2937;
-  cursor: pointer;
-  padding: 5px 7px;
-  text-align: left;
-}
-
-.approval-designer__context-action:hover:not(:disabled) {
-  background: #f1f5f9;
-}
-
-.approval-designer__context-action:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
-.approval-designer__context-action--separated {
-  border-top: 1px solid #edf1f7;
-  margin-top: 4px;
-  padding-top: 8px;
-}
-
-.approval-designer__context-action span {
-  display: grid;
-  width: 24px;
-  height: 24px;
-  place-items: center;
-  border: 1px solid #dbe4f0;
-  border-radius: 6px;
-  background: #f8fafc;
-  color: #2563eb;
-  font-size: 10px;
-  font-weight: 900;
-}
-
-.approval-designer__context-action strong {
-  overflow: hidden;
-  font-size: 13px;
-  line-height: 18px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.approval-designer__context-action--danger {
-  color: #b91c1c;
-}
-
-.approval-designer__context-action--danger span {
-  border-color: #fecaca;
-  background: #fef2f2;
-  color: #b91c1c;
 }
 
 .approval-designer__flow {

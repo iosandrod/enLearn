@@ -67,7 +67,7 @@ import { convertLowCodePageSchemaToVisualEditor } from '../lowcode/visual-conver
 import { prepareLowCodePageSchema } from '../lowcode/schema';
 import { convertVisualEditorToLowCode } from '../utils/visual-to-lowcode';
 import {
-  closeGlobalDialog,
+  confirmLowCodePage,
   findGlobalDialog,
   openGlobalDialog,
 } from '../runtime/global-dialog';
@@ -78,7 +78,7 @@ import {
   type LowCodeMessages,
   type LowCodeTheme,
 } from '../core/host';
-import { getLowCodePage, listLowCodePages } from '../runtime/lowcode-pages';
+import { getLowCodePage } from '../runtime/lowcode-pages';
 
 const props = defineProps<{
   code?: string;
@@ -152,8 +152,6 @@ const messageType = ref<'success' | 'error'>('success');
 const visualModel = ref<VisualEditorModelValue | null>(null);
 const loadingPageCode = ref('');
 const pagePickerLoading = ref(false);
-const pagePickerRows = ref<LowCodePageRecord[]>([]);
-const selectedPickerPage = ref<LowCodePageRecord | null>(null);
 
 const designerThemeClass = computed(() => host.getTheme().className);
 const designerThemeStyle = computed(() =>
@@ -209,15 +207,77 @@ const pageInfoSchema: LowCodeFormSchema = {
   ],
   actions: [],
 };
-const pagePickerColumns: Record<string, unknown>[] = [
-  { type: 'seq', title: '#', width: 56 },
-  { field: 'title', title: '标题', minWidth: 180 },
-  { field: 'code', title: '编码', minWidth: 160 },
-  { field: 'route', title: '路由', minWidth: 260 },
-  { field: 'status', title: '状态', width: 96 },
-  { field: 'version', title: '版本', width: 88 },
-  { field: 'updated_at', title: '更新时间', width: 190 }
-];
+
+const pagePickerPage: LowCodePageRecord = {
+  id: 'lowcode-page-picker-page',
+  code: 'lowcode-page-picker-page',
+  route: '/__lowcode/page-picker',
+  title: '加载页面',
+  description: null,
+  layout: 'dashboard',
+  status: 'published',
+  keep_alive: false,
+  edit_page_id: null,
+  version: 1,
+  published_at: null,
+  created_at: '',
+  updated_at: '',
+  schema: {
+    schemaVersion: 1,
+    code: 'lowcode-page-picker-page',
+    route: '/__lowcode/page-picker',
+    title: '加载页面',
+    pageType: 'list',
+    layout: 'dashboard',
+    status: 'published',
+    keepAlive: false,
+    dataSources: {
+      pages: {
+        key: 'pages',
+        serviceName: 'lowcode',
+        serviceMethod: 'listItems',
+        autoLoad: true,
+        postData: {
+          tableName: 'lowcode_pages',
+          includeData: false,
+          sorts: [{ field: 'updated_at', direction: 'desc' }],
+          limit: 1000,
+        },
+      },
+    },
+    blocks: [
+      {
+        id: 'lowcode-page-picker-grid',
+        kind: 'grid',
+        sourceKey: 'pages',
+        schema: {
+          grid: {
+            border: true,
+            stripe: true,
+            showOverflow: true,
+            rowConfig: { keyField: 'id', isCurrent: true },
+            height: '100%',
+            columns: [
+              { field: 'code', title: '页面编码', minWidth: 180, fixed: 'left' },
+              { field: 'title', title: '标题', minWidth: 180 },
+              { field: 'route', title: '路由', minWidth: 260, showOverflow: 'tooltip' },
+              { field: 'status', title: '状态', width: 96, align: 'center' },
+              { field: 'version', title: '版本', width: 88, align: 'center' },
+              { field: 'updated_at', title: '更新时间', minWidth: 190 },
+            ],
+          },
+          events: {
+            rowCurrentChange: [],
+            cellClick: [],
+            rowDblclick: [],
+          },
+          rowActions: { edit: false, delete: false },
+        },
+        layout: { fillRemaining: true },
+      },
+    ],
+  },
+};
 
 const fallbackVisualModel = computed<VisualEditorModelValue>(() => ({
   pages: {
@@ -431,6 +491,43 @@ function buildSchema(payload: {
   });
 }
 
+function buildPageSaveData(schema: LowCodePageSchema) {
+  const nextVersion = (page.value?.version ?? 0) + 1;
+  const publishedAt =
+    schema.status === 'published'
+      ? new Date().toISOString()
+      : page.value?.published_at ?? null;
+
+  return {
+    code: schema.code,
+    route: schema.route,
+    title: schema.title,
+    description: schema.description ?? null,
+    layout: schema.layout ?? 'dashboard',
+    status: schema.status ?? 'draft',
+    keep_alive: schema.keepAlive ?? true,
+    edit_page_id: page.value?.edit_page_id ?? null,
+    schema,
+    version: nextVersion,
+    published_at: publishedAt
+  };
+}
+
+async function savePageItem(schema: LowCodePageSchema) {
+  return host.getServiceApi().invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+    resource: 'pages',
+    ...(page.value?.id ? { id: page.value.id } : {}),
+    data: buildPageSaveData(schema)
+  });
+}
+
+async function savePageWithWorkflow(schema: LowCodePageSchema) {
+  return host.getServiceApi().invoke<LowCodePageRecord>('lowcode', 'savePage', {
+    code: page.value?.code || form.value.code,
+    schema
+  });
+}
+
 async function saveVisualProject(payload: {
   model: VisualEditorModelValue;
   currentPath: string;
@@ -452,10 +549,9 @@ async function saveVisualProject(payload: {
       form.value.status = overrideStatus;
     }
     const schema = buildSchema(payload);
-    const saved = await host.getServiceApi().invoke<LowCodePageRecord>('lowcode', 'savePage', {
-      code: page.value?.code || form.value.code,
-      schema
-    });
+    const saved = overrideStatus === 'published'
+      ? await savePageWithWorkflow(schema)
+      : await savePageItem(schema);
 
     page.value = saved;
     fillForm(saved);
@@ -496,12 +592,40 @@ function requestPublish() {
   saveVisualProject(snapshot, 'published').catch(() => undefined);
 }
 
-async function fetchPageRows() {
+async function openPagePicker() {
+  if (findGlobalDialog('lowcode-page-picker')) return;
+
   pagePickerLoading.value = true;
+  message.value = '';
 
   try {
-    pagePickerRows.value = await listLowCodePages(host.getServiceApi(), { includeData: false });
-    selectedPickerPage.value = null;
+    const result = await confirmLowCodePage({
+      page: pagePickerPage,
+      serviceApi: host.getServiceApi(),
+      router: host.getRouter(),
+      route: host.getRoute(),
+      locale: props.locale,
+      messages: props.messages,
+      theme: props.theme,
+      title: '加载页面',
+      confirmLabel: '加载',
+      requireSelection: true,
+      dialog: {
+        id: 'lowcode-page-picker',
+        className: 'visual-designer-dialog',
+      },
+    });
+
+    if (result.action === 'cancel' || result.action === 'close') return;
+
+    const code = readPageCodeFromPickerResult(result.payload);
+    if (!code) {
+      message.value = '请先选择要加载的页面。';
+      messageType.value = 'error';
+      return;
+    }
+
+    await loadPageByCode(code);
   } catch (error) {
     message.value = error instanceof Error ? error.message : '页面列表加载失败。';
     messageType.value = 'error';
@@ -510,101 +634,18 @@ async function fetchPageRows() {
   }
 }
 
-async function openPagePicker() {
-  if (findGlobalDialog('lowcode-page-picker')) return;
+function readPageCodeFromPickerResult(payload: unknown) {
+  if (!isPlainRecord(payload)) return '';
 
-  selectedPickerPage.value = null;
-  void openGlobalDialog({
-    id: 'lowcode-page-picker',
-    title: '加载页面',
-    width: 'min(1040px, calc(100vw - 48px))',
-    height: 'min(680px, calc(100vh - 96px))',
-    showFooter: true,
-    content: {
-      className: 'visual-designer-dialog',
-      children: [
-        {
-          type: 'toolbar',
-          className: 'visual-designer-dialog-toolbar lc-actions',
-          actions: [
-            {
-              code: 'refresh',
-              label: '刷新列表',
-              status: 'primary',
-              loading: pagePickerLoading,
-              onClick: () => {
-                void fetchPageRows();
-              },
-            },
-          ],
-        },
-        {
-          type: 'grid',
-          grid: {
-            rows: pagePickerRows,
-            columns: pagePickerColumns,
-            loading: pagePickerLoading,
-            props: {
-              border: true,
-              height: 500,
-              rowConfig: { isCurrent: true, keyField: 'id' },
-            },
-            events: {
-              'current-row-change': handlePagePickerCurrentChange,
-              'row-dblclick': handlePagePickerDblclick,
-            },
-          },
-        },
-      ],
-    },
-    actions: [
-      {
-        code: 'cancel',
-        label: '取消',
-        role: 'cancel',
-      },
-      {
-        code: 'confirm',
-        label: '加载',
-        role: 'confirm',
-        status: 'primary',
-        disabled: computed(() => !selectedPickerPage.value),
-        loading,
-        onClick: () => {
-          if (!selectedPickerPage.value) return false;
-          void confirmLoadSelectedPage();
-        },
-      },
-    ],
-  });
-  await fetchPageRows();
-}
+  const row = [
+    payload.row,
+    payload.selectedRow,
+    payload.currentRow,
+    Array.isArray(payload.selectedRows) ? payload.selectedRows[0] : undefined,
+    Array.isArray(payload.rows) ? payload.rows[0] : undefined,
+  ].find(isPlainRecord);
 
-function readPagePickerRow(payload: unknown) {
-  if (typeof payload !== 'object' || payload === null) return null;
-  const row = (payload as { row?: unknown }).row;
-  return typeof row === 'object' && row !== null ? (row as LowCodePageRecord) : null;
-}
-
-function handlePagePickerCurrentChange(payload: unknown) {
-  selectedPickerPage.value = readPagePickerRow(payload);
-}
-
-function handlePagePickerDblclick(payload: unknown) {
-  const row = readPagePickerRow(payload);
-  if (!row) return;
-  selectedPickerPage.value = row;
-  confirmLoadSelectedPage();
-}
-
-async function confirmLoadSelectedPage() {
-  if (!selectedPickerPage.value) return;
-  const code = selectedPickerPage.value.code;
-  await closeGlobalDialog('lowcode-page-picker', {
-    action: 'confirm',
-    values: {},
-  });
-  await loadPageByCode(code);
+  return typeof row?.code === 'string' ? row.code.trim() : '';
 }
 
 function normalizePageInfoForm(value: Record<string, unknown>): DesignerPageForm {

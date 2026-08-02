@@ -36,6 +36,7 @@ export type LowCodeField = {
   field: string;
   label: string;
   component: LowCodeFieldComponent;
+  showTitle?: boolean;
   help?: string;
   props?: Record<string, unknown>;
   options?: LowCodeOption[];
@@ -260,7 +261,7 @@ export type LowCodeFormProps = {
   className?: string;
   readonly?: boolean;
   disabled?: boolean;
-  rules?: Record<string, unknown>;
+  rules?: Record<string, unknown[]>;
   preventSubmit?: boolean;
   validConfig?: Record<string, unknown>;
   tooltipConfig?: Record<string, unknown>;
