@@ -9,7 +9,13 @@
       <p class="page-description">{{ errorMessage }}</p>
     </div>
 
-    <LowCodePageRenderer v-else-if="page" :page="page" />
+    <LowCodePageRenderer
+      v-else-if="page"
+      :page="page"
+      :service-api="serviceApi"
+      :router="router"
+      :route="route"
+    />
   </section>
 </template>
 
@@ -20,6 +26,7 @@ import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode
 import { getLowCodePage } from '../../../utils/lowCodePages';
 
 const route = useRoute();
+const router = useRouter();
 const serviceApi = useServiceApi();
 const page = ref<LowCodePageRecord & { resolvedData?: Record<string, unknown> } | null>(
   null

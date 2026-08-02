@@ -30,6 +30,7 @@ const dashboardRoutes: RouteRecordRaw[] = [
   { path: '/dashboard', component: () => import('../pages/dashboard/index.vue'), meta: dashboardRouteMeta },
   { path: '/dashboard/trigger-workflow/designer', component: () => import('../pages/dashboard/trigger-workflow/designer.vue'), meta: dashboardRouteMeta },
   { path: '/dashboard/advanced/print-designer', component: () => import('../pages/dashboard/advanced/print-designer.vue'), meta: dashboardRouteMeta },
+  { path: '/dashboard/print-designer', component: () => import('../pages/dashboard/advanced/print-designer.vue'), meta: dashboardRouteMeta },
   { path: '/dashboard/low-code/designer/:code?', component: () => import('../pages/dashboard/low-code/designer/[code].vue'), meta: dashboardRouteMeta },
   { path: '/dashboard/workflow/designer/:code?', component: () => import('../pages/dashboard/workflow/designer.vue'), meta: dashboardRouteMeta },
   { path: '/dashboard/entity-design', component: () => import('../pages/dashboard/entity-design.vue'), meta: dashboardRouteMeta },

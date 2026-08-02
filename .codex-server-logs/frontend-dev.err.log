@@ -1011,3 +1011,36 @@ AggregateError [ECONNREFUSED]:
   at <RouterView> 
   at <Default key=0 > 
   at <App>
+[2m19:58:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m20:03:54[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m20:04:01[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m20:04:38[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m20:04:40[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m20:04:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m20:15:50[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785672948216:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785672948216:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785672948216:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785672948216:181:5)
+[2m20:15:50[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785672948216:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785672948216:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785672948216:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785672948216:200:5)
+[2m20:15:50[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m20:15:50[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785672948216:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785672948216:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785672948216:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785672948216:181:5)
+[2m20:15:50[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785672948216:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785672948216:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785672948216:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785672948216:200:5)

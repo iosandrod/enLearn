@@ -746,3 +746,148 @@ Nest API listening on http://localhost:3002/api/service
 [32m[Nest] 42020  - [39m2026/08/02 19:55:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1830ms[39m
 [32m[Nest] 42020  - [39m2026/08/02 19:56:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3538ms[39m
 [32m[Nest] 42020  - [39m2026/08/02 19:57:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3445ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1351ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2592ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1265ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 743ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 868ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1639ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 340ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 556ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1060ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 543ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1278ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1224ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 912ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 847ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 887ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 287ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1814ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:58:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 325ms[39m
+[33m[Nest] 42020  - [39m2026/08/02 19:58:36 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.savePage failed 3222ms: Could not find the table 'public.lowcode_page_relations' in the schema cache Could not find the table 'public.lowcode_page_relations' in the schema cache Bad Gateway[39m
+[32m[Nest] 42020  - [39m2026/08/02 19:59:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5529ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:00:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2276ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:01:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1097ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:02:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 898ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:03:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1443ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:03:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 340ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:03:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 348ms[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:03:54 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.listTableRows failed 1ms: Unsupported lowcode method: listTableRows Unsupported lowcode method: listTableRows Bad Gateway[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:03:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 627ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 663ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 173ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 862ms[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:04:02 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.listTableRows failed 1ms: Unsupported lowcode method: listTableRows Unsupported lowcode method: listTableRows Bad Gateway[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 958ms[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:04:38 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.listTableRows failed 2ms: Unsupported lowcode method: listTableRows Unsupported lowcode method: listTableRows Bad Gateway[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 397ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 256ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 349ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 978ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 157ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 255ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 310ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 334ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 452ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 462ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 475ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 174ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 181ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 249ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 336ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:04:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 311ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:05:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 504ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:06:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 766ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:06:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 498ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:06:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 304ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:06:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 503ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:07:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 516ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:08:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 750ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:08:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1000ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:08:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 236ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:09:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 482ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:09:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 630ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:09:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 296ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:09:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 610ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:10:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 484ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:10:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 344ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:10:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 344ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:10:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 350ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:10:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 497ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:10:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 518ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:10:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 736ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:11:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 355ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:11:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 170ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:11:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 577ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 568ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 691ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 147ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 148ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 140ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 307ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 157ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 150ms[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:27 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.listMessages failed 0ms: Unsupported notification method: listMessages Unsupported notification method: listMessages Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:27 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getPreferences failed 1ms: Unsupported notification method: getPreferences Unsupported notification method: getPreferences Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:27 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.listMessages failed 1ms: Unsupported notification method: listMessages Unsupported notification method: listMessages Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:27 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.listDeliveries failed 1ms: Unsupported notification method: listDeliveries Unsupported notification method: listDeliveries Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:27 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.listDeliveries failed 1ms: Unsupported notification method: listDeliveries Unsupported notification method: listDeliveries Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:27 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] files.listStorageEntities failed 1ms: Unsupported Files method: listStorageEntities Unsupported Files method: listStorageEntities Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:28 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] files.listStorageEntities failed 2ms: Unsupported Files method: listStorageEntities Unsupported Files method: listStorageEntities Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:28 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] files.listStorageEntities failed 0ms: Unsupported Files method: listStorageEntities Unsupported Files method: listStorageEntities Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:28 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 1ms: Unsupported Admin listItems itemType. Unsupported Admin listItems itemType. Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:28 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 186ms: Could not find the table 'public.workflow_job_runs' in the schema cache Could not find the table 'public.workflow_job_runs' in the schema cache Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:28 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 1ms: Unsupported Admin listItems itemType. Unsupported Admin listItems itemType. Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:28 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 1ms: Unsupported Admin listItems itemType. Unsupported Admin listItems itemType. Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:28 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 157ms: Could not find the table 'public.system_execution_tasks' in the schema cache Could not find the table 'public.system_execution_tasks' in the schema cache Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:12:28 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 154ms: Could not find the table 'public.system_execution_tasks' in the schema cache Could not find the table 'public.system_execution_tasks' in the schema cache Bad Gateway[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 368ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 169ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 154ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1038ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 245ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 158ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 154ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:12:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 490ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:13:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1039ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:13:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.listItems ok 113ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:13:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.listItems ok 1194ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:13:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.listItems ok 881ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:13:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.listItems ok 863ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:14:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1442ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:14:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 371ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:14:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 462ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:14:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 476ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:14:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 478ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:14:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 534ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:14:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 709ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:15:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 561ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 509ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 823ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 153ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 513ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 162ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 244ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 160ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 157ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 159ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 157ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 154ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 414ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 262ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.runAction ok 361ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.runAction ok 159ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] files.runAction ok 524ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.listItems ok 87ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.listItems ok 1460ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.listItems ok 3552ms[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:16:33 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 354ms: Could not find the table 'public.workflow_timer_jobs' in the schema cache Could not find the table 'public.workflow_timer_jobs' in the schema cache Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:16:33 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 157ms: Could not find the table 'public.system_execution_tasks' in the schema cache Could not find the table 'public.system_execution_tasks' in the schema cache Bad Gateway[39m
+[33m[Nest] 42020  - [39m2026/08/02 20:16:33 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 153ms: Could not find the table 'public.system_execution_tasks' in the schema cache Could not find the table 'public.system_execution_tasks' in the schema cache Bad Gateway[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 233ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 164ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 158ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:34 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 337ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:34 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 160ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:34 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 160ms[39m
+[32m[Nest] 42020  - [39m2026/08/02 20:16:34 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 156ms[39m

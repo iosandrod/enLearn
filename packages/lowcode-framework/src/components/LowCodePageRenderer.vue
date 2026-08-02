@@ -341,15 +341,79 @@ const legacyAdminListMethodTables: Record<string, string> = {
   listWorkflowTimerJobs: 'workflow_timer_jobs',
 };
 
+const legacyWorkflowListItemTypes: Record<string, string> = {
+  listWorkflowJobs: 'jobs',
+  listWorkflowJobRuns: 'jobRuns',
+};
+
 const legacyLowCodeListMethodTables: Record<string, string> = {
   listPages: 'lowcode_pages',
 };
+
+const legacyNotificationListResources: Record<string, string> = {
+  listMessages: 'messages',
+  getPreferences: 'preferences',
+  listDeliveries: 'deliveries',
+};
+
+const emptyWhenUnavailableListMethods = new Set([
+  'listSystemExecutionTasks',
+  'listWorkflowTimerJobs',
+]);
+
+const lowCodeTableListMethods = new Set([
+  'listTableRows',
+  'listRows',
+  'listTableData',
+]);
 
 function normalizeLegacyAdminListRequest(
   serviceName: string,
   serviceMethod: string,
   postData: Record<string, unknown>
 ) {
+  if (serviceName === 'notification' && legacyNotificationListResources[serviceMethod]) {
+    return {
+      serviceName,
+      serviceMethod: 'listItems',
+      postData: {
+        ...postData,
+        resource: readString(postData.resource, legacyNotificationListResources[serviceMethod]),
+      },
+    };
+  }
+
+  if (serviceName === 'files' && serviceMethod === 'listStorageEntities') {
+    return {
+      serviceName,
+      serviceMethod: 'runAction',
+      postData: {
+        ...postData,
+        resource: readString(postData.resource, 'files'),
+        operation: readString(postData.operation ?? postData.actionName ?? postData.action, serviceMethod),
+      },
+    };
+  }
+
+  if (serviceName === 'admin' && legacyWorkflowListItemTypes[serviceMethod]) {
+    return {
+      serviceName: 'workflow',
+      serviceMethod: 'listItems',
+      postData: {
+        ...postData,
+        itemType: readString(postData.itemType ?? postData.item_type ?? postData.type, legacyWorkflowListItemTypes[serviceMethod]),
+      },
+    };
+  }
+
+  if (serviceName === 'lowcode' && lowCodeTableListMethods.has(serviceMethod)) {
+    return {
+      serviceName: 'admin',
+      serviceMethod: 'listItems',
+      postData,
+    };
+  }
+
   const tableName = serviceName === 'admin'
     ? legacyAdminListMethodTables[serviceMethod]
     : serviceName === 'lowcode'
@@ -367,6 +431,16 @@ function normalizeLegacyAdminListRequest(
       tableName: readString(postData.tableName ?? postData.table_name, tableName),
     },
   };
+}
+
+function shouldReturnEmptyForUnavailableList(error: unknown, serviceMethod: string) {
+  if (!emptyWhenUnavailableListMethods.has(serviceMethod)) return false;
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return (
+    message.includes('Could not find the table') ||
+    message.includes('Unsupported Admin listItems itemType') ||
+    message.includes('does not exist')
+  );
 }
 
 function isListItemsRequest(serviceName: string, serviceMethod: string) {
@@ -504,11 +578,21 @@ async function invokeDataSource(
     throw new Error(`Data source ${key} is missing serviceName or serviceMethod.`);
   }
 
-  const data = await host.getServiceApi().invoke(
-    serviceName,
-    serviceMethod,
-    postData
-  );
+  let data: unknown;
+
+  try {
+    data = await host.getServiceApi().invoke(
+      serviceName,
+      serviceMethod,
+      postData
+    );
+  } catch (error) {
+    if (shouldReturnEmptyForUnavailableList(error, source.serviceMethod ?? serviceMethod)) {
+      data = [];
+    } else {
+      throw error;
+    }
+  }
 
   return [key, data] as const;
 }
@@ -1034,9 +1118,19 @@ async function invokeServiceDirective(
 
   if (!serviceName || !serviceMethod) return;
 
+  const normalizedRequest = normalizeLegacyAdminListRequest(
+    serviceName,
+    serviceMethod,
+    request.postData
+  );
+
   const result = await host
     .getServiceApi()
-    .invoke(serviceName, serviceMethod, request.postData);
+    .invoke(
+      normalizedRequest.serviceName,
+      normalizedRequest.serviceMethod,
+      normalizedRequest.postData
+    );
   const assignTo = resolveDirectiveString(directive.assignTo, event);
 
   if (assignTo) {

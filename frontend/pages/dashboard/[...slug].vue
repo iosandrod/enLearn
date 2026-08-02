@@ -9,7 +9,13 @@
       <p class="page-description">{{ errorMessage }}</p>
     </div>
 
-    <LowCodePageRenderer v-else-if="page" :page="page" />
+    <LowCodePageRenderer
+      v-else-if="page"
+      :page="page"
+      :service-api="serviceApi"
+      :router="router"
+      :route="currentRoute"
+    />
   </section>
 </template>
 
@@ -24,6 +30,8 @@ const props = defineProps<{
 }>();
 
 const serviceApi = useServiceApi();
+const router = useRouter();
+const currentRoute = useRoute();
 const page = ref<LowCodePageRecord & { resolvedData?: Record<string, unknown> } | null>(
   null
 );
