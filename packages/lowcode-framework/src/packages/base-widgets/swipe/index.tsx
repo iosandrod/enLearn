@@ -51,12 +51,12 @@ export default {
     );
   },
   props: createFieldProps(),
-  events: [{ label: '姣忎竴椤佃疆鎾粨鏉熷悗瑙﹀彂', value: 'change' }],
+  events: [{ label: '每一页轮播结束后触发', value: 'change' }],
   showStyleConfig: false,
   resize: {
     width: true,
   },
   model: {
-    default: '缁戝畾瀛楁',
+    default: '绑定字段',
   },
 } as VisualEditorComponent;

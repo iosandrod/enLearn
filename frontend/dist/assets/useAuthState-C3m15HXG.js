@@ -1,0 +1,1 @@
+import{o as e}from"./spa-compat-84GIo9Sg.js";function t(){return{user:e(`auth-user`,()=>null),profile:e(`auth-profile`,()=>null),permissions:e(`auth-permissions`,()=>[]),accounts:e(`auth-accounts`,()=>[]),session:e(`auth-session`,()=>null),ready:e(`auth-ready`,()=>!1)}}export{t};

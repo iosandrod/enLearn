@@ -221,12 +221,12 @@ const formItemPropsByField = computed(() =>
 const formGridStyle = computed(() => ({
   '--lc-form-columns': String(formColumnCount.value),
 }));
-const vxeFormProps = computed<Partial<VxeLowCodeFormProps>>(() => ({
+const vxeFormProps = computed(() => ({
   size: props.size,
   collapseStatus: props.collapseStatus,
   span: defaultVxeSpan.value,
   align: props.align,
-  verticalAlign: props.verticalAlign,
+  verticalAlign: props.verticalAlign === 'middle' ? 'center' : undefined,
   border: props.border,
   titleBackground: props.titleBackground,
   titleBold: props.titleBold,
@@ -240,12 +240,12 @@ const vxeFormProps = computed<Partial<VxeLowCodeFormProps>>(() => ({
   className: props.className,
   readonly: props.readonly,
   disabled: props.disabled,
-  preventSubmit: props.preventSubmit,
+  preventSubmit: props.preventSubmit !== false,
   validConfig: props.validConfig,
   tooltipConfig: props.tooltipConfig,
   collapseConfig: props.collapseConfig,
   params: props.params,
-}));
+}) as Partial<VxeLowCodeFormProps>);
 const forwardedFormAttrs = computed(() => {
   const blockedAttrs = new Set([
     'data',
@@ -529,7 +529,7 @@ async function handleSubmit() {
 }
 
 function handleVxeSubmit() {
-  emit('submit', snapshot());
+  void handleSubmit();
 }
 
 async function handleAction(action: LowCodeAction) {

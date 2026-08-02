@@ -20,11 +20,11 @@ import {
 export default {
   key: 'rate',
   moduleName: 'baseWidgets',
-  label: '琛ㄥ崟椤圭被鍨?- 璇勫垎',
+  label: '表单项类型 - 评分',
   preview: () => (
     <Field
       name="rate"
-      label="璇勫垎"
+      label="评分"
       labelWidth={50}
       v-slots={{ input: () => <Rate modelValue={3} /> }}
     ></Field>
@@ -53,10 +53,10 @@ export default {
   },
   props: {
     modelValue: createEditorInputNumberProp({ label: 'Default value', defaultValue: 0 }),
-    name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
+    name: createEditorModelBindProp({ label: '字段绑定', defaultValue: '' }),
     label: createEditorInputProp({ label: 'Label', defaultValue: 'Rate' }),
-    count: createEditorInputNumberProp({ label: '鍥炬爣鎬绘暟', defaultValue: 5 }),
-    size: createEditorInputProp({ label: '鍥炬爣澶у皬' }),
+    count: createEditorInputNumberProp({ label: '图标总数', defaultValue: 5 }),
+    size: createEditorInputProp({ label: '图标大小' }),
     'allow-half': createEditorSwitchProp({ label: 'Allow half' }),
     ...createFieldProps(),
   },
@@ -64,6 +64,6 @@ export default {
     width: true,
   },
   model: {
-    default: '缁戝畾瀛楁',
+    default: '绑定字段',
   },
 } as VisualEditorComponent;

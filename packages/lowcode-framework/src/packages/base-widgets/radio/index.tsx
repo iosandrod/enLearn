@@ -20,7 +20,7 @@ import {
 export default {
   key: 'radio',
   moduleName: 'baseWidgets',
-  label: '琛ㄥ崟椤圭被鍨?- 鍗曢€夋',
+  label: '表单项类型 - 单选框',
   preview: () => (
     <RadioGroup modelValue={'1'} direction={'horizontal'}>
       <Radio name="1">one</Radio>
@@ -57,27 +57,27 @@ export default {
   },
   props: {
     modelValue: createEditorInputProp({ label: 'Default value', defaultValue: '' }),
-    name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
+    name: createEditorModelBindProp({ label: '字段绑定', defaultValue: '' }),
     label: createEditorInputProp({ label: 'Label', defaultValue: 'Radio' }),
     options: createEditorCrossSortableProp({
-      label: '榛樿閫夐」',
+      label: '默认选项',
       labelPosition: 'top',
       multiple: false,
       defaultValue: [
         { label: 'Carrot', value: 'carrot' },
-        { label: '鐧借彍', value: 'cabbage' },
+        { label: '白菜', value: 'cabbage' },
         { label: 'Pig', value: 'pig' },
       ],
     }),
     direction: createEditorSelectProp({
-      label: '鎺掑垪鏂瑰悜',
+      label: '排列方向',
       options: [
         {
-          label: '姘村钩',
+          label: '水平',
           value: 'horizontal',
         },
         {
-          label: '鍨傜洿',
+          label: '垂直',
           value: 'vertical',
         },
       ],
@@ -90,6 +90,6 @@ export default {
     width: true,
   },
   model: {
-    default: '缁戝畾瀛楁',
+    default: '绑定字段',
   },
 } as VisualEditorComponent;

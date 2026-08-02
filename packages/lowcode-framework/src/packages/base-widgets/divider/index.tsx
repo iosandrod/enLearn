@@ -21,7 +21,7 @@ export default {
   key: 'divider',
   moduleName: 'baseWidgets',
   label: 'Divider',
-  preview: () => <Divider style="width:190px">鏂囨湰</Divider>,
+  preview: () => <Divider style="width:190px">文本</Divider>,
   render: ({ props, block, styles }) => {
     const { registerRef } = useGlobalProperties();
 
@@ -42,18 +42,18 @@ export default {
     );
   },
   props: {
-    text: createEditorInputProp({ label: '灞曠ず鏂囨湰', defaultValue: '鏂囨湰' }),
+    text: createEditorInputProp({ label: '展示文本', defaultValue: '文本' }),
     'content-position': createEditorSelectProp({
-      label: '鏂囨湰浣嶇疆',
+      label: '文本位置',
       options: [
-        { label: '宸﹁竟', value: 'left' },
-        { label: '涓棿', value: 'center' },
-        { label: '鍙宠竟', value: 'right' },
+        { label: '左边', value: 'left' },
+        { label: '中间', value: 'center' },
+        { label: '右边', value: 'right' },
       ],
       defaultValue: 'center',
     }),
     dashed: createEditorSwitchProp({ label: 'Dashed' }),
-    'text-color': createEditorColorProp({ label: '鏂囨湰棰滆壊' }),
+    'text-color': createEditorColorProp({ label: '文本颜色' }),
     'divider-color': createEditorColorProp({ label: 'Divider color' }),
   },
 } as VisualEditorComponent;

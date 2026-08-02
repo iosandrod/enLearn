@@ -51,7 +51,7 @@ const formComponentOptions = [
 ];
 
 const gridOverflowOptions = [
-  { label: '榛樿', value: '' },
+  { label: '默认', value: '' },
   { label: 'true', value: true },
   { label: 'false', value: false },
   { label: 'ellipsis', value: 'ellipsis' },
@@ -70,7 +70,7 @@ const gridBorderOptions = [
 ];
 
 const gridSizeOptions = [
-  { label: '榛樿', value: '' },
+  { label: '默认', value: '' },
   { label: 'medium', value: 'medium' },
   { label: 'small', value: 'small' },
   { label: 'mini', value: 'mini' },
@@ -199,7 +199,7 @@ function createFieldProps(props: Record<string, unknown>) {
 export default {
   key: 'array-table',
   moduleName: 'baseWidgets',
-  label: '琛ㄥ崟椤圭被鍨?- 琛ㄦ牸',
+  label: '表单项类型 - 表格',
   preview: () => (
     <div
       style={{
@@ -208,7 +208,7 @@ export default {
         gap: '8px',
       }}
     >
-      <div style={{ color: '#475569', fontSize: '13px' }}>琛ㄦ牸杈撳叆</div>
+      <div style={{ color: '#475569', fontSize: '13px' }}>表格输入</div>
       <div style={{ height: '128px' }}>
         {renderVxeGrid(
           {
@@ -253,16 +253,16 @@ export default {
       label: 'Default value',
       defaultValue: [],
     }),
-    name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
+    name: createEditorModelBindProp({ label: '字段绑定', defaultValue: '' }),
     label: createEditorInputProp({ label: 'Label', defaultValue: 'Array table' }),
     __formSpan: createEditorInputNumberProp({
-      label: '琛ㄥ崟璺ㄥ垪',
+      label: '表单跨列',
       defaultValue: 1,
       min: 1,
       max: 6,
     }),
     __formHelp: createEditorInputProp({
-      label: '甯姪鏂囨湰',
+      label: '帮助文本',
       defaultValue: '',
     }),
     addText: createEditorInputProp({
@@ -301,28 +301,28 @@ export default {
       option: {
         showKey: 'title',
         options: [
-          { label: '瀛楁', field: 'field' },
-          { label: '鏍囬', field: 'title' },
+          { label: '字段', field: 'field' },
+          { label: '标题', field: 'title' },
           {
-            label: '缁勪欢',
+            label: '组件',
             field: 'component',
             component: 'vxe-select',
             minWidth: 132,
             options: formComponentOptions,
           },
-          { label: '瀹藉害', field: 'width' },
+          { label: '宽度', field: 'width' },
           { label: 'Min width', field: 'minWidth' },
-          { label: '鍗犱綅鎻愮ず', field: 'placeholder' },
+          { label: '占位提示', field: 'placeholder' },
           { label: 'Default value', field: 'defaultValue' },
           {
-            label: '閫夐」 JSON',
+            label: '选项 JSON',
             field: 'optionsJson',
             component: 'lc-json-editor',
             minWidth: 220,
             placeholder: '[{"label":"A","value":"a"}]',
           },
           {
-            label: '灞炴€?JSON',
+            label: '属性 JSON',
             field: 'propsJson',
             component: 'lc-json-editor',
             minWidth: 220,
@@ -350,6 +350,6 @@ export default {
     width: true,
   },
   model: {
-    default: '缁戝畾瀛楁',
+    default: '绑定字段',
   },
 } as VisualEditorComponent;

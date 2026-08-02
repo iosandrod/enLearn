@@ -93,6 +93,30 @@ function canRefreshForPath(apiPath: string) {
   return !apiPath.startsWith('/auth/refresh') && !apiPath.startsWith('/auth/signin') && !apiPath.startsWith('/auth/signup');
 }
 
+function resolveRequestMethod(
+  apiPath: string,
+  method: RequestInit['method'],
+  body: unknown
+) {
+  if (method) return method;
+
+  if (
+    body !== undefined &&
+    (
+      apiPath.startsWith('/auth/signin') ||
+      apiPath.startsWith('/auth/signup') ||
+      apiPath.startsWith('/auth/session') ||
+      apiPath.startsWith('/auth/signout') ||
+      apiPath.startsWith('/auth/refresh') ||
+      apiPath.startsWith('/service')
+    )
+  ) {
+    return 'POST';
+  }
+
+  return undefined;
+}
+
 function redirectToSignIn() {
   if (window.location.pathname === '/signin') return;
   void navigateTo('/signin').catch(() => {
@@ -154,6 +178,7 @@ async function fetchBackend<T>(url: string, options: FetchOptions = {}, didRetry
 
   const response = await fetch(`${getApiBaseUrl()}${apiPath}`, {
     ...requestOptions,
+    method: resolveRequestMethod(apiPath, requestOptions.method, body),
     headers,
     body:
       body === undefined || body instanceof FormData

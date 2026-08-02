@@ -84,20 +84,20 @@ export default {
       options: [
         { label: 'Button', value: 'button' },
         {
-          label: '琛ㄥ崟鎻愪氦鎸夐挳',
+          label: '表单提交按钮',
           value: 'submit',
         },
         {
-          label: '琛ㄥ崟閲嶇疆鎸夐挳',
+          label: '表单重置按钮',
           value: 'reset',
         },
       ],
       defaultValue: 'button',
     }),
-    to: createEditorInputProp({ label: '璺敱璺宠浆' }),
-    url: createEditorInputProp({ label: '璺宠浆閾炬帴' }),
+    to: createEditorInputProp({ label: '路由跳转' }),
+    url: createEditorInputProp({ label: '跳转链接' }),
     plain: createEditorSwitchProp({ label: 'Plain' }),
-    replace: createEditorSwitchProp({ label: '鏄惁鍦ㄨ烦杞椂鏇挎崲褰撳墠椤甸潰鍘嗗彶' }),
+    replace: createEditorSwitchProp({ label: '是否在跳转时替换当前页面历史' }),
     round: createEditorSwitchProp({ label: 'Round' }),
     square: createEditorSwitchProp({ label: 'Square' }),
     block: createEditorSwitchProp({ label: 'Block', defaultValue: false }),
@@ -105,18 +105,18 @@ export default {
       label: 'Button color',
       tips: 'Supports color strings and linear-gradient values',
     }),
-    disabled: createEditorSwitchProp({ label: '鏄惁绂佺敤鎸夐挳' }),
-    hairline: createEditorSwitchProp({ label: '鏄惁浣跨敤 0.5px 杈规' }),
+    disabled: createEditorSwitchProp({ label: '是否禁用按钮' }),
+    hairline: createEditorSwitchProp({ label: '是否使用 0.5px 边框' }),
     icon: createEditorInputProp({ label: 'Icon' }),
     'icon-position': createEditorSelectProp({
-      label: '鍥炬爣灞曠ず浣嶇疆',
+      label: '图标显示位置',
       options: [
         {
-          label: '宸︿晶',
+          label: '左侧',
           value: 'left',
         },
         {
-          label: '鍙充晶',
+          label: '右侧',
           value: 'right',
         },
       ],
@@ -126,10 +126,10 @@ export default {
       tips: 'Icon class prefix',
     }),
     loading: createEditorSwitchProp({ label: 'Loading' }),
-    'loading-size': createEditorInputProp({ label: '鍔犺浇鍥炬爣澶у皬' }),
+    'loading-size': createEditorInputProp({ label: '加载图标大小' }),
     'loading-text': createEditorInputProp({ label: 'Loading text' }),
     'loading-type': createEditorSelectProp({
-      label: '鍔犺浇鍥炬爣绫诲瀷',
+      label: '加载图标类型',
       options: [
         { label: 'circular', value: 'circular' },
         { label: 'spinner', value: 'spinner' },

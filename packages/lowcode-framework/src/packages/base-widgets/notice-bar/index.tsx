@@ -32,15 +32,15 @@ export default {
     );
   },
   events: [
-    { label: '鐐瑰嚮閫氱煡鏍忔椂瑙﹀彂', value: 'click' },
-    { label: '鍏抽棴閫氱煡鏍忔椂瑙﹀彂', value: 'close' },
-    { label: '姣忓綋婊氬姩鏍忛噸鏂板紑濮嬫粴鍔ㄦ椂瑙﹀彂', value: 'replay' },
+    { label: '点击通知栏时触发', value: 'click' },
+    { label: '关闭通知栏时触发', value: 'close' },
+    { label: '每当滚动栏重新开始滚动时触发', value: 'replay' },
   ],
   props: createFieldProps(),
   resize: {
     width: true,
   },
   model: {
-    default: '缁戝畾瀛楁',
+    default: '绑定字段',
   },
 } as VisualEditorComponent;

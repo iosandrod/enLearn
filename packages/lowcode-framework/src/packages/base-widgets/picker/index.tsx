@@ -86,15 +86,15 @@ export default {
   },
   props: {
     modelValue: createEditorInputProp({ label: 'Default value' }),
-    name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
+    name: createEditorModelBindProp({ label: '字段绑定', defaultValue: '' }),
     label: createEditorInputProp({ label: 'Label', defaultValue: 'Picker' }),
     columns: createEditorCrossSortableProp({
-      label: '榛樿閫夐」',
+      label: '默认选项',
       labelPosition: 'top',
       multiple: false,
       defaultValue: [
-        { label: '鏉窞', value: 'hangzhou' },
-        { label: '涓婃捣', value: 'shanghai' },
+        { label: '杭州', value: 'hangzhou' },
+        { label: '上海', value: 'shanghai' },
       ],
     }),
     placeholder: createEditorInputProp({ label: 'Placeholder', defaultValue: 'Select' }),
@@ -109,6 +109,6 @@ export default {
     width: true,
   },
   model: {
-    default: '缁戝畾瀛楁',
+    default: '绑定字段',
   },
 } as VisualEditorComponent;

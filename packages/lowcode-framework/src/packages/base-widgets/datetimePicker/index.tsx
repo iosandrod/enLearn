@@ -80,11 +80,11 @@ export default {
   },
   props: {
     modelValue: createEditorInputProp({ label: 'Default value' }),
-    name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
+    name: createEditorModelBindProp({ label: '字段绑定', defaultValue: '' }),
     label: createEditorInputProp({ label: 'Label', defaultValue: 'Datetime picker' }),
     title: createEditorInputProp({ label: 'Title', defaultValue: 'Select datetime' }),
     type: createEditorSelectProp({
-      label: '鏃堕棿绫诲瀷',
+      label: '时间类型',
       options: [
         {
           label: 'date',
@@ -114,34 +114,34 @@ export default {
       tips: 'YYYY-MM-DD HH:mm:ss',
       defaultValue: '',
     }),
-    cancelButtonText: createEditorInputProp({ label: '鍙栨秷鎸夐挳鏂囧瓧' }),
+    cancelButtonText: createEditorInputProp({ label: '取消按钮文字' }),
     columnsOrder: createEditorInputProp({
-      label: '鑷畾涔夊垪鎺掑簭鏁扮粍',
-      tips: '鍙€夊€间负锛歽ear銆乵onth銆乨ay銆乭our銆乵inute锛屼紶澶氫釜鍊间互鑻辨枃閫楀彿闅斿紑',
+      label: '自定义列排序数组',
+      tips: '可选值为 year、month、day、hour、minute，多个值用英文逗号分隔',
     }),
-    confirmButtonText: createEditorInputProp({ label: '纭鎸夐挳鏂囧瓧' }),
-    filter: createEditorInputProp({ label: '閫夐」杩囨护鍑芥暟' }),
+    confirmButtonText: createEditorInputProp({ label: '确认按钮文字' }),
+    filter: createEditorInputProp({ label: '选项过滤函数' }),
     formatter: createEditorInputProp({ label: 'Formatter' }),
     itemHeight: createEditorInputProp({
-      label: '閫夐」楂樺害',
-      tips: '鏀寔 px vw vh rem 鍗曚綅锛岄粯璁?px',
+      label: '选项高度',
+      tips: '支持 px、vw、vh、rem 单位，默认 px',
     }),
     loading: createEditorSwitchProp({ label: 'Loading' }),
     showToolbar: createEditorSwitchProp({ label: 'Show toolbar' }),
-    swipeDuration: createEditorInputProp({ label: '蹇€熸粦鍔ㄦ椂鎯€ф粴鍔ㄧ殑鏃堕暱锛屽崟浣峬s' }),
-    visibleItemCount: createEditorInputNumberProp({ label: '鍙鐨勯€夐」涓暟', defaultValue: 6 }),
+    swipeDuration: createEditorInputProp({ label: '快速滑动时惯性滚动的时长，单位 ms' }),
+    visibleItemCount: createEditorInputNumberProp({ label: '可见的选项个数', defaultValue: 6 }),
     placeholder: createEditorInputProp({ label: 'Placeholder', defaultValue: 'Select' }),
     ...createFieldProps(),
   },
   events: [
     { label: 'Change', value: 'change' },
-    { label: '鐐瑰嚮瀹屾垚鎸夐挳鏃惰Е鍙戠殑浜嬩欢', value: 'confirm' },
-    { label: '鐐瑰嚮鍙栨秷鎸夐挳鏃惰Е鍙戠殑浜嬩欢', value: 'cancel' },
+    { label: '点击完成按钮时触发', value: 'confirm' },
+    { label: '点击取消按钮时触发', value: 'cancel' },
   ],
   resize: {
     width: true,
   },
   model: {
-    default: '缁戝畾瀛楁',
+    default: '绑定字段',
   },
 } as VisualEditorComponent;

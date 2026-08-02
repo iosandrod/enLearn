@@ -51,6 +51,7 @@
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import type {
   LowCodeAction,
+  LowCodeButtonGroupAction,
   LowCodePageBlock,
   LowCodePageDataSource,
   LowCodePageRecord,
@@ -340,16 +341,20 @@ const legacyAdminListMethodTables: Record<string, string> = {
   listWorkflowTimerJobs: 'workflow_timer_jobs',
 };
 
+const legacyLowCodeListMethodTables: Record<string, string> = {
+  listPages: 'lowcode_pages',
+};
+
 function normalizeLegacyAdminListRequest(
   serviceName: string,
   serviceMethod: string,
   postData: Record<string, unknown>
 ) {
-  if (serviceName !== 'admin') {
-    return { serviceName, serviceMethod, postData };
-  }
-
-  const tableName = legacyAdminListMethodTables[serviceMethod];
+  const tableName = serviceName === 'admin'
+    ? legacyAdminListMethodTables[serviceMethod]
+    : serviceName === 'lowcode'
+      ? legacyLowCodeListMethodTables[serviceMethod]
+      : '';
   if (!tableName) {
     return { serviceName, serviceMethod, postData };
   }
@@ -1295,7 +1300,7 @@ async function handleFormAction(
   }
 }
 
-async function handleToolbarAction(action: LowCodeAction) {
+async function handleToolbarAction(action: LowCodeAction | LowCodeButtonGroupAction) {
   if (action.route) {
     await host.getRouter().push(resolveRuntimeRoute(action.route));
     return;

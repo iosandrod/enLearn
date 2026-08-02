@@ -39,9 +39,9 @@ export default {
     );
   },
   events: [
-    { label: '杈撳叆妗嗗唴瀹瑰彉鍖栨椂瑙﹀彂', value: 'update:model-value' },
-    { label: '杈撳叆妗嗚幏寰楃劍鐐规椂瑙﹀彂', value: 'focus' },
-    { label: '杈撳叆妗嗗け鍘荤劍鐐规椂瑙﹀彂', value: 'blur' },
+    { label: '输入框内容变化时触发', value: 'update:model-value' },
+    { label: '输入框获得焦点时触发', value: 'focus' },
+    { label: '输入框失去焦点时触发', value: 'blur' },
     { label: 'Clear', value: 'clear' },
     { label: 'Click', value: 'click' },
     { label: 'Click input', value: 'click-input' },
@@ -53,6 +53,6 @@ export default {
     width: true,
   },
   model: {
-    default: '缁戝畾瀛楁',
+    default: '绑定字段',
   },
 } as VisualEditorComponent;

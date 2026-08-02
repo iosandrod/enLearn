@@ -27,6 +27,8 @@ const DEV_AUTO_LOGIN_CREDENTIALS = {
 const ADMIN_LOGIN_ALIAS = 'admin';
 const ADMIN_LOGIN_EMAIL = '1151685410@qq.com';
 const DEV_TEST_USER_KEY = 'enlearn_dev_test_user';
+const ACCESS_TOKEN_KEY = 'enlearn_access_token';
+const REFRESH_TOKEN_KEY = 'enlearn_refresh_token';
 
 let initPromise: Promise<void> | null = null;
 
@@ -36,6 +38,62 @@ function shouldUseDevAutoLogin() {
 
 function normalizeLoginEmail(email: string) {
   return email.trim().toLowerCase() === ADMIN_LOGIN_ALIAS ? ADMIN_LOGIN_EMAIL : email.trim();
+}
+
+function getApiBaseUrl() {
+  if (import.meta.env.DEV) return '/api';
+  return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002/api').replace(/\/+$/, '');
+}
+
+function persistAuthTokens(payload: AppAuthPayload) {
+  const session = payload.session as
+    | (AppAuthPayload['session'] & { access_token?: string; refresh_token?: string })
+    | null;
+  const accessToken = session?.access_token;
+  if (import.meta.server || !accessToken) return;
+  window.localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  if (session.refresh_token) {
+    window.localStorage.setItem(REFRESH_TOKEN_KEY, session.refresh_token);
+  }
+}
+
+function readAuthErrorMessage(payload: unknown, fallback: string) {
+  if (typeof payload === 'string') return payload;
+  if (!payload || typeof payload !== 'object') return fallback;
+
+  const record = payload as { message?: unknown; error?: unknown; statusMessage?: unknown };
+  const message = Array.isArray(record.message)
+    ? record.message.filter(Boolean).join(', ')
+    : record.message;
+
+  return String(message ?? record.statusMessage ?? record.error ?? fallback);
+}
+
+async function postAuthJson<TPayload>(path: string, body: Record<string, unknown>) {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const text = await response.text();
+  let payload: unknown = null;
+
+  if (text) {
+    try {
+      payload = JSON.parse(text) as unknown;
+    } catch {
+      payload = { message: text };
+    }
+  }
+
+  if (!response.ok) {
+    throw createError({
+      statusCode: response.status,
+      statusMessage: readAuthErrorMessage(payload, response.statusText),
+    });
+  }
+
+  return payload as TPayload;
 }
 
 function isDevAutoLoginUser(email?: string | null) {
@@ -232,13 +290,11 @@ export function useAuth() {
     email: string;
     password: string;
   }) {
-    const payload = await $fetch<AppAuthPayload>('/api/auth/signin', {
-      method: 'POST',
-      body: {
-        ...credentials,
-        email: normalizeLoginEmail(credentials.email)
-      }
+    const payload = await postAuthJson<AppAuthPayload>('/auth/signin', {
+      ...credentials,
+      email: normalizeLoginEmail(credentials.email)
     });
+    persistAuthTokens(payload);
     applyAuthPayload(payload);
     restoreDevTestUser();
   }

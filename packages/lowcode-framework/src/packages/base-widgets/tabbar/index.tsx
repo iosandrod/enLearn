@@ -23,15 +23,15 @@ import { BASE_URL } from '../../../visual-editor/utils';
 const defaultTabbarItems = [
   {
     icon: 'home-o',
-    title: '棣栭〉',
+    title: '首页',
   },
   {
     icon: 'apps-o',
-    title: '瀵艰埅',
+    title: '导航',
   },
   {
     icon: 'user-o',
-    title: '鎴戠殑',
+    title: '我的',
   },
 ];
 
@@ -103,7 +103,7 @@ export default {
       defaultValue: '',
     }),
     tabs: createEditorCrossSortableProp({
-      label: '榛樿閫夐」',
+      label: '默认选项',
       labelPosition: 'top',
       multiple: false,
       showItemPropsConfig: true,
@@ -115,8 +115,8 @@ export default {
     }),
     fixed: createEditorSwitchProp({ label: 'Fixed bottom', defaultValue: true }),
     border: createEditorSwitchProp({ label: 'Show border', defaultValue: true }),
-    zIndex: createEditorInputProp({ label: '鍏冪礌 z-index', defaultValue: '1' }),
-    baseUrl: createEditorInputProp({ label: '璺敱璺緞鍓嶇紑', defaultValue: '/preview/#/' }),
+    zIndex: createEditorInputProp({ label: '元素 z-index', defaultValue: '1' }),
+    baseUrl: createEditorInputProp({ label: '路由路径前缀', defaultValue: '/preview/#/' }),
     activeColor: createEditorColorProp({ label: 'Active color', defaultValue: '#1989fa' }),
     inactiveColor: createEditorColorProp({ label: 'Inactive color', defaultValue: '#7d7e80' }),
     route: createEditorSwitchProp({ label: 'Route mode', defaultValue: false }),
