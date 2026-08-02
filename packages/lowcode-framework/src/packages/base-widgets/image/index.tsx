@@ -19,7 +19,7 @@ import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 export default {
   key: 'image',
   moduleName: 'baseWidgets',
-  label: '鍥剧墖',
+  label: '图片',
   resize: {
     width: true,
     height: true,
@@ -44,17 +44,17 @@ export default {
   },
   props: {
     src: createEditorInputProp({
-      label: '鍥剧墖閾炬帴',
+      label: '图片链接',
       defaultValue: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=600&q=80',
     }),
-    width: createEditorInputProp({ label: '瀹藉害', defaultValue: 100 }),
-    height: createEditorInputProp({ label: '楂樺害', defaultValue: 100 }),
+    width: createEditorInputProp({ label: '宽度', defaultValue: 100 }),
+    height: createEditorInputProp({ label: '高度', defaultValue: 100 }),
     errorIcon: createEditorInputProp({ label: 'Error icon' }),
     fit: createEditorSelectProp({
-      label: '鍥剧墖濉厖妯″紡',
+      label: '图片填充模式',
       options: [
         {
-          label: '淇濇寔瀹介珮缂╂斁鍥剧墖锛屼娇鍥剧墖鐨勯暱杈硅兘瀹屽叏鏄剧ず鍑烘潵',
+          label: '保持宽高缩放图片，使图片的长边能完全显示出来',
           value: 'contain',
         },
         {
@@ -62,11 +62,11 @@ export default {
           value: 'cover',
         },
         {
-          label: '鎷変几鍥剧墖锛屼娇鍥剧墖濉弧鍏冪礌',
+          label: '拉伸图片，使图片填满元素',
           value: 'fill',
         },
         {
-          label: '淇濇寔鍥剧墖鍘熸湁灏哄',
+          label: '保持图片原有尺寸',
           value: 'none',
         },
         {
@@ -77,20 +77,20 @@ export default {
       defaultValue: 'fill',
     }),
     iconPrefix: createEditorInputProp({
-      label: '鍥炬爣绫诲悕鍓嶇紑',
+      label: '图标类名前缀',
       tips: 'Icon class prefix',
     }),
-    iconSize: createEditorInputProp({ label: '鍔犺浇鍥炬爣鍜屽け璐ュ浘鏍囩殑澶у皬' }),
+    iconSize: createEditorInputProp({ label: '加载图标和失败图标的大小' }),
     deferLoad: createEditorSwitchProp({
-      label: '鏄惁寮€鍚浘鐗囨噿鍔犺浇',
+      label: '是否开启图片懒加载',
       tips: '启用图片懒加载',
     }),
     loadingIcon: createEditorInputProp({ label: 'Loading icon' }),
-    radius: createEditorInputProp({ label: '鍦嗚澶у皬', tips: '榛樿鍗曚綅涓?px' }),
+    radius: createEditorInputProp({ label: '圆角大小', tips: '默认单位为 px' }),
     round: createEditorSwitchProp({ label: 'Round' }),
-    'show-error': createEditorSwitchProp({ label: '鏄惁灞曠ず鍥剧墖鍔犺浇澶辫触鎻愮ず' }),
+    'show-error': createEditorSwitchProp({ label: '是否显示图片加载失败提示' }),
     'show-loading': createEditorSwitchProp({ label: 'Show loading' }),
-    alt: createEditorInputProp({ label: '鏇夸唬鏂囨湰' }),
+    alt: createEditorInputProp({ label: '替代文本' }),
   },
   events: [
     { label: 'Click', value: 'click' },

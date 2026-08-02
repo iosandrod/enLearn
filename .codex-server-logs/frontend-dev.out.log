@@ -21,3 +21,53 @@
 [2m15:21:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
 [2m15:22:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
 [2m15:22:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css, /layouts/dashboard.vue, /pages/dashboard/[...slug].vue[22m
+[2m15:29:19[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m15:31:06[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mdependency optimized: [33m@vue-flow/core[32m[39m
+[2m15:31:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/runtime/lowcode-pages.ts[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/checkbox/index.tsx[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/radio/index.tsx[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/rate/index.tsx[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/slider/index.tsx[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/array-table/index.tsx[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/switch/index.tsx[22m
+[2m15:32:42[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m15:33:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/input/index.tsx[22m
+[2m15:33:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/picker/index.tsx[22m
+[2m15:33:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/datetimePicker/index.tsx[22m
+[2m15:33:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/stepper/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/image/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/button/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/process/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/divider/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/nav-bar/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/notice-bar/index.tsx[22m
+[2m15:35:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/tabbar/index.tsx[22m
+[2m15:35:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/swipe/index.tsx[22m
+[2m15:35:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue, /assets/styles/app.css[22m
+[2m15:36:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/spa-compat.ts[22m
+[2m15:37:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/stubs/tldraw-vue-phase-one.ts[22m
+[2m15:37:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m15:37:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/stubs/tldraw-vue-phase-one.css[22m
+[2m15:37:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m15:38:28[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue, /assets/styles/app.css[22m
+[2m15:38:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m15:39:38[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m
+[2m15:40:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m
+[2m15:41:07[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m15:41:08[22m [36m[1m[vite][22m[39m server restarted.
+ ELIFECYCLE  Command failed with exit code 4294967295.
+ ELIFECYCLE  Command failed with exit code 4294967295.
+
+> @ dev E:\enLearn\frontend
+> vite --host 0.0.0.0 --port 3000
+
+
+  [32m[1mVITE[22m v8.1.5[39m  [2mready in [0m[1m738[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.0.12.5:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://100.65.207.11:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.20.208.1:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.137.1:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.36:[1m3000[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m

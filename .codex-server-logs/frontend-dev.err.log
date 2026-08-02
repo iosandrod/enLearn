@@ -104,3 +104,765 @@ More info and automated migrator: https://sass-lang.com/d/import
     at async invoke (http://localhost:3000/composables/useServiceApi.ts:15:20)
     at async loadDevTestUsers (http://localhost:3000/layouts/dashboard.vue:48:19)
     at async http://localhost:3000/layouts/dashboard.vue:677:4
+[2m15:26:24[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:26:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:33[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:35[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:26:35[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:26[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:28[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:29[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:32[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:32[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:33[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:33[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:33[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:33[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:34[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:34[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: inject() can only be used inside setup() or functional components.
+[2m15:27:47[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:28:22[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Failed to resolve directive: infinite-scroll 
+  at <DataModel> 
+  at <VxeTabs type="card" class="data-source" > 
+  at <Index ref_for=true > 
+  at <VxeTabs modelValue="data-source" onUpdate:modelValue=fn position="left"  ... > 
+  at <LeftAside exclude-labels= ["页面"] > 
+  at <Index show-header=true left-exclude-labels= ["页面"] left-width="340px"  ... > 
+  at <VisualEditorProvider ref="providerRef" key=1 initial-data= {"pages":{"/":{"title":"可视化低代码页面","path":"/","config":{"bgColor":"","bgImage":"","keepAlive":false},"blocks":[],"overlays":[]}},"models":[],"actions":{"fetch":{"name":"接口请求","apis":[]},"dialog":{"name":"对话框","handlers":[]}}}  ... > 
+  at <ClientOnly key=2 > 
+  at <LowCodeVisualDesigner key="" code="" > 
+  at <[code] onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > key="/dashboard/low-code/designer" > 
+  at <RouterView> 
+  at <Dashboard key=0 > 
+  at <App>
+[2m15:28:22[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of component update 
+  at <LeftAside exclude-labels= ["页面"] > 
+  at <Index show-header=true left-exclude-labels= ["页面"] left-width="340px"  ... > 
+  at <VisualEditorProvider ref="providerRef" key=1 initial-data= {"pages":{"/":{"title":"可视化低代码页面","path":"/","config":{"bgColor":"","bgImage":"","keepAlive":false},"blocks":[],"overlays":[]}},"models":[],"actions":{"fetch":{"name":"接口请求","apis":[]},"dialog":{"name":"对话框","handlers":[]}}}  ... > 
+  at <ClientOnly key=2 > 
+  at <LowCodeVisualDesigner key="" code="" > 
+  at <[code] onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > key="/dashboard/low-code/designer" > 
+  at <RouterView> 
+  at <Dashboard key=0 > 
+  at <App>
+[2m15:28:22[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Failed to set an indexed property [0] on 'CSSStyleDeclaration': Indexed property setter is not supported.
+[39m > setStyle ../node_modules/.pnpm/@vue+runtime-dom@3.5.40/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-bundler.js:595:14
+ > patchStyle ../node_modules/.pnpm/@vue+runtime-dom@3.5.40/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-bundler.js:543:10
+ > patchProp ../node_modules/.pnpm/@vue+runtime-dom@3.5.40/node_modules/@vue/runtime-dom/dist/runtime-dom.esm-bundler.js:798:4
+ > mountElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5729:10
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5666:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > ReactiveEffect.componentUpdateFn [as fn] ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6198:10
+ > ReactiveEffect.run ../node_modules/.pnpm/@vue+reactivity@3.5.40/node_modules/@vue/reactivity/dist/reactivity.esm-bundler.js:264:18
+ > setupRenderEffect ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6326:4
+ > mountComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6098:6
+
+[2m15:28:23[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of component update 
+  at <LeftAside exclude-labels= ["页面"] > 
+  at <Index show-header=true left-exclude-labels= ["页面"] left-width="340px"  ... > 
+  at <VisualEditorProvider ref="providerRef" key=1 initial-data= {"pages":{"/":{"title":"可视化低代码页面","path":"/","config":{"bgColor":"","bgImage":"","keepAlive":false},"blocks":[],"overlays":[]}},"models":[],"actions":{"fetch":{"name":"接口请求","apis":[]},"dialog":{"name":"对话框","handlers":[]}}}  ... > 
+  at <ClientOnly key=2 > 
+  at <LowCodeVisualDesigner key="" code="" > 
+  at <[code] onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > key="/dashboard/low-code/designer" > 
+  at <RouterView> 
+  at <Dashboard key=0 > 
+  at <App>
+[2m15:28:23[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:24[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of component update 
+  at <LeftAside exclude-labels= ["页面"] > 
+  at <Index show-header=true left-exclude-labels= ["页面"] left-width="340px"  ... > 
+  at <VisualEditorProvider ref="providerRef" key=1 initial-data= {"pages":{"/":{"title":"可视化低代码页面","path":"/","config":{"bgColor":"","bgImage":"","keepAlive":false},"blocks":[],"overlays":[]}},"models":[],"actions":{"fetch":{"name":"接口请求","apis":[]},"dialog":{"name":"对话框","handlers":[]}}}  ... > 
+  at <ClientOnly key=2 > 
+  at <LowCodeVisualDesigner key="" code="" > 
+  at <[code] onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > key="/dashboard/low-code/designer" > 
+  at <RouterView> 
+  at <Dashboard key=0 > 
+  at <App>
+[2m15:28:24[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of component update 
+  at <LeftAside exclude-labels= ["页面"] > 
+  at <Index show-header=true left-exclude-labels= ["页面"] left-width="340px"  ... > 
+  at <VisualEditorProvider ref="providerRef" key=1 initial-data= {"pages":{"/":{"title":"可视化低代码页面","path":"/","config":{"bgColor":"","bgImage":"","keepAlive":false},"blocks":[],"overlays":[]}},"models":[],"actions":{"fetch":{"name":"接口请求","apis":[]},"dialog":{"name":"对话框","handlers":[]}}}  ... > 
+  at <ClientOnly key=2 > 
+  at <LowCodeVisualDesigner key="" code="" > 
+  at <[code] onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > key="/dashboard/low-code/designer" > 
+  at <RouterView> 
+  at <Dashboard key=0 > 
+  at <App>
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:25[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:35[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of component update 
+  at <LeftAside exclude-labels= ["页面"] > 
+  at <Index show-header=true left-exclude-labels= ["页面"] left-width="340px"  ... > 
+  at <VisualEditorProvider ref="providerRef" key=1 initial-data= {"pages":{"/":{"title":"可视化低代码页面","path":"/","config":{"bgColor":"","bgImage":"","keepAlive":false},"blocks":[],"overlays":[]}},"models":[],"actions":{"fetch":{"name":"接口请求","apis":[]},"dialog":{"name":"对话框","handlers":[]}}}  ... > 
+  at <ClientOnly key=2 > 
+  at <LowCodeVisualDesigner key="" code="" > 
+  at <[code] onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > key="/dashboard/low-code/designer" > 
+  at <RouterView> 
+  at <Dashboard key=0 > 
+  at <App>
+[2m15:28:35[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:28:38[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of component update 
+  at <LeftAside exclude-labels= ["页面"] > 
+  at <Index show-header=true left-exclude-labels= ["页面"] left-width="340px"  ... > 
+  at <VisualEditorProvider ref="providerRef" key=1 initial-data= {"pages":{"/":{"title":"可视化低代码页面","path":"/","config":{"bgColor":"","bgImage":"","keepAlive":false},"blocks":[],"overlays":[]}},"models":[],"actions":{"fetch":{"name":"接口请求","apis":[]},"dialog":{"name":"对话框","handlers":[]}}}  ... > 
+  at <ClientOnly key=2 > 
+  at <LowCodeVisualDesigner key="" code="" > 
+  at <[code] onVnodeUnmounted=fn<onVnodeUnmounted> ref=Ref< {} > key="/dashboard/low-code/designer" > 
+  at <RouterView> 
+  at <Dashboard key=0 > 
+  at <App>
+[2m15:28:38[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'emitsOptions')
+[39m > shouldUpdateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:4797:26
+ > updateComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6115:8
+ > processComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6061:6
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5544:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+ > patchChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6383:10
+ > patchElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5853:6
+ > processElement ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5682:8
+ > patch ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:5532:10
+ > patchKeyedChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6469:8
+
+[2m15:31:06[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Unhandled error during execution of component update 
+  at <RouterView> 
+  at <Dashboard key=0 > 
+  at <App>
+[2m15:31:06[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue Router warn]: uncaught error during route navigation:
+[2m15:31:06[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22mTypeError: Cannot read properties of null (reading 'type')
+    at unmountComponent (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=bb4b81d1:5374:16)
+    at unmount (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=bb4b81d1:5320:22)
+    at unmountChildren (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=bb4b81d1:5391:49)
+    at unmount (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=bb4b81d1:5329:83)
+    at unmountChildren (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=bb4b81d1:5391:49)
+    at unmount (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=bb4b81d1:5329:83)
+    at unmountChildren (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=bb4b81d1:5391:49)
+    at unmount (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=bb4b81d1:5329:83)
+    at unmountChildren (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=bb4b81d1:5391:49)
+    at unmount (http://localhost:3000/node_modules/.vite/deps/runtime-dom.esm-bundler-BAOC07_q.js?v=bb4b81d1:5329:83)
+[2m15:31:06[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'type')
+[39m > unmountComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6830:62
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6733:6
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+
+[2m15:31:06[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'type')
+[39m > unmountComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6830:62
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6733:6
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+
+[2m15:31:06[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'type')
+[39m > unmountComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6830:62
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6733:6
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+
+[2m15:31:06[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [31m[Unhandled rejection] [1mTypeError[22m: Cannot read properties of null (reading 'type')
+[39m > unmountComponent ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6830:62
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6733:6
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+ > unmountChildren ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6856:6
+ > unmount ../node_modules/.pnpm/@vue+runtime-core@3.5.40/node_modules/@vue/runtime-core/dist/runtime-core.esm-bundler.js:6765:8
+
+[2m15:31:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785655907499:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785655907499:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785655907499:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785655907499:136:5)
+[2m15:31:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785655907499:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785655907499:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785655907499:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785655907499:155:5)
+[2m15:31:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:31:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785655907499:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785655907499:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785655907499:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785655907499:136:5)
+[2m15:31:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785655907499:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785655907499:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785655907499:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785655907499:155:5)
+[2m15:32:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:32:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785655960531:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785655960531:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785655960531:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785655960531:136:5)
+[2m15:32:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785655960531:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785655960531:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785655960531:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785655960531:155:5)
+[2m15:32:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:32:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785655960531:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785655960531:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785655960531:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785655960531:136:5)
+[2m15:32:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785655960531:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785655960531:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785655960531:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785655960531:155:5)
+[2m15:33:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656020491:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656020491:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656020491:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656020491:136:5)
+[2m15:33:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656020491:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656020491:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656020491:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656020491:155:5)
+[2m15:33:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:33:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656020491:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656020491:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656020491:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656020491:136:5)
+[2m15:33:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656020491:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656020491:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656020491:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656020491:155:5)
+[2m15:34:20[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656057087:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656057087:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656057087:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656057087:136:5)
+[2m15:34:20[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656057087:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656057087:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656057087:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656057087:155:5)
+[2m15:34:20[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:34:20[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656057087:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656057087:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656057087:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656057087:136:5)
+[2m15:34:20[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656057087:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656057087:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656057087:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656057087:155:5)
+[2m15:35:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656109907:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656109907:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656109907:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656109907:136:5)
+[2m15:35:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656109907:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656109907:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656109907:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656109907:155:5)
+[2m15:35:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:35:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656109907:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656109907:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656109907:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656109907:136:5)
+[2m15:35:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656109907:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656109907:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656109907:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656109907:155:5)
+[2m15:36:07[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656165293:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656165293:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656165293:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656165293:136:5)
+[2m15:36:07[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656165293:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656165293:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656165293:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656165293:155:5)
+[2m15:36:07[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:36:07[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656165293:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656165293:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656165293:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656165293:136:5)
+[2m15:36:07[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656165293:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656165293:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656165293:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656165293:155:5)
+[2m15:37:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656225874:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656225874:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656225874:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656225874:136:5)
+[2m15:37:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656225874:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656225874:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656225874:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656225874:155:5)
+[2m15:37:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:37:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656225874:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656225874:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656225874:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656225874:136:5)
+[2m15:37:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656225874:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656225874:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656225874:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656225874:155:5)
+[2m15:37:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656225874:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656225874:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656225874:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656225874:136:5)
+[2m15:37:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656225874:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656225874:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656225874:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656225874:155:5)
+[2m15:37:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:37:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656225874:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656225874:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656225874:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656225874:136:5)
+[2m15:37:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656225874:204:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts?t=1785656225874:130:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656225874:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656225874:155:5)
+[2m15:39:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656378963:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785656378963:53:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656378963:213:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656378963:179:5)
+[2m15:39:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656378963:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785656378963:53:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656378963:213:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656378963:198:5)
+[2m15:39:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:39:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656378963:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785656378963:53:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656378963:213:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656378963:179:5)
+[2m15:39:41[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785656378963:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785656378963:53:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785656378963:213:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785656378963:198:5)
+[2m15:40:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[2m15:41:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:181:5)
+[2m15:41:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:200:5)
+[2m15:41:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:41:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:181:5)
+[2m15:41:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:200:5)
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[2m15:42:40[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:181:5)
+[2m15:42:40[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:200:5)
+[2m15:42:40[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:42:40[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:181:5)
+[2m15:42:40[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:200:5)

@@ -17,7 +17,7 @@ export default {
   moduleName: 'baseWidgets',
   label: 'Nav bar',
   preview: () => (
-    <NavBar title="鏍囬" left-text="杩斿洖" right-text="鎸夐挳" left-arrow style={{ width: '100%' }} />
+    <NavBar title="标题" left-text="返回" right-text="按钮" left-arrow style={{ width: '100%' }} />
   ),
   render: ({ props, block }) => {
     const { registerRef } = useGlobalProperties();
@@ -58,8 +58,8 @@ export default {
     return () => <NavBar ref={(el) => registerRef(el, block._vid)} {...props} />;
   },
   props: {
-    title: createEditorInputProp({ label: '鏍囬', defaultValue: '鏍囬' }),
-    fixed: createEditorSwitchProp({ label: '鏄惁鍥哄畾', defaultValue: true }),
+    title: createEditorInputProp({ label: '标题', defaultValue: '标题' }),
+    fixed: createEditorSwitchProp({ label: '是否固定', defaultValue: true }),
     // placeholder: createEditorSwitchProp({
     //   label: '鏄惁鐢熸垚鍗犱綅鍏冪礌',
     //   defaultValue: true,
@@ -67,9 +67,9 @@ export default {
     // }),
     zIndex: createEditorInputProp({ label: 'z-index' }),
     border: createEditorSwitchProp({ label: 'Show border', defaultValue: false }),
-    leftText: createEditorInputProp({ label: '宸︿晶鏂囨', defaultValue: '杩斿洖' }),
-    rightText: createEditorInputProp({ label: '鍙充晶鏂囨', defaultValue: '鎸夐挳' }),
-    leftArrow: createEditorSwitchProp({ label: '鏄惁鏄剧ず宸︿晶绠ご', defaultValue: true }),
+    leftText: createEditorInputProp({ label: '左侧文案', defaultValue: '返回' }),
+    rightText: createEditorInputProp({ label: '右侧文案', defaultValue: '按钮' }),
+    leftArrow: createEditorSwitchProp({ label: '是否显示左侧箭头', defaultValue: true }),
   },
   events: [
     { label: 'Click left', value: 'click-left' },

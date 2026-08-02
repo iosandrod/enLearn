@@ -1,1 +1,0 @@
-import{T as e,V as t,g as n,it as r,k as i,m as a,yt as o}from"./vue.runtime.esm-bundler-BmNzlVHg.js";import{_ as s,m as c}from"./index-ChtNaXUk.js";i(),r();var l=e({__name:`[code]`,setup(e){let r=s(),i=a(()=>String(r.params.code??``));return(e,r)=>{let a=c;return t(),n(a,{key:o(i),code:o(i)},null,8,[`code`])}}});export{l as default};

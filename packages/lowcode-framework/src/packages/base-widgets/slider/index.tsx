@@ -21,11 +21,11 @@ import {
 export default {
   key: 'slider',
   moduleName: 'baseWidgets',
-  label: '琛ㄥ崟椤圭被鍨?- 婊戝潡',
+  label: '表单项类型 - 滑块',
   preview: () => (
     <Field
       name="rate"
-      label="婊戝潡"
+      label="滑块"
       labelWidth={50}
       v-slots={{ input: () => <Slider modelValue={3} /> }}
     ></Field>
@@ -53,18 +53,18 @@ export default {
   },
   props: {
     modelValue: createEditorInputNumberProp({ label: 'Default value', defaultValue: 0 }),
-    name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
+    name: createEditorModelBindProp({ label: '字段绑定', defaultValue: '' }),
     label: createEditorInputProp({ label: 'Label', defaultValue: 'Slider' }),
     min: createEditorInputNumberProp({ label: 'Min value' }),
     max: createEditorInputNumberProp({ label: 'Max value', defaultValue: 10 }),
-    size: createEditorInputNumberProp({ label: '鍥炬爣澶у皬' }),
-    range: createEditorSwitchProp({ label: '鏄惁寮€鍚弻婊戝潡妯″紡' }),
+    size: createEditorInputNumberProp({ label: '滑块大小' }),
+    range: createEditorSwitchProp({ label: '是否开启双滑块模式' }),
     ...createFieldProps(),
   },
   resize: {
     width: true,
   },
   model: {
-    default: '缁戝畾瀛楁',
+    default: '绑定字段',
   },
 } as VisualEditorComponent;

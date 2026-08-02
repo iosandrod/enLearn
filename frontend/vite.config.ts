@@ -200,6 +200,13 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    proxy: {
+      '/api': {
+        target: env.VITE_API_BASE_URL ?? env.NUXT_API_BASE_URL ?? env.API_BASE_URL ?? `http://localhost:${env.API_PORT ?? '3002'}/api`,
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
     fs: {
       allow: [resolve(__dirname, '..')],
     },

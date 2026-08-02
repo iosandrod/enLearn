@@ -48,7 +48,7 @@ export default {
   },
   props: {
     modelValue: createEditorInputProp({ label: 'Default value', defaultValue: 'false' }),
-    name: createEditorModelBindProp({ label: '瀛楁缁戝畾', defaultValue: '' }),
+    name: createEditorModelBindProp({ label: '字段绑定', defaultValue: '' }),
     label: createEditorInputProp({ label: 'Label', defaultValue: 'Switch' }),
     activeColor: createEditorColorProp({ label: 'Active color' }),
     activeValue: createEditorInputProp({ label: 'Active value', defaultValue: 'true' }),
@@ -60,13 +60,13 @@ export default {
     ...createFieldProps(),
   },
   events: [
-    { label: '寮€鍏崇姸鎬佸垏鎹㈡椂瑙﹀彂', value: 'change' },
+    { label: '开关状态切换时触发', value: 'change' },
     { label: 'Click', value: 'click' },
   ],
   resize: {
     width: true,
   },
   model: {
-    default: '缁戝畾瀛楁',
+    default: '绑定字段',
   },
 } as VisualEditorComponent;

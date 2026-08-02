@@ -9,6 +9,7 @@ export type LowCodePageLookup = {
   code?: string;
   route?: string;
   includeData?: boolean;
+  includeRelations?: boolean;
 };
 
 function readString(value: unknown) {
@@ -104,13 +105,16 @@ export async function listLowCodePages(
   serviceApi: Pick<LowCodeHostServiceApi, 'invoke'>,
   postData: Record<string, unknown> = {},
 ) {
+  const { includeRelations, ...listPostData } = postData;
   const rows = await serviceApi.invoke<LowCodePageRecord[]>('lowcode', 'listItems', {
     tableName: 'lowcode_pages',
     sorts: [{ field: 'updated_at', direction: 'desc' }],
-    ...postData,
+    ...listPostData,
   });
 
   const pages = Array.isArray(rows) ? rows : [];
+  if (includeRelations !== true) return pages;
+
   return attachRelations(pages, await listLowCodePageRelations(serviceApi));
 }
 
@@ -131,6 +135,7 @@ export async function getLowCodePage(
       ...(route ? { route } : {}),
     },
     includeData: lookup.includeData !== false,
+    includeRelations: lookup.includeRelations === true,
     limit: 1,
   });
   const page = rows[0];
