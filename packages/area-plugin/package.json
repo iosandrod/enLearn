@@ -1,0 +1,33 @@
+{
+  "name": "vxe-table-plugin-extend-cell-area",
+  "version": "0.1.0",
+  "description": "Excel-like cell area selection plugin for vxe-table.",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "src",
+    "DEVELOPMENT_PLAN.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-style.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "vxe-table": "^4.0.0",
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  },
+  "license": "MIT"
+}
