@@ -239,7 +239,7 @@ export default {
     }),
     postDataJson: createEditorInputProp({
       label: '请求参数 JSON',
-      defaultValue: '{\n  "entityCode": "users"\n}',
+      defaultValue: '{\n  "tableName": "profiles"\n}',
     }),
     showRowActions: createEditorSwitchProp({
       label: '显示行操作',

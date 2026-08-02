@@ -1,5 +1,9 @@
 import type { LowCodeHostServiceApi } from '../core/host';
-import type { LowCodePageRecord } from '../types/lowcode';
+import type {
+  LowCodePageOpenType,
+  LowCodePageRecord,
+  LowCodePageRelation
+} from '../types/lowcode';
 
 export type LowCodePageLookup = {
   code?: string;
@@ -11,16 +15,103 @@ function readString(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : '';
 }
 
+type RelationPageRow = Pick<LowCodePageRecord, 'id' | 'code' | 'route' | 'title' | 'status'>;
+
+type RelationRow = {
+  id: string;
+  source_page_id: string;
+  action_key: string;
+  target_page_id: string;
+  open_type: LowCodePageOpenType;
+  metadata?: Record<string, unknown> | null;
+  created_at?: string;
+  updated_at?: string;
+  source_page?: RelationPageRow | RelationPageRow[] | null;
+  target_page?: RelationPageRow | RelationPageRow[] | null;
+};
+
+const relationSelect = `
+  id,
+  source_page_id,
+  action_key,
+  target_page_id,
+  open_type,
+  metadata,
+  created_at,
+  updated_at,
+  source_page:source_page_id(id, code, route, title, status),
+  target_page:target_page_id(id, code, route, title, status)
+`;
+
+function readRelationPage(value?: RelationPageRow | RelationPageRow[] | null) {
+  return Array.isArray(value) ? value[0] ?? null : value ?? null;
+}
+
+function normalizeRelation(row: RelationRow): LowCodePageRelation {
+  const sourcePage = readRelationPage(row.source_page);
+  const targetPage = readRelationPage(row.target_page);
+
+  return {
+    id: row.id,
+    sourcePageId: row.source_page_id,
+    sourcePageCode: sourcePage?.code ?? '',
+    sourcePageRoute: sourcePage?.route,
+    sourcePageTitle: sourcePage?.title,
+    actionKey: row.action_key,
+    targetPageId: row.target_page_id,
+    targetPageCode: targetPage?.code ?? '',
+    targetPageRoute: targetPage?.route,
+    targetPageTitle: targetPage?.title,
+    openType: row.open_type || 'page',
+    metadata: row.metadata ?? {},
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function isMissingRelationTable(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? '');
+  return message.includes('lowcode_page_relations') || message.includes('Could not find the table');
+}
+
+async function listLowCodePageRelations(serviceApi: Pick<LowCodeHostServiceApi, 'invoke'>) {
+  try {
+    const rows = await serviceApi.invoke<RelationRow[]>('lowcode', 'listItems', {
+      tableName: 'lowcode_page_relations',
+      select: relationSelect,
+      sorts: [{ field: 'updated_at', direction: 'desc' }],
+      limit: 1000,
+    });
+
+    return Array.isArray(rows) ? rows.map(normalizeRelation) : [];
+  } catch (error) {
+    if (isMissingRelationTable(error)) return [];
+    throw error;
+  }
+}
+
+function attachRelations(pages: LowCodePageRecord[], relations: LowCodePageRelation[]) {
+  return pages.map((page) => ({
+    ...page,
+    relations: {
+      outgoing: relations.filter((relation) => relation.sourcePageId === page.id),
+      incoming: relations.filter((relation) => relation.targetPageId === page.id),
+    },
+  }));
+}
+
 export async function listLowCodePages(
   serviceApi: Pick<LowCodeHostServiceApi, 'invoke'>,
   postData: Record<string, unknown> = {},
 ) {
-  const rows = await serviceApi.invoke<LowCodePageRecord[]>('admin', 'listItems', {
-    entityCode: 'lowcode_pages',
+  const rows = await serviceApi.invoke<LowCodePageRecord[]>('lowcode', 'listItems', {
+    tableName: 'lowcode_pages',
+    sorts: [{ field: 'updated_at', direction: 'desc' }],
     ...postData,
   });
 
-  return Array.isArray(rows) ? rows : [];
+  const pages = Array.isArray(rows) ? rows : [];
+  return attachRelations(pages, await listLowCodePageRelations(serviceApi));
 }
 
 export async function getLowCodePage(
@@ -35,8 +126,10 @@ export async function getLowCodePage(
   }
 
   const rows = await listLowCodePages(serviceApi, {
-    ...(code ? { code } : {}),
-    ...(route ? { route } : {}),
+    filters: {
+      ...(code ? { code } : {}),
+      ...(route ? { route } : {}),
+    },
     includeData: lookup.includeData !== false,
     limit: 1,
   });

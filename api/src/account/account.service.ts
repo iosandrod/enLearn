@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import type { ServiceContext, ServiceExecutor } from '../common/interfaces/service-executor';
+import { BaseService, type ListItemsHandler } from '../common/base.service';
+import type { ServiceContext } from '../common/interfaces/service-executor';
 import { getCurrentUser } from '../common/utils/supabase';
 
 type PostData = Record<string, unknown>;
@@ -68,15 +69,9 @@ function assertRpcSucceeded<T>(
 }
 
 @Injectable()
-export class AccountService implements ServiceExecutor {
-  async execute(method: string, postData: PostData, context: ServiceContext) {
+export class AccountService extends BaseService {
+  protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
-      case 'listItems':
-        return this.listItems(postData, context);
-      case 'getAccount':
-        return this.getAccount(postData, context);
-      case 'getPersonalAccount':
-        return this.getPersonalAccount(context);
       case 'createAccount':
         return this.createAccount(postData, context);
       case 'updateAccount':
@@ -92,34 +87,52 @@ export class AccountService implements ServiceExecutor {
     }
   }
 
-  private async listItems(postData: PostData, context: ServiceContext) {
-    switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type) || 'accounts') {
-      case 'accounts':
-        return this.listAccounts(context);
-      case 'members':
-        return this.listMembers(postData, context);
-      default:
-        throw new BadRequestException('Unsupported account listItems itemType.');
-    }
+  protected override defaultListItemsType() {
+    return 'accounts';
   }
 
-  private async listAccounts(context: ServiceContext) {
+  protected override listItemHandlers(): Record<string, ListItemsHandler> {
+    return {
+      accounts: (postData, context) => this.listAccounts(postData, context),
+      account: (postData, context) => this.listAccount(postData, context),
+      personalAccount: (postData, context) => this.listPersonalAccount(postData, context),
+      personal_account: (postData, context) => this.listPersonalAccount(postData, context),
+      members: (postData, context) => this.listMembers(postData, context)
+    };
+  }
+
+  private async listAccounts(postData: PostData, context: ServiceContext) {
     const { client } = await getCurrentUser(context);
     const result = await client.rpc('get_accounts');
-    return assertRpcSucceeded(result, []);
+    const rows: Record<string, unknown>[] = assertRpcSucceeded(
+      result,
+      [] as Record<string, unknown>[]
+    );
+    const accountId = this.readFilterString(postData, 'account_id') ||
+      this.readFilterString(postData, 'accountId') ||
+      this.readFilterString(postData, 'id');
+    const slug = this.readFilterString(postData, 'slug');
+
+    return rows.filter((account) => {
+      if (accountId && String(account.account_id ?? account.id ?? '') !== accountId) return false;
+      if (slug && String(account.slug ?? '') !== slug) return false;
+      return true;
+    });
   }
 
-  private async getAccount(postData: PostData, context: ServiceContext) {
+  private async listAccount(postData: PostData, context: ServiceContext) {
     const { client } = await getCurrentUser(context);
     const accountId = readString(postData.account_id ?? postData.accountId, 'account_id');
     const result = await client.rpc('get_account', { account_id: accountId });
-    return assertRpcSucceeded(result, null);
+    const account = assertRpcSucceeded(result, null as Record<string, unknown> | null);
+    return account ? [account] : [];
   }
 
-  private async getPersonalAccount(context: ServiceContext) {
+  private async listPersonalAccount(_postData: PostData, context: ServiceContext) {
     const { client } = await getCurrentUser(context);
     const result = await client.rpc('get_personal_account');
-    return assertRpcSucceeded(result, null);
+    const account = assertRpcSucceeded(result, null as Record<string, unknown> | null);
+    return account ? [account] : [];
   }
 
   private async createAccount(postData: PostData, context: ServiceContext) {

@@ -24,7 +24,7 @@
         :loading="loadingPages"
         @toolbar="handlePagesToolbar"
         @edit="selectPage"
-        @delete="archivePage"
+        @delete="archiveLowCodePage"
       />
     </div>
 
@@ -253,8 +253,8 @@ async function loadGeneratorOptions() {
   try {
     generatorOptions.value = await serviceApi.invoke<TablePageOption[]>(
       'lowcode',
-      'listItems',
-      { itemType: 'tablePageOptions' }
+      'listTablePageOptions',
+      {}
     );
 
     if (!generatorForm.value.tableName && generatorOptions.value.length) {
@@ -276,13 +276,17 @@ async function selectPage(row: Record<string, unknown>) {
   message.value = '';
 }
 
-async function archivePage(row: Record<string, unknown>) {
+async function archiveLowCodePage(row: Record<string, unknown>) {
   const page = row as LowCodePageRecord;
   saving.value = true;
   message.value = '';
 
   try {
-    await serviceApi.invoke('lowcode', 'archivePage', { code: page.code });
+    await serviceApi.invoke('lowcode', 'updateItem', {
+      resource: 'pages',
+      filters: { code: page.code },
+      data: { status: 'archived' }
+    });
     message.value = `Archived ${page.code}.`;
     messageClass.value = 'lc-help';
     await loadPages();
@@ -390,9 +394,12 @@ async function handleEditorAction(action: { code: string }) {
     message.value = '';
 
     try {
-      await serviceApi.invoke('lowcode', 'publishPage', {
+      await serviceApi.invoke('lowcode', 'savePage', {
         code: pageForm.value.code,
-        schema: buildSchemaPayload(pageForm.value),
+        schema: {
+          ...buildSchemaPayload(pageForm.value),
+          status: 'published'
+        },
         ...(pageForm.value.parentListPageCode.trim()
           ? {
               parentListPageCode: pageForm.value.parentListPageCode.trim(),
@@ -413,7 +420,7 @@ async function handleEditorAction(action: { code: string }) {
   }
 
   if (action.code === 'archive') {
-    await archivePage({ code: pageForm.value.code } as Record<string, unknown>);
+    await archiveLowCodePage({ code: pageForm.value.code } as Record<string, unknown>);
   }
 }
 

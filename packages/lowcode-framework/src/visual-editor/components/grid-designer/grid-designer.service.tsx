@@ -841,7 +841,7 @@ function createDefaultBusiness(): GridDesignerBusinessInfo {
     serviceMethod: 'listItems',
     saveMethod: '',
     deleteMethod: '',
-    postDataJson: '{\n  "entityCode": "users"\n}',
+    postDataJson: '{\n  "tableName": "profiles"\n}',
     showRowActions: true,
   };
 }

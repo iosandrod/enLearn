@@ -1,165 +1,23 @@
 
-> @ dev C:\Users\11516\Desktop\project\enLearn\frontend
+> @ dev E:\enLearn
+> pnpm --dir frontend dev
+
+
+> @ dev E:\enLearn\frontend
 > vite --host 0.0.0.0 --port 3000
 
-[2m05:33:01[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
 
-  [32m[1mVITE[22m v8.1.5[39m  [2mready in [0m[1m4458[22m[2m[0m ms[22m
+  [32m[1mVITE[22m v8.1.5[39m  [2mready in [0m[1m2954[22m[2m[0m ms[22m
 
   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
-  [32m➜[39m  [1mNetwork[22m: [36mhttp://100.101.158.119:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.0.12.5:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://100.65.207.11:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.20.208.1:[1m3000[22m/[39m
   [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.137.1:[1m3000[22m/[39m
-  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.43:[1m3000[22m/[39m
-[2m05:33:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
-[2m05:33:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
-[2m05:33:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mdependency optimized: [33msocket.io-client[32m[39m
-[2m05:33:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:34:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:34:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:34:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:34:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:34:55[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/left-aside/components/chart-component/index.tsx[22m
-[2m05:34:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
-[2m05:35:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mdependency optimized: [33mecharts[32m[39m
-[2m05:35:19[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
-[2m05:35:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:35:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
-[2m05:35:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
-[2m05:36:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
-[2m05:36:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
-[2m05:36:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
-[2m05:36:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
-[2m05:37:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
-[2m05:37:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual.config.jsx[22m
-[2m05:37:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
-[2m05:37:11[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual.config.jsx[22m
-[2m05:37:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
-[2m05:37:18[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
-[2m05:38:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
-[2m05:38:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
-[2m05:40:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:40:35[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:41:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:41:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:42:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
-[2m05:43:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:44:49[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:44:49[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m05:46:38[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
-[2m05:56:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
-[2m05:56:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/visual-editor-utilities.scss[22m
-[2m05:57:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
-[2m06:04:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue[22m
-[2m06:04:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue?vue&type=style&index=0&lang.css[22m
-[2m06:04:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue?vue&type=style&index=0&lang.css[22m
-[2m06:04:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
-[2m06:05:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue?vue&type=style&index=0&scoped=a496e247&lang.css[22m
-[2m06:07:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
-[2m06:07:00[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
-[2m06:11:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.jsx[22m
-[2m06:11:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/tabs/index.vue[22m
-[2m06:11:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/tabs/index.vue[22m
-[2m06:12:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.jsx[22m
-[2m06:12:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.jsx[22m
-[2m06:13:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.tsx[22m
-[2m06:13:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.tsx[22m
-[2m06:13:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.tsx[22m
-[2m06:13:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.tsx[22m
-[2m06:16:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/lowcode-grid/index.ts[22m
-[2m06:16:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/lowcode-grid/index.ts[22m
-[2m06:16:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m06:16:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
-[2m06:17:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-grid/index.tsx[22m
-[2m06:18:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.tsx[22m
-[2m06:18:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.tsx[22m
-[2m06:18:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.jsx[22m
-[2m06:18:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
-[2m06:18:35[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/lowcode-grid/index.js[22m
-[2m06:18:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/index.js[22m
-[2m06:19:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/button-group/index.vue, /@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/button-group/index.vue?vue&type=style&index=0&scoped=c47cba5a&lang.css[22m
-[2m06:19:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/lowcode-button-group/index.ts[22m
-[2m06:20:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/attr-editor/index.jsx[22m
-[2m06:20:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/attr-editor/index.jsx[22m
-[2m06:22:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/attr-editor/index.jsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/container-component/form/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/container-component/layout/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/datetimePicker/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/button/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/array-table/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/checkbox/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/image/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/divider/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/nav-bar/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/notice-bar/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/input/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/swipe/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/slider/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/switch/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/stepper/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/sub-form/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/rate/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/process/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/tabbar/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/picker/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/radio/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/nav-bar/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/notice-bar/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/input/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/swipe/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/slider/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/switch/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/stepper/index.tsx[22m
-[2m06:22:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/sub-form/index.tsx[22m
-[2m06:22:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/sub-form/index.tsx[22m
-[2m06:23:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/main.ts[22m
-[2m06:23:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
-[2m06:24:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/image/index.tsx[22m
-[2m06:24:35[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/block-materials/button-group/index.vue[22m
-[2m06:27:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.jsx[22m
-[2m06:27:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/business-component/lowcode-button-group/index.tsx[22m
-[2m06:28:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/container-component/form/index.jsx[22m
-[2m06:28:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/lowcode-button-group/index.js[22m
-[2m06:28:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/index.js[22m
-[2m06:28:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/swipe/createFieldProps.js[22m
-[2m06:31:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
-[2m06:31:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
-[2m06:32:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/container-component/form/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/container-component/form/index.jsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/checkbox/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/button/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/divider/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/container-component/layout/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/array-table/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/process/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/image/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/nav-bar/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/datetimePicker/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/notice-bar/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/picker/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/slider/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/input/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/stepper/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/radio/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/rate/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/swipe/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/switch/index.tsx[22m
-[2m06:32:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/tabbar/index.tsx[22m
-[2m06:33:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/image/index.tsx[22m
-[2m06:33:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/image/index.tsx[22m
-[2m08:03:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/picker/index.tsx[22m
-[2m08:03:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/radio/index.tsx[22m
-[2m08:03:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/rate/index.tsx[22m
-[2m08:03:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/slider/index.tsx[22m
-[2m08:03:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/stepper/index.tsx[22m
-[2m08:03:10[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mC:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/packages/base-widgets/switch/index.tsx[22m
-[2m12:42:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-sub-form/index.vue[22m
-[2m12:46:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
-[2m12:46:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
-[2m12:46:56[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
-[2m12:47:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
-[2m12:55:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
-[2m12:55:08[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
-[2m12:55:31[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
-[2m12:55:46[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/C:/Users/11516/Desktop/project/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
- ELIFECYCLE  Command failed with exit code 4294967295.
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.36:[1m3000[22m/[39m
+[2m15:11:55[22m [36m[1m[vite][22m[39m changed tsconfig file detected: E:/enLearn/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2m15:12:37[22m [36m[1m[vite][22m[39m changed tsconfig file detected: E:/enLearn/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2m15:20:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m15:21:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m15:22:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
+[2m15:22:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css, /layouts/dashboard.vue, /pages/dashboard/[...slug].vue[22m

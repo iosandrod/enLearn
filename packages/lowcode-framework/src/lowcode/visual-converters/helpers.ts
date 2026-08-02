@@ -384,7 +384,7 @@ export function upsertFormDataSource(
   const saveMethod = readString(props.saveMethod);
   const postData = readJsonObject(props.postDataJson, {});
   const entityCode = readString(props.entityCode, readString(postData.entityCode ?? postData.entity_code));
-  const tableName = readString(props.tableName, readString(postData.tableName ?? postData.table_name));
+  const tableName = readString(props.tableName, readString(postData.tableName ?? postData.table_name)) || (entityCode === 'users' ? 'profiles' : entityCode);
 
   dataSources[key] = {
     key,
@@ -392,7 +392,6 @@ export function upsertFormDataSource(
     serviceName,
     serviceMethod,
     ...(saveMethod ? { saveMethod } : {}),
-    ...(entityCode ? { entityCode } : {}),
     ...(tableName ? { tableName } : {}),
     ...(Object.keys(postData).length ? { postData } : {}),
     autoLoad,

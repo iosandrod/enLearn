@@ -35,6 +35,12 @@ const triggerWorkflowEditorRoot = resolve(__dirname, '..', 'packages', 'trigger-
 const workflowSchemaRoot = resolve(__dirname, '..', 'packages', 'workflow-schema', 'src');
 const tldrawVueRoot = resolve(__dirname, '..', 'packages', 'tldraw-vue');
 const tldrawVueSrcRoot = resolve(tldrawVueRoot, 'src');
+const tldrawVueEntry = existsSync(resolve(tldrawVueSrcRoot, 'index.ts'))
+  ? resolve(tldrawVueSrcRoot, 'index.ts')
+  : resolve(__dirname, 'src', 'stubs', 'tldraw-vue-phase-one.ts');
+const tldrawVueStyle = existsSync(resolve(tldrawVueSrcRoot, 'styles.css'))
+  ? resolve(tldrawVueSrcRoot, 'styles.css')
+  : resolve(__dirname, 'src', 'stubs', 'tldraw-vue-phase-one.css');
 const tldrawVuePackageSrc = (name: string) => resolve(tldrawVueRoot, 'packages', name, 'src', 'index.ts');
 const tldrawVueDep = (name: string) => resolve(tldrawVueRoot, 'node_modules', ...name.split('/'));
 const tldrawVueRootForVite = toVitePath(tldrawVueRoot);
@@ -149,8 +155,9 @@ export default defineConfig({
       { find: '@enlearn/chat-widget', replacement: chatWidgetRoot },
       { find: '@enlearn/trigger-workflow-editor', replacement: triggerWorkflowEditorRoot },
       { find: '@enlearn/workflow-schema', replacement: workflowSchemaRoot },
-      { find: 'tldraw-vue-phase-one/style.css', replacement: resolve(tldrawVueSrcRoot, 'styles.css') },
-      { find: 'tldraw-vue-phase-one', replacement: resolve(tldrawVueSrcRoot, 'index.ts') },
+      { find: 'tldraw-vue-phase-one/style.css', replacement: tldrawVueStyle },
+      { find: 'tldraw-vue-phase-one', replacement: tldrawVueEntry },
+      { find: 'echarts', replacement: resolve(__dirname, 'node_modules', 'echarts') },
       { find: '@tldraw/editor', replacement: resolve(tldrawVueRoot, 'packages', 'editor', 'src', 'vue-core.ts') },
       { find: '@tldraw/state', replacement: tldrawVuePackageSrc('state') },
       { find: '@tldraw/state-react', replacement: tldrawVuePackageSrc('state-react') },

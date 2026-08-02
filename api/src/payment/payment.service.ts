@@ -4,7 +4,8 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import type Stripe from 'stripe';
-import type { ServiceContext, ServiceExecutor } from '../common/interfaces/service-executor';
+import { BaseService, type ListItemsHandler } from '../common/base.service';
+import type { ServiceContext } from '../common/interfaces/service-executor';
 import { createSupabaseClient, getCurrentUser } from '../common/utils/supabase';
 import {
   calculateTrialEndUnixTimestamp,
@@ -39,13 +40,9 @@ function readNumber(value: unknown, name: string, fallback?: number) {
 }
 
 @Injectable()
-export class PaymentService implements ServiceExecutor {
-  async execute(method: string, postData: PostData, context: ServiceContext) {
+export class PaymentService extends BaseService {
+  protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
-      case 'listItems':
-        return this.listItems(postData);
-      case 'getSubscription':
-        return this.getSubscription(context);
       case 'createCheckoutSession':
         return this.createCheckoutSession(postData, context);
       case 'createBillingPortal':
@@ -55,20 +52,20 @@ export class PaymentService implements ServiceExecutor {
     }
   }
 
-  private async listItems(postData: PostData) {
-    const itemType = typeof postData.itemType === 'string' && postData.itemType.trim()
-      ? postData.itemType.trim()
-      : typeof postData.item_type === 'string' && postData.item_type.trim()
-        ? postData.item_type.trim()
-        : typeof postData.type === 'string' && postData.type.trim()
-          ? postData.type.trim()
-          : 'plans';
+  protected override defaultListItemsType() {
+    return 'plans';
+  }
 
-    if (itemType === 'plans') {
-      return this.listPlans();
-    }
+  protected override listItemHandlers(): Record<string, ListItemsHandler> {
+    return {
+      plans: () => this.listPlans(),
+      subscription: (_postData, context) => this.listSubscription(context)
+    };
+  }
 
-    throw new BadRequestException('Unsupported payment listItems itemType.');
+  private async listSubscription(context: ServiceContext) {
+    const subscription = await this.getSubscription(context);
+    return subscription ? [subscription] : [];
   }
 
   private async listPlans() {

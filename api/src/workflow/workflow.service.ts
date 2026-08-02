@@ -2,7 +2,8 @@ import { BadGatewayException, BadRequestException, Inject, Injectable } from '@n
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
-import type { ServiceContext, ServiceExecutor } from '../common/interfaces/service-executor';
+import { BaseService } from '../common/base.service';
+import type { ServiceContext } from '../common/interfaces/service-executor';
 import {
   WORKFLOW_REQUEST_PATTERN,
   WORKFLOW_SERVICE_CLIENT,
@@ -36,21 +37,21 @@ function stripUndefined(input: Record<string, unknown>) {
 }
 
 @Injectable()
-export class WorkflowService implements ServiceExecutor {
+export class WorkflowService extends BaseService {
   constructor(
     @Inject(WORKFLOW_SERVICE_CLIENT)
     private readonly workflowClient: ClientProxy
-  ) {}
+  ) {
+    super();
+  }
 
-  async execute(method: string, postData: PostData, context: ServiceContext) {
+  protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     const request = this.resolveRequest(method, postData);
     return this.invokeWorkflowService(request, postData, context);
   }
 
   private resolveRequest(method: string, postData: PostData): WorkflowRequest {
     switch (method) {
-      case 'listItems':
-        return this.resolveListItemsRequest(postData);
       case 'getModel':
         return { method: 'GET', path: `/models/${readString(postData.modelId, 'modelId')}` };
       case 'saveModel':
@@ -164,6 +165,11 @@ export class WorkflowService implements ServiceExecutor {
       default:
         throw new BadRequestException(`Unsupported workflow method: ${method}`);
     }
+  }
+
+  protected override async handleListItems(postData: PostData, context: ServiceContext) {
+    const request = this.resolveListItemsRequest(postData);
+    return this.invokeWorkflowService(request, postData, context);
   }
 
   private resolveListItemsRequest(postData: PostData): WorkflowRequest {

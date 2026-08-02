@@ -109,12 +109,62 @@ type ListFoldersResponse = {
   items: FileFolder[];
 };
 
+type FileObjectRow = {
+  id: string;
+  bucket: string;
+  object_key: string;
+  original_name: string;
+  mime_type: string | null;
+  size_bytes: number | null;
+  checksum: string | null;
+  owner_id: string;
+  visibility: FileVisibility;
+  status: FileStatus;
+  locked: boolean;
+  metadata: Record<string, unknown> | null;
+  upload_expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+type FileFolderRow = {
+  id: string;
+  bucket: string;
+  owner_id: string;
+  name: string;
+  path: string;
+  parent_path: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+};
+
+type ListItemsPageResponse<T> = {
+  rows: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
 type AttachToEntityInput = {
   fileId: string;
   entityType: string;
   entityId: string;
   purpose?: string;
   metadata?: Record<string, unknown>;
+};
+
+type FileUsageRow = {
+  id: string;
+  file_id: string;
+  entity_type: string;
+  entity_id: string;
+  purpose: string;
+  metadata: Record<string, unknown> | null;
+  created_by: string | null;
+  created_at: string;
 };
 
 async function uploadFileToSignedUrl(
@@ -161,11 +211,50 @@ async function uploadFileToSignedUrl(
   });
 }
 
+function normalizeFile(row: FileObjectRow): FileObject {
+  return {
+    id: row.id,
+    bucket: row.bucket,
+    objectKey: row.object_key,
+    originalName: row.original_name,
+    mimeType: row.mime_type,
+    sizeBytes: row.size_bytes,
+    checksum: row.checksum,
+    ownerId: row.owner_id,
+    visibility: row.visibility,
+    status: row.status,
+    locked: row.locked === true,
+    metadata: row.metadata ?? {},
+    uploadExpiresAt: row.upload_expires_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at
+  };
+}
+
+function normalizeFolder(row: FileFolderRow): FileFolder {
+  return {
+    id: row.id,
+    bucket: row.bucket,
+    ownerId: row.owner_id,
+    name: row.name,
+    path: row.path,
+    parentPath: row.parent_path,
+    metadata: row.metadata ?? {},
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deletedAt: row.deleted_at
+  };
+}
+
 export function useFilesApi() {
   const serviceApi = useServiceApi();
+  const { user } = useAuthState();
 
   async function createUploadIntent(input: CreateUploadIntentInput) {
-    return serviceApi.invoke<UploadIntentResponse>('files', 'createUploadIntent', {
+    return serviceApi.invoke<UploadIntentResponse>('files', 'runAction', {
+      resource: 'files',
+      operation: 'createUploadIntent',
       originalName: input.file.name,
       mimeType: input.file.type || null,
       sizeBytes: input.file.size,
@@ -180,8 +269,10 @@ export function useFilesApi() {
   async function confirmUpload(input: ConfirmUploadInput) {
     return serviceApi.invoke<{ file: FileObject; object: unknown }>(
       'files',
-      'confirmUpload',
+      'runAction',
       {
+        resource: 'files',
+        operation: 'confirmUpload',
         fileId: input.fileId,
         checksum: input.checksum,
         status: input.status ?? 'ready'
@@ -199,23 +290,62 @@ export function useFilesApi() {
   }
 
   async function getDownloadUrl(fileId: string, expiresInSeconds?: number) {
-    return serviceApi.invoke<DownloadUrlResponse>('files', 'getDownloadUrl', {
+    return serviceApi.invoke<DownloadUrlResponse>('files', 'runAction', {
+      resource: 'files',
+      operation: 'getDownloadUrl',
       fileId,
       expiresInSeconds
     });
   }
 
   async function list(input: ListFilesInput = {}) {
-    return serviceApi.invoke<ListFilesResponse>('files', 'listItems', {
-      ...input,
-      itemType: 'files'
+    const limit = Math.min(Math.max(input.limit ?? 50, 1), 100);
+    const offset = Math.max(input.offset ?? 0, 0);
+    if (!user.value?.id) {
+      return { items: [], count: 0, limit, offset } satisfies ListFilesResponse;
+    }
+
+    const filters: Record<string, unknown> = {};
+    filters.owner_id = user.value.id;
+    if (!input.includeDeleted) filters.deleted_at = null;
+    if (input.status) filters.status = input.status;
+
+    const result = await serviceApi.invoke<ListItemsPageResponse<FileObjectRow>>('files', 'listItems', {
+      tableName: 'file_objects',
+      filters,
+      limit,
+      offset,
+      orderBy: 'created_at',
+      orderDirection: 'desc',
+      withCount: true,
+      responseMode: 'page'
     });
+
+    return {
+      items: result.rows.map(normalizeFile),
+      count: result.total,
+      limit,
+      offset
+    } satisfies ListFilesResponse;
   }
 
   async function listFolders() {
-    return serviceApi.invoke<ListFoldersResponse>('files', 'listItems', {
-      itemType: 'folders'
+    if (!user.value?.id) return { items: [] } satisfies ListFoldersResponse;
+
+    const filters: Record<string, unknown> = { deleted_at: null };
+    filters.owner_id = user.value.id;
+
+    const rows = await serviceApi.invoke<FileFolderRow[]>('files', 'listItems', {
+      tableName: 'file_folders',
+      filters,
+      limit: 300,
+      orderBy: 'path',
+      orderDirection: 'asc'
     });
+
+    return {
+      items: rows.map(normalizeFolder)
+    } satisfies ListFoldersResponse;
   }
 
   async function createFolder(input: {
@@ -223,35 +353,63 @@ export function useFilesApi() {
     parentPath?: string;
     metadata?: Record<string, unknown>;
   }) {
-    return serviceApi.invoke<{ folder: FileFolder }>('files', 'createFolder', input);
+    return serviceApi.invoke<{ folder: FileFolder }>('files', 'runAction', {
+      resource: 'folders',
+      operation: 'createFolder',
+      ...input
+    });
   }
 
   async function deleteFolder(path: string) {
-    return serviceApi.invoke<{ success: boolean; path: string }>('files', 'deleteFolder', {
+    return serviceApi.invoke<{ success: boolean; path: string }>('files', 'runAction', {
+      resource: 'folders',
+      operation: 'deleteFolder',
       path
     });
   }
 
   async function setFileLocked(fileId: string, locked: boolean) {
-    return serviceApi.invoke<{ file: FileObject }>('files', 'setFileLocked', {
-      fileId,
-      locked
+    const row = await serviceApi.invoke<FileObjectRow>('files', 'updateItem', {
+      resource: 'files',
+      id: fileId,
+      data: { locked }
     });
+
+    return { file: normalizeFile(row) };
   }
 
   async function attachToEntity(input: AttachToEntityInput) {
-    return serviceApi.invoke<{ file: FileObject; usage: unknown }>(
-      'files',
-      'attachToEntity',
-      input
-    );
+    const fileRows = await serviceApi.invoke<FileObjectRow[]>('files', 'listItems', {
+      tableName: 'file_objects',
+      filters: { id: input.fileId },
+      limit: 1
+    });
+    const fileRow = fileRows[0];
+    if (!fileRow) throw new Error('File not found.');
+
+    const usage = await serviceApi.invoke<FileUsageRow>('files', 'createItem', {
+      resource: 'usages',
+      data: {
+        file_id: input.fileId,
+        entity_type: input.entityType,
+        entity_id: input.entityId,
+        purpose: input.purpose ?? 'attachment',
+        metadata: input.metadata ?? {}
+      }
+    });
+
+    return {
+      file: normalizeFile(fileRow),
+      usage
+    };
   }
 
   async function remove(fileId: string, purge = false) {
     return serviceApi.invoke<{ success: boolean; purged: boolean; file: FileObject }>(
       'files',
-      'delete',
+      'deleteItem',
       {
+        resource: 'files',
         fileId,
         purge
       }

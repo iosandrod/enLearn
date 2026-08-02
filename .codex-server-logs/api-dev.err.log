@@ -1,146 +1,160 @@
-[31m[Nest] 34312  - [39m2026/07/31 22:16:44 [31m  ERROR[39m [38;5;3m[NestApplication] [39m[31mError: listen EADDRINUSE: address already in use :::3002[39m[38;5;3m +6ms[39m
-node:net:1940
-    const ex = new UVExceptionWithHostPort(err, 'listen', address, port);
-               ^
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
 
-Error: listen EADDRINUSE: address already in use :::3002
-    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
-    at listenInCluster (node:net:1997:12)
-    at Server.listen (node:net:2102:7)
-    at ExpressAdapter.listen (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+platform-express@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validat_3e645l3ehqiqb6yhgcfsxu7f44\node_modules\@nestjs\platform-express\adapters\express-adapter.js:95:32)
-    at C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\nest-application.js:183:30
-    at new Promise (<anonymous>)
-    at NestApplication.listen (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\nest-application.js:173:16)
-    at async bootstrap (C:\Users\11516\Desktop\project\enLearn\api\src\main.ts:33:3) {
-  code: 'EADDRINUSE',
-  errno: -4091,
-  syscall: 'listen',
-  address: '::',
-  port: 3002
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:4:12: ERROR: Expected identifier but found "1"
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
 }
 
-Node.js v22.20.0
-[WARN] Redis server does not require a password, but a password was supplied.
-[WARN] Redis server does not require a password, but a password was supplied.
-TypeError: fetch failed
-    at node:internal/deps/undici/undici:13510:13
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async _handleRequest (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:223:14)
-    at async _request (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:196:16)
-    at async SupabaseAuthClient.signInWithPassword (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:1217:15)
-    at async AuthService.signInWithPassword (C:\Users\11516\Desktop\project\enLearn\api\src\auth\auth.service.ts:78:29)
-    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  [cause]: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 172.64.149.246:443, timeout: 10000ms)
-      at onConnectTimeout (node:internal/deps/undici/undici:2602:28)
-      at Immediate._onImmediate (node:internal/deps/undici/undici:2568:35)
-      at process.processImmediate (node:internal/timers:485:21) {
-    code: 'UND_ERR_CONNECT_TIMEOUT'
-  }
-}
-TypeError: fetch failed
-    at node:internal/deps/undici/undici:13510:13
-    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async _handleRequest (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:223:14)
-    at async _request (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\lib\fetch.ts:196:16)
-    at async SupabaseAuthClient.signInWithPassword (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@supabase+auth-js@2.110.7\node_modules\@supabase\auth-js\src\GoTrueClient.ts:1217:15)
-    at async AuthService.signInWithPassword (C:\Users\11516\Desktop\project\enLearn\api\src\auth\auth.service.ts:78:29)
-    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\router\router-execution-context.js:46:28
-    at async C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\router\router-proxy.js:9:17 {
-  [cause]: ConnectTimeoutError: Connect Timeout Error (attempted addresses: 172.64.149.246:443, timeout: 10000ms)
-      at onConnectTimeout (node:internal/deps/undici/undici:2602:28)
-      at Immediate._onImmediate (node:internal/deps/undici/undici:2568:35)
-      at process.processImmediate (node:internal/timers:485:21) {
-    code: 'UND_ERR_CONNECT_TIMEOUT'
-  }
-}
-[31m[Nest] 34292  - [39m2026/08/01 00:06:40 [31m  ERROR[39m [38;5;3m[NestApplication] [39m[31mError: listen EADDRINUSE: address already in use :::3002[39m[38;5;3m +15ms[39m
-node:net:1940
-    const ex = new UVExceptionWithHostPort(err, 'listen', address, port);
-               ^
+Node.js v22.17.0
+node:internal/modules/cjs/loader:1401
+  const err = new Error(message);
+              ^
 
-Error: listen EADDRINUSE: address already in use :::3002
-    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
-    at listenInCluster (node:net:1997:12)
-    at Server.listen (node:net:2102:7)
-    at ExpressAdapter.listen (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+platform-express@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validat_3e645l3ehqiqb6yhgcfsxu7f44\node_modules\@nestjs\platform-express\adapters\express-adapter.js:95:32)
-    at C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\nest-application.js:183:30
-    at new Promise (<anonymous>)
-    at NestApplication.listen (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\nest-application.js:173:16)
-    at async bootstrap (C:\Users\11516\Desktop\project\enLearn\api\src\main.ts:33:3) {
-  code: 'EADDRINUSE',
-  errno: -4091,
-  syscall: 'listen',
-  address: '::',
-  port: 3002
+Error: Cannot find module '../common/base.service'
+Require stack:
+- E:\enLearn\api\src\workflow\workflow.service.ts
+- E:\enLearn\api\src\gateway\service-router.service.ts
+- E:\enLearn\api\src\gateway\service-gateway.controller.ts
+- E:\enLearn\api\src\app.module.ts
+- E:\enLearn\api\src\main.ts
+    at node:internal/modules/cjs/loader:1401:15
+    at nextResolveSimple (E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171
+    at T._resolveFilename (file:///E:/enLearn/node_modules/.pnpm/tsx@4.23.1/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\enLearn\\api\\src\\workflow\\workflow.service.ts',
+    'E:\\enLearn\\api\\src\\gateway\\service-router.service.ts',
+    'E:\\enLearn\\api\\src\\gateway\\service-gateway.controller.ts',
+    'E:\\enLearn\\api\\src\\app.module.ts',
+    'E:\\enLearn\\api\\src\\main.ts'
+  ]
 }
 
-Node.js v22.20.0
-[31m[Nest] 13764  - [39m2026/08/01 00:07:09 [31m  ERROR[39m [38;5;3m[NestApplication] [39m[31mError: listen EADDRINUSE: address already in use :::3002[39m[38;5;3m +5ms[39m
-node:net:1940
-    const ex = new UVExceptionWithHostPort(err, 'listen', address, port);
-               ^
+Node.js v22.17.0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
 
-Error: listen EADDRINUSE: address already in use :::3002
-    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
-    at listenInCluster (node:net:1997:12)
-    at Server.listen (node:net:2102:7)
-    at ExpressAdapter.listen (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+platform-express@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validat_3e645l3ehqiqb6yhgcfsxu7f44\node_modules\@nestjs\platform-express\adapters\express-adapter.js:95:32)
-    at C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\nest-application.js:183:30
-    at new Promise (<anonymous>)
-    at NestApplication.listen (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\nest-application.js:173:16)
-    at async bootstrap (C:\Users\11516\Desktop\project\enLearn\api\src\main.ts:33:3) {
-  code: 'EADDRINUSE',
-  errno: -4091,
-  syscall: 'listen',
-  address: '::',
-  port: 3002
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:658:58: ERROR: Unterminated string literal
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
 }
 
-Node.js v22.20.0
-[WARN] Redis server does not require a password, but a password was supplied.
-[WARN] Redis server does not require a password, but a password was supplied.
-[31m[Nest] 65512  - [39m2026/08/01 00:20:03 [31m  ERROR[39m [38;5;3m[NestApplication] [39m[31mError: listen EADDRINUSE: address already in use :::3002[39m[38;5;3m +2ms[39m
-node:net:1940
-    const ex = new UVExceptionWithHostPort(err, 'listen', address, port);
-               ^
+Node.js v22.17.0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
 
-Error: listen EADDRINUSE: address already in use :::3002
-    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
-    at listenInCluster (node:net:1997:12)
-    at Server.listen (node:net:2102:7)
-    at ExpressAdapter.listen (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+platform-express@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validat_3e645l3ehqiqb6yhgcfsxu7f44\node_modules\@nestjs\platform-express\adapters\express-adapter.js:95:32)
-    at C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\nest-application.js:183:30
-    at new Promise (<anonymous>)
-    at NestApplication.listen (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\nest-application.js:173:16)
-    at async bootstrap (C:\Users\11516\Desktop\project\enLearn\api\src\main.ts:33:3) {
-  code: 'EADDRINUSE',
-  errno: -4091,
-  syscall: 'listen',
-  address: '::',
-  port: 3002
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:658:58: ERROR: Unterminated string literal
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
 }
 
-Node.js v22.20.0
-[31m[Nest] 22960  - [39m2026/08/01 15:40:57 [31m  ERROR[39m [38;5;3m[NestApplication] [39m[31mError: listen EADDRINUSE: address already in use :::3002[39m[38;5;3m +6ms[39m
-node:net:1940
-    const ex = new UVExceptionWithHostPort(err, 'listen', address, port);
-               ^
+Node.js v22.17.0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
 
-Error: listen EADDRINUSE: address already in use :::3002
-    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
-    at listenInCluster (node:net:1997:12)
-    at Server.listen (node:net:2102:7)
-    at ExpressAdapter.listen (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+platform-express@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validat_3e645l3ehqiqb6yhgcfsxu7f44\node_modules\@nestjs\platform-express\adapters\express-adapter.js:95:32)
-    at C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\nest-application.js:183:30
-    at new Promise (<anonymous>)
-    at NestApplication.listen (C:\Users\11516\Desktop\project\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestjs+common@10.4.22_class-transformer@0.5.1_class-validator@0.14.4_re_uzqqxc2ewfsre2q7hf3x34nf2i\node_modules\@nestjs\core\nest-application.js:173:16)
-    at async bootstrap (C:\Users\11516\Desktop\project\enLearn\api\src\main.ts:33:3) {
-  code: 'EADDRINUSE',
-  errno: -4091,
-  syscall: 'listen',
-  address: '::',
-  port: 3002
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:658:58: ERROR: Unterminated string literal
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
 }
 
-Node.js v22.20.0
+Node.js v22.17.0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:658:58: ERROR: Unterminated string literal
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v22.17.0
+node:internal/modules/cjs/loader:1401
+  const err = new Error(message);
+              ^
+
+Error: Cannot find module './chat.service'
+Require stack:
+- E:\enLearn\api\src\chat\chat.module.ts
+- E:\enLearn\api\src\app.module.ts
+- E:\enLearn\api\src\main.ts
+    at node:internal/modules/cjs/loader:1401:15
+    at nextResolveSimple (E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1017)
+    at E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:4613
+    at E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:9:3894
+    at resolveTsPaths (E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:770)
+    at E:\enLearn\node_modules\.pnpm\tsx@4.23.1\node_modules\tsx\dist\register-BoI6-WNn.cjs:10:1171
+    at T._resolveFilename (file:///E:/enLearn/node_modules/.pnpm/tsx@4.23.1/node_modules/tsx/dist/register-zZ7SWseA.mjs:2:15301)
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1057:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1062:22)
+    at Function._load (node:internal/modules/cjs/loader:1211:37) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'E:\\enLearn\\api\\src\\chat\\chat.module.ts',
+    'E:\\enLearn\\api\\src\\app.module.ts',
+    'E:\\enLearn\\api\\src\\main.ts'
+  ]
+}
+
+Node.js v22.17.0

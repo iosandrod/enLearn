@@ -3,6 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "allowImportingTsExtensions": true,
     "strict": false,
     "noImplicitAny": false,
     "verbatimModuleSyntax": false,
@@ -24,7 +25,9 @@
       "@enlearn/chat-widget/*": ["../packages/chat-widget/src/*"],
       "@enlearn/trigger-workflow-editor": ["../packages/trigger-workflow-editor/src/index.ts"],
       "@enlearn/trigger-workflow-editor/*": ["../packages/trigger-workflow-editor/src/*"],
-      "@enlearn/workflow-schema/*": ["../packages/workflow-schema/src/*"]
+      "@enlearn/workflow-schema/*": ["../packages/workflow-schema/src/*"],
+      "echarts": ["./node_modules/echarts"],
+      "echarts/*": ["./node_modules/echarts/*"]
     }
   },
   "include": ["**/*"],

@@ -202,28 +202,28 @@ async function fetchPosts<T>(url: string, options: FetchOptions = {}) {
   if (method === 'GET' && path === '/posts') {
     return fetchBackend<T>('/api/service', {
       method: 'POST',
-      body: { serviceName: 'posts', serviceMethod: 'listItems', postData: {} },
+      body: { serviceName: 'posts', serviceMethod: 'listItems', postData: { tableName: 'posts' } },
     });
   }
 
   if (method === 'POST' && path === '/posts') {
     return fetchBackend<T>('/api/service', {
       method: 'POST',
-      body: { serviceName: 'posts', serviceMethod: 'create', postData: options.body ?? {} },
+      body: { serviceName: 'posts', serviceMethod: 'createItem', postData: { resource: 'posts', ...(options.body as Record<string, unknown> ?? {}) } },
     });
   }
 
   if (method === 'PUT' && id) {
     return fetchBackend<T>('/api/service', {
       method: 'POST',
-      body: { serviceName: 'posts', serviceMethod: 'update', postData: { id, ...(options.body as Record<string, unknown>) } },
+      body: { serviceName: 'posts', serviceMethod: 'updateItem', postData: { resource: 'posts', id, ...(options.body as Record<string, unknown>) } },
     });
   }
 
   if (method === 'DELETE' && id) {
     return fetchBackend<T>('/api/service', {
       method: 'POST',
-      body: { serviceName: 'posts', serviceMethod: 'delete', postData: { id } },
+      body: { serviceName: 'posts', serviceMethod: 'deleteItem', postData: { resource: 'posts', id } },
     });
   }
 

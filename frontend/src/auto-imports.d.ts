@@ -73,6 +73,7 @@ declare global {
   const useModel: typeof import('vue').useModel
   const useNotificationApi: typeof import('../composables/useNotificationApi').useNotificationApi
   const usePostsApi: typeof import('../composables/usePostsApi').usePostsApi
+  const useResourceApi: typeof import('../composables/useResourceApi').useResourceApi
   const useRoute: typeof import('vue-router').useRoute
   const useRouter: typeof import('vue-router').useRouter
   const useSeoMeta: typeof import('@/src/spa-compat').useSeoMeta
@@ -179,6 +180,7 @@ declare module 'vue' {
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
     readonly useNotificationApi: UnwrapRef<typeof import('../composables/useNotificationApi')['useNotificationApi']>
     readonly usePostsApi: UnwrapRef<typeof import('../composables/usePostsApi')['usePostsApi']>
+    readonly useResourceApi: UnwrapRef<typeof import('../composables/useResourceApi')['useResourceApi']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
     readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
     readonly useSeoMeta: UnwrapRef<typeof import('@/src/spa-compat')['useSeoMeta']>

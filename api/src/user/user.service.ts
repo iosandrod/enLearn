@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import type { ServiceContext, ServiceExecutor } from '../common/interfaces/service-executor';
+import { BaseService, type ListItemsHandler } from '../common/base.service';
+import type { ServiceContext } from '../common/interfaces/service-executor';
 import { createSupabaseClient, getCurrentUser } from '../common/utils/supabase';
 
 type PostData = Record<string, unknown>;
@@ -17,12 +18,9 @@ function readString(value: unknown, name: string, fallback = '') {
 }
 
 @Injectable()
-export class UserService implements ServiceExecutor {
-  async execute(method: string, postData: PostData, context: ServiceContext) {
+export class UserService extends BaseService {
+  protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
-      case 'me':
-      case 'profile':
-        return this.me(context);
       case 'updateProfile':
         return this.updateProfile(postData, context);
       case 'updateEmail':
@@ -32,6 +30,21 @@ export class UserService implements ServiceExecutor {
       default:
         throw new BadRequestException(`Unsupported user method: ${method}`);
     }
+  }
+
+  protected override defaultListItemsType() {
+    return 'me';
+  }
+
+  protected override listItemHandlers(): Record<string, ListItemsHandler> {
+    return {
+      me: (_postData, context) => this.listMe(context),
+      profile: (_postData, context) => this.listMe(context)
+    };
+  }
+
+  private async listMe(context: ServiceContext) {
+    return [await this.me(context)];
   }
 
   private async me(context: ServiceContext) {

@@ -5,7 +5,8 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import type { PoolClient } from 'pg';
-import type { ServiceContext, ServiceExecutor } from '../common/interfaces/service-executor';
+import { BaseService } from '../common/base.service';
+import type { ServiceContext } from '../common/interfaces/service-executor';
 import { withPostgresClient } from '../common/utils/database';
 import { requireAdmin } from '../common/utils/supabase';
 
@@ -281,12 +282,10 @@ async function runInTransaction<T>(client: PoolClient, callback: () => Promise<T
 }
 
 @Injectable()
-export class EntityDesignService implements ServiceExecutor {
-  async execute(method: string, postData: JsonRecord, context: ServiceContext) {
+export class EntityDesignService extends BaseService {
+  protected override async executeAction(method: string, postData: JsonRecord, context: ServiceContext) {
     try {
       switch (method) {
-        case 'listItems':
-          return this.listItems(postData, context);
         case 'syncPhysicalColumns':
           return this.syncPhysicalColumns(postData, context);
         case 'syncPhysicalTables':
@@ -317,14 +316,22 @@ export class EntityDesignService implements ServiceExecutor {
     }
   }
 
-  private async listItems(postData: JsonRecord, context: ServiceContext) {
-    switch (readString(postData.itemType ?? postData.item_type ?? postData.type, 'itemType')) {
-      case 'design':
-        return this.listDesign(context);
-      case 'physicalTables':
-        return this.listPhysicalTables(context);
-      default:
-        throw new BadRequestException('Unsupported entityDesign listItems itemType.');
+  protected override async handleListItems(postData: JsonRecord, context: ServiceContext) {
+    try {
+      switch (readString(postData.itemType ?? postData.item_type ?? postData.type, 'itemType')) {
+        case 'design':
+          return this.listDesign(context);
+        case 'physicalTables':
+          return this.listPhysicalTables(context);
+        default:
+          throw new BadRequestException('Unsupported entityDesign listItems itemType.');
+      }
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      if (isMissingEntityMetadataError(error)) {
+        throw new BadRequestException(entityMetadataRequiredMessage());
+      }
+      throw error;
     }
   }
 

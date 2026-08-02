@@ -96,13 +96,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const context = this.requireContext(client);
       const tenantId = readTenantId(payload);
       const conversationId = readConversationId(payload);
-      const adminClient = createSupabaseClient('admin');
 
       await this.chatService.requireActiveMember(
-        adminClient,
         tenantId,
         conversationId,
-        context.userId
+        context.userId,
+        { authorization: context.authorization }
       );
       await client.join(`conversation:${conversationId}`);
 
@@ -136,9 +135,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const conversationId = String(message.conversationId);
       const tenantId = readTenantId(payload);
       const memberIds = await this.chatService.listActiveMemberIds(
-        createSupabaseClient('admin'),
         tenantId,
-        conversationId
+        conversationId,
+        { authorization: context.authorization }
       );
 
       this.server.to(`conversation:${conversationId}`).emit('chat:messageCreated', message);

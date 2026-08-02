@@ -53,7 +53,7 @@ export class DomainServiceRouter {
     context: ServiceContext
   ) {
     if (serviceMethod === 'listItems' && (serviceName === 'admin' || hasListItemsEntityTarget(postData))) {
-      return this.adminService.listItems(postData, context);
+      return this.adminService.execute('listItems', postData, context);
     }
 
     const executor = this.resolveExecutor(serviceName);

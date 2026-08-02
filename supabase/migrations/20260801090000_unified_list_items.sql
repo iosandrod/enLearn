@@ -229,7 +229,7 @@ begin
               source_value || jsonb_build_object('serviceName', 'admin', 'serviceMethod', 'listItems'),
               '{postData}',
               (case when jsonb_typeof(source_value->'postData') = 'object' then source_value->'postData' else '{}'::jsonb end)
-                || '{"entityCode": "users"}'::jsonb,
+                || '{"tableName": "profiles"}'::jsonb,
               true
             )
           when 'listRoles' then
@@ -237,7 +237,7 @@ begin
               source_value || jsonb_build_object('serviceName', 'admin', 'serviceMethod', 'listItems'),
               '{postData}',
               (case when jsonb_typeof(source_value->'postData') = 'object' then source_value->'postData' else '{}'::jsonb end)
-                || '{"entityCode": "admin_roles"}'::jsonb,
+                || '{"tableName": "admin_roles"}'::jsonb,
               true
             )
           when 'listPermissions' then
@@ -245,7 +245,7 @@ begin
               source_value || jsonb_build_object('serviceName', 'admin', 'serviceMethod', 'listItems'),
               '{postData}',
               (case when jsonb_typeof(source_value->'postData') = 'object' then source_value->'postData' else '{}'::jsonb end)
-                || '{"entityCode": "admin_permissions"}'::jsonb,
+                || '{"tableName": "admin_permissions"}'::jsonb,
               true
             )
           when 'listRoutes' then
@@ -253,7 +253,7 @@ begin
               source_value || jsonb_build_object('serviceName', 'admin', 'serviceMethod', 'listItems'),
               '{postData}',
               (case when jsonb_typeof(source_value->'postData') = 'object' then source_value->'postData' else '{}'::jsonb end)
-                || '{"entityCode": "admin_routes"}'::jsonb,
+                || '{"tableName": "admin_routes"}'::jsonb,
               true
             )
           when 'listEntities' then
@@ -261,7 +261,7 @@ begin
               source_value || jsonb_build_object('serviceName', 'admin', 'serviceMethod', 'listItems'),
               '{postData}',
               (case when jsonb_typeof(source_value->'postData') = 'object' then source_value->'postData' else '{}'::jsonb end)
-                || '{"entityCode": "admin_entities"}'::jsonb,
+                || '{"tableName": "admin_entities"}'::jsonb,
               true
             )
           when 'listPages' then
@@ -269,7 +269,7 @@ begin
               source_value || jsonb_build_object('serviceName', 'admin', 'serviceMethod', 'listItems'),
               '{postData}',
               (case when jsonb_typeof(source_value->'postData') = 'object' then source_value->'postData' else '{}'::jsonb end)
-                || '{"entityCode": "lowcode_pages"}'::jsonb,
+                || '{"tableName": "lowcode_pages"}'::jsonb,
               true
             )
           when 'listTableRows' then
