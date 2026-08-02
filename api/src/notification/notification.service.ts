@@ -1,17 +1,16 @@
 import { randomUUID } from 'node:crypto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { BaseService } from '../common/base.service';
-import type { ServiceContext } from '../common/interfaces/service-executor';
 import {
-  createSupabaseClient,
-  getCurrentUser,
-  requireAdmin
-} from '../common/utils/supabase';
+  BaseService,
+  type HookContext,
+  type ResourceConfigMap,
+  type ServiceHooks
+} from '../common/base.service';
+import type { ServiceContext } from '../common/interfaces/service-executor';
+import { createSupabaseClient, getCurrentUser, requireAdmin } from '../common/utils/supabase';
 import type {
   NotificationCategory,
-  NotificationDeliveryChannel,
-  NotificationDeliveryRow,
   NotificationEventRow,
   NotificationMessageRow,
   NotificationPreferenceRow,
@@ -22,20 +21,6 @@ type PostData = Record<string, unknown>;
 
 const categories: NotificationCategory[] = ['system', 'approval', 'mention', 'security', 'business'];
 const priorities: NotificationPriority[] = ['low', 'normal', 'high', 'urgent'];
-const deliveryChannels: NotificationDeliveryChannel[] = ['email', 'sms'];
-const deliveryStatuses = ['pending', 'sending', 'sent', 'failed', 'canceled'] as const;
-const deliveryChannelLabels: Record<NotificationDeliveryChannel, string> = {
-  email: '邮件',
-  sms: '短信'
-};
-const deliveryStatusLabels: Record<(typeof deliveryStatuses)[number], string> = {
-  pending: '待投递',
-  sending: '投递中',
-  sent: '已发送',
-  failed: '失败',
-  canceled: '已取消'
-};
-
 const categoryLabels: Record<NotificationCategory, string> = {
   system: '系统提醒',
   approval: '审批通知',
@@ -43,13 +28,16 @@ const categoryLabels: Record<NotificationCategory, string> = {
   security: '安全提醒',
   business: '业务通知'
 };
-
 const priorityLabels: Record<NotificationPriority, string> = {
   low: '低',
   normal: '普通',
   high: '高',
   urgent: '紧急'
 };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 function readOptionalString(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : '';
@@ -64,15 +52,6 @@ function readString(value: unknown, name: string, fallback = '') {
 
 function readBoolean(value: unknown, fallback = false) {
   return typeof value === 'boolean' ? value : fallback;
-}
-
-function readNumber(value: unknown, fallback: number) {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string' && value.trim()) {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return fallback;
 }
 
 function readStringArray(value: unknown) {
@@ -96,44 +75,23 @@ function readPriority(value: unknown, fallback: NotificationPriority = 'normal')
     : fallback;
 }
 
-function readDeliveryChannel(value: unknown) {
-  const channel = readOptionalString(value);
-  return deliveryChannels.includes(channel as NotificationDeliveryChannel)
-    ? (channel as NotificationDeliveryChannel)
-    : undefined;
-}
-
-function readDeliveryStatus(value: unknown) {
-  const status = readOptionalString(value);
-  return deliveryStatuses.includes(status as typeof deliveryStatuses[number])
-    ? status
-    : undefined;
-}
-
 function readJsonObject(value: unknown, fallback: Record<string, unknown> = {}) {
-  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-    return value as Record<string, unknown>;
-  }
-
+  if (isRecord(value)) return value;
   if (typeof value === 'string' && value.trim()) {
     try {
       const parsed = JSON.parse(value);
-      if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-        return parsed as Record<string, unknown>;
-      }
+      if (isRecord(parsed)) return parsed;
     } catch {
       throw new BadRequestException('Invalid JSON payload.');
     }
   }
-
   return fallback;
 }
 
 function isMissingNotificationTable(error: { code?: string; message?: string } | null | undefined) {
   return Boolean(
     error?.code === 'PGRST205' ||
-      error?.message?.includes('notification_messages') ||
-      error?.message?.includes('notification_events') ||
+      error?.message?.includes('notification_') ||
       error?.message?.includes('Could not find the table')
   );
 }
@@ -167,26 +125,6 @@ function normalizePreference(row: NotificationPreferenceRow) {
   };
 }
 
-function normalizeDelivery(row: NotificationDeliveryRow) {
-  return {
-    ...row,
-    channel_label: deliveryChannelLabels[row.channel] ?? row.channel,
-    status_label: deliveryStatusLabels[row.status] ?? row.status,
-    tenantId: row.tenant_id,
-    eventId: row.event_id,
-    messageId: row.message_id,
-    recipientId: row.recipient_id,
-    templateCode: row.template_code,
-    attemptCount: row.attempt_count,
-    providerMessageId: row.provider_message_id,
-    errorMessage: row.error_message,
-    nextRetryAt: row.next_retry_at,
-    sentAt: row.sent_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at
-  };
-}
-
 function resolveAdminClient(fallback: SupabaseClient) {
   try {
     return createSupabaseClient('admin');
@@ -197,22 +135,104 @@ function resolveAdminClient(fallback: SupabaseClient) {
 
 @Injectable()
 export class NotificationService extends BaseService {
+  protected override resources(): ResourceConfigMap {
+    return {
+      messages: {
+        tableName: 'notification_messages',
+        ownerField: 'recipient_id',
+        defaults: { tenant_id: 'default', category: 'system', channel: 'inbox', priority: 'normal', metadata: {} },
+        list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
+        create: {
+          allowedFields: ['tenant_id', 'event_id', 'recipient_id', 'category', 'channel', 'title', 'content', 'link_url', 'priority', 'source_type', 'source_id', 'metadata'],
+          requiredFields: ['recipient_id', 'title'],
+          userFields: { owner: 'recipient_id' }
+        },
+        update: {
+          allowedFields: ['read_at', 'archived_at'],
+          timestamp: false
+        }
+      },
+      preferences: {
+        tableName: 'notification_preferences',
+        ownerField: 'user_id',
+        defaults: { tenant_id: 'default', inbox_enabled: true, email_enabled: false, sms_enabled: false, quiet_hours: {} },
+        list: { defaultSorts: [{ field: 'category', direction: 'asc' }], defaultPageSize: 100, maxPageSize: 100 },
+        create: {
+          allowedFields: ['tenant_id', 'user_id', 'category', 'inbox_enabled', 'email_enabled', 'sms_enabled', 'quiet_hours'],
+          requiredFields: ['user_id', 'category'],
+          userFields: { owner: 'user_id' }
+        },
+        update: {
+          allowedFields: ['inbox_enabled', 'email_enabled', 'sms_enabled', 'quiet_hours']
+        }
+      },
+      deliveries: {
+        tableName: 'notification_deliveries',
+        clientMode: 'admin',
+        permissions: this.adminCrudPermissions('notification.deliveries.manage'),
+        list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
+        create: {
+          allowedFields: ['tenant_id', 'event_id', 'message_id', 'recipient_id', 'channel', 'target', 'template_code', 'status', 'attempt_count', 'provider_message_id', 'error_message', 'next_retry_at', 'sent_at'],
+          requiredFields: ['recipient_id', 'channel']
+        },
+        update: {
+          allowedFields: ['status', 'error_message', 'next_retry_at', 'attempt_count', 'provider_message_id', 'sent_at']
+        }
+      },
+      events: {
+        tableName: 'notification_events',
+        clientMode: 'admin',
+        permissions: this.adminCrudPermissions('notification.messages.manage'),
+        list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 1000 },
+        create: {
+          allowedFields: ['tenant_id', 'event_type', 'source_type', 'source_id', 'actor_id', 'payload', 'idempotency_key', 'status', 'error_message', 'processed_at'],
+          requiredFields: ['event_type', 'idempotency_key']
+        },
+        update: {
+          allowedFields: ['status', 'error_message', 'processed_at']
+        }
+      },
+      templates: {
+        tableName: 'notification_templates',
+        clientMode: 'admin',
+        permissions: this.adminCrudPermissions('notification.templates.manage'),
+        list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 1000 },
+        create: {
+          allowedFields: ['code', 'name', 'event_type', 'channel', 'title_template', 'content_template', 'status', 'metadata'],
+          requiredFields: ['code', 'name', 'event_type', 'channel', 'title_template']
+        },
+        update: {
+          allowedFields: ['code', 'name', 'event_type', 'channel', 'title_template', 'content_template', 'status', 'metadata'],
+          requiredFields: ['code', 'name', 'event_type', 'channel', 'title_template']
+        }
+      }
+    };
+  }
+
+  protected override hooks(): ServiceHooks {
+    return {
+      messages: {
+        beforeCreate: [this.normalizeMessagePayload],
+        beforeUpdate: [this.normalizeMessageUpdatePayload],
+        afterCreate: [this.normalizeMessageResult],
+        afterUpdate: [this.normalizeMessageResult]
+      },
+      preferences: {
+        beforeCreate: [this.normalizePreferencePayload],
+        beforeUpdate: [this.normalizePreferencePayload],
+        afterCreate: [this.normalizePreferenceResult],
+        afterUpdate: [this.normalizePreferenceResult]
+      },
+      deliveries: {
+        beforeUpdate: [this.normalizeDeliveryPayload]
+      }
+    };
+  }
+
   protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
       case 'getUnreadCount':
         return this.getUnreadCount(postData, context);
-      case 'markRead':
-        return this.markRead(postData, context);
-      case 'markAllRead':
-        return this.markAllRead(postData, context);
-      case 'archiveMessage':
-        return this.archiveMessage(postData, context);
-      case 'getPreferences':
-        return this.getPreferences(postData, context);
-      case 'updatePreference':
-        return this.updatePreference(postData, context);
-      case 'retryDelivery':
-        return this.retryDelivery(postData, context);
       case 'createSystemNotice':
         return this.createSystemNotice(postData, context);
       default:
@@ -220,370 +240,113 @@ export class NotificationService extends BaseService {
     }
   }
 
-  protected override async handleListItems(postData: PostData, context: ServiceContext) {
-    switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type) || 'messages') {
-      case 'messages':
-        return this.listMessages(postData, context);
-      case 'deliveries':
-        return this.listDeliveries(postData, context);
-      default:
-        throw new BadRequestException('Unsupported notification listItems itemType.');
-    }
+  private adminCrudPermissions(permission: string) {
+    return { list: permission, create: permission, update: permission, delete: permission };
   }
 
-  private async listMessages(postData: PostData, context: ServiceContext) {
-    const { client, targetUserId } = await this.resolveMessageTarget(postData, context);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
-    const page = Math.max(1, Math.floor(readNumber(postData.page, 1)));
-    const pageSize = Math.min(100, Math.max(1, Math.floor(readNumber(postData.pageSize ?? postData.page_size, 20))));
-    const category = readCategory(postData.category);
-    const priority = readOptionalString(postData.priority);
-    const unreadOnly = readBoolean(postData.unreadOnly ?? postData.unread_only, false);
-    const includeArchived = readBoolean(postData.includeArchived ?? postData.include_archived, false);
+  private normalizeMessagePayload = (ctx: HookContext) => {
+    ctx.data.tenant_id = readOptionalString(ctx.data.tenant_id ?? ctx.input.tenantId ?? ctx.input.tenant_id) || 'default';
+    ctx.data.category = readCategory(ctx.data.category) ?? 'system';
+    ctx.data.channel = 'inbox';
+    ctx.data.priority = readPriority(ctx.data.priority);
+    ctx.data.metadata = readJsonObject(ctx.data.metadata);
+    if ('linkUrl' in ctx.input) ctx.data.link_url = readOptionalString(ctx.input.linkUrl) || null;
+    if ('sourceType' in ctx.input) ctx.data.source_type = readOptionalString(ctx.input.sourceType) || null;
+    if ('sourceId' in ctx.input) ctx.data.source_id = readOptionalString(ctx.input.sourceId) || null;
+  };
 
-    let query = client
-      .from('notification_messages')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('recipient_id', targetUserId);
-
-    if (category) {
-      query = query.eq('category', category);
+  private normalizeMessageUpdatePayload = (ctx: HookContext) => {
+    const now = new Date().toISOString();
+    if (readBoolean(ctx.input.markRead ?? ctx.input.mark_read, false)) {
+      ctx.data.read_at = ctx.data.read_at || now;
     }
 
-    if (priorities.includes(priority as NotificationPriority)) {
-      query = query.eq('priority', priority);
+    if (readBoolean(ctx.input.archive ?? ctx.input.archived, false)) {
+      ctx.data.read_at = ctx.data.read_at || now;
+      ctx.data.archived_at = ctx.data.archived_at || now;
     }
 
-    if (unreadOnly) {
-      query = query.is('read_at', null);
+    if ('readAt' in ctx.input) ctx.data.read_at = readOptionalString(ctx.input.readAt) || null;
+    if ('archivedAt' in ctx.input) ctx.data.archived_at = readOptionalString(ctx.input.archivedAt) || null;
+  };
+
+  private normalizePreferencePayload = async (ctx: HookContext) => {
+    const { user } = await getCurrentUser(ctx.context);
+    const targetUserId = readOptionalString(ctx.input.userId ?? ctx.input.user_id ?? ctx.data.user_id) || user.id;
+    if (targetUserId !== user.id) await requireAdmin(ctx.context, 'notification.messages.manage');
+
+    ctx.data.tenant_id = readOptionalString(ctx.input.tenantId ?? ctx.input.tenant_id ?? ctx.data.tenant_id) || 'default';
+    ctx.data.user_id = targetUserId;
+    const category = readCategory(ctx.data.category ?? ctx.input.category);
+    if (category) ctx.data.category = category;
+    if (ctx.action === 'create' && !ctx.data.category) throw new BadRequestException('category is required.');
+    if ('inboxEnabled' in ctx.input) ctx.data.inbox_enabled = readBoolean(ctx.input.inboxEnabled, true);
+    if ('emailEnabled' in ctx.input) ctx.data.email_enabled = readBoolean(ctx.input.emailEnabled, false);
+    if ('smsEnabled' in ctx.input) ctx.data.sms_enabled = readBoolean(ctx.input.smsEnabled, false);
+    if ('quietHours' in ctx.input || 'quiet_hours' in ctx.input) {
+      ctx.data.quiet_hours = readJsonObject(ctx.input.quietHours ?? ctx.input.quiet_hours);
     }
+  };
 
-    if (!includeArchived) {
-      query = query.is('archived_at', null);
+  private normalizeDeliveryPayload = (ctx: HookContext) => {
+    if (ctx.input.retry === true) {
+      ctx.data.status = 'pending';
+      ctx.data.error_message = null;
+      ctx.data.next_retry_at = null;
     }
+  };
 
-    const { data, error } = await query
-      .order('created_at', { ascending: false })
-      .range((page - 1) * pageSize, page * pageSize - 1);
+  private normalizeMessageResult = (ctx: HookContext) => {
+    if (Array.isArray(ctx.result)) ctx.result = (ctx.result as NotificationMessageRow[]).map(normalizeMessage);
+    else if (ctx.result) ctx.result = normalizeMessage(ctx.result as NotificationMessageRow);
+  };
 
-    if (error) {
-      if (isMissingNotificationTable(error)) return [];
-      throw new BadRequestException(error.message);
-    }
-
-    return ((data ?? []) as NotificationMessageRow[]).map(normalizeMessage);
-  }
+  private normalizePreferenceResult = (ctx: HookContext) => {
+    if (Array.isArray(ctx.result)) ctx.result = (ctx.result as NotificationPreferenceRow[]).map(normalizePreference);
+    else if (ctx.result) ctx.result = normalizePreference(ctx.result as NotificationPreferenceRow);
+  };
 
   private async getUnreadCount(postData: PostData, context: ServiceContext) {
-    const { client, targetUserId } = await this.resolveMessageTarget(postData, context);
+    const { user } = await getCurrentUser(context);
+    const targetUserId = readOptionalString(postData.userId ?? postData.user_id) || user.id;
+    if (targetUserId !== user.id) await requireAdmin(context, ['notification.messages.manage', 'admin.users.manage']);
     const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const unreadFilters = {
+      tenant_id: tenantId,
+      recipient_id: targetUserId,
+      read_at: { op: 'isNull' },
+      archived_at: { op: 'isNull' }
+    };
 
-    const totalResult = await client
-      .from('notification_messages')
-      .select('id', { count: 'exact', head: true })
-      .eq('tenant_id', tenantId)
-      .eq('recipient_id', targetUserId)
-      .is('read_at', null)
-      .is('archived_at', null);
+    const page = await this.safeListItemsPage<{ id: string }>(
+      {
+        tableName: 'notification_messages',
+        select: 'id',
+        filters: unreadFilters,
+        responseMode: 'page',
+        pageSize: 1
+      },
+      context,
+      { rows: [], total: 0, page: 1, pageSize: 1 }
+    );
 
-    if (totalResult.error) {
-      if (isMissingNotificationTable(totalResult.error)) return { total: 0, byCategory: {} };
-      throw new BadRequestException(totalResult.error.message);
-    }
+    const rows = await this.safeListItems<Record<string, unknown>>(
+      {
+        tableName: 'notification_messages',
+        select: 'category',
+        filters: unreadFilters,
+        pageSize: 1000
+      },
+      context
+    );
 
-    const categoryResult = await client
-      .from('notification_messages')
-      .select('category')
-      .eq('tenant_id', tenantId)
-      .eq('recipient_id', targetUserId)
-      .is('read_at', null)
-      .is('archived_at', null);
-
-    if (categoryResult.error) {
-      if (isMissingNotificationTable(categoryResult.error)) return { total: 0, byCategory: {} };
-      throw new BadRequestException(categoryResult.error.message);
-    }
-
-    const byCategory = (categoryResult.data ?? []).reduce<Record<string, number>>((counts, row) => {
+    const byCategory = rows.reduce<Record<string, number>>((counts, row) => {
       const category = String((row as Record<string, unknown>).category ?? '');
       counts[category] = (counts[category] ?? 0) + 1;
       return counts;
     }, {});
 
-    return {
-      total: totalResult.count ?? 0,
-      byCategory
-    };
-  }
-
-  private async markRead(postData: PostData, context: ServiceContext) {
-    const { client, targetUserId } = await this.resolveMessageTarget(postData, context);
-    const ids = [
-      ...readStringArray(postData.ids),
-      ...readStringArray(postData.messageIds ?? postData.message_ids),
-      readOptionalString(postData.id)
-    ].filter(Boolean);
-
-    if (!ids.length) {
-      throw new BadRequestException('ids is required.');
-    }
-
-    const { data, error } = await client
-      .from('notification_messages')
-      .update({ read_at: new Date().toISOString() })
-      .in('id', [...new Set(ids)])
-      .eq('recipient_id', targetUserId)
-      .select('id');
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    return {
-      success: true,
-      count: data?.length ?? 0
-    };
-  }
-
-  private async markAllRead(postData: PostData, context: ServiceContext) {
-    const { client, targetUserId } = await this.resolveMessageTarget(postData, context);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
-    const category = readCategory(postData.category);
-
-    let query = client
-      .from('notification_messages')
-      .update({ read_at: new Date().toISOString() })
-      .eq('tenant_id', tenantId)
-      .eq('recipient_id', targetUserId)
-      .is('read_at', null)
-      .is('archived_at', null);
-
-    if (category) {
-      query = query.eq('category', category);
-    }
-
-    const { data, error } = await query.select('id');
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    return {
-      success: true,
-      count: data?.length ?? 0
-    };
-  }
-
-  private async archiveMessage(postData: PostData, context: ServiceContext) {
-    const { client, targetUserId } = await this.resolveMessageTarget(postData, context);
-    const now = new Date().toISOString();
-    const ids = [
-      ...readStringArray(postData.ids),
-      ...readStringArray(postData.messageIds ?? postData.message_ids),
-      readOptionalString(postData.id)
-    ].filter(Boolean);
-
-    if (!ids.length) {
-      throw new BadRequestException('ids is required.');
-    }
-
-    const { data, error } = await client
-      .from('notification_messages')
-      .update({
-        read_at: now,
-        archived_at: now
-      })
-      .in('id', [...new Set(ids)])
-      .eq('recipient_id', targetUserId)
-      .select('id');
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    return {
-      success: true,
-      count: data?.length ?? 0
-    };
-  }
-
-  private async resolveMessageTarget(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const targetUserId = readOptionalString(postData.userId ?? postData.user_id) || user.id;
-    if (targetUserId === user.id) {
-      return { client, user, targetUserId };
-    }
-
-    const admin = await requireAdmin(context, ['notification.messages.manage', 'admin.users.manage']);
-    return {
-      client: resolveAdminClient(admin.client),
-      user: admin.user,
-      targetUserId
-    };
-  }
-
-  private async getPreferences(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
-    const targetUserId = readOptionalString(postData.userId ?? postData.user_id) || user.id;
-    const readClient = targetUserId === user.id
-      ? client
-      : resolveAdminClient((await requireAdmin(context, 'notification.messages.manage')).client);
-
-    const { data, error } = await readClient
-      .from('notification_preferences')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('user_id', targetUserId);
-
-    if (error) {
-      if (isMissingNotificationTable(error)) return this.defaultPreferences(tenantId, targetUserId);
-      throw new BadRequestException(error.message);
-    }
-
-    const byCategory = new Map(
-      ((data ?? []) as NotificationPreferenceRow[]).map((row) => [row.category, row])
-    );
-    return categories.map((category) => {
-      const row = byCategory.get(category);
-      if (row) return normalizePreference(row);
-      return {
-        id: '',
-        tenant_id: tenantId,
-        tenantId,
-        user_id: targetUserId,
-        userId: targetUserId,
-        category,
-        category_label: categoryLabels[category],
-        inbox_enabled: true,
-        inboxEnabled: true,
-        email_enabled: false,
-        emailEnabled: false,
-        sms_enabled: false,
-        smsEnabled: false,
-        quiet_hours: {},
-        quietHours: {}
-      };
-    });
-  }
-
-  private async updatePreference(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
-    const targetUserId = readOptionalString(postData.userId ?? postData.user_id) || user.id;
-    const category = readCategory(postData.category);
-    if (!category) {
-      throw new BadRequestException('category is required.');
-    }
-
-    const writeClient = targetUserId === user.id
-      ? client
-      : resolveAdminClient((await requireAdmin(context, 'notification.messages.manage')).client);
-    const existingResult = await writeClient
-      .from('notification_preferences')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('user_id', targetUserId)
-      .eq('category', category)
-      .maybeSingle();
-
-    if (existingResult.error && !isMissingNotificationTable(existingResult.error)) {
-      throw new BadRequestException(existingResult.error.message);
-    }
-
-    const existing = existingResult.data as NotificationPreferenceRow | null;
-    const quietHoursInput = postData.quietHours ?? postData.quiet_hours;
-    const payload = {
-      tenant_id: tenantId,
-      user_id: targetUserId,
-      category,
-      inbox_enabled: postData.inboxEnabled === undefined && postData.inbox_enabled === undefined
-        ? existing?.inbox_enabled ?? true
-        : readBoolean(postData.inboxEnabled ?? postData.inbox_enabled, true),
-      email_enabled: postData.emailEnabled === undefined && postData.email_enabled === undefined
-        ? existing?.email_enabled ?? false
-        : readBoolean(postData.emailEnabled ?? postData.email_enabled, false),
-      sms_enabled: postData.smsEnabled === undefined && postData.sms_enabled === undefined
-        ? existing?.sms_enabled ?? false
-        : readBoolean(postData.smsEnabled ?? postData.sms_enabled, false),
-      quiet_hours: quietHoursInput === undefined
-        ? existing?.quiet_hours ?? {}
-        : readJsonObject(quietHoursInput)
-    };
-
-    const { data, error } = await writeClient
-      .from('notification_preferences')
-      .upsert(payload, {
-        onConflict: 'tenant_id,user_id,category'
-      })
-      .select('*')
-      .single();
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    return normalizePreference(data as NotificationPreferenceRow);
-  }
-
-  private async listDeliveries(postData: PostData, context: ServiceContext) {
-    const { client } = await requireAdmin(context, 'notification.deliveries.manage');
-    const readClient = resolveAdminClient(client);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
-    const page = Math.max(1, Math.floor(readNumber(postData.page, 1)));
-    const pageSize = Math.min(100, Math.max(1, Math.floor(readNumber(postData.pageSize ?? postData.page_size, 20))));
-    const status = readDeliveryStatus(postData.status);
-    const channel = readDeliveryChannel(postData.channel);
-    const recipientId = readOptionalString(postData.recipientId ?? postData.recipient_id);
-
-    let query = readClient
-      .from('notification_deliveries')
-      .select('*')
-      .eq('tenant_id', tenantId);
-
-    if (status) query = query.eq('status', status);
-    if (channel) query = query.eq('channel', channel);
-    if (recipientId) query = query.eq('recipient_id', recipientId);
-
-    const { data, error } = await query
-      .order('created_at', { ascending: false })
-      .range((page - 1) * pageSize, page * pageSize - 1);
-
-    if (error) {
-      if (isMissingNotificationTable(error)) return [];
-      throw new BadRequestException(error.message);
-    }
-
-    return ((data ?? []) as NotificationDeliveryRow[]).map(normalizeDelivery);
-  }
-
-  private async retryDelivery(postData: PostData, context: ServiceContext) {
-    const { client } = await requireAdmin(context, 'notification.deliveries.manage');
-    const writeClient = resolveAdminClient(client);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
-    const id = readString(postData.id ?? postData.deliveryId ?? postData.delivery_id, 'id');
-
-    const { data, error } = await writeClient
-      .from('notification_deliveries')
-      .update({
-        status: 'pending',
-        error_message: null,
-        next_retry_at: null
-      })
-      .eq('tenant_id', tenantId)
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    return {
-      success: true,
-      delivery: normalizeDelivery(data as NotificationDeliveryRow)
-    };
+    return { total: page.total, byCategory };
   }
 
   private async createSystemNotice(postData: PostData, context: ServiceContext) {
@@ -596,48 +359,28 @@ export class NotificationService extends BaseService {
     const priority = readPriority(postData.priority);
     const metadata = readJsonObject(postData.metadata);
     const noticeId = readOptionalString(postData.noticeId ?? postData.notice_id ?? postData.sourceId ?? postData.source_id) || randomUUID();
-    const recipientIds = await this.resolveRecipients(writeClient, postData);
-
-    const eventPayload = {
-      title,
-      content,
-      linkUrl,
-      priority,
-      recipientIds,
-      metadata
-    };
+    const recipientIds = await this.resolveRecipients(postData, context);
+    const eventPayload = { title, content, linkUrl, priority, recipientIds, metadata };
 
     const { data: event, error: eventError } = await writeClient
       .from('notification_events')
-      .upsert(
-        {
-          tenant_id: tenantId,
-          event_type: 'system.notice.created',
-          source_type: 'system_notice',
-          source_id: noticeId,
-          actor_id: user.id,
-          payload: eventPayload,
-          idempotency_key: `system-notice:${noticeId}`,
-          status: 'processed',
-          processed_at: new Date().toISOString()
-        },
-        { onConflict: 'tenant_id,idempotency_key' }
-      )
+      .upsert({
+        tenant_id: tenantId,
+        event_type: 'system.notice.created',
+        source_type: 'system_notice',
+        source_id: noticeId,
+        actor_id: user.id,
+        payload: eventPayload,
+        idempotency_key: `system-notice:${noticeId}`,
+        status: 'processed',
+        processed_at: new Date().toISOString()
+      }, { onConflict: 'tenant_id,idempotency_key' })
       .select('*')
       .single();
 
-    if (eventError) {
-      throw new BadRequestException(eventError.message);
-    }
+    if (eventError) throw new BadRequestException(eventError.message);
 
-    if (!recipientIds.length) {
-      return {
-        success: true,
-        event,
-        messages: [],
-        count: 0
-      };
-    }
+    if (!recipientIds.length) return { success: true, event, messages: [], count: 0 };
 
     const messages = recipientIds.map((recipientId) => ({
       tenant_id: tenantId,
@@ -656,14 +399,10 @@ export class NotificationService extends BaseService {
 
     const { data, error } = await writeClient
       .from('notification_messages')
-      .upsert(messages, {
-        onConflict: 'tenant_id,recipient_id,source_type,source_id,category'
-      })
+      .upsert(messages, { onConflict: 'tenant_id,recipient_id,source_type,source_id,category' })
       .select('*');
 
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
+    if (error) throw new BadRequestException(error.message);
 
     return {
       success: true,
@@ -673,51 +412,64 @@ export class NotificationService extends BaseService {
     };
   }
 
-  private defaultPreferences(tenantId: string, userId: string) {
-    return categories.map((category) => ({
-      id: '',
-      tenant_id: tenantId,
-      tenantId,
-      user_id: userId,
-      userId,
-      category,
-      category_label: categoryLabels[category],
-      inbox_enabled: true,
-      inboxEnabled: true,
-      email_enabled: false,
-      emailEnabled: false,
-      sms_enabled: false,
-      smsEnabled: false,
-      quiet_hours: {},
-      quietHours: {}
-    }));
-  }
-
-  private async resolveRecipients(client: SupabaseClient, postData: PostData) {
+  private async resolveRecipients(postData: PostData, context: ServiceContext) {
     const explicitIds = [
       ...readStringArray(postData.recipientIds ?? postData.recipient_ids),
       ...readStringArray(postData.userIds ?? postData.user_ids)
     ];
 
-    if (explicitIds.length) {
-      return [...new Set(explicitIds)];
+    if (explicitIds.length) return [...new Set(explicitIds)];
+
+    const rows = await this.safeListItems<Record<string, unknown>>(
+      {
+        tableName: 'users',
+        select: 'id',
+        clientMode: 'admin',
+        sorts: [{ field: 'created_at', direction: 'asc' }],
+        pageSize: 1000
+      },
+      context
+    );
+
+    return [...new Set(rows.map((row) => String(row.id ?? '')).filter(Boolean))];
+  }
+
+  private async safeListItems<T extends Record<string, unknown>>(
+    postData: PostData,
+    context: ServiceContext,
+    fallback: T[] = []
+  ) {
+    try {
+      const result = await this.listItems(postData, context);
+      return Array.isArray(result) ? (result as unknown as T[]) : fallback;
+    } catch (error) {
+      if (this.isMissingNotificationListError(error)) return fallback;
+      throw error;
+    }
+  }
+
+  private async safeListItemsPage<T extends Record<string, unknown>>(
+    postData: PostData,
+    context: ServiceContext,
+    fallback: { rows: T[]; total: number; page: number; pageSize: number }
+  ) {
+    try {
+      const result = await this.listItems(postData, context);
+      return isRecord(result) && Array.isArray(result.rows)
+        ? result as unknown as { rows: T[]; total: number; page: number; pageSize: number }
+        : fallback;
+    } catch (error) {
+      if (this.isMissingNotificationListError(error)) return fallback;
+      throw error;
+    }
+  }
+
+  private isMissingNotificationListError(error: unknown) {
+    if (error instanceof BadRequestException) {
+      const response = error.getResponse();
+      return isMissingNotificationTable({ message: typeof response === 'string' ? response : error.message });
     }
 
-    const { data, error } = await client
-      .from('users')
-      .select('id')
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    return [
-      ...new Set(
-        (data ?? [])
-          .map((row) => String((row as Record<string, unknown>).id ?? ''))
-          .filter(Boolean)
-      )
-    ];
+    return isMissingNotificationTable(error instanceof Error ? { message: error.message } : null);
   }
 }

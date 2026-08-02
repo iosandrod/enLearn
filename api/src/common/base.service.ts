@@ -92,8 +92,9 @@ export interface ServicePostData {
 }
 
 export type CrudAction = 'list' | 'create' | 'update' | 'delete';
+export type ServiceAction = CrudAction | 'action';
 
-export type ResourcePermissions = Partial<Record<CrudAction, string | string[]>>;
+export type ResourcePermissions = Partial<Record<ServiceAction, string | string[]>>;
 
 export type ResourceUserFields = {
   createdBy?: string;
@@ -142,7 +143,7 @@ export type ResourceConfig = {
 export type ResourceConfigMap = Record<string, ResourceConfig>;
 
 export type HookContext = {
-  action: CrudAction;
+  action: ServiceAction;
   serviceName: string;
   resourceName: string;
   resource: ResourceConfig;
@@ -165,6 +166,7 @@ export type HookHandler = (ctx: HookContext) => Promise<void> | void;
 export type ResourceHooks = Partial<Record<
   | 'beforeAction'
   | 'afterAction'
+  | 'action'
   | 'beforeList'
   | 'afterList'
   | 'beforeCreate'
@@ -202,6 +204,8 @@ export abstract class BaseService implements ServiceExecutor {
           return this.deleteItem(postData, context);
         case 'saveItem':
           return this.saveItem(postData, context);
+        case 'runAction':
+          return this.runResourceAction(postData, context);
         default:
           return this.executeAction(method, postData, context);
       }
@@ -286,6 +290,23 @@ export abstract class BaseService implements ServiceExecutor {
       : this.createItem(postData, context);
   }
 
+  protected async runResourceAction(postData: ServicePostData, context: ServiceContext) {
+    const resource = this.resolveResource(postData);
+    const ctx = await this.createCrudContext('action', postData, context, resource);
+
+    try {
+      await this.runHooks(ctx, ['beforeAction']);
+      await this.assertPermission(ctx);
+      await this.runHooks(ctx, ['action']);
+      await this.runHooks(ctx, ['afterAction']);
+      return ctx.result;
+    } catch (error) {
+      ctx.meta.error = error;
+      await this.runHooks(ctx, ['onError']);
+      throw error;
+    }
+  }
+
   protected async runCrud(
     action: CrudAction,
     postData: ServicePostData,
@@ -314,7 +335,7 @@ export abstract class BaseService implements ServiceExecutor {
   }
 
   protected async createCrudContext(
-    action: CrudAction,
+    action: ServiceAction,
     postData: ServicePostData,
     context: ServiceContext,
     resource: { name: string; config: ResourceConfig }
@@ -440,25 +461,40 @@ export abstract class BaseService implements ServiceExecutor {
 
   protected async performUpdate(ctx: CrudContext) {
     const id = ctx.id;
-    if (!id) throw new BadRequestException('id is required.');
+    const ids = ctx.ids.filter((item) => item !== id);
+    const filters = this.readRecord(ctx.filters);
+    const hasFilters = Object.keys(filters).length > 0;
+    if (!id && !ids.length && !hasFilters) {
+      throw new BadRequestException('id, ids, or filters is required.');
+    }
+
     const payload = await this.buildWritePayload(ctx, 'update');
     this.assertRequiredFields(payload, ctx.resource.update?.requiredFields ?? []);
 
     let query = ctx.client
       .from(ctx.resource.tableName)
-      .update(payload)
-      .eq(this.primaryKey(ctx.resource), id);
+      .update(payload);
+
+    if (id) {
+      query = query.eq(this.primaryKey(ctx.resource), id);
+    } else if (ids.length) {
+      query = query.in(this.primaryKey(ctx.resource), ids);
+    } else {
+      for (const [field, value] of Object.entries(filters)) {
+        query = this.applySupabaseFilter(query, field, value);
+      }
+    }
 
     if (ctx.resource.ownerField && ctx.user) {
       query = query.eq(ctx.resource.ownerField, ctx.user.id);
     }
 
     const { data, error } = await query
-      .select(ctx.resource.select ?? '*')
-      .single();
+      .select(ctx.resource.select ?? '*');
 
     if (error) throw new BadRequestException(error.message);
-    return data;
+    if (id) return Array.isArray(data) ? data[0] : data;
+    return data ?? [];
   }
 
   protected async performDelete(ctx: CrudContext) {
@@ -771,6 +807,7 @@ export abstract class BaseService implements ServiceExecutor {
     if (Object.keys(data).length) return data;
     const reserved = new Set([
       'resource', 'itemType', 'item_type', 'type', 'entityCode', 'entity_code', 'tableName', 'table_name',
+      'operation', 'actionName', 'action_name', 'action',
       'id', 'ids', 'data', 'items', 'rows', 'filters', 'requiredFilters', 'required_filters', 'search', 'searchFields', 'search_fields',
       'limit', 'page', 'pageSize', 'page_size', 'offset', 'orderBy', 'order_by', 'orderDirection',
       'order_direction', 'sorts', 'withCount', 'with_count', 'responseMode', 'response_mode', 'clientMode', 'client_mode'

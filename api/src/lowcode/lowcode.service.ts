@@ -1,348 +1,71 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { BaseService } from '../common/base.service';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { BaseService, type ResourceConfigMap } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { withPostgresClient } from '../common/utils/database';
+import { requireAdmin } from '../common/utils/supabase';
+import { isRecord, type LowCodePageSchema } from './lowcode.schema';
 import {
-  createSupabaseClient,
-  requireAdmin
-} from '../common/utils/supabase';
-import {
-  LowCodeSchemaValidationError,
-  assertValidLowCodePageSchema,
-  isRecord,
-  migrateLowCodePageSchema,
-  type LowCodePageSchema
-} from './lowcode.schema';
+  asRows,
+  normalizeActionKey,
+  normalizeGeneratedStatus,
+  normalizeOpenType,
+  normalizePageRow,
+  normalizeSchema,
+  readMetadata,
+  readString
+} from './lowcode.helpers';
+import { lowCodeResources } from './lowcode.resources';
+import type {
+  LowCodePageRelation,
+  LowCodePageRelationInput,
+  LowCodePageRelationPageRow,
+  LowCodePageRelations,
+  LowCodePageRow
+} from './lowcode.types';
 import {
   buildTableListPageSchemaFromDatabase,
   listDatabaseTableOptions
 } from './table-page-generator';
 
-type LowCodePageRow = {
-  id: string;
-  code: string;
-  route: string;
-  title: string;
-  description: string | null;
-  layout: 'default' | 'dashboard' | 'blank';
-  status: 'draft' | 'published' | 'archived';
-  keep_alive: boolean;
-  schema: LowCodePageSchema;
-  version: number;
-  published_at: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type LowCodePageOpenType = 'page' | 'drawer' | 'modal';
-
-type LowCodePageRelationPageRow = {
-  id: string;
-  code: string;
-  route: string;
-  title: string;
-  status: 'draft' | 'published' | 'archived';
-};
-
-type LowCodePageRelationRow = {
-  id: string;
-  source_page_id: string;
-  action_key: string;
-  target_page_id: string;
-  open_type: LowCodePageOpenType;
-  metadata: Record<string, unknown> | null;
-  created_at: string;
-  updated_at: string;
-  source_page?: LowCodePageRelationPageRow | LowCodePageRelationPageRow[] | null;
-  target_page?: LowCodePageRelationPageRow | LowCodePageRelationPageRow[] | null;
-};
-
-type LowCodePageRelation = {
-  id: string;
-  sourcePageId: string;
-  sourcePageCode: string;
-  sourcePageRoute?: string;
-  sourcePageTitle?: string;
-  actionKey: string;
-  targetPageId: string;
-  targetPageCode: string;
-  targetPageRoute?: string;
-  targetPageTitle?: string;
-  openType: LowCodePageOpenType;
-  metadata: Record<string, unknown>;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type LowCodePageRelations = {
-  outgoing: LowCodePageRelation[];
-  incoming: LowCodePageRelation[];
-};
-
-type LowCodePageRelationInput = {
-  sourcePageCode?: string;
-  targetPageCode?: string;
-  actionKey?: string;
-  openType?: LowCodePageOpenType;
-  metadata?: Record<string, unknown>;
-};
-
-function normalizeSchema(value: unknown, shouldValidate = false): LowCodePageSchema {
-  try {
-    const schema = migrateLowCodePageSchema(value);
-    if (shouldValidate) {
-      assertValidLowCodePageSchema(schema);
-    }
-    return schema;
-  } catch (error) {
-    if (error instanceof LowCodeSchemaValidationError) {
-      throw new BadRequestException(error.message);
-    }
-
-    throw error;
-  }
-}
-
-function createEmptyRelations(): LowCodePageRelations {
-  return {
-    outgoing: [],
-    incoming: []
-  };
-}
-
-function isMissingRelationTableError(error: { code?: string; message?: string } | null) {
-  if (!error) return false;
-
-  const message = error.message ?? '';
-
-  return (
-    error.code === '42P01' ||
-    error.code === 'PGRST205' ||
-    message.includes("Could not find the table 'public.lowcode_page_relations'") ||
-    (message.includes('lowcode_page_relations') && message.includes('schema cache'))
-  );
-}
-
-function normalizePageRow(row: LowCodePageRow, relations?: LowCodePageRelations) {
-  return {
-    ...row,
-    schema: normalizeSchema(row.schema),
-    ...(relations ? { relations } : {})
-  };
-}
-
-function readString(value: unknown, fallback = '') {
-  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
-}
-
-function normalizeOpenType(value: unknown): LowCodePageOpenType {
-  return value === 'drawer' || value === 'modal' || value === 'page' ? value : 'page';
-}
-
-function normalizeActionKey(value: unknown, fallback = 'edit') {
-  return readString(value, fallback);
-}
-
-function readMetadata(value: unknown) {
-  return isRecord(value) ? value : {};
-}
-
-function readRelationPage(
-  value?: LowCodePageRelationPageRow | LowCodePageRelationPageRow[] | null
-) {
-  if (Array.isArray(value)) return value[0] ?? null;
-  return value ?? null;
-}
-
-function normalizeRelationRow(row: LowCodePageRelationRow): LowCodePageRelation {
-  const sourcePage = readRelationPage(row.source_page);
-  const targetPage = readRelationPage(row.target_page);
-
-  return {
-    id: row.id,
-    sourcePageId: row.source_page_id,
-    sourcePageCode: sourcePage?.code ?? '',
-    ...(sourcePage?.route ? { sourcePageRoute: sourcePage.route } : {}),
-    ...(sourcePage?.title ? { sourcePageTitle: sourcePage.title } : {}),
-    actionKey: row.action_key,
-    targetPageId: row.target_page_id,
-    targetPageCode: targetPage?.code ?? '',
-    ...(targetPage?.route ? { targetPageRoute: targetPage.route } : {}),
-    ...(targetPage?.title ? { targetPageTitle: targetPage.title } : {}),
-    openType: normalizeOpenType(row.open_type),
-    metadata: readMetadata(row.metadata),
-    createdAt: row.created_at,
-    updatedAt: row.updated_at
-  };
-}
-
-function normalizeGeneratedStatus(value: unknown): 'draft' | 'published' | 'archived' {
-  return value === 'draft' || value === 'archived' ? value : 'published';
-}
-
 @Injectable()
 export class LowCodeService extends BaseService {
+  protected override resources(): ResourceConfigMap {
+    return lowCodeResources;
+  }
+
   protected override async executeAction(method: string, postData: Record<string, unknown>, context: ServiceContext) {
     switch (method) {
+      case 'listTablePageOptions':
+        return this.listTablePageOptions(context);
       case 'generateTableListPageSchema':
         return this.generateTableListPageSchema(postData, context);
       case 'saveGeneratedTableListPage':
         return this.saveGeneratedTableListPage(postData, context);
       case 'savePage':
         return this.savePage(postData, context);
-      case 'publishPage':
-        return this.publishPage(postData, context);
-      case 'archivePage':
-        return this.archivePage(postData, context);
       default:
         throw new BadRequestException(`Unsupported lowcode method: ${method}`);
     }
   }
 
-  protected override async handleListItems(postData: Record<string, unknown>, context: ServiceContext) {
-    switch (readString(postData.itemType ?? postData.item_type ?? postData.type, 'pages')) {
-      case 'pages':
-        return this.listPages(context);
-      case 'pageRelations':
-        return this.listPageRelations(postData, context);
-      case 'tablePageOptions':
-        return this.listTablePageOptions(context);
-      default:
-        throw new BadRequestException('Unsupported lowcode listItems itemType.');
-    }
-  }
-
-  private async listPages(context: ServiceContext) {
-    const { client } = await requireAdmin(context, [
-      'lowcode.pages.manage',
-      'admin.permissions.manage',
-      'admin.routes.manage',
-      'admin.entities.manage'
-    ]);
-    const { data, error } = await client
-      .from('lowcode_pages')
-      .select('*')
-      .order('updated_at', { ascending: false });
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    return Promise.all(
-      (data ?? []).map(async (row) => {
-        const page = row as LowCodePageRow;
-        return normalizePageRow(page, await this.getRelationsForPage(client, page.id));
-      })
-    );
-  }
-
-  private relationSelect() {
-    return `
-      id,
-      source_page_id,
-      action_key,
-      target_page_id,
-      open_type,
-      metadata,
-      created_at,
-      updated_at,
-      source_page:source_page_id(id, code, route, title, status),
-      target_page:target_page_id(id, code, route, title, status)
-    `;
-  }
-
   private async findRelationPageByCode(
-    client: ReturnType<typeof createSupabaseClient>,
+    context: ServiceContext,
     code: string,
     role: 'source' | 'target'
   ) {
-    const { data, error } = await client
-      .from('lowcode_pages')
-      .select('id, code, route, title, status')
-      .eq('code', code)
-      .maybeSingle();
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
+    const [data] = asRows(await this.listItems({
+      tableName: 'lowcode_pages',
+      select: 'id, code, route, title, status',
+      filters: { code },
+      clientMode: 'admin',
+      limit: 1
+    }, context));
 
     if (!data) {
       throw new BadRequestException(`${role} page "${code}" does not exist.`);
     }
 
     return data as LowCodePageRelationPageRow;
-  }
-
-  private async getRelationsForPage(
-    client: ReturnType<typeof createSupabaseClient>,
-    pageId: string
-  ): Promise<LowCodePageRelations> {
-    const select = this.relationSelect();
-    const [outgoingResult, incomingResult] = await Promise.all([
-      client
-        .from('lowcode_page_relations')
-        .select(select)
-        .eq('source_page_id', pageId)
-        .order('action_key', { ascending: true }),
-      client
-        .from('lowcode_page_relations')
-        .select(select)
-        .eq('target_page_id', pageId)
-        .order('action_key', { ascending: true })
-    ]);
-
-    if (outgoingResult.error) {
-      if (isMissingRelationTableError(outgoingResult.error)) {
-        return createEmptyRelations();
-      }
-
-      throw new BadRequestException(outgoingResult.error.message);
-    }
-
-    if (incomingResult.error) {
-      if (isMissingRelationTableError(incomingResult.error)) {
-        return createEmptyRelations();
-      }
-
-      throw new BadRequestException(incomingResult.error.message);
-    }
-
-    return {
-      outgoing: ((outgoingResult.data ?? []) as unknown as LowCodePageRelationRow[]).map(
-        normalizeRelationRow
-      ),
-      incoming: ((incomingResult.data ?? []) as unknown as LowCodePageRelationRow[]).map(
-        normalizeRelationRow
-      )
-    };
-  }
-
-  private async listPageRelations(
-    postData: Record<string, unknown>,
-    context: ServiceContext
-  ) {
-    const { client } = await requireAdmin(context, 'lowcode.pages.manage');
-    const code = readString(postData.code ?? postData.pageCode);
-
-    if (code) {
-      const page = await this.findRelationPageByCode(client, code, 'source');
-      return this.getRelationsForPage(client, page.id);
-    }
-
-    const { data, error } = await client
-      .from('lowcode_page_relations')
-      .select(this.relationSelect())
-      .order('updated_at', { ascending: false });
-
-    if (error) {
-      if (isMissingRelationTableError(error)) {
-        return [];
-      }
-
-      throw new BadRequestException(error.message);
-    }
-
-    return ((data ?? []) as unknown as LowCodePageRelationRow[]).map(normalizeRelationRow);
   }
 
   private async listTablePageOptions(context: ServiceContext) {
@@ -477,11 +200,7 @@ export class LowCodeService extends BaseService {
     });
   }
 
-  private async upsertPageRelation(
-    client: ReturnType<typeof createSupabaseClient>,
-    userId: string,
-    input: LowCodePageRelationInput
-  ) {
+  private async upsertPageRelation(context: ServiceContext, input: LowCodePageRelationInput) {
     const sourcePageCode = readString(input.sourcePageCode);
     const targetPageCode = readString(input.targetPageCode);
     const actionKey = normalizeActionKey(input.actionKey);
@@ -495,8 +214,8 @@ export class LowCodeService extends BaseService {
     }
 
     const [sourcePage, targetPage] = await Promise.all([
-      this.findRelationPageByCode(client, sourcePageCode, 'source'),
-      this.findRelationPageByCode(client, targetPageCode, 'target')
+      this.findRelationPageByCode(context, sourcePageCode, 'source'),
+      this.findRelationPageByCode(context, targetPageCode, 'target')
     ]);
 
     const relationPayload = {
@@ -504,70 +223,44 @@ export class LowCodeService extends BaseService {
       action_key: actionKey,
       target_page_id: targetPage.id,
       open_type: normalizeOpenType(input.openType),
-      metadata: input.metadata ?? {},
-      updated_by: userId,
-      updated_at: new Date().toISOString()
+      metadata: input.metadata ?? {}
     };
 
-    const { data: existing, error: lookupError } = await client
-      .from('lowcode_page_relations')
-      .select('id')
-      .eq('source_page_id', sourcePage.id)
-      .eq('action_key', actionKey)
-      .maybeSingle();
+    const updated = asRows(await this.updateItem({
+      resource: 'pageRelations',
+      filters: { source_page_id: sourcePage.id, action_key: actionKey },
+      data: relationPayload
+    }, context));
 
-    if (lookupError) {
-      if (isMissingRelationTableError(lookupError)) {
-        throw new BadRequestException(
-          'Low-code page relation table is not created yet. Run supabase/migrations/20260728040000_lowcode_page_relations.sql first.'
-        );
-      }
-
-      throw new BadRequestException(lookupError.message);
-    }
-
-    if (existing) {
-      const { error } = await client
-        .from('lowcode_page_relations')
-        .update(relationPayload)
-        .eq('id', (existing as { id: string }).id);
-
-      if (error) {
-        throw new BadRequestException(error.message);
-      }
-    } else {
-      const { error } = await client.from('lowcode_page_relations').insert({
-        ...relationPayload,
-        created_by: userId
-      });
-
-      if (error) {
-        throw new BadRequestException(error.message);
-      }
+    if (!updated.length) {
+      await this.createItem({ resource: 'pageRelations', data: relationPayload }, context);
     }
 
     return {
       sourcePageId: sourcePage.id,
+      sourcePageCode: sourcePage.code,
+      sourcePageRoute: sourcePage.route,
+      sourcePageTitle: sourcePage.title,
+      actionKey,
       targetPageId: targetPage.id,
-      actionKey
+      targetPageCode: targetPage.code,
+      targetPageRoute: targetPage.route,
+      targetPageTitle: targetPage.title,
+      openType: normalizeOpenType(input.openType),
+      metadata: input.metadata ?? {}
     };
   }
 
   private async syncPageRelations(
-    client: ReturnType<typeof createSupabaseClient>,
-    userId: string,
+    context: ServiceContext,
     savedPage: LowCodePageRow,
     postData: Record<string, unknown>
   ) {
     const relationInputs = this.collectRelationInputs(postData, savedPage);
-    const syncedRelations: Array<{
-      sourcePageId: string;
-      targetPageId: string;
-      actionKey: string;
-    }> = [];
+    const syncedRelations: LowCodePageRelation[] = [];
 
     for (const input of relationInputs) {
-      syncedRelations.push(await this.upsertPageRelation(client, userId, input));
+      syncedRelations.push(await this.upsertPageRelation(context, input));
     }
 
     const incomingEditRelations = syncedRelations.filter(
@@ -575,29 +268,40 @@ export class LowCodeService extends BaseService {
     );
 
     for (const relation of incomingEditRelations) {
-      const { error } = await client
-        .from('lowcode_page_relations')
-        .delete()
-        .eq('target_page_id', savedPage.id)
-        .eq('action_key', relation.actionKey)
-        .neq('source_page_id', relation.sourcePageId);
-
-      if (error) {
-        throw new BadRequestException(error.message);
-      }
+      await this.deleteItem({
+        resource: 'pageRelations',
+        filters: {
+          target_page_id: savedPage.id,
+          action_key: relation.actionKey,
+          source_page_id: { op: 'ne', value: relation.sourcePageId }
+        }
+      }, context);
     }
 
-    return this.getRelationsForPage(client, savedPage.id);
+    return {
+      outgoing: syncedRelations.filter((relation) => relation.sourcePageId === savedPage.id),
+      incoming: syncedRelations.filter((relation) => relation.targetPageId === savedPage.id)
+    };
   }
 
-  private assertEditPageHasListRelation(savedPage: LowCodePageRow, relations: LowCodePageRelations) {
+  private async assertEditPageHasListRelation(
+    context: ServiceContext,
+    savedPage: LowCodePageRow,
+    relations: LowCodePageRelations
+  ) {
     if (savedPage.schema.pageType !== 'edit') return;
-
-    const hasListRelation = relations.incoming.some(
+    if (relations.incoming.some(
       (relation) => relation.actionKey === 'edit' && relation.sourcePageCode
-    );
+    )) return;
 
-    if (hasListRelation) return;
+    const existing = asRows(await this.listItems({
+      tableName: 'lowcode_page_relations',
+      select: 'id',
+      filters: { target_page_id: savedPage.id, action_key: 'edit' },
+      clientMode: 'admin',
+      limit: 1
+    }, context));
+    if (existing.length) return;
 
     throw new BadRequestException(
       'Edit page must be linked to a list page. Pass parentListPageCode when saving the page.'
@@ -605,7 +309,7 @@ export class LowCodeService extends BaseService {
   }
 
   private async savePage(postData: Record<string, unknown>, context: ServiceContext) {
-    const { client, user } = await requireAdmin(context, 'lowcode.pages.manage');
+    await requireAdmin(context, 'lowcode.pages.manage');
     const schema = normalizeSchema(postData.schema ?? postData, true);
     const existingCode = readString(postData.code, schema.code);
 
@@ -613,17 +317,12 @@ export class LowCodeService extends BaseService {
       throw new BadRequestException('code is required.');
     }
 
-    const { data: existing, error: lookupError } = await client
-      .from('lowcode_pages')
-      .select('*')
-      .eq('code', existingCode)
-      .maybeSingle();
-
-    if (lookupError) {
-      throw new BadRequestException(lookupError.message);
-    }
-
-    const existingPage = existing as LowCodePageRow | null;
+    const [existingPage] = asRows(await this.listItems({
+      tableName: 'lowcode_pages',
+      filters: { code: existingCode },
+      clientMode: 'admin',
+      limit: 1
+    }, context)) as LowCodePageRow[];
     const nextVersion = (existingPage?.version ?? 0) + 1;
     const now = new Date().toISOString();
     const pagePayload = {
@@ -636,134 +335,27 @@ export class LowCodeService extends BaseService {
       keep_alive: schema.keepAlive ?? true,
       schema: schema as unknown as Record<string, unknown>,
       version: nextVersion,
-      updated_at: now,
-      updated_by: user.id,
       published_at: schema.status === 'published' ? now : existingPage?.published_at ?? null
     };
 
-    let savedPage: LowCodePageRow | null = null;
+    const savedPage = await (existingPage
+      ? this.updateItem({ resource: 'pages', id: existingPage.id, data: pagePayload }, context)
+      : this.createItem({ resource: 'pages', data: pagePayload }, context)) as LowCodePageRow;
 
-    if (existingPage) {
-      const { data, error } = await client
-        .from('lowcode_pages')
-        .update(pagePayload)
-        .eq('id', existingPage.id)
-        .select('*')
-        .single();
-
-      if (error) {
-        throw new BadRequestException(error.message);
+    await this.createItem({
+      resource: 'pageVersions',
+      data: {
+        page_id: savedPage.id,
+        version: nextVersion,
+        schema: schema as unknown as Record<string, unknown>,
+        published_at: schema.status === 'published' ? now : null
       }
+    }, context);
 
-      savedPage = data as LowCodePageRow;
-    } else {
-      const { data, error } = await client
-        .from('lowcode_pages')
-        .insert({
-          ...pagePayload,
-          created_by: user.id
-        })
-        .select('*')
-        .single();
-
-      if (error) {
-        throw new BadRequestException(error.message);
-      }
-
-      savedPage = data as LowCodePageRow;
-    }
-
-    const { error: versionError } = await client.from('lowcode_page_versions').insert({
-      page_id: savedPage.id,
-      version: nextVersion,
-      schema: schema as unknown as Record<string, unknown>,
-      created_by: user.id,
-      published_at: schema.status === 'published' ? now : null
-    });
-
-    if (versionError) {
-      throw new BadRequestException(versionError.message);
-    }
-
-    const relations = await this.syncPageRelations(client, user.id, savedPage, postData);
-    this.assertEditPageHasListRelation(savedPage, relations);
+    const relations = await this.syncPageRelations(context, savedPage, postData);
+    await this.assertEditPageHasListRelation(context, savedPage, relations);
 
     return normalizePageRow(savedPage, relations);
   }
 
-  private async publishPage(postData: Record<string, unknown>, context: ServiceContext) {
-    const code = readString(postData.code);
-    if (!code) {
-      throw new BadRequestException('code is required.');
-    }
-
-    const saved = await this.savePage(
-      {
-        code,
-        parentListPageCode: postData.parentListPageCode,
-        listPageCode: postData.listPageCode,
-        sourcePageCode: postData.sourcePageCode,
-        actionKey: postData.actionKey,
-        openType: postData.openType,
-        editOpenType: postData.editOpenType,
-        relation: postData.relation,
-        relations: postData.relations,
-        relationMetadata: postData.relationMetadata,
-        editPageCode: postData.editPageCode,
-        edit_page_code: postData.edit_page_code,
-        editRelationMetadata: postData.editRelationMetadata,
-        schema: {
-          ...(isRecord(postData.schema) ? postData.schema : {}),
-          code,
-          status: 'published'
-        }
-      },
-      context
-    );
-
-    return {
-      success: true,
-      page: saved
-    };
-  }
-
-  private async archivePage(postData: Record<string, unknown>, context: ServiceContext) {
-    const { client, user } = await requireAdmin(context, 'lowcode.pages.manage');
-    const code = readString(postData.code);
-
-    if (!code) {
-      throw new BadRequestException('code is required.');
-    }
-
-    const { data: existing, error: lookupError } = await client
-      .from('lowcode_pages')
-      .select('*')
-      .eq('code', code)
-      .maybeSingle();
-
-    if (lookupError) {
-      throw new BadRequestException(lookupError.message);
-    }
-
-    if (!existing) {
-      throw new NotFoundException('Low-code page not found.');
-    }
-
-    const { data, error } = await client
-      .from('lowcode_pages')
-      .update({
-        status: 'archived',
-        updated_at: new Date().toISOString(),
-        updated_by: user.id
-      })
-      .eq('id', existing.id)
-      .select('*')
-      .single();
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    return normalizePageRow(data as LowCodePageRow);
-  }
 }

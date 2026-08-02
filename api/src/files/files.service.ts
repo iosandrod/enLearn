@@ -6,39 +6,48 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { BaseService } from '../common/base.service';
+import {
+  BaseService,
+  type HookContext,
+  type ResourceConfigMap,
+  type ServiceHooks
+} from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import {
-  createSupabaseClient,
   getCurrentUser,
   requireAdmin
 } from '../common/utils/supabase';
-import { getEnv } from '../common/utils/env';
 import { SupabaseStorageDriver } from './supabase-storage.driver';
 import type { FileStorageDriver } from './storage-driver';
 import type {
   FileFolderRow,
-  FileObjectRow,
-  FileStatus,
-  FileVisibility,
-  JsonRecord
+  FileObjectRow
 } from './files.types';
+import {
+  buildObjectKey,
+  fileMetadataRequiredMessage,
+  isMissingFileTable,
+  normalizeFile,
+  normalizeFolder,
+  normalizeFolderPath,
+  readBoolean,
+  readJsonObject,
+  readNumber,
+  readOptionalString,
+  readStatus,
+  readString,
+  readVisibility,
+  resolveAdminClient,
+  resolveConfig,
+  sanitizeFolderSegment
+} from './files.helpers';
+import { fileResources } from './files.resources';
 
 type PostData = Record<string, unknown>;
 
-const DEFAULT_BUCKET = 'app-files';
-const DEFAULT_UPLOAD_TTL_SECONDS = 60 * 15;
-const DEFAULT_DOWNLOAD_TTL_SECONDS = 60 * 10;
-const DEFAULT_MAX_UPLOAD_BYTES = 1024 * 1024 * 50;
-const VISIBILITIES = new Set<FileVisibility>(['private', 'public']);
-const STATUSES = new Set<FileStatus>([
-  'created',
-  'uploading',
-  'uploaded',
-  'ready',
-  'rejected',
-  'deleted'
-]);
+function asListRows<T>(value: unknown): T[] {
+  return Array.isArray(value) ? value as T[] : [];
+}
 
 const STORAGE_ENTITY_DEFINITIONS = [
   {
@@ -112,255 +121,65 @@ const STORAGE_ENTITY_DEFINITIONS = [
   }
 ] as const;
 
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function readOptionalString(value: unknown) {
-  return typeof value === 'string' && value.trim() ? value.trim() : '';
-}
-
-function readString(value: unknown, name: string, fallback = '') {
-  const optional = readOptionalString(value);
-  if (optional) return optional;
-  if (fallback) return fallback;
-  throw new BadRequestException(`${name} is required.`);
-}
-
-function readNumber(value: unknown, name: string, fallback?: number) {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string' && value.trim()) {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-
-  if (fallback !== undefined) return fallback;
-  throw new BadRequestException(`${name} must be a number.`);
-}
-
-function readBoolean(value: unknown, fallback = false) {
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'number') return value !== 0;
-  if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase();
-    if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
-    if (['false', '0', 'no', 'off'].includes(normalized)) return false;
-  }
-  return fallback;
-}
-
-function readJsonObject(value: unknown, fallback: JsonRecord = {}) {
-  if (isRecord(value)) return value;
-  if (typeof value === 'string' && value.trim()) {
-    try {
-      const parsed = JSON.parse(value);
-      if (isRecord(parsed)) return parsed;
-    } catch {
-      throw new BadRequestException('metadata must be valid JSON.');
-    }
-  }
-  return fallback;
-}
-
-function readVisibility(value: unknown) {
-  const visibility = readOptionalString(value) || 'private';
-  if (!VISIBILITIES.has(visibility as FileVisibility)) {
-    throw new BadRequestException('visibility must be "private" or "public".');
-  }
-  return visibility as FileVisibility;
-}
-
-function readStatus(value: unknown) {
-  const status = readOptionalString(value);
-  if (!STATUSES.has(status as FileStatus)) return undefined;
-  return status as FileStatus;
-}
-
-function sanitizeFolderSegment(value: string) {
-  const sanitized = value
-    .trim()
-    .replace(/[\\]+/g, '/')
-    .replace(/[^\w.\- \u4e00-\u9fa5]+/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
-
-  if (!sanitized || sanitized === '.' || sanitized === '..') {
-    throw new BadRequestException('Folder name is invalid.');
-  }
-
-  return sanitized;
-}
-
-function normalizeFolderPath(value: unknown) {
-  const raw = readOptionalString(value);
-  if (!raw) return '';
-
-  return raw
-    .replace(/[\\]+/g, '/')
-    .split('/')
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .map(sanitizeFolderSegment)
-    .join('/');
-}
-
-function resolveConfig() {
-  const env = getEnv();
-  return {
-    driver: (env.FILE_STORAGE_DRIVER || 'supabase').trim().toLowerCase(),
-    bucket: (env.FILE_STORAGE_BUCKET || DEFAULT_BUCKET).trim(),
-    uploadTtlSeconds: readNumber(
-      env.FILE_UPLOAD_URL_TTL_SECONDS,
-      'FILE_UPLOAD_URL_TTL_SECONDS',
-      DEFAULT_UPLOAD_TTL_SECONDS
-    ),
-    downloadTtlSeconds: readNumber(
-      env.FILE_DOWNLOAD_URL_TTL_SECONDS,
-      'FILE_DOWNLOAD_URL_TTL_SECONDS',
-      DEFAULT_DOWNLOAD_TTL_SECONDS
-    ),
-    maxUploadBytes: readNumber(
-      env.FILE_MAX_UPLOAD_BYTES,
-      'FILE_MAX_UPLOAD_BYTES',
-      DEFAULT_MAX_UPLOAD_BYTES
-    )
-  };
-}
-
-function resolveAdminClient(fallback: SupabaseClient) {
-  try {
-    return createSupabaseClient('admin');
-  } catch {
-    return fallback;
-  }
-}
-
-function sanitizeFileName(value: string) {
-  const fallback = 'file';
-  const name = value
-    .replace(/\\/g, '/')
-    .split('/')
-    .pop()
-    ?.trim();
-
-  if (!name) return fallback;
-
-  const sanitized = name
-    .normalize('NFKD')
-    .replace(/[^\w.\- ]+/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 120);
-
-  return sanitized || fallback;
-}
-
-function buildObjectKey(
-  userId: string,
-  fileId: string,
-  originalName: string,
-  folderPath = ''
-) {
-  const now = new Date();
-  const year = String(now.getUTCFullYear());
-  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-  const safeName = sanitizeFileName(originalName);
-  if (folderPath) {
-    return `users/${userId}/folders/${folderPath}/${fileId}/${safeName}`;
-  }
-  return `users/${userId}/${year}/${month}/${fileId}/${safeName}`;
-}
-
-function normalizeFile(row: FileObjectRow) {
-  return {
-    id: row.id,
-    bucket: row.bucket,
-    objectKey: row.object_key,
-    originalName: row.original_name,
-    mimeType: row.mime_type,
-    sizeBytes: row.size_bytes,
-    checksum: row.checksum,
-    ownerId: row.owner_id,
-    visibility: row.visibility,
-    status: row.status,
-    locked: row.locked === true,
-    metadata: row.metadata ?? {},
-    uploadExpiresAt: row.upload_expires_at,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    deletedAt: row.deleted_at
-  };
-}
-
-function normalizeFolder(row: FileFolderRow) {
-  return {
-    id: row.id,
-    bucket: row.bucket,
-    ownerId: row.owner_id,
-    name: row.name,
-    path: row.path,
-    parentPath: row.parent_path,
-    metadata: row.metadata ?? {},
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-    deletedAt: row.deleted_at
-  };
-}
-
-function isMissingFileTable(error: { code?: string; message?: string } | null | undefined) {
-  return Boolean(
-    error?.code === 'PGRST205' ||
-      error?.code === '42P01' ||
-      error?.message?.includes('file_objects') ||
-      error?.message?.includes('file_folders') ||
-      error?.message?.includes('file_usages') ||
-      error?.message?.includes('Could not find the table')
-  );
-}
-
-function fileMetadataRequiredMessage() {
-  return 'File metadata tables are not created yet. Run supabase/migrations/20260729090000_file_storage_system.sql first.';
-}
-
 @Injectable()
 export class FilesService extends BaseService {
-  protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
-    switch (method) {
+  protected override resources(): ResourceConfigMap {
+    return fileResources();
+  }
+
+  protected override hooks(): ServiceHooks {
+    return {
+      files: {
+        action: (ctx) => this.runFilesAction(ctx),
+        beforeDelete: (ctx) => this.prepareFileDelete(ctx),
+        afterDelete: (ctx) => {
+          ctx.result = {
+            success: true,
+            purged: ctx.meta.purge === true,
+            file: normalizeFile(ctx.meta.deletedFile as FileObjectRow)
+          };
+        }
+      },
+      folders: {
+        action: (ctx) => this.runFoldersAction(ctx)
+      }
+    };
+  }
+
+  private async runFilesAction(ctx: HookContext) {
+    const operation = readOptionalString(ctx.input.operation ?? ctx.input.actionName ?? ctx.input.action);
+    switch (operation) {
       case 'createUploadIntent':
       case 'createUploadUrl':
-        return this.createUploadIntent(postData, context);
+        ctx.result = await this.createUploadIntent(ctx.input, ctx.context);
+        return;
       case 'confirmUpload':
-        return this.confirmUpload(postData, context);
+        ctx.result = await this.confirmUpload(ctx.input, ctx.context);
+        return;
       case 'getDownloadUrl':
-        return this.getDownloadUrl(postData, context);
-      case 'createFolder':
-        return this.createFolder(postData, context);
-      case 'deleteFolder':
-        return this.deleteFolder(postData, context);
-      case 'setFileLocked':
-      case 'lockFile':
-        return this.setFileLocked(postData, context);
-      case 'attachToEntity':
-        return this.attachToEntity(postData, context);
-      case 'delete':
-      case 'deleteFile':
-        return this.deleteFile(postData, context);
+        ctx.result = await this.getDownloadUrl(ctx.input, ctx.context);
+        return;
+      case 'listStorageEntities':
+        ctx.result = await this.listStorageEntities(ctx.context);
+        return;
       default:
-        throw new BadRequestException(`Unsupported files method: ${method}`);
+        throw new BadRequestException(`Unsupported files action: ${operation || 'unknown'}`);
     }
   }
 
-  protected override async handleListItems(postData: PostData, context: ServiceContext) {
-    switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type) || 'files') {
-      case 'files':
-        return this.list(postData, context);
-      case 'folders':
-        return this.listFolders(context);
-      case 'storageEntities':
-        return this.listStorageEntities(context);
+  private async runFoldersAction(ctx: HookContext) {
+    const operation = readOptionalString(ctx.input.operation ?? ctx.input.actionName ?? ctx.input.action);
+    switch (operation) {
+      case 'createFolder':
+      case 'create':
+        ctx.result = await this.createFolder(ctx.input, ctx.context);
+        return;
+      case 'deleteFolder':
+      case 'delete':
+        ctx.result = await this.deleteFolder(ctx.input, ctx.context);
+        return;
       default:
-        throw new BadRequestException('Unsupported files listItems itemType.');
+        throw new BadRequestException(`Unsupported folders action: ${operation || 'unknown'}`);
     }
   }
 
@@ -375,29 +194,19 @@ export class FilesService extends BaseService {
     return new SupabaseStorageDriver(client);
   }
 
-  private async getFileById(
-    client: SupabaseClient,
-    id: string
-  ): Promise<FileObjectRow> {
-    const { data, error } = await client
-      .from('file_objects')
-      .select('*')
-      .eq('id', id)
-      .is('deleted_at', null)
-      .maybeSingle();
+  private async getFileById(context: ServiceContext, id: string): Promise<FileObjectRow> {
+    const rows = asListRows<FileObjectRow>(await this.listItems({
+      tableName: 'file_objects',
+      filters: { id, deleted_at: null },
+      limit: 1
+    }, context));
 
-    if (error) {
-      if (isMissingFileTable(error)) {
-        throw new BadRequestException(fileMetadataRequiredMessage());
-      }
-      throw new BadRequestException(error.message);
-    }
-
-    if (!data) {
+    const row = rows[0];
+    if (!row) {
       throw new NotFoundException('File not found.');
     }
 
-    return data as FileObjectRow;
+    return row;
   }
 
   private assertCanRead(row: FileObjectRow, userId: string) {
@@ -412,7 +221,6 @@ export class FilesService extends BaseService {
 
   private async createUploadIntent(postData: PostData, context: ServiceContext) {
     const { client, user } = await getCurrentUser(context);
-    const dataClient = resolveAdminClient(client);
     const storageClient = resolveAdminClient(client);
     const storage = this.createStorageDriver(storageClient);
     const config = resolveConfig();
@@ -447,9 +255,9 @@ export class FilesService extends BaseService {
       buildObjectKey(user.id, id, originalName, folderPath);
     const uploadExpiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString();
 
-    const { data, error } = await dataClient
-      .from('file_objects')
-      .insert({
+    const file = await this.createItem({
+      resource: 'files',
+      data: {
         id,
         bucket,
         object_key: objectKey,
@@ -461,16 +269,8 @@ export class FilesService extends BaseService {
         status: 'uploading',
         metadata,
         upload_expires_at: uploadExpiresAt
-      })
-      .select('*')
-      .single();
-
-    if (error) {
-      if (isMissingFileTable(error)) {
-        throw new BadRequestException(fileMetadataRequiredMessage());
       }
-      throw new BadRequestException(error.message);
-    }
+    }, context) as FileObjectRow;
 
     const upload = await storage.createUploadUrl({
       bucket,
@@ -480,7 +280,7 @@ export class FilesService extends BaseService {
     });
 
     return {
-      file: normalizeFile(data as FileObjectRow),
+      file: normalizeFile(file),
       upload: {
         ...upload,
         expiresAt: upload.expiresAt ?? uploadExpiresAt
@@ -490,7 +290,6 @@ export class FilesService extends BaseService {
 
   private async confirmUpload(postData: PostData, context: ServiceContext) {
     const { client, user } = await getCurrentUser(context);
-    const dataClient = resolveAdminClient(client);
     const storageClient = resolveAdminClient(client);
     const storage = this.createStorageDriver(storageClient);
     const id = readString(postData.id ?? postData.fileId, 'id');
@@ -501,7 +300,7 @@ export class FilesService extends BaseService {
       throw new BadRequestException('status must be "uploaded", "ready", or "rejected".');
     }
 
-    const row = await this.getFileById(dataClient, id);
+    const row = await this.getFileById(context, id);
     this.assertCanManage(row, user.id);
 
     const objectHead = await storage.headObject(row.bucket, row.object_key);
@@ -516,26 +315,20 @@ export class FilesService extends BaseService {
       size_bytes: objectHead.size ?? row.size_bytes
     };
 
-    const { data, error } = await dataClient
-      .from('file_objects')
-      .update(patch)
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
+    const file = await this.updateItem({
+      resource: 'files',
+      id,
+      data: patch
+    }, context) as FileObjectRow;
 
     return {
-      file: normalizeFile(data as FileObjectRow),
+      file: normalizeFile(file),
       object: objectHead
     };
   }
 
   private async getDownloadUrl(postData: PostData, context: ServiceContext) {
     const { client, user } = await getCurrentUser(context);
-    const dataClient = resolveAdminClient(client);
     const storageClient = resolveAdminClient(client);
     const storage = this.createStorageDriver(storageClient);
     const config = resolveConfig();
@@ -546,7 +339,7 @@ export class FilesService extends BaseService {
       config.downloadTtlSeconds
     );
 
-    const row = await this.getFileById(dataClient, id);
+    const row = await this.getFileById(context, id);
     this.assertCanRead(row, user.id);
 
     if (!['uploaded', 'ready'].includes(row.status)) {
@@ -565,83 +358,29 @@ export class FilesService extends BaseService {
     };
   }
 
-  private async list(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const dataClient = resolveAdminClient(client);
-    const limit = Math.min(
-      Math.max(readNumber(postData.limit, 'limit', 50), 1),
-      100
-    );
-    const offset = Math.max(readNumber(postData.offset, 'offset', 0), 0);
-    const includeDeleted = readBoolean(postData.includeDeleted, false);
-    const status = readStatus(postData.status);
-
-    let query = dataClient
-      .from('file_objects')
-      .select('*', { count: 'exact' })
-      .eq('owner_id', user.id)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    if (!includeDeleted) {
-      query = query.is('deleted_at', null);
-    }
-    if (status) {
-      query = query.eq('status', status);
-    }
-
-    const { data, error, count } = await query;
-    if (error) {
-      if (isMissingFileTable(error)) {
-        return { items: [], count: 0, limit, offset };
-      }
-      throw new BadRequestException(error.message);
-    }
-
-    return {
-      items: ((data ?? []) as FileObjectRow[]).map(normalizeFile),
-      count: count ?? 0,
-      limit,
-      offset
-    };
-  }
-
-  private async listFolders(context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const dataClient = resolveAdminClient(client);
-
-    const { data, error } = await dataClient
-      .from('file_folders')
-      .select('*')
-      .eq('owner_id', user.id)
-      .is('deleted_at', null)
-      .order('path', { ascending: true });
-
-    if (error) {
-      if (isMissingFileTable(error)) return { items: [] };
-      throw new BadRequestException(error.message);
-    }
-
-    return {
-      items: ((data ?? []) as FileFolderRow[]).map(normalizeFolder)
-    };
-  }
-
   private async listStorageEntities(context: ServiceContext) {
-    const { client } = await requireAdmin(context, [
+    await requireAdmin(context, [
       'admin.entities.manage',
       'lowcode.pages.manage'
     ]);
-    const dataClient = resolveAdminClient(client);
 
     const countResults = await Promise.all(
       STORAGE_ENTITY_DEFINITIONS.map(async (entity) => {
         const tableName = entity.code;
-        const { count, error } = await dataClient
-          .from(tableName)
-          .select('id', { count: 'exact', head: true });
+        try {
+          const result = await this.listItems({
+            tableName,
+            select: 'id',
+            clientMode: 'admin',
+            withCount: true,
+            responseMode: 'page',
+            limit: 1
+          }, context) as { total?: number };
 
-        return [tableName, error ? 0 : count ?? 0] as const;
+          return [tableName, result.total ?? 0] as const;
+        } catch {
+          return [tableName, 0] as const;
+        }
       })
     );
     const countByCode = new Map(countResults);
@@ -664,8 +403,7 @@ export class FilesService extends BaseService {
   }
 
   private async createFolder(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const dataClient = resolveAdminClient(client);
+    const { user } = await getCurrentUser(context);
     const config = resolveConfig();
     const parentPath = normalizeFolderPath(
       postData.parentPath ?? postData.parent_path
@@ -676,39 +414,31 @@ export class FilesService extends BaseService {
     const path = parentPath ? `${parentPath}/${name}` : name;
     const metadata = readJsonObject(postData.metadata);
     const bucket = readOptionalString(postData.bucket) || config.bucket;
-
-    const { data, error } = await dataClient
-      .from('file_folders')
-      .upsert(
-        {
-          bucket,
-          owner_id: user.id,
-          name,
-          path,
-          parent_path: parentPath || null,
-          metadata,
-          deleted_at: null
-        },
-        { onConflict: 'bucket,owner_id,path' }
-      )
-      .select('*')
-      .single();
-
-    if (error) {
-      if (isMissingFileTable(error)) {
-        throw new BadRequestException(fileMetadataRequiredMessage());
-      }
-      throw new BadRequestException(error.message);
-    }
+    const payload = {
+      bucket,
+      owner_id: user.id,
+      name,
+      path,
+      parent_path: parentPath || null,
+      metadata,
+      deleted_at: null
+    };
+    const existingRows = asListRows<FileFolderRow>(await this.listItems({
+      tableName: 'file_folders',
+      filters: { bucket, owner_id: user.id, path },
+      limit: 1
+    }, context));
+    const folder = existingRows[0]
+      ? await this.updateItem({ resource: 'folders', id: existingRows[0].id, data: payload }, context) as FileFolderRow
+      : await this.createItem({ resource: 'folders', data: payload }, context) as FileFolderRow;
 
     return {
-      folder: normalizeFolder(data as FileFolderRow)
+      folder: normalizeFolder(folder)
     };
   }
 
   private async deleteFolder(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const dataClient = resolveAdminClient(client);
+    const { user } = await getCurrentUser(context);
     const path = normalizeFolderPath(postData.path ?? postData.folderPath);
 
     if (!path) {
@@ -716,121 +446,49 @@ export class FilesService extends BaseService {
     }
 
     const folderPrefix = `users/${user.id}/folders/${path}/`;
-    const [{ data: childFolders, error: childFolderError }, { data: childFiles, error: childFileError }] =
-      await Promise.all([
-        dataClient
-          .from('file_folders')
-          .select('id')
-          .eq('owner_id', user.id)
-          .is('deleted_at', null)
-          .like('path', `${path}/%`)
-          .limit(1),
-        dataClient
-          .from('file_objects')
-          .select('id')
-          .eq('owner_id', user.id)
-          .is('deleted_at', null)
-          .like('object_key', `${folderPrefix}%`)
-          .limit(1)
-      ]);
-
-    if (childFolderError || childFileError) {
-      const error = childFolderError ?? childFileError;
-      if (isMissingFileTable(error)) {
-        throw new BadRequestException(fileMetadataRequiredMessage());
-      }
-      throw new BadRequestException(error?.message ?? 'Failed to check folder.');
-    }
+    const [childFolders, childFiles] = await Promise.all([
+      this.listItems({
+        tableName: 'file_folders',
+        select: 'id',
+        filters: {
+          owner_id: user.id,
+          deleted_at: null,
+          path: { op: 'startsWith', value: `${path}/` }
+        },
+        limit: 1
+      }, context).then(asListRows<{ id: string }>),
+      this.listItems({
+        tableName: 'file_objects',
+        select: 'id',
+        filters: {
+          owner_id: user.id,
+          deleted_at: null,
+          object_key: { op: 'startsWith', value: folderPrefix }
+        },
+        limit: 1
+      }, context).then(asListRows<{ id: string }>)
+    ]);
 
     if ((childFolders?.length ?? 0) > 0 || (childFiles?.length ?? 0) > 0) {
       throw new BadRequestException('Folder must be empty before it can be deleted.');
     }
 
-    const { error } = await dataClient
-      .from('file_folders')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('owner_id', user.id)
-      .eq('path', path);
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
+    await this.updateItem({
+      resource: 'folders',
+      filters: { path },
+      data: { deleted_at: new Date().toISOString() }
+    }, context);
 
     return { success: true, path };
   }
 
-  private async setFileLocked(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const dataClient = resolveAdminClient(client);
-    const id = readString(postData.id ?? postData.fileId, 'id');
-    const locked = readBoolean(postData.locked, true);
-    const row = await this.getFileById(dataClient, id);
-    this.assertCanManage(row, user.id);
-
-    const { data, error } = await dataClient
-      .from('file_objects')
-      .update({ locked })
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    return {
-      file: normalizeFile(data as FileObjectRow)
-    };
-  }
-
-  private async attachToEntity(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const dataClient = resolveAdminClient(client);
-    const fileId = readString(postData.fileId ?? postData.file_id, 'fileId');
-    const entityType = readString(
-      postData.entityType ?? postData.entity_type,
-      'entityType'
-    );
-    const entityId = readString(postData.entityId ?? postData.entity_id, 'entityId');
-    const purpose = readString(postData.purpose, 'purpose', 'attachment');
-    const metadata = readJsonObject(postData.metadata);
-    const row = await this.getFileById(dataClient, fileId);
-    this.assertCanManage(row, user.id);
-
-    const { data, error } = await dataClient
-      .from('file_usages')
-      .insert({
-        file_id: fileId,
-        entity_type: entityType,
-        entity_id: entityId,
-        purpose,
-        created_by: user.id,
-        metadata
-      })
-      .select('*')
-      .single();
-
-    if (error) {
-      if (isMissingFileTable(error)) {
-        throw new BadRequestException(fileMetadataRequiredMessage());
-      }
-      throw new BadRequestException(error.message);
-    }
-
-    return {
-      file: normalizeFile(row),
-      usage: data
-    };
-  }
-
-  private async deleteFile(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const dataClient = resolveAdminClient(client);
-    const storageClient = resolveAdminClient(client);
+  private async prepareFileDelete(ctx: HookContext) {
+    const user = ctx.user ?? (await getCurrentUser(ctx.context)).user;
+    const storageClient = resolveAdminClient(ctx.client);
     const storage = this.createStorageDriver(storageClient);
-    const id = readString(postData.id ?? postData.fileId, 'id');
-    const purge = readBoolean(postData.purge, false);
-    const row = await this.getFileById(dataClient, id);
+    const id = readString(ctx.id ?? ctx.input.fileId, 'id');
+    const purge = readBoolean(ctx.input.purge, false);
+    const row = await this.getFileById(ctx.context, id);
     this.assertCanManage(row, user.id);
 
     if (row.locked) {
@@ -841,24 +499,12 @@ export class FilesService extends BaseService {
       await storage.deleteObject(row.bucket, row.object_key);
     }
 
-    const { data, error } = await dataClient
-      .from('file_objects')
-      .update({
-        status: 'deleted',
-        deleted_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select('*')
-      .single();
-
-    if (error) {
-      throw new BadRequestException(error.message);
-    }
-
-    return {
-      success: true,
-      purged: purge,
-      file: normalizeFile(data as FileObjectRow)
-    };
+    ctx.id = id;
+    ctx.meta.purge = purge;
+    ctx.meta.deletedFile = {
+      ...row,
+      status: 'deleted',
+      deleted_at: new Date().toISOString()
+    } satisfies FileObjectRow;
   }
 }

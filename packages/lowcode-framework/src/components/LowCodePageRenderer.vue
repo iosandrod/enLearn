@@ -323,6 +323,47 @@ function resolveDataSourceService(
   };
 }
 
+const legacyAdminListMethodTables: Record<string, string> = {
+  listUsers: 'users',
+  listRoles: 'admin_roles',
+  listPermissions: 'admin_permissions',
+  listRoutes: 'admin_routes',
+  listRouteTree: 'admin_routes',
+  listRouteManageTree: 'admin_routes',
+  listEntities: 'admin_entities',
+  listPages: 'lowcode_pages',
+  listOptionSources: 'system_option_sources',
+  listOptionItems: 'system_option_items',
+  listSystemExecutionTasks: 'system_execution_tasks',
+  listWorkflowJobs: 'workflow_jobs',
+  listWorkflowJobRuns: 'workflow_job_runs',
+  listWorkflowTimerJobs: 'workflow_timer_jobs',
+};
+
+function normalizeLegacyAdminListRequest(
+  serviceName: string,
+  serviceMethod: string,
+  postData: Record<string, unknown>
+) {
+  if (serviceName !== 'admin') {
+    return { serviceName, serviceMethod, postData };
+  }
+
+  const tableName = legacyAdminListMethodTables[serviceMethod];
+  if (!tableName) {
+    return { serviceName, serviceMethod, postData };
+  }
+
+  return {
+    serviceName,
+    serviceMethod: 'listItems',
+    postData: {
+      ...postData,
+      tableName: readString(postData.tableName ?? postData.table_name, tableName),
+    },
+  };
+}
+
 function isListItemsRequest(serviceName: string, serviceMethod: string) {
   return serviceName === 'admin' && serviceMethod === 'listItems';
 }
@@ -360,7 +401,7 @@ function resolveDataSourceRequest(
   );
   const service = resolveDataSourceService(source, postData);
 
-  return { serviceName: service.serviceName, serviceMethod: service.serviceMethod, postData };
+  return normalizeLegacyAdminListRequest(service.serviceName, service.serviceMethod, postData);
 }
 
 function resolveDataSourcePostData(key: string, source: LowCodePageDataSource) {

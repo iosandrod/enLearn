@@ -1,22 +1,3 @@
-[31m(!) Failed to run dependency scan. Skipping dependency pre-bundling. Error: [31m  Failed to scan for dependencies from entries:
-  E:/enLearn/frontend/index.html
-
-  [31mBuild failed with 1 error:
-
-[31m[UNLOADABLE_DEPENDENCY] [0mCould not load ../packages/tldraw-vue/src/index.ts
-   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m virtual-module:E:/enLearn/frontend/pages/dashboard/advanced/print-designer.vue?id=0:9:8 [38;5;246m][0m
-   [38;5;246m│[0m
- [38;5;246m9 │[0m [38;5;249m}[0m[38;5;249m [0m[38;5;249mf[0m[38;5;249mr[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249m [0m'tldraw-vue-phase-one'[38;5;249m;[0m
- [38;5;240m  │[0m        ───────────┬──────────  
- [38;5;240m  │[0m                   ╰──────────── 系统找不到指定的路径。 (os error 3)
-[38;5;246m───╯[0m
-
-    at aggregateBindingErrorsIntoJsError (file:///E:/enLearn/node_modules/.pnpm/rolldown@1.1.5/node_modules/rolldown/dist/shared/error-BHRSI0R7.mjs:48:18)
-    at unwrapBindingResult (file:///E:/enLearn/node_modules/.pnpm/rolldown@1.1.5/node_modules/rolldown/dist/shared/error-BHRSI0R7.mjs:18:128)
-    at scan (file:///E:/enLearn/node_modules/.pnpm/rolldown@1.1.5/node_modules/rolldown/dist/experimental-index.mjs:187:3)
-    at async Object.build (file:///E:/enLearn/node_modules/.pnpm/vite@8.1.5_@types+node@20.1_5e7453f806b460177312f0cfff09cd5f/node_modules/vite/dist/node/chunks/node.js:30762:3)
-    at async scan (file:///E:/enLearn/node_modules/.pnpm/vite@8.1.5_@types+node@20.1_5e7453f806b460177312f0cfff09cd5f/node_modules/vite/dist/node/chunks/node.js:30701:4)
-    at async file:///E:/enLearn/node_modules/.pnpm/vite@8.1.5_@types+node@20.1_5e7453f806b460177312f0cfff09cd5f/node_modules/vite/dist/node/chunks/node.js:33703:15[39m
 DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
 
 More info and automated migrator: https://sass-lang.com/d/import
@@ -27,14 +8,6 @@ More info and automated migrator: https://sass-lang.com/d/import
   ╵
     ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
 
-[2m05:27:17[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "echarts" from "../packages/lowcode-framework/src/packages/chart-component/index.tsx". Does the file exist?
-  Plugin: [35mvite:import-analysis[39m
-  File: [36mE:/enLearn/packages/lowcode-framework/src/packages/chart-component/index.tsx[39m:2:25
-[33m  1  |  import { defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch, createVNode as _createVNode } from 'vue';
-  2  |  import * as echarts from 'echarts';
-     |                            ^
-  3  |  import { useGlobalProperties } from '../../hooks/useGlobalProperties';
-  4  |  import { createEditorColorProp, createEditorInputProp, createEditorSelectProp } from '../../visual-editor/visual-edit...[39m
 DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
 
 More info and automated migrator: https://sass-lang.com/d/import
@@ -59,11 +32,75 @@ More info and automated migrator: https://sass-lang.com/d/import
 
 [1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
 
-[2m05:27:19[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to resolve import "echarts" from "../packages/lowcode-framework/src/packages/chart-component/index.tsx". Does the file exist?
-  Plugin: [35mvite:import-analysis[39m
-  File: [36mE:/enLearn/packages/lowcode-framework/src/packages/chart-component/index.tsx[39m:2:25
-[33m  1  |  import { defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch, createVNode as _createVNode } from 'vue';
-  2  |  import * as echarts from 'echarts';
-     |                            ^
-  3  |  import { useGlobalProperties } from '../../hooks/useGlobalProperties';
-  4  |  import { createEditorColorProp, createEditorInputProp, createEditorSelectProp } from '../../visual-editor/visual-edit...[39m
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[2m15:15:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:136:5)
+    at async http://localhost:3000/src/main.ts:55:2
+[2m15:15:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:155:5)
+    at async http://localhost:3000/src/main.ts:55:2
+[2m15:15:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:136:5)
+[2m15:15:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:122:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:170:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:155:5)
+[2m15:15:17[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev user switcher could not load admin users. Error: Could not find the table 'public.profiles' in the schema cache
+    at createError (http://localhost:3000/src/spa-compat.ts:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:122:9)
+    at async invoke (http://localhost:3000/composables/useServiceApi.ts:15:20)
+    at async loadDevTestUsers (http://localhost:3000/layouts/dashboard.vue:48:19)
+    at async http://localhost:3000/layouts/dashboard.vue:677:4
+[2m15:15:32[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m15:15:33[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev user switcher could not load admin users. Error: Could not find the table 'public.profiles' in the schema cache
+    at createError (http://localhost:3000/src/spa-compat.ts:196:16)
+    at fetchBackend (http://localhost:3000/src/spa-compat.ts:122:9)
+    at async invoke (http://localhost:3000/composables/useServiceApi.ts:15:20)
+    at async loadDevTestUsers (http://localhost:3000/layouts/dashboard.vue:48:19)
+    at async http://localhost:3000/layouts/dashboard.vue:677:4

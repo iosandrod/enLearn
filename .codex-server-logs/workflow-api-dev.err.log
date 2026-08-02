@@ -294,3 +294,452 @@
 [31m[Nest] 37648  - [39m2026/08/02 07:10:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
 [31m[Nest] 37648  - [39m2026/08/02 07:10:20 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
 [31m[Nest] 37648  - [39m2026/08/02 07:10:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:31:18 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:31:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:31:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:32:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:32:20 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:32:41 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:33:01 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:33:14 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:33:35 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:33:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:33:56 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:34:19 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:34:20 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:34:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:35:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:35:21 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:35:21 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:35:42 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:36:02 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:36:22 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:36:42 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:37:03 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:37:23 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:37:43 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:38:03 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:38:04 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:38:24 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:38:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:39:07 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:39:14 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:39:27 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:40:55 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:41:15 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:41:35 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:41:36 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:41:57 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:42:17 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:42:18 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:42:38 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:42:58 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:42:59 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:43:19 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:43:39 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:44:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:44:20 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:44:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:45:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:45:21 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:45:41 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:46:01 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:46:02 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:46:22 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:46:23 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:46:44 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:46:44 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:05 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:25 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:30 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:33 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:34 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:35 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:36 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:37 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:38 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:39 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:47:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:01 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:02 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:03 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:04 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:05 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:07 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:26 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:30 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:33 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:34 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:35 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:36 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:37 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:38 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:39 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:48:41 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: remaining connection slots are reserved for roles with the SUPERUSER attribute[39m
+[31m[Nest] 37648  - [39m2026/08/02 07:49:09 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:23:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:24:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:24:20 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:24:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:25:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:25:21 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:25:21 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:25:42 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:26:02 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:26:23 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:26:24 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:26:44 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:27:05 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:27:25 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:27:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:28:05 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:28:25 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:28:46 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:29:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:29:26 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:29:46 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:30:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:30:27 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:30:47 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:31:07 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:31:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:31:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:31:49 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:32:35 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:32:54 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:32:55 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:33:15 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:33:36 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:33:56 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:34:16 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:34:37 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:34:37 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:34:58 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:35:18 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:35:38 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:35:58 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:36:18 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:36:39 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:36:59 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:37:19 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:37:39 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:38:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:38:01 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:38:21 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:38:41 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:39:01 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:39:21 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:39:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:39:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:40:05 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:40:25 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:40:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:41:54 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:42:14 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:42:34 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:42:55 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:43:15 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:43:35 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:43:36 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:43:56 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:44:17 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:44:37 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:44:57 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:45:18 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:45:38 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:45:39 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:46:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:46:20 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:46:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:47:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:47:20 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:47:41 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:48:01 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:48:21 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:48:41 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:49:02 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:49:22 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:49:42 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 09:50:02 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:35:12 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:35:33 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:35:53 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:36:13 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:36:33 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:36:53 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:37:14 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:37:14 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:37:35 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:37:55 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:38:15 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:38:35 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:38:56 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:38:56 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:39:17 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:39:37 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:39:57 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:39:58 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:40:18 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:40:19 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:40:39 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:41:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:41:20 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:41:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:42:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:42:20 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:42:41 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:43:01 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:43:21 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:47:05 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:47:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:47:26 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:47:47 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:47:47 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:48:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:48:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:48:48 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:49:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:49:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:49:49 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:50:09 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:50:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:50:49 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:51:09 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:51:30 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:51:50 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:52:10 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:52:30 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:52:50 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:53:11 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:53:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:53:51 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:54:11 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:54:12 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:54:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:54:53 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:55:13 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:56:14 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:56:34 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:56:55 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:57:15 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:57:35 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:57:55 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:58:16 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:58:36 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 10:58:56 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:03:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:03:41 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:04:02 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:04:22 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:04:42 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:05:02 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:05:22 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:05:43 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:06:03 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:06:23 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:06:43 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:07:03 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:07:24 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:07:25 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:07:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:08:05 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:08:25 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:08:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:09:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:09:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:09:27 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:09:47 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:09:48 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:10:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:10:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:10:48 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:11:09 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:11:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:11:49 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:12:09 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:12:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:12:50 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:12:51 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:13:11 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:13:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:13:51 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:14:11 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:14:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:14:52 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:15:12 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:15:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:15:52 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:16:13 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:16:33 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:16:53 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:17:13 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:17:34 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:17:34 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:17:55 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:17:56 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:18:16 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:18:36 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:18:56 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:19:16 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:19:37 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:19:57 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:20:17 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:20:37 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:20:38 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:20:58 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:21:19 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:21:39 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:21:59 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:22:19 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:22:39 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:23:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:23:20 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:23:40 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:24:00 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:24:20 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:24:41 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:25:01 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:25:21 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:25:41 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:26:01 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:26:22 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:26:42 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:27:02 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:27:22 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:27:43 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:28:03 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:28:23 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:28:43 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:29:03 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:29:24 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:29:24 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:29:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:30:05 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:30:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:30:26 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:30:46 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:31:07 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:31:27 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:31:47 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:53:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:53:27 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:53:47 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:54:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:54:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:54:48 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:55:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:55:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:55:49 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:56:09 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:56:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:56:49 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:57:09 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:57:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:57:50 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:58:10 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:58:30 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:58:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:58:51 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:59:12 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:59:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 11:59:52 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:00:12 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:00:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:00:52 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:01:13 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:01:14 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:13:03 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:13:05 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:13:25 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:13:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:14:05 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:14:25 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:14:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:15:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:15:26 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:15:46 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:16:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:16:26 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:16:47 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:17:07 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:17:27 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:17:47 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:18:07 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:18:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:18:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:18:49 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:18:50 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:19:10 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:19:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:19:51 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:20:13 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:20:33 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:20:34 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:20:54 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:20:55 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:21:15 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:22:28 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:22:48 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:23:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:23:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:23:49 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:24:09 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:24:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:24:49 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:25:09 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:25:30 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:25:50 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:26:10 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:26:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:26:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:26:51 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:27:12 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:27:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:27:52 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:28:12 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:28:33 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:28:53 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:29:13 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:29:33 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:29:54 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:29:54 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:30:15 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:30:35 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 12:30:55 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:13:23 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:13:45 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:14:05 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:14:26 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:14:46 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:15:06 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:15:26 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:15:47 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:16:07 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:16:27 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:16:48 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:16:48 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:17:08 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:17:29 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:17:50 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:18:11 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:18:31 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:18:51 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:19:12 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:19:32 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:19:52 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:20:12 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:20:34 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:20:54 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mFailed to run interval job supabase_users_20s_logger: Connection terminated unexpectedly[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:20:56 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:21:16 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m
+[31m[Nest] 37648  - [39m2026/08/02 14:21:36 [31m  ERROR[39m [38;5;3m[JobSchedulerService] [39m[31mWorkflow interval scheduler tick failed: read ECONNRESET[39m

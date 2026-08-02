@@ -187,10 +187,13 @@ type ServiceInvoke = <T = unknown>(
 ) => Promise<T>;
 ```
 
-### `lowcode.listPages`
+### `lowcode.listItems`
 
 ```ts
-invoke<LowCodePageRecord[]>('lowcode', 'listPages');
+invoke<LowCodePageRecord[]>('lowcode', 'listItems', {
+  tableName: 'lowcode_pages',
+  sorts: [{ field: 'updated_at', direction: 'desc' }],
+});
 ```
 
 | 参数 | 类型 | 必填 | 说明 |
@@ -247,12 +250,12 @@ invoke<LowCodePageRecord>('lowcode', 'savePage', {
 - 新页面会插入 `lowcode_pages`，同时写入 `lowcode_page_versions`。
 - `schema.status === 'published'` 时会写入 `published_at`。
 
-### `lowcode.publishPage`
+### Publish with `lowcode.savePage`
 
 ```ts
-invoke<{ success: true; page: LowCodePageRecord }>('lowcode', 'publishPage', {
+invoke<LowCodePageRecord>('lowcode', 'savePage', {
   code: 'users',
-  schema,
+  schema: { ...schema, status: 'published' },
 });
 ```
 
@@ -265,11 +268,13 @@ invoke<{ success: true; page: LowCodePageRecord }>('lowcode', 'publishPage', {
 
 注意：当前设计器发布按钮实际调用的是 `savePage` 并把 `schema.status` 设置为 `'published'`；`publishPage` 是服务端预留方法。
 
-### `lowcode.archivePage`
+### Archive with `lowcode.updateItem`
 
 ```ts
-invoke<LowCodePageRecord>('lowcode', 'archivePage', {
-  code: 'users',
+invoke('lowcode', 'updateItem', {
+  resource: 'pages',
+  filters: { code: 'users' },
+  data: { status: 'archived' },
 });
 ```
 

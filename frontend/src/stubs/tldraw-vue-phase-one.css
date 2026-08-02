@@ -1,0 +1,21 @@
+.tldraw-vue-unavailable {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  height: 100%;
+  min-height: 360px;
+  padding: 24px;
+  color: #475569;
+  text-align: center;
+}
+
+.tldraw-vue-unavailable strong {
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.tldraw-vue-unavailable span {
+  max-width: 440px;
+  font-size: 13px;
+  line-height: 20px;
+}

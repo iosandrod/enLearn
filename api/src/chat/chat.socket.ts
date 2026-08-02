@@ -107,10 +107,10 @@ export function registerChatSocket(app: INestApplication) {
         const conversationId = readConversationId(payload);
 
         await chatService.requireActiveMember(
-          createSupabaseClient('admin'),
           tenantId,
           conversationId,
-          context.userId
+          context.userId,
+          { authorization: context.authorization }
         );
         await client.join(`conversation:${conversationId}`);
         ack?.({ success: true, conversationId });
@@ -136,9 +136,9 @@ export function registerChatSocket(app: INestApplication) {
         const conversationId = String(message.conversationId);
         const tenantId = readTenantId(payload);
         const memberIds = await chatService.listActiveMemberIds(
-          createSupabaseClient('admin'),
           tenantId,
-          conversationId
+          conversationId,
+          { authorization: context.authorization }
         );
 
         chatNamespace.to(`conversation:${conversationId}`).emit('chat:messageCreated', message);

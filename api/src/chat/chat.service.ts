@@ -1,9 +1,14 @@
 import { randomUUID } from 'node:crypto';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { BaseService } from '../common/base.service';
+import {
+  BaseService,
+  type HookContext,
+  type ResourceConfigMap,
+  type ServiceHooks,
+  type ServicePostData
+} from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
-import { createSupabaseClient, getCurrentUser } from '../common/utils/supabase';
+import { getCurrentUser } from '../common/utils/supabase';
 import type {
   ChatConversationMemberRow,
   ChatConversationRow,
@@ -16,6 +21,10 @@ type PostData = Record<string, unknown>;
 
 const conversationTypes: ChatConversationType[] = ['direct', 'group', 'system'];
 const messageTypes: ChatMessageType[] = ['text', 'image', 'file', 'system'];
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 function readOptionalString(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : '';
@@ -34,26 +43,12 @@ function readStringArray(value: unknown) {
     .filter(Boolean);
 }
 
-function readNumber(value: unknown, fallback: number) {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value === 'string' && value.trim()) {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) return parsed;
-  }
-  return fallback;
-}
-
 function readJsonObject(value: unknown, fallback: Record<string, unknown> = {}) {
-  if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-    return value as Record<string, unknown>;
-  }
-
+  if (isRecord(value)) return value;
   if (typeof value === 'string' && value.trim()) {
     try {
       const parsed = JSON.parse(value);
-      if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-        return parsed as Record<string, unknown>;
-      }
+      if (isRecord(parsed)) return parsed;
     } catch {
       throw new BadRequestException('Invalid JSON payload.');
     }
@@ -76,14 +71,6 @@ function readMessageType(value: unknown, fallback: ChatMessageType = 'text') {
     : fallback;
 }
 
-function resolveAdminClient(fallback: SupabaseClient) {
-  try {
-    return createSupabaseClient('admin');
-  } catch {
-    return fallback;
-  }
-}
-
 function normalizeConversation(
   row: ChatConversationRow,
   member?: ChatConversationMemberRow,
@@ -101,18 +88,18 @@ function normalizeConversation(
     unreadCount,
     member: member
       ? {
-          ...member,
-          tenantId: member.tenant_id,
-          conversationId: member.conversation_id,
-          userId: member.user_id,
-          mutedAt: member.muted_at,
-          pinnedAt: member.pinned_at,
-          lastReadMessageId: member.last_read_message_id,
-          lastReadAt: member.last_read_at,
-          joinedAt: member.joined_at,
-          createdAt: member.created_at,
-          updatedAt: member.updated_at
-        }
+        ...member,
+        tenantId: member.tenant_id,
+        conversationId: member.conversation_id,
+        userId: member.user_id,
+        mutedAt: member.muted_at,
+        pinnedAt: member.pinned_at,
+        lastReadMessageId: member.last_read_message_id,
+        lastReadAt: member.last_read_at,
+        joinedAt: member.joined_at,
+        createdAt: member.created_at,
+        updatedAt: member.updated_at
+      }
       : null
   };
 }
@@ -135,6 +122,93 @@ function normalizeMessage(row: ChatMessageRow) {
 
 @Injectable()
 export class ChatService extends BaseService {
+  protected override resources(): ResourceConfigMap {
+    return {
+      conversations: {
+        tableName: 'chat_conversations',
+        defaults: { tenant_id: 'default', type: 'direct', metadata: {} },
+        list: { defaultSorts: [{ field: 'last_message_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
+        create: {
+          allowedFields: ['tenant_id', 'type', 'title', 'created_by', 'last_message_id', 'last_message_at', 'metadata'],
+          requiredFields: ['type'],
+          userFields: { createdBy: 'created_by' }
+        },
+        update: {
+          allowedFields: ['title', 'last_message_id', 'last_message_at', 'metadata']
+        }
+      },
+      members: {
+        tableName: 'chat_conversation_members',
+        ownerField: 'user_id',
+        defaults: { tenant_id: 'default', role: 'member', status: 'active' },
+        list: { defaultSorts: [{ field: 'updated_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 500 },
+        create: {
+          allowedFields: ['tenant_id', 'conversation_id', 'user_id', 'role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at'],
+          requiredFields: ['conversation_id'],
+          userFields: { owner: 'user_id' }
+        },
+        update: {
+          allowedFields: ['role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at']
+        }
+      },
+      allMembers: {
+        tableName: 'chat_conversation_members',
+        clientMode: 'admin',
+        defaults: { tenant_id: 'default', role: 'member', status: 'active' },
+        list: { defaultSorts: [{ field: 'updated_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 500 },
+        create: {
+          allowedFields: ['tenant_id', 'conversation_id', 'user_id', 'role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at'],
+          requiredFields: ['conversation_id', 'user_id']
+        },
+        update: {
+          allowedFields: ['role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at']
+        }
+      },
+      messages: {
+        tableName: 'chat_messages',
+        defaults: { tenant_id: 'default', message_type: 'text', attachment_ids: [], status: 'sent', metadata: {} },
+        list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 30, maxPageSize: 100 },
+        create: {
+          allowedFields: ['tenant_id', 'conversation_id', 'sender_id', 'content', 'message_type', 'attachment_ids', 'reply_to_id', 'status', 'metadata'],
+          requiredFields: ['conversation_id'],
+          userFields: { owner: 'sender_id' }
+        },
+        update: {
+          allowedFields: ['content', 'status', 'edited_at', 'deleted_at', 'metadata']
+        }
+      },
+      reads: {
+        tableName: 'chat_message_reads',
+        ownerField: 'user_id',
+        defaults: { tenant_id: 'default' },
+        create: {
+          allowedFields: ['tenant_id', 'message_id', 'conversation_id', 'user_id', 'read_at'],
+          requiredFields: ['message_id', 'conversation_id'],
+          userFields: { owner: 'user_id' }
+        },
+        update: {
+          allowedFields: ['read_at']
+        }
+      }
+    };
+  }
+
+  protected override hooks(): ServiceHooks {
+    return {
+      conversations: {
+        beforeCreate: [this.normalizeConversationPayload],
+        afterCreate: [this.normalizeConversationResult],
+        afterUpdate: [this.normalizeConversationResult]
+      },
+      messages: {
+        beforeCreate: [this.normalizeMessagePayload],
+        beforeUpdate: [this.normalizeMessageUpdatePayload],
+        afterCreate: [this.normalizeMessageResult],
+        afterUpdate: [this.normalizeMessageResult]
+      }
+    };
+  }
+
   protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
       case 'createDirectConversation':
@@ -154,85 +228,45 @@ export class ChatService extends BaseService {
     }
   }
 
-  protected override async handleListItems(postData: PostData, context: ServiceContext) {
-    switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type) || 'conversations') {
-      case 'conversations':
-        return this.listConversations(postData, context);
-      case 'messages':
-        return this.listMessages(postData, context);
-      default:
-        throw new BadRequestException('Unsupported chat listItems itemType.');
+  private normalizeConversationPayload = (ctx: HookContext) => {
+    ctx.data.tenant_id = readOptionalString(ctx.data.tenant_id ?? ctx.input.tenantId ?? ctx.input.tenant_id) || 'default';
+    ctx.data.type = readConversationType(ctx.data.type, 'group');
+    ctx.data.metadata = readJsonObject(ctx.data.metadata);
+  };
+
+  private normalizeMessagePayload = (ctx: HookContext) => {
+    ctx.data.tenant_id = readOptionalString(ctx.data.tenant_id ?? ctx.input.tenantId ?? ctx.input.tenant_id) || 'default';
+    ctx.data.message_type = readMessageType(ctx.data.message_type ?? ctx.input.messageType ?? ctx.input.message_type);
+    ctx.data.attachment_ids = readStringArray(ctx.data.attachment_ids ?? ctx.input.attachmentIds ?? ctx.input.attachment_ids);
+    ctx.data.reply_to_id = readOptionalString(ctx.data.reply_to_id ?? ctx.input.replyToId ?? ctx.input.reply_to_id) || null;
+    ctx.data.metadata = readJsonObject(ctx.data.metadata);
+  };
+
+  private normalizeMessageUpdatePayload = (ctx: HookContext) => {
+    if (ctx.input.edit === true || ctx.input.edited === true) {
+      ctx.data.status = 'edited';
+      ctx.data.edited_at = ctx.data.edited_at || new Date().toISOString();
     }
-  }
 
-  async listConversations(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const readClient = resolveAdminClient(client);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
-    const page = Math.max(1, Math.floor(readNumber(postData.page, 1)));
-    const pageSize = Math.min(100, Math.max(1, Math.floor(readNumber(postData.pageSize ?? postData.page_size, 20))));
+    if (ctx.input.delete === true || ctx.input.deleted === true) {
+      ctx.data.content = '';
+      ctx.data.status = 'deleted';
+      ctx.data.deleted_at = ctx.data.deleted_at || new Date().toISOString();
+    }
+  };
 
-    const { data: memberships, error: membershipError } = await readClient
-      .from('chat_conversation_members')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .range((page - 1) * pageSize, page * pageSize - 1);
+  private normalizeConversationResult = (ctx: HookContext) => {
+    if (Array.isArray(ctx.result)) ctx.result = (ctx.result as ChatConversationRow[]).map((row) => normalizeConversation(row));
+    else if (ctx.result) ctx.result = normalizeConversation(ctx.result as ChatConversationRow);
+  };
 
-    if (membershipError) throw new BadRequestException(membershipError.message);
-
-    const memberRows = (memberships ?? []) as ChatConversationMemberRow[];
-    const conversationIds = memberRows.map((member) => member.conversation_id);
-    if (!conversationIds.length) return [];
-
-    const { data: conversations, error: conversationError } = await readClient
-      .from('chat_conversations')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .in('id', conversationIds)
-      .order('last_message_at', { ascending: false, nullsFirst: false });
-
-    if (conversationError) throw new BadRequestException(conversationError.message);
-
-    const membersByConversation = new Map(memberRows.map((member) => [member.conversation_id, member]));
-    const unreadCounts = await this.loadUnreadCounts(readClient, tenantId, memberRows);
-
-    return ((conversations ?? []) as ChatConversationRow[]).map((conversation) =>
-      normalizeConversation(
-        conversation,
-        membersByConversation.get(conversation.id),
-        unreadCounts.get(conversation.id) ?? 0
-      )
-    );
-  }
-
-  async listMessages(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const readClient = resolveAdminClient(client);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
-    const conversationId = readString(postData.conversationId ?? postData.conversation_id, 'conversationId');
-    const page = Math.max(1, Math.floor(readNumber(postData.page, 1)));
-    const pageSize = Math.min(100, Math.max(1, Math.floor(readNumber(postData.pageSize ?? postData.page_size, 30))));
-
-    await this.requireActiveMember(readClient, tenantId, conversationId, user.id);
-
-    const { data, error } = await readClient
-      .from('chat_messages')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: false })
-      .range((page - 1) * pageSize, page * pageSize - 1);
-
-    if (error) throw new BadRequestException(error.message);
-
-    return ((data ?? []) as ChatMessageRow[]).map(normalizeMessage).reverse();
-  }
+  private normalizeMessageResult = (ctx: HookContext) => {
+    if (Array.isArray(ctx.result)) ctx.result = (ctx.result as ChatMessageRow[]).map(normalizeMessage);
+    else if (ctx.result) ctx.result = normalizeMessage(ctx.result as ChatMessageRow);
+  };
 
   async createDirectConversation(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const writeClient = resolveAdminClient(client);
+    const { user } = await getCurrentUser(context);
     const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
     const targetUserId = readString(postData.targetUserId ?? postData.target_user_id, 'targetUserId');
 
@@ -240,13 +274,13 @@ export class ChatService extends BaseService {
       throw new BadRequestException('Cannot create a direct conversation with yourself.');
     }
 
-    const existing = await this.findDirectConversation(writeClient, tenantId, user.id, targetUserId);
+    const existing = await this.findDirectConversation(tenantId, user.id, targetUserId, context);
     if (existing) return normalizeConversation(existing);
 
     const directMemberIds = [user.id, targetUserId].sort();
-    const { data: conversation, error: conversationError } = await writeClient
-      .from('chat_conversations')
-      .insert({
+    const conversation = await this.runCrud('create', {
+      resource: 'conversations',
+      data: {
         tenant_id: tenantId,
         type: 'direct',
         created_by: user.id,
@@ -254,23 +288,19 @@ export class ChatService extends BaseService {
           directMemberIds,
           directKey: directMemberIds.join(':')
         }
-      })
-      .select('*')
-      .single();
+      }
+    }, context) as ReturnType<typeof normalizeConversation>;
 
-    if (conversationError) throw new BadRequestException(conversationError.message);
-
-    await this.insertMembers(writeClient, tenantId, (conversation as ChatConversationRow).id, [
+    await this.insertMembers(tenantId, String(conversation.id), [
       { userId: user.id, role: 'owner' },
       { userId: targetUserId, role: 'member' }
-    ]);
+    ], context);
 
-    return normalizeConversation(conversation as ChatConversationRow);
+    return conversation;
   }
 
   async createGroupConversation(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const writeClient = resolveAdminClient(client);
+    const { user } = await getCurrentUser(context);
     const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
     const title = readString(postData.title, 'title');
     const memberIds = [...new Set([user.id, ...readStringArray(postData.memberIds ?? postData.member_ids)])];
@@ -279,36 +309,32 @@ export class ChatService extends BaseService {
       throw new BadRequestException('Group conversation requires at least two members.');
     }
 
-    const { data: conversation, error: conversationError } = await writeClient
-      .from('chat_conversations')
-      .insert({
+    const conversation = await this.runCrud('create', {
+      resource: 'conversations',
+      data: {
         tenant_id: tenantId,
         type: readConversationType(postData.type, 'group'),
         title,
         created_by: user.id,
         metadata: readJsonObject(postData.metadata)
-      })
-      .select('*')
-      .single();
-
-    if (conversationError) throw new BadRequestException(conversationError.message);
+      }
+    }, context) as ReturnType<typeof normalizeConversation>;
 
     await this.insertMembers(
-      writeClient,
       tenantId,
-      (conversation as ChatConversationRow).id,
+      String(conversation.id),
       memberIds.map((memberId) => ({
         userId: memberId,
         role: memberId === user.id ? 'owner' : 'member'
-      }))
+      })),
+      context
     );
 
-    return normalizeConversation(conversation as ChatConversationRow);
+    return conversation;
   }
 
   async sendMessage(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const writeClient = resolveAdminClient(client);
+    const { user } = await getCurrentUser(context);
     const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
     const conversationId = readString(postData.conversationId ?? postData.conversation_id, 'conversationId');
     const content = readOptionalString(postData.content);
@@ -319,16 +345,16 @@ export class ChatService extends BaseService {
       throw new BadRequestException('Message content or attachmentIds is required.');
     }
 
-    await this.requireActiveMember(writeClient, tenantId, conversationId, user.id);
+    await this.requireActiveMember(tenantId, conversationId, user.id, context);
 
     const metadata = {
       ...readJsonObject(postData.metadata),
       requestId: readOptionalString(postData.requestId ?? postData.request_id) || randomUUID()
     };
 
-    const { data: message, error } = await writeClient
-      .from('chat_messages')
-      .insert({
+    const message = await this.runCrud('create', {
+      resource: 'messages',
+      data: {
         tenant_id: tenantId,
         conversation_id: conversationId,
         sender_id: user.id,
@@ -337,71 +363,62 @@ export class ChatService extends BaseService {
         attachment_ids: attachmentIds,
         reply_to_id: readOptionalString(postData.replyToId ?? postData.reply_to_id) || null,
         metadata
-      })
-      .select('*')
-      .single();
+      }
+    }, context) as ReturnType<typeof normalizeMessage>;
 
-    if (error) throw new BadRequestException(error.message);
+    await this.runCrud('update', {
+      resource: 'conversations',
+      id: conversationId,
+      data: {
+        last_message_id: message.id,
+        last_message_at: message.createdAt
+      }
+    }, context);
 
-    const messageRow = message as ChatMessageRow;
-    await writeClient
-      .from('chat_conversations')
-      .update({
-        last_message_id: messageRow.id,
-        last_message_at: messageRow.created_at
-      })
-      .eq('tenant_id', tenantId)
-      .eq('id', conversationId);
-
-    await this.markRead(
-      {
-        tenantId,
-        conversationId,
-        messageId: messageRow.id
-      },
-      context
-    );
-
-    return normalizeMessage(messageRow);
+    await this.markRead({ tenantId, conversationId, messageId: message.id }, context);
+    return message;
   }
 
   async markRead(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const writeClient = resolveAdminClient(client);
+    const { user } = await getCurrentUser(context);
     const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
     const conversationId = readString(postData.conversationId ?? postData.conversation_id, 'conversationId');
     const messageId = readOptionalString(postData.messageId ?? postData.message_id);
     const now = new Date().toISOString();
 
-    await this.requireActiveMember(writeClient, tenantId, conversationId, user.id);
+    await this.requireActiveMember(tenantId, conversationId, user.id, context);
 
-    const updatePayload: Record<string, unknown> = {
-      last_read_at: now
-    };
-    if (messageId) updatePayload.last_read_message_id = messageId;
-
-    const { error } = await writeClient
-      .from('chat_conversation_members')
-      .update(updatePayload)
-      .eq('tenant_id', tenantId)
-      .eq('conversation_id', conversationId)
-      .eq('user_id', user.id);
-
-    if (error) throw new BadRequestException(error.message);
+    await this.runCrud('update', {
+      resource: 'members',
+      filters: {
+        tenant_id: tenantId,
+        conversation_id: conversationId,
+        user_id: user.id
+      },
+      data: {
+        last_read_at: now,
+        ...(messageId ? { last_read_message_id: messageId } : {})
+      }
+    }, context);
 
     if (messageId) {
-      await writeClient
-        .from('chat_message_reads')
-        .upsert(
-          {
-            tenant_id: tenantId,
-            conversation_id: conversationId,
-            message_id: messageId,
-            user_id: user.id,
-            read_at: now
-          },
-          { onConflict: 'message_id,user_id' }
-        );
+      const existing = await this.firstListItem<Record<string, unknown>>({
+        tableName: 'chat_message_reads',
+        filters: { tenant_id: tenantId, message_id: messageId, user_id: user.id },
+        pageSize: 1
+      }, context);
+
+      await this.runCrud(existing ? 'update' : 'create', {
+        resource: 'reads',
+        ...(existing?.id ? { id: existing.id } : {}),
+        data: {
+          tenant_id: tenantId,
+          conversation_id: conversationId,
+          message_id: messageId,
+          user_id: user.id,
+          read_at: now
+        }
+      }, context);
     }
 
     return {
@@ -415,110 +432,76 @@ export class ChatService extends BaseService {
   }
 
   async editMessage(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const writeClient = resolveAdminClient(client);
+    const { user } = await getCurrentUser(context);
     const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
     const id = readString(postData.id ?? postData.messageId ?? postData.message_id, 'messageId');
     const content = readString(postData.content, 'content');
-    const now = new Date().toISOString();
+    const message = await this.requireMessageOwner(tenantId, id, user.id, context);
 
-    const message = await this.requireMessageOwner(writeClient, tenantId, id, user.id);
-
-    const { data, error } = await writeClient
-      .from('chat_messages')
-      .update({
-        content,
-        status: 'edited',
-        edited_at: now
-      })
-      .eq('tenant_id', tenantId)
-      .eq('id', message.id)
-      .select('*')
-      .single();
-
-    if (error) throw new BadRequestException(error.message);
-    return normalizeMessage(data as ChatMessageRow);
+    return this.runCrud('update', {
+      resource: 'messages',
+      id: message.id,
+      data: { content, edit: true }
+    }, context);
   }
 
   async deleteMessage(postData: PostData, context: ServiceContext) {
-    const { client, user } = await getCurrentUser(context);
-    const writeClient = resolveAdminClient(client);
+    const { user } = await getCurrentUser(context);
     const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
     const id = readString(postData.id ?? postData.messageId ?? postData.message_id, 'messageId');
-    const now = new Date().toISOString();
+    const message = await this.requireMessageOwner(tenantId, id, user.id, context);
 
-    const message = await this.requireMessageOwner(writeClient, tenantId, id, user.id);
-
-    const { data, error } = await writeClient
-      .from('chat_messages')
-      .update({
-        content: '',
-        status: 'deleted',
-        deleted_at: now
-      })
-      .eq('tenant_id', tenantId)
-      .eq('id', message.id)
-      .select('*')
-      .single();
-
-    if (error) throw new BadRequestException(error.message);
-    return normalizeMessage(data as ChatMessageRow);
+    return this.runCrud('update', {
+      resource: 'messages',
+      id: message.id,
+      data: { delete: true }
+    }, context);
   }
 
-  async listActiveMemberIds(client: SupabaseClient, tenantId: string, conversationId: string) {
-    const { data, error } = await client
-      .from('chat_conversation_members')
-      .select('user_id')
-      .eq('tenant_id', tenantId)
-      .eq('conversation_id', conversationId)
-      .eq('status', 'active');
+  async listActiveMemberIds(tenantId: string, conversationId: string, context?: ServiceContext) {
+    const rows = await this.listRows<Record<string, unknown>>({
+      tableName: 'chat_conversation_members',
+      clientMode: 'admin',
+      select: 'user_id',
+      filters: { tenant_id: tenantId, conversation_id: conversationId, status: 'active' },
+      pageSize: 500
+    }, context ?? {});
 
-    if (error) throw new BadRequestException(error.message);
-
-    return (data ?? [])
-      .map((row) => String((row as Record<string, unknown>).user_id ?? ''))
-      .filter(Boolean);
+    return rows.map((row) => String(row.user_id ?? '')).filter(Boolean);
   }
 
   async requireActiveMember(
-    client: SupabaseClient,
     tenantId: string,
     conversationId: string,
-    userId: string
+    userId: string,
+    context?: ServiceContext
   ) {
-    const { data, error } = await client
-      .from('chat_conversation_members')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('conversation_id', conversationId)
-      .eq('user_id', userId)
-      .eq('status', 'active')
-      .maybeSingle();
+    const member = await this.firstListItem<ChatConversationMemberRow>({
+      tableName: 'chat_conversation_members',
+      clientMode: 'admin',
+      filters: { tenant_id: tenantId, conversation_id: conversationId, user_id: userId, status: 'active' },
+      pageSize: 1
+    }, context ?? {});
 
-    if (error) throw new BadRequestException(error.message);
-    if (!data) throw new ForbiddenException('You are not a member of this conversation.');
-
-    return data as ChatConversationMemberRow;
+    if (!member) throw new ForbiddenException('You are not a member of this conversation.');
+    return member;
   }
 
   private async requireMessageOwner(
-    client: SupabaseClient,
     tenantId: string,
     messageId: string,
-    userId: string
+    userId: string,
+    context: ServiceContext
   ) {
-    const { data, error } = await client
-      .from('chat_messages')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('id', messageId)
-      .maybeSingle();
+    const message = await this.firstListItem<ChatMessageRow>({
+      tableName: 'chat_messages',
+      clientMode: 'admin',
+      filters: { tenant_id: tenantId, id: messageId },
+      pageSize: 1
+    }, context);
 
-    if (error) throw new BadRequestException(error.message);
-    if (!data) throw new BadRequestException('Message not found.');
-
-    const message = data as ChatMessageRow;
-    await this.requireActiveMember(client, tenantId, message.conversation_id, userId);
+    if (!message) throw new BadRequestException('Message not found.');
+    await this.requireActiveMember(tenantId, message.conversation_id, userId, context);
     if (message.sender_id !== userId) {
       throw new ForbiddenException('You can only modify your own messages.');
     }
@@ -527,28 +510,31 @@ export class ChatService extends BaseService {
   }
 
   private async loadUnreadCounts(
-    client: SupabaseClient,
     tenantId: string,
-    members: ChatConversationMemberRow[]
+    members: ChatConversationMemberRow[],
+    context: ServiceContext
   ) {
     const counts = new Map<string, number>();
 
     await Promise.all(
       members.map(async (member) => {
-        let query = client
-          .from('chat_messages')
-          .select('id', { count: 'exact', head: true })
-          .eq('tenant_id', tenantId)
-          .eq('conversation_id', member.conversation_id)
-          .neq('sender_id', member.user_id)
-          .is('deleted_at', null);
+        const filters: Record<string, unknown> = {
+          tenant_id: tenantId,
+          conversation_id: member.conversation_id,
+          sender_id: { op: 'ne', value: member.user_id },
+          deleted_at: { op: 'isNull' }
+        };
+        if (member.last_read_at) filters.created_at = { op: 'gt', value: member.last_read_at };
 
-        if (member.last_read_at) {
-          query = query.gt('created_at', member.last_read_at);
-        }
-
-        const { count } = await query;
-        counts.set(member.conversation_id, count ?? 0);
+        const page = await this.listPage<{ id: string }>({
+          tableName: 'chat_messages',
+          clientMode: 'admin',
+          select: 'id',
+          filters,
+          responseMode: 'page',
+          pageSize: 1
+        }, context);
+        counts.set(member.conversation_id, page.total);
       })
     );
 
@@ -556,43 +542,55 @@ export class ChatService extends BaseService {
   }
 
   private async findDirectConversation(
-    client: SupabaseClient,
     tenantId: string,
     userId: string,
-    targetUserId: string
+    targetUserId: string,
+    context: ServiceContext
   ) {
     const directKey = [userId, targetUserId].sort().join(':');
-    const { data, error } = await client
-      .from('chat_conversations')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('type', 'direct')
-      .contains('metadata', { directKey })
-      .maybeSingle();
-
-    if (error) throw new BadRequestException(error.message);
-    return (data as ChatConversationRow | null) ?? null;
+    return this.firstListItem<ChatConversationRow>({
+      tableName: 'chat_conversations',
+      clientMode: 'admin',
+      filters: {
+        tenant_id: tenantId,
+        type: 'direct',
+        metadata: { op: 'contains', value: { directKey } }
+      },
+      pageSize: 1
+    }, context);
   }
 
   private async insertMembers(
-    client: SupabaseClient,
     tenantId: string,
     conversationId: string,
-    members: Array<{ userId: string; role: string }>
+    members: Array<{ userId: string; role: string }>,
+    context: ServiceContext
   ) {
-    const { error } = await client
-      .from('chat_conversation_members')
-      .upsert(
-        members.map((member) => ({
-          tenant_id: tenantId,
-          conversation_id: conversationId,
-          user_id: member.userId,
-          role: member.role,
-          status: 'active'
-        })),
-        { onConflict: 'conversation_id,user_id' }
-      );
+    const rows = members.map((member) => ({
+      tenant_id: tenantId,
+      conversation_id: conversationId,
+      user_id: member.userId,
+      role: member.role,
+      status: 'active'
+    }));
 
-    if (error) throw new BadRequestException(error.message);
+    await this.runCrud('create', { resource: 'allMembers', items: rows }, context);
+  }
+
+  private async listRows<T extends Record<string, unknown>>(postData: ServicePostData, context: ServiceContext) {
+    const result = await this.listItems(postData, context);
+    return Array.isArray(result) ? result as unknown as T[] : [];
+  }
+
+  private async firstListItem<T extends Record<string, unknown>>(postData: ServicePostData, context: ServiceContext) {
+    return (await this.listRows<T>({ ...postData, pageSize: 1 }, context))[0];
+  }
+
+  private async listPage<T extends Record<string, unknown>>(postData: ServicePostData, context: ServiceContext) {
+    const result = await this.listItems(postData, context);
+    if (isRecord(result) && Array.isArray(result.rows)) {
+      return result as unknown as { rows: T[]; total: number; page: number; pageSize: number };
+    }
+    return { rows: [], total: 0, page: 1, pageSize: 1 };
   }
 }

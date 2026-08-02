@@ -209,7 +209,7 @@ async function loadDevTestUsers() {
 
   try {
     const users = await serviceApi.listItems<Record<string, unknown>[]>('admin', {
-      tableName: 'profiles',
+      tableName: 'users',
       limit: 1000,
     });
     auth.setDevTestUsers(Array.isArray(users) ? users : []);
