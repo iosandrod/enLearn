@@ -1,5 +1,6 @@
 import {
   BadGatewayException,
+  BadRequestException,
   GatewayTimeoutException,
   Inject,
   Injectable
@@ -10,15 +11,22 @@ import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 import { WorkflowService } from '../workflow/workflow.service';
 import {
   DOMAIN_SERVICE_CLIENT,
-  SERVICE_EXECUTE_PATTERN,
+  isDomainServiceName,
+  parseIndependentServiceNames,
+  resolveServiceExecutePattern,
   type ServiceBusResponse
 } from '../common/service-bus';
 import type { ServiceContext } from '../common/interfaces/service-executor';
+import { getEnv } from '../common/utils/env';
 
 const DOMAIN_SERVICE_TIMEOUT_MS = 20_000;
 
 @Injectable()
 export class ServiceRouterService {
+  private readonly independentServices = parseIndependentServiceNames(
+    getEnv().INDEPENDENT_SERVICES ?? getEnv().API_INDEPENDENT_SERVICES
+  );
+
   constructor(
     @Inject(DOMAIN_SERVICE_CLIENT)
     private readonly domainClient: ClientProxy,
@@ -36,9 +44,15 @@ export class ServiceRouterService {
       return this.workflowService.execute(serviceMethod, postData, context);
     }
 
+    if (!isDomainServiceName(serviceName)) {
+      throw new BadRequestException(`Unsupported serviceName: ${serviceName}`);
+    }
+
+    const pattern = resolveServiceExecutePattern(serviceName, this.independentServices);
+
     const response = await firstValueFrom(
       this.domainClient
-        .send<ServiceBusResponse>(SERVICE_EXECUTE_PATTERN, {
+        .send<ServiceBusResponse>(pattern, {
           serviceName,
           serviceMethod,
           postData,

@@ -1,16 +1,17 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 
-import { AccountService } from '../account/account.service';
-import { AdminService } from '../admin/admin.service';
+import { AccountService } from '../account-service/account.service';
+import { AdminService } from '../admin-service/admin.service';
 import type { ServiceContext, ServiceExecutor } from '../common/interfaces/service-executor';
-import { ChatService } from '../chat/chat.service';
-import { EntityDesignService } from '../entity-design/entity-design.service';
-import { FilesService } from '../files/files.service';
-import { LowCodeService } from '../lowcode/lowcode.service';
-import { NotificationService } from '../notification/notification.service';
-import { PaymentService } from '../payment/payment.service';
-import { PostsService } from '../posts/posts.service';
-import { UserService } from '../user/user.service';
+import { ChatService } from '../chat-service/chat.service';
+import { EntityDesignService } from '../entity-design-service/entity-design.service';
+import { FilesService } from '../files-service/files.service';
+import { LowCodeService } from '../lowcode-service/lowcode.service';
+import { NotificationService } from '../notification-service/notification.service';
+import { PaymentService } from '../payment-service/payment.service';
+import { PostsService } from '../posts-service/posts.service';
+import { UserService } from '../user-service/user.service';
+import { isDomainServiceName, type DomainServiceName } from '../common/service-bus';
 
 function hasListItemsEntityTarget(postData: Record<string, unknown>) {
   return Boolean(
@@ -23,6 +24,8 @@ function hasListItemsEntityTarget(postData: Record<string, unknown>) {
 
 @Injectable()
 export class DomainServiceRouter {
+  private readonly executors: Record<DomainServiceName, ServiceExecutor>;
+
   constructor(
     @Inject(AccountService)
     private readonly accountService: AccountService,
@@ -44,7 +47,20 @@ export class DomainServiceRouter {
     private readonly filesService: FilesService,
     @Inject(ChatService)
     private readonly chatService: ChatService
-  ) {}
+  ) {
+    this.executors = {
+      account: accountService,
+      admin: adminService,
+      payment: paymentService,
+      user: userService,
+      lowcode: lowCodeService,
+      posts: postsService,
+      notification: notificationService,
+      entityDesign: entityDesignService,
+      files: filesService,
+      chat: chatService
+    };
+  }
 
   async invoke(
     serviceName: string,
@@ -61,29 +77,10 @@ export class DomainServiceRouter {
   }
 
   private resolveExecutor(serviceName: string): ServiceExecutor {
-    switch (serviceName) {
-      case 'account':
-        return this.accountService;
-      case 'admin':
-        return this.adminService;
-      case 'payment':
-        return this.paymentService;
-      case 'user':
-        return this.userService;
-      case 'lowcode':
-        return this.lowCodeService;
-      case 'posts':
-        return this.postsService;
-      case 'notification':
-        return this.notificationService;
-      case 'entityDesign':
-        return this.entityDesignService;
-      case 'files':
-        return this.filesService;
-      case 'chat':
-        return this.chatService;
-      default:
-        throw new BadRequestException(`Unsupported serviceName: ${serviceName}`);
+    if (!isDomainServiceName(serviceName)) {
+      throw new BadRequestException(`Unsupported serviceName: ${serviceName}`);
     }
+
+    return this.executors[serviceName];
   }
 }

@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
-import { registerChatSocket } from './chat/chat.socket';
+import { registerChatSocket } from './chat-service/chat.socket';
 import { responseCompressionMiddleware } from './common/middleware/compression.middleware';
 import { getEnv } from './common/utils/env';
 

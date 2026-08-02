@@ -866,3 +866,148 @@ More info and automated migrator: https://sass-lang.com/d/import
     at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
     at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
     at async runInit (http://localhost:3000/composables/useAuth.ts:200:5)
+[2m16:02:05[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m16:10:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m16:11:18[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m16:12:51[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m Pre-transform error: Failed to load url /src/stubs/tldraw-vue-phase-one.ts (resolved id: E:/enLearn/frontend/src/stubs/tldraw-vue-phase-one.ts) in E:/enLearn/frontend/pages/dashboard/advanced/print-designer.vue. Does the file exist?
+[2m16:12:51[22m [31m[1m[vite][22m[39m [31m[2m(client)[22m[39m [2m[console.error] [22m[vite] Failed to reload /pages/dashboard/advanced/print-designer.vue. This could be due to syntax errors or importing non-existent modules. (see errors above)
+[2m16:13:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785658385910:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785658385910:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785658385910:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785658385910:181:5)
+[2m16:13:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785658385910:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785658385910:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785658385910:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785658385910:200:5)
+[2m16:13:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m16:13:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785658385910:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785658385910:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785658385910:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785658385910:181:5)
+[2m16:13:08[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785658385910:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785658385910:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785658385910:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785658385910:200:5)
+[2m16:13:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785658385910:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785658385910:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785658385910:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785658385910:181:5)
+[2m16:13:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785658385910:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785658385910:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785658385910:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785658385910:200:5)
+[2m16:13:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m16:13:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785658385910:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785658385910:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785658385910:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785658385910:181:5)
+[2m16:13:27[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts?t=1785658385910:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts?t=1785658385910:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts?t=1785658385910:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts?t=1785658385910:200:5)
+[2m16:45:59[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m16:46:10[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m16:46:40[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\simulator-editor.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\draggable-transition-group.vue 2:11  root stylesheet
+
+DEPRECATION WARNING [import]: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+
+  ╷
+2 │   @import './func.scss';
+  │           ^^^^^^^^^^^^^
+  ╵
+    ..\packages\lowcode-framework\src\visual-editor\components\simulator-editor\slot-item.vue 2:11  root stylesheet
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[2m16:51:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:181:5)
+[2m16:51:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:200:5)
+[2m16:51:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>
+[2m16:51:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:181:5)
+[2m16:51:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Cannot GET /api/auth/signin
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:200:5)
+[2m19:53:12[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /auth/signin[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1134:18)
+    at afterConnectMultiple (node:net:1715:7)
+[2m19:53:12[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22mDev auto login failed. Error: Bad Gateway
+    at createError (http://localhost:3000/src/spa-compat.ts:204:16)
+    at postAuthJson (http://localhost:3000/composables/useAuth.ts:55:9)
+    at async signInWithPassword (http://localhost:3000/composables/useAuth.ts:215:19)
+    at async runInit (http://localhost:3000/composables/useAuth.ts:181:5)
+[2m19:53:18[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: <Suspense> slots expect a single root node. 
+  at <RouterView> 
+  at <Default key=0 > 
+  at <App>

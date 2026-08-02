@@ -1017,9 +1017,7 @@ async function openLoadTablesModal() {
   loadingPhysicalTables.value = true;
   message.value = '';
   try {
-    const rows = await serviceApi.invoke<PhysicalTableOption[]>('entityDesign', 'listItems', {
-      itemType: 'physicalTables'
-    });
+    const rows = await serviceApi.invoke<PhysicalTableOption[]>('entityDesign', 'listPhysicalTables', {});
     physicalTables.value = (rows ?? []).map((row) => ({
       ...row,
       checked: false
@@ -1082,9 +1080,7 @@ async function loadDesign() {
   loading.value = true;
   message.value = '';
   try {
-    const graph = await serviceApi.invoke<DesignGraph>('entityDesign', 'listItems', {
-      itemType: 'design'
-    });
+    const graph = await serviceApi.invoke<DesignGraph>('entityDesign', 'listDesign', {});
     tables.value = graph.tables ?? [];
     relations.value = graph.relations ?? [];
     const tableIds = new Set(tables.value.map((table) => table.id));
@@ -1284,13 +1280,22 @@ async function saveRelation(values: FormValues) {
   savingRelation.value = true;
   message.value = '';
   try {
-    await serviceApi.invoke('entityDesign', 'saveRelation', {
+    const isEnforced = booleanValue(values.isEnforced);
+    await serviceApi.invoke('entityDesign', isEnforced ? 'saveRelation' : 'saveItem', {
+      ...(!isEnforced ? { resource: 'relations' } : {}),
+      id: stringValue(values.id),
       sourceTableId: stringValue(values.sourceTableId),
+      source_table_id: stringValue(values.sourceTableId),
       sourceColumnName: stringValue(values.sourceColumnName),
+      source_column_name: stringValue(values.sourceColumnName),
       targetTableId: stringValue(values.targetTableId),
+      target_table_id: stringValue(values.targetTableId),
       targetColumnName: stringValue(values.targetColumnName),
+      target_column_name: stringValue(values.targetColumnName),
       relationType: stringValue(values.relationType) || 'many_to_one',
-      isEnforced: booleanValue(values.isEnforced)
+      relation_type: stringValue(values.relationType) || 'many_to_one',
+      isEnforced,
+      is_enforced: isEnforced
     });
     message.value = '关系已保存。';
     messageClass.value = 'lc-help';
@@ -1307,7 +1312,8 @@ async function saveRelation(values: FormValues) {
 async function deleteRelation(relation: EntityRelation) {
   savingRelation.value = true;
   try {
-    await serviceApi.invoke('entityDesign', 'deleteRelation', {
+    await serviceApi.invoke('entityDesign', 'deleteItem', {
+      resource: 'relations',
       id: relation.id,
       dropConstraint: false
     });
@@ -1323,8 +1329,9 @@ async function deleteRelation(relation: EntityRelation) {
 async function saveLayout() {
   savingLayout.value = true;
   try {
-    await serviceApi.invoke('entityDesign', 'saveTableLayout', {
-      tables: flowNodes.value.map((node) => ({
+    await serviceApi.invoke('entityDesign', 'updateItem', {
+      resource: 'tables',
+      data: flowNodes.value.map((node) => ({
         id: node.id,
         position_x: Math.round(node.position.x),
         position_y: Math.round(node.position.y)

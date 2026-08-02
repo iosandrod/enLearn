@@ -223,9 +223,20 @@ export abstract class BaseService implements ServiceExecutor {
   }
 
   protected async listItems(postData: ServicePostData, context: ServiceContext) {
+    const itemType = this.readListItemsType(postData);
+    const listHandler = this.listItemHandlers()[itemType];
+    if (listHandler) {
+      return listHandler(postData, context);
+    }
+
+    const resource = this.tryResolveResource(postData, itemType);
+    if (resource) {
+      return this.runCrud('list', postData, context, resource);
+    }
+
     const tableName = this.readOptionalString(postData.tableName ?? postData.table_name);
     if (!tableName) {
-      throw new BadRequestException('tableName is required for listItems.');
+      return this.handleListItems(postData, context);
     }
 
     const clientMode = this.readOptionalString(postData.clientMode ?? postData.client_mode);
@@ -464,6 +475,35 @@ export abstract class BaseService implements ServiceExecutor {
     const ids = ctx.ids.filter((item) => item !== id);
     const filters = this.readRecord(ctx.filters);
     const hasFilters = Object.keys(filters).length > 0;
+    const batchItems = this.readBatchUpdateDataItems(ctx);
+    if (!id && !ids.length && !hasFilters && batchItems.length) {
+      const rows = [] as unknown[];
+      const primaryKey = this.primaryKey(ctx.resource);
+      for (const source of batchItems) {
+        const itemId = this.readOptionalString(source[primaryKey] ?? source.id);
+        if (!itemId) throw new BadRequestException(primaryKey + ' is required for each update item.');
+        const payload = await this.buildWritePayload(ctx, 'update', source);
+        this.assertRequiredFields(payload, ctx.resource.update?.requiredFields ?? []);
+
+        let itemQuery = ctx.client
+          .from(ctx.resource.tableName)
+          .update(payload)
+          .eq(primaryKey, itemId);
+
+        if (ctx.resource.ownerField && ctx.user) {
+          itemQuery = itemQuery.eq(ctx.resource.ownerField, ctx.user.id);
+        }
+
+        const { data, error } = await itemQuery
+          .select(ctx.resource.select ?? '*')
+          .single();
+
+        if (error) throw new BadRequestException(error.message);
+        rows.push(data);
+      }
+      return rows;
+    }
+
     if (!id && !ids.length && !hasFilters) {
       throw new BadRequestException('id, ids, or filters is required.');
     }
@@ -495,6 +535,12 @@ export abstract class BaseService implements ServiceExecutor {
     if (error) throw new BadRequestException(error.message);
     if (id) return Array.isArray(data) ? data[0] : data;
     return data ?? [];
+  }
+
+  protected readBatchUpdateDataItems(ctx: CrudContext) {
+    const rawItems = ctx.input.data ?? ctx.input.items ?? ctx.input.rows;
+    if (!Array.isArray(rawItems)) return [] as Record<string, unknown>[];
+    return rawItems.filter(this.isRecord) as Record<string, unknown>[];
   }
 
   protected async performDelete(ctx: CrudContext) {

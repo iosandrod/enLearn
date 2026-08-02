@@ -9,21 +9,11 @@ import {
   UnauthorizedException
 } from '@nestjs/common';
 import { ServiceInvokeDto } from '../common/dto/service-invoke.dto';
+import { isPublicServiceName, type PublicServiceName } from '../common/service-bus';
 import { ServiceRouterService } from './service-router.service';
 
 type NormalizedServiceInvoke = {
-  serviceName:
-    | 'account'
-    | 'payment'
-    | 'user'
-    | 'lowcode'
-    | 'admin'
-    | 'posts'
-    | 'notification'
-    | 'workflow'
-    | 'entityDesign'
-    | 'files'
-    | 'chat';
+  serviceName: PublicServiceName;
   serviceMethod: string;
   postData: Record<string, unknown>;
 };
@@ -39,19 +29,7 @@ function normalizeBody(body: ServiceInvokeDto): NormalizedServiceInvoke {
 
   const serviceName =
     typeof body.serviceName === 'string' ? body.serviceName.trim() : '';
-  if (
-    serviceName !== 'account' &&
-    serviceName !== 'payment' &&
-    serviceName !== 'user' &&
-    serviceName !== 'lowcode' &&
-    serviceName !== 'admin' &&
-    serviceName !== 'posts' &&
-    serviceName !== 'notification' &&
-    serviceName !== 'workflow' &&
-    serviceName !== 'entityDesign' &&
-    serviceName !== 'files' &&
-    serviceName !== 'chat'
-  ) {
+  if (!isPublicServiceName(serviceName)) {
     throw new BadRequestException(
       'serviceName must be either "account", "payment", "user", "lowcode", "admin", "posts", "notification", "workflow", "entityDesign", "files", or "chat".'
     );
