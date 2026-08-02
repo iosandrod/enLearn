@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
-import VxeUI from 'vxe-pc-ui';
+import { VxeUI } from 'vxe-pc-ui';
 import {
   VueFlow,
   useVueFlow,

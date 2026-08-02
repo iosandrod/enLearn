@@ -513,18 +513,11 @@ function buildPageSaveData(schema: LowCodePageSchema) {
   };
 }
 
-async function savePageItem(schema: LowCodePageSchema) {
+async function saveLowCodePageItem(schema: LowCodePageSchema) {
   return host.getServiceApi().invoke<LowCodePageRecord>('lowcode', 'saveItem', {
     resource: 'pages',
     ...(page.value?.id ? { id: page.value.id } : {}),
     data: buildPageSaveData(schema)
-  });
-}
-
-async function savePageWithWorkflow(schema: LowCodePageSchema) {
-  return host.getServiceApi().invoke<LowCodePageRecord>('lowcode', 'savePage', {
-    code: page.value?.code || form.value.code,
-    schema
   });
 }
 
@@ -549,9 +542,7 @@ async function saveVisualProject(payload: {
       form.value.status = overrideStatus;
     }
     const schema = buildSchema(payload);
-    const saved = overrideStatus === 'published'
-      ? await savePageWithWorkflow(schema)
-      : await savePageItem(schema);
+    const saved = await saveLowCodePageItem(schema);
 
     page.value = saved;
     fillForm(saved);

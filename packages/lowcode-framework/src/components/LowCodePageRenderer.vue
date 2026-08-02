@@ -57,7 +57,6 @@ import type {
   LowCodePageRecord,
   LowCodePageFormBlock,
   LowCodePageGridBlock,
-  LowCodePageRelation,
   LowCodePageOverlayBlock,
   LowCodePageSearchFormBlock,
   LowCodeRuntimeDirective,
@@ -512,34 +511,7 @@ function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
-function readRelationMetadataString(
-  relation: LowCodePageRelation | undefined,
-  key: string,
-  fallback = ''
-) {
-  return readString(relation?.metadata?.[key], fallback);
-}
-
-function findPageRelation(actionKey: string, block?: LowCodePageGridBlock) {
-  const relations = props.page.relations?.outgoing ?? [];
-  const blockActionKey = block ? `${block.id}.${actionKey}` : '';
-
-  return (
-    (blockActionKey
-      ? relations.find((relation) => relation.actionKey === blockActionKey)
-      : undefined) ??
-    relations.find((relation) => {
-      if (relation.actionKey !== actionKey) return false;
-      const blockId = readRelationMetadataString(relation, 'blockId');
-      return !block || !blockId || blockId === block.id;
-    })
-  );
-}
-
-function getGridRowKey(block: LowCodePageGridBlock, relation?: LowCodePageRelation) {
-  const metadataRowKey = readRelationMetadataString(relation, 'rowKey');
-  if (metadataRowKey) return metadataRowKey;
-
+function getGridRowKey(block: LowCodePageGridBlock) {
   const rowConfig = block.schema.grid.rowConfig;
   return isRecord(rowConfig) ? readString(rowConfig.keyField, 'id') : 'id';
 }
@@ -557,21 +529,28 @@ function appendRouteQuery(route: string, query: Record<string, unknown>) {
   return `${withoutHash}${separator}${queryString}${hash ? `#${hash}` : ''}`;
 }
 
-function resolveRelationRoute(
-  relation: LowCodePageRelation,
+async function resolveLinkedEditPageRoute(
   block: LowCodePageGridBlock,
   row: Record<string, unknown>
 ) {
-  const route = readString(relation.targetPageRoute);
+  const editPageId = readString(props.page.edit_page_id);
+  if (!editPageId) return '';
+
+  const pages = await host.getServiceApi().invoke<LowCodePageRecord[]>('lowcode', 'listItems', {
+    tableName: 'lowcode_pages',
+    filters: { id: editPageId },
+    limit: 1
+  });
+  const editPage = Array.isArray(pages) ? pages[0] : undefined;
+  const route = readString(editPage?.route);
   if (!route) return '';
 
-  const rowKey = getGridRowKey(block, relation);
-  const queryKey = readRelationMetadataString(relation, 'queryKey', rowKey);
+  const rowKey = getGridRowKey(block);
   const resolvedRoute = resolveRuntimeRoute(route, row);
 
   return appendRouteQuery(resolvedRoute, {
     fromPage: props.page.code,
-    [queryKey]: row[rowKey],
+    [rowKey]: row[rowKey],
   });
 }
 
@@ -1451,11 +1430,10 @@ async function handleGridEdit(
   block: LowCodePageGridBlock,
   row: Record<string, unknown>
 ) {
-  const editRelation = findPageRelation('edit', block);
-  const relationRoute = editRelation ? resolveRelationRoute(editRelation, block, row) : '';
+  const linkedEditRoute = await resolveLinkedEditPageRoute(block, row);
 
-  if (relationRoute) {
-    await host.getRouter().push(relationRoute);
+  if (linkedEditRoute) {
+    await host.getRouter().push(linkedEditRoute);
     return;
   }
 

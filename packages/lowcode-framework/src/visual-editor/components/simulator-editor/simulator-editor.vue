@@ -78,7 +78,7 @@
   import CompRender from './comp-render';
   import SlotItem from './slot-item.vue';
   import type { VisualEditorBlockData } from '../../visual-editor.utils';
-  import VxeUI from 'vxe-pc-ui';
+  import {VxeUI} from 'vxe-pc-ui';
   import MonacoEditor from '../common/monaco-editor/MonacoEditor';
   import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
   import { useVisualData } from '../../hooks/useVisualData';

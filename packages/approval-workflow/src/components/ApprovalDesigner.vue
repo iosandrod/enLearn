@@ -8,7 +8,7 @@ import {
   type NodeDragEvent,
   type NodeMouseEvent
 } from '@vue-flow/core';
-import VxeUI, { type VxeContextMenuDefines } from 'vxe-pc-ui';
+import { VxeUI, type VxeContextMenuDefines } from 'vxe-pc-ui';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import {

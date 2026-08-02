@@ -244,7 +244,7 @@
 </template>
 
 <script setup lang="ts">
-import VxeUI from 'vxe-pc-ui';
+import { VxeUI } from 'vxe-pc-ui';
 import type { FileFolder, FileObject } from '~/composables/useFilesApi';
 
 type FileTreeNode = {

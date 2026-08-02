@@ -80,7 +80,7 @@
           v-model="pageForm"
           :schema="pageEditorSchema"
           :loading="saving"
-          @submit="savePage"
+          @submit="saveLowCodePage"
           @action="handleEditorAction"
         />
       </div>
@@ -106,7 +106,7 @@ import {
   lowCodePagesGridSchema as pagesGridSchema
 } from '~/schemas/lowcode';
 import { prepareLowCodePageSchema } from '@enlearn/lowcode-framework/lowcode/schema';
-import type { LowCodePageOpenType, LowCodePageRecord, LowCodePageType } from '@enlearn/lowcode-framework/types/lowcode';
+import type { LowCodePageRecord, LowCodePageSchema, LowCodePageType } from '@enlearn/lowcode-framework/types/lowcode';
 import { listLowCodePages } from '../../../utils/lowCodePages';
 
 type LowCodePageForm = {
@@ -119,7 +119,6 @@ type LowCodePageForm = {
   status: 'draft' | 'published' | 'archived';
   keep_alive: boolean;
   parentListPageCode: string;
-  editOpenType: LowCodePageOpenType;
   schemaJson: string;
 };
 
@@ -187,7 +186,6 @@ function createEmptyPageForm(): LowCodePageForm {
     status: 'draft',
     keep_alive: true,
     parentListPageCode: '',
-    editOpenType: 'page',
     schemaJson: JSON.stringify(emptySchema, null, 2)
   };
 }
@@ -212,8 +210,8 @@ function applyGeneratorOption(option: TablePageOption) {
 function normalizeFormFromPage(page: LowCodePageRecord | null): LowCodePageForm {
   if (!page) return createEmptyPageForm();
 
-  const incomingEditRelation = page.relations?.incoming.find(
-    (relation) => relation.actionKey === 'edit'
+  const parentListPage = pages.value.find(
+    (candidate) => candidate.edit_page_id === page.id
   );
 
   return {
@@ -225,8 +223,7 @@ function normalizeFormFromPage(page: LowCodePageRecord | null): LowCodePageForm 
     layout: page.layout,
     status: page.status,
     keep_alive: page.keep_alive,
-    parentListPageCode: incomingEditRelation?.sourcePageCode ?? '',
-    editOpenType: incomingEditRelation?.openType ?? 'page',
+    parentListPageCode: parentListPage?.code ?? '',
     schemaJson: JSON.stringify(page.schema, null, 2)
   };
 }
@@ -319,34 +316,92 @@ function buildSchemaPayload(values: LowCodePageForm) {
   });
 }
 
-async function savePage(values: Record<string, unknown>) {
+function buildPageSaveData(
+  schema: LowCodePageSchema,
+  currentPage: LowCodePageRecord | undefined
+) {
+  return {
+    code: schema.code,
+    route: schema.route,
+    title: schema.title,
+    description: schema.description ?? null,
+    layout: schema.layout ?? 'dashboard',
+    status: schema.status ?? 'draft',
+    keep_alive: schema.keepAlive ?? true,
+    edit_page_id: currentPage?.edit_page_id ?? null,
+    schema,
+    version: (currentPage?.version ?? 0) + 1,
+    published_at: schema.status === 'published'
+      ? new Date().toISOString()
+      : currentPage?.published_at ?? null
+  };
+}
+
+async function persistPage(
+  formValues: LowCodePageForm,
+  statusOverride?: 'draft' | 'published' | 'archived'
+) {
+  const currentPage = pages.value.find((page) => page.code === selectedCode.value);
+  const parentListPageCode = formValues.parentListPageCode.trim();
+  const parentListPage = parentListPageCode
+    ? pages.value.find((page) => page.code === parentListPageCode)
+    : undefined;
+
+  if (formValues.pageType === 'edit' && !parentListPageCode) {
+    throw new Error('Edit Page must be linked to a Parent List Page.');
+  }
+  if (parentListPageCode && !parentListPage) {
+    throw new Error(`Parent List Page "${parentListPageCode}" does not exist.`);
+  }
+  if (parentListPage && currentPage?.id === parentListPage.id) {
+    throw new Error('A page cannot use itself as its edit page.');
+  }
+
+  const schema = {
+    ...buildSchemaPayload(formValues),
+    ...(statusOverride ? { status: statusOverride } : {})
+  };
+  const saved = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+    resource: 'pages',
+    ...(currentPage?.id ? { id: currentPage.id } : {}),
+    data: buildPageSaveData(schema, currentPage)
+  });
+
+  const previousParent = pages.value.find((page) => page.edit_page_id === saved.id);
+  if (previousParent && previousParent.id !== parentListPage?.id) {
+    await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+      resource: 'pages',
+      id: previousParent.id,
+      data: { edit_page_id: null }
+    });
+  }
+
+  if (parentListPage && parentListPage.edit_page_id !== saved.id) {
+    await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+      resource: 'pages',
+      id: parentListPage.id,
+      data: { edit_page_id: saved.id }
+    });
+  }
+
+  return saved;
+}
+
+async function saveLowCodePage(values: Record<string, unknown>) {
   saving.value = true;
   message.value = '';
 
   try {
     const formValues = values as unknown as LowCodePageForm;
-    if (formValues.pageType === 'edit' && !formValues.parentListPageCode.trim()) {
-      throw new Error('Edit Page must be linked to a Parent List Page.');
-    }
-
-    const schema = buildSchemaPayload(formValues);
-
-    const saved = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'savePage', {
-      code: formValues.code,
-      schema,
-      ...(formValues.parentListPageCode.trim()
-        ? {
-            parentListPageCode: formValues.parentListPageCode.trim(),
-            editOpenType: formValues.editOpenType
-          }
-        : {})
-    });
+    const saved = await persistPage(formValues);
 
     selectedCode.value = saved.code;
-    pageForm.value = normalizeFormFromPage(saved);
     message.value = `Saved ${saved.code} successfully.`;
     messageClass.value = 'lc-help';
     await loadPages();
+    pageForm.value = normalizeFormFromPage(
+      pages.value.find((page) => page.code === saved.code) ?? saved
+    );
   } catch (error) {
     message.value =
       error instanceof Error ? error.message : 'Could not save the page.';
@@ -394,22 +449,13 @@ async function handleEditorAction(action: { code: string }) {
     message.value = '';
 
     try {
-      await serviceApi.invoke('lowcode', 'savePage', {
-        code: pageForm.value.code,
-        schema: {
-          ...buildSchemaPayload(pageForm.value),
-          status: 'published'
-        },
-        ...(pageForm.value.parentListPageCode.trim()
-          ? {
-              parentListPageCode: pageForm.value.parentListPageCode.trim(),
-              editOpenType: pageForm.value.editOpenType
-            }
-          : {})
-      });
+      const saved = await persistPage(pageForm.value, 'published');
       message.value = `Published ${pageForm.value.code}.`;
       messageClass.value = 'lc-help';
       await loadPages();
+      pageForm.value = normalizeFormFromPage(
+        pages.value.find((page) => page.code === saved.code) ?? saved
+      );
     } catch (error) {
       message.value =
         error instanceof Error ? error.message : 'Could not publish the page.';

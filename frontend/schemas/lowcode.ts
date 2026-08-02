@@ -80,16 +80,6 @@ export const lowCodePageEditorSchema: LowCodeFormSchema = {
       span: 2
     },
     {
-      field: 'editOpenType',
-      label: 'Edit Open Type',
-      component: 'vxe-select',
-      options: [
-        { label: 'Page', value: 'page' },
-        { label: 'Drawer', value: 'drawer' },
-        { label: 'Modal', value: 'modal' }
-      ]
-    },
-    {
       field: 'description',
       label: 'Description',
       component: 'vxe-textarea',

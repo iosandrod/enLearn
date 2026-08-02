@@ -57,7 +57,7 @@ async function cleanupDevServiceWorkers() {
     ) {
       window.sessionStorage.setItem(DEV_SERVICE_WORKER_RELOAD_KEY, '1');
       window.location.reload();
-      await new Promise<void>(() => {});
+      await new Promise<void>(() => { });
     }
   } catch (error) {
     console.warn('Dev service worker cleanup failed.', error);

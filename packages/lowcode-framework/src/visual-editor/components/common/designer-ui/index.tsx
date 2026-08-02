@@ -6,7 +6,8 @@ import {
   type PropType,
   type VNode
 } from 'vue';
-import VxeUI, {
+import {
+  VxeUI,
   VxeAlert,
   VxeButton,
   VxeCard,

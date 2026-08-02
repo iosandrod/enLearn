@@ -18,14 +18,6 @@ const pageFields = [
   'edit_page_id'
 ];
 
-const pageRelationFields = [
-  'source_page_id',
-  'action_key',
-  'target_page_id',
-  'open_type',
-  'metadata'
-];
-
 export const lowCodeResources: ResourceConfigMap = {
   pages: {
     tableName: 'lowcode_pages',
@@ -57,21 +49,6 @@ export const lowCodeResources: ResourceConfigMap = {
     update: {
       allowedFields: ['schema', 'published_at'],
       timestamp: false
-    }
-  },
-  pageRelations: {
-    tableName: 'lowcode_page_relations',
-    clientMode: 'admin',
-    permissions: crudPermissions('lowcode.pages.manage'),
-    list: { defaultSorts: [{ field: 'updated_at', direction: 'desc' }] },
-    create: {
-      allowedFields: pageRelationFields,
-      requiredFields: ['source_page_id', 'action_key', 'target_page_id'],
-      userFields: { createdBy: 'created_by', updatedBy: 'updated_by' }
-    },
-    update: {
-      allowedFields: pageRelationFields,
-      userFields: { updatedBy: 'updated_by' }
     }
   }
 };

@@ -320,30 +320,6 @@ export type LowCodePageDataSource = {
 
 export type LowCodePageType = 'list' | 'edit' | 'detail' | 'custom';
 
-export type LowCodePageOpenType = 'page' | 'drawer' | 'modal';
-
-export type LowCodePageRelation = {
-  id?: string;
-  sourcePageId?: string;
-  sourcePageCode: string;
-  sourcePageRoute?: string;
-  sourcePageTitle?: string;
-  actionKey: string;
-  targetPageId?: string;
-  targetPageCode: string;
-  targetPageRoute?: string;
-  targetPageTitle?: string;
-  openType: LowCodePageOpenType;
-  metadata?: Record<string, unknown>;
-  createdAt?: string;
-  updatedAt?: string;
-};
-
-export type LowCodePageRelations = {
-  outgoing: LowCodePageRelation[];
-  incoming: LowCodePageRelation[];
-};
-
 export type LowCodeMaterialVersionedBlock = {
   materialVersion?: string;
   className?: unknown;
@@ -566,7 +542,6 @@ export type LowCodePageRecord = {
   keep_alive: boolean;
   edit_page_id: string | null;
   schema: LowCodePageSchema;
-  relations?: LowCodePageRelations;
   version: number;
   published_at: string | null;
   created_at: string;

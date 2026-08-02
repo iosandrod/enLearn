@@ -6,33 +6,42 @@
         <span>工厂制造管理平台</span>
       </RouterLink>
 
-      <div v-if="advancedTools.length" class="admin-tool-launcher" @click.stop>
+      <div
+        v-for="toolGroup in topToolGroups"
+        :key="toolGroup.code"
+        class="admin-tool-launcher"
+        @click.stop
+      >
         <button
           class="admin-tool-launcher__trigger"
           type="button"
-          :aria-expanded="advancedToolsOpen"
+          :aria-expanded="openTopToolCode === toolGroup.code"
           aria-haspopup="menu"
-          @click="advancedToolsOpen = !advancedToolsOpen"
+          @click="toggleTopTool(toolGroup.code)"
         >
-          <i class="ri-tools-line" aria-hidden="true" />
-          <span>高级功能</span>
+          <i :class="resolveRouteIcon(toolGroup)" aria-hidden="true" />
+          <span>{{ toolGroup.title }}</span>
           <i
-            :class="advancedToolsOpen ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
+            :class="openTopToolCode === toolGroup.code ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'"
             aria-hidden="true"
           />
         </button>
 
-        <div v-if="advancedToolsOpen" class="admin-tool-panel" role="menu">
+        <div
+          v-if="openTopToolCode === toolGroup.code"
+          class="admin-tool-panel"
+          role="menu"
+        >
           <RouterLink
-            v-for="tool in advancedTools"
+            v-for="tool in toolGroup.tools"
             :key="tool.code"
             class="admin-tool-panel__item"
-            :class="{ 'is-active': isAdvancedToolActive(tool) }"
+            :class="{ 'is-active': isTopToolActive(tool) }"
             :to="tool.path"
             role="menuitem"
-            @click="advancedToolsOpen = false"
+            @click="openTopToolCode = ''"
           >
-            <i :class="resolveAdvancedToolIcon(tool)" aria-hidden="true" />
+            <i :class="resolveRouteIcon(tool)" aria-hidden="true" />
             <span>{{ tool.title }}</span>
           </RouterLink>
         </div>
@@ -141,6 +150,12 @@ type MenuContextPayload = {
   item: AdminRouteNode;
 };
 
+type TopToolGroup = AdminRouteNode & {
+  tools: AdminRouteNode[];
+};
+
+type NavigationPlacement = 'sidebar' | 'top-tool' | 'container' | 'hidden';
+
 const auth = useAuth();
 const serviceApi = useServiceApi();
 const route = useRoute();
@@ -161,7 +176,7 @@ const routes = ref<AdminRouteNode[]>([]);
 const expandedGroups = reactive<Record<string, boolean>>({});
 const visitedTabs = ref<Array<{ title: string; path: string }>>([]);
 const menuFilter = ref('');
-const advancedToolsOpen = ref(false);
+const openTopToolCode = ref('');
 
 function ensureDevTestUserSelected() {
   if (!isDev) return;
@@ -187,80 +202,6 @@ async function loadDevTestUsers() {
   ensureDevTestUserSelected();
 }
 
-const fallbackRoutes: AdminRouteNode[] = [
-  {
-    code: 'business-root',
-    title: '生产运营',
-    path: '/dashboard',
-    children: [
-      { code: 'dashboard-home', title: '工作台', path: '/dashboard' },
-      { code: 'lowcode-pages', title: '低代码页面管理', path: '/dashboard/low-code', permission_code: 'lowcode.pages.manage' },
-      { code: 'file-management', title: '文件管理', path: '/dashboard/files', icon: 'ri-folder-3-line' },
-      { code: 'entity-design', title: '实体设计器', path: '/dashboard/entity-design', icon: 'ri-database-2-line', permission_code: 'entity.design.manage' },
-      { code: 'lowcode-visual-designer', title: '可视化设计器', path: '/dashboard/low-code/designer', icon: 'ri-layout-masonry-line', permission_code: 'lowcode.pages.manage' },
-      { code: 'workflow-designer', title: '审批流设计器', path: '/dashboard/workflow/designer', icon: 'ri-git-merge-line', permission_code: 'workflow.definitions.manage' },
-      { code: 'trigger-workflow-designer', title: '触发器编排器', path: '/dashboard/trigger-workflow/designer', icon: 'ri-node-tree', permission_code: 'workflow.definitions.manage' },
-      { code: 'advanced-print-designer', title: '打印设计器', path: '/dashboard/advanced/print-designer', icon: 'ri-printer-line', permission_code: 'print.templates.manage' },
-      { code: 'print-designer', title: '打印模板', path: '/dashboard/print-designer', metadata: { group: 'lowcode-app' }, permission_code: 'print.templates.manage' },
-      { code: 'print-logs', title: '打印日志', path: '/dashboard/print/logs', metadata: { group: 'lowcode-app' }, permission_code: 'print.logs.view' }
-    ]
-  },
-  {
-    code: 'system-root',
-    title: '系统设置',
-    path: '/dashboard/system',
-    children: [
-      { code: 'system-users', title: '用户权限档案', path: '/dashboard/system/users', page_code: 'admin-system-users', permission_code: 'admin.users.manage' },
-      { code: 'system-roles', title: '角色管理', path: '/dashboard/system/roles', page_code: 'admin-system-roles', permission_code: 'admin.roles.manage' },
-      { code: 'system-permissions', title: '权限管理', path: '/dashboard/system/permissions', page_code: 'admin-system-permissions', permission_code: 'admin.permissions.manage' },
-      { code: 'system-routes', title: '动态路由', path: '/dashboard/system/routes', page_code: 'admin-system-routes', permission_code: 'admin.routes.manage' },
-      { code: 'system-entities', title: '实体管理', path: '/dashboard/system/entities', page_code: 'admin-system-entities', permission_code: 'admin.entities.manage' },
-      { code: 'system-file-entities', title: '文件存储实体', path: '/dashboard/system/file-entities', page_code: 'admin-system-file-entities', permission_code: 'admin.entities.manage' },
-      { code: 'system-execution-tasks', title: '系统执行任务', path: '/dashboard/system/execution-tasks', page_code: 'admin-system-execution-tasks', permission_code: 'workflow.runtime.manage' }
-    ]
-  }
-];
-
-const menuTitleOverrides: Record<string, string> = {
-  'low-code': '低代码页面管理',
-  'lowcode-pages': '低代码页面管理',
-  'entity-design': '实体设计器',
-  'advanced-print-designer': '打印设计器',
-  'print-designer': '打印模板',
-  'print-logs': '打印日志',
-  'trigger-workflow-designer': '触发器编排器',
-  'workflow-jobs': '作业定义',
-  'workflow-job-runs': '作业运行记录',
-  'workflow-timer-jobs': '定时器任务'
-};
-
-const advancedRouteCodes = new Set([
-  'file-management',
-  'entity-design',
-  'low-code-designer',
-  'lowcode-visual-designer',
-  'advanced-print-designer',
-  'workflow-designer',
-  'trigger-workflow-designer'
-]);
-const advancedToolOrder = [
-  'trigger-workflow-designer',
-  'advanced-print-designer',
-  'lowcode-visual-designer',
-  'workflow-designer',
-  'entity-design',
-  'file-management'
-];
-const advancedToolIconOverrides: Record<string, string> = {
-  'file-management': 'ri-folder-3-line',
-  'entity-design': 'ri-database-2-line',
-  'low-code-designer': 'ri-layout-masonry-line',
-  'lowcode-visual-designer': 'ri-layout-masonry-line',
-  'advanced-print-designer': 'ri-printer-line',
-  'workflow-designer': 'ri-git-merge-line',
-  'trigger-workflow-designer': 'ri-node-tree'
-};
-const hiddenRouteCodes = new Set(['business-root', 'system-root']);
 function getLowCodeDesignerLoadPageBus() {
   const scope = globalThis as any;
   scope.__enlearnLowCodeDesignerLoadPageBus ??= { subscribers: [] };
@@ -274,49 +215,6 @@ function publishLowCodeDesignerLoadPage(code: string) {
     subscriber(code);
   }
 }
-
-const lowCodeMenuGroups = [
-  {
-    code: 'lowcode-config-root',
-    title: '页面配置',
-    routeCodes: ['lowcode-pages']
-  },
-  {
-    code: 'lowcode-user-root',
-    title: '用户权限',
-    routeCodes: ['system-users', 'system-roles', 'system-permissions']
-  },
-  {
-    code: 'lowcode-notification-root',
-    title: '消息通知',
-    routeCodes: ['notification-message-center', 'notification-deliveries']
-  },
-  {
-    code: 'lowcode-file-root',
-    title: '文件资料',
-    routeCodes: ['system-file-entities']
-  },
-  {
-    code: 'lowcode-print-root',
-    title: '打印管理',
-    routeCodes: ['print-designer', 'print-logs']
-  },
-  {
-    code: 'lowcode-job-root',
-    title: '作业调度',
-    routeCodes: [
-      'workflow-jobs',
-      'workflow-job-runs',
-      'workflow-timer-jobs',
-      'system-execution-tasks'
-    ]
-  },
-  {
-    code: 'lowcode-metadata-root',
-    title: '系统元数据',
-    routeCodes: ['system-routes', 'system-entities', 'system-options']
-  }
-];
 
 const MenuItem = defineComponent({
   name: 'DashboardMenuItem',
@@ -459,15 +357,28 @@ function buildMenuGroup(
 }
 
 function buildLowCodeMenuGroups(pages: AdminRouteNode[]) {
-  const databaseGroups = pages
+  const uniquePages = [...new Map(pages.map((page) => [page.code, page])).values()];
+  const databaseGroups = uniquePages
     .filter((page) => page.children?.length && page.route_type === 'group')
     .map((group) => ({
       ...group,
       children: sortMenuPages(group.children ?? [])
     }));
-  const byCode = new Map(pages.map((page) => [page.code, page]));
+  const nestedGroupCodes = new Set(
+    databaseGroups.flatMap((group) =>
+      flattenNodes(group.children ?? [])
+        .filter((child) => child.route_type === 'group')
+        .map((child) => child.code)
+    )
+  );
+  const rootDatabaseGroups = databaseGroups.filter(
+    (group) => !nestedGroupCodes.has(group.code)
+  );
+  const byCode = new Map(uniquePages.map((page) => [page.code, page]));
   const groupedCodes = new Set<string>(
-    databaseGroups.flatMap((group) => (group.children ?? []).map((child) => child.code))
+    rootDatabaseGroups.flatMap((group) =>
+      flattenNodes(group.children ?? []).map((child) => child.code)
+    )
   );
   const groups = lowCodeMenuGroups
     .map((group, index) => {
@@ -481,14 +392,14 @@ function buildLowCodeMenuGroups(pages: AdminRouteNode[]) {
     })
     .filter((group) => group.children.length);
 
-  const uncategorizedPages = pages.filter(
+  const uncategorizedPages = uniquePages.filter(
     (page) => !page.children?.length && !groupedCodes.has(page.code)
   );
   if (uncategorizedPages.length) {
     groups.push(buildMenuGroup('lowcode-other-root', '其他应用', uncategorizedPages));
   }
 
-  return [...databaseGroups, ...groups];
+  return [...rootDatabaseGroups, ...groups];
 }
 
 function readRouteMetadata(item: AdminRouteNode) {
@@ -768,20 +679,43 @@ function buildEmptyEditPageSchema(
   };
 }
 
-async function resolveExistingEditPageRoute(page: LowCodePageRecord) {
-  const relation = page.relations?.outgoing?.find(
-    (item) => item.actionKey === 'edit'
-  );
-  if (!relation) return '';
-  if (relation.targetPageRoute) return relation.targetPageRoute;
-  if (!relation.targetPageCode) return '';
+function isMissingLowCodePageError(error: unknown) {
+  return error instanceof Error && error.message.includes('Low-code page not found');
+}
 
-  const editPage = await getLowCodePage(serviceApi, {
-    code: relation.targetPageCode,
-    includeData: false
-  });
+async function resolveExistingEditPage(page: LowCodePageRecord) {
+  if (page.edit_page_id) {
+    return getLowCodePage(serviceApi, {
+      id: page.edit_page_id,
+      includeData: false
+    });
+  }
 
-  return editPage.route;
+  try {
+    return await getLowCodePage(serviceApi, {
+      code: `${page.code}-edit`,
+      includeData: false
+    });
+  } catch (error) {
+    if (isMissingLowCodePageError(error)) return null;
+    throw error;
+  }
+}
+
+function buildPageSaveData(schema: LowCodePageSchema) {
+  return {
+    code: schema.code,
+    route: schema.route,
+    title: schema.title,
+    description: schema.description ?? null,
+    layout: schema.layout ?? 'dashboard',
+    status: schema.status ?? 'draft',
+    keep_alive: schema.keepAlive ?? true,
+    schema,
+    version: 1,
+    published_at: schema.status === 'published' ? new Date().toISOString() : null,
+    edit_page_id: null
+  };
 }
 
 async function openLowCodeDesigner(item: AdminRouteNode) {
@@ -802,21 +736,25 @@ async function openLowCodeEditPage(item: AdminRouteNode) {
       code: pageCode,
       includeData: false
     });
-    const existingEditRoute = await resolveExistingEditPageRoute(page);
-    if (existingEditRoute) {
-      await router.push(existingEditRoute);
-      return;
+    let editPage = await resolveExistingEditPage(page);
+
+    if (!editPage) {
+      const schema = buildEmptyEditPageSchema(page, item);
+      editPage = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+        resource: 'pages',
+        data: buildPageSaveData(schema)
+      });
     }
 
-    const schema = buildEmptyEditPageSchema(page, item);
-    const saved = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'savePage', {
-      code: schema.code,
-      schema,
-      parentListPageCode: page.code,
-      editOpenType: 'page'
-    });
+    if (page.edit_page_id !== editPage.id) {
+      await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+        resource: 'pages',
+        id: page.id,
+        data: { edit_page_id: editPage.id }
+      });
+    }
 
-    await router.push(saved.route);
+    await router.push(editPage.route);
     await reloadRoutes();
   } catch (error) {
     routeError.value =
