@@ -1,68 +1,146 @@
 <template>
   <section class="print-designer-page">
-    <aside class="print-template-panel">
-      <header class="print-template-panel__header">
-        <div>
-          <h2>打印设计器</h2>
-          <span>{{ templates.length }} 个模板</span>
-        </div>
-        <button type="button" class="print-icon-button" title="刷新模板" aria-label="刷新模板" @click="refreshTemplates">
-          <i class="ri-refresh-line" />
-        </button>
-      </header>
-
-      <div class="print-template-actions">
-        <button type="button" class="print-button print-button--primary" @click="saveCurrentTemplate">
-          <i class="ri-save-3-line" />
-          <span>保存</span>
-        </button>
-        <button type="button" class="print-button" @click="createBlankTemplate">
-          <i class="ri-file-add-line" />
-          <span>新建</span>
-        </button>
-      </div>
-
-      <p v-if="message" :class="messageClass">{{ message }}</p>
-
-      <div class="print-template-list">
+    <header class="print-template-toolbar">
+      <div class="print-template-toolbar__actions">
         <button
-          v-for="template in templates"
-          :key="template.id"
           type="button"
-          class="print-template-row"
-          :class="{ 'is-active': template.id === selectedTemplateId }"
-          @click="loadTemplate(template)"
+          class="print-toolbar-button"
+          :disabled="loadingTemplates || savingTemplate"
+          @click="openTemplatePicker"
         >
-          <span class="print-template-row__name">{{ template.name }}</span>
-          <span class="print-template-row__meta">{{ formatTemplateDate(template.updatedAt) }}</span>
+          <i :class="loadingTemplates ? 'ri-loader-4-line print-spin' : 'ri-folder-open-line'" aria-hidden="true" />
+          <span>加载模板</span>
+        </button>
+
+        <button
+          type="button"
+          class="print-toolbar-button"
+          :disabled="savingTemplate || !editorReady"
+          @click="createBlankTemplate"
+        >
+          <i class="ri-file-add-line" aria-hidden="true" />
+          <span>新建模板</span>
+        </button>
+
+        <button
+          type="button"
+          class="print-toolbar-button print-toolbar-button--primary"
+          :disabled="savingTemplate || !editorReady"
+          @click="saveCurrentTemplate"
+        >
+          <i :class="savingTemplate ? 'ri-loader-4-line print-spin' : 'ri-save-3-line'" aria-hidden="true" />
+          <span>保存模板</span>
+        </button>
+
+        <button
+          type="button"
+          class="print-toolbar-button"
+          :disabled="savingTemplate || !editorReady"
+          @click="openTemplateNameDialog('saveAs')"
+        >
+          <i class="ri-file-copy-2-line" aria-hidden="true" />
+          <span>另存模板</span>
         </button>
       </div>
 
-      <div class="print-template-footer">
-        <button type="button" class="print-button" :disabled="!selectedTemplate" @click="duplicateSelectedTemplate">
-          <i class="ri-file-copy-line" />
-          <span>复制</span>
-        </button>
-        <button type="button" class="print-button print-button--danger" :disabled="!selectedTemplate" @click="deleteSelectedTemplate">
-          <i class="ri-delete-bin-line" />
-          <span>删除</span>
-        </button>
+      <div class="print-template-current" :title="currentTemplateName">
+        <span>当前模板</span>
+        <strong>{{ currentTemplateName }}</strong>
+        <small :class="{ 'is-dirty': templateDirty }">{{ currentTemplateStatus }}</small>
       </div>
-    </aside>
+    </header>
 
     <main class="print-canvas-shell">
       <TldrawVue
-          ref="designerRef"
-          :plugins="designerPlugins"
-          :load-templates="loadTemplateRecords"
-          :save-templates="saveTemplateRecords"
-          @ready="handleDesignerReady"
-        />
+        ref="designerRef"
+        :plugins="designerPlugins"
+        :show-template-controls="false"
+        @content-change="markTemplateDirty"
+        @ready="handleDesignerReady"
+        @workspace-config-change="handleWorkspaceConfigChange"
+      />
     </main>
+
+    <p v-if="message" :class="messageClass" role="status">
+      <i :class="messageIcon" aria-hidden="true" />
+      <span>{{ message }}</span>
+    </p>
+
+    <Teleport to="body">
+      <div
+        v-if="templateNameDialogOpen"
+        class="print-dialog-layer"
+        role="presentation"
+        @pointerdown.self="closeTemplateNameDialog"
+      >
+        <form
+          class="print-name-dialog"
+          role="dialog"
+          aria-modal="true"
+          :aria-labelledby="templateNameDialogTitleId"
+          @submit.prevent="confirmTemplateNameDialog"
+        >
+          <header>
+            <div>
+              <strong :id="templateNameDialogTitleId">{{ templateNameDialogTitle }}</strong>
+              <span>模板将保存到后台打印模板表</span>
+            </div>
+            <button
+              type="button"
+              class="print-icon-button"
+              title="关闭"
+              aria-label="关闭"
+              :disabled="savingTemplate"
+              @click="closeTemplateNameDialog"
+            >
+              <i class="ri-close-line" aria-hidden="true" />
+            </button>
+          </header>
+
+          <label class="print-name-dialog__field">
+            <span>模板名称</span>
+            <input
+              ref="templateNameInputRef"
+              v-model="templateNameInput"
+              maxlength="120"
+              autocomplete="off"
+              placeholder="请输入模板名称"
+              @input="templateNameError = ''"
+            />
+            <small v-if="templateNameError" class="print-name-dialog__error">{{ templateNameError }}</small>
+          </label>
+
+          <footer>
+            <button
+              type="button"
+              class="print-toolbar-button"
+              :disabled="savingTemplate"
+              @click="closeTemplateNameDialog"
+            >
+              取消
+            </button>
+            <button
+              type="submit"
+              class="print-toolbar-button print-toolbar-button--primary"
+              :disabled="savingTemplate"
+            >
+              <i :class="savingTemplate ? 'ri-loader-4-line print-spin' : 'ri-save-3-line'" aria-hidden="true" />
+              <span>{{ templateNameDialogMode === 'saveAs' ? '另存为' : '保存' }}</span>
+            </button>
+          </footer>
+        </form>
+      </div>
+    </Teleport>
+
+    <GlobalDialogHost />
   </section>
 </template>
 
 <script setup lang="ts">
+import {
+  confirmLowCodePage,
+  GlobalDialogHost
+} from '@enlearn/lowcode-framework/runtime';
 import TldrawVue, {
   defineVueEditorPlugin,
   type Editor,
@@ -78,14 +156,53 @@ type TldrawVueExpose = {
   applyWorkspaceTemplateConfig(config: VueTemplateWorkspaceConfig): void;
 };
 
-const TEMPLATE_STORAGE_KEY = 'enlearn.print-designer.templates.v1';
+type PrintTemplateStatus = 'draft' | 'active' | 'archived';
+
+type PrintTemplateRow = {
+  id: string;
+  name: string;
+  content: TLContent;
+  workspace: VueTemplateWorkspaceConfig | null;
+  status: PrintTemplateStatus;
+  version: number;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type PrintTemplateRecord = VueTemplateRecord & {
+  status: PrintTemplateStatus;
+  version: number;
+  metadata: Record<string, unknown>;
+};
+
+type TemplateNameDialogMode = 'save' | 'saveAs';
+
+const PRINT_TEMPLATE_RESOURCE = 'print_templates';
+const templateNameDialogTitleId = 'print-template-name-dialog-title';
 
 const route = useRoute();
+const router = useRouter();
+const serviceApi = useServiceApi();
 const designerRef = ref<TldrawVueExpose | null>(null);
-const templates = ref<VueTemplateRecord[]>([]);
+const editorReady = ref(false);
+const templateNameInputRef = ref<HTMLInputElement | null>(null);
+const templates = ref<PrintTemplateRecord[]>([]);
 const selectedTemplateId = ref('');
+const loadingTemplates = ref(false);
+const savingTemplate = ref(false);
+const templateNameDialogOpen = ref(false);
+const templateNameDialogMode = ref<TemplateNameDialogMode>('save');
+const templateNameInput = ref('');
+const templateNameError = ref('');
+const templateDirty = ref(false);
 const message = ref('');
 const messageType = ref<'info' | 'success' | 'error'>('info');
+let messageTimer: ReturnType<typeof setTimeout> | undefined;
+let suppressDirtyTracking = false;
+let designerInitialized = false;
+let savedWorkspaceSignature = '';
+let templateLoadRequestId = 0;
 
 const designerPlugins: VueEditorPlugin[] = [
   defineVueEditorPlugin({
@@ -108,54 +225,138 @@ const designerPlugins: VueEditorPlugin[] = [
 const selectedTemplate = computed(
   () => templates.value.find((template) => template.id === selectedTemplateId.value) ?? null
 );
+const currentTemplateName = computed(() => selectedTemplate.value?.name ?? '新建模板');
+const currentTemplateStatus = computed(() => {
+  if (templateDirty.value) return '有未保存修改';
+  if (selectedTemplate.value) return `数据库模板 · v${selectedTemplate.value.version}`;
+  return '尚未保存';
+});
+const templateNameDialogTitle = computed(() =>
+  templateNameDialogMode.value === 'saveAs' ? '另存打印模板' : '保存打印模板'
+);
 const messageClass = computed(() => `print-message print-message--${messageType.value}`);
-
-onMounted(async () => {
-  await refreshTemplates();
-  await loadRouteTemplate();
+const messageIcon = computed(() => {
+  if (messageType.value === 'success') return 'ri-checkbox-circle-line';
+  if (messageType.value === 'error') return 'ri-error-warning-line';
+  return 'ri-information-line';
 });
 
 watch(
   () => route.query.templateId,
   async () => {
-    await refreshTemplates();
+    await refreshTemplates({ quiet: true });
     await loadRouteTemplate();
   }
 );
 
-async function handleDesignerReady() {
-  await refreshTemplates();
+onMounted(() => {
+  window.addEventListener('keydown', handleWindowKeydown);
+});
+
+onActivated(async () => {
+  await refreshTemplates({ quiet: true });
   await loadRouteTemplate();
+});
+
+onDeactivated(() => {
+  templateNameDialogOpen.value = false;
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleWindowKeydown);
+  if (messageTimer) clearTimeout(messageTimer);
+});
+
+async function handleDesignerReady() {
+  await refreshTemplates({ quiet: true });
+  await loadRouteTemplate();
+  savedWorkspaceSignature = getWorkspaceDirtySignature(
+    designerRef.value?.getWorkspaceTemplateConfig() ?? {}
+  );
+  editorReady.value = true;
+  designerInitialized = true;
 }
 
-async function refreshTemplates() {
-  templates.value = await loadTemplateRecords();
-  if (selectedTemplateId.value && !selectedTemplate.value) {
-    selectedTemplateId.value = '';
+function handleWorkspaceConfigChange(config: VueTemplateWorkspaceConfig) {
+  if (!designerInitialized || suppressDirtyTracking) return;
+  if (getWorkspaceDirtySignature(config) !== savedWorkspaceSignature) {
+    templateDirty.value = true;
   }
 }
 
-async function loadTemplateRecords() {
-  if (typeof window === 'undefined') return [];
+function markTemplateDirty() {
+  if (!suppressDirtyTracking) templateDirty.value = true;
+}
 
-  const raw = window.localStorage.getItem(TEMPLATE_STORAGE_KEY);
-  if (!raw) return [];
+async function refreshTemplates(options: { quiet?: boolean } = {}) {
+  if (loadingTemplates.value) return templates.value;
 
+  loadingTemplates.value = true;
   try {
-    const value = JSON.parse(raw) as unknown;
-    return normalizeTemplateRecords(value);
-  } catch {
-    window.localStorage.removeItem(TEMPLATE_STORAGE_KEY);
-    return [];
+    const result = await serviceApi.listItems<PrintTemplateRow[]>('admin', {
+      resource: PRINT_TEMPLATE_RESOURCE,
+      filters: { status: { op: 'ne', value: 'archived' } },
+      sorts: [
+        { field: 'updated_at', direction: 'desc' },
+        { field: 'created_at', direction: 'desc' }
+      ],
+      limit: 500
+    });
+
+    templates.value = readRows<PrintTemplateRow>(result)
+      .map(mapTemplateRow)
+      .filter((template): template is PrintTemplateRecord => template !== null);
+
+    if (selectedTemplateId.value && !selectedTemplate.value) {
+      selectedTemplateId.value = '';
+      templateDirty.value = true;
+    }
+
+    return templates.value;
+  } catch (error) {
+    if (!options.quiet) {
+      showMessage(getErrorMessage(error, '模板列表加载失败'), 'error');
+    }
+    return templates.value;
+  } finally {
+    loadingTemplates.value = false;
   }
 }
 
-async function saveTemplateRecords(nextTemplates: readonly VueTemplateRecord[]) {
-  const normalizedTemplates = normalizeTemplateRecords(nextTemplates);
-  templates.value = normalizedTemplates;
+async function openTemplatePicker() {
+  if (loadingTemplates.value || savingTemplate.value) return;
 
-  if (typeof window !== 'undefined') {
-    window.localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(normalizedTemplates));
+  loadingTemplates.value = true;
+  try {
+    const result = await confirmLowCodePage({
+      pageCode: 'print-templates',
+      includeData: true,
+      serviceApi,
+      router,
+      route,
+      locale: 'zh-CN',
+      title: '加载打印模板',
+      confirmLabel: '加载',
+      requireSelection: true,
+      dialog: {
+        id: 'print-template-picker-dialog'
+      }
+    });
+
+    if (result.action === 'cancel' || result.action === 'close') return;
+
+    const template = readTemplateFromPickerPayload(result.payload);
+    if (!template) {
+      showMessage('请先选择要加载的模板', 'error');
+      return;
+    }
+
+    upsertTemplate(template);
+    await loadTemplate(template);
+  } catch (error) {
+    showMessage(getErrorMessage(error, '模板列表加载失败'), 'error');
+  } finally {
+    loadingTemplates.value = false;
   }
 }
 
@@ -164,155 +365,246 @@ async function createBlankTemplate() {
   if (!editor) return;
 
   const shapeIds = editor.getCurrentPageShapeIdsSorted();
-  if (shapeIds.length && !window.confirm('清空当前画布并新建模板？')) return;
+  if (templateDirty.value && !window.confirm('新建模板会放弃当前未保存的修改，是否继续？')) return;
 
-  editor.markHistoryStoppingPoint('new print template');
-  editor.run(
-    () => {
-      if (shapeIds.length) editor.deleteShapes(shapeIds);
-      editor.selectNone();
-    },
-    { ignoreShapeLock: true }
-  );
+  suppressDirtyTracking = true;
+  try {
+    editor.store.mergeRemoteChanges(() => {
+      editor.run(
+        () => {
+          if (shapeIds.length) editor.deleteShapes(shapeIds);
+          editor.selectNone();
+        },
+        { history: 'ignore', ignoreShapeLock: true }
+      );
+    });
+    editor.clearHistory();
+  } finally {
+    suppressDirtyTracking = false;
+  }
 
   selectedTemplateId.value = '';
+  savedWorkspaceSignature = getWorkspaceDirtySignature(
+    designerRef.value?.getWorkspaceTemplateConfig() ?? {}
+  );
+  templateDirty.value = false;
+  await syncRouteTemplateId('');
   showMessage('已新建空白模板', 'success');
 }
 
 async function saveCurrentTemplate() {
-  const editor = getEditor();
-  if (!editor) return;
-
-  const content = await getCurrentTemplateContent(editor);
-  if (!content) {
-    showMessage('当前画布没有可保存内容', 'error');
+  if (selectedTemplate.value) {
+    await persistExistingTemplate(selectedTemplate.value);
     return;
   }
 
-  const currentName = selectedTemplate.value?.name;
-  const nextName = window.prompt('模板名称', currentName ?? `打印模板 ${templates.value.length + 1}`);
-  if (nextName === null) return;
-
-  const name = nextName.trim();
-  if (!name) {
-    showMessage('模板名称不能为空', 'error');
-    return;
-  }
-
-  const workspace = designerRef.value?.getWorkspaceTemplateConfig();
-  const nextTemplates = templates.value.slice();
-  const existingIndex = selectedTemplateId.value
-    ? nextTemplates.findIndex((template) => template.id === selectedTemplateId.value)
-    : nextTemplates.findIndex((template) => template.name === name);
-
-  if (existingIndex >= 0) {
-    const existing = nextTemplates[existingIndex];
-    nextTemplates[existingIndex] = {
-      ...existing,
-      name,
-      content: cloneJson(content),
-      workspace: cloneWorkspace(workspace),
-      updatedAt: Date.now()
-    };
-    selectedTemplateId.value = existing.id;
-  } else {
-    const record = createTemplateRecord(name, content, workspace);
-    nextTemplates.unshift(record);
-    selectedTemplateId.value = record.id;
-  }
-
-  await saveTemplateRecords(nextTemplates);
-  showMessage('模板已保存', 'success');
+  openTemplateNameDialog('save');
 }
 
-async function loadTemplate(template: VueTemplateRecord, options: { confirmReplace?: boolean } = {}) {
+function openTemplateNameDialog(mode: TemplateNameDialogMode) {
+  if (savingTemplate.value) return;
+
+  templateNameDialogMode.value = mode;
+  templateNameError.value = '';
+  templateNameInput.value = mode === 'saveAs'
+    ? createAvailableTemplateName(selectedTemplate.value?.name ?? '打印模板')
+    : createAvailableTemplateName('打印模板');
+  templateNameDialogOpen.value = true;
+
+  void nextTick(() => {
+    templateNameInputRef.value?.focus();
+    templateNameInputRef.value?.select();
+  });
+}
+
+function closeTemplateNameDialog() {
+  if (savingTemplate.value) return;
+  templateNameDialogOpen.value = false;
+  templateNameError.value = '';
+}
+
+async function confirmTemplateNameDialog() {
+  const name = templateNameInput.value.trim();
+  if (!name) {
+    templateNameError.value = '模板名称不能为空';
+    return;
+  }
+
+  if (hasTemplateName(name)) {
+    templateNameError.value = '模板名称已存在，请使用其他名称';
+    return;
+  }
+
+  await persistNewTemplate(name);
+}
+
+async function persistExistingTemplate(template: PrintTemplateRecord) {
+  const snapshot = await getCurrentTemplateSnapshot();
+  if (!snapshot) return;
+
+  savingTemplate.value = true;
+  try {
+    const row = await serviceApi.invoke<PrintTemplateRow>('admin', 'updateItem', {
+      resource: PRINT_TEMPLATE_RESOURCE,
+      id: template.id,
+      data: {
+        name: template.name,
+        content: snapshot.content,
+        workspace: snapshot.workspace,
+        status: template.status === 'archived' ? 'active' : template.status,
+        version: template.version + 1,
+        metadata: createTemplateMetadata(template.metadata)
+      }
+    });
+
+    const saved = requireTemplateRecord(row);
+    upsertTemplate(saved);
+    selectedTemplateId.value = saved.id;
+    savedWorkspaceSignature = getWorkspaceDirtySignature(snapshot.workspace);
+    templateDirty.value = false;
+    await syncRouteTemplateId(saved.id);
+    showMessage(`模板“${saved.name}”已保存`, 'success');
+  } catch (error) {
+    showMessage(getErrorMessage(error, '模板保存失败'), 'error');
+  } finally {
+    savingTemplate.value = false;
+  }
+}
+
+async function persistNewTemplate(name: string) {
+  const snapshot = await getCurrentTemplateSnapshot();
+  if (!snapshot) return;
+
+  savingTemplate.value = true;
+  try {
+    const row = await serviceApi.invoke<PrintTemplateRow>('admin', 'createItem', {
+      resource: PRINT_TEMPLATE_RESOURCE,
+      data: {
+        name,
+        content: snapshot.content,
+        workspace: snapshot.workspace,
+        status: 'active',
+        version: 1,
+        metadata: createTemplateMetadata()
+      }
+    });
+
+    const saved = requireTemplateRecord(row);
+    upsertTemplate(saved);
+    selectedTemplateId.value = saved.id;
+    savedWorkspaceSignature = getWorkspaceDirtySignature(snapshot.workspace);
+    templateDirty.value = false;
+    templateNameDialogOpen.value = false;
+    templateNameError.value = '';
+    await syncRouteTemplateId(saved.id);
+    showMessage(`模板“${saved.name}”已保存`, 'success');
+  } catch (error) {
+    const errorMessage = getErrorMessage(error, '模板保存失败');
+    if (templateNameDialogOpen.value) {
+      templateNameError.value = errorMessage;
+    } else {
+      showMessage(errorMessage, 'error');
+    }
+  } finally {
+    savingTemplate.value = false;
+  }
+}
+
+async function loadTemplate(template: PrintTemplateRecord, options: { confirmReplace?: boolean } = {}) {
   const editor = getEditor();
   if (!editor) return;
 
-  const shouldConfirmReplace = options.confirmReplace ?? true;
   const shapeIds = editor.getCurrentPageShapeIdsSorted();
-  if (shouldConfirmReplace && shapeIds.length && selectedTemplateId.value !== template.id) {
-    const confirmed = window.confirm(`加载"${template.name}"会替换当前画布，是否继续？`);
+  if ((options.confirmReplace ?? true) && templateDirty.value) {
+    const confirmed = window.confirm(`加载“${template.name}”会放弃当前未保存的修改，是否继续？`);
     if (!confirmed) return;
   }
 
-  editor.markHistoryStoppingPoint('load print template');
-  editor.run(
-    () => {
-      if (shapeIds.length) editor.deleteShapes(shapeIds);
-      editor.selectNone();
-    },
-    { ignoreShapeLock: true }
-  );
+  try {
+    suppressDirtyTracking = true;
+    try {
+      editor.store.mergeRemoteChanges(() => {
+        editor.run(
+          () => {
+            if (shapeIds.length) editor.deleteShapes(shapeIds);
+            editor.selectNone();
+            editor.putContentOntoCurrentPage(cloneJson(template.content), {
+              preservePosition: true,
+              select: true
+            });
+          },
+          { history: 'ignore', ignoreShapeLock: true }
+        );
+      });
 
-  if (template.workspace) {
-    designerRef.value?.applyWorkspaceTemplateConfig(cloneWorkspace(template.workspace));
+      if (template.workspace) {
+        designerRef.value?.applyWorkspaceTemplateConfig(cloneJson(template.workspace));
+      }
+      editor.clearHistory();
+    } finally {
+      suppressDirtyTracking = false;
+    }
+
+    selectedTemplateId.value = template.id;
+    savedWorkspaceSignature = getWorkspaceDirtySignature(
+      designerRef.value?.getWorkspaceTemplateConfig() ?? template.workspace ?? {}
+    );
+    templateDirty.value = false;
+    await syncRouteTemplateId(template.id);
+    showMessage(`已加载模板“${template.name}”`, 'success');
+  } catch (error) {
+    showMessage(getErrorMessage(error, '模板加载失败'), 'error');
   }
-
-  editor.putContentOntoCurrentPage(cloneJson(template.content), {
-    preservePosition: true,
-    select: true
-  });
-
-  selectedTemplateId.value = template.id;
-  showMessage(`已加载 ${template.name}`, 'success');
 }
 
 async function loadRouteTemplate() {
   const templateId = getRouteTemplateId();
   if (!templateId || selectedTemplateId.value === templateId) return;
+  if (!designerRef.value?.getEditor()) return;
+  const requestId = ++templateLoadRequestId;
 
-  const editor = designerRef.value?.getEditor();
-  if (!editor) return;
-
-  const template = templates.value.find((item) => item.id === templateId);
+  let template = templates.value.find((item) => item.id === templateId);
   if (!template) {
-    showMessage('未找到要编辑的模板', 'error');
+    await refreshTemplates({ quiet: true });
+    if (requestId !== templateLoadRequestId || getRouteTemplateId() !== templateId) return;
+    template = templates.value.find((item) => item.id === templateId);
+  }
+
+  if (!template) {
+    showMessage('未找到要编辑的打印模板', 'error');
     return;
   }
 
+  if (requestId !== templateLoadRequestId || getRouteTemplateId() !== templateId) return;
   await loadTemplate(template, { confirmReplace: false });
 }
 
-async function duplicateSelectedTemplate() {
-  const template = selectedTemplate.value;
-  if (!template) return;
+async function getCurrentTemplateSnapshot() {
+  const editor = getEditor();
+  if (!editor) return null;
 
-  const name = window.prompt('模板名称', `${template.name} 副本`);
-  if (name === null) return;
-
-  const trimmedName = name.trim();
-  if (!trimmedName) {
-    showMessage('模板名称不能为空', 'error');
-    return;
+  const shapeIds = editor.getCurrentPageShapeIdsSorted();
+  if (!shapeIds.length) {
+    showMessage('当前画布没有可保存内容', 'error');
+    return null;
   }
 
-  const nextTemplate = createTemplateRecord(
-    trimmedName,
-    cloneJson(template.content),
-    cloneWorkspace(template.workspace)
-  );
-  await saveTemplateRecords([nextTemplate, ...templates.value]);
-  selectedTemplateId.value = nextTemplate.id;
-  showMessage('模板已复制', 'success');
-}
-
-async function deleteSelectedTemplate() {
-  const template = selectedTemplate.value;
-  if (!template) return;
-  if (!window.confirm(`删除"${template.name}"？`)) return;
-
-  await saveTemplateRecords(templates.value.filter((item) => item.id !== template.id));
-  selectedTemplateId.value = '';
-  showMessage('模板已删除', 'success');
-}
-
-async function getCurrentTemplateContent(editor: Editor) {
-  const shapeIds = editor.getCurrentPageShapeIdsSorted();
-  if (!shapeIds.length) return null;
-
   const content = editor.getContentFromCurrentPage(shapeIds);
-  return editor.resolveAssetsInContent(content);
+  if (!content) {
+    showMessage('当前画布内容读取失败', 'error');
+    return null;
+  }
+
+  const resolvedContent = await editor.resolveAssetsInContent(content);
+  if (!resolvedContent) {
+    showMessage('当前画布资源读取失败', 'error');
+    return null;
+  }
+
+  return {
+    content: cloneJson(resolvedContent),
+    workspace: cloneJson(designerRef.value?.getWorkspaceTemplateConfig() ?? {})
+  };
 }
 
 function getEditor() {
@@ -324,65 +616,105 @@ function getEditor() {
   return editor;
 }
 
-function createTemplateRecord(
-  name: string,
-  content: TLContent,
-  workspace?: VueTemplateWorkspaceConfig
-): VueTemplateRecord {
-  const now = Date.now();
+function mapTemplateRow(row: PrintTemplateRow): PrintTemplateRecord | null {
+  if (!row || typeof row.id !== 'string' || typeof row.name !== 'string' || !isRecord(row.content)) {
+    return null;
+  }
+
+  const createdAt = parseTemplateTimestamp(row.created_at);
+  const updatedAt = parseTemplateTimestamp(row.updated_at);
   return {
-    id: createTemplateId(),
-    name,
-    createdAt: now,
-    updatedAt: now,
-    content: cloneJson(content),
-    workspace: cloneWorkspace(workspace)
+    id: row.id,
+    name: row.name,
+    createdAt,
+    updatedAt,
+    content: cloneJson(row.content),
+    workspace: isRecord(row.workspace) ? cloneJson(row.workspace) : undefined,
+    status: isTemplateStatus(row.status) ? row.status : 'active',
+    version: Number.isInteger(row.version) && row.version > 0 ? row.version : 1,
+    metadata: isRecord(row.metadata) ? cloneJson(row.metadata) : {}
   };
 }
 
-function normalizeTemplateRecords(value: unknown): VueTemplateRecord[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter(isTemplateRecord).map((template) => ({
-    ...template,
-    content: cloneJson(template.content),
-    workspace: cloneWorkspace(template.workspace)
-  }));
+function readTemplateFromPickerPayload(payload: unknown) {
+  if (!isRecord(payload)) return null;
+
+  const row = [
+    payload.row,
+    payload.selectedRow,
+    payload.currentRow,
+    Array.isArray(payload.selectedRows) ? payload.selectedRows[0] : undefined,
+    Array.isArray(payload.rows) ? payload.rows[0] : undefined
+  ].find(isRecord);
+
+  return row ? mapTemplateRow(row as PrintTemplateRow) : null;
 }
 
-function isTemplateRecord(value: unknown): value is VueTemplateRecord {
-  if (!isRecord(value)) return false;
-  return (
-    typeof value.id === 'string' &&
-    typeof value.name === 'string' &&
-    typeof value.createdAt === 'number' &&
-    typeof value.updatedAt === 'number' &&
-    isRecord(value.content)
+function requireTemplateRecord(row: PrintTemplateRow) {
+  const record = mapTemplateRow(row);
+  if (!record) throw new Error('后台未返回有效的模板记录');
+  return record;
+}
+
+function upsertTemplate(template: PrintTemplateRecord) {
+  const nextTemplates = templates.value.filter((item) => item.id !== template.id);
+  templates.value = [template, ...nextTemplates].sort((left, right) => right.updatedAt - left.updatedAt);
+}
+
+function createTemplateMetadata(existing: Record<string, unknown> = {}) {
+  return {
+    ...existing,
+    editor: 'tldraw-vue',
+    schemaVersion: 1,
+    source: 'print-designer'
+  };
+}
+
+function getWorkspaceDirtySignature(config: VueTemplateWorkspaceConfig) {
+  const workspace = isRecord(config) ? config : {};
+  return JSON.stringify({
+    pageSizeMm: workspace.pageSizeMm ?? null,
+    guides: workspace.guides ?? [],
+    printDataSource: workspace.printDataSource ?? null
+  });
+}
+
+function createAvailableTemplateName(baseName: string) {
+  const normalizedBase = baseName.trim() || '打印模板';
+  const firstCandidate = selectedTemplate.value ? `${normalizedBase} 副本` : normalizedBase;
+  if (!hasTemplateName(firstCandidate)) return firstCandidate;
+
+  let index = 2;
+  while (hasTemplateName(`${firstCandidate} ${index}`)) index += 1;
+  return `${firstCandidate} ${index}`;
+}
+
+function hasTemplateName(name: string) {
+  const normalizedName = name.trim().toLocaleLowerCase('zh-CN');
+  return templates.value.some(
+    (template) => template.name.trim().toLocaleLowerCase('zh-CN') === normalizedName
   );
 }
 
-function cloneJson<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T;
+async function syncRouteTemplateId(templateId: string) {
+  if (getRouteTemplateId() === templateId) return;
+  templateLoadRequestId += 1;
+
+  const query = { ...route.query };
+  if (templateId) query.templateId = templateId;
+  else delete query.templateId;
+  await router.replace({ query });
 }
 
-function cloneWorkspace(workspace: VueTemplateWorkspaceConfig | undefined) {
-  return workspace ? cloneJson(workspace) : undefined;
+function readRows<T>(value: unknown) {
+  if (Array.isArray(value)) return value as T[];
+  if (isRecord(value) && Array.isArray(value.rows)) return value.rows as T[];
+  return [] as T[];
 }
 
-function createTemplateId() {
-  if (globalThis.crypto?.randomUUID) return `print-template:${globalThis.crypto.randomUUID()}`;
-  return `print-template:${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function formatTemplateDate(timestamp: number) {
-  if (!Number.isFinite(timestamp)) return '';
-
-  const date = new Date(timestamp);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
+function parseTemplateTimestamp(value: string) {
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : Date.now();
 }
 
 function getRouteTemplateId() {
@@ -390,84 +722,85 @@ function getRouteTemplateId() {
   return typeof value === 'string' ? value : '';
 }
 
+function handleWindowKeydown(event: KeyboardEvent) {
+  if (event.key !== 'Escape') return;
+  if (templateNameDialogOpen.value) closeTemplateNameDialog();
+}
+
 function showMessage(nextMessage: string, type: 'info' | 'success' | 'error' = 'info') {
   message.value = nextMessage;
   messageType.value = type;
+  if (messageTimer) clearTimeout(messageTimer);
+  messageTimer = setTimeout(() => {
+    message.value = '';
+  }, type === 'error' ? 6000 : 3200);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null;
+function getErrorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error && error.message) return error.message;
+  if (isRecord(error)) {
+    const message = error.statusMessage ?? error.message;
+    if (typeof message === 'string' && message) return message;
+  }
+  return fallback;
+}
+
+function cloneJson<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
+}
+
+function isTemplateStatus(value: unknown): value is PrintTemplateStatus {
+  return value === 'draft' || value === 'active' || value === 'archived';
+}
+
+function isRecord(value: unknown): value is Record<string, any> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 </script>
 
 <style scoped>
 .print-designer-page {
-  display: grid;
-  grid-template-columns: 286px minmax(0, 1fr);
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
   gap: 8px;
-  height: calc(100vh - 60px);
+  height: 100%;
   min-height: 0;
   padding: 8px;
   background: #f4f6f8;
 }
 
-.print-template-panel,
-.print-canvas-shell {
-  min-height: 0;
-  border: 1px solid #d6dce5;
-  border-radius: 8px;
-  background: #ffffff;
-  overflow: hidden;
-}
-
-.print-template-panel {
+.print-template-toolbar {
+  position: relative;
+  z-index: 30;
   display: flex;
-  flex-direction: column;
-  color: #111827;
-}
-
-.print-template-panel__header {
-  display: flex;
+  flex: none;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  min-height: 62px;
-  border-bottom: 1px solid #e5eaf1;
-  padding: 12px;
+  gap: 16px;
+  min-height: 44px;
+  border: 1px solid #d6dce5;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 5px 10px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
-.print-template-panel__header h2 {
-  margin: 0;
-  font-size: 17px;
-  line-height: 22px;
+.print-template-toolbar__actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
 
-.print-template-panel__header span,
-.print-template-row__meta,
-.print-message {
-  color: #64748b;
-  font-size: 12px;
-}
-
-.print-template-actions,
-.print-template-footer {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  padding: 10px 12px;
-}
-
-.print-template-footer {
-  border-top: 1px solid #e5eaf1;
-}
-
-.print-button,
+.print-toolbar-button,
 .print-icon-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  min-width: 0;
   height: 32px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
@@ -476,119 +809,248 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   cursor: pointer;
   font: inherit;
   font-size: 13px;
-  font-weight: 700;
+  line-height: 1;
+  padding: 0 11px;
+  white-space: nowrap;
 }
 
 .print-icon-button {
-  width: 32px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   font-size: 16px;
 }
 
-.print-button:hover:not(:disabled),
-.print-icon-button:hover {
-  border-color: #94a3b8;
-  background: #f8fafc;
+.print-toolbar-button:hover:not(:disabled),
+.print-icon-button:hover:not(:disabled) {
+  border-color: #8fb8e8;
+  background: #edf6ff;
+  color: #0969c7;
 }
 
-.print-button:disabled {
+.print-toolbar-button:disabled,
+.print-icon-button:disabled {
   cursor: not-allowed;
-  opacity: 0.48;
+  opacity: 0.52;
 }
 
-.print-button--primary {
-  border-color: #0f766e;
-  background: #0f766e;
+.print-toolbar-button--primary {
+  border-color: #1476d4;
+  background: #1476d4;
   color: #ffffff;
 }
 
-.print-button--primary:hover:not(:disabled) {
-  border-color: #0b605a;
-  background: #0b605a;
+.print-toolbar-button--primary:hover:not(:disabled) {
+  border-color: #0d63b6;
+  background: #0d63b6;
+  color: #ffffff;
 }
 
-.print-button--danger {
-  color: #b91c1c;
-}
-
-.print-message {
-  margin: 0 12px 10px;
-  border-radius: 6px;
-  background: #f8fafc;
-  line-height: 18px;
-  padding: 7px 9px;
-}
-
-.print-message--success {
-  background: #ecfdf5;
-  color: #047857;
-}
-
-.print-message--error {
-  background: #fef2f2;
-  color: #b91c1c;
-}
-
-.print-template-list {
-  display: flex;
-  flex: 1 1 0;
-  flex-direction: column;
-  gap: 6px;
-  min-height: 0;
-  overflow: auto;
-  padding: 2px 8px 12px;
-}
-
-.print-template-row {
+.print-template-current {
   display: grid;
-  gap: 3px;
-  min-height: 50px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: #111827;
-  cursor: pointer;
-  font: inherit;
-  padding: 8px 10px;
-  text-align: left;
+  grid-template-columns: auto minmax(0, auto);
+  align-items: center;
+  column-gap: 7px;
+  min-width: 0;
+  text-align: right;
 }
 
-.print-template-row:hover,
-.print-template-row.is-active {
-  border-color: #bfdbfe;
-  background: #eff6ff;
+.print-template-current > span,
+.print-template-current > small {
+  color: #718096;
+  font-size: 11px;
 }
 
-.print-template-row__name {
+.print-template-current > span {
+  grid-row: 1;
+  grid-column: 1;
+}
+
+.print-template-current > strong {
+  grid-row: 1;
+  grid-column: 2;
+  max-width: min(360px, 32vw);
   overflow: hidden;
+  color: #172033;
   font-size: 13px;
-  font-weight: 750;
   line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.print-template-current > small {
+  grid-row: 2;
+  grid-column: 1 / -1;
+  line-height: 14px;
+}
+
+.print-template-current > small.is-dirty {
+  color: #b45309;
+  font-weight: 700;
+}
+
 .print-canvas-shell {
   position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+  border: 1px solid #d6dce5;
+  border-radius: 6px;
+  background: #ffffff;
+  overflow: hidden;
 }
 
 .print-canvas-shell :deep(.app-shell) {
   height: 100%;
 }
 
-@media (max-width: 980px) {
-  .print-designer-page {
-    grid-template-columns: 1fr;
-    height: auto;
-    min-height: calc(100vh - 60px);
+.print-message {
+  position: absolute;
+  z-index: 60;
+  right: 20px;
+  bottom: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(460px, calc(100% - 40px));
+  min-height: 36px;
+  margin: 0;
+  border: 1px solid #cdd8e6;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #334155;
+  padding: 7px 12px;
+  font-size: 13px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16);
+}
+
+.print-message--success {
+  border-color: #a7dfc3;
+  color: #08734d;
+}
+
+.print-message--error {
+  border-color: #f2b8b8;
+  color: #b42318;
+}
+
+.print-dialog-layer {
+  position: fixed;
+  z-index: 4000;
+  display: grid;
+  place-items: center;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.46);
+  padding: 16px;
+}
+
+.print-name-dialog {
+  width: min(420px, calc(100vw - 32px));
+  border: 1px solid #cfd8e5;
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+}
+
+.print-name-dialog > header,
+.print-name-dialog > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+}
+
+.print-name-dialog > header {
+  border-bottom: 1px solid #e5eaf1;
+}
+
+.print-name-dialog > header > div {
+  display: grid;
+  gap: 3px;
+}
+
+.print-name-dialog > header strong {
+  color: #172033;
+  font-size: 15px;
+}
+
+.print-name-dialog > header span {
+  color: #718096;
+  font-size: 11px;
+}
+
+.print-name-dialog__field {
+  display: grid;
+  gap: 7px;
+  padding: 18px 16px 20px;
+}
+
+.print-name-dialog__field > span {
+  color: #334155;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.print-name-dialog__field input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 36px;
+  border: 1px solid #bfcbd9;
+  border-radius: 6px;
+  outline: 0;
+  color: #172033;
+  font: inherit;
+  font-size: 13px;
+  padding: 0 10px;
+}
+
+.print-name-dialog__field input:focus {
+  border-color: #438fdd;
+  box-shadow: 0 0 0 2px rgba(20, 118, 212, 0.12);
+}
+
+.print-name-dialog__error {
+  color: #b42318;
+  font-size: 11px;
+}
+
+.print-name-dialog > footer {
+  justify-content: flex-end;
+  border-top: 1px solid #e5eaf1;
+  background: #f8fafc;
+}
+
+.print-spin {
+  animation: print-spin 0.8s linear infinite;
+}
+
+@keyframes print-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 820px) {
+  .print-template-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
   }
 
-  .print-template-panel {
-    min-height: 260px;
+  .print-template-toolbar__actions {
+    flex-wrap: wrap;
+    width: 100%;
   }
 
-  .print-canvas-shell {
-    min-height: 640px;
+  .print-template-current {
+    align-self: flex-end;
+  }
+
+  .print-template-current > strong {
+    max-width: 58vw;
   }
 }
 </style>

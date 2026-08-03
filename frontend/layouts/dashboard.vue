@@ -866,6 +866,10 @@ function handleAdminRoutesUpdated() {
   reloadRoutes();
 }
 
+function handleWindowFocus() {
+  void reloadRoutes();
+}
+
 function handleMenuContextKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     closeMenuContext();
@@ -889,12 +893,14 @@ onMounted(async () => {
   await reloadRoutes();
   rememberTab();
   window.addEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
+  window.addEventListener('focus', handleWindowFocus);
   window.addEventListener('click', closeFloatingPanels);
   window.addEventListener('keydown', handleMenuContextKeydown);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
+  window.removeEventListener('focus', handleWindowFocus);
   window.removeEventListener('click', closeFloatingPanels);
   window.removeEventListener('keydown', handleMenuContextKeydown);
 });

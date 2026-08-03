@@ -6,11 +6,15 @@ export type Editor = {
   getCurrentPageShapeIdsSorted(): unknown[];
   getContentFromCurrentPage(shapeIds: unknown[]): TLContent;
   resolveAssetsInContent(content: TLContent): Promise<TLContent>;
+  clearHistory(): void;
   markHistoryStoppingPoint(label: string): void;
   run(callback: () => void, options?: Record<string, unknown>): void;
   deleteShapes(shapeIds: unknown[]): void;
   selectNone(): void;
   putContentOntoCurrentPage(content: TLContent, options?: Record<string, unknown>): void;
+  store: {
+    mergeRemoteChanges(callback: () => void): void;
+  };
 };
 
 export type VueTemplateWorkspaceConfig = Record<string, unknown>;
@@ -41,11 +45,15 @@ const unavailableEditor: Editor = {
   getCurrentPageShapeIdsSorted: () => [],
   getContentFromCurrentPage: () => ({}),
   resolveAssetsInContent: async (content) => content,
+  clearHistory: () => undefined,
   markHistoryStoppingPoint: () => undefined,
   run: (callback) => callback(),
   deleteShapes: () => undefined,
   selectNone: () => undefined,
   putContentOntoCurrentPage: () => undefined,
+  store: {
+    mergeRemoteChanges: (callback) => callback(),
+  },
 };
 
 export function defineVueEditorPlugin(plugin: VueEditorPlugin): VueEditorPlugin {
@@ -54,7 +62,13 @@ export function defineVueEditorPlugin(plugin: VueEditorPlugin): VueEditorPlugin 
 
 const TldrawVue = defineComponent({
   name: 'TldrawVueUnavailable',
-  emits: ['ready', 'workspace-config-change'],
+  props: {
+    showTemplateControls: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  emits: ['content-change', 'ready', 'workspace-config-change'],
   setup(_, { emit, expose }) {
     expose({
       getEditor: () => unavailableEditor,

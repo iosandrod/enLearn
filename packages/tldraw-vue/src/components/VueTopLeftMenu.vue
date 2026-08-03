@@ -35,6 +35,7 @@ const props = defineProps<{
 	getWorkspaceTemplateConfig?: () => VueTemplateWorkspaceConfig
 	loadTemplates?: VueTemplateLoadHandler
 	saveTemplates?: VueTemplateSaveHandler
+	showTemplateControls?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -661,7 +662,7 @@ onBeforeUnmount(() => {
 				&#9776;
 			</button>
 			<button
-				v-if="canPreviewPrint"
+				v-if="props.showTemplateControls !== false && canPreviewPrint"
 				type="button"
 				class="top-menu-icon-button"
 				aria-label="加载模板"
@@ -672,7 +673,7 @@ onBeforeUnmount(() => {
 				&#128194;
 			</button>
 			<button
-				v-if="canPrint"
+				v-if="props.showTemplateControls !== false && canPrint"
 				type="button"
 				class="top-menu-icon-button"
 				aria-label="保存模板"
@@ -735,7 +736,10 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
-		<div v-if="templateMenuOpen" class="top-menu-popover top-menu-popover--templates">
+		<div
+			v-if="props.showTemplateControls !== false && templateMenuOpen"
+			class="top-menu-popover top-menu-popover--templates"
+		>
 			<div class="top-menu-template-title">模板</div>
 			<div v-if="templateError" class="top-menu-template-state top-menu-template-state--error">
 				{{ templateError }}

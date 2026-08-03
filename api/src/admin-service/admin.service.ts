@@ -442,6 +442,33 @@ export class AdminService extends BaseService {
           ),
           userFields: { updatedBy: 'updated_by' }
         }
+      },
+      print_templates: {
+        tableName: 'print_templates',
+        permissions: this.adminCrudPermissions('print.templates.manage'),
+        defaults: {
+          workspace: {},
+          status: 'active',
+          version: 1,
+          metadata: {}
+        },
+        list: {
+          defaultSorts: [
+            { field: 'updated_at', direction: 'desc' },
+            { field: 'created_at', direction: 'desc' }
+          ],
+          defaultPageSize: 100,
+          maxPageSize: 500
+        },
+        create: {
+          allowedFields: ['name', 'content', 'workspace', 'status', 'version', 'metadata'],
+          requiredFields: ['name', 'content'],
+          userFields: { createdBy: 'created_by', updatedBy: 'updated_by' }
+        },
+        update: {
+          allowedFields: ['name', 'content', 'workspace', 'status', 'version', 'metadata'],
+          userFields: { updatedBy: 'updated_by' }
+        }
       }
     };
   }
