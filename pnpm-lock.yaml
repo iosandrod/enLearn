@@ -148,7 +148,7 @@ importers:
         version: 4.1.0(vue@3.5.40(typescript@5.9.3))
       vxe-pc-ui:
         specifier: latest
-        version: 4.16.24(vue@3.5.40(typescript@5.9.3))
+        version: 4.16.25(vue@3.5.40(typescript@5.9.3))
       vxe-table:
         specifier: latest
         version: 4.20.9
@@ -2151,6 +2151,11 @@ packages:
 
   '@vxe-ui/core@4.4.18':
     resolution: {integrity: sha512-1w9eSWxUe5gIgkZB9QTTWiAcYd9fnnhWeyZNILIp7SwYA8s8962S6bNi2xYv4FFj5ipXrZjfIXdOUJzb3d3aYw==}
+    peerDependencies:
+      vue: ^3.2.0
+
+  '@vxe-ui/core@4.4.19':
+    resolution: {integrity: sha512-Ahx7WWS43tkT6JzVbfZsZ0+81xmVDuzIw0ZXhbUAYqGd98DPX3pnMOdYCHe9OzgpQWkDwsmXF0zuPcEIMnUdQQ==}
     peerDependencies:
       vue: ^3.2.0
 
@@ -4379,6 +4384,9 @@ packages:
   vxe-pc-ui@4.16.24:
     resolution: {integrity: sha512-HhjkVaY0m+rfQNncMIlwiIj3xcjJxBTXAd7MS4BfKRzCJXrjWrpgFtRlGTm37RP/BftJDS4CaP/lzH4jtPotSA==}
 
+  vxe-pc-ui@4.16.25:
+    resolution: {integrity: sha512-Tf3gJEaXgmwtVxsgcsHCxXTpIENOvZEdJRL6AGnhjBKJrL8fwiv3Zwd5Zj9q0Czvux0nrCHgUSmftBGAwrYrQg==}
+
   vxe-table-plugin-extend-cell-area@0.1.0:
     resolution: {integrity: sha512-9zFofYQQcGlzR3y4kBN0WVyqK2bpiujuDnZuJOU/oPxRzMHyiIIN0aPh8Kc4Hom9lhsG5yehGyGiBiFN5bvPdA==}
     peerDependencies:
@@ -4453,6 +4461,9 @@ packages:
 
   xe-utils@4.0.11:
     resolution: {integrity: sha512-r3v1o10AnHXKRZ5ikuAOQ+Mxw/hy1XWjFr2/Q9L+LEZYq/PRxmiZ6/J53DEH53XqklEXddsmx1vYjOaOACq8IQ==}
+
+  xe-utils@4.0.12:
+    resolution: {integrity: sha512-4y2OXEVlXHoBMSyzdAcXDM9oyb8EL9U4LIEq642JO0liULVpC9U5aEiVv2xbS9hhoebYCMdZZYASqh/7H5Wd0Q==}
 
   xmlhttprequest-ssl@2.0.0:
     resolution: {integrity: sha512-QKxVRxiRACQcVuQEYFsI1hhkrMlrXHPegbbd1yn9UHOmRxY+si12nQYzri3vbzt8VdTTRviqcKxcyllFas5z2A==}
@@ -6100,6 +6111,12 @@ snapshots:
       dom-zindex: 1.0.7
       vue: 3.5.40(typescript@5.9.3)
       xe-utils: 4.0.11
+
+  '@vxe-ui/core@4.4.19(vue@3.5.40(typescript@5.9.3))':
+    dependencies:
+      dom-zindex: 1.0.7
+      vue: 3.5.40(typescript@5.9.3)
+      xe-utils: 4.0.12
 
   accepts@1.3.8:
     dependencies:
@@ -8501,6 +8518,12 @@ snapshots:
     transitivePeerDependencies:
       - vue
 
+  vxe-pc-ui@4.16.25(vue@3.5.40(typescript@5.9.3)):
+    dependencies:
+      '@vxe-ui/core': 4.4.19(vue@3.5.40(typescript@5.9.3))
+    transitivePeerDependencies:
+      - vue
+
   vxe-table-plugin-extend-cell-area@0.1.0(vue@3.5.40(typescript@5.9.3))(vxe-table@4.20.9):
     dependencies:
       vue: 3.5.40(typescript@5.9.3)
@@ -8554,6 +8577,8 @@ snapshots:
       fsevents: 2.3.3
 
   xe-utils@4.0.11: {}
+
+  xe-utils@4.0.12: {}
 
   xmlhttprequest-ssl@2.0.0: {}
 

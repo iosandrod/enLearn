@@ -303,18 +303,72 @@ export type LowCodeGridSchema = {
   eventNames?: Record<string, string>;
 };
 
+/**
+ * 低代码页面的数据源定义。
+ *
+ * 页面加载时，运行时会遍历 `schema.dataSources`，调用配置的后端服务，
+ * 再将响应结果保存到对应的数据源 key 下，供表格、表单等区块通过
+ * `sourceKey` 使用。
+ */
 export type LowCodePageDataSource = {
+  /**
+   * 数据源的唯一标识。
+   * 应与 `schema.dataSources` 中的属性名一致，例如 `dataSources.pages.key = 'pages'`。
+   */
   key: string;
+
+  /** 数据源的可读名称，主要用于设计器和界面展示，不参与接口路由。 */
   label?: string;
+
+  /**
+   * 后端服务名，对应 `serviceApi.invoke(serviceName, ...)` 的第一个参数，
+   * 例如 `admin`、`lowcode`、`notification`。
+   */
   serviceName?: string;
+
+  /**
+   * 读取数据时调用的服务方法，对应 `serviceApi.invoke(..., serviceMethod, ...)`
+   * 的第二个参数；列表数据通常使用 `listItems`。
+   */
   serviceMethod?: string;
+
+  /** 表单提交时调用的服务方法；请求参数由 `postData` 和表单值合并得到。 */
   saveMethod?: string;
+
+  /** 表格删除行时调用的服务方法；请求参数由 `postData` 和当前行数据合并得到。 */
   deleteMethod?: string;
+
+  /**
+   * 逻辑实体编码。运行时可据此推导实际表名，并按实体列表方式读取数据。
+   * 新配置优先使用 camelCase 字段 `entityCode`。
+   */
   entityCode?: string;
+
+  /** `entityCode` 的 snake_case 兼容字段，用于读取历史或后端生成的配置。 */
   entity_code?: string;
+
+  /**
+   * 实际数据库表名，例如 `lowcode_pages`。配置后，运行时会将其补入请求参数，
+   * 并默认通过 `admin.listItems` 读取该表。
+   */
   tableName?: string;
+
+  /** `tableName` 的 snake_case 兼容字段，新配置优先使用 `tableName`。 */
   table_name?: string;
+
+  /**
+   * 传给服务方法的基础请求参数，例如 `resource`、`filters`、`sorts`、
+   * `page` 和 `pageSize`。运行时还会按场景合并查询条件、表单值或行数据。
+   *
+   * 若填写 `resource`，必须使用后端注册的资源名；本项目通常与真实表名一致，
+   * 例如应使用 `lowcode_pages`，不能使用旧别名 `pages`。
+   */
   postData?: Record<string, unknown>;
+
+  /**
+   * 是否在页面初始化时自动读取数据，默认 `true`。
+   * 设为 `false` 时跳过首次加载，但仍可由刷新动作或运行时指令主动加载。
+   */
   autoLoad?: boolean;
 };
 
@@ -540,6 +594,7 @@ export type LowCodePageRecord = {
   layout: 'default' | 'dashboard' | 'blank';
   status: 'draft' | 'published' | 'archived';
   keep_alive: boolean;
+  page_type: LowCodePageType;
   edit_page_id: string | null;
   schema: LowCodePageSchema;
   version: number;
@@ -550,5 +605,5 @@ export type LowCodePageRecord = {
 
 export type LowCodePageSummary = Pick<
   LowCodePageRecord,
-  'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'edit_page_id' | 'version' | 'published_at' | 'created_at' | 'updated_at'
+  'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'page_type' | 'edit_page_id' | 'version' | 'published_at' | 'created_at' | 'updated_at'
 >;

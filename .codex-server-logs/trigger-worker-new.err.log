@@ -1,0 +1,7 @@
+Trigger.dev CLI credential resolver returned invalid JSON.
+ËùÔÚÎ»ÖÃ E:\enLearn\api\scripts\start-trigger-dev.ps1:133 ×Ö·û: 3
++   throw "Trigger.dev CLI credential resolver returned invalid JSON."
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Trigger.dev CLI...d invalid JSON.:String) [], RuntimeException
+    + FullyQualifiedErrorId : Trigger.dev CLI credential resolver returned invalid JSON.
+ 

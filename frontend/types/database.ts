@@ -1,4 +1,7 @@
-import type { LowCodePageSchema } from '@enlearn/lowcode-framework/types/lowcode';
+import type {
+  LowCodePageSchema,
+  LowCodePageType
+} from '@enlearn/lowcode-framework/types/lowcode';
 
 export type Json =
   | string
@@ -465,6 +468,7 @@ export type LowCodePageRow = {
   layout: 'default' | 'dashboard' | 'blank';
   status: 'draft' | 'published' | 'archived';
   keep_alive: boolean;
+  page_type: LowCodePageType;
   edit_page_id: string | null;
   schema: LowCodePageSchema;
   version: number;

@@ -58,12 +58,13 @@ async function main() {
             layout,
             status,
             keep_alive,
+            page_type,
             schema,
             version,
             published_at,
             updated_at
           ) values (
-            $1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $10
+            $1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11, $11
           )
           on conflict (code) do update set
             route = excluded.route,
@@ -72,6 +73,7 @@ async function main() {
             layout = excluded.layout,
             status = excluded.status,
             keep_alive = excluded.keep_alive,
+            page_type = excluded.page_type,
             schema = excluded.schema,
             version = excluded.version,
             published_at = excluded.published_at,
@@ -86,6 +88,7 @@ async function main() {
           schema.layout ?? 'dashboard',
           schema.status ?? 'published',
           schema.keepAlive !== false,
+          schema.pageType ?? 'custom',
           JSON.stringify(schema),
           nextVersion,
           now

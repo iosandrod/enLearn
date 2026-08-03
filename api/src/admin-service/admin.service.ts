@@ -274,7 +274,7 @@ export class AdminService extends BaseService {
     ];
 
     return {
-      roles: {
+      admin_roles: {
         tableName: 'admin_roles',
         permissions: this.adminCrudPermissions('admin.roles.manage'),
         defaults: { status: 'active', sort_order: 0, is_system: false },
@@ -290,7 +290,7 @@ export class AdminService extends BaseService {
           userFields: { updatedBy: 'updated_by' }
         }
       },
-      permissions: {
+      admin_permissions: {
         tableName: 'admin_permissions',
         permissions: this.adminCrudPermissions('admin.permissions.manage'),
         defaults: { status: 'active', sort_order: 0 },
@@ -306,7 +306,7 @@ export class AdminService extends BaseService {
           userFields: { updatedBy: 'updated_by' }
         }
       },
-      routes: {
+      admin_routes: {
         tableName: 'admin_routes',
         permissions: this.adminCrudPermissions('admin.routes.manage'),
         defaults: { route_type: 'page', status: 'active', visible: true, keep_alive: false, sort_order: 0 },
@@ -322,7 +322,7 @@ export class AdminService extends BaseService {
           userFields: { updatedBy: 'updated_by' }
         }
       },
-      entities: {
+      admin_entities: {
         tableName: 'admin_entities',
         permissions: this.adminCrudPermissions('admin.entities.manage'),
         defaults: { status: 'active', sort_order: 0 },
@@ -338,7 +338,7 @@ export class AdminService extends BaseService {
           userFields: { updatedBy: 'updated_by' }
         }
       },
-      optionSources: {
+      system_option_sources: {
         tableName: 'system_option_sources',
         permissions: this.adminCrudPermissions('admin.options.manage'),
         defaults: { source_type: 'dict', status: 'active', sort_order: 0, is_system: false },
@@ -354,7 +354,7 @@ export class AdminService extends BaseService {
           userFields: { updatedBy: 'updated_by' }
         }
       },
-      optionItems: {
+      system_option_items: {
         tableName: 'system_option_items',
         permissions: this.adminCrudPermissions('admin.options.manage'),
         defaults: { status: 'active', sort_order: 0, disabled: false, is_system: false },
@@ -370,7 +370,7 @@ export class AdminService extends BaseService {
           userFields: { updatedBy: 'updated_by' }
         }
       },
-      userRoles: {
+      admin_user_roles: {
         tableName: 'admin_user_roles',
         permissions: this.adminCrudPermissions('admin.users.manage'),
         create: {
@@ -380,7 +380,7 @@ export class AdminService extends BaseService {
           userFields: { createdBy: 'assigned_by' }
         }
       },
-      rolePermissions: {
+      admin_role_permissions: {
         tableName: 'admin_role_permissions',
         permissions: this.adminCrudPermissions('admin.roles.manage'),
         create: {
@@ -389,11 +389,11 @@ export class AdminService extends BaseService {
           timestamp: false
         }
       },
-      salesOrders: {
+      sales_orders: {
         tableName: 'sales_orders',
         permissions: this.adminCrudPermissions('sales.orders.manage'),
         detailRelations: {
-          salesOrderLines: {
+          sales_order_lines: {
             foreignKey: 'order_id',
             parentKey: 'id',
             inheritFields: ['account_id'],
@@ -421,7 +421,7 @@ export class AdminService extends BaseService {
           userFields: { updatedBy: 'updated_by' }
         }
       },
-      salesOrderLines: {
+      sales_order_lines: {
         tableName: 'sales_order_lines',
         permissions: this.adminCrudPermissions('sales.orders.manage'),
         defaults: {
@@ -448,28 +448,28 @@ export class AdminService extends BaseService {
 
   protected override hooks(): ServiceHooks {
     return {
-      roles: {
+      admin_roles: {
         afterCreate: [this.syncRolePermissionsHook],
         afterUpdate: [this.syncRolePermissionsHook],
         beforeDelete: [this.resolveCodeDeleteId]
       },
-      permissions: { beforeDelete: [this.resolveCodeDeleteId] },
-      routes: {
+      admin_permissions: { beforeDelete: [this.resolveCodeDeleteId] },
+      admin_routes: {
         beforeCreate: [this.normalizeRoutePayload],
         beforeUpdate: [this.normalizeRoutePayload],
         beforeDelete: [this.resolveCodeDeleteId]
       },
-      entities: {
+      admin_entities: {
         beforeCreate: [this.normalizeEntityPayload],
         beforeUpdate: [this.normalizeEntityPayload],
         beforeDelete: [this.resolveCodeDeleteId]
       },
-      optionSources: {
+      system_option_sources: {
         beforeCreate: [this.normalizeOptionSourcePayload],
         beforeUpdate: [this.normalizeOptionSourcePayload],
         beforeDelete: [this.resolveOptionSourceDeleteId, this.preventDeleteSystemOptionSource]
       },
-      optionItems: {
+      system_option_items: {
         beforeCreate: [this.normalizeOptionItemPayload, this.assertDictOptionSource],
         beforeUpdate: [this.normalizeOptionItemPayload, this.assertDictOptionSource],
         beforeDelete: [this.resolveOptionItemDeleteId, this.preventDeleteSystemOptionItem],

@@ -1,0 +1,108 @@
+
+> @ workflow-api:trigger:dev E:\enLearn
+> pnpm --dir api workflow:trigger:dev
+
+
+> hikari-api@ workflow:trigger:dev E:\enLearn\api
+> powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-trigger-dev.ps1 -ApiUrl http://localhost:3030 -EnvFile %INIT_CWD%\.env
+
+[enLearn-trigger] Starting Trigger.dev worker: http://localhost:3030
+
+Trigger.dev (4.5.7 -> 4.5.9)
+------------------------------------------------------
+[90m|[39m
+[33m![39m  Warning: You're not running the latest CLI version, please consider updating ASAP
+[90m|[39m  
+[90m|[39m           Current:     4.5.7
+[90m|[39m           Latest:      4.5.9
+[90m|[39m  
+[90m|[39m           Run latest:  npx trigger.dev@latest
+------------------------------------------------------
+Key: Version | Task | Run
+------------------------------------------------------
+○ Building local worker…
+○ Local worker ready on branch: default [node] -> 20260803.1
+○ Rebuilding local worker…
+○ No changes detected, skipping build…
+○ Rebuilding local worker…
+○ No changes detected, skipping build…
+○ Aug 03, 17:25:58.954 ->  20260803.1 | workflow.instance.run | run_cmsd0xx9y00016wu2h6n49h8k.1
+○ Aug 03, 17:26:01.919 ->  20260803.1 | notification.dispatch | run_cmsd0xzhx00056wu2rizm0pgi.1
+○ Aug 03, 17:26:04.753 ->  20260803.1 | notification.dispatch | run_cmsd0xzhx00056wu2rizm0pgi.1 | Success (1.2s)
+○ Aug 03, 17:29:00.884 ->  20260803.1 | notification.dispatch | run_cmsd11tub00086wu2yw58t5ol.1
+○ Aug 03, 17:29:02.776 ->  20260803.1 | notification.dispatch | run_cmsd11tub00086wu2yw58t5ol.1 | Success (1s)
+○ Connection was lost: transport close
+○ Connection was restored
+○ Aug 03, 17:46:43.765 ->  20260803.1 | notification.dispatch | run_cmsd1olxe0001s8u24la5eo0n.1
+○ Aug 03, 17:46:45.922 ->  20260803.1 | notification.dispatch | run_cmsd1olxe0001s8u24la5eo0n.1 | Success (1.2s)
+○ Aug 03, 17:47:29.272 ->  20260803.1 | notification.dispatch | run_cmsd1pl1l0004s8u2qm8z0yw1.1
+○ Aug 03, 17:47:33.489 ->  20260803.1 | notification.dispatch | run_cmsd1pl1l0004s8u2qm8z0yw1.1 | Success (2.8s)
+○ Aug 03, 17:47:33.333 ->  20260803.1 | notification.dispatch | run_cmsd1po390008s8u2uu5vek21.1
+○ Aug 03, 17:47:36.946 ->  20260803.1 | notification.dispatch | run_cmsd1po390008s8u2uu5vek21.1 | Success (2.2s)
+○ Aug 03, 17:47:50.567 ->  20260803.1 | notification.dispatch | run_cmsd1q1en000bs8u2eb477rab.1
+○ Aug 03, 17:48:01.858 ->  20260803.1 | notification.dispatch | run_cmsd1q1en000bs8u2eb477rab.1 | Error (10.2s)
+
+X Error: Connection terminated due to connection timeout
+    at file:///E:/enLearn/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at withClient (file:///E:/enLearn/api/src/workflow/trigger/notification.task.ts:1097:18)
+    at runNotificationDispatchTask (file:///E:/enLearn/api/src/workflow/trigger/notification.task.ts:146:12)
+    at _tracer.startActiveSpan.attributes (file:///E:/enLearn/node_modules/.pnpm/@trigger.dev+core@4.5.7_supports-color@10.2.2/node_modules/@trigger.dev/core/src/v3/workers/taskExecutor.ts:431:18)
+    at file:///E:/enLearn/node_modules/.pnpm/@trigger.dev+core@4.5.7_supports-color@10.2.2/node_modules/@trigger.dev/core/src/v3/tracer.ts:135:18
+    at file:///E:/enLearn/node_modules/.pnpm/@trigger.dev+core@4.5.7_supports-color@10.2.2/node_modules/@trigger.dev/core/src/v3/workers/taskExecutor.ts:426:14
+    at _RunTimelineMetricsAPI.measureMetric (file:///E:/enLearn/node_modules/.pnpm/@trigger.dev+core@4.5.7_supports-color@10.2.2/node_modules/@trigger.dev/core/src/v3/runTimelineMetrics/index.ts:67:22)
+    at file:///E:/enLearn/node_modules/.pnpm/@trigger.dev+core@4.5.7_supports-color@10.2.2/node_modules/@trigger.dev/core/src/v3/workers/taskExecutor.ts:190:26
+    at tryCatch (file:///E:/enLearn/node_modules/.pnpm/@trigger.dev+core@4.5.7_supports-color@10.2.2/node_modules/@trigger.dev/core/src/v3/tryCatch.ts:10:18)
+
+○ Aug 03, 17:48:31.969 ->  20260803.1 | workflow.instance.run | run_cmsd0xx9y00016wu2h6n49h8k.1 | Error (48.6s)
+
+X Error: Connection terminated unexpectedly
+    at file:///E:/enLearn/node_modules/.pnpm/pg-pool@3.14.0_pg@8.22.0/node_modules/pg-pool/index.js:45:11
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at PostgresWorkflowRuntimeStore.completeNodeInstanceInClient (file:///E:/enLearn/api/src/workflow/runtime/runtime.postgres-store.ts:915:5)
+    at PostgresWorkflowRuntimeStore.completeNodeInstance (file:///E:/enLearn/api/src/workflow/runtime/runtime.postgres-store.ts:653:5)
+    at completeNodeProjection (file:///E:/enLearn/api/src/workflow/runtime/workflow.executor.ts:279:3)
+    at enterNode (file:///E:/enLearn/api/src/workflow/runtime/workflow.executor.ts:140:9)
+    at executeWorkflowInstance (file:///E:/enLearn/api/src/workflow/runtime/workflow.executor.ts:58:18)
+    at run (file:///E:/enLearn/api/src/workflow/trigger/workflow-instance.task.ts:37:14)
+    at _tracer.startActiveSpan.attributes (file:///E:/enLearn/node_modules/.pnpm/@trigger.dev+core@4.5.7_supports-color@10.2.2/node_modules/@trigger.dev/core/src/v3/workers/taskExecutor.ts:431:18)
+    at file:///E:/enLearn/node_modules/.pnpm/@trigger.dev+core@4.5.7_supports-color@10.2.2/node_modules/@trigger.dev/core/src/v3/tracer.ts:135:18
+
+○ Rebuilding local worker…
+○ Local worker ready on branch: default [node] -> 20260803.2
+○ Aug 03, 18:05:21.873 ->  20260803.2 | workflow.instance.run | run_cmsd2ckoj000fs8u25p2h0i4e.1
+○ Aug 03, 18:05:24.323 ->  20260803.2 | notification.dispatch | run_cmsd2cmhf000js8u22ry0qlsa.1
+○ Aug 03, 18:05:26.946 ->  20260803.2 | notification.dispatch | run_cmsd2cmhf000js8u22ry0qlsa.1 | Success (1.1s)
+○ Rebuilding local worker…
+○ No changes detected, skipping build…
+○ Aug 03, 18:14:25.267 ->  20260803.2 | workflow.instance.run | run_cmsd2o7xg000ms8u2jngl66in.1
+○ Aug 03, 18:14:27.374 ->  20260803.2 | notification.dispatch | run_cmsd2o9kb000qs8u2igrqaff5.1
+○ Aug 03, 18:14:29.837 ->  20260803.2 | notification.dispatch | run_cmsd2o9kb000qs8u2igrqaff5.1 | Success (1.2s)
+○ Aug 03, 18:20:16.743 ->  20260803.2 | workflow.instance.run | run_cmsd2vr3u000ts8u2j2oxqtpk.1
+○ Aug 03, 18:20:17.293 ->  20260803.2 | workflow.instance.run | run_cmsd2vrag000ws8u23t2v8hmb.1
+○ Aug 03, 18:20:19.215 ->  20260803.2 | notification.dispatch | run_cmsd2vt0w0010s8u2n5i0ye6k.1
+○ Aug 03, 18:20:21.487 ->  20260803.2 | notification.dispatch | run_cmsd2vt0w0010s8u2n5i0ye6k.1 | Success (1.1s)
+○ Aug 03, 18:20:19.841 ->  20260803.2 | notification.dispatch | run_cmsd2vte70014s8u2xp7ui6sg.1
+○ Aug 03, 18:20:23.260 ->  20260803.2 | notification.dispatch | run_cmsd2vte70014s8u2xp7ui6sg.1 | Success (1s)
+○ Aug 03, 18:27:21.746 ->  20260803.2 | workflow.instance.run | run_cmsd34v3m0017s8u2righ9j4r.1
+○ Aug 03, 18:28:08.392 ->  20260803.2 | workflow.instance.run | run_cmsd34v3m0017s8u2righ9j4r.1 | Success (5.2s)
+○ Aug 03, 18:27:23.823 ->  20260803.2 | notification.dispatch | run_cmsd34wq7001bs8u2xyd0md4e.1
+○ Aug 03, 18:28:10.534 ->  20260803.2 | notification.dispatch | run_cmsd34wq7001bs8u2xyd0md4e.1 | Success (1.3s)
+○ Aug 03, 18:28:08.475 ->  20260803.2 | notification.dispatch | run_cmsd356qp001es8u25lsij3aw.1
+○ Aug 03, 18:28:12.397 ->  20260803.2 | notification.dispatch | run_cmsd356qp001es8u25lsij3aw.1 | Success (1s)
+○ Aug 03, 18:28:10.996 ->  20260803.2 | notification.dispatch | run_cmsd357qg001hs8u20y8u4zya.1
+○ Aug 03, 18:28:14.348 ->  20260803.2 | notification.dispatch | run_cmsd357qg001hs8u20y8u4zya.1 | Success (1s)
+○ Aug 03, 18:28:13.530 ->  20260803.2 | notification.dispatch | run_cmsd35hd9001js8u2ksi55i3r.1
+○ Aug 03, 18:28:16.251 ->  20260803.2 | notification.dispatch | run_cmsd35hd9001js8u2ksi55i3r.1 | Success (1s)
+○ Aug 03, 18:28:15.066 ->  20260803.2 | notification.dispatch | run_cmsd35ie6001ms8u2gooezz3p.1
+○ Aug 03, 18:28:18.080 ->  20260803.2 | notification.dispatch | run_cmsd35ie6001ms8u2gooezz3p.1 | Success (1s)
+○ Aug 03, 18:28:16.449 ->  20260803.2 | notification.dispatch | run_cmsd35ttl001os8u21fkzvegj.1
+○ Aug 03, 18:28:19.860 ->  20260803.2 | notification.dispatch | run_cmsd35ttl001os8u21fkzvegj.1 | Success (1s)
+○ Aug 03, 18:28:18.979 ->  20260803.2 | notification.dispatch | run_cmsd35uva001qs8u22j1a6ghg.1
+○ Aug 03, 18:28:21.703 ->  20260803.2 | notification.dispatch | run_cmsd35uva001qs8u22j1a6ghg.1 | Success (1.1s)
+○ Aug 03, 18:33:01.685 ->  20260803.2 | workflow.instance.run | run_cmsd2ckoj000fs8u25p2h0i4e.1 | Cancelled (0ms)
+○ Aug 03, 18:33:02.684 ->  20260803.2 | workflow.instance.run | run_cmsd2o7xg000ms8u2jngl66in.1 | Cancelled (0ms)
+○ Aug 03, 18:33:03.797 ->  20260803.2 | workflow.instance.run | run_cmsd2vr3u000ts8u2j2oxqtpk.1 | Cancelled (0ms)
+○ Aug 03, 18:33:04.926 ->  20260803.2 | workflow.instance.run | run_cmsd2vrag000ws8u23t2v8hmb.1 | Cancelled (0ms)
+○ Rebuilding local worker…
+○ No changes detected, skipping build…

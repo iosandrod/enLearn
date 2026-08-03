@@ -9,7 +9,7 @@ import type {
   WorkflowDefinitionQuery,
   WorkflowModelQuery
 } from '../workflow/definition/definition.dto';
-import { getTriggerEngineStatus } from '../workflow/trigger/trigger-engine.config';
+import { TriggerCredentialsService } from '../workflow/trigger/trigger-credentials.service';
 import { RuntimeService } from '../workflow/runtime/runtime.service';
 import type {
   AddSignTaskDto,
@@ -47,7 +47,9 @@ export class WorkflowRpcController {
     @Inject(JobService)
     private readonly jobService: JobService,
     @Inject(ApprovalFlowTestService)
-    private readonly approvalFlowTestService: ApprovalFlowTestService
+    private readonly approvalFlowTestService: ApprovalFlowTestService,
+    @Inject(TriggerCredentialsService)
+    private readonly triggerCredentials: TriggerCredentialsService
   ) {}
 
   @MessagePattern(WORKFLOW_REQUEST_PATTERN)
@@ -77,7 +79,7 @@ export class WorkflowRpcController {
       return {
         service: 'workflow-service',
         status: 'ok',
-        triggerEngine: getTriggerEngineStatus(),
+        triggerEngine: await this.triggerCredentials.getStatus(),
         timestamp: new Date().toISOString()
       };
     }

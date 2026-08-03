@@ -231,7 +231,7 @@ invoke<LowCodePageRecord & { resolvedData: Record<string, unknown> }>(
 
 ```ts
 invoke<LowCodePageRecord>('lowcode', 'saveItem', {
-  resource: 'pages',
+  resource: 'lowcode_pages',
   id: existingPage?.id,
   data: {
     code: schema.code,
@@ -241,6 +241,7 @@ invoke<LowCodePageRecord>('lowcode', 'saveItem', {
     layout: schema.layout ?? 'dashboard',
     status: schema.status ?? 'draft',
     keep_alive: schema.keepAlive ?? true,
+    page_type: schema.pageType ?? 'custom',
     edit_page_id: existingPage?.edit_page_id ?? null,
     schema,
     version: (existingPage?.version ?? 0) + 1,
@@ -253,7 +254,7 @@ invoke<LowCodePageRecord>('lowcode', 'saveItem', {
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `resource` | `'pages'` | 是 | 低代码页面资源 |
+| `resource` | `'lowcode_pages'` | 是 | 低代码页面资源（与真实表名一致） |
 | `id` | `string` | 否 | 已有记录的 ID；传入时更新，否则新增 |
 | `data` | `Record<string, unknown>` | 是 | `lowcode_pages` 的页面字段和 Schema |
 
@@ -264,13 +265,14 @@ invoke<LowCodePageRecord>('lowcode', 'saveItem', {
 - 调用方负责先用 `prepareLowCodePageSchema` 规范化 Schema。
 - 已存在页面传入 `id` 后更新；不传 `id` 时新增。
 - 调用方负责递增 `version`，发布时写入 `published_at`。
+- 页面类型以 `lowcode_pages.page_type` 为准；`schema.pageType` 作为兼容镜像，由数据库从该字段保持同步。
 - 列表页通过 `lowcode_pages.edit_page_id` 指向编辑页，不使用独立关系表。
 
 ### Publish with `lowcode.saveItem`
 
 ```ts
 invoke<LowCodePageRecord>('lowcode', 'saveItem', {
-  resource: 'pages',
+  resource: 'lowcode_pages',
   id: page.id,
   data: {
     status: 'published',
@@ -283,7 +285,7 @@ invoke<LowCodePageRecord>('lowcode', 'saveItem', {
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `resource` | `'pages'` | 是 | 低代码页面资源 |
+| `resource` | `'lowcode_pages'` | 是 | 低代码页面资源（与真实表名一致） |
 | `id` | `string` | 是 | 页面记录 ID |
 | `data` | `Record<string, unknown>` | 是 | 包含发布状态、Schema、版本号和发布时间 |
 
@@ -295,7 +297,7 @@ invoke<LowCodePageRecord>('lowcode', 'saveItem', {
 
 ```ts
 invoke('lowcode', 'updateItem', {
-  resource: 'pages',
+  resource: 'lowcode_pages',
   filters: { code: 'users' },
   data: { status: 'archived' },
 });
@@ -523,7 +525,7 @@ type Props = {
 | 服务 | 方法 | 参数 | 返回值 |
 | --- | --- | --- | --- |
 | `lowcode` | `getPage` | `{ code: string; includeData: boolean }` | `Promise<LowCodePageRecord>` |
-| `lowcode` | `saveItem` | `{ resource: 'pages'; id?: string; data: Record<string, unknown> }` | `Promise<LowCodePageRecord>` |
+| `lowcode` | `saveItem` | `{ resource: 'lowcode_pages'; id?: string; data: Record<string, unknown> }` | `Promise<LowCodePageRecord>` |
 | `lowcode` | `listPages` | 无 | `Promise<LowCodePageRecord[]>` |
 
 ### `VisualEditorProvider`

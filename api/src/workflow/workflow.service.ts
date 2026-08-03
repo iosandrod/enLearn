@@ -36,6 +36,14 @@ function stripUndefined(input: Record<string, unknown>) {
   return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
 }
 
+function resolveListQuery(postData: PostData) {
+  const filters = isRecord(postData.filters) ? postData.filters : {};
+  return {
+    ...postData,
+    ...filters
+  };
+}
+
 @Injectable()
 export class WorkflowService extends BaseService {
   constructor(
@@ -173,27 +181,29 @@ export class WorkflowService extends BaseService {
   }
 
   private resolveListItemsRequest(postData: PostData): WorkflowRequest {
+    const query = resolveListQuery(postData);
+
     switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type)) {
       case 'models':
-        return { method: 'GET', path: '/models', query: postData };
+        return { method: 'GET', path: '/models', query };
       case 'definitions':
-        return { method: 'GET', path: '/definitions', query: postData };
+        return { method: 'GET', path: '/definitions', query };
       case 'instances':
-        return { method: 'GET', path: '/instances', query: postData };
+        return { method: 'GET', path: '/instances', query };
       case 'startedInstances':
-        return { method: 'GET', path: '/instances/started', query: postData };
+        return { method: 'GET', path: '/instances/started', query };
       case 'jobs':
-        return { method: 'GET', path: '/jobs', query: postData };
+        return { method: 'GET', path: '/jobs', query };
       case 'jobRuns':
-        return { method: 'GET', path: '/jobs/runs', query: postData };
+        return { method: 'GET', path: '/jobs/runs', query };
       case 'todoTasks':
-        return { method: 'GET', path: '/tasks/todo', query: postData };
+        return { method: 'GET', path: '/tasks/todo', query };
       case 'doneTasks':
-        return { method: 'GET', path: '/tasks/done', query: postData };
+        return { method: 'GET', path: '/tasks/done', query };
       case 'ccTasks':
-        return { method: 'GET', path: '/tasks/cc', query: postData };
+        return { method: 'GET', path: '/tasks/cc', query };
       case 'startedTasks':
-        return { method: 'GET', path: '/tasks/started', query: postData };
+        return { method: 'GET', path: '/tasks/started', query };
       default:
         throw new BadRequestException('Unsupported workflow listItems itemType.');
     }

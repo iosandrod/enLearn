@@ -435,6 +435,7 @@ function buildPageSaveData(schema: LowCodePageSchema) {
     layout: schema.layout ?? 'dashboard',
     status: schema.status ?? 'draft',
     keep_alive: schema.keepAlive ?? true,
+    page_type: schema.pageType ?? 'custom',
     edit_page_id: page.value?.edit_page_id ?? null,
     schema,
     version: nextVersion,
@@ -444,7 +445,7 @@ function buildPageSaveData(schema: LowCodePageSchema) {
 
 async function saveLowCodePageItem(schema: LowCodePageSchema) {
   return host.getServiceApi().invoke<LowCodePageRecord>('lowcode', 'saveItem', {
-    resource: 'pages',
+    resource: 'lowcode_pages',
     ...(page.value?.id ? { id: page.value.id } : {}),
     data: buildPageSaveData(schema)
   });

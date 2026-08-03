@@ -9,6 +9,7 @@ export type LowCodePageRow = {
   layout: 'default' | 'dashboard' | 'blank';
   status: 'draft' | 'published' | 'archived';
   keep_alive: boolean;
+  page_type: 'list' | 'edit' | 'detail' | 'custom';
   edit_page_id: string | null;
   schema: LowCodePageSchema;
   version: number;

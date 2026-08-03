@@ -147,6 +147,20 @@ export const lowCodePagesGridSchema: LowCodeGridSchema = {
       { field: 'route', title: 'Route', minWidth: 220 },
       { field: 'title', title: 'Title', minWidth: 180 },
       {
+        field: 'page_type',
+        title: 'Page Type',
+        minWidth: 120,
+        formatter: {
+          type: 'enum',
+          map: {
+            list: 'List',
+            edit: 'Edit',
+            detail: 'Detail',
+            custom: 'Custom'
+          }
+        }
+      },
+      {
         field: 'status',
         title: 'Status',
         minWidth: 120,

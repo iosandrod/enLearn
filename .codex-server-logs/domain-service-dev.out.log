@@ -2246,3 +2246,243 @@ Domain service is listening on Redis.
 [32m[Nest] 37148  - [39m2026/08/03 12:54:21 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
 [32m[Nest] 37148  - [39m2026/08/03 12:54:21 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +96ms[39m
 Domain service is listening on Redis.
+15:42:34 [tsx] change in ./src\files-service\files.service.ts Restarting...
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +15ms[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +4ms[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +11ms[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:41 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 53256  - [39m2026/08/03 15:43:42 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +100ms[39m
+Domain service is listening on Redis.
+15:43:44 [tsx] change in ./src\chat-service\chat.service.ts Restarting...
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +15ms[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +12ms[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +4ms[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 36324  - [39m2026/08/03 15:43:48 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +89ms[39m
+Domain service is listening on Redis.
+15:43:59 [tsx] change in ./src\chat-service\chat.service.ts Restarting...
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +17ms[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +7ms[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +9ms[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 51084  - [39m2026/08/03 15:44:00 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +63ms[39m
+Domain service is listening on Redis.
+15:44:52 [tsx] change in ./src\common\base.service.ts Restarting...
+[32m[Nest] 49320  - [39m2026/08/03 15:44:53 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +19ms[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +10ms[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +4ms[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +10ms[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:53 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 49320  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +141ms[39m
+Domain service is listening on Redis.
+15:46:11 [tsx] change in ./src\chat-service\chat.service.ts Restarting...
+[32m[Nest] 15456  - [39m2026/08/03 15:46:12 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:12 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +17ms[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +7ms[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 15456  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +109ms[39m
+Domain service is listening on Redis.
+15:47:59 [tsx] change in ./src\common\base.service.ts Restarting...
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +14ms[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +11ms[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 54252  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +67ms[39m
+Domain service is listening on Redis.
+15:48:08 [tsx] change in ./src\common\base.service.ts Restarting...
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +13ms[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +8ms[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 24968  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +69ms[39m
+Domain service is listening on Redis.
+17:14:15 [tsx] change in ./src\lowcode-service\lowcode.resources.ts Rerunning...
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +22ms[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 47696  - [39m2026/08/03 17:14:18 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +293ms[39m
+Domain service is listening on Redis.
+17:23:06 [tsx] change in ./src\lowcode-service\lowcode.resources.ts Restarting...
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +49ms[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +12ms[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 45168  - [39m2026/08/03 17:23:09 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +303ms[39m
+Domain service is listening on Redis.
+17:28:43 [tsx] change in ./src\lowcode-service\lowcode.resources.ts Restarting...
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +15ms[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +10ms[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 30548  - [39m2026/08/03 17:28:44 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +120ms[39m
+Domain service is listening on Redis.
+18:04:02 [tsx] change in ./src\common\base.service.ts Restarting...
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +17ms[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +16ms[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 59740  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +201ms[39m
+Domain service is listening on Redis.
+18:10:44 [tsx] change in ./src\common\base.service.ts Restarting...
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +18ms[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 62824  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +185ms[39m
+Domain service is listening on Redis.
+18:12:23 [tsx] change in ./src\common\base.service.ts Restarting...
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +17ms[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:25 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 40548  - [39m2026/08/03 18:12:26 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +185ms[39m
+Domain service is listening on Redis.
+18:12:43 [tsx] change in ./src\lowcode-service\lowcode.resources.ts Restarting...
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +11ms[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +10ms[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:44 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 60616  - [39m2026/08/03 18:12:45 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +156ms[39m
+Domain service is listening on Redis.
+18:45:27 [tsx] change in ./src\lowcode-service\lowcode.service.ts Restarting...
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +11ms[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +25ms[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 48820  - [39m2026/08/03 18:45:39 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +143ms[39m
+Domain service is listening on Redis.
+18:46:56 [tsx] change in ./src\lowcode-service\lowcode.service.ts Restarting...
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAccountModule dependencies initialized[39m[38;5;3m +10ms[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAdminModule dependencies initialized[39m[38;5;3m +8ms[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPaymentModule dependencies initialized[39m[38;5;3m +8ms[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUserModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mLowCodeModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mPostsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mNotificationModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mEntityDesignModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mFilesModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 61884  - [39m2026/08/03 18:46:57 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +118ms[39m
+Domain service is listening on Redis.

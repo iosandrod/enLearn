@@ -12,6 +12,7 @@ const pageFields = [
   'layout',
   'status',
   'keep_alive',
+  'page_type',
   'schema',
   'version',
   'published_at',
@@ -19,11 +20,31 @@ const pageFields = [
 ];
 
 export const lowCodeResources: ResourceConfigMap = {
-  pages: {
+  lowcode_pages: {
     tableName: 'lowcode_pages',
     clientMode: 'admin',
     permissions: crudPermissions('lowcode.pages.manage'),
-    defaults: { layout: 'dashboard', status: 'draft', keep_alive: true, version: 1 },
+    defaults: {
+      layout: 'dashboard',
+      status: 'draft',
+      keep_alive: true,
+      page_type: 'custom',
+      version: 1
+    },
+    detailRelations: {
+      lowcode_page_versions: {
+        foreignKey: 'page_id',
+        parentKey: 'id',
+        updateMode: 'replace'
+      }
+    },
+    afterSaveRelations: {
+      lowcode_pages: {
+        actions: ['update'],
+        allowedFields: ['edit_page_id'],
+        allowedWhereFields: ['id']
+      }
+    },
     list: { defaultSorts: [{ field: 'updated_at', direction: 'desc' }] },
     create: {
       allowedFields: pageFields,
@@ -35,7 +56,7 @@ export const lowCodeResources: ResourceConfigMap = {
       userFields: { updatedBy: 'updated_by' }
     }
   },
-  pageVersions: {
+  lowcode_page_versions: {
     tableName: 'lowcode_page_versions',
     clientMode: 'admin',
     permissions: crudPermissions('lowcode.pages.manage'),

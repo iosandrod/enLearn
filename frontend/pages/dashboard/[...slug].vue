@@ -14,14 +14,17 @@
       :page="page"
       :service-api="serviceApi"
       :router="router"
-      :route="currentRoute"
+      :route="pageRoute"
     />
   </section>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
-import { getBuiltinLowCodePageByRoute } from '@enlearn/lowcode-framework/runtime';
+import {
+  getBuiltinLowCodePageByRoute,
+  type LowCodeHostRoute,
+} from '@enlearn/lowcode-framework/runtime';
 import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
 import { getLowCodePage } from '../../utils/lowCodePages';
 
@@ -32,11 +35,21 @@ const props = defineProps<{
 const serviceApi = useServiceApi();
 const router = useRouter();
 const currentRoute = useRoute();
+const pageRoute = ref<LowCodeHostRoute>(createPageRoute());
 const page = ref<LowCodePageRecord & { resolvedData?: Record<string, unknown> } | null>(
   null
 );
 const loading = ref(true);
 const errorMessage = ref('');
+
+function createPageRoute(): LowCodeHostRoute {
+  return {
+    query: { ...currentRoute.query },
+    params: { ...currentRoute.params },
+    path: currentRoute.path,
+    fullPath: currentRoute.fullPath,
+  };
+}
 
 function isMissingLowCodePageError(error: unknown) {
   const fetchError = error as {
@@ -85,7 +98,14 @@ async function loadPage() {
 }
 
 watch(() => props.routePath, () => {
+  pageRoute.value = createPageRoute();
   loadPage();
+});
+
+watch(() => currentRoute.fullPath, () => {
+  if (currentRoute.path === props.routePath) {
+    pageRoute.value = createPageRoute();
+  }
 });
 
 onMounted(loadPage);

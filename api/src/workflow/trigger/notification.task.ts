@@ -1,6 +1,10 @@
 import { task, tasks, wait } from '@trigger.dev/sdk';
 import { Pool, type PoolClient, type QueryResultRow } from 'pg';
 import { getWorkflowEnv } from '../common/env';
+import {
+  isTransientPostgresError,
+  retryTransientPostgresOperation
+} from '../common/postgres-resilience';
 
 export const NOTIFICATION_DISPATCH_TASK_ID = 'notification.dispatch';
 export const NOTIFICATION_RETRY_DELIVERY_TASK_ID = 'notification.retryDelivery';
@@ -995,12 +999,18 @@ function createNotificationPool(taskName: string) {
   if (!connectionString) {
     throw new Error(`DIRECT_URL or DATABASE_URL is required by the ${taskName}.`);
   }
-  return new Pool({
+  const pool = new Pool({
     connectionString,
     max: 2,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 5_000,
     idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 10_000
+    connectionTimeoutMillis: 30_000
   });
+  pool.on('error', (error) => {
+    console.warn(`[notification-task] Postgres idle client error: ${error.message}`);
+  });
+  return pool;
 }
 
 async function upsertRestRows<T extends Record<string, unknown>>(
@@ -1094,11 +1104,15 @@ function localInboxTemplate(eventType: string): NotificationTemplateRow {
 }
 
 async function withClient<T>(pool: Pool, callback: (client: PoolClient) => Promise<T>) {
-  const client = await pool.connect();
+  const client = await retryTransientPostgresOperation(() => pool.connect());
+  let failure: unknown;
   try {
     return await callback(client);
+  } catch (error) {
+    failure = error;
+    throw error;
   } finally {
-    client.release();
+    client.release(isTransientPostgresError(failure) ? true : undefined);
   }
 }
 

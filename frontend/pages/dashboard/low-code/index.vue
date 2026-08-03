@@ -218,7 +218,7 @@ function normalizeFormFromPage(page: LowCodePageRecord | null): LowCodePageForm 
     code: page.code,
     route: page.route,
     title: page.title,
-    pageType: page.schema.pageType ?? 'custom',
+    pageType: page.page_type,
     description: page.description ?? '',
     layout: page.layout,
     status: page.status,
@@ -280,7 +280,7 @@ async function archiveLowCodePage(row: Record<string, unknown>) {
 
   try {
     await serviceApi.invoke('lowcode', 'updateItem', {
-      resource: 'pages',
+      resource: 'lowcode_pages',
       filters: { code: page.code },
       data: { status: 'archived' }
     });
@@ -328,6 +328,7 @@ function buildPageSaveData(
     layout: schema.layout ?? 'dashboard',
     status: schema.status ?? 'draft',
     keep_alive: schema.keepAlive ?? true,
+    page_type: schema.pageType ?? 'custom',
     edit_page_id: currentPage?.edit_page_id ?? null,
     schema,
     version: (currentPage?.version ?? 0) + 1,
@@ -362,7 +363,7 @@ async function persistPage(
     ...(statusOverride ? { status: statusOverride } : {})
   };
   const saved = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
-    resource: 'pages',
+    resource: 'lowcode_pages',
     ...(currentPage?.id ? { id: currentPage.id } : {}),
     data: buildPageSaveData(schema, currentPage)
   });
@@ -370,7 +371,7 @@ async function persistPage(
   const previousParent = pages.value.find((page) => page.edit_page_id === saved.id);
   if (previousParent && previousParent.id !== parentListPage?.id) {
     await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
-      resource: 'pages',
+      resource: 'lowcode_pages',
       id: previousParent.id,
       data: { edit_page_id: null }
     });
@@ -378,7 +379,7 @@ async function persistPage(
 
   if (parentListPage && parentListPage.edit_page_id !== saved.id) {
     await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
-      resource: 'pages',
+      resource: 'lowcode_pages',
       id: parentListPage.id,
       data: { edit_page_id: saved.id }
     });

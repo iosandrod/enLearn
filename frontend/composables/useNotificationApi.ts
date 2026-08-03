@@ -208,7 +208,7 @@ export function useNotificationApi() {
 
   async function archiveMessage(ids: string[]) {
     const rows = await serviceApi.invoke<NotificationMessage[]>('notification', 'updateItem', {
-      resource: 'messages',
+      resource: 'notification_messages',
       ids,
       archive: true
     });
@@ -268,7 +268,7 @@ export function useNotificationApi() {
     };
     const method = existing?.id ? 'updateItem' : 'createItem';
     const result = await serviceApi.invoke<NotificationPreference>('notification', method, {
-      resource: 'preferences',
+      resource: 'notification_preferences',
       ...(existing?.id ? { id: existing.id } : {}),
       data: payload
     });
@@ -297,7 +297,7 @@ export function useNotificationApi() {
 
   async function retryDelivery(id: string) {
     const delivery = await serviceApi.invoke<NotificationDelivery>('notification', 'updateItem', {
-      resource: 'deliveries',
+      resource: 'notification_deliveries',
       id,
       retry: true
     });

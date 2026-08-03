@@ -3,10 +3,13 @@
     <RouterView v-slot="{ Component, route: viewRoute }">
       <Suspense>
         <template #default>
-          <KeepAlive v-if="shouldKeepAliveRoute(viewRoute)" :max="dashboardKeepAliveMax">
-            <component :is="Component" :key="resolveRouteCacheKey(viewRoute)" />
-          </KeepAlive>
-          <component v-else :is="Component" :key="viewRoute.fullPath" />
+          <RouteCacheOutlet
+            :route-component="Component"
+            :keep-alive="shouldKeepAliveRoute(viewRoute)"
+            :cache-key="resolveRouteCacheKey(viewRoute)"
+            :route-key="viewRoute.fullPath"
+            :max="dashboardKeepAliveMax"
+          />
         </template>
       </Suspense>
     </RouterView>
@@ -23,6 +26,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router';
+import RouteCacheOutlet from './components/RouteCacheOutlet.vue';
 import DashboardLayout from './layouts/dashboard.vue';
 import DefaultLayout from './layouts/default.vue';
 

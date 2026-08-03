@@ -1,5 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { BaseService, type ResourceConfigMap } from '../common/base.service';
+import {
+  BaseService,
+  type HookContext,
+  type ResourceConfigMap,
+  type ServiceHooks
+} from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { withPostgresClient } from '../common/utils/database';
 import { requireAdmin } from '../common/utils/supabase';
@@ -20,6 +25,37 @@ export class LowCodeService extends BaseService {
   protected override resources(): ResourceConfigMap {
     return lowCodeResources;
   }
+
+  protected override hooks(): ServiceHooks {
+    return {
+      lowcode_pages: {
+        beforeCreate: [this.normalizePageType],
+        beforeUpdate: [this.normalizePageType]
+      }
+    };
+  }
+
+  private normalizePageType = (ctx: HookContext) => {
+    const schema = ctx.data.schema;
+    const schemaPageType = schema && typeof schema === 'object' && !Array.isArray(schema)
+      ? (schema as Record<string, unknown>).pageType
+      : undefined;
+    const candidate = ctx.data.page_type ?? schemaPageType;
+
+    if (candidate === undefined && ctx.action === 'update') return;
+
+    if (
+      candidate !== undefined &&
+      candidate !== 'list' &&
+      candidate !== 'edit' &&
+      candidate !== 'detail' &&
+      candidate !== 'custom'
+    ) {
+      throw new BadRequestException('page_type must be list, edit, detail, or custom.');
+    }
+
+    ctx.data.page_type = candidate ?? 'custom';
+  };
 
   protected override async executeAction(method: string, postData: Record<string, unknown>, context: ServiceContext) {
     switch (method) {
@@ -78,7 +114,7 @@ export class LowCodeService extends BaseService {
   ) {
     const schema = await this.generateTableListPageSchema(postData, context);
     const [existingPage] = asRows(await this.listItems({
-      resource: 'pages',
+      resource: 'lowcode_pages',
       filters: { code: schema.code },
       limit: 1
     }, context)) as LowCodePageRow[];
@@ -86,7 +122,7 @@ export class LowCodeService extends BaseService {
     const now = new Date().toISOString();
 
     return this.saveItem({
-      resource: 'pages',
+      resource: 'lowcode_pages',
       ...(existingPage ? { id: existingPage.id } : {}),
       data: {
         code: schema.code,
@@ -96,6 +132,7 @@ export class LowCodeService extends BaseService {
         layout: schema.layout ?? 'dashboard',
         status: schema.status ?? 'draft',
         keep_alive: schema.keepAlive ?? true,
+        page_type: schema.pageType ?? 'custom',
         edit_page_id: existingPage?.edit_page_id ?? null,
         schema: schema as unknown as Record<string, unknown>,
         version: nextVersion,

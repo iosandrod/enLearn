@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { DefinitionService } from '../definition/definition.service';
 import type { WorkflowRequestActor } from '../definition/definition.types';
@@ -38,7 +39,7 @@ export class ApprovalFlowTestService {
 
     const tenantId = readString(input.tenantId) || actor.tenantId || 'default';
     const testActor = { tenantId, userId };
-    const suffix = Date.now().toString(36);
+    const suffix = createTestRunSuffix();
     const businessKey = `approval-flow-test-${suffix}`;
     const requestedApproverIds = readStringArray(input.approverIds).filter(isUuid);
     const schema = prepareApprovalFlowTestSchema(input.schema, suffix, userId, requestedApproverIds);
@@ -332,6 +333,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function cloneRecord(value: Record<string, unknown>) {
   return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
+}
+
+function createTestRunSuffix() {
+  return `${Date.now().toString(36)}_${randomUUID().replaceAll('-', '').slice(0, 8)}`;
 }
 
 function isUuid(value: string) {

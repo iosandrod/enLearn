@@ -3561,3 +3561,1034 @@ Nest API listening on http://localhost:3002/api/service
 [32m[Nest] 51872  - [39m2026/08/03 13:02:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 1916ms[39m
 [32m[Nest] 51872  - [39m2026/08/03 13:02:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1744ms[39m
 [32m[Nest] 51872  - [39m2026/08/03 13:02:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2386ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:03:06 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1296ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:03:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 1590ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:03:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2744ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:03:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2199ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:04:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1091ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:04:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 347ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:05:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 797ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:05:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 320ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:06:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 643ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:06:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 327ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:07:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 640ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:07:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 344ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:08:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 691ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:08:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 336ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:09:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 649ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:09:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 322ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:10:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 651ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:10:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3903ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:11:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1002ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:11:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 625ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:12:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 796ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:12:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 342ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:13:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 650ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:13:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 332ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:14:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1657ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:14:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 515ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:15:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2114ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:15:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 671ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:16:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1615ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:16:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 513ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:17:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3057ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:17:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2302ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:18:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1428ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:18:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1141ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:19:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1047ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:19:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3539ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:20:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2204ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:20:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2543ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:21:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2752ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:21:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1707ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:22:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2184ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:22:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1230ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:23:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1679ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:23:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 517ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:24:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1985ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:24:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 707ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:25:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2095ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:25:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 949ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:26:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1957ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:26:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1259ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:27:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2526ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:27:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1308ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:28:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1435ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:28:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1072ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:29:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1673ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:29:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 509ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:30:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2961ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:30:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1156ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:31:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3189ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:31:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1673ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:32:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1568ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:32:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1466ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:33:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1694ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:33:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 671ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:34:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1633ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:34:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 475ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:35:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 769ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:35:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 356ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:36:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 691ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:36:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 342ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:37:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 685ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:37:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 341ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:38:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1763ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:38:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 509ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:39:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 879ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:39:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 514ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:40:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 658ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:40:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 340ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:41:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1671ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:41:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 349ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:42:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 700ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:42:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 644ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:43:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 762ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:43:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 432ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:44:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1720ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:44:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 686ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:45:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1802ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:45:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 512ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:46:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2471ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:46:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1699ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:47:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3602ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:47:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1885ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:48:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1721ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:48:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 700ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:49:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1722ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:49:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 682ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:50:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1750ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:50:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 714ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:51:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2785ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:51:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1611ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:52:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2808ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:52:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4445ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:53:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2338ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:53:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1143ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:54:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 687ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:54:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 340ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:55:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 671ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:55:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 432ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:56:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 808ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:56:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 341ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:57:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 726ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:57:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 436ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:58:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 696ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:58:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 361ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:59:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1169ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 13:59:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 321ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:00:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 667ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:00:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 334ms[39m
+[33m[Nest] 51872  - [39m2026/08/03 14:01:34 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getUnreadCount failed 400ms: JWT expired JWT expired Bad Gateway[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:01:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 487ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:01:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 572ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:02:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 676ms[39m
+[33m[Nest] 51872  - [39m2026/08/03 14:02:36 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getUnreadCount failed 163ms: JWT expired JWT expired Bad Gateway[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:02:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 519ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:03:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 696ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:03:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 350ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:04:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1951ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:04:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 930ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:05:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3248ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:05:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1486ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:06:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2576ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:06:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1444ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:07:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2011ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:07:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1219ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:08:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4315ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:08:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2784ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:09:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1521ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:09:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 488ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:10:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3007ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:10:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1305ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:11:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2443ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:11:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1498ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:12:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3070ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:12:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1436ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:13:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3218ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:13:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1919ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:14:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1634ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:14:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 670ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:15:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1386ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:15:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 365ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:16:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2304ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:16:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2220ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:17:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1885ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:17:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1394ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:18:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1888ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:18:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 512ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:19:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3703ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:19:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1915ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:20:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2707ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:20:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1181ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:21:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1170ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:21:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4264ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:22:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2131ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:22:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5458ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:23:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1404ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:23:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3458ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:24:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2246ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:24:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2026ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:25:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2065ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:25:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 667ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:26:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4050ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:26:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5424ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:27:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3738ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:27:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3060ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:28:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1507ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:28:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1804ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:29:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1184ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:29:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3409ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:30:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2071ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:30:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1257ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:31:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2326ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:31:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1575ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:32:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2578ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:32:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1103ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:33:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2586ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:33:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2614ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:34:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2272ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:34:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2357ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:35:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5177ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:35:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6582ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:36:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2224ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:36:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1341ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:37:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2961ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:37:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1138ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:38:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1510ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:38:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1263ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:39:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2284ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:39:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1120ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:40:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1090ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:40:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3295ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:41:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4223ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:41:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5447ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:42:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 12473ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:42:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2614ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:43:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1472ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:43:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2797ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:44:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5025ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:44:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3050ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:45:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4088ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:45:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3397ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:46:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2007ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:46:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2846ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:47:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6499ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:47:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4820ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:48:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2417ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:48:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2256ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:49:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2120ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:49:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6058ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:50:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2840ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:50:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5501ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:51:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2237ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:51:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1895ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:52:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2201ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:52:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2397ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:53:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5676ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:54:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 9182ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:54:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4187ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:54:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4067ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:55:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6907ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:56:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3054ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:57:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2980ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:58:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3582ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 14:59:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6887ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:00:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3049ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:01:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1909ms[39m
+[33m[Nest] 51872  - [39m2026/08/03 15:02:35 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getUnreadCount failed 1016ms: JWT expired JWT expired Bad Gateway[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:02:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1835ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:03:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2494ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:04:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3709ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:05:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3568ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:06:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6560ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:07:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3956ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:08:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3038ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:09:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2012ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:10:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1995ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:11:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2427ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:12:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4213ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:13:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4893ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:14:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3517ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:15:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3247ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:16:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2638ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:17:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3283ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:18:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2782ms[39m
+[33m[Nest] 51872  - [39m2026/08/03 15:19:26 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getUnreadCount failed 826ms: Authentication required. Authentication required. Bad Gateway[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:19:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1661ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:19:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 724ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:19:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3075ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:20:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1648ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:20:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 717ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:21:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1722ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:21:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 754ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:22:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2607ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:22:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6489ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:23:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3082ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:23:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 15230ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:23:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2411ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:23:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 356ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:23:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 705ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:23:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 3576ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:23:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 540ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:23:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 2489ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:09 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1252ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 312ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 568ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 293ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1461ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1818ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3481ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2803ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 340ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 340ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 352ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1231ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 1263ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1554ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1222ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 963ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1107ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 314ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 370ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 913ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 666ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 639ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1016ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 312ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 312ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 318ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 339ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 553ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 806ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 315ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1995ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 2082ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 1152ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 310ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 1318ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1385ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.listItems ok 1672ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 657ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3281ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:24:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2066ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:25:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1631ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:25:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 641ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:26:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2986ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:26:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1373ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:27:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5949ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:27:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5261ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:28:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 2731ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:28:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3663ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:28:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 853ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:28:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1507ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:29:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1773ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:29:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 9821ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2957ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1257ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2009ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5847ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1459ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1729ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 309ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.saveItem ok 924ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.saveItem ok 231ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1163ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1277ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1800ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:30:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1980ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:31:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2649ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:31:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2014ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:32:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2795ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:32:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2705ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:33:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2039ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:33:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6984ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:34:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3059ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:34:46 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 11521ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:35:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2691ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:35:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3200ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:36:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2642ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:36:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2959ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:37:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1872ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:37:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2937ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:38:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3840ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:38:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2056ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:39:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1478ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:39:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3283ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:40:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2249ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:40:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2396ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:41:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2432ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:41:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1941ms[39m
+[32m[Nest] 51872  - [39m2026/08/03 15:42:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2644ms[39m
+15:42:35 [tsx] change in ./src\chat-service\chat.service.ts Restarting...
+15:43:43 [tsx] change in ./src\chat-service\chat.service.ts Restarting...
+[32m[Nest] 57244  - [39m2026/08/03 15:43:50 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:50 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +10ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:50 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:50 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:50 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:50 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:50 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:50 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:59 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +8980ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +5ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:59 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:59 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 57244  - [39m2026/08/03 15:43:59 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +2ms[39m
+Nest API listening on http://localhost:3002/api/service
+15:44:01 [tsx] change in ./src\chat-service\chat.service.ts Restarting...
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +15ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +5ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +357ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +3ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:03 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +3ms[39m
+Nest API listening on http://localhost:3002/api/service
+[32m[Nest] 46444  - [39m2026/08/03 15:44:07 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3570ms[39m
+[32m[Nest] 46444  - [39m2026/08/03 15:44:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3849ms[39m
+15:44:52 [tsx] change in ./src\common\base.service.ts Restarting...
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +23ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +25ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +373ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +8ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +13ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:44:54 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +6ms[39m
+Nest API listening on http://localhost:3002/api/service
+[32m[Nest] 3576  - [39m2026/08/03 15:45:04 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2744ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:45:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4395ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:45:58 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 3364ms[39m
+[32m[Nest] 3576  - [39m2026/08/03 15:46:04 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1943ms[39m
+15:46:11 [tsx] change in ./src\chat-service\chat.service.ts Restarting...
+[32m[Nest] 42252  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +18ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +6ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +11ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +15ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:13 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:14 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +895ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:14 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:14 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:14 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +3ms[39m
+Nest API listening on http://localhost:3002/api/service
+[32m[Nest] 42252  - [39m2026/08/03 15:46:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 2498ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2676ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3960ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 4813ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 5046ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:46:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 339ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:47:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3161ms[39m
+[32m[Nest] 42252  - [39m2026/08/03 15:47:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3653ms[39m
+15:47:59 [tsx] change in ./src\common\base.service.ts Restarting...
+[32m[Nest] 54884  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +10ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:00 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:01 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +320ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:01 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:01 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 54884  - [39m2026/08/03 15:48:01 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +1ms[39m
+Nest API listening on http://localhost:3002/api/service
+15:48:08 [tsx] change in ./src\common\base.service.ts Restarting...
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +9ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +6ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +19ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +231ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:10 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +1ms[39m
+Nest API listening on http://localhost:3002/api/service
+[32m[Nest] 48460  - [39m2026/08/03 15:48:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2133ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3124ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 4476ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:48:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 5226ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:49:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2382ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:49:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6375ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:50:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2187ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:50:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5482ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:51:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3982ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:51:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3521ms[39m
+[33m[Nest] 48460  - [39m2026/08/03 15:51:26 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.saveItem failed 3ms: Unsupported LowCode resource: pages Unsupported LowCode resource: pages Bad Gateway[39m
+[33m[Nest] 48460  - [39m2026/08/03 15:51:26 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.saveItem failed 5ms: Permission required. Permission required. Bad Gateway[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:52:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 2486ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:52:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 5257ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:52:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3739ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:52:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6609ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:53:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4378ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:53:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1883ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:54:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2463ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:54:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 686ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:55:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3270ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:55:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1275ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:55:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1440ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:55:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 2225ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:55:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2768ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:55:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3388ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:55:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 3588ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:56:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3487ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:56:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5176ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:57:09 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1343ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:57:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1475ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:57:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 2347ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:57:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2376ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:57:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3247ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:57:59 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1919ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:58:00 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 2836ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:58:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 942ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:58:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 566ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:58:04 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 328ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:58:05 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1229ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:58:05 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1361ms[39m
+[33m[Nest] 48460  - [39m2026/08/03 15:58:07 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 1370ms: Could not find the table 'public.profiles' in the schema cache Could not find the table 'public.profiles' in the schema cache Bad Gateway[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:58:08 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 3795ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:58:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2178ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:58:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2553ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:59:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2452ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 15:59:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2196ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:00:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 2640ms[39m
+[33m[Nest] 48460  - [39m2026/08/03 16:00:38 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 363ms: Could not find the table 'public.profiles' in the schema cache Could not find the table 'public.profiles' in the schema cache Bad Gateway[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:00:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3640ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:00:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 3755ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:00:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1529ms[39m
+[33m[Nest] 48460  - [39m2026/08/03 16:00:45 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 337ms: Could not find the table 'public.profiles' in the schema cache Could not find the table 'public.profiles' in the schema cache Bad Gateway[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:00:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1088ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1040ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:10 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 315ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 950ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2440ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1105ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 558ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 729ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 2067ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2904ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 729ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:26 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 585ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1263ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1562ms[39m
+[33m[Nest] 48460  - [39m2026/08/03 16:01:28 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 329ms: Could not find the table 'public.profiles' in the schema cache Could not find the table 'public.profiles' in the schema cache Bad Gateway[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2274ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:01:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1999ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:09 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2344ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 330ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2746ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 312ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1401ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1138ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 304ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:28 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1627ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1640ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 2340ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1410ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2769ms[39m
+[33m[Nest] 48460  - [39m2026/08/03 16:02:39 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 1030ms: Could not find the table 'public.profiles' in the schema cache Could not find the table 'public.profiles' in the schema cache Bad Gateway[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:39 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 805ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 787ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 682ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 670ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1216ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 980ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 678ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 676ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 662ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 669ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1122ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:02:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1112ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2259ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 2328ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 323ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1060ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1656ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 871ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 323ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1495ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 634ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1504ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 374ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2135ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1304ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 342ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:03:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1074ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:04:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1450ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:04:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2084ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:05:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1479ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:05:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1845ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:06:04 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 16182ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:06:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2848ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:06:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2258ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:07:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2723ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:07:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2279ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:08:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3393ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:08:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3107ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:09:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1964ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:09:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5206ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:10:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2563ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:10:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1717ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:11:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6471ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:11:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5059ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:12:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2746ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:12:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5797ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:13:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2314ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:13:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3401ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:14:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2967ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:14:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1987ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:15:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5107ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:15:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3364ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:16:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6569ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:16:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3437ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:17:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2956ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:17:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3639ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:18:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4812ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:18:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1456ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:19:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1484ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:19:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3240ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:20:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2039ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:20:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2318ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:21:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1909ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:21:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3407ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:22:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2465ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:22:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2053ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:23:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2357ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:23:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 716ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:24:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3183ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:24:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 707ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:25:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3226ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:25:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 660ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:26:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1484ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:26:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 688ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:27:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4106ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:27:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 672ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:28:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3121ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:28:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 668ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:29:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3809ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:29:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4055ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:30:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3001ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:30:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3641ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:31:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2198ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:31:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5748ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:32:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5097ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:32:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 6667ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:33:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4065ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:33:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 687ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:34:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3694ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:34:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 665ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:35:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4158ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:35:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 806ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:36:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2901ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:36:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1207ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:37:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1932ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:37:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 648ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:38:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 7720ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:38:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4704ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:39:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4408ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:39:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1238ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:40:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2168ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:40:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 885ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:41:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4599ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:41:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 668ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:42:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3377ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:42:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2462ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:43:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3685ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:43:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 909ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:44:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4330ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:44:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 670ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:45:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1976ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:45:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 675ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:46:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2182ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:47:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 5078ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:48:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3514ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:49:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4084ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:50:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2355ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:51:51 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3917ms[39m
+[33m[Nest] 48460  - [39m2026/08/03 16:52:48 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getUnreadCount failed 946ms: JWT expired JWT expired Bad Gateway[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:53:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 9637ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:53:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1639ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:54:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 867ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:55:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 909ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:56:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 683ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:57:49 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1299ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:58:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 832ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 16:59:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 719ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 17:00:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1081ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 17:01:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 834ms[39m
+[32m[Nest] 48460  - [39m2026/08/03 17:02:48 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 974ms[39m
+[33m[Nest] 48460  - [39m2026/08/03 17:04:07 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getUnreadCount failed 20013ms: Domain service did not respond within 20000ms. Domain service did not respond within 20000ms. Gateway Timeout[39m
+18:04:02 [tsx] change in ./src\common\base.service.ts Rerunning...
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +8ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +4ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +535ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +4ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +13ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +14ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:04:05 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +4ms[39m
+Nest API listening on http://localhost:3002/api/service
+[32m[Nest] 61120  - [39m2026/08/03 18:04:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3358ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:05:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 3238ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:05:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 4966ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:05:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 660ms[39m
+[33m[Nest] 61120  - [39m2026/08/03 18:05:19 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] workflow.runApprovalFlowTest failed 301ms: duplicate key value violates unique constraint "wf_model_tenant_id_code_key" duplicate key value violates unique constraint "wf_model_tenant_id_code_key" Bad Gateway[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:05:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1529ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:06:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1921ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:06:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1315ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:07:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1765ms[39m
+[33m[Nest] 61120  - [39m2026/08/03 18:07:33 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] workflow.listInstances failed 0ms: Unsupported workflow method: listInstances Unsupported workflow method: listInstances Bad Request[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:07:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2173ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:08:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 1604ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:08:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2836ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:08:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1297ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:08:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1890ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:09:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 2011ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:09:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 356ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:09:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 4170ms[39m
+[32m[Nest] 61120  - [39m2026/08/03 18:09:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1163ms[39m
+18:10:44 [tsx] change in ./src\common\base.service.ts Restarting...
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +10ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +3ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +266ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 57320  - [39m2026/08/03 18:10:46 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +1ms[39m
+18:12:23 [tsx] change in ./src\common\base.service.ts Rerunning...
+[32m[Nest] 28520  - [39m2026/08/03 18:12:26 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +16ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +2ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:26 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:27 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +846ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:27 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:27 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +1ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:27 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:27 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:27 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:27 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:27 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:27 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:27 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:27 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +3ms[39m
+Nest API listening on http://localhost:3002/api/service
+[32m[Nest] 28520  - [39m2026/08/03 18:12:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1374ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:12:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1749ms[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:13:03 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getUnreadCount failed 20003ms: Domain service did not respond within 20000ms. Domain service did not respond within 20000ms. Gateway Timeout[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:13:03 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 20002ms: Domain service did not respond within 20000ms. Domain service did not respond within 20000ms. Gateway Timeout[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:13:04 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] notification.getUnreadCount failed 20013ms: Domain service did not respond within 20000ms. Domain service did not respond within 20000ms. Gateway Timeout[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:13:04 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.listItems failed 20015ms: Domain service did not respond within 20000ms. Domain service did not respond within 20000ms. Gateway Timeout[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:13:04 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 20015ms: Domain service did not respond within 20000ms. Domain service did not respond within 20000ms. Gateway Timeout[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:13:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1258ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:14:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2164ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:14:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 2396ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:14:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 333ms[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:14:24 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] workflow.runApprovalFlowTest failed 2613ms: duplicate key value violates unique constraint "uq_wf_process_instance_running_business" duplicate key value violates unique constraint "uq_wf_process_instance_running_business" Bad Gateway[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:14:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 927ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:15:18 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 541ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:15:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.saveItem ok 2984ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:15:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1080ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:16:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1713ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:16:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.saveItem ok 3648ms[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:16:22 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.saveItem failed 456ms: afterSave[0] expected 1 affected row(s), but updated 0. afterSave[0] expected 1 affected row(s), but updated 0. Bad Gateway[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:16:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1420ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:17:06 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.saveItem ok 2868ms[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:17:07 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.saveItem failed 475ms: afterSave[0] expected 1 affected row(s), but updated 0. afterSave[0] expected 1 affected row(s), but updated 0. Bad Gateway[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:17:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 969ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:18:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 569ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:19:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 514ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:20:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 968ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:20:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 241ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:20:12 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1497ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:20:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.runApprovalFlowTest ok 5951ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:20:45 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1272ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:21:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1155ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:21:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 609ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:22:11 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1088ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:22:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 576ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:23:46 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2524ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 511ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 664ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:13 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 822ms[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:24:13 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] lowcode.listItems failed 26ms: Unsupported LowCode listItems itemType. Unsupported LowCode listItems itemType. Bad Gateway[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 950ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:19 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1127ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:20 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1293ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 371ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:22 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 443ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 381ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 382ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:23 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 678ms[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:24:23 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] admin.listItems failed 346ms: Could not find the table 'public.profiles' in the schema cache Could not find the table 'public.profiles' in the schema cache Bad Gateway[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 657ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 731ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 388ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.listItems ok 133ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1192ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 656ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1125ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1802ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:37 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1122ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:24:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1130ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:25:06 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 499ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:25:06 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 503ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:25:06 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 231ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:25:06 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 232ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:25:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1087ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:26:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1222ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1130ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 744ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 397ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:17 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1585ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.runApprovalFlowTest ok 6146ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 252ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 1031ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1221ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 342ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 703ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:29 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 727ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 692ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:30 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 999ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getTask ok 198ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 210ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 671ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 661ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getTask ok 212ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 412ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 214ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:34 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 550ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:36 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.approveTask ok 1072ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:38 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 231ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 1227ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 292ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1902ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:41 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1046ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 854ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1115ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 337ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 477ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:46 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getTask ok 218ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:46 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 210ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 709ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getTask ok 266ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1011ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 342ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 226ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:47 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 544ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:50 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.approveTask ok 1227ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:52 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 201ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 978ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 351ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1592ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 664ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 704ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 980ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 373ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:27:56 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 490ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getTask ok 189ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 202ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 1121ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getTask ok 212ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 367ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 185ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2101ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:04 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1023ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:06 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.approveTask ok 1175ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:08 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 168ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:08 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 173ms[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:28:08 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] workflow.getTimeline failed 0ms: Unsupported workflow method: getTimeline Unsupported workflow method: getTimeline Bad Request[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1050ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 791ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:28:57 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstanceTimeline ok 247ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:29:00 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1300ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:29:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listApprovalTestUsers ok 1731ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:29:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1946ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:29:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 340ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:29:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 997ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:30:14 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 796ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:31:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2606ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:32:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 771ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:32:31 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 250ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:32:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 274ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:32:32 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 261ms[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:32:46 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] workflow.terminateInstance failed 655ms: invalid input syntax for type uuid: "codex-e2e-cleanup" invalid input syntax for type uuid: "codex-e2e-cleanup" Bad Gateway[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:32:46 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] workflow.terminateInstance failed 631ms: invalid input syntax for type uuid: "codex-e2e-cleanup" invalid input syntax for type uuid: "codex-e2e-cleanup" Bad Gateway[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:32:47 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] workflow.terminateInstance failed 662ms: invalid input syntax for type uuid: "codex-e2e-cleanup" invalid input syntax for type uuid: "codex-e2e-cleanup" Bad Gateway[39m
+[33m[Nest] 28520  - [39m2026/08/03 18:32:48 [33m   WARN[39m [38;5;3m[ServiceGatewayController] [39m[33m[service] workflow.terminateInstance failed 613ms: invalid input syntax for type uuid: "codex-e2e-cleanup" invalid input syntax for type uuid: "codex-e2e-cleanup" Bad Gateway[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:32:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 743ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:33:01 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.terminateInstance ok 1433ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:33:02 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.terminateInstance ok 1048ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:33:03 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.terminateInstance ok 1087ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:33:04 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.terminateInstance ok 1103ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:33:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1156ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:33:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 835ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:33:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 232ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:33:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 265ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:33:55 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 242ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:34:15 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstance ok 214ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:34:16 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstanceTimeline ok 222ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:34:54 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1535ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:35:35 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.listItems ok 684ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:35:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 801ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:36:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.getInstanceTimeline ok 511ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:36:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 560ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:37:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 844ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:38:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1228ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:39:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 934ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:40:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 542ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:41:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 505ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:45:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1400ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:45:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1258ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:46:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1367ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:47:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1904ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:48:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 588ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:49:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 969ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:50:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1355ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:51:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 888ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:52:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 554ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:53:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1069ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:54:21 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 941ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:54:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 1039ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:54:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1287ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:54:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 519ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:54:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 573ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:54:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 1763ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:54:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1056ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:55:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1140ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:55:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 665ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:56:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1286ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:56:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1126ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:57:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1373ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:57:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 882ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:58:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 973ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:58:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 647ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:24 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1173ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 440ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] workflow.listItems ok 466ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:27 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1105ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 776ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1065ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:33 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 381ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 867ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:40 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 391ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.saveItem ok 2196ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 680ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] lowcode.listItems ok 342ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] admin.listItems ok 637ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 18:59:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 870ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:00:25 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1169ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:00:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1300ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:01:42 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 732ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:01:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1217ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:02:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1483ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:02:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1155ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:03:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1392ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:03:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 673ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:04:43 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1080ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:04:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 839ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:05:44 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 2242ms[39m
+[32m[Nest] 28520  - [39m2026/08/03 19:05:53 [32m    LOG[39m [38;5;3m[ServiceGatewayController] [39m[32m[service] notification.getUnreadCount ok 1353ms[39m
+19:06:42 [tsx] change in ./src\workflow\workflow.service.ts Restarting...
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mChatModule dependencies initialized[39m[38;5;3m +8ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mClientsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mWorkflowModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDomainClientModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mServiceGatewayController {/api}:[39m[38;5;3m +221ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/service, POST} route[39m[38;5;3m +2ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/auth}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signin, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signup, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/oauth, POST} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/session, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/refresh, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/auth/signout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 66984  - [39m2026/08/03 19:06:46 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +2ms[39m

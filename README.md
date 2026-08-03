@@ -46,28 +46,41 @@ The frontend app lives in `frontend/`. Shared content, public assets, and Supaba
 `api/src/workflow-service` hosts the workflow microservice. It uses Redis for
 gateway-to-service communication and Trigger.dev as the internal workflow
 engine. enLearn users do not authenticate with Trigger.dev directly; the
-backend stores the engine project ref and secret key in `.env`.
+backend resolves the project ref, environment secret, and admin PAT from the
+Trigger.dev database and keeps them in an in-process cache.
 
 Start Redis before starting the workflow service. The default connection is
 `redis://127.0.0.1:6379`; override it with `REDIS_URL`.
 
-Start or reuse the local Trigger.dev webapp first, then bootstrap the engine values:
+Start or reuse the local Trigger.dev webapp first, then start the workflow service:
 
 ```bash
 cd C:\Users\11516\Desktop\project\trigger.dev-main
 pnpm run dev --filter webapp
 
 cd C:\Users\11516\Desktop\project\enLearn
-pnpm triggerdev:bootstrap
 pnpm workflow-api:dev
 ```
 
-`pnpm triggerdev:bootstrap` writes these values to `.env` if they are missing or stale:
+The local Trigger.dev stack requires Redis 6 or newer. The legacy Windows
+Redis 3 service is not compatible with Trigger.dev's Lua queue scripts.
+
+Only the endpoint belongs in the enLearn `.env`:
 
 ```env
 TRIGGER_API_URL=http://localhost:3030
-TRIGGER_PROJECT_REF=proj_...
-TRIGGER_SECRET_KEY=tr_dev_...
 ```
 
-`TRIGGER_ACCESS_TOKEN` is only needed for the old CLI-login bootstrap path and is not required by the backend runtime.
+By default the backend reads `DATABASE_URL` and `ENCRYPTION_KEY` from the
+adjacent `../trigger.dev-main/.env`. Set `TRIGGER_ENV_FILE` when that file lives
+elsewhere. On first use it creates/reuses the `enlearn-workflow-local` project,
+its runtime key, a Trigger.dev super-admin, and that admin's PAT. None of
+`TRIGGER_PROJECT_REF`, `TRIGGER_SECRET_KEY`, or `TRIGGER_ACCESS_TOKEN` is written
+to the enLearn env file.
+
+`DATABASE_URL` and the fixed 32-byte `ENCRYPTION_KEY` remain Trigger.dev
+infrastructure settings. The encryption key is required to decrypt the PAT
+stored in Trigger.dev PostgreSQL; it is not one of the dynamic credentials.
+
+Run `pnpm --dir api workflow:trigger:credentials` to verify database resolution
+and the in-process cache without printing complete secrets.

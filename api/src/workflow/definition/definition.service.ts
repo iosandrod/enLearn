@@ -127,42 +127,40 @@ export class DefinitionService {
 
     if (this.database?.isConfigured) {
       const code = dto.code.trim();
-      const existing = modelId
-        ? await this.findDbModelById(modelId)
-        : await this.findDbModelByCode(actor.tenantId, code);
-      if (modelId && !existing) {
-        throw new NotFoundException('Workflow model not found.');
-      }
-
-      const id = existing?.id ?? randomUUID();
       const result = await this.database.query<WorkflowModelRow>(
         `insert into public.wf_model (
           id, tenant_id, code, name, document_type, status, current_version,
           draft_schema, created_by, updated_by, created_at, updated_at
         ) values ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $11)
-        on conflict (id) do update set
+        on conflict (tenant_id, code) do update set
           code = excluded.code,
           name = excluded.name,
           document_type = excluded.document_type,
           draft_schema = excluded.draft_schema,
           updated_by = excluded.updated_by,
           updated_at = excluded.updated_at
+        where $12::uuid is null or public.wf_model.id = $12::uuid
         returning *`,
         [
-          id,
+          modelId ?? randomUUID(),
           actor.tenantId,
           code,
           dto.name.trim(),
           dto.documentType?.trim() || null,
-          existing?.status ?? 'draft',
-          existing?.currentVersion ?? 0,
+          'draft',
+          0,
           JSON.stringify(schema),
-          existing?.createdBy ?? actor.userId ?? null,
           actor.userId ?? null,
-          now
+          actor.userId ?? null,
+          now,
+          modelId ?? null
         ]
       );
-      return mapModel(result.rows[0]);
+      const row = result.rows[0];
+      if (!row) {
+        throw new NotFoundException('Workflow model not found.');
+      }
+      return mapModel(row);
     }
 
     const existing = modelId ? this.models.get(modelId) : this.findModelByCode(actor.tenantId, dto.code);

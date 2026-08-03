@@ -185,6 +185,9 @@ type WorkflowModelRecord = {
   id: string;
   code: string;
   name: string;
+  documentType?: string;
+  currentVersion: number;
+  draftSchema: WorkflowModel;
 };
 
 type WorkflowDefinitionRecord = {
@@ -313,23 +316,66 @@ watch(
 
 onMounted(() => {
   window.addEventListener('click', closeActionMenu);
-
-  const saved = window.localStorage.getItem(activeStorageKey.value);
-  if (!saved) return;
-
-  try {
-    workflowModel.value = parseWorkflowModelJson(saved);
-    schemaText.value = serializeWorkflowModel(workflowModel.value);
-    message.value = '已加载本地草稿';
-    messageClass.value = 'workflow-help';
-  } catch {
-    window.localStorage.removeItem(localStorageKey);
-  }
+  void loadInitialWorkflow();
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('click', closeActionMenu);
 });
+
+watch(routeCode, (nextCode, previousCode) => {
+  if (nextCode !== previousCode) void loadInitialWorkflow();
+});
+
+async function loadInitialWorkflow() {
+  resetRuntimeState();
+  savedModelId.value = '';
+  publishedDefinitionId.value = '';
+
+  if (routeCode.value) {
+    isApiBusy.value = true;
+    message.value = '正在加载审批模板...';
+    messageClass.value = 'workflow-help';
+
+    try {
+      const model = await invokeWorkflowService<WorkflowModelRecord>('getModel', {
+        modelId: routeCode.value
+      });
+      const schema = parseWorkflowModelJson(JSON.stringify(model.draftSchema));
+
+      workflowModel.value = schema;
+      savedModelId.value = model.id;
+      schemaText.value = serializeWorkflowModel(schema);
+      designerRef.value?.loadSchema(schema);
+      message.value = `已加载审批模板 ${model.name}`;
+      messageClass.value = 'workflow-success';
+      return;
+    } catch (error) {
+      message.value = error instanceof Error ? error.message : '审批模板加载失败';
+      messageClass.value = 'workflow-error';
+    } finally {
+      isApiBusy.value = false;
+    }
+  }
+
+  loadLocalDraft();
+}
+
+function loadLocalDraft() {
+  const saved = window.localStorage.getItem(activeStorageKey.value);
+  if (!saved) return;
+
+  try {
+    const schema = parseWorkflowModelJson(saved);
+    workflowModel.value = schema;
+    schemaText.value = serializeWorkflowModel(schema);
+    designerRef.value?.loadSchema(schema);
+    message.value = '已加载本地草稿';
+    messageClass.value = 'workflow-help';
+  } catch {
+    window.localStorage.removeItem(activeStorageKey.value);
+  }
+}
 
 function toggleActionMenu(event: MouseEvent) {
   event.stopPropagation();
@@ -597,15 +643,21 @@ async function publishCurrentWorkflow() {
   window.localStorage.setItem(localStorageKey, serialized);
   window.localStorage.setItem(`enlearn.workflow.designer.${schema.code}`, serialized);
 
-  const model = await workflowApi<WorkflowModelRecord>('/models', {
-    method: 'POST',
-    body: JSON.stringify({
-      code: schema.code,
-      name: schema.name,
-      documentType: schema.documentType,
-      schema
-    })
-  });
+  const modelPayload = {
+    code: schema.code,
+    name: schema.name,
+    documentType: schema.documentType,
+    schema
+  };
+  const model = savedModelId.value
+    ? await invokeWorkflowService<WorkflowModelRecord>('updateModel', {
+        modelId: savedModelId.value,
+        ...modelPayload
+      })
+    : await workflowApi<WorkflowModelRecord>('/models', {
+        method: 'POST',
+        body: JSON.stringify(modelPayload)
+      });
   savedModelId.value = model.id;
 
   const published = await workflowApi<PublishWorkflowResult>(`/models/${model.id}/publish`, {

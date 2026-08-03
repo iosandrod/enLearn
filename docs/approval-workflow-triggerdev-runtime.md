@@ -155,10 +155,17 @@ supabase/migrations/20260727090000_workflow_triggerdev_runtime.sql
 DATABASE_URL="postgres://postgres:password@host:6543/postgres?pgbouncer=true"
 DIRECT_URL="postgres://postgres:password@host:5432/postgres"
 WORKFLOW_API_PORT=3010
-TRIGGER_PROJECT_REF=
-TRIGGER_SECRET_KEY=
-TRIGGER_API_URL=
+TRIGGER_API_URL=http://localhost:3030
+# Optional: TRIGGER_ENV_FILE=E:\trigger.dev-main\.env
+# Optional: TRIGGER_PROJECT_NAME=enlearn-workflow-local
+# Optional: TRIGGER_ENVIRONMENT=dev
 ```
+
+`TRIGGER_PROJECT_REF`, `TRIGGER_SECRET_KEY`, and the admin
+`TRIGGER_ACCESS_TOKEN` are resolved from Trigger.dev PostgreSQL on first use and
+cached in process. The Trigger.dev database connection and its fixed
+`ENCRYPTION_KEY` come from `TRIGGER_ENV_FILE` (auto-discovered from
+`../trigger.dev-main/.env` locally).
 
 常用命令：
 

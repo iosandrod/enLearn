@@ -296,7 +296,7 @@ export class EntityDesignService extends BaseService {
     const permissions = this.entityDesignCrudPermissions();
     const userFields = { createdBy: 'created_by', updatedBy: 'updated_by' };
     return {
-      tables: {
+      entity_design_tables: {
         tableName: 'entity_design_tables',
         permissions,
         create: {
@@ -309,7 +309,7 @@ export class EntityDesignService extends BaseService {
           userFields: { updatedBy: 'updated_by' }
         }
       },
-      columns: {
+      entity_design_columns: {
         tableName: 'entity_design_columns',
         permissions,
         create: {
@@ -322,7 +322,7 @@ export class EntityDesignService extends BaseService {
           userFields: { updatedBy: 'updated_by' }
         }
       },
-      relations: {
+      entity_design_relations: {
         tableName: 'entity_design_relations',
         permissions,
         create: {

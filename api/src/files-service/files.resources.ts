@@ -3,8 +3,7 @@ import { DEFAULT_BUCKET } from './files.helpers';
 
 export function fileResources(): ResourceConfigMap {
   return {
-    files: {
-      code: 'file_objects',
+    file_objects: {
       tableName: 'file_objects',
       ownerField: 'owner_id',
       defaults: {
@@ -59,8 +58,7 @@ export function fileResources(): ResourceConfigMap {
         deletedStatus: 'deleted'
       }
     },
-    folders: {
-      code: 'file_folders',
+    file_folders: {
       tableName: 'file_folders',
       ownerField: 'owner_id',
       defaults: {
@@ -83,8 +81,7 @@ export function fileResources(): ResourceConfigMap {
         softDelete: true
       }
     },
-    usages: {
-      code: 'file_usages',
+    file_usages: {
       tableName: 'file_usages',
       list: {
         defaultSorts: [{ field: 'created_at', direction: 'desc' }]

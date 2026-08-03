@@ -344,11 +344,13 @@ export type LowCodePageTreeBlock = LowCodeMaterialVersionedBlock & {
     childrenField?: string;
 };
 export type LowCodePageBlock = LowCodePageTextBlock | LowCodePageContainerBlock | LowCodePageSectionBlock | LowCodePageTabsBlock | LowCodePageToolbarBlock | LowCodePageFormBlock | LowCodePageSearchFormBlock | LowCodePageGridBlock | LowCodePageDetailBlock | LowCodePageModalBlock | LowCodePageDrawerBlock | LowCodePageStatCardBlock | LowCodePageTreeBlock;
+export type LowCodePageType = 'list' | 'edit' | 'detail' | 'custom';
 export type LowCodePageSchema = {
     schemaVersion?: number;
     code: string;
     route: string;
     title: string;
+    pageType?: LowCodePageType;
     description?: string;
     layout?: 'default' | 'dashboard' | 'blank';
     status?: 'draft' | 'published' | 'archived';
@@ -371,11 +373,13 @@ export type LowCodePageRecord = {
     layout: 'default' | 'dashboard' | 'blank';
     status: 'draft' | 'published' | 'archived';
     keep_alive: boolean;
+    page_type: LowCodePageType;
+    edit_page_id: string | null;
     schema: LowCodePageSchema;
     version: number;
     published_at: string | null;
     created_at: string;
     updated_at: string;
 };
-export type LowCodePageSummary = Pick<LowCodePageRecord, 'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'version' | 'published_at' | 'created_at' | 'updated_at'>;
+export type LowCodePageSummary = Pick<LowCodePageRecord, 'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'page_type' | 'edit_page_id' | 'version' | 'published_at' | 'created_at' | 'updated_at'>;
 //# sourceMappingURL=lowcode.d.ts.map

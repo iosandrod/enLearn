@@ -32,6 +32,10 @@ import type {
   WorkflowTaskRecord,
   WorkflowVariableRecord
 } from './runtime.types';
+import {
+  isTransientPostgresError,
+  retryTransientPostgresOperation
+} from '../common/postgres-resilience';
 
 export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
   constructor(private readonly database: RuntimeDatabase) {}
@@ -955,17 +959,27 @@ export function createStandalonePostgresWorkflowRuntimeStore(connectionString: s
   const pool = new Pool({
     connectionString,
     max: 5,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 5_000,
     idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 10_000
+    connectionTimeoutMillis: 30_000
+  });
+  pool.on('error', (error) => {
+    console.warn(`[workflow-runtime] Postgres idle client error: ${error.message}`);
   });
   const database: RuntimeDatabase = {
-    query: (text, values) => pool.query(text, values),
+    query: <T extends QueryResultRow = QueryResultRow>(text: string, values?: unknown[]) =>
+      retryTransientPostgresOperation(() => pool.query<T>(text, values)),
     withClient: async (callback) => {
-      const client = await pool.connect();
+      const client = await retryTransientPostgresOperation(() => pool.connect());
+      let failure: unknown;
       try {
         return await callback(client);
+      } catch (error) {
+        failure = error;
+        throw error;
       } finally {
-        client.release();
+        client.release(isTransientPostgresError(failure) ? true : undefined);
       }
     }
   };

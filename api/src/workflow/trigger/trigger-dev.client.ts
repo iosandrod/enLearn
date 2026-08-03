@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { runs, tasks, wait } from '@trigger.dev/sdk';
 import type {
   WorkflowInstanceTaskPayload,
@@ -11,7 +11,7 @@ import {
   WORKFLOW_INSTANCE_TASK_ID
 } from '../runtime/runtime.engine.types';
 import type { workflowInstanceTask } from './workflow-instance.task';
-import { assertTriggerEngineConfigured } from './trigger-engine.config';
+import { TriggerCredentialsService } from './trigger-credentials.service';
 import {
   NOTIFICATION_DISPATCH_TASK_ID,
   runLocalNotificationDispatchTask
@@ -29,19 +29,21 @@ export class TriggerDevClient implements WorkflowTriggerClient {
     }
   >();
 
+  constructor(
+    @Inject(TriggerCredentialsService)
+    private readonly credentials: TriggerCredentialsService
+  ) {}
+
   async triggerWorkflow(payload: WorkflowInstanceTaskPayload) {
-    this.assertTriggerDevConfigured();
-    return tasks.trigger<typeof workflowInstanceTask>(
-      WORKFLOW_INSTANCE_TASK_ID,
-      payload,
-      {
+    return this.withTriggerCredentials(() =>
+      tasks.trigger<typeof workflowInstanceTask>(WORKFLOW_INSTANCE_TASK_ID, payload, {
         idempotencyKey: `workflow-instance:${payload.instanceId}`,
         tags: [
           `tenant:${payload.tenantId}`,
           `workflow-instance:${payload.instanceId}`,
           `definition:${payload.definitionId}`
         ]
-      }
+      })
     );
   }
 
@@ -51,8 +53,7 @@ export class TriggerDevClient implements WorkflowTriggerClient {
     options: Record<string, unknown> = {}
   ) {
     try {
-      this.assertTriggerDevConfigured();
-      return await tasks.trigger(taskId, payload, options);
+      return await this.withTriggerCredentials(() => tasks.trigger(taskId, payload, options));
     } catch (error) {
       if (taskId === NOTIFICATION_DISPATCH_TASK_ID) {
         await runLocalNotificationDispatchTask(
@@ -69,8 +70,7 @@ export class TriggerDevClient implements WorkflowTriggerClient {
 
   async createWaitpoint(options: { idempotencyKey: string; tags: string[] }) {
     try {
-      this.assertTriggerDevConfigured();
-      return await wait.createToken(options);
+      return await this.withTriggerCredentials(() => wait.createToken(options));
     } catch {
       return this.createLocalToken(options);
     }
@@ -82,9 +82,8 @@ export class TriggerDevClient implements WorkflowTriggerClient {
       return;
     }
 
-    this.assertTriggerDevConfigured();
     try {
-      await this.completeTriggerWaitpoint(tokenId, decision);
+      await this.withTriggerCredentials(() => this.completeTriggerWaitpoint(tokenId, decision));
     } catch (error) {
       if (this.localWaiters.has(tokenId)) {
         this.completeLocalToken(tokenId, decision);
@@ -96,12 +95,7 @@ export class TriggerDevClient implements WorkflowTriggerClient {
   }
 
   async cancelRun(runId: string) {
-    this.assertTriggerDevConfigured();
-    await runs.cancel(runId);
-  }
-
-  private assertTriggerDevConfigured() {
-    assertTriggerEngineConfigured();
+    await this.withTriggerCredentials(() => runs.cancel(runId));
   }
 
   startLocalWorkflowExecution(
@@ -186,4 +180,28 @@ export class TriggerDevClient implements WorkflowTriggerClient {
       await wait.completeToken(tokenId, decision);
     }
   }
+
+  private async withTriggerCredentials<T>(operation: () => Promise<T>): Promise<T> {
+    await this.credentials.configureSdk();
+    try {
+      return await operation();
+    } catch (error) {
+      if (!isTriggerAuthenticationError(error)) throw error;
+
+      this.credentials.invalidate();
+      await this.credentials.configureSdk(true);
+      return operation();
+    }
+  }
+}
+
+function isTriggerAuthenticationError(error: unknown) {
+  if (typeof error !== 'object' || error === null) return false;
+  const typedError = error as {
+    response?: { status?: unknown };
+    status?: unknown;
+    statusCode?: unknown;
+  };
+  const status = typedError.status ?? typedError.statusCode ?? typedError.response?.status;
+  return status === 401 || status === 403;
 }

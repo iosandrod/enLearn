@@ -8,7 +8,7 @@ import {
   type ServicePostData
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
-import { getCurrentUser } from '../common/utils/supabase';
+import { createSupabaseClient, getCurrentUser } from '../common/utils/supabase';
 import type {
   ChatConversationMemberRow,
   ChatConversationRow,
@@ -124,7 +124,7 @@ function normalizeMessage(row: ChatMessageRow) {
 export class ChatService extends BaseService {
   protected override resources(): ResourceConfigMap {
     return {
-      conversations: {
+      chat_conversations: {
         tableName: 'chat_conversations',
         defaults: { tenant_id: 'default', type: 'direct', metadata: {} },
         list: { defaultSorts: [{ field: 'last_message_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
@@ -137,7 +137,7 @@ export class ChatService extends BaseService {
           allowedFields: ['title', 'last_message_id', 'last_message_at', 'metadata']
         }
       },
-      members: {
+      chat_conversation_members: {
         tableName: 'chat_conversation_members',
         ownerField: 'user_id',
         defaults: { tenant_id: 'default', role: 'member', status: 'active' },
@@ -151,20 +151,7 @@ export class ChatService extends BaseService {
           allowedFields: ['role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at']
         }
       },
-      allMembers: {
-        tableName: 'chat_conversation_members',
-        clientMode: 'admin',
-        defaults: { tenant_id: 'default', role: 'member', status: 'active' },
-        list: { defaultSorts: [{ field: 'updated_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 500 },
-        create: {
-          allowedFields: ['tenant_id', 'conversation_id', 'user_id', 'role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at'],
-          requiredFields: ['conversation_id', 'user_id']
-        },
-        update: {
-          allowedFields: ['role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at']
-        }
-      },
-      messages: {
+      chat_messages: {
         tableName: 'chat_messages',
         defaults: { tenant_id: 'default', message_type: 'text', attachment_ids: [], status: 'sent', metadata: {} },
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 30, maxPageSize: 100 },
@@ -177,7 +164,7 @@ export class ChatService extends BaseService {
           allowedFields: ['content', 'status', 'edited_at', 'deleted_at', 'metadata']
         }
       },
-      reads: {
+      chat_message_reads: {
         tableName: 'chat_message_reads',
         ownerField: 'user_id',
         defaults: { tenant_id: 'default' },
@@ -195,12 +182,12 @@ export class ChatService extends BaseService {
 
   protected override hooks(): ServiceHooks {
     return {
-      conversations: {
+      chat_conversations: {
         beforeCreate: [this.normalizeConversationPayload],
         afterCreate: [this.normalizeConversationResult],
         afterUpdate: [this.normalizeConversationResult]
       },
-      messages: {
+      chat_messages: {
         beforeCreate: [this.normalizeMessagePayload],
         beforeUpdate: [this.normalizeMessageUpdatePayload],
         afterCreate: [this.normalizeMessageResult],
@@ -279,7 +266,7 @@ export class ChatService extends BaseService {
 
     const directMemberIds = [user.id, targetUserId].sort();
     const conversation = await this.runCrud('create', {
-      resource: 'conversations',
+      resource: 'chat_conversations',
       data: {
         tenant_id: tenantId,
         type: 'direct',
@@ -310,7 +297,7 @@ export class ChatService extends BaseService {
     }
 
     const conversation = await this.runCrud('create', {
-      resource: 'conversations',
+      resource: 'chat_conversations',
       data: {
         tenant_id: tenantId,
         type: readConversationType(postData.type, 'group'),
@@ -353,7 +340,7 @@ export class ChatService extends BaseService {
     };
 
     const message = await this.runCrud('create', {
-      resource: 'messages',
+      resource: 'chat_messages',
       data: {
         tenant_id: tenantId,
         conversation_id: conversationId,
@@ -367,7 +354,7 @@ export class ChatService extends BaseService {
     }, context) as ReturnType<typeof normalizeMessage>;
 
     await this.runCrud('update', {
-      resource: 'conversations',
+      resource: 'chat_conversations',
       id: conversationId,
       data: {
         last_message_id: message.id,
@@ -389,7 +376,7 @@ export class ChatService extends BaseService {
     await this.requireActiveMember(tenantId, conversationId, user.id, context);
 
     await this.runCrud('update', {
-      resource: 'members',
+      resource: 'chat_conversation_members',
       filters: {
         tenant_id: tenantId,
         conversation_id: conversationId,
@@ -409,7 +396,7 @@ export class ChatService extends BaseService {
       }, context);
 
       await this.runCrud(existing ? 'update' : 'create', {
-        resource: 'reads',
+        resource: 'chat_message_reads',
         ...(existing?.id ? { id: existing.id } : {}),
         data: {
           tenant_id: tenantId,
@@ -439,7 +426,7 @@ export class ChatService extends BaseService {
     const message = await this.requireMessageOwner(tenantId, id, user.id, context);
 
     return this.runCrud('update', {
-      resource: 'messages',
+      resource: 'chat_messages',
       id: message.id,
       data: { content, edit: true }
     }, context);
@@ -452,7 +439,7 @@ export class ChatService extends BaseService {
     const message = await this.requireMessageOwner(tenantId, id, user.id, context);
 
     return this.runCrud('update', {
-      resource: 'messages',
+      resource: 'chat_messages',
       id: message.id,
       data: { delete: true }
     }, context);
@@ -574,7 +561,9 @@ export class ChatService extends BaseService {
       status: 'active'
     }));
 
-    await this.runCrud('create', { resource: 'allMembers', items: rows }, context);
+    const adminClient = createSupabaseClient('admin', context);
+    const { error } = await adminClient.from('chat_conversation_members').insert(rows);
+    if (error) throw new BadRequestException(error.message);
   }
 
   private async listRows<T extends Record<string, unknown>>(postData: ServicePostData, context: ServiceContext) {

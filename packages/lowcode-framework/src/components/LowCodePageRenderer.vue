@@ -367,9 +367,9 @@ const legacyLowCodeListMethodTables: Record<string, string> = {
 };
 
 const legacyNotificationListResources: Record<string, string> = {
-  listMessages: 'messages',
-  getPreferences: 'preferences',
-  listDeliveries: 'deliveries',
+  listMessages: 'notification_messages',
+  getPreferences: 'notification_preferences',
+  listDeliveries: 'notification_deliveries',
 };
 
 const emptyWhenUnavailableListMethods = new Set([
@@ -405,7 +405,7 @@ function normalizeLegacyAdminListRequest(
       serviceMethod: 'runAction',
       postData: {
         ...postData,
-        resource: readString(postData.resource, 'files'),
+        resource: readString(postData.resource, 'file_objects'),
         operation: readString(postData.operation ?? postData.actionName ?? postData.action, serviceMethod),
       },
     };
@@ -760,7 +760,7 @@ const loadingText = computed(() =>
 );
 
 watch(
-  [() => props.page, () => host.getRoute().fullPath],
+  [() => props.page, () => props.route?.fullPath ?? host.getRoute().fullPath],
   async ([nextPage]) => {
     const currentLoad = ++loadSequence;
     message.value = '';

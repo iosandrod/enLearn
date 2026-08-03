@@ -260,16 +260,14 @@ if (-not $UseCliBootstrap -and -not $EngineOnly) {
   }
 
   Set-DotEnvValue -Path $EnvFile -Key "TRIGGER_API_URL" -Value (Normalize-Url $ApiUrl)
-  Set-DotEnvValue -Path $EnvFile -Key "TRIGGER_PROJECT_REF" -Value $bootstrap.project.ref
-  Set-DotEnvValue -Path $EnvFile -Key "TRIGGER_SECRET_KEY" -Value $secretKey
+  Remove-DotEnvValue -Path $EnvFile -Key "TRIGGER_PROJECT_REF"
+  Remove-DotEnvValue -Path $EnvFile -Key "TRIGGER_SECRET_KEY"
   Remove-DotEnvValue -Path $EnvFile -Key "TRIGGER_ACCESS_TOKEN"
 
   Write-Host ""
-  Write-Host "Trigger.dev engine values have been written to $EnvFile"
+  Write-Host "Trigger.dev engine records are ready. Dynamic credentials were not written to $EnvFile."
   Write-Host "TRIGGER_API_URL=$(Normalize-Url $ApiUrl)"
-  Write-Host "TRIGGER_PROJECT_REF=$($bootstrap.project.ref)"
-  Write-Host "TRIGGER_SECRET_KEY=$(Mask-Secret $secretKey)"
-  Write-Host "TRIGGER_ACCESS_TOKEN is not used by the enLearn backend runtime."
+  Write-Host "TRIGGER_PROJECT_REF, TRIGGER_SECRET_KEY, and TRIGGER_ACCESS_TOKEN are resolved and cached by the backend."
   exit 0
 }
 

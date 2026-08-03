@@ -685,7 +685,7 @@ async function renameMenuItem(item: AdminRouteNode) {
 
   try {
     await serviceApi.invoke('admin', 'saveItem', {
-      resource: 'routes',
+      resource: 'admin_routes',
       ...buildRouteSavePayload(item, nextTitle)
     });
     await reloadRoutes();
@@ -755,6 +755,7 @@ function buildPageSaveData(schema: LowCodePageSchema) {
     layout: schema.layout ?? 'dashboard',
     status: schema.status ?? 'draft',
     keep_alive: schema.keepAlive ?? true,
+    page_type: schema.pageType ?? 'custom',
     schema,
     version: 1,
     published_at: schema.status === 'published' ? new Date().toISOString() : null,
@@ -784,15 +785,49 @@ async function openLowCodeEditPage(item: AdminRouteNode) {
 
     if (!editPage) {
       const schema = buildEmptyEditPageSchema(page, item);
+      const editPageData = buildPageSaveData(schema);
+
       editPage = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
-        resource: 'pages',
-        data: buildPageSaveData(schema)
+        resource: 'lowcode_pages',
+        data: {
+          ...editPageData,
+          __details: [
+            {
+              resource: 'lowcode_page_versions',
+              mode: 'replace',
+              foreignKey: 'page_id',
+              parentKey: 'id',
+              rows: [
+                {
+                  version: editPageData.version,
+                  schema: editPageData.schema,
+                  published_at: editPageData.published_at
+                }
+              ]
+            }
+          ]
+        },
+        afterSave: [
+          {
+            action: 'update',
+            resource: 'lowcode_pages',
+            data: {
+              edit_page_id: { $ref: 'saved.id' }
+            },
+            where: { id: page.id },
+            expect: 1
+          }
+        ]
       });
+
+      await router.push(editPage.route);
+      await reloadRoutes();
+      return;
     }
 
     if (page.edit_page_id !== editPage.id) {
       await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
-        resource: 'pages',
+        resource: 'lowcode_pages',
         id: page.id,
         data: { edit_page_id: editPage.id }
       });

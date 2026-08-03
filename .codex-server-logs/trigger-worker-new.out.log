@@ -1,0 +1,10 @@
+
+> @ workflow-api:trigger:dev E:\enLearn
+> pnpm --dir api workflow:trigger:dev
+
+
+> hikari-api@ workflow:trigger:dev E:\enLearn\api
+> powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-trigger-dev.ps1 -ApiUrl http://localhost:3030 -EnvFile %INIT_CWD%\.env
+
+ ELIFECYCLE  Command failed with exit code 1.
+ ELIFECYCLE  Command failed with exit code 1.

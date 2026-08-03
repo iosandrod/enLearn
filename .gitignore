@@ -15,6 +15,7 @@
 /nuxt-app/node_modules/
 /api/dist/
 /api/node_modules/
+/api/.trigger.worker.env
 /services/*/dist/
 /services/*/node_modules/
 
@@ -42,6 +43,8 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+/trigger-workflow-gateway/.env.bootstrap
+/trigger-workflow-gateway/dist/bootstrap.*
 
 # vercel
 .vercel

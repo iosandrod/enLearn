@@ -137,7 +137,7 @@ function resolveAdminClient(fallback: SupabaseClient) {
 export class NotificationService extends BaseService {
   protected override resources(): ResourceConfigMap {
     return {
-      messages: {
+      notification_messages: {
         tableName: 'notification_messages',
         ownerField: 'recipient_id',
         defaults: { tenant_id: 'default', category: 'system', channel: 'inbox', priority: 'normal', metadata: {} },
@@ -152,7 +152,7 @@ export class NotificationService extends BaseService {
           timestamp: false
         }
       },
-      preferences: {
+      notification_preferences: {
         tableName: 'notification_preferences',
         ownerField: 'user_id',
         defaults: { tenant_id: 'default', inbox_enabled: true, email_enabled: false, sms_enabled: false, quiet_hours: {} },
@@ -166,7 +166,7 @@ export class NotificationService extends BaseService {
           allowedFields: ['inbox_enabled', 'email_enabled', 'sms_enabled', 'quiet_hours']
         }
       },
-      deliveries: {
+      notification_deliveries: {
         tableName: 'notification_deliveries',
         clientMode: 'admin',
         permissions: this.adminCrudPermissions('notification.deliveries.manage'),
@@ -179,7 +179,7 @@ export class NotificationService extends BaseService {
           allowedFields: ['status', 'error_message', 'next_retry_at', 'attempt_count', 'provider_message_id', 'sent_at']
         }
       },
-      events: {
+      notification_events: {
         tableName: 'notification_events',
         clientMode: 'admin',
         permissions: this.adminCrudPermissions('notification.messages.manage'),
@@ -192,7 +192,7 @@ export class NotificationService extends BaseService {
           allowedFields: ['status', 'error_message', 'processed_at']
         }
       },
-      templates: {
+      notification_templates: {
         tableName: 'notification_templates',
         clientMode: 'admin',
         permissions: this.adminCrudPermissions('notification.templates.manage'),
@@ -211,19 +211,19 @@ export class NotificationService extends BaseService {
 
   protected override hooks(): ServiceHooks {
     return {
-      messages: {
+      notification_messages: {
         beforeCreate: [this.normalizeMessagePayload],
         beforeUpdate: [this.normalizeMessageUpdatePayload],
         afterCreate: [this.normalizeMessageResult],
         afterUpdate: [this.normalizeMessageResult]
       },
-      preferences: {
+      notification_preferences: {
         beforeCreate: [this.normalizePreferencePayload],
         beforeUpdate: [this.normalizePreferencePayload],
         afterCreate: [this.normalizePreferenceResult],
         afterUpdate: [this.normalizePreferenceResult]
       },
-      deliveries: {
+      notification_deliveries: {
         beforeUpdate: [this.normalizeDeliveryPayload]
       }
     };

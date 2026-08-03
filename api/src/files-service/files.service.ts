@@ -129,7 +129,7 @@ export class FilesService extends BaseService {
 
   protected override hooks(): ServiceHooks {
     return {
-      files: {
+      file_objects: {
         action: (ctx) => this.runFilesAction(ctx),
         beforeDelete: (ctx) => this.prepareFileDelete(ctx),
         afterDelete: (ctx) => {
@@ -140,7 +140,7 @@ export class FilesService extends BaseService {
           };
         }
       },
-      folders: {
+      file_folders: {
         action: (ctx) => this.runFoldersAction(ctx)
       }
     };
@@ -256,7 +256,7 @@ export class FilesService extends BaseService {
     const uploadExpiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString();
 
     const file = await this.createItem({
-      resource: 'files',
+      resource: 'file_objects',
       data: {
         id,
         bucket,
@@ -316,7 +316,7 @@ export class FilesService extends BaseService {
     };
 
     const file = await this.updateItem({
-      resource: 'files',
+      resource: 'file_objects',
       id,
       data: patch
     }, context) as FileObjectRow;
@@ -429,8 +429,8 @@ export class FilesService extends BaseService {
       limit: 1
     }, context));
     const folder = existingRows[0]
-      ? await this.updateItem({ resource: 'folders', id: existingRows[0].id, data: payload }, context) as FileFolderRow
-      : await this.createItem({ resource: 'folders', data: payload }, context) as FileFolderRow;
+      ? await this.updateItem({ resource: 'file_folders', id: existingRows[0].id, data: payload }, context) as FileFolderRow
+      : await this.createItem({ resource: 'file_folders', data: payload }, context) as FileFolderRow;
 
     return {
       folder: normalizeFolder(folder)
@@ -474,7 +474,7 @@ export class FilesService extends BaseService {
     }
 
     await this.updateItem({
-      resource: 'folders',
+      resource: 'file_folders',
       filters: { path },
       data: { deleted_at: new Date().toISOString() }
     }, context);

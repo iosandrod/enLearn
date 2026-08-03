@@ -1,0 +1,40 @@
+
+> @ workflow-api:trigger:dev E:\enLearn
+> pnpm --dir api workflow:trigger:dev
+
+
+> hikari-api@ workflow:trigger:dev E:\enLearn\api
+> powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-trigger-dev.ps1 -ApiUrl http://localhost:3030 -EnvFile %INIT_CWD%\.env
+
+[enLearn-trigger] Starting Trigger.dev worker: http://localhost:3030
+
+Trigger.dev (4.5.7 -> 4.5.9)
+------------------------------------------------------
+[90m|[39m
+[33m![39m  Warning: You're not running the latest CLI version, please consider updating ASAP
+[90m|[39m  
+[90m|[39m           Current:     4.5.7
+[90m|[39m           Latest:      4.5.9
+[90m|[39m  
+[90m|[39m           Run latest:  npx trigger.dev@latest
+------------------------------------------------------
+Key: Version | Task | Run
+------------------------------------------------------
+○ Building local worker…
+[90m|[39m
+[31mx[39m  Error: No trigger files found
+[90m|[39m  
+[90m|[39m         Dirs config:
+[90m|[39m         ./src/trigger
+[90m|[39m         
+[90m|[39m         Search patterns:
+[90m|[39m         ./src/trigger/**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}
+[90m|[39m         
+[90m|[39m         Possible solutions:
+[90m|[39m         1. Check if the directory paths in your config are correct
+[90m|[39m         2. Verify that your files match the search patterns
+[90m|[39m         3. Update the search patterns in your config
+[90m|[39m  
+[90m|[39m         View the config docs https://trigger.dev/docs/config/config-file
+[90m|[39m
+[90m|[39m  💡 Get a fix for this error using AI http://localhost:3030/projects/proj_rdxcpdxdckdmxroceyml/ai-help?q=Build+failed%3A%0A+%0A%0AError%0A++++at+bundleWorker+%28file%3A%2F%2F%2FE%3A%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fbuild%2Fbundle.js%3A54%3A15%29%0A++++at+async+runBundle+%28file%3A%2F%2F%2FE%3A%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSession.js%3A116%3A34%29%0A++++at+async+startDevSession+%28file%3A%2F%2F%2FE%3A%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fdev%2FdevSession.js%3A141%3A26%29%0A++++at+async+startDev+%28file%3A%2F%2F%2FE%3A%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fcommands%2Fdev.js%3A224%3A23%29%0A++++at+async+devCommand+%28file%3A%2F%2F%2FE%3A%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fcommands%2Fdev.js%3A137%3A29%29%0A++++at+async+file%3A%2F%2F%2FE%3A%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fcommands%2Fdev.js%3A69%3A13%0A++++at+async+wrapCommandAction+%28file%3A%2F%2F%2FE%3A%2FenLearn%2Fnode_modules%2F.pnpm%2Ftrigger.dev%404.5.7_react%4019.2.8_typescript%405.9.3%2Fnode_modules%2Ftrigger.dev%2Fdist%2Fesm%2Fcli%2Fcommon.js%3A47%3A24%29

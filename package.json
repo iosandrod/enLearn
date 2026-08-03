@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --dir frontend dev",
-    "start:redis":"\"C:/Program Files/Redis/redis-server.exe\" --service-run \"C:/Program Files/Redis/redis.windows-service.conf\"",
+    "start:redis": "\"C:/Program Files/Redis/redis-server.exe\" --service-run \"C:/Program Files/Redis/redis.windows-service.conf\"",
     "build": "pnpm --dir frontend build",
     "start": "pnpm --dir frontend preview",
     "typecheck": "pnpm --dir frontend typecheck",
@@ -48,6 +48,7 @@
     "triggerdev:up": "docker compose --env-file infra/triggerdev/.env -f infra/triggerdev/docker-compose.yml up -d",
     "triggerdev:down": "docker compose --env-file infra/triggerdev/.env -f infra/triggerdev/docker-compose.yml down",
     "triggerdev:logs": "docker compose --env-file infra/triggerdev/.env -f infra/triggerdev/docker-compose.yml logs -f webapp supervisor",
+    "triggerdev:bootstrap:database": "pnpm --dir trigger-workflow-gateway bootstrap --base-dir ..",
     "triggerdev:bootstrap": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/triggerdev-bootstrap.ps1",
     "triggerdev:bootstrap:cli": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/triggerdev-bootstrap.ps1 -UseCliBootstrap",
     "triggerdev:up:bootstrap": "pnpm triggerdev:up && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/triggerdev-bootstrap.ps1 -ApiUrl http://localhost:8030 -UseCliBootstrap",

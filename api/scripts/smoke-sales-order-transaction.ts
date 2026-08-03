@@ -101,7 +101,7 @@ function buildFrontendRequest(
     serviceName: 'admin',
     serviceMethod: 'createItem',
     postData: {
-      resource: 'salesOrders',
+      resource: 'sales_orders',
       data: {
         account_id: accountId,
         doc_no: docNo,
@@ -119,7 +119,7 @@ function buildFrontendRequest(
           : 'One sales order with three detail rows.',
         __details: [
           {
-            resource: 'salesOrderLines',
+            resource: 'sales_order_lines',
             foreignKey: 'order_id',
             inheritFields: ['account_id'],
             rows: buildLines(failThirdLine)
@@ -135,7 +135,7 @@ function buildUpdateRequest(orderId: string, failThirdLine: boolean): JsonRecord
     serviceName: 'admin',
     serviceMethod: 'updateItem',
     postData: {
-      resource: 'salesOrders',
+      resource: 'sales_orders',
       id: orderId,
       data: {
         total_qty: 6,
@@ -144,7 +144,7 @@ function buildUpdateRequest(orderId: string, failThirdLine: boolean): JsonRecord
           : 'Parent and three replacement details committed.',
         __details: [
           {
-            resource: 'salesOrderLines',
+            resource: 'sales_order_lines',
             mode: 'replace',
             foreignKey: 'order_id',
             inheritFields: ['account_id'],

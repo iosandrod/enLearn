@@ -1524,7 +1524,7 @@ async function saveRelation(values: FormValues) {
   try {
     const isEnforced = booleanValue(values.isEnforced);
     await serviceApi.invoke('entityDesign', isEnforced ? 'saveRelation' : 'saveItem', {
-      ...(!isEnforced ? { resource: 'relations' } : {}),
+      ...(!isEnforced ? { resource: 'entity_design_relations' } : {}),
       id: stringValue(values.id),
       sourceTableId: stringValue(values.sourceTableId),
       source_table_id: stringValue(values.sourceTableId),
@@ -1555,7 +1555,7 @@ async function deleteRelation(relation: EntityRelation) {
   savingRelation.value = true;
   try {
     await serviceApi.invoke('entityDesign', 'deleteItem', {
-      resource: 'relations',
+      resource: 'entity_design_relations',
       id: relation.id,
       dropConstraint: false
     });
@@ -1572,7 +1572,7 @@ async function saveLayout() {
   savingLayout.value = true;
   try {
     await serviceApi.invoke('entityDesign', 'updateItem', {
-      resource: 'tables',
+      resource: 'entity_design_tables',
       data: flowNodes.value.map((node) => ({
         id: node.id,
         position_x: Math.round(node.position.x),

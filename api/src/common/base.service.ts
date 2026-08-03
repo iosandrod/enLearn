@@ -1,5 +1,6 @@
-import { BadRequestException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
+import type { PoolClient } from 'pg';
 import type { ServiceContext, ServiceExecutor } from './interfaces/service-executor';
 import {
   createSupabaseClient,
@@ -87,6 +88,8 @@ export interface ServicePostData {
   with_count?: unknown;
   responseMode?: unknown;
   response_mode?: unknown;
+  afterSave?: unknown;
+  after_save?: unknown;
   clientMode?: unknown;
   client_mode?: unknown;
   [key: string]: unknown;
@@ -134,6 +137,22 @@ export type ResourceDetailRelation = {
   updateMode?: 'replace';
 };
 
+export type ResourceAfterSaveRelation = {
+  resource?: string;
+  actions: Array<'update'>;
+  allowedFields: string[];
+  allowedWhereFields?: string[];
+};
+
+type PreparedAfterSaveUpdate = {
+  action: 'update';
+  resourceName: string;
+  resource: ResourceConfig;
+  data: Record<string, unknown>;
+  where: Record<string, unknown>;
+  expectedAffectedRows?: number;
+};
+
 export type ResourceConfig = {
   code?: string;
   tableName: string;
@@ -144,6 +163,7 @@ export type ResourceConfig = {
   permissions?: ResourcePermissions;
   defaults?: Record<string, unknown> | ((ctx: CrudContext) => Record<string, unknown> | Promise<Record<string, unknown>>);
   detailRelations?: Record<string, ResourceDetailRelation>;
+  afterSaveRelations?: Record<string, ResourceAfterSaveRelation>;
   list?: ResourceListConfig;
   create?: ResourceActionConfig;
   update?: ResourceActionConfig;
@@ -616,6 +636,10 @@ export abstract class BaseService implements ServiceExecutor {
         return { payload, details };
       })
     );
+    const afterSaveActions = await this.prepareAfterSaveActions(ctx);
+    if (afterSaveActions.length && preparedItems.length !== 1) {
+      throw new BadRequestException('afterSave requires exactly one saved item.');
+    }
 
     const client = await getPostgresPool().connect();
     let transactionStarted = false;
@@ -730,6 +754,15 @@ export abstract class BaseService implements ServiceExecutor {
         insertedParents.push(parent);
       }
 
+      if (afterSaveActions.length) {
+        await this.executeAfterSaveActions(
+          client,
+          ctx,
+          afterSaveActions,
+          insertedParents[0]
+        );
+      }
+
       await client.query('commit');
       transactionStarted = false;
       return insertedParents.length === 1 ? insertedParents[0] : insertedParents;
@@ -745,7 +778,7 @@ export abstract class BaseService implements ServiceExecutor {
         }
       }
 
-      if (error instanceof BadRequestException) throw error;
+      if (error instanceof BadRequestException || error instanceof ConflictException) throw error;
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Create transaction failed.'
       );
@@ -1005,6 +1038,10 @@ export abstract class BaseService implements ServiceExecutor {
       );
       payload = await this.buildWritePayload(ctx, 'update', mainSource);
       this.assertRequiredFields(payload, ctx.resource.update?.requiredFields ?? []);
+    }
+    const afterSaveActions = await this.prepareAfterSaveActions(ctx);
+    if (afterSaveActions.length && (isBatchUpdate || !id)) {
+      throw new BadRequestException('afterSave on update requires a single id.');
     }
 
     const client = await getPostgresPool().connect();
@@ -1290,6 +1327,15 @@ export abstract class BaseService implements ServiceExecutor {
         }
         await replaceDetails(updated, details);
       }
+      if (afterSaveActions.length) {
+        const [saved] = updatedRows;
+        if (!saved) {
+          throw new BadRequestException(
+            `No ${ctx.resourceName} row matched ${primaryKey}: ${id}.`
+          );
+        }
+        await this.executeAfterSaveActions(client, ctx, afterSaveActions, saved);
+      }
 
       await client.query('commit');
       transactionStarted = false;
@@ -1306,13 +1352,285 @@ export abstract class BaseService implements ServiceExecutor {
         }
       }
 
-      if (error instanceof BadRequestException) throw error;
+      if (error instanceof BadRequestException || error instanceof ConflictException) throw error;
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Update transaction failed.'
       );
     } finally {
       client.release(releaseError);
     }
+  }
+
+  protected async prepareAfterSaveActions(
+    ctx: CrudContext
+  ): Promise<PreparedAfterSaveUpdate[]> {
+    const rawActions = ctx.input.afterSave ?? ctx.input.after_save;
+    if (rawActions === undefined || rawActions === null) return [];
+    if (!Array.isArray(rawActions)) {
+      throw new BadRequestException('afterSave must be an array.');
+    }
+    if (rawActions.length > 10) {
+      throw new BadRequestException('afterSave supports at most 10 actions.');
+    }
+
+    const prepared: PreparedAfterSaveUpdate[] = [];
+    for (const [index, rawAction] of rawActions.entries()) {
+      if (!this.isRecord(rawAction)) {
+        throw new BadRequestException(`afterSave[${index}] must be an object.`);
+      }
+
+      const action = this.readOptionalString(rawAction.action);
+      if (action !== 'update') {
+        throw new BadRequestException(
+          `Unsupported afterSave[${index}].action: ${action || '(empty)'}.`
+        );
+      }
+
+      const relationName = this.readOptionalString(rawAction.resource);
+      if (!relationName) {
+        throw new BadRequestException(`afterSave[${index}].resource is required.`);
+      }
+      const relation = ctx.resource.afterSaveRelations?.[relationName];
+      if (!relation || !relation.actions.includes(action)) {
+        throw new BadRequestException(
+          `afterSave update resource ${relationName} is not configured for ${ctx.resourceName}.`
+        );
+      }
+
+      const resolved = this.tryResolveResource({
+        resource: relation.resource ?? relationName
+      });
+      if (!resolved?.config.update) {
+        throw new BadRequestException(
+          `Unsupported afterSave update resource: ${relationName}.`
+        );
+      }
+      if (
+        (resolved.config.clientMode ?? 'user') !==
+        (ctx.resource.clientMode ?? 'user')
+      ) {
+        throw new BadRequestException(
+          `afterSave resource ${relationName} must use the same clientMode as ${ctx.resourceName}.`
+        );
+      }
+
+      if (!this.isRecord(rawAction.data) || !Object.keys(rawAction.data).length) {
+        throw new BadRequestException(`afterSave[${index}].data must be a non-empty object.`);
+      }
+      const data = rawAction.data;
+      for (const [field, value] of Object.entries(data)) {
+        this.assertIdentifier(field, `afterSave[${index}].data field`);
+        if (!relation.allowedFields.includes(field)) {
+          throw new BadRequestException(
+            `afterSave[${index}].data field ${field} is not allowed.`
+          );
+        }
+        if (
+          resolved.config.update.allowedFields &&
+          !resolved.config.update.allowedFields.includes(field)
+        ) {
+          throw new BadRequestException(
+            `${field} is not writable on afterSave resource ${relationName}.`
+          );
+        }
+        this.assertAfterSaveReferences(value, `afterSave[${index}].data.${field}`);
+      }
+
+      if (!this.isRecord(rawAction.where) || !Object.keys(rawAction.where).length) {
+        throw new BadRequestException(`afterSave[${index}].where must be a non-empty object.`);
+      }
+      const where = rawAction.where;
+      const allowedWhereFields = relation.allowedWhereFields ?? [
+        this.primaryKey(resolved.config)
+      ];
+      for (const [field, value] of Object.entries(where)) {
+        this.assertIdentifier(field, `afterSave[${index}].where field`);
+        if (!allowedWhereFields.includes(field)) {
+          throw new BadRequestException(
+            `afterSave[${index}].where field ${field} is not allowed.`
+          );
+        }
+        this.assertAfterSaveWhereValue(value, `afterSave[${index}].where.${field}`);
+      }
+
+      const targetContext: CrudContext = {
+        ...ctx,
+        action: 'update',
+        resourceName: resolved.name,
+        resource: resolved.config,
+        input: { ...ctx.input, resource: resolved.name, data },
+        data,
+        filters: where,
+        id: undefined,
+        ids: [],
+        result: undefined,
+        meta: {}
+      };
+      await this.assertPermission(targetContext);
+      const payload = await this.buildWritePayload(targetContext, 'update', data);
+      this.assertRequiredFields(payload, resolved.config.update.requiredFields ?? []);
+
+      const rawExpected = rawAction.expect ??
+        rawAction.expectedAffectedRows ??
+        rawAction.expected_affected_rows;
+      const expectedAffectedRows = rawExpected === undefined
+        ? 1
+        : typeof rawExpected === 'number' && Number.isInteger(rawExpected) && rawExpected >= 0
+          ? rawExpected
+          : NaN;
+      if (!Number.isInteger(expectedAffectedRows)) {
+        throw new BadRequestException(
+          `afterSave[${index}].expect must be a non-negative integer.`
+        );
+      }
+
+      prepared.push({
+        action,
+        resourceName: resolved.name,
+        resource: resolved.config,
+        data: payload,
+        where,
+        expectedAffectedRows
+      });
+    }
+
+    return prepared;
+  }
+
+  protected async executeAfterSaveActions(
+    client: PoolClient,
+    ctx: CrudContext,
+    actions: PreparedAfterSaveUpdate[],
+    saved: Record<string, unknown>
+  ) {
+    const quoteIdentifier = (value: string, fieldName: string) => {
+      this.assertIdentifier(value, fieldName);
+      return `"${value}"`;
+    };
+    const quoteRelation = (value: string, fieldName: string) => {
+      const parts = value.split('.').map((part) => part.trim()).filter(Boolean);
+      if (parts.length < 1 || parts.length > 2) {
+        throw new BadRequestException(fieldName + ' must be table or schema.table.');
+      }
+      return parts.map((part) => quoteIdentifier(part, fieldName)).join('.');
+    };
+
+    for (const [index, action] of actions.entries()) {
+      const data = this.resolveAfterSaveReferences(action.data, saved);
+      const where = this.resolveAfterSaveReferences(action.where, saved);
+      const dataEntries = Object.entries(data).filter(([, value]) => value !== undefined);
+      if (!dataEntries.length) {
+        throw new BadRequestException(`afterSave[${index}] has no resolved update fields.`);
+      }
+
+      const values: unknown[] = [];
+      const bind = (value: unknown) => {
+        values.push(value);
+        return `$${values.length}`;
+      };
+      const setSql = dataEntries.map(([field, value]) =>
+        `${quoteIdentifier(field, 'afterSave data field')} = ${bind(value)}`
+      );
+      const conditions = Object.entries(where).map(([field, value]) => {
+        const fieldSql = quoteIdentifier(field, 'afterSave where field');
+        return value === null ? `${fieldSql} is null` : `${fieldSql} = ${bind(value)}`;
+      });
+      if (action.resource.ownerField && ctx.user) {
+        conditions.push(
+          `${quoteIdentifier(action.resource.ownerField, 'afterSave owner field')} = ${bind(ctx.user.id)}`
+        );
+      }
+      if (!conditions.length) {
+        throw new BadRequestException(`afterSave[${index}] requires an effective where condition.`);
+      }
+
+      const result = await client.query(
+        `update ${quoteRelation(action.resource.tableName, 'afterSave tableName')} ` +
+          `set ${setSql.join(', ')} where ${conditions.join(' and ')} returning *`,
+        values
+      );
+      const affectedRows = result.rowCount ?? result.rows.length;
+      if (
+        action.expectedAffectedRows !== undefined &&
+        affectedRows !== action.expectedAffectedRows
+      ) {
+        throw new ConflictException(
+          `afterSave[${index}] expected ${action.expectedAffectedRows} affected row(s), ` +
+          `but updated ${affectedRows}.`
+        );
+      }
+    }
+  }
+
+  protected assertAfterSaveReferences(value: unknown, fieldName: string): void {
+    if (Array.isArray(value)) {
+      value.forEach((item, index) =>
+        this.assertAfterSaveReferences(item, `${fieldName}[${index}]`)
+      );
+      return;
+    }
+    if (!this.isRecord(value)) return;
+
+    if (Object.prototype.hasOwnProperty.call(value, '$ref')) {
+      if (Object.keys(value).length !== 1) {
+        throw new BadRequestException(`${fieldName} reference must only contain $ref.`);
+      }
+      const reference = this.readOptionalString(value.$ref);
+      if (!/^saved(?:\.[a-zA-Z_][a-zA-Z0-9_]*)+$/.test(reference)) {
+        throw new BadRequestException(
+          `${fieldName}.$ref must use the saved.<field> format.`
+        );
+      }
+      return;
+    }
+
+    for (const [field, nested] of Object.entries(value)) {
+      this.assertAfterSaveReferences(nested, `${fieldName}.${field}`);
+    }
+  }
+
+  protected assertAfterSaveWhereValue(value: unknown, fieldName: string) {
+    this.assertAfterSaveReferences(value, fieldName);
+    if (
+      Array.isArray(value) ||
+      (this.isRecord(value) && !Object.prototype.hasOwnProperty.call(value, '$ref'))
+    ) {
+      throw new BadRequestException(
+        `${fieldName} must be a scalar, null, or a saved.<field> reference.`
+      );
+    }
+  }
+
+  protected resolveAfterSaveReferences(
+    value: Record<string, unknown>,
+    saved: Record<string, unknown>
+  ): Record<string, unknown>;
+  protected resolveAfterSaveReferences(value: unknown, saved: Record<string, unknown>): any;
+  protected resolveAfterSaveReferences(value: unknown, saved: Record<string, unknown>): any {
+    if (Array.isArray(value)) {
+      return value.map((item) => this.resolveAfterSaveReferences(item, saved));
+    }
+    if (!this.isRecord(value)) return value;
+
+    if (Object.prototype.hasOwnProperty.call(value, '$ref')) {
+      const reference = this.readOptionalString(value.$ref);
+      const path = reference.split('.').slice(1);
+      let resolved: unknown = saved;
+      for (const field of path) {
+        resolved = this.isRecord(resolved) ? resolved[field] : undefined;
+      }
+      if (resolved === undefined) {
+        throw new BadRequestException(`Could not resolve afterSave reference: ${reference}.`);
+      }
+      return resolved;
+    }
+
+    return Object.fromEntries(
+      Object.entries(value).map(([field, nested]) => [
+        field,
+        this.resolveAfterSaveReferences(nested, saved)
+      ])
+    );
   }
 
   protected readBatchUpdateDataItems(ctx: CrudContext) {
@@ -1634,7 +1952,8 @@ export abstract class BaseService implements ServiceExecutor {
       'operation', 'actionName', 'action_name', 'action',
       'id', 'ids', 'data', 'items', 'rows', 'filters', 'requiredFilters', 'required_filters', 'search', 'searchFields', 'search_fields',
       'limit', 'page', 'pageSize', 'page_size', 'offset', 'orderBy', 'order_by', 'orderDirection',
-      'order_direction', 'sorts', 'withCount', 'with_count', 'responseMode', 'response_mode', 'clientMode', 'client_mode'
+      'order_direction', 'sorts', 'withCount', 'with_count', 'responseMode', 'response_mode',
+      'afterSave', 'after_save', 'clientMode', 'client_mode'
     ]);
     return Object.fromEntries(Object.entries(postData).filter(([key]) => !reserved.has(key)));
   }
@@ -1657,9 +1976,12 @@ export abstract class BaseService implements ServiceExecutor {
 
   protected tryResolveResource(postData: ServicePostData, fallback = '') {
     const resources = this.resources();
+    this.assertResourceMapMatchesTables(resources);
     const resourceName = this.readOptionalString(postData.resource) || fallback;
     if (resourceName && resources[resourceName]) {
-      return { name: resourceName, config: this.withResourceCode(resourceName, resources[resourceName]) };
+      const config = resources[resourceName];
+      this.assertResourceMatchesTable(resourceName, config);
+      return { name: resourceName, config: this.withResourceCode(resourceName, config) };
     }
 
     const entityCode = this.readOptionalString(postData.entityCode ?? postData.entity_code);
@@ -1675,6 +1997,21 @@ export abstract class BaseService implements ServiceExecutor {
 
   protected withResourceCode(name: string, resource: ResourceConfig): ResourceConfig {
     return { ...resource, code: resource.code ?? name };
+  }
+
+  protected assertResourceMatchesTable(name: string, resource: ResourceConfig) {
+    const tableName = resource.tableName.split('.').map((part) => part.trim()).filter(Boolean).at(-1);
+    if (name !== tableName) {
+      throw new Error(
+        `Resource key ${name} must match its database table name ${resource.tableName}.`
+      );
+    }
+  }
+
+  protected assertResourceMapMatchesTables(resources: ResourceConfigMap) {
+    for (const [name, resource] of Object.entries(resources)) {
+      this.assertResourceMatchesTable(name, resource);
+    }
   }
 
   protected primaryKey(resource: ResourceConfig) {
