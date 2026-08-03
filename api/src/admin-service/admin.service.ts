@@ -147,14 +147,6 @@ export class AdminService extends BaseService {
       return this.listApprovalTestUsers(context);
     }
 
-    if (method === 'getPrintTemplate') {
-      return this.getPrintTemplate(postData, context);
-    }
-
-    if (method === 'savePrintTemplate') {
-      return this.savePrintTemplate(postData, context);
-    }
-
     return super.executeAction(method, postData, context);
   }
 
@@ -516,59 +508,6 @@ export class AdminService extends BaseService {
 
   private adminCrudPermissions(permission: string) {
     return { list: permission, create: permission, update: permission, delete: permission };
-  }
-
-  private async getPrintTemplate(
-    postData: Record<string, unknown>,
-    context: ServiceContext
-  ) {
-    const id = readOptionalString(postData.id);
-    if (!id) {
-      return {
-        id: '',
-        name: '',
-        status: 'active',
-        version: 1,
-        content: {},
-        workspace: {},
-        metadata: {}
-      };
-    }
-
-    const [template] = asRows(await this.listItems({
-      resource: 'print_templates',
-      filters: { id },
-      limit: 1
-    }, context));
-    if (!template) throw new NotFoundException('Print template not found.');
-    return template;
-  }
-
-  private async savePrintTemplate(
-    postData: Record<string, unknown>,
-    context: ServiceContext
-  ) {
-    const id = readOptionalString(postData.id);
-    const existing = id
-      ? await this.getPrintTemplate({ id }, context)
-      : undefined;
-    const status = readOptionalString(postData.status) || 'active';
-    if (status !== 'draft' && status !== 'active' && status !== 'archived') {
-      throw new BadRequestException('status must be draft, active, or archived.');
-    }
-
-    return this.saveItem({
-      resource: 'print_templates',
-      ...(id ? { id } : {}),
-      data: {
-        name: readString(postData.name, 'name'),
-        content: readJsonObject(postData.content, readJsonObject(existing?.content)),
-        workspace: readJsonObject(postData.workspace, readJsonObject(existing?.workspace)),
-        status,
-        version: existing ? Number(existing.version ?? 0) + 1 : 1,
-        metadata: readJsonObject(postData.metadata, readJsonObject(existing?.metadata))
-      }
-    }, context);
   }
 
   private async listApprovalTestUsers(context: ServiceContext) {

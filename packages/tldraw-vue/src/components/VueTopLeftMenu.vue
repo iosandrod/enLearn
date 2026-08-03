@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Editor, TLContent, TLPageId, TLShapeId } from '@tldraw/editor'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { VxeUI } from 'vxe-pc-ui'
 import {
 	TopMenuController,
 	type TopMenuGridActionId,
@@ -132,6 +133,15 @@ const pagedPrintPreviewPages = computed(() => {
 const printPreviewPageLabel = computed(
 	() => `${printPreviewPageIndex.value + 1} / ${printPreviewPageCount.value}`
 )
+
+async function showModalAlert(content: string, title = '提示') {
+	await VxeUI.modal.confirm({
+		title,
+		content,
+		mask: false,
+		lockView: false,
+	}).catch(() => false)
+}
 
 watch(pageMenuOpen, (open) => {
 	if (!open) {
@@ -314,7 +324,7 @@ async function printCurrentPage() {
 		const manager = new PrintManager(props.editor)
 		await manager.print(createPrintJobConfig())
 	} catch (error) {
-		window.alert(getTemplateErrorMessage(error, '打印失败'))
+		await showModalAlert(getTemplateErrorMessage(error, '打印失败'), '打印失败')
 	}
 }
 
@@ -491,7 +501,7 @@ async function saveCurrentTemplate() {
 		const content = await getCurrentPageTemplateContent()
 		const workspace = props.getWorkspaceTemplateConfig?.()
 		if (!content) {
-			window.alert('当前页没有可保存的内容')
+			await showModalAlert('当前页没有可保存的内容')
 			return
 		}
 
@@ -501,7 +511,7 @@ async function saveCurrentTemplate() {
 
 		const trimmedName = name.trim()
 		if (!trimmedName) {
-			window.alert('模板名称不能为空')
+			await showModalAlert('模板名称不能为空')
 			return
 		}
 
@@ -523,11 +533,11 @@ async function saveCurrentTemplate() {
 		}
 
 		await saveTemplateRecords(nextTemplates)
-		window.alert('模板已保存')
+		await showModalAlert('模板已保存')
 	} catch (error) {
 		const message = getTemplateErrorMessage(error, '模板保存失败')
 		templateError.value = message
-		window.alert(message)
+		await showModalAlert(message, '模板保存失败')
 	} finally {
 		isTemplateSaving.value = false
 	}
@@ -560,7 +570,7 @@ async function applyTemplate(template: VueTemplateRecord) {
 			select: true,
 		})
 	} catch (error) {
-		window.alert(getTemplateErrorMessage(error, '模板加载失败'))
+		await showModalAlert(getTemplateErrorMessage(error, '模板加载失败'), '模板加载失败')
 	}
 }
 
@@ -573,7 +583,7 @@ async function deleteTemplate(template: VueTemplateRecord) {
 	} catch (error) {
 		const message = getTemplateErrorMessage(error, '模板删除失败')
 		templateError.value = message
-		window.alert(message)
+		await showModalAlert(message, '模板删除失败')
 	}
 }
 

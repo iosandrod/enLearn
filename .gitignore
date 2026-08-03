@@ -58,3 +58,5 @@ certificates
 .env*.local
 api/.trigger/**
 frontend/dist/index.html
+/api/.trigger/**
+api/.trigger/tmp/**/*

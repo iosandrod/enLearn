@@ -32,27 +32,11 @@ insert into public.lowcode_pages (
     "layout": "dashboard",
     "status": "published",
     "keepAlive": false,
-    "dataSources": {
-      "printTemplate": {
-        "key": "printTemplate",
-        "label": "打印模板",
-        "serviceName": "admin",
-        "serviceMethod": "getPrintTemplate",
-        "saveMethod": "savePrintTemplate",
-        "entityCode": "print_templates",
-        "tableName": "print_templates",
-        "postData": {
-          "id": "{{route.query.id}}"
-        },
-        "autoLoad": true
-      }
-    },
+    "dataSources": {},
     "blocks": [
       {
         "id": "print-templates-edit-form",
         "kind": "form",
-        "sourceKey": "printTemplate",
-        "submitSourceKey": "printTemplate",
         "initialValues": {
           "id": "",
           "name": "",

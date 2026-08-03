@@ -451,20 +451,11 @@ async function persistTemplateFromDialog(
       isRecord(values.metadata) ? values.metadata : existing?.metadata
     )
   };
-  let row: PrintTemplateRow;
-
-  if (existing) {
-    row = await serviceApi.invoke<PrintTemplateRow>('admin', 'updateItem', {
-      resource: PRINT_TEMPLATE_RESOURCE,
-      id: existing.id,
-      data
-    });
-  } else {
-    row = await serviceApi.invoke<PrintTemplateRow>('admin', 'createItem', {
-      resource: PRINT_TEMPLATE_RESOURCE,
-      data
-    });
-  }
+  const row = await serviceApi.invoke<PrintTemplateRow>('admin', 'saveItem', {
+    resource: PRINT_TEMPLATE_RESOURCE,
+    ...(existing ? { id: existing.id } : {}),
+    data
+  });
 
   await finishTemplateSave(row, snapshot);
 }

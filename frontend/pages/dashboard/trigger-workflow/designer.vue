@@ -7,7 +7,7 @@
       </div>
 
       <div class="trigger-workflow-page__job">
-        <strong>模拟测试：20 秒用户日志定时任务</strong>
+        <strong>模拟测试：每分钟用户日志定时任务</strong>
         <span>{{ jobStatusText }}</span>
       </div>
 
@@ -22,7 +22,7 @@
         </div>
         <div>
           <dt>间隔</dt>
-          <dd>{{ demoJob?.intervalSeconds ? `${demoJob.intervalSeconds}s` : '20s' }}</dd>
+          <dd>{{ demoJob?.intervalSeconds ? `${demoJob.intervalSeconds}s` : '60s' }}</dd>
         </div>
         <div>
           <dt>最近运行</dt>
@@ -72,7 +72,7 @@ const exportedModel = ref<TriggerWorkflowModel | undefined>();
 const demoJob = ref<WorkflowJobRecord | undefined>();
 const demoRuns = ref<WorkflowJobRunRecord[]>([]);
 const isJobBusy = ref(false);
-const jobMessage = ref('点击“创建并启用”后，后端每 20 秒读取 Supabase public.users 并打印日志。');
+const jobMessage = ref('点击“创建并启用”后，Trigger.dev 每分钟读取 Supabase public.users 并打印日志。');
 
 const statusText = computed(() => {
   const errors = issues.value.filter((issue) => issue.level === 'error').length;
@@ -128,13 +128,13 @@ async function createAndEnableUsersLogJob() {
     if (!job) {
       job = await workflowApi<WorkflowJobRecord>('createJob', {
         code: demoJobCode,
-        name: 'Supabase users 20s logger',
+        name: 'Supabase users 60s logger',
         type: 'interval',
         triggerTaskId: demoTaskId,
-        intervalSeconds: 20,
+        intervalSeconds: 60,
         timezone: 'Asia/Shanghai',
         payload: {
-          intervalSeconds: 20,
+          intervalSeconds: 60,
           limit: 20,
           source: 'public.users',
           logMode: 'backend-console'
@@ -144,12 +144,16 @@ async function createAndEnableUsersLogJob() {
       });
     }
 
+    if (job.intervalSeconds !== 60) {
+      throw new Error('现有示例任务使用旧的 20 秒间隔，请归档后重新创建为每分钟任务。');
+    }
+
     demoJob.value = await workflowApi<WorkflowJobRecord>('updateJobStatus', {
       jobId: job.id,
       status: 'enabled'
     });
     await refreshUsersLogJob();
-    jobMessage.value = '已创建并启用：后端调度器会每 20 秒执行一次，日志在 workflow-api 控制台输出。';
+    jobMessage.value = '已创建并启用：Trigger.dev Schedule 会每分钟执行一次，日志由 Trigger.dev worker 输出。';
   } catch (error) {
     jobMessage.value = error instanceof Error ? error.message : String(error);
   } finally {
@@ -207,21 +211,21 @@ function createUsersLogWorkflowModel(): TriggerWorkflowModel {
   return {
     schemaVersion: TRIGGER_WORKFLOW_SCHEMA_VERSION,
     code: demoJobCode,
-    name: 'Supabase Users 20s Logger',
+    name: 'Supabase Users 60s Logger',
     kind: 'dataSync',
     nodes: [
       {
         id: 'schedule',
         type: 'schedule',
-        name: 'Every 20 seconds',
+        name: 'Every minute',
         position: { x: 380, y: 40 },
         config: {
           schedule: {
-            cron: '*/20 * * * * *',
+            cron: '*/1 * * * *',
             timezone: 'Asia/Shanghai',
             externalId: demoJobCode
           },
-          metadata: { intervalSeconds: 20 }
+          metadata: { intervalSeconds: 60 }
         }
       },
       {

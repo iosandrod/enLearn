@@ -1,9 +1,7 @@
-import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { runs, tasks, wait } from '@trigger.dev/sdk';
+import { runs, schedules, tasks, wait } from '@trigger.dev/sdk';
 import type {
   WorkflowInstanceTaskPayload,
-  WorkflowRuntimeStore,
   WorkflowTaskDecision,
   WorkflowTriggerClient
 } from '../runtime/runtime.engine.types';
@@ -12,23 +10,9 @@ import {
 } from '../runtime/runtime.engine.types';
 import type { workflowInstanceTask } from './workflow-instance.task';
 import { TriggerCredentialsService } from './trigger-credentials.service';
-import {
-  NOTIFICATION_DISPATCH_TASK_ID,
-  runLocalNotificationDispatchTask
-} from './notification.task';
-import { executeWorkflowInstance, type WorkflowWaitDriver } from '../runtime/workflow.executor';
 
 @Injectable()
 export class TriggerDevClient implements WorkflowTriggerClient {
-  private readonly localWaiters = new Map<
-    string,
-    {
-      promise: Promise<WorkflowTaskDecision>;
-      resolve: (decision: WorkflowTaskDecision) => void;
-      reject: (error: Error) => void;
-    }
-  >();
-
   constructor(
     @Inject(TriggerCredentialsService)
     private readonly credentials: TriggerCredentialsService
@@ -52,113 +36,57 @@ export class TriggerDevClient implements WorkflowTriggerClient {
     payload: Record<string, unknown>,
     options: Record<string, unknown> = {}
   ) {
-    try {
-      return await this.withTriggerCredentials(() => tasks.trigger(taskId, payload, options));
-    } catch (error) {
-      if (taskId === NOTIFICATION_DISPATCH_TASK_ID) {
-        await runLocalNotificationDispatchTask(
-          payload as Parameters<typeof runLocalNotificationDispatchTask>[0]
-        );
-        return {
-          id: `local-notification:${Date.now().toString(36)}`
-        };
-      }
-
-      throw error;
-    }
+    return this.withTriggerCredentials(() => tasks.trigger(taskId, payload, options));
   }
 
   async createWaitpoint(options: { idempotencyKey: string; tags: string[] }) {
-    try {
-      return await this.withTriggerCredentials(() => wait.createToken(options));
-    } catch {
-      return this.createLocalToken(options);
-    }
+    return this.withTriggerCredentials(() => wait.createToken(options));
   }
 
   async completeWaitpoint(tokenId: string, decision: WorkflowTaskDecision) {
-    if (this.localWaiters.has(tokenId)) {
-      this.completeLocalToken(tokenId, decision);
-      return;
-    }
-
-    try {
-      await this.withTriggerCredentials(() => this.completeTriggerWaitpoint(tokenId, decision));
-    } catch (error) {
-      if (this.localWaiters.has(tokenId)) {
-        this.completeLocalToken(tokenId, decision);
-        return;
-      }
-
-      throw error;
-    }
+    await this.withTriggerCredentials(() => this.completeTriggerWaitpoint(tokenId, decision));
   }
 
   async cancelRun(runId: string) {
     await this.withTriggerCredentials(() => runs.cancel(runId));
   }
 
-  startLocalWorkflowExecution(
-    payload: WorkflowInstanceTaskPayload,
-    store: WorkflowRuntimeStore,
-    originalError: unknown
+  async createSchedule(options: {
+    task: string;
+    cron: string;
+    timezone?: string;
+    externalId?: string;
+    deduplicationKey: string;
+  }) {
+    return this.withTriggerCredentials(() => schedules.create(options));
+  }
+
+  async updateSchedule(
+    scheduleId: string,
+    options: { task: string; cron: string; timezone?: string; externalId?: string }
   ) {
-    const runId = `local-workflow:${payload.instanceId}`;
-    const waits: WorkflowWaitDriver = {
-      createToken: (options) => this.createLocalToken(options),
-      waitForToken: (tokenId) => this.waitForLocalToken(tokenId),
-      waitFor: ({ seconds }) =>
-        new Promise<void>((resolve) => setTimeout(resolve, Math.max(0, seconds) * 1000)),
-      waitUntil: ({ date }) =>
-        new Promise<void>((resolve) => setTimeout(resolve, Math.max(0, date.getTime() - Date.now()))),
-      triggerTask: (taskId, taskPayload, options) => this.triggerTask(taskId, taskPayload, options)
-    };
-
-    void executeWorkflowInstance(payload, store, waits).catch((error) =>
-      store.recordHistory(
-        payload.tenantId,
-        payload.instanceId,
-        'LOCAL_WORKFLOW_EXECUTION_FAILED',
-        payload.initiatorId,
-        {
-          message: error instanceof Error ? error.message : String(error),
-          triggerError: originalError instanceof Error ? originalError.message : String(originalError)
-        },
-        `workflow:${payload.instanceId}:local-execution-failed`
-      )
-    );
-
-    return { id: runId };
+    return this.withTriggerCredentials(() => schedules.update(scheduleId, options));
   }
 
-  private createLocalToken(options: { idempotencyKey: string; tags: string[] }) {
-    const id = `local-waitpoint:${randomUUID()}`;
-    let resolve!: (decision: WorkflowTaskDecision) => void;
-    let reject!: (error: Error) => void;
-    const promise = new Promise<WorkflowTaskDecision>((nextResolve, nextReject) => {
-      resolve = nextResolve;
-      reject = nextReject;
+  async findScheduleByDeduplicationKey(deduplicationKey: string) {
+    return this.withTriggerCredentials(async () => {
+      for await (const schedule of schedules.list()) {
+        if (schedule.deduplicationKey === deduplicationKey) return schedule;
+      }
+      throw new Error(`Trigger.dev schedule not found for deduplication key ${deduplicationKey}.`);
     });
-    this.localWaiters.set(id, { promise, resolve, reject });
-    return Promise.resolve({ id });
   }
 
-  private async waitForLocalToken<T>(tokenId: string) {
-    const waiter = this.localWaiters.get(tokenId);
-    if (!waiter) {
-      throw new Error(`Unknown local workflow waitpoint: ${tokenId}`);
-    }
-    return waiter.promise as Promise<T>;
+  async activateSchedule(scheduleId: string) {
+    return this.withTriggerCredentials(() => schedules.activate(scheduleId));
   }
 
-  private completeLocalToken(tokenId: string, decision: WorkflowTaskDecision) {
-    const waiter = this.localWaiters.get(tokenId);
-    if (!waiter) {
-      throw new Error(`Unknown local workflow waitpoint: ${tokenId}`);
-    }
+  async deactivateSchedule(scheduleId: string) {
+    return this.withTriggerCredentials(() => schedules.deactivate(scheduleId));
+  }
 
-    waiter.resolve(decision);
-    this.localWaiters.delete(tokenId);
+  async deleteSchedule(scheduleId: string) {
+    return this.withTriggerCredentials(() => schedules.del(scheduleId));
   }
 
   private async completeTriggerWaitpoint(tokenId: string, decision: WorkflowTaskDecision) {

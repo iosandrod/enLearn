@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../../../../../src/workflow/trigger/waitpoint-diagnostic.task.ts"],
-  "sourcesContent": ["import { task, wait } from '@trigger.dev/sdk';\r\n\r\nexport const TRIGGER_WAITPOINT_DIAGNOSTIC_TASK_ID = 'trigger-waitpoint-diagnostic';\r\n\r\ntype WaitpointDiagnosticPayload = {\r\n  tokenId: string;\r\n  testId: string;\r\n};\r\n\r\ntype WaitpointDiagnosticOutput = {\r\n  testId: string;\r\n  tokenId: string;\r\n  data: Record<string, unknown>;\r\n};\r\n\r\nexport const waitpointDiagnosticTask = task({\r\n  id: TRIGGER_WAITPOINT_DIAGNOSTIC_TASK_ID,\r\n  run: async (payload: WaitpointDiagnosticPayload): Promise<WaitpointDiagnosticOutput> => {\r\n    const result = await wait.forToken<Record<string, unknown>>(payload.tokenId);\r\n    if (!result.ok) throw result.error;\r\n\r\n    return {\r\n      testId: payload.testId,\r\n      tokenId: payload.tokenId,\r\n      data: result.output\r\n    };\r\n  }\r\n});\r\n"],
-  "mappings": ";;;;;;;;;;;;;;;AAAA;AAEO,IAAM,uCAAuC;AAa7C,IAAM,0BAA0B,KAAK;AAAA,EAC1C,IAAI;AAAA,EACJ,KAAK,8BAAO,YAA4E;AACtF,UAAM,SAAS,MAAM,KAAK,SAAkC,QAAQ,OAAO;AAC3E,QAAI,CAAC,OAAO,GAAI,OAAM,OAAO;AAE7B,WAAO;AAAA,MACL,QAAQ,QAAQ;AAAA,MAChB,SAAS,QAAQ;AAAA,MACjB,MAAM,OAAO;AAAA,IACf;AAAA,EACF,GATK;AAUP,CAAC;",
-  "names": []
-}

@@ -7,8 +7,9 @@ import {
   type WorkflowJobRunRecord,
   type WorkflowJobRunStatus
 } from './job.types';
-import { JobLocalExecutorService } from './job-local-executor.service';
 import { TriggerDevClient } from '../trigger/trigger-dev.client';
+
+const WORKFLOW_SCHEDULED_JOB_TASK_ID = 'workflow.job.scheduled';
 
 function isMissingWorkflowJobTableError(error: unknown) {
   const databaseError = error as { code?: string; message?: string };
@@ -23,13 +24,8 @@ function isMissingWorkflowJobTableError(error: unknown) {
 export class JobService {
   constructor(
     @Inject(DatabaseService) private readonly database: DatabaseService,
-    @Inject(JobLocalExecutorService) private readonly localExecutor: JobLocalExecutorService,
     @Inject(TriggerDevClient) private readonly triggerClient: TriggerDevClient
   ) {}
-
-  get canScheduleTimers() {
-    return this.database.isConfigured;
-  }
 
   async createJob(dto: CreateJobDto, actor: WorkflowJobActor) {
     const code = dto.code.trim();
@@ -43,6 +39,9 @@ export class JobService {
     }
 
     const payload = normalizeJobPayload(dto);
+    if (dto.type === 'interval') {
+      intervalCron(readIntervalSeconds(payload) ?? 60);
+    }
     const result = await this.database.query<WorkflowJobRow>(
       `insert into public.wf_job (
         tenant_id, code, name, type, status, trigger_task_id, cron_expr, timezone,
@@ -106,15 +105,88 @@ export class JobService {
   }
 
   async updateJobStatus(jobId: string, status: WorkflowJobRecord['status'], actor: WorkflowJobActor) {
-    const result = await this.database.query<WorkflowJobRow>(
-      `update public.wf_job
-      set status = $3, updated_at = timezone('utc'::text, now())
-      where id = $1 and tenant_id = $2
-      returning *`,
-      [jobId, actor.tenantId, status]
-    );
+    const current = await this.getJob(jobId, actor);
+    if (!isScheduledJob(current) && current.status === status) return current;
+
+    let scheduleId = current.scheduleId;
+    let compensation: (() => Promise<void>) | undefined;
+    if (status === 'enabled' && isScheduledJob(current)) {
+      let compensationMode: 'delete' | 'deactivate' | undefined;
+      let schedule: { id: string };
+      try {
+        if (scheduleId) {
+          schedule = await this.triggerClient.updateSchedule(scheduleId, scheduleOptions(current));
+        } else {
+          schedule = await this.createSchedule(current);
+          compensationMode = 'delete';
+        }
+      } catch (error) {
+        if (scheduleId && isTriggerNotFoundError(error)) {
+          try {
+            schedule = await this.createSchedule(current);
+            compensationMode = 'delete';
+          } catch (createError) {
+            if (!isTriggerScheduleConflict(createError)) throw createError;
+            schedule = await this.findSchedule(current);
+            compensationMode = 'deactivate';
+          }
+        } else if (isTriggerScheduleConflict(error)) {
+          schedule = await this.findSchedule(current);
+          compensationMode = 'deactivate';
+        } else {
+          throw error;
+        }
+      }
+      try {
+        await this.triggerClient.activateSchedule(schedule.id);
+      } catch (error) {
+        await runCompensation(
+          compensationMode === 'delete'
+            ? () => this.triggerClient.deleteSchedule(schedule.id).then(() => undefined)
+            : () => this.triggerClient.deactivateSchedule(schedule.id).then(() => undefined)
+        );
+        throw error;
+      }
+      scheduleId = schedule.id;
+      if (current.status !== 'enabled') {
+        compensation = compensationMode === 'delete'
+          ? () => this.triggerClient.deleteSchedule(schedule.id).then(() => undefined)
+          : () => this.triggerClient.deactivateSchedule(schedule.id).then(() => undefined);
+      }
+    } else if (scheduleId && status !== 'enabled') {
+      try {
+        if (status === 'archived') {
+          await this.triggerClient.deleteSchedule(scheduleId);
+          scheduleId = undefined;
+        } else {
+          await this.triggerClient.deactivateSchedule(scheduleId);
+        }
+      } catch (error) {
+        if (!isTriggerNotFoundError(error)) throw error;
+        scheduleId = undefined;
+      }
+    }
+
+    if (current.status === status && current.scheduleId === scheduleId) return current;
+
+    let result;
+    try {
+      result = await this.database.query<WorkflowJobRow>(
+        `update public.wf_job
+        set status = $3, schedule_id = $4, updated_at = timezone('utc'::text, now())
+        where id = $1 and tenant_id = $2
+        returning *`,
+        [jobId, actor.tenantId, status, scheduleId ?? null]
+      );
+    } catch (error) {
+      await runCompensation(compensation);
+      throw error;
+    }
     const row = result.rows[0];
-    if (!row) throw new NotFoundException('Workflow job not found.');
+    if (!row) {
+      await runCompensation(compensation);
+      throw new NotFoundException('Workflow job not found.');
+    }
     return mapJob(row);
   }
 
@@ -142,40 +214,38 @@ export class JobService {
       runId: run.id
     };
 
-    if (this.localExecutor.canHandle(job.triggerTaskId)) {
-      await this.markRunRunning(run.id);
+    let handle: { id: string };
+    try {
+      handle = await this.triggerClient.triggerTask(job.triggerTaskId, triggerInput, {
+        idempotencyKey: `workflow-job-run:${run.id}`,
+        tags: [`tenant:${job.tenantId}`, `workflow-job:${job.id}`, `workflow-job-run:${run.id}`]
+      });
+    } catch (error) {
       try {
-        const output = await this.localExecutor.execute({
-          job,
-          runId: run.id,
-          payload: triggerInput
-        });
-        return this.finishRun(run.id, 'succeeded', output);
-      } catch (error) {
-        return this.finishRun(
+        await this.finishRun(
           run.id,
           'failed',
-          {
-            handledBy: job.triggerTaskId,
-            payload: triggerInput
-          },
+          { handledBy: job.triggerTaskId, payload: triggerInput },
           error instanceof Error ? error.message : String(error)
         );
+      } catch {
+        // Preserve the Trigger.dev failure returned to the caller.
       }
+      throw error;
     }
-
-    const handle = await this.triggerClient.triggerTask(job.triggerTaskId, triggerInput, {
-      idempotencyKey: `workflow-job-run:${run.id}`,
-      tags: [`tenant:${job.tenantId}`, `workflow-job:${job.id}`, `workflow-job-run:${run.id}`]
-    });
-    const updated = await this.database.query<WorkflowJobRunRow>(
-      `update public.wf_job_run
-      set trigger_run_id = $2
-      where id = $1
-      returning *`,
-      [run.id, handle.id]
-    );
-    return mapRun(updated.rows[0]);
+    try {
+      const updated = await this.database.query<WorkflowJobRunRow>(
+        `update public.wf_job_run
+        set trigger_run_id = $2
+        where id = $1
+        returning *`,
+        [run.id, handle.id]
+      );
+      return mapRun(updated.rows[0]);
+    } catch (error) {
+      await this.cancelRunAfterProjectionFailure(handle.id);
+      throw error;
+    }
   }
 
   async listRuns(query: JobRunQueryDto, actor: WorkflowJobActor) {
@@ -255,6 +325,25 @@ export class JobService {
       ]
     );
     return mapRun(result.rows[0]);
+  }
+
+  private async cancelRunAfterProjectionFailure(runId: string) {
+    try {
+      await this.triggerClient.cancelRun(runId);
+    } catch {
+      return;
+    }
+  }
+
+  private createSchedule(job: WorkflowJobRecord) {
+    return this.triggerClient.createSchedule({
+      ...scheduleOptions(job),
+      deduplicationKey: scheduleDeduplicationKey(job)
+    });
+  }
+
+  private findSchedule(job: WorkflowJobRecord) {
+    return this.triggerClient.findScheduleByDeduplicationKey(scheduleDeduplicationKey(job));
   }
 }
 
@@ -350,4 +439,57 @@ function readIntervalSeconds(payload: Record<string, unknown> | null | undefined
   const value = payload?.intervalSeconds;
   const numberValue = typeof value === 'number' ? value : Number(value);
   return Number.isInteger(numberValue) && numberValue > 0 ? numberValue : undefined;
+}
+
+function isScheduledJob(job: WorkflowJobRecord) {
+  return job.type === 'cron' || job.type === 'interval';
+}
+
+function scheduleOptions(job: WorkflowJobRecord) {
+  return {
+    task: WORKFLOW_SCHEDULED_JOB_TASK_ID,
+    cron: job.type === 'cron' ? job.cronExpr! : intervalCron(job.intervalSeconds ?? 60),
+    timezone: job.timezone,
+    externalId: job.id
+  };
+}
+
+function intervalCron(intervalSeconds: number) {
+  if (intervalSeconds % 60 === 0 && intervalSeconds / 60 <= 59) {
+    return `*/${intervalSeconds / 60} * * * *`;
+  }
+  throw new BadRequestException(
+    'Trigger.dev interval jobs must use a whole number of minutes from 1 to 59.'
+  );
+}
+
+async function runCompensation(compensation: (() => Promise<void>) | undefined) {
+  if (!compensation) return;
+  try {
+    await compensation();
+  } catch {
+    return;
+  }
+}
+
+function scheduleDeduplicationKey(job: WorkflowJobRecord) {
+  return `workflow-job:${job.id}`;
+}
+
+function isTriggerNotFoundError(error: unknown) {
+  return triggerErrorStatus(error) === 404;
+}
+
+function isTriggerScheduleConflict(error: unknown) {
+  return triggerErrorStatus(error) === 409;
+}
+
+function triggerErrorStatus(error: unknown) {
+  if (typeof error !== 'object' || error === null) return undefined;
+  const typedError = error as {
+    response?: { status?: unknown };
+    status?: unknown;
+    statusCode?: unknown;
+  };
+  return typedError.status ?? typedError.statusCode ?? typedError.response?.status;
 }

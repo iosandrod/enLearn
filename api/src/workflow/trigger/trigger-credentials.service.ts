@@ -20,6 +20,8 @@ const DEFAULT_PROJECT_NAME = 'enlearn-workflow-local';
 const WORKFLOW_TASK_IDS = [
   'workflow.instance.run',
   'workflow.job.run',
+  'workflow.job.scheduled',
+  'workflow.supabase.users.log',
   'notification.dispatch'
 ];
 const PAT_ALPHABET = '123456789abcdefghijkmnopqrstuvwxyz';

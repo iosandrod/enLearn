@@ -67,44 +67,33 @@ export class RuntimeService {
 
     try {
       const run = await this.triggerClient.triggerWorkflow(triggerPayload);
-      await this.store.setTriggerRun(instance.id, run.id);
-    } catch (error) {
-      const localTriggerClient = this.triggerClient as WorkflowTriggerClient & {
-        startLocalWorkflowExecution?: (
-          payload: typeof triggerPayload,
-          store: WorkflowRuntimeStore,
-          originalError: unknown
-        ) => { id: string };
-      };
-
-      if (localTriggerClient.startLocalWorkflowExecution) {
-        const run = localTriggerClient.startLocalWorkflowExecution(
-          triggerPayload,
-          this.store,
-          error
-        );
+      try {
         await this.store.setTriggerRun(instance.id, run.id);
-        await this.store.recordHistory(
-          instance.tenantId,
-          instance.id,
-          'LOCAL_WORKFLOW_EXECUTION_STARTED',
-          actor.userId,
-          {
-            triggerRunId: run.id,
-            triggerError: error instanceof Error ? error.message : String(error)
-          },
-          `workflow:${instance.id}:local-execution-started`
-        );
-      } else {
+      } catch (error) {
+        await this.cancelRunAfterProjectionFailure(run.id);
+        throw error;
+      }
+    } catch (error) {
+      try {
         await this.store.setInstanceStatus(instance.id, 'failed', {
           message: error instanceof Error ? error.message : String(error),
           phase: 'triggerWorkflow'
         });
-        throw error;
+      } catch {
+        // Preserve the Trigger.dev or projection failure returned to the caller.
       }
+      throw error;
     }
 
     return this.store.getInstance(instance.id);
+  }
+
+  private async cancelRunAfterProjectionFailure(runId: string) {
+    try {
+      await this.triggerClient.cancelRun(runId);
+    } catch {
+      return;
+    }
   }
 
   listInstances(query: WorkflowInstanceQuery = {}) {

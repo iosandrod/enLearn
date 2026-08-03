@@ -444,7 +444,9 @@ function loadTriggerApprovalTestWorkflow() {
   message.value = `已加载测试流程，发起人：${auth.activeDevTestUser.value?.name ?? auth.user.value?.email ?? currentUserId}`;
   messageClass.value = 'workflow-success';
 }
-
+onMounted(() => {
+  loadTriggerApprovalTestWorkflow();//
+});
 async function simulateOrderWorkflow() {
   const orderWorkflow = createOrderApprovalWorkflow();
 

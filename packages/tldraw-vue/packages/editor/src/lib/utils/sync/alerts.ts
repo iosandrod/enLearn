@@ -1,6 +1,17 @@
+import { VxeUI } from 'vxe-pc-ui'
+
+function showStorageAlert(content: string) {
+	void VxeUI.modal.confirm({
+		title: 'Browser storage error',
+		content,
+		mask: false,
+		lockView: false,
+	}).catch(() => false)
+}
+
 /** @internal */
 export function showCantWriteToIndexDbAlert() {
-	window.alert(
+	showStorageAlert(
 		`Oops! We could not save changes to your browser's storage. We now need to reload the page and try again.
 
 Keep seeing this message?
@@ -11,7 +22,7 @@ Keep seeing this message?
 
 /** @internal */
 export function showCantReadFromIndexDbAlert() {
-	window.alert(
+	showStorageAlert(
 		`Oops! We could not access your browser's storage—and the app won't work correctly without that. We now need to reload the page and try again.
 
 Keep seeing this message?

@@ -501,7 +501,12 @@ async function createFolder() {
 async function deleteSelectedFolder() {
   if (!selectedPrefix.value) return;
   if (!canDeleteSelectedFolder.value) {
-    window.alert('只能删除空文件夹。');
+    await VxeUI.modal.confirm({
+      title: '提示',
+      content: '只能删除空文件夹。',
+      mask: false,
+      lockView: false
+    }).catch(() => false);
     return;
   }
   if (!window.confirm(`确认删除文件夹「${selectedNodeLabel.value}」？`)) return;
@@ -775,7 +780,12 @@ async function toggleLock(file: FileObject) {
 async function remove(file: FileObject) {
   closeContextMenu();
   if (file.locked) {
-    window.alert('文件已锁定，解锁后才能删除。');
+    await VxeUI.modal.confirm({
+      title: '提示',
+      content: '文件已锁定，解锁后才能删除。',
+      mask: false,
+      lockView: false
+    }).catch(() => false);
     return;
   }
   if (!window.confirm(`确认删除 ${file.originalName}？`)) return;

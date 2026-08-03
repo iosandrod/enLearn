@@ -15,7 +15,6 @@ import type {
   WorkflowTaskCandidateRecord,
   WorkflowTaskRecord
 } from './runtime.types';
-import { runLocalNotificationDispatchTask } from '../trigger/notification.task';
 
 const NOTIFICATION_DISPATCH_TASK_ID = 'notification.dispatch';
 
@@ -530,35 +529,6 @@ async function triggerNotificationEvent(
       }
     );
   } catch (error) {
-    try {
-      await runLocalNotificationDispatchTask({
-        tenantId: payload.tenantId,
-        event: {
-          tenantId: payload.tenantId,
-          eventType: input.eventType,
-          sourceType: input.sourceType,
-          sourceId: input.sourceId,
-          actorId: actor.userId,
-          payload: input.payload,
-          idempotencyKey: input.idempotencyKey
-        }
-      });
-    } catch (fallbackError) {
-      await store.recordHistory(
-        payload.tenantId,
-        payload.instanceId,
-        'NOTIFICATION_LOCAL_DISPATCH_FAILED',
-        actor.userId,
-        {
-          eventType: input.eventType,
-          sourceType: input.sourceType,
-          sourceId: input.sourceId,
-          message: fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
-        },
-        `notification:${input.idempotencyKey}:local-dispatch-failed`
-      );
-    }
-
     await store.recordHistory(
       payload.tenantId,
       payload.instanceId,

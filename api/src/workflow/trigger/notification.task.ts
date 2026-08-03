@@ -1,6 +1,5 @@
 import { task, tasks, wait } from '@trigger.dev/sdk';
 import { Pool, type PoolClient, type QueryResultRow } from 'pg';
-import { getWorkflowEnv } from '../common/env';
 import {
   isTransientPostgresError,
   retryTransientPostgresOperation
@@ -151,94 +150,6 @@ export async function runNotificationDispatchTask(payload: NotificationDispatchP
   } finally {
     await pool.end();
   }
-}
-
-export async function runLocalNotificationDispatchTask(payload: NotificationDispatchPayload) {
-  const eventInput = payload.event;
-  if (!eventInput) {
-    return runNotificationDispatchTask(payload);
-  }
-
-  const tenantId = eventInput.tenantId?.trim() || payload.tenantId?.trim() || 'default';
-  const eventType = eventInput.eventType.trim();
-  const idempotencyKey = eventInput.idempotencyKey.trim();
-  const eventPayload = eventInput.payload ?? {};
-  if (!eventType || !idempotencyKey) {
-    throw new Error('Notification eventType and idempotencyKey are required.');
-  }
-
-  const eventRows = await upsertRestRows<NotificationEventRow>(
-    'notification_events',
-    'tenant_id,idempotency_key',
-    [
-      {
-        tenant_id: tenantId,
-        event_type: eventType,
-        source_type: eventInput.sourceType?.trim() || null,
-        source_id: eventInput.sourceId?.trim() || null,
-        actor_id: eventInput.actorId?.trim() || null,
-        payload: eventPayload,
-        idempotency_key: idempotencyKey,
-        status: 'processed',
-        processed_at: new Date().toISOString()
-      }
-    ]
-  );
-  const event = eventRows[0];
-  if (!event) {
-    throw new Error('Notification event could not be created.');
-  }
-
-  const recipientIds = readRecipientIds(eventPayload).filter(isUuid);
-  if (!recipientIds.length) {
-    return {
-      eventId: event.id,
-      status: 'processed',
-      messageCount: 0,
-      deliveryCount: 0,
-      sentCount: 0,
-      failedCount: 0,
-      reminderCount: 0
-    };
-  }
-
-  const template = localInboxTemplate(eventType);
-  const title = renderTemplate(template.title_template, eventPayload);
-  const content = renderTemplate(template.content_template, eventPayload);
-  const rows = recipientIds.map((recipientId) => ({
-    tenant_id: tenantId,
-    event_id: event.id,
-    recipient_id: recipientId,
-    category: categoryForEvent(eventType),
-    channel: 'inbox',
-    title,
-    content,
-    link_url: readString(eventPayload.linkUrl ?? eventPayload.link_url) || null,
-    priority: priorityForPayload(eventPayload),
-    source_type: eventInput.sourceType?.trim() || null,
-    source_id: eventInput.sourceId?.trim() || null,
-    metadata: {
-      templateCode: template.code,
-      eventType,
-      ...(isRecord(eventPayload.metadata) ? eventPayload.metadata : {})
-    }
-  }));
-
-  const messages = await upsertRestRows<NotificationMessageRow>(
-    'notification_messages',
-    'tenant_id,recipient_id,source_type,source_id,category',
-    rows
-  );
-
-  return {
-    eventId: event.id,
-    status: 'processed',
-    messageCount: messages.length,
-    deliveryCount: 0,
-    sentCount: 0,
-    failedCount: 0,
-    reminderCount: 0
-  };
 }
 
 export const notificationDispatchTask = task({
@@ -1011,96 +922,6 @@ function createNotificationPool(taskName: string) {
     console.warn(`[notification-task] Postgres idle client error: ${error.message}`);
   });
   return pool;
-}
-
-async function upsertRestRows<T extends Record<string, unknown>>(
-  table: string,
-  onConflict: string,
-  rows: Record<string, unknown>[]
-) {
-  if (!rows.length) return [] as T[];
-
-  const env = getWorkflowEnv();
-  const supabaseUrl =
-    env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL ?? env.SUPABASE_PROJECT_URL;
-  const supabaseKey =
-    env.SUPABASE_SERVICE_ROLE_KEY ??
-    env.SUPABASE_ANON_KEY ??
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-    env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!supabaseUrl?.trim() || !supabaseKey?.trim()) {
-    throw new Error('Supabase URL and key are required by local notification dispatch.');
-  }
-
-  const response = await fetch(
-    `${supabaseUrl.replace(/\/+$/, '')}/rest/v1/${table}?on_conflict=${encodeURIComponent(onConflict)}`,
-    {
-      method: 'POST',
-      headers: {
-        apikey: supabaseKey,
-        authorization: `Bearer ${supabaseKey}`,
-        'content-type': 'application/json',
-        prefer: 'resolution=merge-duplicates,return=representation'
-      },
-      body: JSON.stringify(rows)
-    }
-  );
-  const body = await response.text();
-  if (!response.ok) {
-    throw new Error(`Supabase REST upsert failed for ${table}: HTTP ${response.status} ${body}`);
-  }
-  if (!body) return [] as T[];
-
-  const parsed = JSON.parse(body) as unknown;
-  return Array.isArray(parsed) ? (parsed as T[]) : [] as T[];
-}
-
-function localInboxTemplate(eventType: string): NotificationTemplateRow {
-  if (eventType === 'approval.task.created') {
-    return {
-      code: 'approval_task_created_local_inbox',
-      title_template: '新的审批待办：{{title}}',
-      content_template: '请及时处理审批任务。'
-    };
-  }
-  if (eventType === 'approval.task.completed') {
-    return {
-      code: 'approval_task_completed_local_inbox',
-      title_template: '审批已通过：{{title}}',
-      content_template: '审批人已完成处理。{{comment}}'
-    };
-  }
-  if (eventType === 'approval.task.rejected') {
-    return {
-      code: 'approval_task_rejected_local_inbox',
-      title_template: '审批已驳回：{{title}}',
-      content_template: '审批任务已被驳回。{{comment}}'
-    };
-  }
-  if (eventType === 'approval.task.transferred') {
-    return {
-      code: 'approval_task_transferred_local_inbox',
-      title_template: '审批已转交：{{title}}',
-      content_template: '有一条审批任务转交给你，请及时处理。{{comment}}'
-    };
-  }
-  if (eventType === 'approval.task.add_signed') {
-    return {
-      code: 'approval_task_add_signed_local_inbox',
-      title_template: '新的加签审批：{{title}}',
-      content_template: '你收到一条加签审批任务，请及时处理。{{comment}}'
-    };
-  }
-
-  if (eventType === 'approval.instance.approved') {
-    return {
-      code: 'approval_instance_approved_local_inbox',
-      title_template: '流程已通过：{{title}}',
-      content_template: '审批流程已全部完成。'
-    };
-  }
-
-  return fallbackTemplate('inbox');
 }
 
 async function withClient<T>(pool: Pool, callback: (client: PoolClient) => Promise<T>) {
