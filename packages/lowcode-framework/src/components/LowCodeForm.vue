@@ -649,6 +649,27 @@ defineExpose({
   line-height: 18px;
 }
 
+.lc-form .vxe-form--item.is--vertical {
+  align-items: stretch;
+  gap: 5px;
+}
+
+.lc-form .vxe-form--item.is--vertical > .vxe-form--item-title {
+  width: auto;
+  height: auto;
+  min-height: 18px;
+  margin: 0;
+  line-height: 18px;
+}
+
+.lc-form .vxe-form--item.is--vertical:not(.is--padding) > .vxe-form--item-title {
+  padding: 0;
+}
+
+.lc-form .vxe-form--item.is--vertical > .vxe-form--item-content {
+  min-height: 0;
+}
+
 .lc-form .vxe-form--item-content,
 .lc-form .lc-form-item__content {
   min-width: 0;

@@ -8,7 +8,7 @@
 
 # testing
 /coverage
-
+/api/.trigger/*
 # nuxt
 /nuxt-app/.nuxt/
 /nuxt-app/.output/
@@ -18,10 +18,11 @@
 /api/.trigger.worker.env
 /services/*/dist/
 /services/*/node_modules/
-
+**/dist/*
 # production
 /build
-
+**/.codex-server-logs/*
+**/.trigger/*
 # misc
 .DS_Store
 *.pem
@@ -55,3 +56,5 @@ yarn-error.log*
 # certificates
 certificates
 .env*.local
+api/.trigger/**
+frontend/dist/index.html

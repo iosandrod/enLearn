@@ -36,7 +36,7 @@
           type="button"
           class="print-toolbar-button"
           :disabled="savingTemplate || !editorReady"
-          @click="openTemplateNameDialog('saveAs')"
+          @click="saveTemplateAs"
         >
           <i class="ri-file-copy-2-line" aria-hidden="true" />
           <span>另存模板</span>
@@ -66,72 +66,6 @@
       <span>{{ message }}</span>
     </p>
 
-    <Teleport to="body">
-      <div
-        v-if="templateNameDialogOpen"
-        class="print-dialog-layer"
-        role="presentation"
-        @pointerdown.self="closeTemplateNameDialog"
-      >
-        <form
-          class="print-name-dialog"
-          role="dialog"
-          aria-modal="true"
-          :aria-labelledby="templateNameDialogTitleId"
-          @submit.prevent="confirmTemplateNameDialog"
-        >
-          <header>
-            <div>
-              <strong :id="templateNameDialogTitleId">{{ templateNameDialogTitle }}</strong>
-              <span>模板将保存到后台打印模板表</span>
-            </div>
-            <button
-              type="button"
-              class="print-icon-button"
-              title="关闭"
-              aria-label="关闭"
-              :disabled="savingTemplate"
-              @click="closeTemplateNameDialog"
-            >
-              <i class="ri-close-line" aria-hidden="true" />
-            </button>
-          </header>
-
-          <label class="print-name-dialog__field">
-            <span>模板名称</span>
-            <input
-              ref="templateNameInputRef"
-              v-model="templateNameInput"
-              maxlength="120"
-              autocomplete="off"
-              placeholder="请输入模板名称"
-              @input="templateNameError = ''"
-            />
-            <small v-if="templateNameError" class="print-name-dialog__error">{{ templateNameError }}</small>
-          </label>
-
-          <footer>
-            <button
-              type="button"
-              class="print-toolbar-button"
-              :disabled="savingTemplate"
-              @click="closeTemplateNameDialog"
-            >
-              取消
-            </button>
-            <button
-              type="submit"
-              class="print-toolbar-button print-toolbar-button--primary"
-              :disabled="savingTemplate"
-            >
-              <i :class="savingTemplate ? 'ri-loader-4-line print-spin' : 'ri-save-3-line'" aria-hidden="true" />
-              <span>{{ templateNameDialogMode === 'saveAs' ? '另存为' : '保存' }}</span>
-            </button>
-          </footer>
-        </form>
-      </div>
-    </Teleport>
-
     <GlobalDialogHost />
   </section>
 </template>
@@ -139,7 +73,9 @@
 <script setup lang="ts">
 import {
   confirmLowCodePage,
-  GlobalDialogHost
+  getLowCodePage,
+  GlobalDialogHost,
+  type LowCodePageRecord
 } from '@enlearn/lowcode-framework/runtime';
 import TldrawVue, {
   defineVueEditorPlugin,
@@ -176,25 +112,26 @@ type PrintTemplateRecord = VueTemplateRecord & {
   metadata: Record<string, unknown>;
 };
 
-type TemplateNameDialogMode = 'save' | 'saveAs';
+type TemplateSaveMode = 'save' | 'saveAs';
+
+type TemplateSnapshot = {
+  content: TLContent;
+  workspace: VueTemplateWorkspaceConfig;
+};
 
 const PRINT_TEMPLATE_RESOURCE = 'print_templates';
-const templateNameDialogTitleId = 'print-template-name-dialog-title';
+const PRINT_TEMPLATE_LIST_PAGE_CODE = 'print-templates';
+const PRINT_TEMPLATE_EDIT_FORM_ID = 'print-templates-edit-form';
 
 const route = useRoute();
 const router = useRouter();
 const serviceApi = useServiceApi();
 const designerRef = ref<TldrawVueExpose | null>(null);
 const editorReady = ref(false);
-const templateNameInputRef = ref<HTMLInputElement | null>(null);
 const templates = ref<PrintTemplateRecord[]>([]);
 const selectedTemplateId = ref('');
 const loadingTemplates = ref(false);
 const savingTemplate = ref(false);
-const templateNameDialogOpen = ref(false);
-const templateNameDialogMode = ref<TemplateNameDialogMode>('save');
-const templateNameInput = ref('');
-const templateNameError = ref('');
 const templateDirty = ref(false);
 const message = ref('');
 const messageType = ref<'info' | 'success' | 'error'>('info');
@@ -231,9 +168,6 @@ const currentTemplateStatus = computed(() => {
   if (selectedTemplate.value) return `数据库模板 · v${selectedTemplate.value.version}`;
   return '尚未保存';
 });
-const templateNameDialogTitle = computed(() =>
-  templateNameDialogMode.value === 'saveAs' ? '另存打印模板' : '保存打印模板'
-);
 const messageClass = computed(() => `print-message print-message--${messageType.value}`);
 const messageIcon = computed(() => {
   if (messageType.value === 'success') return 'ri-checkbox-circle-line';
@@ -249,21 +183,12 @@ watch(
   }
 );
 
-onMounted(() => {
-  window.addEventListener('keydown', handleWindowKeydown);
-});
-
 onActivated(async () => {
   await refreshTemplates({ quiet: true });
   await loadRouteTemplate();
 });
 
-onDeactivated(() => {
-  templateNameDialogOpen.value = false;
-});
-
 onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleWindowKeydown);
   if (messageTimer) clearTimeout(messageTimer);
 });
 
@@ -329,11 +254,11 @@ async function openTemplatePicker() {
   loadingTemplates.value = true;
   try {
     const result = await confirmLowCodePage({
-      pageCode: 'print-templates',
+      pageCode: PRINT_TEMPLATE_LIST_PAGE_CODE,
       includeData: true,
-      serviceApi,
-      router,
-      route,
+      serviceApi: serviceApi as Parameters<typeof confirmLowCodePage>[0]['serviceApi'],
+      router: router as Parameters<typeof confirmLowCodePage>[0]['router'],
+      route: route as Parameters<typeof confirmLowCodePage>[0]['route'],
       locale: 'zh-CN',
       title: '加载打印模板',
       confirmLabel: '加载',
@@ -393,121 +318,165 @@ async function createBlankTemplate() {
 }
 
 async function saveCurrentTemplate() {
-  if (selectedTemplate.value) {
-    await persistExistingTemplate(selectedTemplate.value);
-    return;
-  }
-
-  openTemplateNameDialog('save');
+  await openTemplateSaveDialog('save');
 }
 
-function openTemplateNameDialog(mode: TemplateNameDialogMode) {
-  if (savingTemplate.value) return;
-
-  templateNameDialogMode.value = mode;
-  templateNameError.value = '';
-  templateNameInput.value = mode === 'saveAs'
-    ? createAvailableTemplateName(selectedTemplate.value?.name ?? '打印模板')
-    : createAvailableTemplateName('打印模板');
-  templateNameDialogOpen.value = true;
-
-  void nextTick(() => {
-    templateNameInputRef.value?.focus();
-    templateNameInputRef.value?.select();
-  });
+async function saveTemplateAs() {
+  await openTemplateSaveDialog('saveAs');
 }
 
-function closeTemplateNameDialog() {
-  if (savingTemplate.value) return;
-  templateNameDialogOpen.value = false;
-  templateNameError.value = '';
-}
+async function openTemplateSaveDialog(mode: TemplateSaveMode) {
+  if (savingTemplate.value || !editorReady.value) return;
 
-async function confirmTemplateNameDialog() {
-  const name = templateNameInput.value.trim();
-  if (!name) {
-    templateNameError.value = '模板名称不能为空';
-    return;
-  }
-
-  if (hasTemplateName(name)) {
-    templateNameError.value = '模板名称已存在，请使用其他名称';
-    return;
-  }
-
-  await persistNewTemplate(name);
-}
-
-async function persistExistingTemplate(template: PrintTemplateRecord) {
   const snapshot = await getCurrentTemplateSnapshot();
   if (!snapshot) return;
 
   savingTemplate.value = true;
   try {
-    const row = await serviceApi.invoke<PrintTemplateRow>('admin', 'updateItem', {
-      resource: PRINT_TEMPLATE_RESOURCE,
-      id: template.id,
-      data: {
-        name: template.name,
-        content: snapshot.content,
-        workspace: snapshot.workspace,
-        status: template.status === 'archived' ? 'active' : template.status,
-        version: template.version + 1,
-        metadata: createTemplateMetadata(template.metadata)
+    await refreshTemplates({ quiet: true });
+    const editPage = await getPrintTemplateEditPage();
+    const initialValues = createSaveDialogValues(mode, snapshot);
+    const result = await confirmLowCodePage({
+      page: createPrefilledEditPage(editPage, initialValues),
+      includeData: false,
+      serviceApi: serviceApi as Parameters<typeof confirmLowCodePage>[0]['serviceApi'],
+      router: router as Parameters<typeof confirmLowCodePage>[0]['router'],
+      route: route as Parameters<typeof confirmLowCodePage>[0]['route'],
+      locale: 'zh-CN',
+      title: mode === 'saveAs' ? '另存打印模板' : '保存打印模板',
+      width: 'min(560px, calc(100vw - 32px))',
+      confirmLabel: mode === 'saveAs' ? '另存' : '保存',
+      cancelLabel: '取消',
+      dialog: {
+        id: 'print-template-save-dialog'
       }
     });
 
-    const saved = requireTemplateRecord(row);
-    upsertTemplate(saved);
-    selectedTemplateId.value = saved.id;
-    savedWorkspaceSignature = getWorkspaceDirtySignature(snapshot.workspace);
-    templateDirty.value = false;
-    await syncRouteTemplateId(saved.id);
-    showMessage(`模板“${saved.name}”已保存`, 'success');
+    if (result.action === 'cancel' || result.action === 'close') return;
+
+    const values = readTemplateFormValues(result.payload, initialValues);
+    await persistTemplateFromDialog(mode, values, snapshot);
   } catch (error) {
-    showMessage(getErrorMessage(error, '模板保存失败'), 'error');
+    showMessage(getErrorMessage(error, '模板保存页面加载失败'), 'error');
   } finally {
     savingTemplate.value = false;
   }
 }
 
-async function persistNewTemplate(name: string) {
-  const snapshot = await getCurrentTemplateSnapshot();
-  if (!snapshot) return;
+async function getPrintTemplateEditPage() {
+  const listPage = await getLowCodePage(
+    serviceApi as Parameters<typeof getLowCodePage>[0],
+    { code: PRINT_TEMPLATE_LIST_PAGE_CODE, includeData: false }
+  );
+  if (!listPage.edit_page_id) {
+    throw new Error('打印模板列表尚未关联编辑页面');
+  }
 
-  savingTemplate.value = true;
-  try {
-    const row = await serviceApi.invoke<PrintTemplateRow>('admin', 'createItem', {
-      resource: PRINT_TEMPLATE_RESOURCE,
-      data: {
-        name,
-        content: snapshot.content,
-        workspace: snapshot.workspace,
-        status: 'active',
-        version: 1,
-        metadata: createTemplateMetadata()
-      }
-    });
+  return getLowCodePage(
+    serviceApi as Parameters<typeof getLowCodePage>[0],
+    { id: listPage.edit_page_id, includeData: false }
+  );
+}
 
-    const saved = requireTemplateRecord(row);
-    upsertTemplate(saved);
-    selectedTemplateId.value = saved.id;
-    savedWorkspaceSignature = getWorkspaceDirtySignature(snapshot.workspace);
-    templateDirty.value = false;
-    templateNameDialogOpen.value = false;
-    templateNameError.value = '';
-    await syncRouteTemplateId(saved.id);
-    showMessage(`模板“${saved.name}”已保存`, 'success');
-  } catch (error) {
-    const errorMessage = getErrorMessage(error, '模板保存失败');
-    if (templateNameDialogOpen.value) {
-      templateNameError.value = errorMessage;
-    } else {
-      showMessage(errorMessage, 'error');
+function createSaveDialogValues(mode: TemplateSaveMode, snapshot: TemplateSnapshot) {
+  const template = mode === 'save' ? selectedTemplate.value : null;
+  return {
+    id: template?.id ?? '',
+    name: mode === 'saveAs'
+      ? createAvailableTemplateName(selectedTemplate.value?.name ?? '打印模板')
+      : template?.name ?? createAvailableTemplateName('打印模板'),
+    status: template?.status ?? 'active',
+    version: template?.version ?? 1,
+    content: cloneJson(snapshot.content),
+    workspace: cloneJson(snapshot.workspace),
+    metadata: createTemplateMetadata(template?.metadata)
+  };
+}
+
+function createPrefilledEditPage(
+  page: LowCodePageRecord,
+  initialValues: Record<string, unknown>
+): LowCodePageRecord {
+  return {
+    ...page,
+    schema: {
+      ...page.schema,
+      dataSources: {},
+      blocks: page.schema.blocks.map((block) => {
+        if (block.kind !== 'form' || block.id !== PRINT_TEMPLATE_EDIT_FORM_ID) return block;
+        return {
+          ...block,
+          sourceKey: undefined,
+          submitSourceKey: undefined,
+          initialValues: cloneJson(initialValues),
+          schema: {
+            ...block.schema,
+            actions: []
+          }
+        };
+      })
     }
-  } finally {
-    savingTemplate.value = false;
+  };
+}
+
+function readTemplateFormValues(payload: unknown, fallback: Record<string, unknown>) {
+  if (!isRecord(payload) || !isRecord(payload.formModels)) return fallback;
+  const form = payload.formModels[PRINT_TEMPLATE_EDIT_FORM_ID];
+  return isRecord(form) ? { ...fallback, ...form } : fallback;
+}
+
+async function persistTemplateFromDialog(
+  mode: TemplateSaveMode,
+  values: Record<string, unknown>,
+  snapshot: TemplateSnapshot
+) {
+  const existing = mode === 'save' ? selectedTemplate.value : null;
+  const name = typeof values.name === 'string' ? values.name.trim() : '';
+  if (!name) {
+    throw new Error('模板名称不能为空');
   }
+
+  if (hasTemplateName(name, existing?.id ?? '')) {
+    throw new Error('模板名称已存在，请使用其他名称');
+  }
+
+  const status = isTemplateStatus(values.status) ? values.status : 'active';
+  const data = {
+    name,
+    content: cloneJson(snapshot.content),
+    workspace: cloneJson(snapshot.workspace),
+    status,
+    version: existing ? existing.version + 1 : 1,
+    metadata: createTemplateMetadata(
+      isRecord(values.metadata) ? values.metadata : existing?.metadata
+    )
+  };
+  let row: PrintTemplateRow;
+
+  if (existing) {
+    row = await serviceApi.invoke<PrintTemplateRow>('admin', 'updateItem', {
+      resource: PRINT_TEMPLATE_RESOURCE,
+      id: existing.id,
+      data
+    });
+  } else {
+    row = await serviceApi.invoke<PrintTemplateRow>('admin', 'createItem', {
+      resource: PRINT_TEMPLATE_RESOURCE,
+      data
+    });
+  }
+
+  await finishTemplateSave(row, snapshot);
+}
+
+async function finishTemplateSave(row: PrintTemplateRow, snapshot: TemplateSnapshot) {
+  const saved = requireTemplateRecord(row);
+  upsertTemplate(saved);
+  selectedTemplateId.value = saved.id;
+  savedWorkspaceSignature = getWorkspaceDirtySignature(snapshot.workspace);
+  templateDirty.value = false;
+  await syncRouteTemplateId(saved.id);
+  showMessage(`模板“${saved.name}”已保存`, 'success');
 }
 
 async function loadTemplate(template: PrintTemplateRecord, options: { confirmReplace?: boolean } = {}) {
@@ -689,10 +658,10 @@ function createAvailableTemplateName(baseName: string) {
   return `${firstCandidate} ${index}`;
 }
 
-function hasTemplateName(name: string) {
+function hasTemplateName(name: string, exceptId = '') {
   const normalizedName = name.trim().toLocaleLowerCase('zh-CN');
   return templates.value.some(
-    (template) => template.name.trim().toLocaleLowerCase('zh-CN') === normalizedName
+    (template) => template.id !== exceptId && template.name.trim().toLocaleLowerCase('zh-CN') === normalizedName
   );
 }
 
@@ -720,11 +689,6 @@ function parseTemplateTimestamp(value: string) {
 function getRouteTemplateId() {
   const value = route.query.templateId;
   return typeof value === 'string' ? value : '';
-}
-
-function handleWindowKeydown(event: KeyboardEvent) {
-  if (event.key !== 'Escape') return;
-  if (templateNameDialogOpen.value) closeTemplateNameDialog();
 }
 
 function showMessage(nextMessage: string, type: 'info' | 'success' | 'error' = 'info') {
@@ -933,94 +897,6 @@ function isRecord(value: unknown): value is Record<string, any> {
 .print-message--error {
   border-color: #f2b8b8;
   color: #b42318;
-}
-
-.print-dialog-layer {
-  position: fixed;
-  z-index: 4000;
-  display: grid;
-  place-items: center;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.46);
-  padding: 16px;
-}
-
-.print-name-dialog {
-  width: min(420px, calc(100vw - 32px));
-  border: 1px solid #cfd8e5;
-  border-radius: 8px;
-  background: #ffffff;
-  overflow: hidden;
-  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
-}
-
-.print-name-dialog > header,
-.print-name-dialog > footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 11px 14px;
-}
-
-.print-name-dialog > header {
-  border-bottom: 1px solid #e5eaf1;
-}
-
-.print-name-dialog > header > div {
-  display: grid;
-  gap: 3px;
-}
-
-.print-name-dialog > header strong {
-  color: #172033;
-  font-size: 15px;
-}
-
-.print-name-dialog > header span {
-  color: #718096;
-  font-size: 11px;
-}
-
-.print-name-dialog__field {
-  display: grid;
-  gap: 7px;
-  padding: 18px 16px 20px;
-}
-
-.print-name-dialog__field > span {
-  color: #334155;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.print-name-dialog__field input {
-  box-sizing: border-box;
-  width: 100%;
-  height: 36px;
-  border: 1px solid #bfcbd9;
-  border-radius: 6px;
-  outline: 0;
-  color: #172033;
-  font: inherit;
-  font-size: 13px;
-  padding: 0 10px;
-}
-
-.print-name-dialog__field input:focus {
-  border-color: #438fdd;
-  box-shadow: 0 0 0 2px rgba(20, 118, 212, 0.12);
-}
-
-.print-name-dialog__error {
-  color: #b42318;
-  font-size: 11px;
-}
-
-.print-name-dialog > footer {
-  justify-content: flex-end;
-  border-top: 1px solid #e5eaf1;
-  background: #f8fafc;
 }
 
 .print-spin {
