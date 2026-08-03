@@ -50,15 +50,88 @@
       <div class="admin-top-actions">
         <ChatPopup />
         <NotificationBell />
-        <label v-if="isDev" class="admin-user-switcher">
-          <i class="ri-user-line" aria-hidden="true" />
-          <select v-model="activeDevUserId" aria-label="快速切换用户">
-            <option v-for="user in devTestUsers" :key="user.id" :value="user.id">
-              {{ user.name }} · {{ user.title }}
-            </option>
-          </select>
-        </label>
-        <span v-else class="admin-user">{{ auth.user.value?.email ?? '已登录' }}</span>
+        <div v-if="showApprovalTestSwitcher" class="admin-user-switcher" @click.stop>
+          <button
+            class="admin-user-switcher__trigger"
+            type="button"
+            :aria-expanded="testUserMenuOpen"
+            aria-controls="approval-test-user-menu"
+            aria-haspopup="dialog"
+            title="切换审批测试身份"
+            @click="toggleTestUserMenu"
+          >
+            <i class="ri-user-settings-line" aria-hidden="true" />
+            <span class="admin-user-switcher__mode">测试</span>
+            <span class="admin-user-switcher__label">
+              {{ activeDevTestUser?.name ?? '选择测试用户' }}
+              <small>{{ activeDevTestUser?.title ?? '审批测试身份' }}</small>
+            </span>
+            <i :class="testUserMenuOpen ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'" aria-hidden="true" />
+          </button>
+
+          <section
+            v-if="testUserMenuOpen"
+            id="approval-test-user-menu"
+            class="admin-user-switcher__panel"
+            role="dialog"
+            aria-label="切换审批测试身份"
+          >
+            <header>
+              <div>
+                <strong>切换测试身份</strong>
+                <span>仅影响审批测试，不改变登录权限</span>
+              </div>
+              <button
+                type="button"
+                title="刷新用户"
+                aria-label="刷新用户"
+                :disabled="devUsersLoading"
+                @click="loadDevTestUsers"
+              >
+                <i :class="devUsersLoading ? 'ri-loader-4-line admin-spin' : 'ri-refresh-line'" aria-hidden="true" />
+              </button>
+            </header>
+
+            <label class="admin-user-switcher__search">
+              <i class="ri-search-line" aria-hidden="true" />
+              <input
+                ref="testUserSearchInput"
+                v-model="testUserSearch"
+                type="search"
+                placeholder="搜索姓名、角色或邮箱"
+              />
+            </label>
+
+            <p v-if="devUsersError" class="admin-user-switcher__notice" role="status">
+              <i class="ri-error-warning-line" aria-hidden="true" />
+              {{ devUsersError }}
+            </p>
+
+            <div class="admin-user-switcher__list" role="listbox" aria-label="审批测试用户">
+              <button
+                v-for="user in filteredDevTestUsers"
+                :key="user.id"
+                type="button"
+                role="option"
+                :aria-selected="user.id === activeDevUserId"
+                :class="{ 'is-active': user.id === activeDevUserId }"
+                @click="selectDevTestUser(user.id)"
+              >
+                <span class="admin-user-switcher__avatar">{{ user.name.slice(0, 1).toUpperCase() }}</span>
+                <span class="admin-user-switcher__meta">
+                  <strong>{{ user.name }}</strong>
+                  <small>{{ user.title }}<template v-if="user.email"> · {{ user.email }}</template></small>
+                </span>
+                <i v-if="user.id === activeDevUserId" class="ri-check-line" aria-hidden="true" />
+              </button>
+
+              <p v-if="!filteredDevTestUsers.length" class="admin-user-switcher__empty">
+                {{ devUsersLoading ? '正在加载测试用户...' : '没有匹配的测试用户' }}
+              </p>
+            </div>
+          </section>
+        </div>
+        <span v-else class="admin-user">{{ displayUserLabel }}</span>
         <vxe-button size="mini" mode="text" status="primary" @click="reloadRoutes">
           刷新菜单
         </vxe-button>
@@ -162,14 +235,37 @@ const route = useRoute();
 const router = useRouter();
 const isDev = import.meta.env.DEV;
 const devTestUsers = computed(() => auth.devTestUsers.value);
+const activeDevTestUser = computed(() => auth.activeDevTestUser.value);
 const activeDevUserId = computed({
-  get: () =>
-    devTestUsers.value.find((user) => user.id === auth.user.value?.id)?.id ??
-    devTestUsers.value[0]?.id ??
-    '',
+  get: () => auth.activeDevTestUserId.value,
   set: (userId: string) => {
     auth.switchDevTestUser(userId);
   }
+});
+const showApprovalTestSwitcher = computed(
+  () => isDev && route.path.startsWith('/dashboard/workflow')
+);
+const displayUserLabel = computed(() => {
+  const profile = auth.profile.value ?? {};
+  const name = readDisplayString(profile.full_name ?? profile.nickname ?? profile.name)
+    || auth.user.value?.email
+    || '已登录';
+  const rawRole = readDisplayString(profile.role);
+  const role = rawRole === 'admin' ? '管理员' : rawRole || '审批用户';
+  return `${name} · ${role}`;
+});
+const testUserMenuOpen = ref(false);
+const testUserSearch = ref('');
+const testUserSearchInput = ref<HTMLInputElement | null>(null);
+const devUsersLoading = ref(false);
+const devUsersError = ref('');
+const filteredDevTestUsers = computed(() => {
+  const keyword = testUserSearch.value.trim().toLowerCase();
+  if (!keyword) return devTestUsers.value;
+  return devTestUsers.value.filter((user) =>
+    [user.name, user.title, user.role, user.email]
+      .some((value) => value.toLowerCase().includes(keyword))
+  );
 });
 const routeError = ref('');
 const routes = ref<AdminRouteNode[]>([]);
@@ -180,26 +276,52 @@ const openTopToolCode = ref('');
 
 function ensureDevTestUserSelected() {
   if (!isDev) return;
-  if (devTestUsers.value.some((user) => user.id === auth.user.value?.id)) return;
-  const defaultUserId = devTestUsers.value[0]?.id;
+  if (devTestUsers.value.some((user) => user.id === activeDevUserId.value)) return;
+  const defaultUserId =
+    devTestUsers.value.find((user) => user.id === auth.user.value?.id)?.id ??
+    devTestUsers.value[0]?.id;
   if (defaultUserId) auth.switchDevTestUser(defaultUserId);
 }
 
 async function loadDevTestUsers() {
   if (!isDev) return;
+  devUsersLoading.value = true;
+  devUsersError.value = '';
 
   try {
-    const users = await serviceApi.listItems<Record<string, unknown>[]>('admin', {
-      tableName: 'users',
-      limit: 1000,
-    });
+    const users = await serviceApi.invoke<Record<string, unknown>[]>(
+      'admin',
+      'listApprovalTestUsers'
+    );
     auth.setDevTestUsers(Array.isArray(users) ? users : []);
   } catch (error) {
-    auth.setDevTestUsers([]);
+    devUsersError.value = error instanceof Error ? error.message : '测试用户加载失败';
     console.warn('Dev user switcher could not load admin users.', error);
+  } finally {
+    devUsersLoading.value = false;
   }
 
   ensureDevTestUserSelected();
+}
+
+function readDisplayString(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value.trim() : '';
+}
+
+function toggleTestUserMenu() {
+  testUserMenuOpen.value = !testUserMenuOpen.value;
+  if (testUserMenuOpen.value && !devTestUsers.value.length && !devUsersLoading.value) {
+    void loadDevTestUsers();
+  }
+  if (testUserMenuOpen.value) {
+    void nextTick(() => testUserSearchInput.value?.focus());
+  }
+}
+
+function selectDevTestUser(userId: string) {
+  activeDevUserId.value = userId;
+  testUserMenuOpen.value = false;
+  testUserSearch.value = '';
 }
 
 function getLowCodeDesignerLoadPageBus() {
@@ -689,10 +811,20 @@ function rememberTab() {
     title: activeTitle.value,
     path: route.path
   };
-  const existing = visitedTabs.value.filter(
-    (tab: { title: string; path: string }) => tab.path !== current.path
+  const existingIndex = visitedTabs.value.findIndex(
+    (tab: { title: string; path: string }) => tab.path === current.path
   );
-  visitedTabs.value = [...existing, current].slice(-8);
+
+  if (existingIndex >= 0) {
+    if (visitedTabs.value[existingIndex]?.title !== current.title) {
+      visitedTabs.value = visitedTabs.value.map((tab, index) =>
+        index === existingIndex ? current : tab
+      );
+    }
+    return;
+  }
+
+  visitedTabs.value = [...visitedTabs.value, current].slice(-8);
 }
 
 function handleAdminRoutesUpdated() {
@@ -703,18 +835,22 @@ function handleMenuContextKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     closeMenuContext();
     openTopToolCode.value = '';
+    testUserMenuOpen.value = false;
   }
 }
 
 function closeFloatingPanels() {
   closeMenuContext();
   openTopToolCode.value = '';
+  testUserMenuOpen.value = false;
 }
 
 onMounted(async () => {
   await auth.init();
-  await loadDevTestUsers();
-  ensureDevTestUserSelected();
+  if (showApprovalTestSwitcher.value) {
+    await loadDevTestUsers();
+    ensureDevTestUserSelected();
+  }
   await reloadRoutes();
   rememberTab();
   window.addEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
@@ -734,6 +870,9 @@ watch(
     closeMenuContext();
     openTopToolCode.value = '';
     rememberTab();
+    if (showApprovalTestSwitcher.value && !devTestUsers.value.length && !devUsersLoading.value) {
+      void loadDevTestUsers();
+    }
   }
 );
 </script>

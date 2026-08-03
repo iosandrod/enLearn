@@ -21,9 +21,10 @@
 import { computed, onBeforeUnmount, onMounted, provide, useSlots } from 'vue';
 import VisualEditor from '../visual-editor/index.vue';
 import GlobalDialogHost from './GlobalDialogHost';
-import type {
-  VisualEditorModelValue,
-  VisualEditorPage
+import {
+  ensureUniqueVisualBlockIds,
+  type VisualEditorModelValue,
+  type VisualEditorPage
 } from '../visual-editor/visual-editor.utils';
 import {
   initVisualData,
@@ -90,10 +91,18 @@ function persistToSession() {
 }
 
 function getSnapshot() {
+  const model = ensureUniqueVisualBlockIds(cloneModel());
+  const currentPath = visualData.currentPath.value;
+  const currentPage = model.pages[currentPath] ?? model.pages['/'];
+
+  if (!currentPage) {
+    throw new Error('当前设计页面不存在，无法保存。');
+  }
+
   return {
-    model: cloneModel(),
-    currentPath: visualData.currentPath.value,
-    currentPage: JSON.parse(JSON.stringify(visualData.currentPage.value)) as VisualEditorPage
+    model,
+    currentPath,
+    currentPage: currentPage as VisualEditorPage
   };
 }
 

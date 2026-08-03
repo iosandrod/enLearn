@@ -181,7 +181,7 @@ watch(
 );
 
 watch(
-  () => auth.user.value?.id,
+  () => auth.activeDevTestUser.value?.id ?? auth.user.value?.id,
   () => {
     open.value = false;
     messages.value = [];

@@ -230,3 +230,143 @@ Require stack:
 }
 
 Node.js v22.17.0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:432:10: ERROR: The constant "sourceItem_detail" must be initialized
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v22.17.0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:433:4: ERROR: Unexpected "const"
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v22.17.0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:435:4: ERROR: Unexpected "}"
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v22.17.0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:446:4: ERROR: Expected identifier but found "if"
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v22.17.0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:445:10: ERROR: The constant "pgConnection" must be initialized
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v22.17.0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:446:4: ERROR: Unexpected "if"
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v22.17.0
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+Error: Transform failed with 1 error:
+E:\enLearn\api\src\common\base.service.ts:446:4: ERROR: Unexpected "if"
+    at failureErrorWithLog (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1748:15)
+    at E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:1017:50
+    at responseCallbacks.<computed> (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:884:9)
+    at handleIncomingPacket (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:939:12)
+    at Socket.readFromStdout (E:\enLearn\node_modules\.pnpm\esbuild@0.28.1\node_modules\esbuild\lib\main.js:862:7)
+    at Socket.emit (node:events:518:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v22.17.0

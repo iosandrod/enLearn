@@ -5,6 +5,8 @@ import {
   type ResourceConfigMap,
   type ServiceHooks
 } from '../common/base.service';
+import type { ServiceContext } from '../common/interfaces/service-executor';
+import { createSupabaseClient, requireAdmin } from '../common/utils/supabase';
 
 type OptionSourceType = 'dict' | 'table' | 'view' | 'rpc' | 'sql';
 
@@ -136,7 +138,141 @@ function asRows(value: unknown): Record<string, unknown>[] {
 
 @Injectable()
 export class AdminService extends BaseService {
+  protected override async executeAction(
+    method: string,
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    if (method === 'listApprovalTestUsers') {
+      return this.listApprovalTestUsers(context);
+    }
+
+    return super.executeAction(method, postData, context);
+  }
+
   protected override resources(): ResourceConfigMap {
+    const salesOrderFields = [
+      'account_id',
+      'external_source',
+      'external_id',
+      'external_doc_id',
+      'external_doc_no',
+      'doc_no',
+      'doc_type_code',
+      'doc_type_name',
+      'doc_date',
+      'business_date',
+      'status',
+      'approval_status',
+      'close_status',
+      'hold_status',
+      'org_code',
+      'org_name',
+      'sales_org_code',
+      'sales_org_name',
+      'sales_department_code',
+      'sales_department_name',
+      'salesperson_code',
+      'salesperson_name',
+      'operator_code',
+      'operator_name',
+      'customer_id',
+      'customer_code',
+      'customer_name',
+      'invoice_customer_code',
+      'invoice_customer_name',
+      'payer_customer_code',
+      'payer_customer_name',
+      'ship_to_customer_code',
+      'ship_to_customer_name',
+      'contact_name',
+      'contact_phone',
+      'delivery_address',
+      'currency_code',
+      'currency_name',
+      'exchange_rate',
+      'price_includes_tax',
+      'payment_terms_code',
+      'payment_terms_name',
+      'settlement_method_code',
+      'settlement_method_name',
+      'trade_terms_code',
+      'trade_terms_name',
+      'delivery_terms_code',
+      'delivery_terms_name',
+      'price_list_code',
+      'price_list_name',
+      'total_qty',
+      'total_amount',
+      'discount_amount',
+      'tax_exclusive_amount',
+      'tax_amount',
+      'tax_inclusive_amount',
+      'local_currency_amount',
+      'source_doc_type',
+      'source_doc_id',
+      'source_doc_no',
+      'remark',
+      'metadata'
+    ];
+    const salesOrderLineFields = [
+      'account_id',
+      'order_id',
+      'external_source',
+      'external_id',
+      'external_line_id',
+      'line_no',
+      'row_no',
+      'status',
+      'close_status',
+      'item_id',
+      'item_code',
+      'item_name',
+      'item_spec',
+      'item_model',
+      'item_category_code',
+      'item_category_name',
+      'customer_item_code',
+      'customer_item_name',
+      'uom_code',
+      'uom_name',
+      'pricing_uom_code',
+      'pricing_uom_name',
+      'ordered_qty',
+      'delivered_qty',
+      'shipped_qty',
+      'invoiced_qty',
+      'returned_qty',
+      'open_qty',
+      'unit_price',
+      'tax_inclusive_unit_price',
+      'discount_rate',
+      'discount_amount',
+      'tax_rate',
+      'tax_exclusive_amount',
+      'tax_amount',
+      'tax_inclusive_amount',
+      'local_currency_amount',
+      'need_date',
+      'promise_date',
+      'delivery_date',
+      'warehouse_code',
+      'warehouse_name',
+      'storage_location_code',
+      'storage_location_name',
+      'lot_no',
+      'project_code',
+      'project_name',
+      'source_doc_type',
+      'source_doc_id',
+      'source_doc_no',
+      'source_line_id',
+      'source_line_no',
+      'is_free_gift',
+      'remark',
+      'metadata'
+    ];
+
     return {
       roles: {
         tableName: 'admin_roles',
@@ -252,6 +388,60 @@ export class AdminService extends BaseService {
           requiredFields: ['role_id', 'permission_id'],
           timestamp: false
         }
+      },
+      salesOrders: {
+        tableName: 'sales_orders',
+        permissions: this.adminCrudPermissions('sales.orders.manage'),
+        detailRelations: {
+          salesOrderLines: {
+            foreignKey: 'order_id',
+            parentKey: 'id',
+            inheritFields: ['account_id'],
+            updateMode: 'replace'
+          }
+        },
+        defaults: {
+          external_source: 'manual',
+          status: 'draft',
+          approval_status: 'draft',
+          close_status: 'open',
+          hold_status: false,
+          currency_code: 'CNY',
+          exchange_rate: 1,
+          price_includes_tax: true,
+          metadata: {}
+        },
+        create: {
+          allowedFields: salesOrderFields,
+          requiredFields: ['account_id', 'doc_no'],
+          userFields: { createdBy: 'created_by', updatedBy: 'updated_by' }
+        },
+        update: {
+          allowedFields: salesOrderFields.filter((field) => field !== 'account_id'),
+          userFields: { updatedBy: 'updated_by' }
+        }
+      },
+      salesOrderLines: {
+        tableName: 'sales_order_lines',
+        permissions: this.adminCrudPermissions('sales.orders.manage'),
+        defaults: {
+          external_source: 'manual',
+          status: 'open',
+          close_status: 'open',
+          is_free_gift: false,
+          metadata: {}
+        },
+        create: {
+          allowedFields: salesOrderLineFields,
+          requiredFields: ['account_id', 'order_id', 'line_no', 'item_code', 'item_name'],
+          userFields: { createdBy: 'created_by', updatedBy: 'updated_by' }
+        },
+        update: {
+          allowedFields: salesOrderLineFields.filter(
+            (field) => field !== 'account_id' && field !== 'order_id'
+          ),
+          userFields: { updatedBy: 'updated_by' }
+        }
       }
     };
   }
@@ -291,6 +481,54 @@ export class AdminService extends BaseService {
 
   private adminCrudPermissions(permission: string) {
     return { list: permission, create: permission, update: permission, delete: permission };
+  }
+
+  private async listApprovalTestUsers(context: ServiceContext) {
+    const { client } = await requireAdmin(context, [
+      'workflow.definitions.manage',
+      'admin.users.manage'
+    ]);
+    const { data: permissionRows, error: permissionRowsError } = await client.rpc(
+      'get_admin_user_permission_rows'
+    );
+
+    if (!permissionRowsError && Array.isArray(permissionRows)) {
+      return permissionRows.map((row: Record<string, unknown>) => ({
+        id: row.id,
+        user_id: row.user_id,
+        email: row.email,
+        full_name: row.full_name,
+        nickname: row.nickname,
+        role: row.legacy_profile_role,
+        app_role_names: row.app_role_names,
+        role_names: row.role_names
+      }));
+    }
+
+    const adminClient = createSupabaseClient('admin', context);
+    const [{ data: profiles, error: profileError }, authUsersResult] = await Promise.all([
+      adminClient
+        .from('users')
+        .select('id, full_name, nickname, role, updated_at')
+        .order('updated_at', { ascending: false }),
+      adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 })
+    ]);
+
+    if (profileError) throw new BadRequestException(profileError.message);
+    if (authUsersResult.error) throw new BadRequestException(authUsersResult.error.message);
+
+    const authUsersById = new Map(
+      authUsersResult.data.users.map((user) => [user.id, user])
+    );
+
+    return (profiles ?? []).map((profile) => ({
+      id: profile.id,
+      user_id: profile.id,
+      email: authUsersById.get(profile.id)?.email ?? '',
+      full_name: profile.full_name,
+      nickname: profile.nickname,
+      role: profile.role
+    }));
   }
 
   private resolveCodeDeleteId = async (ctx: HookContext) => {

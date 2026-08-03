@@ -149,7 +149,7 @@ export function useNotificationApi() {
   const auth = useAuth();
 
   function currentUserId() {
-    return auth.user.value?.id ?? '';
+    return auth.activeDevTestUser.value?.id ?? auth.user.value?.id ?? '';
   }
 
   function currentUserFilters(postData: Record<string, unknown> = {}) {
@@ -189,28 +189,21 @@ export function useNotificationApi() {
   }
 
   async function markRead(ids: string[]) {
-    const rows = await serviceApi.invoke<NotificationMessage[]>('notification', 'updateItem', {
-      resource: 'messages',
+    const result = await serviceApi.invoke<{ success: boolean; count: number }>('notification', 'markRead', {
       ids,
-      markRead: true
+      userId: currentUserId()
     });
 
-    return { success: true, count: Array.isArray(rows) ? rows.length : 0 };
+    return result;
   }
 
   async function markAllRead(postData: Record<string, unknown> = {}) {
-    const rows = await serviceApi.invoke<NotificationMessage[]>('notification', 'updateItem', {
-      resource: 'messages',
-      filters: {
-        ...currentUserFilters(postData),
-        read_at: { op: 'isNull' },
-        archived_at: { op: 'isNull' },
-        ...(readString(postData.category) ? { category: readString(postData.category) } : {})
-      },
-      markRead: true
+    return serviceApi.invoke<{ success: boolean; count: number }>('notification', 'markAllRead', {
+      ...postData,
+      userId: readString(postData.userId ?? postData.user_id) || currentUserId(),
+      tenantId: readString(postData.tenantId ?? postData.tenant_id) || 'default',
+      ...(readString(postData.category) ? { category: readString(postData.category) } : {})
     });
-
-    return { success: true, count: Array.isArray(rows) ? rows.length : 0 };
   }
 
   async function archiveMessage(ids: string[]) {

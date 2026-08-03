@@ -7,6 +7,7 @@ import {
   getUserAuthorization,
   hasRequiredPermission
 } from './utils/supabase';
+import { getPostgresPool } from './utils/database';
 
 export type ListFilterLogic = 'and' | 'or';
 
@@ -125,6 +126,14 @@ export type ResourceListConfig = {
   maxPageSize?: number;
 };
 
+export type ResourceDetailRelation = {
+  resource?: string;
+  foreignKey: string;
+  parentKey?: string;
+  inheritFields?: string[];
+  updateMode?: 'replace';
+};
+
 export type ResourceConfig = {
   code?: string;
   tableName: string;
@@ -134,6 +143,7 @@ export type ResourceConfig = {
   ownerField?: string;
   permissions?: ResourcePermissions;
   defaults?: Record<string, unknown> | ((ctx: CrudContext) => Record<string, unknown> | Promise<Record<string, unknown>>);
+  detailRelations?: Record<string, ResourceDetailRelation>;
   list?: ResourceListConfig;
   create?: ResourceActionConfig;
   update?: ResourceActionConfig;
@@ -429,34 +439,319 @@ export abstract class BaseService implements ServiceExecutor {
 
   protected async performCreate(ctx: CrudContext) {
     const sourceItems = this.readCreateDataItems(ctx);
-    const payloads = await Promise.all(
-      sourceItems.map(async (source) => {
-        const payload = await this.buildWritePayload(ctx, 'create', source);
+
+    type PreparedDetail = {
+      resourceName: string;
+      resource: ResourceConfig;
+      foreignKey: string;
+      parentKey: string;
+      inheritFields: string[];
+      payloads: Record<string, unknown>[];
+    };
+
+    type PreparedItem = {
+      payload: Record<string, unknown>;
+      details: PreparedDetail[];
+    };
+
+    const quoteIdentifier = (value: string, fieldName: string) => {
+      this.assertIdentifier(value, fieldName);
+      return `"${value}"`;
+    };
+
+    const quoteRelation = (value: string, fieldName: string) => {
+      const parts = value.split('.').map((part) => part.trim()).filter(Boolean);
+      if (parts.length < 1 || parts.length > 2) {
+        throw new BadRequestException(fieldName + ' must be table or schema.table.');
+      }
+      return parts.map((part) => quoteIdentifier(part, fieldName)).join('.');
+    };
+
+    const prepareDetails = async (source: Record<string, unknown>) => {
+      const rawDetails = source.__details;
+      if (rawDetails === undefined || rawDetails === null) return [] as PreparedDetail[];
+      if (!Array.isArray(rawDetails)) {
+        throw new BadRequestException('__details must be an array.');
+      }
+
+      const details: PreparedDetail[] = [];
+      for (const [detailIndex, rawDetail] of rawDetails.entries()) {
+        if (!this.isRecord(rawDetail)) {
+          throw new BadRequestException(`__details[${detailIndex}] must be an object.`);
+        }
+
+        const resourceName = this.readOptionalString(rawDetail.resource);
+        if (!resourceName) {
+          throw new BadRequestException(`__details[${detailIndex}].resource is required.`);
+        }
+
+        const relation = ctx.resource.detailRelations?.[resourceName];
+        if (!relation) {
+          throw new BadRequestException(
+            `Detail resource ${resourceName} is not configured for ${ctx.resourceName}.`
+          );
+        }
+
+        const resolved = this.tryResolveResource({
+          resource: relation.resource ?? resourceName
+        });
+        if (!resolved || !resolved.config.create) {
+          throw new BadRequestException(`Unsupported create detail resource: ${resourceName}`);
+        }
+        if (
+          (resolved.config.clientMode ?? 'user') !==
+          (ctx.resource.clientMode ?? 'user')
+        ) {
+          throw new BadRequestException(
+            `Detail resource ${resourceName} must use the same clientMode as ${ctx.resourceName}.`
+          );
+        }
+
+        const requestedForeignKey = this.readOptionalString(
+          rawDetail.foreignKey ?? rawDetail.foreign_key
+        );
+        const foreignKey = relation.foreignKey;
+        if (requestedForeignKey && requestedForeignKey !== foreignKey) {
+          throw new BadRequestException(
+            `__details[${detailIndex}].foreignKey must be ${foreignKey}.`
+          );
+        }
+        this.assertIdentifier(foreignKey, `__details[${detailIndex}].foreignKey`);
+
+        const requestedParentKey = this.readOptionalString(
+          rawDetail.parentKey ?? rawDetail.parent_key
+        );
+        const parentKey = relation.parentKey ?? this.primaryKey(ctx.resource);
+        if (requestedParentKey && requestedParentKey !== parentKey) {
+          throw new BadRequestException(
+            `__details[${detailIndex}].parentKey must be ${parentKey}.`
+          );
+        }
+        this.assertIdentifier(parentKey, `__details[${detailIndex}].parentKey`);
+
+        const requestedInheritFields = this.readStringArray(
+          rawDetail.inheritFields ?? rawDetail.inherit_fields
+        );
+        const inheritFields = relation.inheritFields ?? [];
+        if (
+          (rawDetail.inheritFields !== undefined || rawDetail.inherit_fields !== undefined) &&
+          (
+            requestedInheritFields.length !== inheritFields.length ||
+            requestedInheritFields.some((field) => !inheritFields.includes(field))
+          )
+        ) {
+          throw new BadRequestException(
+            `__details[${detailIndex}].inheritFields does not match the configured relation.`
+          );
+        }
+        inheritFields.forEach((field) =>
+          this.assertIdentifier(field, `__details[${detailIndex}].inheritFields`)
+        );
+
+        const allowedFields = resolved.config.create.allowedFields;
+        for (const managedField of [foreignKey, ...inheritFields]) {
+          if (allowedFields && !allowedFields.includes(managedField)) {
+            throw new BadRequestException(
+              `${managedField} is not writable on detail resource ${resourceName}.`
+            );
+          }
+        }
+
+        if (!Array.isArray(rawDetail.rows)) {
+          throw new BadRequestException(`__details[${detailIndex}].rows must be an array.`);
+        }
+        if (!rawDetail.rows.every((row) => this.isRecord(row))) {
+          throw new BadRequestException(
+            `Every item in __details[${detailIndex}].rows must be an object.`
+          );
+        }
+
+        const detailContext: CrudContext = {
+          ...ctx,
+          action: 'create',
+          resourceName: resolved.name,
+          resource: resolved.config,
+          input: { ...ctx.input, resource: resolved.name },
+          data: {},
+          filters: undefined,
+          id: undefined,
+          ids: [],
+          result: undefined,
+          meta: {}
+        };
+        await this.assertPermission(detailContext);
+
+        const payloads = await Promise.all(
+          (rawDetail.rows as Record<string, unknown>[]).map(async (row, rowIndex) => {
+            if (row.__details !== undefined) {
+              throw new BadRequestException(
+                `Nested __details is not supported at __details[${detailIndex}].rows[${rowIndex}].`
+              );
+            }
+            return this.buildWritePayload(detailContext, 'create', row);
+          })
+        );
+
+        details.push({
+          resourceName: resolved.name,
+          resource: resolved.config,
+          foreignKey,
+          parentKey,
+          inheritFields,
+          payloads
+        });
+      }
+
+      return details;
+    };
+
+    const preparedItems = await Promise.all(
+      sourceItems.map(async (source): Promise<PreparedItem> => {
+        const details = await prepareDetails(source);
+        const mainSource = Object.fromEntries(
+          Object.entries(source).filter(([field]) => field !== '__details')
+        );
+        const payload = await this.buildWritePayload(ctx, 'create', mainSource);
         this.assertRequiredFields(payload, ctx.resource.create?.requiredFields ?? []);
-        return payload;
+        return { payload, details };
       })
     );
 
-    if (payloads.length > 1) {
-      const { data, error } = await ctx.client
-        .from(ctx.resource.tableName)
-        .insert(payloads)
-        .select(ctx.resource.select ?? '*');
+    const client = await getPostgresPool().connect();
+    let transactionStarted = false;
+    let releaseError: Error | undefined;
 
-      if (error) throw new BadRequestException(error.message);
-      return data ?? [];//批量新增
+    const insertRows = async (
+      tableName: string,
+      rows: Record<string, unknown>[]
+    ): Promise<Record<string, unknown>[]> => {
+      if (!rows.length) return [];
+
+      const relationSql = quoteRelation(tableName, 'tableName');
+      const insertedRows = new Array<Record<string, unknown>>(rows.length);
+      const groups = new Map<
+        string,
+        { columns: string[]; items: Array<{ index: number; row: Record<string, unknown> }> }
+      >();
+
+      rows.forEach((row, index) => {
+        const normalizedRow = Object.fromEntries(
+          Object.entries(row).filter(([, value]) => value !== undefined)
+        );
+        const columns = Object.keys(normalizedRow).sort();
+        const signature = JSON.stringify(columns);
+        const group = groups.get(signature) ?? { columns, items: [] };
+        group.items.push({ index, row: normalizedRow });
+        groups.set(signature, group);
+      });
+
+      for (const group of groups.values()) {
+        if (!group.columns.length) {
+          for (const item of group.items) {
+            const result = await client.query(
+              `insert into ${relationSql} default values returning *`
+            );
+            insertedRows[item.index] = result.rows[0] as Record<string, unknown>;
+          }
+          continue;
+        }
+
+        const values: unknown[] = [];
+        const valueRows = group.items.map(({ row }) => {
+          const placeholders = group.columns.map((column) => {
+            values.push(row[column]);
+            return `$${values.length}`;
+          });
+          return `(${placeholders.join(', ')})`;
+        });
+        const columnsSql = group.columns
+          .map((column) => quoteIdentifier(column, 'column'))
+          .join(', ');
+        const result = await client.query(
+          `insert into ${relationSql} (${columnsSql}) values ${valueRows.join(', ')} returning *`,
+          values
+        );
+
+        result.rows.forEach((row, resultIndex) => {
+          insertedRows[group.items[resultIndex].index] = row as Record<string, unknown>;
+        });
+      }
+
+      return insertedRows;
+    };
+
+    try {
+      await client.query('begin');
+      transactionStarted = true;
+      if (ctx.resource.clientMode !== 'admin' && ctx.user) {
+        await client.query(
+          `select
+            set_config('request.jwt.claims', $1, true),
+            set_config('request.jwt.claim.sub', $2, true),
+            set_config('request.jwt.claim.role', 'authenticated', true)`,
+          [JSON.stringify({ sub: ctx.user.id, role: 'authenticated' }), ctx.user.id]
+        );
+        await client.query('set local role authenticated');
+      }
+
+      const insertedParents: Record<string, unknown>[] = [];
+      for (const item of preparedItems) {
+        const [parent] = await insertRows(ctx.resource.tableName, [item.payload]);
+        if (!parent) throw new BadRequestException('The created parent row was not returned.');
+
+        for (const detail of item.details) {
+          const parentValue = parent[detail.parentKey];
+          if (parentValue === undefined || parentValue === null) {
+            throw new BadRequestException(
+              `Parent field ${detail.parentKey} is required for detail resource ${detail.resourceName}.`
+            );
+          }
+
+          const linkedPayloads = detail.payloads.map((payload) => {
+            const linkedPayload = { ...payload, [detail.foreignKey]: parentValue };
+            for (const field of detail.inheritFields) {
+              if (parent[field] === undefined) {
+                throw new BadRequestException(
+                  `Parent field ${field} is required for detail resource ${detail.resourceName}.`
+                );
+              }
+              linkedPayload[field] = parent[field];
+            }
+            this.assertRequiredFields(
+              linkedPayload,
+              detail.resource.create?.requiredFields ?? []
+            );
+            return linkedPayload;
+          });
+
+          await insertRows(detail.resource.tableName, linkedPayloads);
+        }
+
+        insertedParents.push(parent);
+      }
+
+      await client.query('commit');
+      transactionStarted = false;
+      return insertedParents.length === 1 ? insertedParents[0] : insertedParents;
+    } catch (error) {
+      if (transactionStarted) {
+        try {
+          await client.query('rollback');
+          transactionStarted = false;
+        } catch (rollbackError) {
+          releaseError = rollbackError instanceof Error
+            ? rollbackError
+            : new Error('PostgreSQL rollback failed.');
+        }
+      }
+
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Create transaction failed.'
+      );
+    } finally {
+      client.release(releaseError);
     }
-
-    const payload = payloads[0] ?? {};
-
-    const { data, error } = await ctx.client
-      .from(ctx.resource.tableName)
-      .insert(payload)
-      .select(ctx.resource.select ?? '*')
-      .single();
-
-    if (error) throw new BadRequestException(error.message);
-    return data;
   }
 
   protected readCreateDataItems(ctx: CrudContext) {
@@ -466,7 +761,6 @@ export abstract class BaseService implements ServiceExecutor {
       if (!rows.length) throw new BadRequestException('data must include at least one item.');
       return rows;
     }
-
     return [ctx.data];
   }
 
@@ -476,65 +770,549 @@ export abstract class BaseService implements ServiceExecutor {
     const filters = this.readRecord(ctx.filters);
     const hasFilters = Object.keys(filters).length > 0;
     const batchItems = this.readBatchUpdateDataItems(ctx);
-    if (!id && !ids.length && !hasFilters && batchItems.length) {
-      const rows = [] as unknown[];
-      const primaryKey = this.primaryKey(ctx.resource);
-      for (const source of batchItems) {
-        const itemId = this.readOptionalString(source[primaryKey] ?? source.id);
-        if (!itemId) throw new BadRequestException(primaryKey + ' is required for each update item.');
-        const payload = await this.buildWritePayload(ctx, 'update', source);
-        this.assertRequiredFields(payload, ctx.resource.update?.requiredFields ?? []);
+    const primaryKey = this.primaryKey(ctx.resource);
+    const isBatchUpdate = !id && !ids.length && !hasFilters && batchItems.length > 0;
 
-        let itemQuery = ctx.client
-          .from(ctx.resource.tableName)
-          .update(payload)
-          .eq(primaryKey, itemId);
+    type PreparedDetail = {
+      resourceName: string;
+      resource: ResourceConfig;
+      foreignKey: string;
+      parentKey: string;
+      inheritFields: string[];
+      payloads: Record<string, unknown>[];
+    };
 
-        if (ctx.resource.ownerField && ctx.user) {
-          itemQuery = itemQuery.eq(ctx.resource.ownerField, ctx.user.id);
+    type PreparedBatchItem = {
+      itemId: string;
+      payload: Record<string, unknown>;
+      details: PreparedDetail[];
+    };
+
+    const quoteIdentifier = (value: string, fieldName: string) => {
+      this.assertIdentifier(value, fieldName);
+      return `"${value}"`;
+    };
+
+    const quoteRelation = (value: string, fieldName: string) => {
+      const parts = value.split('.').map((part) => part.trim()).filter(Boolean);
+      if (parts.length < 1 || parts.length > 2) {
+        throw new BadRequestException(fieldName + ' must be table or schema.table.');
+      }
+      return parts.map((part) => quoteIdentifier(part, fieldName)).join('.');
+    };
+
+    const prepareDetails = async (source: Record<string, unknown>) => {
+      const rawDetails = source.__details;
+      if (rawDetails === undefined || rawDetails === null) return [] as PreparedDetail[];
+      if (!Array.isArray(rawDetails)) {
+        throw new BadRequestException('__details must be an array.');
+      }
+
+      const details: PreparedDetail[] = [];
+      const targets = new Set<string>();
+      for (const [detailIndex, rawDetail] of rawDetails.entries()) {
+        if (!this.isRecord(rawDetail)) {
+          throw new BadRequestException(`__details[${detailIndex}] must be an object.`);
         }
 
-        const { data, error } = await itemQuery
-          .select(ctx.resource.select ?? '*')
-          .single();
+        const mode = this.readOptionalString(rawDetail.mode) || 'replace';
+        if (mode !== 'replace') {
+          throw new BadRequestException(
+            `Unsupported __details[${detailIndex}].mode: ${mode}. Only replace is supported.`
+          );
+        }
 
-        if (error) throw new BadRequestException(error.message);
-        rows.push(data);
+        const resourceName = this.readOptionalString(rawDetail.resource);
+        if (!resourceName) {
+          throw new BadRequestException(`__details[${detailIndex}].resource is required.`);
+        }
+
+        const relation = ctx.resource.detailRelations?.[resourceName];
+        if (!relation) {
+          throw new BadRequestException(
+            `Detail resource ${resourceName} is not configured for ${ctx.resourceName}.`
+          );
+        }
+        if (relation.updateMode !== mode) {
+          throw new BadRequestException(
+            `Detail resource ${resourceName} does not allow ${mode} updates.`
+          );
+        }
+
+        const resolved = this.tryResolveResource({
+          resource: relation.resource ?? resourceName
+        });
+        if (!resolved || !resolved.config.create) {
+          throw new BadRequestException(`Unsupported replace detail resource: ${resourceName}`);
+        }
+        if (
+          (resolved.config.clientMode ?? 'user') !==
+          (ctx.resource.clientMode ?? 'user')
+        ) {
+          throw new BadRequestException(
+            `Detail resource ${resourceName} must use the same clientMode as ${ctx.resourceName}.`
+          );
+        }
+
+        const requestedForeignKey = this.readOptionalString(
+          rawDetail.foreignKey ?? rawDetail.foreign_key
+        );
+        const foreignKey = relation.foreignKey;
+        if (requestedForeignKey && requestedForeignKey !== foreignKey) {
+          throw new BadRequestException(
+            `__details[${detailIndex}].foreignKey must be ${foreignKey}.`
+          );
+        }
+        this.assertIdentifier(foreignKey, `__details[${detailIndex}].foreignKey`);
+
+        const requestedParentKey = this.readOptionalString(
+          rawDetail.parentKey ?? rawDetail.parent_key
+        );
+        const parentKey = relation.parentKey ?? primaryKey;
+        if (requestedParentKey && requestedParentKey !== parentKey) {
+          throw new BadRequestException(
+            `__details[${detailIndex}].parentKey must be ${parentKey}.`
+          );
+        }
+        this.assertIdentifier(parentKey, `__details[${detailIndex}].parentKey`);
+
+        const targetKey = `${resolved.name}:${foreignKey}:${parentKey}`;
+        if (targets.has(targetKey)) {
+          throw new BadRequestException(
+            `Duplicate replace target at __details[${detailIndex}]: ${resourceName}.${foreignKey}.`
+          );
+        }
+        targets.add(targetKey);
+
+        const requestedInheritFields = this.readStringArray(
+          rawDetail.inheritFields ?? rawDetail.inherit_fields
+        );
+        const inheritFields = relation.inheritFields ?? [];
+        if (
+          (rawDetail.inheritFields !== undefined || rawDetail.inherit_fields !== undefined) &&
+          (
+            requestedInheritFields.length !== inheritFields.length ||
+            requestedInheritFields.some((field) => !inheritFields.includes(field))
+          )
+        ) {
+          throw new BadRequestException(
+            `__details[${detailIndex}].inheritFields does not match the configured relation.`
+          );
+        }
+        inheritFields.forEach((field) =>
+          this.assertIdentifier(field, `__details[${detailIndex}].inheritFields`)
+        );
+
+        const allowedFields = resolved.config.create.allowedFields;
+        for (const managedField of [foreignKey, ...inheritFields]) {
+          if (allowedFields && !allowedFields.includes(managedField)) {
+            throw new BadRequestException(
+              `${managedField} is not writable on detail resource ${resourceName}.`
+            );
+          }
+        }
+
+        if (!Array.isArray(rawDetail.rows)) {
+          throw new BadRequestException(`__details[${detailIndex}].rows must be an array.`);
+        }
+        if (!rawDetail.rows.every((row) => this.isRecord(row))) {
+          throw new BadRequestException(
+            `Every item in __details[${detailIndex}].rows must be an object.`
+          );
+        }
+
+        const detailContext: CrudContext = {
+          ...ctx,
+          action: 'create',
+          resourceName: resolved.name,
+          resource: resolved.config,
+          input: { ...ctx.input, resource: resolved.name },
+          data: {},
+          filters: undefined,
+          id: undefined,
+          ids: [],
+          result: undefined,
+          meta: {}
+        };
+        await this.assertPermission(detailContext);
+        await this.assertPermission({ ...detailContext, action: 'delete' });
+
+        const payloads = await Promise.all(
+          (rawDetail.rows as Record<string, unknown>[]).map(async (row, rowIndex) => {
+            if (row.__details !== undefined) {
+              throw new BadRequestException(
+                `Nested __details is not supported at __details[${detailIndex}].rows[${rowIndex}].`
+              );
+            }
+            return this.buildWritePayload(detailContext, 'create', row);
+          })
+        );
+
+        details.push({
+          resourceName: resolved.name,
+          resource: resolved.config,
+          foreignKey,
+          parentKey,
+          inheritFields,
+          payloads
+        });
       }
-      return rows;
-    }
 
-    if (!id && !ids.length && !hasFilters) {
-      throw new BadRequestException('id, ids, or filters is required.');
-    }
+      return details;
+    };
 
-    const payload = await this.buildWritePayload(ctx, 'update');
-    this.assertRequiredFields(payload, ctx.resource.update?.requiredFields ?? []);
+    let preparedBatchItems: PreparedBatchItem[] = [];
+    let payload: Record<string, unknown> | undefined;
+    let details: PreparedDetail[] = [];
 
-    let query = ctx.client
-      .from(ctx.resource.tableName)
-      .update(payload);
-
-    if (id) {
-      query = query.eq(this.primaryKey(ctx.resource), id);
-    } else if (ids.length) {
-      query = query.in(this.primaryKey(ctx.resource), ids);
+    if (isBatchUpdate) {
+      preparedBatchItems = await Promise.all(
+        batchItems.map(async (source) => {
+          const itemId = this.readOptionalString(source[primaryKey] ?? source.id);
+          if (!itemId) {
+            throw new BadRequestException(primaryKey + ' is required for each update item.');
+          }
+          const itemDetails = await prepareDetails(source);
+          const mainSource = Object.fromEntries(
+            Object.entries(source).filter(
+              ([field]) => field !== '__details' && field !== primaryKey
+            )
+          );
+          const itemPayload = await this.buildWritePayload(ctx, 'update', mainSource);
+          this.assertRequiredFields(
+            itemPayload,
+            ctx.resource.update?.requiredFields ?? []
+          );
+          return { itemId, payload: itemPayload, details: itemDetails };
+        })
+      );
     } else {
-      for (const [field, value] of Object.entries(filters)) {
-        query = this.applySupabaseFilter(query, field, value);
+      if (!id && !ids.length && !hasFilters) {
+        throw new BadRequestException('id, ids, or filters is required.');
       }
+
+      details = await prepareDetails(ctx.data);
+      if (details.length && !id) {
+        throw new BadRequestException(
+          'A single id is required when replacing detail rows.'
+        );
+      }
+
+      const mainSource = Object.fromEntries(
+        Object.entries(ctx.data).filter(
+          ([field]) => field !== '__details' && field !== primaryKey
+        )
+      );
+      payload = await this.buildWritePayload(ctx, 'update', mainSource);
+      this.assertRequiredFields(payload, ctx.resource.update?.requiredFields ?? []);
     }
 
-    if (ctx.resource.ownerField && ctx.user) {
-      query = query.eq(ctx.resource.ownerField, ctx.user.id);
+    const client = await getPostgresPool().connect();
+    let transactionStarted = false;
+    let releaseError: Error | undefined;
+
+    const insertRows = async (
+      tableName: string,
+      rows: Record<string, unknown>[]
+    ): Promise<Record<string, unknown>[]> => {
+      if (!rows.length) return [];
+
+      const relationSql = quoteRelation(tableName, 'tableName');
+      const insertedRows = new Array<Record<string, unknown>>(rows.length);
+      const groups = new Map<
+        string,
+        { columns: string[]; items: Array<{ index: number; row: Record<string, unknown> }> }
+      >();
+
+      rows.forEach((row, index) => {
+        const normalizedRow = Object.fromEntries(
+          Object.entries(row).filter(([, value]) => value !== undefined)
+        );
+        const columns = Object.keys(normalizedRow).sort();
+        const signature = JSON.stringify(columns);
+        const group = groups.get(signature) ?? { columns, items: [] };
+        group.items.push({ index, row: normalizedRow });
+        groups.set(signature, group);
+      });
+
+      for (const group of groups.values()) {
+        if (!group.columns.length) {
+          for (const item of group.items) {
+            const result = await client.query(
+              `insert into ${relationSql} default values returning *`
+            );
+            insertedRows[item.index] = result.rows[0] as Record<string, unknown>;
+          }
+          continue;
+        }
+
+        const values: unknown[] = [];
+        const valueRows = group.items.map(({ row }) => {
+          const placeholders = group.columns.map((column) => {
+            values.push(row[column]);
+            return `$${values.length}`;
+          });
+          return `(${placeholders.join(', ')})`;
+        });
+        const columnsSql = group.columns
+          .map((column) => quoteIdentifier(column, 'column'))
+          .join(', ');
+        const result = await client.query(
+          `insert into ${relationSql} (${columnsSql}) values ${valueRows.join(', ')} returning *`,
+          values
+        );
+
+        result.rows.forEach((row, resultIndex) => {
+          insertedRows[group.items[resultIndex].index] = row as Record<string, unknown>;
+        });
+      }
+
+      return insertedRows;
+    };
+
+    const appendFilter = (
+      conditions: string[],
+      values: unknown[],
+      field: string,
+      value: unknown
+    ) => {
+      if (!field || value === undefined || value === '') return;
+      const fieldSql = quoteIdentifier(field, 'filter field');
+      const bind = (operand: unknown) => {
+        values.push(operand);
+        return `$${values.length}`;
+      };
+
+      if (Array.isArray(value)) {
+        if (value.length) {
+          conditions.push(`${fieldSql} in (${value.map((item) => bind(item)).join(', ')})`);
+        }
+        return;
+      }
+      if (value === null) {
+        conditions.push(`${fieldSql} is null`);
+        return;
+      }
+
+      if (this.isRecord(value)) {
+        const op = this.readOptionalString(value.op).replace(/_/g, '').toLowerCase();
+        const operand = value.value;
+        if (op === 'isnull') {
+          conditions.push(`${fieldSql} is null`);
+          return;
+        }
+        if (op === 'isnotnull') {
+          conditions.push(`${fieldSql} is not null`);
+          return;
+        }
+        if (operand === undefined || operand === '') return;
+        if (op === 'eq') conditions.push(`${fieldSql} = ${bind(operand)}`);
+        else if (op === 'ne') conditions.push(`${fieldSql} <> ${bind(operand)}`);
+        else if (op === 'gt') conditions.push(`${fieldSql} > ${bind(operand)}`);
+        else if (op === 'gte') conditions.push(`${fieldSql} >= ${bind(operand)}`);
+        else if (op === 'lt') conditions.push(`${fieldSql} < ${bind(operand)}`);
+        else if (op === 'lte') conditions.push(`${fieldSql} <= ${bind(operand)}`);
+        else if (op === 'in' || op === 'notin') {
+          const operands = Array.isArray(operand) ? operand : [];
+          if (operands.length) {
+            const operator = op === 'in' ? 'in' : 'not in';
+            conditions.push(
+              `${fieldSql} ${operator} (${operands.map((item) => bind(item)).join(', ')})`
+            );
+          }
+        } else if (op === 'between') {
+          const operands = Array.isArray(operand) ? operand : [];
+          if (operands.length >= 2) {
+            conditions.push(
+              `${fieldSql} between ${bind(operands[0])} and ${bind(operands[1])}`
+            );
+          }
+        } else if (op === 'like' || op === 'ilike' || op === 'notlike' || op === 'notilike') {
+          const operator = op === 'like'
+            ? 'like'
+            : op === 'ilike'
+              ? 'ilike'
+              : op === 'notlike'
+                ? 'not like'
+                : 'not ilike';
+          conditions.push(`${fieldSql} ${operator} ${bind(`%${String(operand)}%`)}`);
+        } else if (op === 'startswith') {
+          conditions.push(`${fieldSql} like ${bind(`${String(operand)}%`)}`);
+        } else if (op === 'endswith') {
+          conditions.push(`${fieldSql} like ${bind(`%${String(operand)}`)}`);
+        } else if (op === 'contains') {
+          conditions.push(`${fieldSql} @> ${bind(operand)}`);
+        } else if (op === 'containedby') {
+          conditions.push(`${fieldSql} <@ ${bind(operand)}`);
+        } else if (op === 'overlaps') {
+          conditions.push(`${fieldSql} && ${bind(operand)}`);
+        } else {
+          throw new BadRequestException('Unsupported filter operator: ' + value.op);
+        }
+        return;
+      }
+
+      conditions.push(`${fieldSql} = ${bind(value)}`);
+    };
+
+    const updateRows = async (
+      updatePayload: Record<string, unknown>,
+      selector: { id?: string; ids?: string[]; filters?: Record<string, unknown> }
+    ) => {
+      const entries = Object.entries(updatePayload).filter(([, value]) => value !== undefined);
+      if (!entries.length) throw new BadRequestException('No writable update fields were provided.');
+
+      const values: unknown[] = [];
+      const setSql = entries.map(([field, value]) => {
+        values.push(value);
+        return `${quoteIdentifier(field, 'column')} = $${values.length}`;
+      });
+      const conditions: string[] = [];
+
+      if (selector.id) {
+        appendFilter(conditions, values, primaryKey, selector.id);
+      } else if (selector.ids?.length) {
+        appendFilter(conditions, values, primaryKey, selector.ids);
+      } else {
+        for (const [field, value] of Object.entries(selector.filters ?? {})) {
+          appendFilter(conditions, values, field, value);
+        }
+      }
+
+      const selectorConditionCount = conditions.length;
+      if (ctx.resource.ownerField && ctx.user) {
+        appendFilter(conditions, values, ctx.resource.ownerField, ctx.user.id);
+      }
+      if (!selectorConditionCount) {
+        throw new BadRequestException('At least one effective update condition is required.');
+      }
+
+      const result = await client.query(
+        `update ${quoteRelation(ctx.resource.tableName, 'tableName')} ` +
+          `set ${setSql.join(', ')} where ${conditions.join(' and ')} returning *`,
+        values
+      );
+      return result.rows as Record<string, unknown>[];
+    };
+
+    const replaceDetails = async (
+      parent: Record<string, unknown>,
+      detailGroups: PreparedDetail[]
+    ) => {
+      for (const detail of detailGroups) {
+        const parentValue = parent[detail.parentKey];
+        if (parentValue === undefined || parentValue === null) {
+          throw new BadRequestException(
+            `Parent field ${detail.parentKey} is required for detail resource ${detail.resourceName}.`
+          );
+        }
+
+        const deleteValues: unknown[] = [parentValue];
+        const deleteConditions = [
+          `${quoteIdentifier(detail.foreignKey, 'detail foreignKey')} = $1`
+        ];
+        for (const field of detail.inheritFields) {
+          if (parent[field] === undefined) {
+            throw new BadRequestException(
+              `Parent field ${field} is required for detail resource ${detail.resourceName}.`
+            );
+          }
+          deleteValues.push(parent[field]);
+          deleteConditions.push(
+            `${quoteIdentifier(field, 'detail inherit field')} = $${deleteValues.length}`
+          );
+        }
+
+        await client.query(
+          `delete from ${quoteRelation(detail.resource.tableName, 'detail tableName')} ` +
+            `where ${deleteConditions.join(' and ')}`,
+          deleteValues
+        );
+
+        const linkedPayloads = detail.payloads.map((detailPayload) => {
+          const linkedPayload = { ...detailPayload, [detail.foreignKey]: parentValue };
+          for (const field of detail.inheritFields) {
+            linkedPayload[field] = parent[field];
+          }
+          this.assertRequiredFields(
+            linkedPayload,
+            detail.resource.create?.requiredFields ?? []
+          );
+          return linkedPayload;
+        });
+        await insertRows(detail.resource.tableName, linkedPayloads);
+      }
+    };
+
+    try {
+      await client.query('begin');
+      transactionStarted = true;
+      if (ctx.resource.clientMode !== 'admin' && ctx.user) {
+        await client.query(
+          `select
+            set_config('request.jwt.claims', $1, true),
+            set_config('request.jwt.claim.sub', $2, true),
+            set_config('request.jwt.claim.role', 'authenticated', true)`,
+          [JSON.stringify({ sub: ctx.user.id, role: 'authenticated' }), ctx.user.id]
+        );
+        await client.query('set local role authenticated');
+      }
+
+      if (isBatchUpdate) {
+        const updatedRows: Record<string, unknown>[] = [];
+        for (const item of preparedBatchItems) {
+          const [updated] = await updateRows(item.payload, { id: item.itemId });
+          if (!updated) {
+            throw new BadRequestException(
+              `No ${ctx.resourceName} row matched ${primaryKey}: ${item.itemId}.`
+            );
+          }
+          await replaceDetails(updated, item.details);
+          updatedRows.push(updated);
+        }
+
+        await client.query('commit');
+        transactionStarted = false;
+        return updatedRows;
+      }
+
+      const updatedRows = await updateRows(payload ?? {}, {
+        ...(id ? { id } : {}),
+        ...(!id && ids.length ? { ids } : {}),
+        ...(!id && !ids.length ? { filters } : {})
+      });
+      if (details.length) {
+        const [updated] = updatedRows;
+        if (!updated) {
+          throw new BadRequestException(
+            `No ${ctx.resourceName} row matched ${primaryKey}: ${id}.`
+          );
+        }
+        await replaceDetails(updated, details);
+      }
+
+      await client.query('commit');
+      transactionStarted = false;
+      return id ? updatedRows[0] : updatedRows;
+    } catch (error) {
+      if (transactionStarted) {
+        try {
+          await client.query('rollback');
+          transactionStarted = false;
+        } catch (rollbackError) {
+          releaseError = rollbackError instanceof Error
+            ? rollbackError
+            : new Error('PostgreSQL rollback failed.');
+        }
+      }
+
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Update transaction failed.'
+      );
+    } finally {
+      client.release(releaseError);
     }
-
-    const { data, error } = await query
-      .select(ctx.resource.select ?? '*');
-
-    if (error) throw new BadRequestException(error.message);
-    if (id) return Array.isArray(data) ? data[0] : data;
-    return data ?? [];
   }
 
   protected readBatchUpdateDataItems(ctx: CrudContext) {

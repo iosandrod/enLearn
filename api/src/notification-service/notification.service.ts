@@ -233,6 +233,10 @@ export class NotificationService extends BaseService {
     switch (method) {
       case 'getUnreadCount':
         return this.getUnreadCount(postData, context);
+      case 'markRead':
+        return this.markRead(postData, context);
+      case 'markAllRead':
+        return this.markAllRead(postData, context);
       case 'createSystemNotice':
         return this.createSystemNotice(postData, context);
       default:
@@ -347,6 +351,48 @@ export class NotificationService extends BaseService {
     }, {});
 
     return { total: page.total, byCategory };
+  }
+
+  private async markRead(postData: PostData, context: ServiceContext) {
+    const ids = readStringArray(postData.ids);
+    if (!ids.length) return { success: true, count: 0 };
+    return this.markMessagesRead(postData, context, ids);
+  }
+
+  private async markAllRead(postData: PostData, context: ServiceContext) {
+    return this.markMessagesRead(postData, context);
+  }
+
+  private async markMessagesRead(
+    postData: PostData,
+    context: ServiceContext,
+    ids: string[] = []
+  ) {
+    const { client, user } = await getCurrentUser(context);
+    const targetUserId = readOptionalString(postData.userId ?? postData.user_id) || user.id;
+    let writeClient = client;
+
+    if (targetUserId !== user.id) {
+      await requireAdmin(context, ['notification.messages.manage', 'admin.users.manage']);
+      writeClient = resolveAdminClient(client);
+    }
+
+    let query = writeClient
+      .from('notification_messages')
+      .update({ read_at: new Date().toISOString() })
+      .eq('tenant_id', readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default')
+      .eq('recipient_id', targetUserId)
+      .is('read_at', null)
+      .is('archived_at', null);
+
+    if (ids.length) query = query.in('id', ids);
+    const category = readCategory(postData.category);
+    if (category) query = query.eq('category', category);
+
+    const { data, error } = await query.select('*');
+    if (error) throw new BadRequestException(error.message);
+    const messages = ((data ?? []) as NotificationMessageRow[]).map(normalizeMessage);
+    return { success: true, count: messages.length, messages };
   }
 
   private async createSystemNotice(postData: PostData, context: ServiceContext) {

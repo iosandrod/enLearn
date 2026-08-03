@@ -490,26 +490,36 @@ async function saveVisualProject(payload: {
   }
 }
 
-function requestSave() {
-  const snapshot = providerRef.value?.getSnapshot();
-  if (!snapshot) {
-    message.value = '请等待设计器初始化完成后再保存。';
-    messageType.value = 'error';
-    return;
-  }
+async function requestSave() {
+  if (saving.value) return;
 
-  saveVisualProject(snapshot).catch(() => undefined);
+  try {
+    const snapshot = providerRef.value?.getSnapshot();
+    if (!snapshot) {
+      throw new Error('请等待设计器初始化完成后再保存。');
+    }
+
+    await saveVisualProject(snapshot);
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '保存失败。';
+    messageType.value = 'error';
+  }
 }
 
-function requestPublish() {
-  const snapshot = providerRef.value?.getSnapshot();
-  if (!snapshot) {
-    message.value = '请等待设计器初始化完成后再发布。';
-    messageType.value = 'error';
-    return;
-  }
+async function requestPublish() {
+  if (saving.value) return;
 
-  saveVisualProject(snapshot, 'published').catch(() => undefined);
+  try {
+    const snapshot = providerRef.value?.getSnapshot();
+    if (!snapshot) {
+      throw new Error('请等待设计器初始化完成后再发布。');
+    }
+
+    await saveVisualProject(snapshot, 'published');
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '发布失败。';
+    messageType.value = 'error';
+  }
 }
 
 async function openPagePicker() {

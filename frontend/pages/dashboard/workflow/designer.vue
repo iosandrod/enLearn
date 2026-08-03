@@ -375,7 +375,7 @@ function createBlankModel() {
 }
 
 function loadTriggerApprovalTestWorkflow() {
-  const currentUserId = auth.user.value?.id ?? 'approval-test-user';
+  const currentUserId = auth.activeDevTestUser.value?.id ?? auth.user.value?.id ?? 'approval-test-user';
   const approverIds = auth.devTestUsers.value
     .map((user) => user.id)
     .filter((userId) => userId !== currentUserId)
@@ -395,7 +395,7 @@ function loadTriggerApprovalTestWorkflow() {
   designerRef.value?.loadSchema(model);
   schemaText.value = serializeWorkflowModel(model);
   void nextTick(() => designerRef.value?.autoLayout());
-  message.value = `已加载测试流程，发起人：${auth.user.value?.email ?? currentUserId}`;
+  message.value = `已加载测试流程，发起人：${auth.activeDevTestUser.value?.name ?? auth.user.value?.email ?? currentUserId}`;
   messageClass.value = 'workflow-success';
 }
 
@@ -533,14 +533,15 @@ async function runMinimalApprovalOneClickTest() {
   try {
     testRunSummary.value = '后端保存并发起测试审批';
     const schema = designerRef.value?.getSchema() ?? workflowModel.value;
+    const testUserId = auth.activeDevTestUser.value?.id ?? auth.user.value?.id;
     const approverIds = auth.devTestUsers.value
       .map((user) => user.id)
-      .filter((userId) => userId && userId !== auth.user.value?.id)
+      .filter((userId) => userId && userId !== testUserId)
       .slice(0, 3);
     const result = await invokeWorkflowService<ApprovalFlowTestResult>('runApprovalFlowTest', {
       timeoutMs: 90000,
       intervalMs: 2000,
-      userId: auth.user.value?.id,
+      userId: testUserId,
       approverIds,
       schema
     });
@@ -698,7 +699,7 @@ function parseWorkflowBody(body: BodyInit | null | undefined) {
 }
 
 async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<string, unknown>) {
-  const userId = auth.user.value?.id;
+  const userId = auth.activeDevTestUser.value?.id ?? auth.user.value?.id;
   if (!userId) {
     throw new Error('请先登录后再操作审批流');
   }

@@ -18,6 +18,7 @@ type AdminUserRow = {
   name?: unknown;
   app_role_names?: unknown;
   role_names?: unknown;
+  role?: unknown;
 };
 
 const DEV_AUTO_LOGIN_CREDENTIALS = {
@@ -124,41 +125,21 @@ function applyAuthPayload(payload: AppAuthPayload) {
   ensureCurrentUserTestOption();
 }
 
-function applyDevTestUser(testUser: DevTestUser) {
-  const { user, profile, ready } = useAuthState();
-  user.value = {
-    ...(user.value ?? {}),
-    id: testUser.id,
-    email: testUser.email,
-    role: testUser.role,
-    user_metadata: {
-      ...(user.value?.user_metadata ?? {}),
-      name: testUser.name,
-      title: testUser.title,
-      devTestUser: true
-    }
-  };
-  profile.value = {
-    ...(profile.value ?? {}),
-    id: testUser.id,
-    name: testUser.name,
-    title: testUser.title,
-    role: testUser.role,
-    email: testUser.email,
-    devTestUser: true
-  };
-  ready.value = true;
-}
-
 function toDevTestUser(row: AdminUserRow, index: number): DevTestUser | null {
   const id = readOptionalString(row.user_id ?? row.id);
   if (!isUuid(id)) return null;
 
   const email = readOptionalString(row.email);
   const name =
-    readOptionalString(row.full_name ?? row.nickname ?? row.name) ||
+    readOptionalString(row.full_name) ||
+    readOptionalString(row.nickname) ||
+    readOptionalString(row.name) ||
     (email ? email.split('@')[0] : `用户 ${index + 1}`);
-  const role = readOptionalString(row.role_names ?? row.app_role_names) || '审批用户';
+  const rawRole =
+    readOptionalString(row.role_names) ||
+    readOptionalString(row.app_role_names) ||
+    readOptionalString(row.role);
+  const role = rawRole === 'admin' ? '管理员' : rawRole === 'student' ? '审批用户' : rawRole || '审批用户';
 
   return {
     id,
@@ -204,8 +185,10 @@ function restoreDevTestUser() {
   if (import.meta.server || !shouldUseDevAutoLogin()) return;
   const savedUserId = window.localStorage.getItem(DEV_TEST_USER_KEY);
   const devTestUsers = useState<DevTestUser[]>('auth-dev-test-users', () => []);
-  const testUser = devTestUsers.value.find((item) => item.id === savedUserId);
-  if (testUser) applyDevTestUser(testUser);
+  const activeDevTestUserId = useState<string>('auth-active-dev-test-user-id', () => '');
+  activeDevTestUserId.value = devTestUsers.value.some((item) => item.id === savedUserId)
+    ? savedUserId ?? ''
+    : currentUserAsTestOption()?.id ?? '';
 }
 
 function clearAuthPayload() {
@@ -250,6 +233,12 @@ function readOAuthHash() {
 export function useAuth() {
   const { user, profile, permissions, accounts, session, ready } = useAuthState();
   const devTestUsers = useState<DevTestUser[]>('auth-dev-test-users', () => []);
+  const activeDevTestUserId = useState<string>('auth-active-dev-test-user-id', () => '');
+  const activeDevTestUser = computed(
+    () =>
+      devTestUsers.value.find((item) => item.id === activeDevTestUserId.value) ??
+      currentUserAsTestOption()
+  );
 
   async function runInit(force = false) {
     if (import.meta.server) return;
@@ -358,7 +347,7 @@ export function useAuth() {
     const testUser = devTestUsers.value.find((item) => item.id === userId);
     if (!testUser) return;
     window.localStorage.setItem(DEV_TEST_USER_KEY, testUser.id);
-    applyDevTestUser(testUser);
+    activeDevTestUserId.value = testUser.id;
   }
 
   function setDevTestUsers(rows: AdminUserRow[]) {
@@ -375,13 +364,19 @@ export function useAuth() {
     devTestUsers.value = Array.from(byId.values());
     const savedUserId = import.meta.server ? '' : window.localStorage.getItem(DEV_TEST_USER_KEY);
     const savedUser = devTestUsers.value.find((item) => item.id === savedUserId);
-    if (savedUser) applyDevTestUser(savedUser);
+    activeDevTestUserId.value =
+      savedUser?.id ??
+      (activeDevTestUserId.value && byId.has(activeDevTestUserId.value)
+        ? activeDevTestUserId.value
+        : current?.id ?? devTestUsers.value[0]?.id ?? '');
   }
 
   async function signOut() {
     disableDevAutoLogin();
     await $fetch('/api/auth/signout', { method: 'POST' });
     window.localStorage.removeItem(DEV_TEST_USER_KEY);
+    activeDevTestUserId.value = '';
+    devTestUsers.value = [];
     user.value = null;
     profile.value = null;
     permissions.value = [];
@@ -404,6 +399,8 @@ export function useAuth() {
     signInWithOAuth,
     completeOAuthRedirect,
     devTestUsers,
+    activeDevTestUser,
+    activeDevTestUserId,
     setDevTestUsers,
     switchDevTestUser,
     signOut
