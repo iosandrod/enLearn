@@ -65,7 +65,7 @@ export function useChatApi() {
   }
 
   function tenantId(params: Record<string, unknown>) {
-    return readString(params.tenantId ?? params.tenant_id) || 'default';
+    return auth.activeAccount.value?.account_id ?? '';
   }
 
   function currentUserId() {
@@ -196,7 +196,10 @@ export function useChatApi() {
     tenantId?: string;
     targetUserId: string;
   }) {
-    return invoke<ChatConversation>('chat', 'createDirectConversation', params);
+    return invoke<ChatConversation>('chat', 'createDirectConversation', {
+      ...params,
+      tenantId: tenantId(params)
+    });
   }
 
   function createGroupConversation(params: {
@@ -205,11 +208,17 @@ export function useChatApi() {
     memberIds: string[];
     metadata?: Record<string, unknown>;
   }) {
-    return invoke<ChatConversation>('chat', 'createGroupConversation', params);
+    return invoke<ChatConversation>('chat', 'createGroupConversation', {
+      ...params,
+      tenantId: tenantId(params)
+    });
   }
 
   function sendMessage(params: SendChatMessageInput) {
-    return invoke<ChatMessage>('chat', 'sendMessage', params);
+    return invoke<ChatMessage>('chat', 'sendMessage', {
+      ...params,
+      tenantId: tenantId(params)
+    });
   }
 
   function markRead(params: {
@@ -217,7 +226,10 @@ export function useChatApi() {
     conversationId: string;
     messageId?: string;
   }) {
-    return invoke('chat', 'markRead', params);
+    return invoke('chat', 'markRead', {
+      ...params,
+      tenantId: tenantId(params)
+    });
   }
 
   return {

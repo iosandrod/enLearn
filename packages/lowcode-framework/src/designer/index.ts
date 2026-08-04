@@ -7,11 +7,13 @@ export * from '../visual-editor/visual-editor.props';
 export * from '../visual-editor/components/grid-designer/grid-designer.service';
 export {
   $$buttonGroupDesigner,
+  $$buttonGroupCurrentButtonDesigner,
 } from '../visual-editor/components/button-group-designer/button-group-designer.service';
 export type {
   ButtonGroupDesignerButton,
   ButtonGroupDesignerBusinessInfo,
   ButtonGroupDesignerResult,
+  CurrentButtonDesignerServiceOption,
 } from '../visual-editor/components/button-group-designer/button-group-designer.service';
 export * from '../utils/visual-to-lowcode';
 export * from '../lowcode/visual-converters/helpers';

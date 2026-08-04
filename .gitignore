@@ -60,3 +60,4 @@ api/.trigger/**
 frontend/dist/index.html
 /api/.trigger/**
 api/.trigger/tmp/**/*
+/.codex-server-logs/**

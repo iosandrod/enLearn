@@ -1,4 +1,4 @@
-import { Controller, Get, Inject, Param, Post, Query } from '@nestjs/common';
+import { Controller, Get, Inject, NotFoundException, Param, Post, Query, Req } from '@nestjs/common';
 import { ok } from '../common/api-response';
 import type { WorkflowDefinitionQuery } from './definition.dto';
 import { DefinitionService } from './definition.service';
@@ -13,12 +13,21 @@ export class DefinitionController {
   }
 
   @Get()
-  async listDefinitions(@Query() query: WorkflowDefinitionQuery) {
-    return ok(await this.definitionService.listDefinitions(query));
+  async listDefinitions(@Query() query: WorkflowDefinitionQuery, @Req() request: HeaderReader) {
+    const tenantId = requireTenant(request);
+    return ok(await this.definitionService.listDefinitions({ ...query, tenantId }));
   }
 
   @Post(':definitionId/disable')
-  async disableDefinition(@Param('definitionId') definitionId: string) {
-    return ok(await this.definitionService.disableDefinition(definitionId));
+  async disableDefinition(@Param('definitionId') definitionId: string, @Req() request: HeaderReader) {
+    return ok(await this.definitionService.disableDefinition(definitionId, requireTenant(request)));
   }
+}
+
+type HeaderReader = { header(name: string): string | undefined };
+
+function requireTenant(request: HeaderReader) {
+  const tenantId = request.header('x-tenant-id')?.trim();
+  if (!tenantId) throw new NotFoundException('An active account set is required.');
+  return tenantId;
 }

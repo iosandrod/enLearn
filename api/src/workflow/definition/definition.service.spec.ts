@@ -62,6 +62,25 @@ const disabled = await service.disableDefinition(published.definition.id);
 assert.equal(disabled.status, 'disabled');
 
 await assert.rejects(
+  () => service.getModel(model.id, 'another-account'),
+  /not found/i
+);
+
+await assert.rejects(
+  () => service.publishModel(
+    model.id,
+    { remark: 'cross-account publish' },
+    { tenantId: 'another-account' }
+  ),
+  /not found/i
+);
+
+await assert.rejects(
+  () => service.getDefinition(published.definition.id, 'another-account'),
+  /not found/i
+);
+
+await assert.rejects(
   () =>
     service.saveModel(
       {

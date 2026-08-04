@@ -1,4 +1,4 @@
-import { IsEmail, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class SignInPasswordAuthDto {
   @IsString()
@@ -47,4 +47,14 @@ export class SetSessionDto {
   @IsOptional()
   @IsNumber()
   expiresAt?: number;
+}
+
+export class SelectAccountDto {
+  @IsString()
+  @IsNotEmpty()
+  accountId!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  setDefault?: boolean;
 }

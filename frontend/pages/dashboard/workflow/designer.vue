@@ -151,13 +151,17 @@ import {
   type WorkflowSchemaIssue
 } from '@enlearn/approval-workflow';
 
-const localStorageKey = 'enlearn.workflow.designer.default';
+const localStorageKey = computed(() =>
+  `enlearn.workflow.designer.${auth.activeAccount.value?.account_id ?? 'unselected'}.default`
+);
 const auth = useAuth();
 const serviceApi = useServiceApi();
 const route = useRoute();
 const routeCode = computed(() => String(route.params.code ?? '').trim());
 const activeStorageKey = computed(() =>
-  routeCode.value ? `enlearn.workflow.designer.${routeCode.value}` : localStorageKey
+  routeCode.value
+    ? `enlearn.workflow.designer.${auth.activeAccount.value?.account_id ?? 'unselected'}.${routeCode.value}`
+    : localStorageKey.value
 );
 
 const workflowModel = ref<WorkflowModel>(
@@ -487,8 +491,11 @@ function saveLocalDraft() {
 
   const serialized = serializeWorkflowModel(workflowModel.value);
   window.localStorage.setItem(activeStorageKey.value, serialized);
-  window.localStorage.setItem(localStorageKey, serialized);
-  window.localStorage.setItem(`enlearn.workflow.designer.${workflowModel.value.code}`, serialized);
+  window.localStorage.setItem(localStorageKey.value, serialized);
+  window.localStorage.setItem(
+    `enlearn.workflow.designer.${auth.activeAccount.value?.account_id ?? 'unselected'}.${workflowModel.value.code}`,
+    serialized
+  );
   message.value = '已保存本地草稿';
   messageClass.value = 'workflow-success';
 }
@@ -642,8 +649,11 @@ async function publishCurrentWorkflow() {
 
   const serialized = serializeWorkflowModel(schema);
   window.localStorage.setItem(activeStorageKey.value, serialized);
-  window.localStorage.setItem(localStorageKey, serialized);
-  window.localStorage.setItem(`enlearn.workflow.designer.${schema.code}`, serialized);
+  window.localStorage.setItem(localStorageKey.value, serialized);
+  window.localStorage.setItem(
+    `enlearn.workflow.designer.${auth.activeAccount.value?.account_id ?? 'unselected'}.${schema.code}`,
+    serialized
+  );
 
   const modelPayload = {
     code: schema.code,
@@ -760,7 +770,7 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
 
   return serviceApi.invoke<T>('workflow', serviceMethod, {
     ...postData,
-    tenantId: 'default',
+    tenantId: auth.activeAccount.value?.account_id,
     userId
   });
 }

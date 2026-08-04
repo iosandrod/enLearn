@@ -11,6 +11,7 @@ import {
 import { ServiceInvokeDto } from '../common/dto/service-invoke.dto';
 import { isPublicServiceName, type PublicServiceName } from '../common/service-bus';
 import { ServiceRouterService } from './service-router.service';
+import { requireActiveAccount } from '../common/utils/account-context';
 
 type NormalizedServiceInvoke = {
   serviceName: PublicServiceName;
@@ -104,7 +105,8 @@ export class ServiceGatewayController {
   async service(
     @Body() body: ServiceInvokeDto,
     @Headers('authorization') authorization?: string,
-    @Headers('x-request-id') requestId?: string
+    @Headers('x-request-id') requestId?: string,
+    @Headers('x-account-id') accountId?: string
   ) {
     const { serviceName, serviceMethod, postData } = normalizeBody(body);
     const serviceLabel = `${serviceName}.${serviceMethod}`;
@@ -115,14 +117,15 @@ export class ServiceGatewayController {
 
     let data: unknown;
     try {
+      const resolvedAccount = await requireActiveAccount(
+        { authorization: contextAuthorization, requestId },
+        accountId
+      );
       data = await this.router.invoke(
         serviceName,
         serviceMethod,
         postData,
-        {
-          authorization: contextAuthorization,
-          requestId
-        }
+        resolvedAccount.context
       );
     } catch (error) {
       const elapsedMs = Date.now() - startedAt;

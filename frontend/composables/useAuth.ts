@@ -30,6 +30,7 @@ const ADMIN_LOGIN_EMAIL = '1151685410@qq.com';
 const DEV_TEST_USER_KEY = 'enlearn_dev_test_user';
 const ACCESS_TOKEN_KEY = 'enlearn_access_token';
 const REFRESH_TOKEN_KEY = 'enlearn_refresh_token';
+const ACTIVE_ACCOUNT_KEY = 'enlearn_active_account_id';
 const DEV_AUTO_LOGIN_DISABLED_KEY = 'enlearn_dev_auto_login_disabled';
 
 let initPromise: Promise<void> | null = null;
@@ -114,12 +115,48 @@ function isDevAutoLoginUser(email?: string | null) {
   return email?.trim().toLowerCase() === ADMIN_LOGIN_EMAIL;
 }
 
-function applyAuthPayload(payload: AppAuthPayload) {
-  const { user, profile, permissions, accounts, session, ready } = useAuthState();
+function applyAuthPayload(payload: AppAuthPayload, options: { activateFallback?: boolean } = {}) {
+  const {
+    user,
+    profile,
+    permissions,
+    accounts,
+    activeAccount,
+    accountRequired,
+    accountEpoch,
+    session,
+    ready
+  } = useAuthState();
   user.value = payload.user;
   profile.value = payload.profile;
   permissions.value = Array.isArray(payload.permissions) ? payload.permissions : [];
   accounts.value = Array.isArray(payload.accounts) ? payload.accounts : [];
+  const savedAccountId = import.meta.server
+    ? ''
+    : window.localStorage.getItem(ACTIVE_ACCOUNT_KEY) ?? '';
+  const selectedAccount = payload.activeAccount ?? (
+    options.activateFallback
+      ? accounts.value.find((account) => account.account_id === savedAccountId) ??
+        accounts.value.find((account) => account.is_last_used) ??
+        accounts.value.find((account) => account.is_default) ??
+        accounts.value.find(
+          (account) => account.status !== 'inactive' && account.status !== 'archived'
+        ) ?? null
+      : null
+  );
+
+  const previousAccountId = activeAccount.value?.account_id ?? '';
+  const nextAccountId = selectedAccount?.account_id ?? '';
+  activeAccount.value = selectedAccount;
+  accountRequired.value = Boolean(payload.user) && !selectedAccount;
+  if (previousAccountId !== nextAccountId) accountEpoch.value += 1;
+  if (!import.meta.server) {
+    if (selectedAccount) {
+      window.localStorage.setItem(ACTIVE_ACCOUNT_KEY, selectedAccount.account_id);
+    } else if (!payload.user) {
+      window.localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
+    }
+  }
   session.value = payload.session;
   ready.value = true;
   ensureCurrentUserTestOption();
@@ -192,11 +229,25 @@ function restoreDevTestUser() {
 }
 
 function clearAuthPayload() {
-  const { user, profile, permissions, accounts, session, ready } = useAuthState();
+  const {
+    user,
+    profile,
+    permissions,
+    accounts,
+    activeAccount,
+    accountRequired,
+    accountEpoch,
+    session,
+    ready
+  } = useAuthState();
   user.value = null;
   profile.value = null;
   permissions.value = [];
   accounts.value = [];
+  if (activeAccount.value) accountEpoch.value += 1;
+  activeAccount.value = null;
+  accountRequired.value = false;
+  if (!import.meta.server) window.localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
   session.value = null;
   ready.value = true;
 }
@@ -231,7 +282,17 @@ function readOAuthHash() {
 }
 
 export function useAuth() {
-  const { user, profile, permissions, accounts, session, ready } = useAuthState();
+  const {
+    user,
+    profile,
+    permissions,
+    accounts,
+    activeAccount,
+    accountRequired,
+    accountEpoch,
+    session,
+    ready
+  } = useAuthState();
   const devTestUsers = useState<DevTestUser[]>('auth-dev-test-users', () => []);
   const activeDevTestUserId = useState<string>('auth-active-dev-test-user-id', () => '');
   const activeDevTestUser = computed(
@@ -242,14 +303,13 @@ export function useAuth() {
 
   async function runInit(force = false) {
     if (import.meta.server) return;
-    if (ready.value && !force) {
-      if (!shouldUseDevAutoLogin() && user.value) return;
-      if (shouldUseDevAutoLogin() && isDevAutoLoginUser(user.value?.email)) return;
+    if (ready.value && !force && user.value && activeAccount.value) {
+      if (!shouldUseDevAutoLogin() || isDevAutoLoginUser(user.value.email)) return;
     }
 
     if (shouldUseDevAutoLogin() && !isDevAutoLoginUser(user.value?.email)) {
       try {
-        await signInWithPassword(DEV_AUTO_LOGIN_CREDENTIALS);
+        await signInWithPassword(DEV_AUTO_LOGIN_CREDENTIALS, { devAutoLogin: true });
         restoreDevTestUser();
         return;
       } catch (error) {
@@ -262,15 +322,17 @@ export function useAuth() {
       applyAuthPayload(payload);
       restoreDevTestUser();
     } catch (error) {
-      if (!isUnauthenticatedError(error)) {
+      if (isUnauthenticatedError(error)) {
+        clearAuthPayload();
+      } else {
         console.warn('Auth session check failed.', error);
+        ready.value = true;
       }
-      clearAuthPayload();
     }
 
     if (!user.value && shouldUseDevAutoLogin()) {
       try {
-        await signInWithPassword(DEV_AUTO_LOGIN_CREDENTIALS);
+        await signInWithPassword(DEV_AUTO_LOGIN_CREDENTIALS, { devAutoLogin: true });
         restoreDevTestUser();
       } catch (error) {
         console.warn('Dev auto login failed.', error);
@@ -291,14 +353,24 @@ export function useAuth() {
   async function signInWithPassword(credentials: {
     email: string;
     password: string;
-  }) {
-    enableDevAutoLogin();
+  }, options: { devAutoLogin?: boolean } = {}) {
+    if (options.devAutoLogin) enableDevAutoLogin();
     const payload = await postAuthJson<AppAuthPayload>('/auth/signin', {
       ...credentials,
       email: normalizeLoginEmail(credentials.email)
     });
     persistAuthTokens(payload);
     applyAuthPayload(payload);
+    if (options.devAutoLogin && shouldUseDevAutoLogin()) {
+      const savedAccountId = window.localStorage.getItem(ACTIVE_ACCOUNT_KEY) ?? '';
+      const preferred = payload.accounts.find((item) => item.account_id === savedAccountId) ??
+        payload.accounts.find((item) => item.is_last_used) ??
+        payload.accounts.find((item) => item.is_default) ??
+        payload.accounts.find(
+          (item) => item.status !== 'inactive' && item.status !== 'archived'
+        );
+      if (preferred) await selectAccount(preferred.account_id);
+    }
     restoreDevTestUser();
   }
 
@@ -342,6 +414,42 @@ export function useAuth() {
     await init(true);
   }
 
+  async function selectAccount(accountId: string, options: { setDefault?: boolean } = {}) {
+    const selected = accounts.value.find((account) => account.account_id === accountId);
+    if (!selected) {
+      throw createError({ statusCode: 400, statusMessage: 'Selected account is unavailable.' });
+    }
+
+    window.localStorage.setItem(ACTIVE_ACCOUNT_KEY, accountId);
+    try {
+      const payload = await $fetch<AppAuthPayload>('/api/auth/select-account', {
+        method: 'POST',
+        body: { accountId, setDefault: options.setDefault === true }
+      });
+      const previousAccountId = activeAccount.value?.account_id ?? '';
+      applyAuthPayload(payload);
+      if (previousAccountId !== accountId) {
+        window.dispatchEvent(new CustomEvent('enlearn:account-changed', {
+          detail: { previousAccountId, accountId }
+        }));
+      }
+    } catch (error) {
+      if (activeAccount.value) {
+        window.localStorage.setItem(ACTIVE_ACCOUNT_KEY, activeAccount.value.account_id);
+      } else {
+        window.localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
+      }
+      throw error;
+    }
+  }
+
+  function clearActiveAccount() {
+    if (activeAccount.value) accountEpoch.value += 1;
+    activeAccount.value = null;
+    accountRequired.value = Boolean(user.value);
+    window.localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
+  }
+
   function switchDevTestUser(userId: string) {
     if (!shouldUseDevAutoLogin()) return;
     const testUser = devTestUsers.value.find((item) => item.id === userId);
@@ -375,12 +483,16 @@ export function useAuth() {
     disableDevAutoLogin();
     await $fetch('/api/auth/signout', { method: 'POST' });
     window.localStorage.removeItem(DEV_TEST_USER_KEY);
+    window.localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
     activeDevTestUserId.value = '';
     devTestUsers.value = [];
     user.value = null;
     profile.value = null;
     permissions.value = [];
     accounts.value = [];
+    if (activeAccount.value) accountEpoch.value += 1;
+    activeAccount.value = null;
+    accountRequired.value = false;
     session.value = null;
     ready.value = true;
     await navigateTo('/signin');
@@ -391,6 +503,9 @@ export function useAuth() {
     profile,
     permissions,
     accounts,
+    activeAccount,
+    accountRequired,
+    accountEpoch,
     session,
     ready,
     init,
@@ -398,6 +513,8 @@ export function useAuth() {
     signUp,
     signInWithOAuth,
     completeOAuthRedirect,
+    selectAccount,
+    clearActiveAccount,
     devTestUsers,
     activeDevTestUser,
     activeDevTestUserId,

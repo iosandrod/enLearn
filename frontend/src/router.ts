@@ -59,11 +59,11 @@ router.beforeEach(async (to) => {
 
   if (to.meta.auth) {
     await auth.init();
-    if (!auth.user.value) return '/signin';
+    if (!auth.user.value || !auth.activeAccount.value) return '/signin';
   }
 
   if (to.meta.guest) {
     await auth.init();
-    if (auth.user.value) return '/dashboard';
+    if (auth.user.value && auth.activeAccount.value) return '/dashboard';
   }
 });

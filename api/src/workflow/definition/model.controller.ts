@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Inject, NotFoundException, Param, Post, Put, Query, Req } from '@nestjs/common';
 import { ok } from '../common/api-response';
 import {
   PublishWorkflowModelDto,
@@ -12,18 +12,18 @@ export class ModelController {
   constructor(@Inject(DefinitionService) private readonly definitionService: DefinitionService) {}
 
   @Get()
-  async listModels(@Query() query: WorkflowModelQuery) {
-    return ok(await this.definitionService.listModels(query));
+  async listModels(@Query() query: WorkflowModelQuery, @Req() request: HeaderReader) {
+    return ok(await this.definitionService.listModels({ ...query, tenantId: this.requireTenant(request) }));
   }
 
   @Get(':modelId')
-  async getModel(@Param('modelId') modelId: string) {
-    return ok(await this.definitionService.getModel(modelId));
+  async getModel(@Param('modelId') modelId: string, @Req() request: HeaderReader) {
+    return ok(await this.definitionService.getModel(modelId, this.requireTenant(request)));
   }
 
   @Post()
   async saveModel(@Body() dto: SaveWorkflowModelDto, @Req() request: HeaderReader) {
-    return ok(await this.definitionService.saveModel(dto, this.resolveActor(request, dto.tenantId)));
+    return ok(await this.definitionService.saveModel(dto, this.resolveActor(request)));
   }
 
   @Put(':modelId')
@@ -32,7 +32,7 @@ export class ModelController {
     @Body() dto: SaveWorkflowModelDto,
     @Req() request: HeaderReader
   ) {
-    return ok(await this.definitionService.saveModel(dto, this.resolveActor(request, dto.tenantId), modelId));
+    return ok(await this.definitionService.saveModel(dto, this.resolveActor(request), modelId));
   }
 
   @Post(':modelId/publish')
@@ -44,14 +44,20 @@ export class ModelController {
     return ok(await this.definitionService.publishModel(modelId, dto, this.resolveActor(request)));
   }
 
-  private resolveActor(request: HeaderReader, tenantId?: string) {
-    const headerTenantId = request.header('x-tenant-id')?.trim();
+  private resolveActor(request: HeaderReader) {
+    const headerTenantId = this.requireTenant(request);
     const headerUserId = request.header('x-user-id')?.trim();
 
     return {
-      tenantId: tenantId?.trim() || headerTenantId || 'default',
+      tenantId: headerTenantId,
       ...(headerUserId ? { userId: headerUserId } : {})
     };
+  }
+
+  private requireTenant(request: HeaderReader) {
+    const tenantId = request.header('x-tenant-id')?.trim();
+    if (!tenantId) throw new NotFoundException('An active account set is required.');
+    return tenantId;
   }
 }
 

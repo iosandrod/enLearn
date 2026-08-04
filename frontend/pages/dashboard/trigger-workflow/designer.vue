@@ -61,7 +61,10 @@ import {
   type TriggerWorkflowModel
 } from '@enlearn/trigger-workflow-editor';
 
-const storageKey = 'enlearn.trigger-workflow-editor.default';
+const auth = useAuth();
+const storageKey = computed(() =>
+  `enlearn.trigger-workflow-editor.${auth.activeAccount.value?.account_id ?? 'unselected'}`
+);
 const demoJobCode = 'supabase_users_20s_logger';
 const demoTaskId = 'workflow.supabase.users.log';
 const serviceApi = useServiceApi();
@@ -99,16 +102,16 @@ onMounted(() => {
 });
 
 function saveDraft() {
-  window.localStorage.setItem(storageKey, JSON.stringify(model.value, null, 2));
+  window.localStorage.setItem(storageKey.value, JSON.stringify(model.value, null, 2));
 }
 
 function loadDraft() {
-  const saved = window.localStorage.getItem(storageKey);
+  const saved = window.localStorage.getItem(storageKey.value);
   if (!saved) return;
   try {
     model.value = JSON.parse(saved) as TriggerWorkflowModel;
   } catch {
-    window.localStorage.removeItem(storageKey);
+    window.localStorage.removeItem(storageKey.value);
   }
 }
 
@@ -202,7 +205,7 @@ async function refreshUsersLogJob() {
 
 async function workflowApi<T>(serviceMethod: string, postData: Record<string, unknown> = {}) {
   return serviceApi.invoke<T>('workflow', serviceMethod, {
-    tenantId: 'default',
+    tenantId: auth.activeAccount.value?.account_id,
     ...postData
   });
 }

@@ -42,8 +42,9 @@
               <comp-render
                 :key="outElement._vid"
                 :element="outElement"
+                :on-button-contextmenu="(event, block, index) => onContextmenuBlock(event, block, findParentBlocks(block), index)"
                 :style="{
-                  pointerEvents: Object.keys(outElement.props?.slots || {}).length
+                  pointerEvents: Object.keys(outElement.props?.slots || {}).length || isButtonGroupDesignBlock(outElement)
                     ? 'auto'
                     : 'none',
                 }"
@@ -95,6 +96,8 @@
   } from '../grid-designer/grid-designer.service';
   import {
     $$buttonGroupDesigner,
+    $$buttonGroupCurrentButtonDesigner,
+    type ButtonGroupDesignerButton,
     type ButtonGroupDesignerResult,
   } from '../button-group-designer/button-group-designer.service';
   import {
@@ -330,6 +333,29 @@
         }
       }
     }
+  };
+
+  const findParentBlocks = (block: VisualEditorBlockData) => {
+    const path = findPathByLeafId(block._vid) ?? [];
+    const parent = path.at(-2);
+
+    if (!parent) {
+      return (currentPage.value.overlays ?? []).includes(block)
+        ? currentPage.value.overlays ?? []
+        : currentPage.value.blocks;
+    }
+
+    const slots = parent.props?.slots || {};
+    for (const slotKey of Object.keys(slots)) {
+      const children = slots[slotKey]?.children;
+      if (Array.isArray(children) && children.includes(block)) {
+        return children;
+      }
+    }
+
+    return Array.isArray(parent.props?.overlays) && parent.props.overlays.includes(block)
+      ? parent.props.overlays
+      : currentPage.value.blocks;
   };
 
   // 给当前点击的组件设置聚焦
@@ -569,6 +595,34 @@
     syncButtonGroupDesignToPageBlock(block, result);
   };
 
+  const openCurrentButtonDesigner = async (
+    block: VisualEditorBlockData,
+    buttonIndex: number,
+  ) => {
+    selectComp(block);
+    const buttons = Array.isArray(block.props?.buttons)
+      ? (block.props.buttons as ButtonGroupDesignerButton[])
+      : [];
+    const button = buttons[buttonIndex];
+    if (!button) return;
+
+    const buttonIdentity = button;
+    const result = await $$buttonGroupCurrentButtonDesigner({
+      title: `${String(button.label || button.code || `按钮 ${buttonIndex + 1}`)}信息设计`,
+      button,
+    });
+
+    const currentButtons = Array.isArray(block.props?.buttons)
+      ? (block.props.buttons as ButtonGroupDesignerButton[])
+      : [];
+    const currentIndex = currentButtons.indexOf(buttonIdentity);
+    if (currentIndex < 0) return;
+
+    currentButtons.splice(currentIndex, 1, cloneDeep(result));
+    block.props.buttonGroupDesignerUpdatedAt = Date.now();
+    selectComp(block);
+  };
+
   const openSubFormDesigner = async (block: VisualEditorBlockData) => {
     selectComp(block);
     const schema = isRecord(block.props?.schema) ? block.props.schema : null;
@@ -600,6 +654,7 @@
     e: MouseEvent,
     block: VisualEditorBlockData,
     parentBlocks = currentPage.value.blocks,
+    buttonIndex?: number,
   ) => {
     e.preventDefault();
     e.stopPropagation();
@@ -610,6 +665,11 @@
         isGridDesignBlock(block) ||
         isButtonGroupDesignBlock(block));
     const canOpenSubFormDesigner = isSubFormDesignBlock(block);
+    const buttons = Array.isArray(block.props?.buttons)
+      ? (block.props.buttons as ButtonGroupDesignerButton[])
+      : [];
+    const currentButton =
+      typeof buttonIndex === 'number' ? buttons[buttonIndex] : undefined;
 
     VxeUI.contextMenu.open({
       x: e.clientX,
@@ -634,6 +694,17 @@
             name: '进入设计',
             prefixIcon: 'ri-edit-line',
             visible: canOpenSubFormDesigner,
+          },
+          {
+            code: 'design-current-button',
+            name: currentButton
+              ? `设计当前按钮：${String(
+                  currentButton.label || currentButton.code || `按钮 ${buttonIndex + 1}`,
+                )}`
+              : '设计当前按钮',
+            prefixIcon: 'ri-settings-3-line',
+            visible: isButtonGroupDesignBlock(block),
+            disabled: !currentButton,
           },
           {
             code: 'duplicate',
@@ -667,6 +738,12 @@
           }
           if (option.code === 'open-sub-form-designer') {
             void openSubFormDesigner(block);
+          }
+          if (
+            option.code === 'design-current-button' &&
+            typeof buttonIndex === 'number'
+          ) {
+            void openCurrentButtonDesigner(block, buttonIndex);
           }
           if (option.code === 'duplicate') {
             const index = parentBlocks.findIndex((item) => item._vid == block._vid);

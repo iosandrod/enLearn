@@ -10,6 +10,7 @@ import type {
   CreateWorkflowTaskInput,
   PreparedTaskDecision,
   PrepareTaskDecisionInput,
+  WorkflowTaskDecision,
   WorkflowRuntimeStore
 } from './runtime.engine.types';
 import type { WorkflowCcQuery, WorkflowInstanceQuery, WorkflowTaskQuery } from './runtime.dto';
@@ -157,7 +158,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
   async listStarted(actor: RuntimeActor, query: WorkflowInstanceQuery = {}) {
     const instances = await this.listInstances({
       ...query,
-      tenantId: query.tenantId ?? actor.tenantId
+      tenantId: actor.tenantId
     });
     return instances.filter((instance) => !actor.userId || instance.initiatorId === actor.userId);
   }
@@ -223,7 +224,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
   async listTodoTasks(actor: RuntimeActor, query: WorkflowTaskQuery = {}) {
     const tasks = await this.listTasks({
       ...query,
-      tenantId: query.tenantId ?? actor.tenantId
+      tenantId: actor.tenantId
     });
     const visible = await this.filterVisibleTasks(
       tasks.filter((task) => task.status === 'pending' || task.status === 'claimed'),
@@ -235,15 +236,15 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
   async listDoneTasks(actor: RuntimeActor, query: WorkflowTaskQuery = {}) {
     const tasks = await this.listTasks({
       ...query,
-      tenantId: query.tenantId ?? actor.tenantId,
+      tenantId: actor.tenantId,
       status: query.status ?? 'completed'
     });
     return this.filterVisibleTasks(tasks, actor);
   }
 
   async listCc(actor: RuntimeActor, query: WorkflowCcQuery = {}) {
-    const tenantId = query.tenantId ?? actor.tenantId;
-    const userId = query.userId ?? actor.userId;
+    const tenantId = actor.tenantId;
+    const userId = actor.userId;
     const values: unknown[] = [tenantId];
     const conditions = ['tenant_id = $1'];
 
@@ -295,6 +296,21 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
       try {
         const context = await this.readTaskContextForUpdate(client, input.taskId);
         const { task, instance, candidates } = context;
+
+        if (task.status === 'completed' && task.decisionPayload?.action === input.action) {
+          if (!task.waitpointTokenId) {
+            throw new BadRequestException('Workflow task is not bound to a Trigger.dev waitpoint.');
+          }
+
+          await client.query('commit');
+          return {
+            task,
+            instance,
+            tokenId: task.waitpointTokenId,
+            decision: task.decisionPayload as WorkflowTaskDecision,
+            alreadyPrepared: true
+          };
+        }
 
         assertTaskMutable(task, instance, input.actor, candidates);
         if (!canActorOperateTask(task, candidates, input.actor)) {
@@ -465,6 +481,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
         }
 
         const nextAssignee = targetUserId.trim();
+        await assertActiveAccountUsers(client, instance.tenantId, [nextAssignee]);
         await client.query(
           `update public.wf_task
           set status = 'pending', assignee_id = $2, claimed_at = null
@@ -513,6 +530,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
 
         const taskId = randomUUID();
         const targetUserId = input.targetUserId.trim();
+        await assertActiveAccountUsers(client, instance.tenantId, [targetUserId]);
         const result = await client.query<TaskRow>(
           `insert into public.wf_task (
             id, tenant_id, process_instance_id, node_instance_id, node_id,
@@ -680,6 +698,19 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
   }
 
   async createTasks(inputs: CreateWorkflowTaskInput[]) {
+    await assertAccountUsersByTenant(
+      this.database,
+      inputs.map((input) => ({
+        tenantId: input.tenantId,
+        userIds: [
+          input.assigneeId,
+          ...input.candidates
+            .filter((candidate) => candidate.candidateType === 'user')
+            .map((candidate) => candidate.candidateId)
+        ]
+      }))
+    );
+
     const tasks: WorkflowTaskRecord[] = [];
     for (const input of inputs) {
       const result = await this.database.query<TaskRow>(
@@ -743,6 +774,17 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
   }
 
   async createCcItems(inputs: CreateWorkflowCcInput[]) {
+    await assertAccountUsersByTenant(
+      this.database,
+      inputs.map((input) => ({
+        tenantId: input.tenantId,
+        userIds: [
+          input.recipientId,
+          input.candidateType === 'user' ? input.candidateId : undefined
+        ]
+      }))
+    );
+
     const items: WorkflowCcRecord[] = [];
     for (const input of inputs) {
       const result = await this.database.query<CcRow>(
@@ -954,6 +996,53 @@ type Queryable = {
 export type RuntimeDatabase = Queryable & {
   withClient<T>(callback: (client: PoolClient) => Promise<T>): Promise<T>;
 };
+
+async function assertAccountUsersByTenant(
+  database: Queryable,
+  groups: Array<{ tenantId: string; userIds: Array<string | undefined> }>
+) {
+  const usersByTenant = new Map<string, string[]>();
+  for (const group of groups) {
+    usersByTenant.set(group.tenantId, [
+      ...(usersByTenant.get(group.tenantId) ?? []),
+      ...group.userIds.filter((userId): userId is string => Boolean(userId?.trim()))
+    ]);
+  }
+
+  for (const [tenantId, userIds] of usersByTenant) {
+    await assertActiveAccountUsers(database, tenantId, userIds);
+  }
+}
+
+async function assertActiveAccountUsers(
+  database: Queryable,
+  tenantId: string,
+  userIds: string[]
+) {
+  const uniqueUserIds = [...new Set(userIds.map((userId) => userId.trim()).filter(Boolean))];
+  if (!uniqueUserIds.length) return;
+  if (!isUuid(tenantId) || uniqueUserIds.some((userId) => !isUuid(userId))) {
+    throw new BadRequestException('Workflow users and account set must use valid UUIDs.');
+  }
+
+  const result = await database.query<{ user_id: string }>(
+    `select memberships.user_id::text
+    from basejump.account_user memberships
+    join basejump.accounts accounts on accounts.id = memberships.account_id
+    where memberships.account_id = $1::uuid
+      and memberships.user_id = any($2::uuid[])
+      and accounts.status = 'active'`,
+    [tenantId, uniqueUserIds]
+  );
+  const memberIds = new Set(result.rows.map((row) => row.user_id));
+  if (uniqueUserIds.some((userId) => !memberIds.has(userId))) {
+    throw new BadRequestException('Every workflow user must belong to the active account set.');
+  }
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
 
 export function createStandalonePostgresWorkflowRuntimeStore(connectionString: string) {
   const pool = new Pool({

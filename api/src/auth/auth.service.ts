@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import type { AuthError, Provider, Session, User } from '@supabase/supabase-js';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import {
+  clearUserAuthorizationCache,
   createSupabaseClient,
   getCurrentUser,
   getUserAuthorization
@@ -10,9 +11,11 @@ import type {
   EmailPasswordAuthDto,
   OAuthUrlDto,
   RefreshSessionDto,
+  SelectAccountDto,
   SetSessionDto,
   SignInPasswordAuthDto
 } from './auth.dto';
+import { requireActiveAccount } from '../common/utils/account-context';
 
 type PublicUser = Pick<
   User,
@@ -131,7 +134,7 @@ export class AuthService {
       throwAuthError(error, 'Invalid auth session.');
     }
 
-    const authorization = await getUserAuthorization(supabase, user.id);
+    const authorization = await getUserAuthorization(supabase, user.id, { refresh: true });
     const nowSeconds = Math.floor(Date.now() / 1000);
 
     return {
@@ -139,6 +142,8 @@ export class AuthService {
       profile: authorization.profile,
       permissions: authorization.permissionCodes,
       accounts: authorization.accounts,
+      activeAccount: null,
+      accountRequired: true,
       session: {
         access_token: dto.accessToken,
         refresh_token: dto.refreshToken ?? '',
@@ -165,13 +170,56 @@ export class AuthService {
 
   async me(context: ServiceContext) {
     const { client, user } = await getCurrentUser(context);
-    const authorization = await getUserAuthorization(client, user.id);
+    const globalAuthorization = await getUserAuthorization(client, user.id, { refresh: true });
+    const requestedAccount = context.accountId
+      ? globalAuthorization.accounts.find((account) => account.account_id === context.accountId)
+      : undefined;
+    const activeAccount = requestedAccount &&
+      requestedAccount.status !== 'inactive' &&
+      requestedAccount.status !== 'archived'
+      ? requestedAccount
+      : null;
+    const authorization = activeAccount
+      ? await getUserAuthorization(client, user.id, { accountId: activeAccount.account_id })
+      : globalAuthorization;
+
+    return {
+      user: toPublicUser(user),
+      profile: authorization.profile,
+      permissions: authorization.permissionCodes,
+      accounts: globalAuthorization.accounts,
+      activeAccount,
+      accountRequired: !activeAccount,
+      session: null
+    };
+  }
+
+  async selectAccount(dto: SelectAccountDto, context: ServiceContext) {
+    const selected = await requireActiveAccount(context, dto.accountId);
+    const { client, user } = await getCurrentUser(selected.context);
+    const { error: selectError } = await client.rpc('select_account_set_with_preference', {
+      account_id: selected.account.account_id,
+      set_default: dto.setDefault === true
+    });
+    if (selectError && !selectError.message.includes('Could not find the function')) {
+      throw new BadRequestException(selectError.message);
+    }
+    clearUserAuthorizationCache(user.id);
+    const authorization = await getUserAuthorization(client, user.id, {
+      refresh: true,
+      accountId: selected.account.account_id
+    });
+    const activeAccount = authorization.accounts.find(
+      (account) => account.account_id === selected.account.account_id
+    ) ?? selected.account;
 
     return {
       user: toPublicUser(user),
       profile: authorization.profile,
       permissions: authorization.permissionCodes,
       accounts: authorization.accounts,
+      activeAccount,
+      accountRequired: false,
       session: null
     };
   }
@@ -197,6 +245,8 @@ export class AuthService {
         profile: null,
         permissions: [],
         accounts: [],
+        activeAccount: null,
+        accountRequired: true,
         session: null
       };
     }
@@ -206,28 +256,17 @@ export class AuthService {
       { authorization: `Bearer ${session.access_token}` }
     );
 
-    const authorization = await getUserAuthorization(client, user.id);
+    const authorization = await getUserAuthorization(client, user.id, { refresh: true });
 
     return {
       user: toPublicUser(user),
       profile: authorization.profile,
       permissions: authorization.permissionCodes,
       accounts: authorization.accounts,
+      activeAccount: null,
+      accountRequired: true,
       session: session ? toPublicSession(session) : null
     };
   }
 
-  private async getProfile(client: ReturnType<typeof createSupabaseClient>, userId: string) {
-    const { data, error } = await client
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-
-    if (error) {
-      return null;
-    }
-
-    return data ?? null;
-  }
 }

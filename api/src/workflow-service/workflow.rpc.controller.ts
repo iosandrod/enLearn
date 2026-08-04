@@ -73,7 +73,6 @@ export class WorkflowRpcController {
     const [resource, idOrAction, action] = this.getPathParts(request.path);
     const body = request.body ?? {};
     const query = request.query ?? {};
-    const actor = this.resolveActor(request.headers);
 
     if (resource === 'health' && request.method === 'GET') {
       return {
@@ -84,23 +83,25 @@ export class WorkflowRpcController {
       };
     }
 
+    const actor = this.resolveActor(request.headers);
+
     if (resource === 'models') {
       if (request.method === 'GET' && !idOrAction) {
-        return this.definitionService.listModels(query as WorkflowModelQuery);
+        return this.definitionService.listModels({ ...query, tenantId: actor.tenantId } as WorkflowModelQuery);
       }
       if (request.method === 'GET' && idOrAction) {
-        return this.definitionService.getModel(idOrAction);
+        return this.definitionService.getModel(idOrAction, actor.tenantId);
       }
       if (request.method === 'POST' && !idOrAction) {
         return this.definitionService.saveModel(
           this.asDto<SaveWorkflowModelDto>(body),
-          this.resolveActor(request.headers, this.readString(body.tenantId))
+          actor
         );
       }
       if (request.method === 'PUT' && idOrAction) {
         return this.definitionService.saveModel(
           this.asDto<SaveWorkflowModelDto>(body),
-          this.resolveActor(request.headers, this.readString(body.tenantId)),
+          actor,
           idOrAction
         );
       }
@@ -118,28 +119,25 @@ export class WorkflowRpcController {
         return this.definitionService.getCapabilities();
       }
       if (request.method === 'GET' && !idOrAction) {
-        return this.definitionService.listDefinitions(query as WorkflowDefinitionQuery);
+        return this.definitionService.listDefinitions({ ...query, tenantId: actor.tenantId } as WorkflowDefinitionQuery);
       }
       if (request.method === 'POST' && idOrAction && action === 'disable') {
-        return this.definitionService.disableDefinition(idOrAction);
+        return this.definitionService.disableDefinition(idOrAction, actor.tenantId);
       }
     }
 
     if (resource === 'instances') {
       if (request.method === 'GET' && !idOrAction) {
-        return this.runtimeService.listInstances({
-          ...query,
-          tenantId: query.tenantId ?? actor.tenantId
-        } as WorkflowInstanceQuery);
+        return this.runtimeService.listInstances(this.withActorTenant(query, actor.tenantId));
       }
       if (request.method === 'GET' && idOrAction === 'started') {
         return this.runtimeService.listStarted(actor, query as WorkflowInstanceQuery);
       }
       if (request.method === 'GET' && idOrAction && !action) {
-        return this.runtimeService.getInstance(idOrAction);
+        return this.runtimeService.getInstance(idOrAction, actor.tenantId);
       }
       if (request.method === 'GET' && idOrAction && action === 'timeline') {
-        return this.runtimeService.getTimeline(idOrAction);
+        return this.runtimeService.getTimeline(idOrAction, actor.tenantId);
       }
       if (request.method === 'POST' && !idOrAction) {
         return this.runtimeService.startInstance(this.asDto<StartWorkflowInstanceDto>(body), actor);
@@ -166,7 +164,7 @@ export class WorkflowRpcController {
         return this.runtimeService.listStarted(actor);
       }
       if (request.method === 'GET' && idOrAction && !action) {
-        return this.runtimeService.getTask(idOrAction);
+        return this.runtimeService.getTask(idOrAction, actor.tenantId);
       }
       if (request.method === 'POST' && idOrAction && action === 'claim') {
         return this.runtimeService.claimTask(idOrAction, actor);
@@ -188,7 +186,7 @@ export class WorkflowRpcController {
     if (resource === 'history' && request.method === 'GET') {
       const [, , instanceId, historyAction] = this.getPathParts(request.path);
       if (idOrAction === 'instances' && instanceId && historyAction === 'timeline') {
-        return this.runtimeService.getTimeline(instanceId);
+        return this.runtimeService.getTimeline(instanceId, actor.tenantId);
       }
     }
 
@@ -221,7 +219,7 @@ export class WorkflowRpcController {
       if (request.method === 'POST' && idOrAction === 'approval-flow' && action === 'run') {
         return this.approvalFlowTestService.runOneClick(
           body,
-          this.resolveActor(request.headers, this.readString(body.tenantId))
+          actor
         );
       }
     }
@@ -236,18 +234,26 @@ export class WorkflowRpcController {
       .map((part) => decodeURIComponent(part));
   }
 
-  private resolveActor(headers: Record<string, string> | undefined, tenantId?: string) {
+  private resolveActor(headers: Record<string, string> | undefined) {
     const headerTenantId = headers?.['x-tenant-id']?.trim();
     const headerUserId = headers?.['x-user-id']?.trim();
 
+    if (!headerTenantId) {
+      throw new NotFoundException('An active account set is required.');
+    }
+
     return {
-      tenantId: tenantId?.trim() || headerTenantId || 'default',
+      tenantId: headerTenantId,
       ...(headerUserId ? { userId: headerUserId } : {})
     };
   }
 
   private readString(value: unknown) {
     return typeof value === 'string' ? value : undefined;
+  }
+
+  private withActorTenant<T extends Record<string, unknown>>(query: T, tenantId: string) {
+    return { ...query, tenantId } as T & { tenantId: string };
   }
 
   private asDto<T>(value: Record<string, unknown>) {

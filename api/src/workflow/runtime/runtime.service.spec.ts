@@ -25,6 +25,7 @@ async function main() {
   await testRunIsCanceledWhenRunIdProjectionFails();
   await testAddSignDoesNotFallBackWhenWaitpointCreationFails();
   await testApprovalRecordsWaitpointFailureWithoutContinuing();
+  await testPreparedApprovalDoesNotCompleteWaitpointTwice();
   console.log('workflow-api Trigger.dev runtime boundary tests passed');
 }
 
@@ -214,6 +215,45 @@ async function testApprovalRecordsWaitpointFailureWithoutContinuing() {
   });
   assert.equal(markedCompleted, false);
   assert.equal(notificationTriggered, false);
+}
+
+async function testPreparedApprovalDoesNotCompleteWaitpointTwice() {
+  const instance = createInstance();
+  const task = createTask();
+  const decision = {
+    action: 'approve' as const,
+    taskId: task.id,
+    nodeId: task.nodeId,
+    operatorId: actor.userId,
+    comment: '',
+    variables: {}
+  };
+  let completedWaitpoint = false;
+  let markedCompleted = false;
+  const store = createStore({
+    prepareTaskDecision: async () => ({
+      task,
+      instance,
+      tokenId: task.waitpointTokenId!,
+      decision,
+      alreadyPrepared: true
+    }),
+    markWaitpointCompleted: async () => {
+      markedCompleted = true;
+    },
+    getInstance: async () => createInstanceDetail(instance)
+  });
+  const trigger = createTriggerClient({
+    completeWaitpoint: async () => {
+      completedWaitpoint = true;
+    }
+  });
+  const service = new RuntimeService(createDefinitionService(), store, trigger);
+
+  await service.completeTask(task.id, {}, actor);
+
+  assert.equal(completedWaitpoint, false);
+  assert.equal(markedCompleted, true);
 }
 
 function createDefinitionService() {

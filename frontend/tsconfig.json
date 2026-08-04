@@ -26,6 +26,8 @@
       "@enlearn/trigger-workflow-editor": ["../packages/trigger-workflow-editor/src/index.ts"],
       "@enlearn/trigger-workflow-editor/*": ["../packages/trigger-workflow-editor/src/*"],
       "@enlearn/workflow-schema/*": ["../packages/workflow-schema/src/*"],
+      "vxe-table-plugin-search-panel": ["../packages/table-search-plugin/src/index.ts"],
+      "vxe-table-plugin-search-panel/style.css": ["../packages/table-search-plugin/src/style/index.css"],
       "echarts": ["./node_modules/echarts"],
       "echarts/*": ["./node_modules/echarts/*"]
     }

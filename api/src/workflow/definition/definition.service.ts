@@ -88,11 +88,11 @@ export class DefinitionService {
       .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
   }
 
-  async getModel(modelId: string) {
+  async getModel(modelId: string, tenantId?: string) {
     if (this.database?.isConfigured) {
       const modelResult = await this.database.query<WorkflowModelRow>(
-        'select * from public.wf_model where id = $1',
-        [modelId]
+        'select * from public.wf_model where id = $1 and ($2::text is null or tenant_id = $2)',
+        [modelId, tenantId ?? null]
       );
       const model = modelResult.rows[0];
       if (!model) {
@@ -111,6 +111,9 @@ export class DefinitionService {
 
     const model = this.models.get(modelId);
     if (!model) {
+      throw new NotFoundException('Workflow model not found.');
+    }
+    if (tenantId && model.tenantId !== tenantId) {
       throw new NotFoundException('Workflow model not found.');
     }
 
@@ -193,8 +196,8 @@ export class DefinitionService {
         await client.query('begin');
         try {
           const modelResult = await client.query<WorkflowModelRow>(
-            'select * from public.wf_model where id = $1 for update',
-            [modelId]
+            'select * from public.wf_model where id = $1 and tenant_id = $2 for update',
+            [modelId, actor.tenantId]
           );
           const modelRow = modelResult.rows[0];
           if (!modelRow) {
@@ -202,6 +205,11 @@ export class DefinitionService {
           }
           const model = mapModel(modelRow);
           assertDraftSchemaPublishable(model.draftSchema, true);
+          await assertWorkflowAccountUsers(
+            { query: (text, values) => client.query(text, values) },
+            actor.tenantId,
+            collectFixedUserIds(model.draftSchema)
+          );
 
           const now = new Date().toISOString();
           const version = model.currentVersion + 1;
@@ -272,6 +280,9 @@ export class DefinitionService {
 
     const model = this.models.get(modelId);
     if (!model) {
+      throw new NotFoundException('Workflow model not found.');
+    }
+    if (model.tenantId !== actor.tenantId) {
       throw new NotFoundException('Workflow model not found.');
     }
 
@@ -345,11 +356,11 @@ export class DefinitionService {
       .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt));
   }
 
-  async getDefinition(definitionId: string) {
+  async getDefinition(definitionId: string, tenantId?: string) {
     if (this.database?.isConfigured) {
       const result = await this.database.query<WorkflowDefinitionRow>(
-        'select * from public.wf_process_definition where id = $1',
-        [definitionId]
+        'select * from public.wf_process_definition where id = $1 and ($2::text is null or tenant_id = $2)',
+        [definitionId, tenantId ?? null]
       );
       const row = result.rows[0];
       if (!row) {
@@ -362,18 +373,21 @@ export class DefinitionService {
     if (!definition) {
       throw new NotFoundException('Workflow definition not found.');
     }
+    if (tenantId && definition.tenantId !== tenantId) {
+      throw new NotFoundException('Workflow definition not found.');
+    }
 
     return definition;
   }
 
-  async disableDefinition(definitionId: string) {
+  async disableDefinition(definitionId: string, tenantId?: string) {
     if (this.database?.isConfigured) {
       const result = await this.database.query<WorkflowDefinitionRow>(
         `update public.wf_process_definition
         set status = 'disabled'
-        where id = $1
+        where id = $1 and ($2::text is null or tenant_id = $2)
         returning *`,
-        [definitionId]
+        [definitionId, tenantId ?? null]
       );
       const row = result.rows[0];
       if (!row) {
@@ -384,6 +398,9 @@ export class DefinitionService {
 
     const definition = this.definitions.get(definitionId);
     if (!definition) {
+      throw new NotFoundException('Workflow definition not found.');
+    }
+    if (tenantId && definition.tenantId !== tenantId) {
       throw new NotFoundException('Workflow definition not found.');
     }
 
@@ -647,6 +664,51 @@ function assertDraftSchemaPublishable(schema: Record<string, unknown>, strict: b
       throw new BadRequestException(`Edge target "${target}" does not exist.`);
     }
   });
+}
+
+function collectFixedUserIds(schema: Record<string, unknown>) {
+  const nodes = Array.isArray(schema.nodes) ? schema.nodes.filter(isRecord) : [];
+  return [
+    ...new Set(
+      nodes.flatMap((node) => {
+        const config = isRecord(node.config) ? node.config : {};
+        const strategy = isRecord(config.assigneeStrategy) ? config.assigneeStrategy : {};
+        if (strategy.type !== 'users' || !Array.isArray(strategy.userIds)) return [];
+        return strategy.userIds
+          .map((userId) => typeof userId === 'string' ? userId.trim() : '')
+          .filter(Boolean);
+      })
+    )
+  ];
+}
+
+async function assertWorkflowAccountUsers(
+  client: { query: <T extends QueryResultRow = QueryResultRow>(text: string, values?: unknown[]) => Promise<{ rows: T[] }> },
+  tenantId: string,
+  userIds: string[]
+) {
+  if (!userIds.length) return;
+  if (!isUuid(tenantId) || userIds.some((userId) => !isUuid(userId))) {
+    throw new BadRequestException('Fixed workflow users and account set must use valid UUIDs.');
+  }
+
+  const result = await client.query<{ user_id: string }>(
+    `select memberships.user_id::text
+    from basejump.account_user memberships
+    join basejump.accounts accounts on accounts.id = memberships.account_id
+    where memberships.account_id = $1::uuid
+      and memberships.user_id = any($2::uuid[])
+      and accounts.status = 'active'`,
+    [tenantId, userIds]
+  );
+  const memberIds = new Set(result.rows.map((row) => row.user_id));
+  if (userIds.some((userId) => !memberIds.has(userId))) {
+    throw new BadRequestException('Every fixed workflow user must belong to the active account set.');
+  }
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

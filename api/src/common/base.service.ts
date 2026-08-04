@@ -160,6 +160,7 @@ export type ResourceConfig = {
   select?: string;
   clientMode?: 'user' | 'admin';
   ownerField?: string;
+  accountField?: string;
   permissions?: ResourcePermissions;
   defaults?: Record<string, unknown> | ((ctx: CrudContext) => Record<string, unknown> | Promise<Record<string, unknown>>);
   detailRelations?: Record<string, ResourceDetailRelation>;
@@ -282,6 +283,11 @@ export abstract class BaseService implements ServiceExecutor {
     const selectOptions = withCount || responseMode === 'page' ? { count: 'exact' as const } : undefined;
     let query = this.fromTable(client, tableName).select(select, selectOptions);
 
+    const accountField = this.accountFieldForTable(tableName);
+    if (accountField) {
+      query = query.eq(accountField, this.accountValue(context, accountField));
+    }
+
     query = this.applyListItemsFilters(query, postData.filters);
     query = this.applyListItemsSearch(query, postData);
 
@@ -384,6 +390,7 @@ export abstract class BaseService implements ServiceExecutor {
     const client = await this.createCrudClient(resource.config, context);
     const user = await this.tryReadCurrentUser(context, resource.config);
     const data = this.readDataPayload(postData);
+    this.assertAccountPayload(resource.config, context, data);
     const id = this.readId(postData, resource.config);
     const ids = this.readIds(postData, resource.config);
 
@@ -432,6 +439,13 @@ export abstract class BaseService implements ServiceExecutor {
 
     if (ctx.resource.ownerField && ctx.user) {
       query = query.eq(ctx.resource.ownerField, ctx.user.id);
+    }
+
+    if (ctx.resource.accountField) {
+      query = query.eq(
+        ctx.resource.accountField,
+        this.accountValue(ctx.context, ctx.resource.accountField)
+      );
     }
 
     const filters = this.readRecord(ctx.filters);
@@ -526,6 +540,7 @@ export abstract class BaseService implements ServiceExecutor {
             `Detail resource ${resourceName} must use the same clientMode as ${ctx.resourceName}.`
           );
         }
+        this.assertSameAccountScope(ctx.resource, resolved.config, resourceName);
 
         const requestedForeignKey = this.readOptionalString(
           rawDetail.foreignKey ?? rawDetail.foreign_key
@@ -886,6 +901,7 @@ export abstract class BaseService implements ServiceExecutor {
             `Detail resource ${resourceName} must use the same clientMode as ${ctx.resourceName}.`
           );
         }
+        this.assertSameAccountScope(ctx.resource, resolved.config, resourceName);
 
         const requestedForeignKey = this.readOptionalString(
           rawDetail.foreignKey ?? rawDetail.foreign_key
@@ -1217,6 +1233,14 @@ export abstract class BaseService implements ServiceExecutor {
       }
 
       const selectorConditionCount = conditions.length;
+      if (ctx.resource.accountField) {
+        appendFilter(
+          conditions,
+          values,
+          ctx.resource.accountField,
+          this.accountValue(ctx.context, ctx.resource.accountField)
+        );
+      }
       if (ctx.resource.ownerField && ctx.user) {
         appendFilter(conditions, values, ctx.resource.ownerField, ctx.user.id);
       }
@@ -1248,6 +1272,12 @@ export abstract class BaseService implements ServiceExecutor {
         const deleteConditions = [
           `${quoteIdentifier(detail.foreignKey, 'detail foreignKey')} = $1`
         ];
+        if (detail.resource.accountField) {
+          deleteValues.push(this.accountValue(ctx.context, detail.resource.accountField));
+          deleteConditions.push(
+            `${quoteIdentifier(detail.resource.accountField, 'detail account field')} = $${deleteValues.length}`
+          );
+        }
         for (const field of detail.inheritFields) {
           if (parent[field] === undefined) {
             throw new BadRequestException(
@@ -1413,6 +1443,7 @@ export abstract class BaseService implements ServiceExecutor {
           `afterSave resource ${relationName} must use the same clientMode as ${ctx.resourceName}.`
         );
       }
+      this.assertSameAccountScope(ctx.resource, resolved.config, relationName);
 
       if (!this.isRecord(rawAction.data) || !Object.keys(rawAction.data).length) {
         throw new BadRequestException(`afterSave[${index}].data must be a non-empty object.`);
@@ -1535,6 +1566,13 @@ export abstract class BaseService implements ServiceExecutor {
         const fieldSql = quoteIdentifier(field, 'afterSave where field');
         return value === null ? `${fieldSql} is null` : `${fieldSql} = ${bind(value)}`;
       });
+      if (action.resource.accountField) {
+        conditions.push(
+          `${quoteIdentifier(action.resource.accountField, 'afterSave account field')} = ${bind(
+            this.accountValue(ctx.context, action.resource.accountField)
+          )}`
+        );
+      }
       if (action.resource.ownerField && ctx.user) {
         conditions.push(
           `${quoteIdentifier(action.resource.ownerField, 'afterSave owner field')} = ${bind(ctx.user.id)}`
@@ -1679,6 +1717,13 @@ export abstract class BaseService implements ServiceExecutor {
       query = query.eq(ctx.resource.ownerField, ctx.user.id);
     }
 
+    if (ctx.resource.accountField) {
+      query = query.eq(
+        ctx.resource.accountField,
+        this.accountValue(ctx.context, ctx.resource.accountField)
+      );
+    }
+
     const { error } = await query;
     if (error) throw new BadRequestException(error.message);
     return { success: true, ...(id ? { id } : {}), ...(ids.length ? { ids } : {}), ...(!id && !ids.length ? { filters } : {}) };
@@ -1724,6 +1769,13 @@ export abstract class BaseService implements ServiceExecutor {
       payload[ctx.resource.ownerField] = payload[ctx.resource.ownerField] ?? ctx.user.id;
     }
 
+    if (ctx.resource.accountField) {
+      payload[ctx.resource.accountField] = this.accountValue(
+        ctx.context,
+        ctx.resource.accountField
+      );
+    }
+
     return payload;
   }
 
@@ -1731,7 +1783,10 @@ export abstract class BaseService implements ServiceExecutor {
     const required = ctx.resource.permissions?.[ctx.action];
     if (!required) return;
     if (!ctx.user) throw new ForbiddenException('Permission required.');
-    const authorization = await getUserAuthorization(ctx.client, ctx.user.id);
+    const authorization = await getUserAuthorization(ctx.client, ctx.user.id, {
+      accountId: ctx.context.accountId,
+      refresh: true
+    });
     if (!hasRequiredPermission(authorization, required)) {
       throw new ForbiddenException('Permission required: ' + ([] as string[]).concat(required).join(', '));
     }
@@ -2093,6 +2148,62 @@ export abstract class BaseService implements ServiceExecutor {
   protected readFilterString(postData: ServicePostData, field: string) {
     const filters = this.readRecord(postData.filters);
     return this.readOptionalString(postData[field] ?? filters[field]);
+  }
+
+  protected accountFieldForTable(tableName: string) {
+    const normalized = tableName.split('.').at(-1) ?? '';
+    if (normalized === 'sales_orders' || normalized === 'sales_order_lines') {
+      return 'account_id';
+    }
+
+    const tenantScoped =
+      normalized.startsWith('chat_') ||
+      normalized === 'print_logs' ||
+      normalized.startsWith('notification_') && normalized !== 'notification_templates' ||
+      normalized.startsWith('wf_') && ![
+        'wf_model_version',
+        'wf_node_definition',
+        'wf_edge_definition',
+        'wf_node_instance',
+        'wf_task_candidate',
+        'wf_variable'
+      ].includes(normalized);
+
+    return tenantScoped ? 'tenant_id' : '';
+  }
+
+  protected assertSameAccountScope(
+    parent: ResourceConfig,
+    child: ResourceConfig,
+    relationName: string
+  ) {
+    if (!parent.accountField && !child.accountField) return;
+    if (!parent.accountField || !child.accountField) {
+      throw new BadRequestException(
+        `Account-scoped relation ${relationName} must configure accountField on both resources.`
+      );
+    }
+  }
+
+  protected accountValue(context: ServiceContext, _accountField: string) {
+    if (!context.accountId) {
+      throw new ForbiddenException('An active account set is required.');
+    }
+    return context.accountId;
+  }
+
+  protected assertAccountPayload(
+    resource: ResourceConfig,
+    context: ServiceContext,
+    data: Record<string, unknown>
+  ) {
+    if (!resource.accountField) return;
+    const expected = this.accountValue(context, resource.accountField);
+    const supplied = data[resource.accountField];
+    if (supplied !== undefined && supplied !== null && String(supplied) !== expected) {
+      throw new ForbiddenException('The requested data belongs to a different account set.');
+    }
+    data[resource.accountField] = expected;
   }
 
   private serviceLabel() {

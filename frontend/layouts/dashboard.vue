@@ -6,6 +6,86 @@
         <span>工厂制造管理平台</span>
       </RouterLink>
 
+      <div class="admin-account-switcher" @click.stop>
+        <button
+          class="admin-account-switcher__trigger"
+          type="button"
+          :aria-expanded="accountMenuOpen"
+          aria-haspopup="dialog"
+          title="切换账套"
+          @click="toggleAccountMenu"
+        >
+          <i class="ri-building-2-line" aria-hidden="true" />
+          <span class="admin-account-switcher__code">
+            {{ auth.activeAccount.value?.code ?? '---' }}
+          </span>
+          <span class="admin-account-switcher__name">
+            {{ auth.activeAccount.value?.name ?? '未选择账套' }}
+          </span>
+          <i :class="accountMenuOpen ? 'ri-arrow-up-s-line' : 'ri-arrow-down-s-line'" aria-hidden="true" />
+        </button>
+
+        <section
+          v-if="accountMenuOpen"
+          class="admin-account-switcher__panel"
+          role="dialog"
+          aria-label="切换账套"
+        >
+          <header>
+            <div>
+              <strong>切换账套</strong>
+              <span>切换后将重新加载当前账套的数据与权限</span>
+            </div>
+            <i v-if="accountSwitching" class="ri-loader-4-line admin-spin" aria-hidden="true" />
+          </header>
+
+          <label class="admin-account-switcher__search">
+            <i class="ri-search-line" aria-hidden="true" />
+            <input
+              ref="accountSearchInput"
+              v-model="accountSearch"
+              type="search"
+              placeholder="搜索账套编码或名称"
+            />
+          </label>
+
+          <p v-if="accountSwitchError" class="admin-account-switcher__error" role="alert">
+            {{ accountSwitchError }}
+          </p>
+
+          <div class="admin-account-switcher__list" role="listbox" aria-label="可用账套">
+            <button
+              v-for="account in filteredAccounts"
+              :key="account.account_id"
+              type="button"
+              role="option"
+              :aria-selected="account.account_id === auth.activeAccount.value?.account_id"
+              :disabled="accountSwitching || !isAccountEnabled(account)"
+              :class="{ 'is-active': account.account_id === auth.activeAccount.value?.account_id }"
+              @click="switchAccount(account.account_id)"
+            >
+              <span class="admin-account-switcher__item-code">{{ account.code ?? '---' }}</span>
+              <span class="admin-account-switcher__item-meta">
+                <strong>{{ account.name ?? '未命名账套' }}</strong>
+                <small>{{ account.account_role === 'owner' ? '账套主管' : '账套成员' }}</small>
+              </span>
+              <span v-if="!isAccountEnabled(account)" class="admin-account-switcher__status">
+                {{ account.status === 'archived' ? '已归档' : '已停用' }}
+              </span>
+              <i
+                v-else-if="account.account_id === auth.activeAccount.value?.account_id"
+                class="ri-check-line"
+                aria-hidden="true"
+              />
+            </button>
+
+            <p v-if="!filteredAccounts.length" class="admin-account-switcher__empty">
+              没有匹配的账套
+            </p>
+          </div>
+        </section>
+      </div>
+
       <div
         v-for="toolGroup in topToolGroups"
         :key="toolGroup.code"
@@ -197,6 +277,7 @@ import type {
   LowCodePageSchema,
 } from '@enlearn/lowcode-framework/types/lowcode';
 import { getLowCodePage } from '../utils/lowCodePages';
+import type { AppAccountSummary } from '../composables/useAuthState';
 
 type AdminRouteNode = {
   id?: string;
@@ -273,6 +354,56 @@ const expandedGroups = reactive<Record<string, boolean>>({});
 const visitedTabs = ref<Array<{ title: string; path: string }>>([]);
 const menuFilter = ref('');
 const openTopToolCode = ref('');
+const accountMenuOpen = ref(false);
+const accountSearch = ref('');
+const accountSearchInput = ref<HTMLInputElement | null>(null);
+const accountSwitching = ref(false);
+const accountSwitchError = ref('');
+const filteredAccounts = computed(() => {
+  const keyword = accountSearch.value.trim().toLowerCase();
+  if (!keyword) return auth.accounts.value;
+  return auth.accounts.value.filter((account) =>
+    [account.code, account.name, account.slug]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(keyword))
+  );
+});
+
+function isAccountEnabled(account: AppAccountSummary) {
+  return account.status !== 'inactive' && account.status !== 'archived';
+}
+
+function toggleAccountMenu() {
+  accountMenuOpen.value = !accountMenuOpen.value;
+  accountSwitchError.value = '';
+  if (accountMenuOpen.value) {
+    void nextTick(() => accountSearchInput.value?.focus());
+  }
+}
+
+async function switchAccount(accountId: string) {
+  if (accountSwitching.value || accountId === auth.activeAccount.value?.account_id) {
+    accountMenuOpen.value = false;
+    return;
+  }
+
+  accountSwitching.value = true;
+  accountSwitchError.value = '';
+  try {
+    await auth.selectAccount(accountId);
+    routes.value = [];
+    visitedTabs.value = [];
+    menuFilter.value = '';
+    accountSearch.value = '';
+    accountMenuOpen.value = false;
+    await router.replace('/dashboard');
+    await reloadRoutes();
+  } catch (error) {
+    accountSwitchError.value = error instanceof Error ? error.message : '账套切换失败，请重试。';
+  } finally {
+    accountSwitching.value = false;
+  }
+}
 
 function ensureDevTestUserSelected() {
   if (!isDev) return;
@@ -875,6 +1006,7 @@ function handleMenuContextKeydown(event: KeyboardEvent) {
     closeMenuContext();
     openTopToolCode.value = '';
     testUserMenuOpen.value = false;
+    accountMenuOpen.value = false;
   }
 }
 
@@ -882,6 +1014,7 @@ function closeFloatingPanels() {
   closeMenuContext();
   openTopToolCode.value = '';
   testUserMenuOpen.value = false;
+  accountMenuOpen.value = false;
 }
 
 onMounted(async () => {
@@ -907,11 +1040,29 @@ onBeforeUnmount(() => {
 
 watch(
   () => route.path,
-  () => {
+  (path, previousPath) => {
     closeMenuContext();
     openTopToolCode.value = '';
     rememberTab();
-    if (showApprovalTestSwitcher.value && !devTestUsers.value.length && !devUsersLoading.value) {
+    if (
+      path.startsWith('/dashboard/workflow') &&
+      !previousPath?.startsWith('/dashboard/workflow') &&
+      !devUsersLoading.value
+    ) {
+      void loadDevTestUsers();
+    }
+  }
+);
+
+watch(
+  () => auth.activeAccount.value?.account_id,
+  (accountId, previousAccountId) => {
+    if (
+      accountId &&
+      accountId !== previousAccountId &&
+      showApprovalTestSwitcher.value &&
+      !devUsersLoading.value
+    ) {
       void loadDevTestUsers();
     }
   }

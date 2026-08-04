@@ -1,7 +1,13 @@
-import { BadRequestException, Controller, Inject, type Type } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Inject,
+  type Type
+} from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 
 import type { ServiceExecutor } from './interfaces/service-executor';
+import { readHttpErrorStatus } from './utils/http-error';
 import {
   getServiceExecutePattern,
   type DomainServiceName,
@@ -58,7 +64,8 @@ export function createServiceRpcController<T extends ServiceExecutor>(
         return {
           success: false,
           error: {
-            message: readErrorMessage(error, `${serviceName} service request failed.`)
+            message: readErrorMessage(error, `${serviceName} service request failed.`),
+            statusCode: readHttpErrorStatus(error)
           }
         };
       }

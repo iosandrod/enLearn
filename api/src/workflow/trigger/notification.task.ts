@@ -16,13 +16,13 @@ type DeliveryChannel = Exclude<NotificationChannel, 'inbox'>;
 
 type NotificationDispatchPayload = {
   eventId?: string;
-  tenantId?: string;
+  tenantId: string;
   idempotencyKey?: string;
   event?: NotificationDispatchEventInput;
 };
 
 type NotificationDispatchEventInput = {
-  tenantId?: string;
+  tenantId: string;
   eventType: string;
   sourceType?: string;
   sourceId?: string;
@@ -32,25 +32,25 @@ type NotificationDispatchEventInput = {
 };
 
 type NotificationRetryDeliveryPayload = {
-  tenantId?: string;
+  tenantId: string;
   limit?: number;
 };
 
 type NotificationRemindUnreadPayload = {
-  tenantId?: string;
+  tenantId: string;
   messageId: string;
   delayMinutes?: number;
 };
 
 type NotificationDigestPayload = {
-  tenantId?: string;
+  tenantId: string;
   recipientId?: string;
   category?: string;
   limit?: number;
 };
 
 type NotificationCleanupPayload = {
-  tenantId?: string;
+  tenantId: string;
   archiveReadOlderThanDays?: number;
   deleteDeliveryOlderThanDays?: number;
 };
@@ -159,7 +159,7 @@ export const notificationDispatchTask = task({
 
 export const notificationRetryDeliveryTask = task({
   id: NOTIFICATION_RETRY_DELIVERY_TASK_ID,
-  run: async (payload: NotificationRetryDeliveryPayload = {}) => {
+  run: async (payload: NotificationRetryDeliveryPayload) => {
     const pool = createNotificationPool('notification retry task');
     try {
       return await withClient(pool, (client) => retryDeliveries(client, payload));
@@ -191,7 +191,7 @@ export const notificationRemindUnreadTask = task({
 
 export const notificationDigestTask = task({
   id: NOTIFICATION_DIGEST_TASK_ID,
-  run: async (payload: NotificationDigestPayload = {}) => {
+  run: async (payload: NotificationDigestPayload) => {
     const pool = createNotificationPool('notification digest task');
     try {
       return await withClient(pool, (client) => createUnreadDigest(client, payload));
@@ -203,7 +203,7 @@ export const notificationDigestTask = task({
 
 export const notificationCleanupTask = task({
   id: NOTIFICATION_CLEANUP_TASK_ID,
-  run: async (payload: NotificationCleanupPayload = {}) => {
+  run: async (payload: NotificationCleanupPayload) => {
     const pool = createNotificationPool('notification cleanup task');
     try {
       return await withClient(pool, (client) => cleanupNotifications(client, payload));
@@ -255,7 +255,7 @@ async function dispatchNotification(
 
     const category = categoryForEvent(event.event_type);
     const recipientIds = readRecipientIds(event.payload).filter(isUuid);
-    const contacts = await readRecipientContacts(client, recipientIds);
+    const contacts = await readRecipientContacts(client, event.tenant_id, recipientIds);
     const preferences = await readPreferences(client, event.tenant_id, recipientIds, category);
     const inboxTemplate = await readTemplate(client, event.event_type, 'inbox');
 
@@ -400,7 +400,7 @@ async function remindUnreadMessage(client: PoolClient, payload: NotificationRemi
 }
 
 async function createUnreadDigest(client: PoolClient, payload: NotificationDigestPayload) {
-  const tenantId = payload.tenantId?.trim() || 'default';
+  const tenantId = requireTenantId(payload.tenantId);
   const limit = Math.min(200, Math.max(1, Math.floor(readNumber(payload.limit, 50))));
   const values: unknown[] = [tenantId, limit];
   const recipientCondition = payload.recipientId?.trim() ? `and recipient_id = $${values.push(payload.recipientId.trim())}` : '';
@@ -451,7 +451,7 @@ async function createUnreadDigest(client: PoolClient, payload: NotificationDiges
 }
 
 async function cleanupNotifications(client: PoolClient, payload: NotificationCleanupPayload) {
-  const tenantId = payload.tenantId?.trim() || 'default';
+  const tenantId = requireTenantId(payload.tenantId);
   const archiveReadOlderThanDays = Math.max(1, Math.floor(readNumber(payload.archiveReadOlderThanDays, 90)));
   const deleteDeliveryOlderThanDays = Math.max(1, Math.floor(readNumber(payload.deleteDeliveryOlderThanDays, 180)));
 
@@ -487,7 +487,7 @@ async function upsertEvent(
     throw new Error('Notification event input is required.');
   }
 
-  const tenantId = input.tenantId?.trim() || 'default';
+  const tenantId = requireTenantId(input.tenantId);
   const eventType = input.eventType.trim();
   const idempotencyKey = input.idempotencyKey.trim();
   if (!eventType || !idempotencyKey) {
@@ -568,16 +568,26 @@ async function readTemplate(client: PoolClient, eventType: string, channel: Noti
   return result.rows[0] ?? fallbackTemplate(channel);
 }
 
-async function readRecipientContacts(client: PoolClient, recipientIds: string[]) {
+async function readRecipientContacts(
+  client: PoolClient,
+  tenantId: string,
+  recipientIds: string[]
+) {
   if (!recipientIds.length) return [] as RecipientContactRow[];
   const result = await client.query<RecipientContactRow>(
     `select users.id::text as id,
             auth_users.email::text as email,
             users.phone::text as phone
     from public.users users
+    join basejump.account_user memberships
+      on memberships.user_id = users.id
+     and memberships.account_id = $1::uuid
+    join basejump.accounts accounts
+      on accounts.id = memberships.account_id
+     and accounts.status = 'active'
     left join auth.users auth_users on auth_users.id = users.id
-    where users.id = any($1::uuid[])`,
-    [recipientIds]
+    where users.id = any($2::uuid[])`,
+    [tenantId, recipientIds]
   );
   return result.rows;
 }
@@ -1024,6 +1034,14 @@ function fallbackTemplate(channel: NotificationChannel): NotificationTemplateRow
 
 function readString(value: unknown) {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function requireTenantId(value: unknown) {
+  const tenantId = readString(value);
+  if (!isUuid(tenantId)) {
+    throw new Error('Notification task requires a valid account-set tenantId.');
+  }
+  return tenantId;
 }
 
 function readNumber(value: unknown, fallback: number) {

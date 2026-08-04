@@ -201,7 +201,7 @@ async function workflowApi<T>(serviceMethod: string, postData: Record<string, un
 
   return serviceApi.invoke<T>('workflow', serviceMethod, {
     ...postData,
-    tenantId: 'default',
+    tenantId: auth.activeAccount.value?.account_id,
     userId: currentUserId.value
   });
 }

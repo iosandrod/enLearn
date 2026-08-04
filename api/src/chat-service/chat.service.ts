@@ -9,6 +9,7 @@ import {
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { createSupabaseClient, getCurrentUser } from '../common/utils/supabase';
+import { accountTenantId, assertAccountUsers } from '../common/utils/account-context';
 import type {
   ChatConversationMemberRow,
   ChatConversationRow,
@@ -126,7 +127,8 @@ export class ChatService extends BaseService {
     return {
       chat_conversations: {
         tableName: 'chat_conversations',
-        defaults: { tenant_id: 'default', type: 'direct', metadata: {} },
+        accountField: 'tenant_id',
+        defaults: { type: 'direct', metadata: {} },
         list: { defaultSorts: [{ field: 'last_message_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
         create: {
           allowedFields: ['tenant_id', 'type', 'title', 'created_by', 'last_message_id', 'last_message_at', 'metadata'],
@@ -139,8 +141,9 @@ export class ChatService extends BaseService {
       },
       chat_conversation_members: {
         tableName: 'chat_conversation_members',
+        accountField: 'tenant_id',
         ownerField: 'user_id',
-        defaults: { tenant_id: 'default', role: 'member', status: 'active' },
+        defaults: { role: 'member', status: 'active' },
         list: { defaultSorts: [{ field: 'updated_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 500 },
         create: {
           allowedFields: ['tenant_id', 'conversation_id', 'user_id', 'role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at'],
@@ -153,7 +156,8 @@ export class ChatService extends BaseService {
       },
       chat_messages: {
         tableName: 'chat_messages',
-        defaults: { tenant_id: 'default', message_type: 'text', attachment_ids: [], status: 'sent', metadata: {} },
+        accountField: 'tenant_id',
+        defaults: { message_type: 'text', attachment_ids: [], status: 'sent', metadata: {} },
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 30, maxPageSize: 100 },
         create: {
           allowedFields: ['tenant_id', 'conversation_id', 'sender_id', 'content', 'message_type', 'attachment_ids', 'reply_to_id', 'status', 'metadata'],
@@ -166,8 +170,8 @@ export class ChatService extends BaseService {
       },
       chat_message_reads: {
         tableName: 'chat_message_reads',
+        accountField: 'tenant_id',
         ownerField: 'user_id',
-        defaults: { tenant_id: 'default' },
         create: {
           allowedFields: ['tenant_id', 'message_id', 'conversation_id', 'user_id', 'read_at'],
           requiredFields: ['message_id', 'conversation_id'],
@@ -216,13 +220,13 @@ export class ChatService extends BaseService {
   }
 
   private normalizeConversationPayload = (ctx: HookContext) => {
-    ctx.data.tenant_id = readOptionalString(ctx.data.tenant_id ?? ctx.input.tenantId ?? ctx.input.tenant_id) || 'default';
+    ctx.data.tenant_id = accountTenantId(ctx.context);
     ctx.data.type = readConversationType(ctx.data.type, 'group');
     ctx.data.metadata = readJsonObject(ctx.data.metadata);
   };
 
   private normalizeMessagePayload = (ctx: HookContext) => {
-    ctx.data.tenant_id = readOptionalString(ctx.data.tenant_id ?? ctx.input.tenantId ?? ctx.input.tenant_id) || 'default';
+    ctx.data.tenant_id = accountTenantId(ctx.context);
     ctx.data.message_type = readMessageType(ctx.data.message_type ?? ctx.input.messageType ?? ctx.input.message_type);
     ctx.data.attachment_ids = readStringArray(ctx.data.attachment_ids ?? ctx.input.attachmentIds ?? ctx.input.attachment_ids);
     ctx.data.reply_to_id = readOptionalString(ctx.data.reply_to_id ?? ctx.input.replyToId ?? ctx.input.reply_to_id) || null;
@@ -254,12 +258,13 @@ export class ChatService extends BaseService {
 
   async createDirectConversation(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const tenantId = accountTenantId(context);
     const targetUserId = readString(postData.targetUserId ?? postData.target_user_id, 'targetUserId');
 
     if (targetUserId === user.id) {
       throw new BadRequestException('Cannot create a direct conversation with yourself.');
     }
+    await this.assertAccountMembers(tenantId, [targetUserId], context);
 
     const existing = await this.findDirectConversation(tenantId, user.id, targetUserId, context);
     if (existing) return normalizeConversation(existing);
@@ -288,13 +293,14 @@ export class ChatService extends BaseService {
 
   async createGroupConversation(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const tenantId = accountTenantId(context);
     const title = readString(postData.title, 'title');
     const memberIds = [...new Set([user.id, ...readStringArray(postData.memberIds ?? postData.member_ids)])];
 
     if (memberIds.length < 2) {
       throw new BadRequestException('Group conversation requires at least two members.');
     }
+    await this.assertAccountMembers(tenantId, memberIds, context);
 
     const conversation = await this.runCrud('create', {
       resource: 'chat_conversations',
@@ -322,7 +328,7 @@ export class ChatService extends BaseService {
 
   async sendMessage(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const tenantId = accountTenantId(context);
     const conversationId = readString(postData.conversationId ?? postData.conversation_id, 'conversationId');
     const content = readOptionalString(postData.content);
     const messageType = readMessageType(postData.messageType ?? postData.message_type);
@@ -368,7 +374,7 @@ export class ChatService extends BaseService {
 
   async markRead(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const tenantId = accountTenantId(context);
     const conversationId = readString(postData.conversationId ?? postData.conversation_id, 'conversationId');
     const messageId = readOptionalString(postData.messageId ?? postData.message_id);
     const now = new Date().toISOString();
@@ -420,7 +426,7 @@ export class ChatService extends BaseService {
 
   async editMessage(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const tenantId = accountTenantId(context);
     const id = readString(postData.id ?? postData.messageId ?? postData.message_id, 'messageId');
     const content = readString(postData.content, 'content');
     const message = await this.requireMessageOwner(tenantId, id, user.id, context);
@@ -434,7 +440,7 @@ export class ChatService extends BaseService {
 
   async deleteMessage(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const tenantId = accountTenantId(context);
     const id = readString(postData.id ?? postData.messageId ?? postData.message_id, 'messageId');
     const message = await this.requireMessageOwner(tenantId, id, user.id, context);
 
@@ -564,6 +570,18 @@ export class ChatService extends BaseService {
     const adminClient = createSupabaseClient('admin', context);
     const { error } = await adminClient.from('chat_conversation_members').insert(rows);
     if (error) throw new BadRequestException(error.message);
+  }
+
+  private async assertAccountMembers(
+    _tenantId: string,
+    userIds: string[],
+    context: ServiceContext
+  ) {
+    await assertAccountUsers(
+      context,
+      userIds,
+      'Every chat participant must belong to the active account set.'
+    );
   }
 
   private async listRows<T extends Record<string, unknown>>(postData: ServicePostData, context: ServiceContext) {

@@ -1,5 +1,5 @@
 <template>
-  <component :is="layoutComponent" v-if="layoutComponent">
+  <component :is="layoutComponent" v-if="layoutComponent" :key="layoutKey">
     <RouterView v-slot="{ Component, route: viewRoute }">
       <Suspense>
         <template #default>
@@ -7,7 +7,7 @@
             :route-component="Component"
             :keep-alive="shouldKeepAliveRoute(viewRoute)"
             :cache-key="resolveRouteCacheKey(viewRoute)"
-            :route-key="viewRoute.fullPath"
+            :route-key="resolveRouteKey(viewRoute)"
             :max="dashboardKeepAliveMax"
           />
         </template>
@@ -31,7 +31,14 @@ import DashboardLayout from './layouts/dashboard.vue';
 import DefaultLayout from './layouts/default.vue';
 
 const route = useRoute();
+const auth = useAuth();
 const dashboardKeepAliveMax = 8;
+const accountCacheScope = computed(() =>
+  `${auth.activeAccount.value?.account_id ?? 'public'}:${auth.accountEpoch.value}`
+);
+const layoutKey = computed(() =>
+  route.meta.layout === 'dashboard' ? `dashboard:${accountCacheScope.value}` : String(route.meta.layout ?? 'default')
+);
 
 const layoutComponent = computed(() => {
   if (route.meta.layout === false) return null;
@@ -44,6 +51,10 @@ function shouldKeepAliveRoute(viewRoute: RouteLocationNormalizedLoaded) {
 }
 
 function resolveRouteCacheKey(viewRoute: RouteLocationNormalizedLoaded) {
-  return viewRoute.path;
+  return `${accountCacheScope.value}:${viewRoute.path}`;
+}
+
+function resolveRouteKey(viewRoute: RouteLocationNormalizedLoaded) {
+  return `${accountCacheScope.value}:${viewRoute.fullPath}`;
 }
 </script>

@@ -16,6 +16,7 @@ type ChatSocketError = {
 let chatSocket: Socket | null = null;
 
 export function useChatSocket() {
+  const auth = useAuth();
   const status = useState<ChatSocketStatus>('chat-socket-status', () => 'idle');
   const lastError = useState<ChatSocketError | null>('chat-socket-error', () => null);
   const messages = useState<ChatMessage[]>('chat-socket-messages', () => []);
@@ -26,13 +27,19 @@ export function useChatSocket() {
 
   async function connect() {
     if (import.meta.server) return null;
-    if (chatSocket?.connected) return chatSocket;
+    const accountId = auth.activeAccount.value?.account_id ?? '';
+    if (!accountId) {
+      throw createError({ statusCode: 400, statusMessage: '请先选择账套。' });
+    }
+    if (chatSocket?.connected && chatSocket.auth &&
+      (chatSocket.auth as Record<string, unknown>).accountId === accountId) return chatSocket;
+    if (chatSocket) disconnect();
 
     status.value = 'connecting';
     const { token, socketBaseUrl } = await $fetch<SocketTokenResponse>('/api/auth/socket-token');
 
     chatSocket = io(`${socketBaseUrl}/chat`, {
-      auth: { token },
+      auth: { token, accountId },
       transports: ['websocket', 'polling'],
       withCredentials: true
     });
@@ -94,7 +101,18 @@ export function useChatSocket() {
     status.value = 'idle';
   }
 
-  async function joinConversation(conversationId: string, tenantId = 'default') {
+  function reset() {
+    disconnect();
+    messages.value = [];
+    typingUsers.value = {};
+    lastError.value = null;
+  }
+
+  function currentAccountId() {
+    return auth.activeAccount.value?.account_id ?? '';
+  }
+
+  async function joinConversation(conversationId: string, tenantId = currentAccountId()) {
     const socket = await connect();
     socket?.emit('chat:joinConversation', { conversationId, tenantId });
   }
@@ -110,8 +128,8 @@ export function useChatSocket() {
       input.requestId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     const optimisticMessage: ChatMessage = {
       id: requestId,
-      tenantId: input.tenantId ?? 'default',
-      tenant_id: input.tenantId ?? 'default',
+      tenantId: currentAccountId(),
+      tenant_id: currentAccountId(),
       conversationId: input.conversationId,
       conversation_id: input.conversationId,
       senderId: null,
@@ -137,16 +155,17 @@ export function useChatSocket() {
     messages.value.push(optimisticMessage);
     socket?.emit('chat:sendMessage', {
       ...input,
+      tenantId: currentAccountId(),
       requestId
     });
   }
 
-  async function markRead(conversationId: string, messageId?: string, tenantId = 'default') {
+  async function markRead(conversationId: string, messageId?: string, tenantId = currentAccountId()) {
     const socket = await connect();
     socket?.emit('chat:markRead', { conversationId, messageId, tenantId });
   }
 
-  async function setTyping(conversationId: string, isTyping: boolean, tenantId = 'default') {
+  async function setTyping(conversationId: string, isTyping: boolean, tenantId = currentAccountId()) {
     const socket = await connect();
     socket?.emit('chat:typing', { conversationId, isTyping, tenantId });
   }
@@ -158,6 +177,7 @@ export function useChatSocket() {
     typingUsers,
     connect,
     disconnect,
+    reset,
     joinConversation,
     leaveConversation,
     sendMessage,

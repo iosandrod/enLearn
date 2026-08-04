@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Inject, Param, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Inject, NotFoundException, Param, Post, Query, Req } from '@nestjs/common';
 import { ok } from '../common/api-response';
 import {
   AddSignTaskDto,
@@ -35,8 +35,8 @@ export class TaskController {
   }
 
   @Get(':taskId')
-  async getTask(@Param('taskId') taskId: string) {
-    return ok(await this.runtimeService.getTask(taskId));
+  async getTask(@Param('taskId') taskId: string, @Req() request: HeaderReader) {
+    return ok(await this.runtimeService.getTask(taskId, resolveActor(request).tenantId));
   }
 
   @Post(':taskId/approve')
@@ -86,7 +86,8 @@ type HeaderReader = {
 };
 
 function resolveActor(request: HeaderReader) {
-  const tenantId = request.header('x-tenant-id')?.trim() || 'default';
+  const tenantId = request.header('x-tenant-id')?.trim();
+  if (!tenantId) throw new NotFoundException('An active account set is required.');
   const userId = request.header('x-user-id')?.trim();
   return {
     tenantId,

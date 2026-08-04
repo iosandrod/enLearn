@@ -42,7 +42,7 @@ var notificationDispatchTask = task({
 });
 var notificationRetryDeliveryTask = task({
   id: NOTIFICATION_RETRY_DELIVERY_TASK_ID,
-  run: /* @__PURE__ */ __name(async (payload = {}) => {
+  run: /* @__PURE__ */ __name(async (payload) => {
     const pool = createNotificationPool("notification retry task");
     try {
       return await withClient(pool, (client) => retryDeliveries(client, payload));
@@ -71,7 +71,7 @@ var notificationRemindUnreadTask = task({
 });
 var notificationDigestTask = task({
   id: NOTIFICATION_DIGEST_TASK_ID,
-  run: /* @__PURE__ */ __name(async (payload = {}) => {
+  run: /* @__PURE__ */ __name(async (payload) => {
     const pool = createNotificationPool("notification digest task");
     try {
       return await withClient(pool, (client) => createUnreadDigest(client, payload));
@@ -82,7 +82,7 @@ var notificationDigestTask = task({
 });
 var notificationCleanupTask = task({
   id: NOTIFICATION_CLEANUP_TASK_ID,
-  run: /* @__PURE__ */ __name(async (payload = {}) => {
+  run: /* @__PURE__ */ __name(async (payload) => {
     const pool = createNotificationPool("notification cleanup task");
     try {
       return await withClient(pool, (client) => cleanupNotifications(client, payload));
@@ -126,7 +126,7 @@ async function dispatchNotification(client, payload) {
     );
     const category = categoryForEvent(event.event_type);
     const recipientIds = readRecipientIds(event.payload).filter(isUuid);
-    const contacts = await readRecipientContacts(client, recipientIds);
+    const contacts = await readRecipientContacts(client, event.tenant_id, recipientIds);
     const preferences = await readPreferences(client, event.tenant_id, recipientIds, category);
     const inboxTemplate = await readTemplate(client, event.event_type, "inbox");
     let messageCount = 0;
@@ -253,7 +253,7 @@ async function remindUnreadMessage(client, payload) {
 }
 __name(remindUnreadMessage, "remindUnreadMessage");
 async function createUnreadDigest(client, payload) {
-  const tenantId = payload.tenantId?.trim() || "default";
+  const tenantId = requireTenantId(payload.tenantId);
   const limit = Math.min(200, Math.max(1, Math.floor(readNumber(payload.limit, 50))));
   const values = [tenantId, limit];
   const recipientCondition = payload.recipientId?.trim() ? `and recipient_id = $${values.push(payload.recipientId.trim())}` : "";
@@ -298,7 +298,7 @@ async function createUnreadDigest(client, payload) {
 }
 __name(createUnreadDigest, "createUnreadDigest");
 async function cleanupNotifications(client, payload) {
-  const tenantId = payload.tenantId?.trim() || "default";
+  const tenantId = requireTenantId(payload.tenantId);
   const archiveReadOlderThanDays = Math.max(1, Math.floor(readNumber(payload.archiveReadOlderThanDays, 90)));
   const deleteDeliveryOlderThanDays = Math.max(1, Math.floor(readNumber(payload.deleteDeliveryOlderThanDays, 180)));
   const archived = await client.query(
@@ -327,7 +327,7 @@ async function upsertEvent(client, input) {
   if (!input) {
     throw new Error("Notification event input is required.");
   }
-  const tenantId = input.tenantId?.trim() || "default";
+  const tenantId = requireTenantId(input.tenantId);
   const eventType = input.eventType.trim();
   const idempotencyKey = input.idempotencyKey.trim();
   if (!eventType || !idempotencyKey) {
@@ -398,16 +398,22 @@ async function readTemplate(client, eventType, channel) {
   return result.rows[0] ?? fallbackTemplate(channel);
 }
 __name(readTemplate, "readTemplate");
-async function readRecipientContacts(client, recipientIds) {
+async function readRecipientContacts(client, tenantId, recipientIds) {
   if (!recipientIds.length) return [];
   const result = await client.query(
     `select users.id::text as id,
             auth_users.email::text as email,
             users.phone::text as phone
     from public.users users
+    join basejump.account_user memberships
+      on memberships.user_id = users.id
+     and memberships.account_id = $1::uuid
+    join basejump.accounts accounts
+      on accounts.id = memberships.account_id
+     and accounts.status = 'active'
     left join auth.users auth_users on auth_users.id = users.id
-    where users.id = any($1::uuid[])`,
-    [recipientIds]
+    where users.id = any($2::uuid[])`,
+    [tenantId, recipientIds]
   );
   return result.rows;
 }
@@ -810,6 +816,14 @@ function readString(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 __name(readString, "readString");
+function requireTenantId(value) {
+  const tenantId = readString(value);
+  if (!isUuid(tenantId)) {
+    throw new Error("Notification task requires a valid account-set tenantId.");
+  }
+  return tenantId;
+}
+__name(requireTenantId, "requireTenantId");
 function readNumber(value, fallback) {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string" && value.trim()) {

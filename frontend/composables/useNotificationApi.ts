@@ -152,10 +152,14 @@ export function useNotificationApi() {
     return auth.activeDevTestUser.value?.id ?? auth.user.value?.id ?? '';
   }
 
+  function currentAccountId() {
+    return auth.activeAccount.value?.account_id ?? '';
+  }
+
   function currentUserFilters(postData: Record<string, unknown> = {}) {
     const userId = readString(postData.userId ?? postData.user_id) || currentUserId();
     return {
-      tenant_id: readString(postData.tenantId ?? postData.tenant_id) || 'default',
+      tenant_id: currentAccountId(),
       ...(userId ? { recipient_id: userId } : {})
     };
   }
@@ -201,7 +205,7 @@ export function useNotificationApi() {
     return serviceApi.invoke<{ success: boolean; count: number }>('notification', 'markAllRead', {
       ...postData,
       userId: readString(postData.userId ?? postData.user_id) || currentUserId(),
-      tenantId: readString(postData.tenantId ?? postData.tenant_id) || 'default',
+      tenantId: currentAccountId(),
       ...(readString(postData.category) ? { category: readString(postData.category) } : {})
     });
   }
@@ -218,7 +222,7 @@ export function useNotificationApi() {
 
   async function getPreferences(postData: Record<string, unknown> = {}) {
     const userId = readString(postData.userId ?? postData.user_id) || currentUserId();
-    const tenantId = readString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const tenantId = currentAccountId();
     const rows = await serviceApi.listItems<NotificationPreference[]>('notification', {
       ...postData,
       tableName: 'notification_preferences',
@@ -248,7 +252,7 @@ export function useNotificationApi() {
 
   async function updatePreference(postData: Record<string, unknown>) {
     const userId = readString(postData.userId ?? postData.user_id) || currentUserId();
-    const tenantId = readString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const tenantId = currentAccountId();
     const category = readString(postData.category);
     const existing = (await getPreferences({ tenantId, userId })).find((item) => item.category === category);
     const payload = {
@@ -278,7 +282,7 @@ export function useNotificationApi() {
 
   async function listDeliveries(postData: Record<string, unknown> = {}) {
     const filters = {
-      tenant_id: readString(postData.tenantId ?? postData.tenant_id) || 'default',
+      tenant_id: currentAccountId(),
       ...normalizeFilters(postData.filters),
       ...(readString(postData.status) ? { status: readString(postData.status) } : {}),
       ...(readString(postData.channel) ? { channel: readString(postData.channel) } : {}),

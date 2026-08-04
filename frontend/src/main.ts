@@ -1,13 +1,16 @@
 import { createApp, defineComponent } from 'vue';
 import { install as installVxeUI } from 'vxe-pc-ui';
-import VxeUITable from 'vxe-table';
+import VxeUITable, { VxeUI } from 'vxe-table';
 import 'normalize.css';
 import 'animate.css/animate.min.css';
 import 'remixicon/fonts/remixicon.css';
 import 'vxe-pc-ui/lib/style.css';
 import 'vxe-table/lib/style.css';
+import 'vxe-table-plugin-search-panel/style.css';
 import '../assets/styles/app.css';
 import '../assets/styles/visual-editor-utilities.scss';
+
+import TableSearchPanel from 'vxe-table-plugin-search-panel';
 
 import {
   LcVxeModalRenderer,
@@ -65,6 +68,10 @@ async function cleanupDevServiceWorkers() {
 }
 
 await cleanupDevServiceWorkers();
+
+VxeUI.use(TableSearchPanel, {
+  defaultExpanded: true,
+});
 
 const app = createApp(App);
 const refs: Record<string, unknown> = {};

@@ -159,10 +159,20 @@ function resolveButtonProps(button: ButtonGroupItem): VxeButtonProps {
   return buttonProps as VxeButtonProps;
 }
 
-function renderButton(button: ButtonGroupItem, index: number) {
+function renderButton(
+  button: ButtonGroupItem,
+  index: number,
+  onButtonContextmenu?: (event: MouseEvent, index: number) => void,
+) {
   return h(VxeButton as any, {
     key: button.code || index,
     ...resolveButtonProps(button),
+    onContextmenu: onButtonContextmenu
+      ? (params: { $event: MouseEvent } | MouseEvent) => {
+          const event = params instanceof MouseEvent ? params : params.$event;
+          onButtonContextmenu(event, index);
+        }
+      : undefined,
   });
 }
 
@@ -182,13 +192,17 @@ export default {
     >
       <div style={{ fontWeight: 600, marginBottom: '8px' }}>按钮组</div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-        {defaultButtons.map(renderButton)}
+        {defaultButtons.map((button, index) => renderButton(button, index))}
       </div>
     </div>
   ),
-  render({ props, styles }) {
+  render({ props, styles, custom }) {
     return () => {
       const buttons = readRootButtons(props.buttons);
+      const onButtonContextmenu =
+        typeof custom.onButtonContextmenu === 'function'
+          ? custom.onButtonContextmenu
+          : undefined;
       const justifyContent =
         props.align === 'center'
           ? 'center'
@@ -218,7 +232,9 @@ export default {
               justifyContent,
             }}
           >
-            {buttons.map(renderButton)}
+            {buttons.map((button, index) =>
+              renderButton(button, index, onButtonContextmenu),
+            )}
           </div>
         </div>
       );

@@ -12,6 +12,6 @@ const auth = useAuth();
 
 onMounted(async () => {
   await auth.completeOAuthRedirect();
-  await navigateTo(auth.user.value ? '/dashboard' : '/signin');
+  await navigateTo(auth.user.value && auth.activeAccount.value ? '/dashboard' : '/signin');
 });
 </script>

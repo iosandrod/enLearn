@@ -38,6 +38,11 @@ type ButtonGroupDesignerServiceOption = {
   buttons?: ButtonGroupDesignerButton[] | null;
 };
 
+export type CurrentButtonDesignerServiceOption = {
+  title?: string;
+  button: ButtonGroupDesignerButton;
+};
+
 type ButtonGroupDesignerState = {
   business: ButtonGroupDesignerBusinessInfo;
   buttonsForm: {
@@ -197,6 +202,11 @@ function normalizeButtonForResult(
     normalizeButtonForResult(child, [...indexPath, index + 1]),
   );
   const next: ButtonGroupDesignerButton = {
+    ...Object.fromEntries(
+      Object.entries(button)
+        .filter(([key, value]) => key !== '__id' && typeof value !== 'undefined')
+        .map(([key, value]) => [key, cloneDeep(value)]),
+    ),
     code,
     label,
     type: readString(button.type, 'button'),
@@ -209,8 +219,11 @@ function normalizeButtonForResult(
 
   if (children.length) {
     next.children = children;
+  } else {
+    delete next.children;
   }
 
+  delete next.__id;
   return next;
 }
 
@@ -485,6 +498,44 @@ function createDesignerBlocks(): LowCodePageBlock[] {
   ];
 }
 
+function createCurrentButtonDesignerBlocks(): LowCodePageBlock[] {
+  return [
+    {
+      id: 'button-group-current-button-panel',
+      kind: 'container',
+      panel: false,
+      blocks: [
+        {
+          id: BUTTONS_FORM_ID,
+          kind: 'form',
+          className: 'grid-designer-schema-form-block',
+          schema: {
+            columns: 1,
+            fields: [
+              {
+                field: 'buttons',
+                label: '按钮信息',
+                component: 'lc-array-table',
+                span: 24,
+                props: {
+                  showToolbar: false,
+                  showActions: false,
+                  rowKey: '__id',
+                  preserveRowKey: true,
+                  minRows: 1,
+                  height: 360,
+                  columns: createButtonArrayColumns(),
+                },
+              },
+            ],
+            actions: [],
+          },
+        },
+      ],
+    },
+  ];
+}
+
 function isButtonGroupDesignerResult(value: unknown): value is ButtonGroupDesignerResult {
   return typeof value === 'object' && value !== null && 'business' in value && 'buttons' in value;
 }
@@ -537,5 +588,76 @@ export function $$buttonGroupDesigner(option: ButtonGroupDesignerServiceOption) 
     }
 
     return new Promise<ButtonGroupDesignerResult>(() => undefined);
+  });
+}
+
+export function $$buttonGroupCurrentButtonDesigner(
+  option: CurrentButtonDesignerServiceOption,
+) {
+  const formModels = reactive<Record<string, Record<string, unknown>>>(
+    {
+      [BUTTONS_FORM_ID]: {
+        buttons: [ensureButtonIds(cloneDeep(option.button))],
+      },
+    },
+  );
+
+  return openGlobalDialog({
+    title: option.title || '按钮信息设计',
+    width: 'min(1180px, calc(100vw - 40px))',
+    className: 'button-group-designer-dialog grid-designer-dialog',
+    props: {
+      top: '8vh',
+      destroyOnClose: true,
+    },
+    content: {
+      type: 'lowcodeBlocks',
+      lowcode: {
+        blocks: createCurrentButtonDesignerBlocks(),
+        formModels,
+      },
+    },
+    actions: [
+      {
+        code: 'cancel',
+        label: '取消',
+        role: 'cancel',
+      },
+      {
+        code: 'confirm',
+        label: '确定',
+        role: 'custom',
+        status: 'primary',
+        onClick: () => {
+          try {
+            const [button] = readButtonsModel(formModels);
+            if (!button) {
+              throw new Error('未找到当前按钮配置');
+            }
+
+            const label = readString(button.label, readString(button.code, '当前按钮'));
+            if (!readString(button.label) && !readString(button.code)) {
+              throw new Error('必须填写按钮名称或编码');
+            }
+            parseDirectivesJson(button.directivesJson, label);
+
+            return {
+              close: true,
+              action: 'confirm',
+              payload: normalizeButtonForResult(button, [1]),
+            };
+          } catch (error) {
+            ElMessage.error(error instanceof Error ? error.message : '按钮配置格式不正确');
+            return false;
+          }
+        },
+      },
+    ],
+  }).then((result) => {
+    if (result.action === 'confirm' && isRecord(result.payload)) {
+      return result.payload as ButtonGroupDesignerButton;
+    }
+
+    return new Promise<ButtonGroupDesignerButton>(() => undefined);
   });
 }

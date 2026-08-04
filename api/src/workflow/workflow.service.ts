@@ -1,9 +1,11 @@
-import { BadGatewayException, BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
 import { BaseService } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
+import { assertAccountUsers } from '../common/utils/account-context';
+import { requireAdmin } from '../common/utils/supabase';
 import {
   WORKFLOW_REQUEST_PATTERN,
   WORKFLOW_SERVICE_CLIENT,
@@ -38,9 +40,11 @@ function stripUndefined(input: Record<string, unknown>) {
 
 function resolveListQuery(postData: PostData) {
   const filters = isRecord(postData.filters) ? postData.filters : {};
+  const { tenantId: _tenantId, tenant_id: _tenantIdSnake, ...safePostData } = postData;
+  const { tenantId: _filterTenantId, tenant_id: _filterTenantIdSnake, ...safeFilters } = filters;
   return {
-    ...postData,
-    ...filters
+    ...safePostData,
+    ...safeFilters
   };
 }
 
@@ -54,6 +58,31 @@ export class WorkflowService extends BaseService {
   }
 
   protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
+    if (method === 'transferTask' || method === 'addSignTask') {
+      const targetUserId = readString(postData.targetUserId, 'targetUserId');
+      await assertAccountUsers(
+        context,
+        [targetUserId],
+        'The workflow target user must belong to the active account set.'
+      );
+    }
+
+    if (method === 'runApprovalFlowTest') {
+      if (process.env.NODE_ENV === 'production') {
+        throw new ForbiddenException('Approval flow test identities are disabled in production.');
+      }
+      await requireAdmin(context, 'workflow.definitions.manage');
+      const requestedUserId = readOptionalString(postData.userId);
+      const approverIds = Array.isArray(postData.approverIds)
+        ? postData.approverIds.map(readOptionalString).filter(Boolean)
+        : [];
+      await assertAccountUsers(
+        context,
+        [...(requestedUserId ? [requestedUserId] : []), ...approverIds],
+        'Every approval test user must belong to the active account set.'
+      );
+    }
+
     const request = this.resolveRequest(method, postData);
     return this.invokeWorkflowService(request, postData, context);
   }
@@ -162,7 +191,6 @@ export class WorkflowService extends BaseService {
           method: 'POST',
           path: '/tests/approval-flow/run',
           body: stripUndefined({
-            tenantId: postData.tenantId,
             userId: postData.userId,
             approverIds: postData.approverIds,
             schema: postData.schema,
@@ -216,11 +244,25 @@ export class WorkflowService extends BaseService {
   ) {
     const headers: Record<string, string> = {
       'content-type': 'application/json',
-      'x-tenant-id': typeof postData.tenantId === 'string' ? postData.tenantId : 'default'
+      'x-tenant-id': context.accountId ?? ''
     };
 
-    const userId = typeof postData.userId === 'string' ? postData.userId.trim() : '';
-    if (userId) headers['x-user-id'] = userId;
+    if (!headers['x-tenant-id']) {
+      throw new BadRequestException('An active account set is required.');
+    }
+
+    const authenticatedUserId = context.userId?.trim();
+    if (!authenticatedUserId) {
+      throw new ForbiddenException('An authenticated workflow user is required.');
+    }
+
+    const requestedTestUserId = readOptionalString(postData.userId);
+    const canUseTestIdentity =
+      request.path === '/tests/approval-flow/run' &&
+      process.env.NODE_ENV !== 'production';
+    headers['x-user-id'] = canUseTestIdentity && requestedTestUserId
+      ? requestedTestUserId
+      : authenticatedUserId;
     if (context.authorization) headers.authorization = context.authorization;
     if (context.requestId) headers['x-request-id'] = context.requestId;
 

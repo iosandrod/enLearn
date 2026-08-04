@@ -9,6 +9,11 @@ import {
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { createSupabaseClient, getCurrentUser, requireAdmin } from '../common/utils/supabase';
+import {
+  accountTenantId,
+  assertAccountUsers,
+  listActiveAccountUserIds
+} from '../common/utils/account-context';
 import type {
   NotificationCategory,
   NotificationEventRow,
@@ -139,8 +144,9 @@ export class NotificationService extends BaseService {
     return {
       notification_messages: {
         tableName: 'notification_messages',
+        accountField: 'tenant_id',
         ownerField: 'recipient_id',
-        defaults: { tenant_id: 'default', category: 'system', channel: 'inbox', priority: 'normal', metadata: {} },
+        defaults: { category: 'system', channel: 'inbox', priority: 'normal', metadata: {} },
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
         create: {
           allowedFields: ['tenant_id', 'event_id', 'recipient_id', 'category', 'channel', 'title', 'content', 'link_url', 'priority', 'source_type', 'source_id', 'metadata'],
@@ -154,8 +160,9 @@ export class NotificationService extends BaseService {
       },
       notification_preferences: {
         tableName: 'notification_preferences',
+        accountField: 'tenant_id',
         ownerField: 'user_id',
-        defaults: { tenant_id: 'default', inbox_enabled: true, email_enabled: false, sms_enabled: false, quiet_hours: {} },
+        defaults: { inbox_enabled: true, email_enabled: false, sms_enabled: false, quiet_hours: {} },
         list: { defaultSorts: [{ field: 'category', direction: 'asc' }], defaultPageSize: 100, maxPageSize: 100 },
         create: {
           allowedFields: ['tenant_id', 'user_id', 'category', 'inbox_enabled', 'email_enabled', 'sms_enabled', 'quiet_hours'],
@@ -168,6 +175,7 @@ export class NotificationService extends BaseService {
       },
       notification_deliveries: {
         tableName: 'notification_deliveries',
+        accountField: 'tenant_id',
         clientMode: 'admin',
         permissions: this.adminCrudPermissions('notification.deliveries.manage'),
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
@@ -181,6 +189,7 @@ export class NotificationService extends BaseService {
       },
       notification_events: {
         tableName: 'notification_events',
+        accountField: 'tenant_id',
         clientMode: 'admin',
         permissions: this.adminCrudPermissions('notification.messages.manage'),
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 1000 },
@@ -212,7 +221,7 @@ export class NotificationService extends BaseService {
   protected override hooks(): ServiceHooks {
     return {
       notification_messages: {
-        beforeCreate: [this.normalizeMessagePayload],
+        beforeCreate: [this.normalizeMessagePayload, this.assertMessageRecipient],
         beforeUpdate: [this.normalizeMessageUpdatePayload],
         afterCreate: [this.normalizeMessageResult],
         afterUpdate: [this.normalizeMessageResult]
@@ -224,7 +233,11 @@ export class NotificationService extends BaseService {
         afterUpdate: [this.normalizePreferenceResult]
       },
       notification_deliveries: {
+        beforeCreate: [this.assertDeliveryRecipient],
         beforeUpdate: [this.normalizeDeliveryPayload]
+      },
+      notification_events: {
+        beforeCreate: [this.assertEventRecipients]
       }
     };
   }
@@ -249,7 +262,7 @@ export class NotificationService extends BaseService {
   }
 
   private normalizeMessagePayload = (ctx: HookContext) => {
-    ctx.data.tenant_id = readOptionalString(ctx.data.tenant_id ?? ctx.input.tenantId ?? ctx.input.tenant_id) || 'default';
+    ctx.data.tenant_id = accountTenantId(ctx.context);
     ctx.data.category = readCategory(ctx.data.category) ?? 'system';
     ctx.data.channel = 'inbox';
     ctx.data.priority = readPriority(ctx.data.priority);
@@ -257,6 +270,16 @@ export class NotificationService extends BaseService {
     if ('linkUrl' in ctx.input) ctx.data.link_url = readOptionalString(ctx.input.linkUrl) || null;
     if ('sourceType' in ctx.input) ctx.data.source_type = readOptionalString(ctx.input.sourceType) || null;
     if ('sourceId' in ctx.input) ctx.data.source_id = readOptionalString(ctx.input.sourceId) || null;
+  };
+
+  private assertMessageRecipient = async (ctx: HookContext) => {
+    const recipientId = readOptionalString(ctx.data.recipient_id ?? ctx.input.recipientId);
+    if (!recipientId) return;
+    await assertAccountUsers(
+      ctx.context,
+      [recipientId],
+      'The notification recipient must belong to the active account set.'
+    );
   };
 
   private normalizeMessageUpdatePayload = (ctx: HookContext) => {
@@ -278,8 +301,13 @@ export class NotificationService extends BaseService {
     const { user } = await getCurrentUser(ctx.context);
     const targetUserId = readOptionalString(ctx.input.userId ?? ctx.input.user_id ?? ctx.data.user_id) || user.id;
     if (targetUserId !== user.id) await requireAdmin(ctx.context, 'notification.messages.manage');
+    await assertAccountUsers(
+      ctx.context,
+      [targetUserId],
+      'The notification preference user must belong to the active account set.'
+    );
 
-    ctx.data.tenant_id = readOptionalString(ctx.input.tenantId ?? ctx.input.tenant_id ?? ctx.data.tenant_id) || 'default';
+    ctx.data.tenant_id = accountTenantId(ctx.context);
     ctx.data.user_id = targetUserId;
     const category = readCategory(ctx.data.category ?? ctx.input.category);
     if (category) ctx.data.category = category;
@@ -300,6 +328,29 @@ export class NotificationService extends BaseService {
     }
   };
 
+  private assertDeliveryRecipient = async (ctx: HookContext) => {
+    const recipientId = readOptionalString(ctx.data.recipient_id ?? ctx.input.recipientId);
+    if (!recipientId) return;
+    await assertAccountUsers(
+      ctx.context,
+      [recipientId],
+      'The notification recipient must belong to the active account set.'
+    );
+  };
+
+  private assertEventRecipients = async (ctx: HookContext) => {
+    const payload = readJsonObject(ctx.data.payload);
+    const recipientIds = [
+      ...readStringArray(payload.recipientIds ?? payload.recipient_ids),
+      ...readStringArray(payload.userIds ?? payload.user_ids)
+    ];
+    await assertAccountUsers(
+      ctx.context,
+      recipientIds,
+      'Every notification recipient must belong to the active account set.'
+    );
+  };
+
   private normalizeMessageResult = (ctx: HookContext) => {
     if (Array.isArray(ctx.result)) ctx.result = (ctx.result as NotificationMessageRow[]).map(normalizeMessage);
     else if (ctx.result) ctx.result = normalizeMessage(ctx.result as NotificationMessageRow);
@@ -311,38 +362,31 @@ export class NotificationService extends BaseService {
   };
 
   private async getUnreadCount(postData: PostData, context: ServiceContext) {
-    const { user } = await getCurrentUser(context);
+    const { client, user } = await getCurrentUser(context);
     const targetUserId = readOptionalString(postData.userId ?? postData.user_id) || user.id;
     if (targetUserId !== user.id) await requireAdmin(context, ['notification.messages.manage', 'admin.users.manage']);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
-    const unreadFilters = {
-      tenant_id: tenantId,
-      recipient_id: targetUserId,
-      read_at: { op: 'isNull' },
-      archived_at: { op: 'isNull' }
-    };
-
-    const page = await this.safeListItemsPage<{ id: string }>(
-      {
-        tableName: 'notification_messages',
-        select: 'id',
-        filters: unreadFilters,
-        responseMode: 'page',
-        pageSize: 1
-      },
+    await assertAccountUsers(
       context,
-      { rows: [], total: 0, page: 1, pageSize: 1 }
+      [targetUserId],
+      'The notification recipient must belong to the active account set.'
     );
+    const tenantId = accountTenantId(context);
+    const readClient = targetUserId === user.id ? client : resolveAdminClient(client);
+    const { data, error, count } = await readClient
+      .from('notification_messages')
+      .select('category', { count: 'exact' })
+      .eq('tenant_id', tenantId)
+      .eq('recipient_id', targetUserId)
+      .is('read_at', null)
+      .is('archived_at', null)
+      .limit(1000);
 
-    const rows = await this.safeListItems<Record<string, unknown>>(
-      {
-        tableName: 'notification_messages',
-        select: 'category',
-        filters: unreadFilters,
-        pageSize: 1000
-      },
-      context
-    );
+    if (error) {
+      if (isMissingNotificationTable(error)) return { total: 0, byCategory: {} };
+      throw new BadRequestException(error.message);
+    }
+
+    const rows = (data ?? []) as Array<Record<string, unknown>>;
 
     const byCategory = rows.reduce<Record<string, number>>((counts, row) => {
       const category = String((row as Record<string, unknown>).category ?? '');
@@ -350,7 +394,7 @@ export class NotificationService extends BaseService {
       return counts;
     }, {});
 
-    return { total: page.total, byCategory };
+    return { total: count ?? rows.length, byCategory };
   }
 
   private async markRead(postData: PostData, context: ServiceContext) {
@@ -376,11 +420,16 @@ export class NotificationService extends BaseService {
       await requireAdmin(context, ['notification.messages.manage', 'admin.users.manage']);
       writeClient = resolveAdminClient(client);
     }
+    await assertAccountUsers(
+      context,
+      [targetUserId],
+      'The notification recipient must belong to the active account set.'
+    );
 
     let query = writeClient
       .from('notification_messages')
       .update({ read_at: new Date().toISOString() })
-      .eq('tenant_id', readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default')
+      .eq('tenant_id', accountTenantId(context))
       .eq('recipient_id', targetUserId)
       .is('read_at', null)
       .is('archived_at', null);
@@ -398,7 +447,7 @@ export class NotificationService extends BaseService {
   private async createSystemNotice(postData: PostData, context: ServiceContext) {
     const { client, user } = await requireAdmin(context, 'notification.notices.manage');
     const writeClient = resolveAdminClient(client);
-    const tenantId = readOptionalString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const tenantId = accountTenantId(context);
     const title = readString(postData.title, 'title');
     const content = readString(postData.content, 'content');
     const linkUrl = readOptionalString(postData.linkUrl ?? postData.link_url) || null;
@@ -464,20 +513,17 @@ export class NotificationService extends BaseService {
       ...readStringArray(postData.userIds ?? postData.user_ids)
     ];
 
-    if (explicitIds.length) return [...new Set(explicitIds)];
+    if (explicitIds.length) {
+      const recipientIds = [...new Set(explicitIds)];
+      await assertAccountUsers(
+        context,
+        recipientIds,
+        'Every notification recipient must belong to the active account set.'
+      );
+      return recipientIds;
+    }
 
-    const rows = await this.safeListItems<Record<string, unknown>>(
-      {
-        tableName: 'users',
-        select: 'id',
-        clientMode: 'admin',
-        sorts: [{ field: 'created_at', direction: 'asc' }],
-        pageSize: 1000
-      },
-      context
-    );
-
-    return [...new Set(rows.map((row) => String(row.id ?? '')).filter(Boolean))];
+    return listActiveAccountUserIds(context);
   }
 
   private async safeListItems<T extends Record<string, unknown>>(

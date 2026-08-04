@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { BaseService, type ListItemsHandler } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { getCurrentUser } from '../common/utils/supabase';
@@ -87,6 +87,17 @@ export class AccountService extends BaseService {
     }
   }
 
+  protected override async listItems(postData: PostData, context: ServiceContext) {
+    const itemType = this.readListItemsType(postData);
+    if (itemType === 'accounts') return super.listItems(postData, context);
+
+    const requestedAccountId = this.readFilterString(postData, 'account_id') ||
+      this.readFilterString(postData, 'accountId') ||
+      this.readFilterString(postData, 'id');
+    if (requestedAccountId) this.assertSelectedAccount(requestedAccountId, context);
+    return super.listItems(postData, context);
+  }
+
   protected override defaultListItemsType() {
     return 'accounts';
   }
@@ -123,6 +134,7 @@ export class AccountService extends BaseService {
   private async listAccount(postData: PostData, context: ServiceContext) {
     const { client } = await getCurrentUser(context);
     const accountId = readString(postData.account_id ?? postData.accountId, 'account_id');
+    this.assertSelectedAccount(accountId, context);
     const result = await client.rpc('get_account', { account_id: accountId });
     const account = assertRpcSucceeded(result, null as Record<string, unknown> | null);
     return account ? [account] : [];
@@ -146,6 +158,7 @@ export class AccountService extends BaseService {
   private async updateAccount(postData: PostData, context: ServiceContext) {
     const { client } = await getCurrentUser(context);
     const accountId = readString(postData.account_id ?? postData.accountId, 'account_id');
+    this.assertSelectedAccount(accountId, context);
     const slug = readOptionalString(postData.slug) || null;
     const name = readOptionalString(postData.name) || null;
     const metadata = readJsonObject(postData.metadata ?? postData.public_metadata ?? postData.publicMetadata);
@@ -164,6 +177,7 @@ export class AccountService extends BaseService {
   private async listMembers(postData: PostData, context: ServiceContext) {
     const { client } = await getCurrentUser(context);
     const accountId = readString(postData.account_id ?? postData.accountId, 'account_id');
+    this.assertSelectedAccount(accountId, context);
     const result = await client.rpc('get_account_members', { account_id: accountId });
     return assertRpcSucceeded(result, []);
   }
@@ -171,6 +185,7 @@ export class AccountService extends BaseService {
   private async addMember(postData: PostData, context: ServiceContext) {
     const { client } = await getCurrentUser(context);
     const accountId = readString(postData.account_id ?? postData.accountId, 'account_id');
+    this.assertSelectedAccount(accountId, context);
     const userId = readString(postData.user_id ?? postData.userId, 'user_id');
     const accountRole = readAccountRole(postData.account_role ?? postData.accountRole ?? 'member');
 
@@ -187,6 +202,7 @@ export class AccountService extends BaseService {
   private async updateMemberRole(postData: PostData, context: ServiceContext) {
     const { client } = await getCurrentUser(context);
     const accountId = readString(postData.account_id ?? postData.accountId, 'account_id');
+    this.assertSelectedAccount(accountId, context);
     const userId = readString(postData.user_id ?? postData.userId, 'user_id');
     const accountRole = readAccountRole(postData.account_role ?? postData.accountRole);
     const makePrimaryOwner = readBoolean(postData.make_primary_owner ?? postData.makePrimaryOwner, false);
@@ -205,6 +221,7 @@ export class AccountService extends BaseService {
   private async removeMember(postData: PostData, context: ServiceContext) {
     const { client } = await getCurrentUser(context);
     const accountId = readString(postData.account_id ?? postData.accountId, 'account_id');
+    this.assertSelectedAccount(accountId, context);
     const userId = readString(postData.user_id ?? postData.userId, 'user_id');
     const result = await client.rpc('remove_account_member', {
       account_id: accountId,
@@ -213,5 +230,11 @@ export class AccountService extends BaseService {
     assertRpcSucceeded(result, null);
 
     return { success: true };
+  }
+
+  private assertSelectedAccount(accountId: string, context: ServiceContext) {
+    if (!context.accountId || accountId !== context.accountId) {
+      throw new ForbiddenException('The requested account must match the active account set.');
+    }
   }
 }

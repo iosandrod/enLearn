@@ -56,3 +56,13 @@ export function requireEnv(name: string, ...fallbackNames: string[]) {
 
   return env[value];
 }
+
+export function normalizePostgresConnectionString(value: string) {
+  try {
+    const url = new URL(value);
+    url.searchParams.delete('pgbouncer');
+    return url.toString();
+  } catch {
+    return value;
+  }
+}

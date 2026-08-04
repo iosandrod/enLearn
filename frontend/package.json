@@ -7,6 +7,7 @@
     "preview": "vite preview --host 0.0.0.0 --port 3000",
     "test:keep-alive": "node tests/keep-alive-regression.mjs",
     "test:navigation": "node tests/database-navigation-regression.mjs",
+    "test:grid-header-menu": "node tests/grid-header-context-menu-regression.mjs",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
@@ -33,7 +34,8 @@
     "vue-router": "^4.6.4",
     "vuedraggable": "^4.1.0",
     "vxe-pc-ui": "latest",
-    "vxe-table": "latest"
+    "vxe-table": "latest",
+    "vxe-table-plugin-search-panel": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

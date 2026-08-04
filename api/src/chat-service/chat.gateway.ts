@@ -10,6 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { createSupabaseClient } from '../common/utils/supabase';
+import { requireActiveAccount } from '../common/utils/account-context';
 import { ChatService } from './chat.service';
 import type { ChatSocketUser } from './chat.types';
 
@@ -17,16 +18,9 @@ type ChatSocket = Socket & {
   data: {
     user?: ChatSocketUser;
     authorization?: string;
+    accountId?: string;
   };
 };
-
-function readTenantId(payload: Record<string, unknown>) {
-  return typeof payload.tenantId === 'string' && payload.tenantId.trim()
-    ? payload.tenantId.trim()
-    : typeof payload.tenant_id === 'string' && payload.tenant_id.trim()
-      ? payload.tenant_id.trim()
-      : 'default';
-}
 
 function readConversationId(payload: Record<string, unknown>) {
   return typeof payload.conversationId === 'string' && payload.conversationId.trim()
@@ -68,6 +62,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         email: user.email
       };
       client.data.authorization = authorization;
+      const accountId = typeof client.handshake.auth?.accountId === 'string'
+        ? client.handshake.auth.accountId.trim()
+        : '';
+      const selectedAccount = await requireActiveAccount({ authorization }, accountId);
+      client.data.accountId = selectedAccount.account.account_id;
       await client.join(`user:${user.id}`);
       client.emit('chat:connected', { userId: user.id });
     } catch (error) {
@@ -94,14 +93,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     try {
       const context = this.requireContext(client);
-      const tenantId = readTenantId(payload);
+      const tenantId = context.accountId;
       const conversationId = readConversationId(payload);
 
       await this.chatService.requireActiveMember(
         tenantId,
         conversationId,
         context.userId,
-        { authorization: context.authorization }
+        { authorization: context.authorization, accountId: context.accountId }
       );
       await client.join(`conversation:${conversationId}`);
 
@@ -130,14 +129,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const context = this.requireContext(client);
       const message = await this.chatService.sendMessage(payload, {
-        authorization: context.authorization
+        authorization: context.authorization,
+        accountId: context.accountId
       });
       const conversationId = String(message.conversationId);
-      const tenantId = readTenantId(payload);
+      const tenantId = context.accountId;
       const memberIds = await this.chatService.listActiveMemberIds(
         tenantId,
         conversationId,
-        { authorization: context.authorization }
+        { authorization: context.authorization, accountId: context.accountId }
       );
 
       this.server.to(`conversation:${conversationId}`).emit('chat:messageCreated', message);
@@ -165,6 +165,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const context = this.requireContext(client);
       const conversationId = readConversationId(payload);
       const isTyping = payload.isTyping === true;
+      await this.chatService.requireActiveMember(
+        context.accountId,
+        conversationId,
+        context.userId,
+        { authorization: context.authorization, accountId: context.accountId }
+      );
       client.to(`conversation:${conversationId}`).emit('chat:typingUpdated', {
         conversationId,
         userId: context.userId,
@@ -186,7 +192,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const context = this.requireContext(client);
       const result = await this.chatService.markRead(payload, {
-        authorization: context.authorization
+        authorization: context.authorization,
+        accountId: context.accountId
       });
       this.server
         .to(`conversation:${result.conversationId}`)
@@ -218,10 +225,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private requireContext(client: ChatSocket) {
     const userId = client.data.user?.id;
     const authorization = client.data.authorization;
-    if (!userId || !authorization) {
+    const accountId = client.data.accountId;
+    if (!userId || !authorization || !accountId) {
       throw new UnauthorizedException('Authentication required.');
     }
-    return { userId, authorization };
+    return { userId, authorization, accountId };
   }
 
   private toClientError(error: unknown) {

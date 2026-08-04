@@ -27,6 +27,7 @@
         @sort-change="(payload) => handleGenericGridEvent('sortChange', payload)"
         @filter-change="(payload) => handleGenericGridEvent('filterChange', payload)"
         @page-change="(payload) => handleGenericGridEvent('pageChange', payload)"
+        @menu-click="handleMenuClick"
         @toolbar-button-click="(payload) => handleToolbarGridEvent('toolbarButtonClick', payload)"
         @toolbar-tool-click="(payload) => handleToolbarGridEvent('toolbarToolClick', payload)"
         @proxy-query="(payload) => handleGenericGridEvent('proxyQuery', payload)"
@@ -106,6 +107,32 @@ type LowCodeGridEventPayload = {
   rawEvent: Record<string, unknown>;
 };
 
+const HEADER_CONTEXT_MENU_CLASS = 'lc-grid-header-context-menu';
+
+function createDefaultHeaderContextMenuOptions() {
+  return [
+    [
+      {
+        code: 'tableInfoDesign',
+        name: '表格信息设计',
+        prefixIcon: 'ri-table-line',
+      },
+    ],
+    [
+      {
+        code: 'openSearch',
+        name: '打开搜索框',
+        prefixIcon: 'ri-search-line',
+      },
+      {
+        code: 'associateEntityField',
+        name: '关联实体字段',
+        prefixIcon: 'ri-links-line',
+      },
+    ],
+  ];
+}
+
 const customRowActions = computed(() => props.schema.rowActions?.actions ?? []);
 
 const tableScrollStyle = computed(() => {
@@ -133,6 +160,8 @@ const gridConfig = computed(() => {
       }
     : { ...baseGrid };
 
+  nextConfig.menuConfig = createGridMenuConfig(baseGrid.menuConfig);
+
   if (
     props.schema.events?.rowCurrentChange ||
     props.schema.events?.currentRowChange ||
@@ -158,6 +187,31 @@ const gridConfig = computed(() => {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function createGridMenuConfig(value: unknown) {
+  const menuConfig = isRecord(value) ? value : {};
+  const isMenuEnabled = menuConfig.enabled !== false;
+  const headerConfig = isRecord(menuConfig.header) ? menuConfig.header : {};
+  const configuredClassName =
+    typeof menuConfig.className === 'string' ? menuConfig.className.trim() : '';
+
+  return {
+    enabled: true,
+    trigger: 'cell',
+    transfer: true,
+    width: 196,
+    ...menuConfig,
+    className: [HEADER_CONTEXT_MENU_CLASS, configuredClassName].filter(Boolean).join(' '),
+    header: {
+      ...headerConfig,
+      options: isMenuEnabled && Array.isArray(headerConfig.options)
+        ? headerConfig.options
+        : isMenuEnabled
+          ? createDefaultHeaderContextMenuOptions()
+          : [],
+    },
+  };
 }
 
 function readRow(payload: unknown) {
@@ -219,6 +273,19 @@ function handleToolbarGridEvent(key: string, payload: unknown) {
 
   emit('gridEvent', {
     key,
+    ...(actionCode ? { actionCode } : {}),
+    rawEvent,
+  });
+}
+
+function handleMenuClick(payload: unknown) {
+  const rawEvent = isRecord(payload) ? payload : {};
+  const menu = isRecord(rawEvent.menu) ? rawEvent.menu : {};
+  const actionCode = typeof menu.code === 'string' ? menu.code.trim() : '';
+  const menuType = typeof rawEvent.type === 'string' ? rawEvent.type : '';
+
+  emit('gridEvent', {
+    key: menuType === 'header' ? 'headerMenuClick' : 'menuClick',
     ...(actionCode ? { actionCode } : {}),
     rawEvent,
   });

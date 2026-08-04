@@ -34,6 +34,7 @@ const chatWidgetRoot = resolve(__dirname, '..', 'packages', 'chat-widget', 'src'
 const triggerWorkflowEditorRoot = resolve(__dirname, '..', 'packages', 'trigger-workflow-editor', 'src');
 const workflowSchemaRoot = resolve(__dirname, '..', 'packages', 'workflow-schema', 'src');
 const areaPluginRoot = resolve(__dirname, '..', 'packages', 'area-plugin');
+const tableSearchPluginRoot = resolve(__dirname, '..', 'packages', 'table-search-plugin');
 const tldrawVueRoot = resolve(__dirname, '..', 'packages', 'tldraw-vue');
 const tldrawVueSrcRoot = resolve(tldrawVueRoot, 'src');
 const tldrawVueEntry = existsSync(resolve(tldrawVueSrcRoot, 'index.ts'))
@@ -163,6 +164,14 @@ export default defineConfig({
       {
         find: /^vxe-table-plugin-extend-cell-area$/,
         replacement: resolve(areaPluginRoot, 'dist', 'index.js'),
+      },
+      {
+        find: /^vxe-table-plugin-search-panel\/style\.css$/,
+        replacement: resolve(tableSearchPluginRoot, 'dist', 'style.css'),
+      },
+      {
+        find: /^vxe-table-plugin-search-panel$/,
+        replacement: resolve(tableSearchPluginRoot, 'dist', 'index.js'),
       },
       { find: 'tldraw-vue-phase-one/style.css', replacement: tldrawVueStyle },
       { find: 'tldraw-vue-phase-one', replacement: tldrawVueEntry },

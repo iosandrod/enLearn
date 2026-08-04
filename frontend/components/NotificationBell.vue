@@ -188,6 +188,17 @@ watch(
     void loadCount();
   }
 );
+
+watch(
+  () => auth.activeAccount.value?.account_id,
+  () => {
+    open.value = false;
+    messages.value = [];
+    unreadTotal.value = 0;
+    errorMessage.value = '';
+    void loadCount();
+  }
+);
 </script>
 
 <style scoped>

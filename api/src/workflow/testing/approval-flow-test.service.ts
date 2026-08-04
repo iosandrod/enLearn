@@ -29,7 +29,7 @@ export class ApprovalFlowTestService {
   ) {}
 
   async runOneClick(input: ApprovalFlowTestInput, actor: WorkflowRequestActor) {
-    const userId = readString(input.userId) || actor.userId?.trim();
+    const userId = actor.userId?.trim();
     if (!userId) {
       throw new Error('A signed-in user is required to run the approval flow test.');
     }
@@ -37,7 +37,7 @@ export class ApprovalFlowTestService {
       throw new Error('Approval flow test requires a real UUID user. Please switch to a database user first.');
     }
 
-    const tenantId = readString(input.tenantId) || actor.tenantId || 'default';
+    const tenantId = actor.tenantId;
     const testActor = { tenantId, userId };
     const suffix = createTestRunSuffix();
     const businessKey = `approval-flow-test-${suffix}`;
@@ -228,11 +228,15 @@ function prepareApprovalFlowTestSchema(
   source.name = `${name} 一键测试`;
   source.status = 'draft';
   source.documentType = readString(source.documentType) || 'approval_flow_test';
-  replaceInvalidUserAssignees(source, route);
+  applyRequestedApproverRoute(source, route, approverIds.length > 0);
   return source as ApprovalFlowTestSchema;
 }
 
-function replaceInvalidUserAssignees(schema: Record<string, unknown>, approverIds: string[]) {
+function applyRequestedApproverRoute(
+  schema: Record<string, unknown>,
+  approverIds: string[],
+  replaceExisting: boolean
+) {
   const nodes = Array.isArray(schema.nodes) ? schema.nodes.filter(isRecord) : [];
   let routeIndex = 0;
 
@@ -244,7 +248,7 @@ function replaceInvalidUserAssignees(schema: Record<string, unknown>, approverId
     const userIds = Array.isArray(strategy.userIds)
       ? strategy.userIds.map((item) => (typeof item === 'string' ? item.trim() : '')).filter(Boolean)
       : [];
-    if (userIds.length && userIds.every(isUuid)) continue;
+    if (!replaceExisting && userIds.length && userIds.every(isUuid)) continue;
 
     strategy.userIds = [approverIds[routeIndex % approverIds.length]];
     routeIndex += 1;

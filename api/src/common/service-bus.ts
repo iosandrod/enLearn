@@ -76,5 +76,6 @@ export type ServiceBusResponse<T = unknown> = {
   data?: T;
   error?: {
     message?: string;
+    statusCode?: number;
   };
 };

@@ -68,7 +68,7 @@ export class JobService {
   }
 
   async listJobs(query: JobQueryDto, actor: WorkflowJobActor) {
-    const tenantId = query.tenantId ?? actor.tenantId;
+    const tenantId = actor.tenantId;
     const values: unknown[] = [tenantId];
     const conditions = ['tenant_id = $1'];
 
@@ -249,7 +249,7 @@ export class JobService {
   }
 
   async listRuns(query: JobRunQueryDto, actor: WorkflowJobActor) {
-    const tenantId = query.tenantId ?? actor.tenantId;
+    const tenantId = actor.tenantId;
     const values: unknown[] = [tenantId];
     const conditions = ['tenant_id = $1'];
     const limit = Math.min(Math.max(query.limit ?? 20, 1), 200);

@@ -2,6 +2,7 @@ import {
   BadGatewayException,
   BadRequestException,
   GatewayTimeoutException,
+  HttpException,
   Inject,
   Injectable
 } from '@nestjs/common';
@@ -74,9 +75,12 @@ export class ServiceRouterService {
     });
 
     if (!response || response.success === false) {
-      throw new BadGatewayException(
-        response?.error?.message ?? 'Domain service request failed.'
-      );
+      const message = response?.error?.message ?? 'Domain service request failed.';
+      const statusCode = response?.error?.statusCode;
+      if (typeof statusCode === 'number' && statusCode >= 400 && statusCode < 500) {
+        throw new HttpException(message, statusCode);
+      }
+      throw new BadGatewayException(message);
     }
 
     return response.data;

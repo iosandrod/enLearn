@@ -7,6 +7,7 @@ import {
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { createSupabaseClient, requireAdmin } from '../common/utils/supabase';
+import { listActiveAccountUserIds } from '../common/utils/account-context';
 
 type OptionSourceType = 'dict' | 'table' | 'view' | 'rpc' | 'sql';
 
@@ -372,10 +373,11 @@ export class AdminService extends BaseService {
       },
       admin_user_roles: {
         tableName: 'admin_user_roles',
+        accountField: 'account_id',
         permissions: this.adminCrudPermissions('admin.users.manage'),
         create: {
-          allowedFields: ['user_id', 'role_id', 'assigned_by'],
-          requiredFields: ['user_id', 'role_id'],
+          allowedFields: ['user_id', 'role_id', 'account_id', 'assigned_by'],
+          requiredFields: ['user_id', 'role_id', 'account_id'],
           timestamp: false,
           userFields: { createdBy: 'assigned_by' }
         }
@@ -391,6 +393,7 @@ export class AdminService extends BaseService {
       },
       sales_orders: {
         tableName: 'sales_orders',
+        accountField: 'account_id',
         permissions: this.adminCrudPermissions('sales.orders.manage'),
         detailRelations: {
           sales_order_lines: {
@@ -423,6 +426,7 @@ export class AdminService extends BaseService {
       },
       sales_order_lines: {
         tableName: 'sales_order_lines',
+        accountField: 'account_id',
         permissions: this.adminCrudPermissions('sales.orders.manage'),
         defaults: {
           external_source: 'manual',
@@ -520,7 +524,10 @@ export class AdminService extends BaseService {
     );
 
     if (!permissionRowsError && Array.isArray(permissionRows)) {
-      return permissionRows.map((row: Record<string, unknown>) => ({
+      const accountUserIds = new Set(await listActiveAccountUserIds(context));
+      return permissionRows
+        .filter((row: Record<string, unknown>) => accountUserIds.has(String(row.user_id ?? row.id ?? '')))
+        .map((row: Record<string, unknown>) => ({
         id: row.id,
         user_id: row.user_id,
         email: row.email,
@@ -547,8 +554,11 @@ export class AdminService extends BaseService {
     const authUsersById = new Map(
       authUsersResult.data.users.map((user) => [user.id, user])
     );
+    const accountUserIds = new Set(await listActiveAccountUserIds(context));
 
-    return (profiles ?? []).map((profile) => ({
+    return (profiles ?? [])
+      .filter((profile) => accountUserIds.has(profile.id))
+      .map((profile) => ({
       id: profile.id,
       user_id: profile.id,
       email: authUsersById.get(profile.id)?.email ?? '',
