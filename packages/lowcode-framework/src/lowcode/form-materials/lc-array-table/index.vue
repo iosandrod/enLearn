@@ -16,6 +16,7 @@
       class="lc-array-table__grid"
       :data="rows"
       :row-config="rowConfig"
+      :tree-config="treeConfig"
       :height="tableHeight"
       @cell-click="handleCellClick"
       @row-dblclick="handleRowDblclick"
@@ -28,6 +29,7 @@
         :title="column.title"
         :width="column.width"
         :min-width="column.minWidth || 100"
+        :tree-node="isTreeNodeColumn(column)"
       >
         <template #default="scope">
           <template v-if="isRecord(scope?.row)">
@@ -140,9 +142,18 @@
               <span v-if="rowActionLabel(action, scope.row)">{{ rowActionLabel(action, scope.row) }}</span>
             </button>
             <button
+              v-if="childAddable"
+              type="button"
+              :title="addChildText"
+              :aria-label="addChildText"
+              @click="addChildRow(scope.row)"
+            >
+              子
+            </button>
+            <button
               v-if="movable"
               type="button"
-              :disabled="getRowIndex(scope.row) <= 0"
+              :disabled="getSiblingIndex(scope.row) <= 0"
               @click="moveRow(scope.row, -1)"
             >
               上
@@ -150,7 +161,7 @@
             <button
               v-if="movable"
               type="button"
-              :disabled="getRowIndex(scope.row) >= rows.length - 1"
+              :disabled="getSiblingIndex(scope.row) >= getSiblingRows(scope.row).length - 1"
               @click="moveRow(scope.row, 1)"
             >
               下
@@ -162,7 +173,7 @@
               v-if="removable"
               type="button"
               class="is-danger"
-              :disabled="rows.length <= minRows"
+              :disabled="!canRemoveRow(scope.row)"
               @click="removeRow(scope.row)"
             >
               删
@@ -225,6 +236,7 @@ const rows = ref<Record<string, unknown>[]>([]);
 const tableRef = ref<{
   recalculate?: (refull?: boolean) => Promise<unknown> | void;
   refreshColumn?: () => Promise<unknown> | void;
+  setTreeExpand?: (row: Record<string, unknown>, expanded: boolean) => Promise<unknown> | void;
 }>();
 
 const fieldProps = computed(() => props.field.props ?? {});
@@ -258,7 +270,24 @@ const rowConfig = computed(() => {
   };
 });
 const rowKey = computed(() => readString(rowConfig.value.keyField, '__rowKey'));
+const treeConfig = computed(() => {
+  const source = fieldProps.value.treeConfig;
+  if (source !== true && !isRecord(source)) return undefined;
+
+  const config = isRecord(source) ? cloneRecord(source) : {};
+  return {
+    ...config,
+    transform: false,
+    childrenField: readString(config.childrenField, 'children'),
+    expandAll: config.expandAll !== false,
+  };
+});
+const treeEnabled = computed(() => Boolean(treeConfig.value));
+const treeChildrenField = computed(() =>
+  readString(treeConfig.value?.childrenField, 'children')
+);
 const addText = computed(() => readString(fieldProps.value.addText, '新增'));
+const addChildText = computed(() => readString(fieldProps.value.addChildText, '新增子项'));
 const tableHeight = computed(() => readSize(fieldProps.value.height));
 const showToolbar = computed(() => fieldProps.value.showToolbar !== false);
 const showActions = computed(() => fieldProps.value.showActions !== false);
@@ -266,6 +295,7 @@ const toolbarAlign = computed(() => readToolbarAlign(fieldProps.value.toolbarAli
 const copyable = computed(() => fieldProps.value.copyable === true);
 const movable = computed(() => fieldProps.value.movable !== false);
 const removable = computed(() => fieldProps.value.removable !== false);
+const childAddable = computed(() => treeEnabled.value && fieldProps.value.childAddable === true);
 const rowActions = computed(() => readRowActions(fieldProps.value.rowActions));
 const preserveRowKey = computed(() => fieldProps.value.preserveRowKey === true);
 const minRows = computed(() => {
@@ -340,16 +370,27 @@ function normalizeColumns(value: unknown): ArrayTableColumn[] {
 
 function normalizeRows(value: unknown) {
   const source = Array.isArray(value) ? value : [];
-  return source.map((item, index) => {
-    const row =
-      valueMode.value === 'primitive'
-        ? { [valueField.value]: item }
-        : isRecord(item)
-          ? cloneRecord(item)
-          : {};
-    ensureRowKey(row, index);
-    return row;
-  });
+  return source.map((item, index) => normalizeRow(item, index));
+}
+
+function normalizeRow(value: unknown, index: number): Record<string, unknown> {
+  const row =
+    valueMode.value === 'primitive'
+      ? { [valueField.value]: value }
+      : isRecord(value)
+        ? cloneRecord(value)
+        : {};
+  ensureRowKey(row, index);
+
+  if (treeEnabled.value) {
+    const childrenField = treeChildrenField.value;
+    const children = Array.isArray(row[childrenField]) ? row[childrenField] : [];
+    row[childrenField] = children.map((child, childIndex) =>
+      normalizeRow(child, childIndex)
+    );
+  }
+
+  return row;
 }
 
 function createDefaultRow() {
@@ -378,6 +419,18 @@ function createDefaultRow() {
 function addRow() {
   rows.value.push(createDefaultRow());
   commitRows();
+}
+
+function addChildRow(parent: Record<string, unknown>) {
+  const children = getChildRows(parent, true);
+  const child = createDefaultRow();
+  children.push(child);
+  commitRows();
+  emitConfiguredEvent('onRowAddChild', rowEventPayload(child, { parent }));
+
+  nextTick(() => {
+    tableRef.value?.setTreeExpand?.(parent, true);
+  });
 }
 
 function setCell(row: Record<string, unknown>, field: string, value: unknown) {
@@ -418,37 +471,52 @@ async function openObjectEditor(row: Record<string, unknown>, column: ArrayTable
 }
 
 function removeRow(row: Record<string, unknown>) {
-  if (rows.value.length <= minRows.value) return;
+  const location = findRowLocation(row);
+  if (!location || !canRemoveRow(row)) return;
 
-  const index = getRowIndex(row);
-  if (index < 0) return;
-  rows.value.splice(index, 1);
+  location.siblings.splice(location.index, 1);
   commitRows();
 }
 
 function copyRow(row: Record<string, unknown>) {
-  const index = getRowIndex(row);
-  if (index < 0) return;
+  const location = findRowLocation(row);
+  if (!location) return;
 
   const copy = cloneRecord(row);
-  assignRowKey(copy, rows.value.length);
-  rows.value.splice(index + 1, 0, copy);
+  assignTreeRowKeys(copy);
+  location.siblings.splice(location.index + 1, 0, copy);
   commitRows();
   emitConfiguredEvent('onRowCopy', rowEventPayload(copy));
 }
 
 function moveRow(row: Record<string, unknown>, offset: number) {
-  const index = getRowIndex(row);
-  const nextIndex = index + offset;
-  if (index < 0 || nextIndex < 0 || nextIndex >= rows.value.length) return;
+  const location = findRowLocation(row);
+  if (!location) return;
 
-  const [current] = rows.value.splice(index, 1);
-  rows.value.splice(nextIndex, 0, current);
+  const nextIndex = location.index + offset;
+  if (nextIndex < 0 || nextIndex >= location.siblings.length) return;
+
+  const [current] = location.siblings.splice(location.index, 1);
+  location.siblings.splice(nextIndex, 0, current);
   commitRows();
 }
 
 function getRowIndex(row: Record<string, unknown>) {
-  return rows.value.indexOf(row);
+  return flattenRows(rows.value).indexOf(row);
+}
+
+function getSiblingIndex(row: Record<string, unknown>) {
+  return findRowLocation(row)?.index ?? -1;
+}
+
+function getSiblingRows(row: Record<string, unknown>) {
+  return findRowLocation(row)?.siblings ?? [];
+}
+
+function canRemoveRow(row: Record<string, unknown>) {
+  const location = findRowLocation(row);
+  if (!location) return false;
+  return Boolean(location.parent) || rows.value.length > minRows.value;
 }
 
 function commitRows() {
@@ -456,13 +524,7 @@ function commitRows() {
   const value =
     valueMode.value === 'primitive'
       ? rows.value.map((row) => cloneValue(row[valueField.value]))
-      : rows.value.map((row) => {
-          const next = cloneRecord(row);
-          if (key.startsWith('__') && !preserveRowKey.value) {
-            delete next[key];
-          }
-          return next;
-        });
+      : rows.value.map((row) => serializeRow(row, key));
 
   emit('update:modelValue', value);
   emitConfiguredEvent('onRowsChange', {
@@ -481,12 +543,75 @@ function ensureRowKey(row: Record<string, unknown>, index: number) {
 function assignRowKey(row: Record<string, unknown>, index: number) {
   const key = rowKey.value;
   const prefix = key.startsWith('__') ? 'row' : key;
-  let seed = index + 1;
+  let seed = Math.max(index + 1, flattenRows(rows.value).length + 1);
 
   do {
     row[key] = `${prefix}_${seed}`;
     seed += 1;
-  } while (rows.value.some((item) => item !== row && item[key] === row[key]));
+  } while (flattenRows(rows.value).some((item) => item !== row && item[key] === row[key]));
+}
+
+function assignTreeRowKeys(row: Record<string, unknown>) {
+  assignRowKey(row, flattenRows(rows.value).length);
+  getChildRows(row).forEach((child) => assignTreeRowKeys(child));
+}
+
+function serializeRow(row: Record<string, unknown>, key: string) {
+  const next = cloneRecord(row);
+
+  if (key.startsWith('__') && !preserveRowKey.value) {
+    delete next[key];
+  }
+
+  if (treeEnabled.value) {
+    const childrenField = treeChildrenField.value;
+    next[childrenField] = getChildRows(row).map((child) => serializeRow(child, key));
+  }
+
+  return next;
+}
+
+function getChildRows(row: Record<string, unknown>, create = false) {
+  if (!treeEnabled.value) return [];
+
+  const field = treeChildrenField.value;
+  if (!Array.isArray(row[field])) {
+    if (!create) return [];
+    row[field] = [];
+  }
+
+  return row[field] as Record<string, unknown>[];
+}
+
+function flattenRows(
+  source: Record<string, unknown>[],
+  result: Record<string, unknown>[] = [],
+) {
+  source.forEach((row) => {
+    result.push(row);
+    flattenRows(getChildRows(row), result);
+  });
+  return result;
+}
+
+function findRowLocation(
+  target: Record<string, unknown>,
+  siblings = rows.value,
+  parent?: Record<string, unknown>,
+): { siblings: Record<string, unknown>[]; index: number; parent?: Record<string, unknown> } | undefined {
+  const index = siblings.indexOf(target);
+  if (index >= 0) return { siblings, index, parent };
+
+  for (const row of siblings) {
+    const location = findRowLocation(target, getChildRows(row), row);
+    if (location) return location;
+  }
+
+  return undefined;
+}
+
+function isTreeNodeColumn(column: ArrayTableColumn) {
+  return treeEnabled.value && columns.value[0]?.field === column.field;
 }
 
 function getEmptyValue(column: ArrayTableColumn) {

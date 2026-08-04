@@ -3,11 +3,14 @@
   min-width: 0;
   min-height: 0;
   gap: 12px;
+  height: 100%;
 }
 
 .lc-global-dialog__lowcode {
+  height: 100%;
   min-width: 0;
   min-height: 0;
+  display: flex;
 }
 
 .lc-global-dialog__lowcode > .lc-runtime-block {

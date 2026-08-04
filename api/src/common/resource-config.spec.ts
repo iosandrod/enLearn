@@ -8,6 +8,7 @@ import { FilesService } from '../files-service/files.service';
 import { LowCodeService } from '../lowcode-service/lowcode.service';
 import { NotificationService } from '../notification-service/notification.service';
 import { PostsService } from '../posts-service/posts.service';
+import { workflowResources } from '../workflow/workflow.resources';
 
 type ServiceWithResources = {
   resources(): ResourceConfigMap;
@@ -22,6 +23,8 @@ const services = [
   new NotificationService(),
   new PostsService()
 ] as unknown as ServiceWithResources[];
+
+services.push({ resources: () => workflowResources });
 
 for (const service of services) {
   for (const [resourceName, config] of Object.entries(service.resources())) {

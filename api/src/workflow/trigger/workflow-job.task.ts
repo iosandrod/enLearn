@@ -1,19 +1,19 @@
 import { runs, schedules, task, tasks } from '@trigger.dev/sdk';
-import { Pool } from 'pg';
+import { type Pool } from 'pg';
+import {
+  createWorkflowPostgresPool,
+  resolveWorkflowDatabaseUrl
+} from '../common/postgres-pool';
 
 export const workflowGenericJobTask = task({
   id: 'workflow.job.run',
   run: async (payload: Record<string, unknown>) => {
     const runId = typeof payload.runId === 'string' ? payload.runId : undefined;
-    const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
     if (!runId) {
       throw new Error('runId is required by workflow.job.run.');
     }
-    if (!connectionString) {
-      throw new Error('DIRECT_URL or DATABASE_URL is required by workflow.job.run.');
-    }
 
-    const pool = new Pool({ connectionString });
+    const pool = createJobPool('workflow.job.run');
     let started = false;
     try {
       await pool.query(
@@ -49,15 +49,11 @@ export const workflowSupabaseUsersLogTask = task({
   id: 'workflow.supabase.users.log',
   run: async (payload: Record<string, unknown>) => {
     const runId = typeof payload.runId === 'string' ? payload.runId : undefined;
-    const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
     if (!runId) {
       throw new Error('runId is required by workflow.supabase.users.log.');
     }
-    if (!connectionString) {
-      throw new Error('DIRECT_URL or DATABASE_URL is required by workflow.supabase.users.log.');
-    }
 
-    const pool = new Pool({ connectionString });
+    const pool = createJobPool('workflow.supabase.users.log');
     let started = false;
     try {
       await pool.query(
@@ -102,15 +98,11 @@ export const workflowScheduledJobTask = schedules.task({
   id: 'workflow.job.scheduled',
   run: async (payload) => {
     const jobId = payload.externalId;
-    const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
     if (!jobId) {
       throw new Error('Schedule externalId is required by workflow.job.scheduled.');
     }
-    if (!connectionString) {
-      throw new Error('DIRECT_URL or DATABASE_URL is required by workflow.job.scheduled.');
-    }
 
-    const pool = new Pool({ connectionString });
+    const pool = createJobPool('workflow.job.scheduled');
     try {
       const jobResult = await pool.query<{
         id: string;
@@ -222,6 +214,17 @@ function sanitizeUserRow(row: Record<string, unknown>) {
 function maskPhone(value: unknown) {
   if (typeof value !== 'string' || value.length < 7) return value;
   return `${value.slice(0, 3)}****${value.slice(-4)}`;
+}
+
+function createJobPool(taskName: string) {
+  const connectionString = resolveWorkflowDatabaseUrl(process.env);
+  if (!connectionString) {
+    throw new Error(`DATABASE_URL or DIRECT_URL is required by ${taskName}.`);
+  }
+  return createWorkflowPostgresPool(connectionString, {
+    max: 2,
+    name: taskName
+  });
 }
 
 async function markJobRunFailedBestEffort(pool: Pool, runId: string, error: unknown) {

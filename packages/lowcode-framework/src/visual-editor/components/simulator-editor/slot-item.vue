@@ -20,9 +20,8 @@
       >
         <comp-render
           :element="innerElement"
-          :on-button-contextmenu="(event, block, index) => props.onContextmenuBlock(event, block, findParentBlocks(block), index)"
           :style="{
-            pointerEvents: Object.keys(innerElement.props?.slots || {}).length || isButtonGroupBlock(innerElement) ? 'auto' : 'none',
+            pointerEvents: Object.keys(innerElement.props?.slots || {}).length ? 'auto' : 'none',
           }"
         >
           <template v-for="(value, key) in innerElement.props?.slots" :key="key" #[key]>
@@ -82,7 +81,6 @@
           e: MouseEvent,
           block: VisualEditorBlockData,
           parentBlocks?: VisualEditorBlockData[],
-          buttonIndex?: number,
         ) => void
       >,
       required: true,
@@ -92,39 +90,6 @@
 
   const isDrag = useVModel(props, 'drag', emit);
   const slotChildren = useVModel(props, 'children', emit);
-
-  const buttonGroupComponentKeys = new Set([
-    'lowcode-button-group',
-    'button-group',
-    'buttonGroup',
-  ]);
-
-  const isButtonGroupBlock = (block: VisualEditorBlockData) =>
-    buttonGroupComponentKeys.has(block.componentKey) || Array.isArray(block.props?.buttons);
-
-  const findParentBlocks = (
-    target: VisualEditorBlockData,
-    blocks: VisualEditorBlockData[] = slotChildren.value,
-  ): VisualEditorBlockData[] => {
-    if (blocks.includes(target)) return blocks;
-
-    for (const block of blocks) {
-      const slots = block.props?.slots || {};
-      for (const slotKey of Object.keys(slots)) {
-        const children = Array.isArray(slots[slotKey]?.children)
-          ? slots[slotKey].children
-          : [];
-        const parentBlocks = findParentBlocks(target, children);
-        if (parentBlocks.length) return parentBlocks;
-      }
-
-      const overlays = Array.isArray(block.props?.overlays) ? block.props.overlays : [];
-      const overlayParentBlocks = findParentBlocks(target, overlays);
-      if (overlayParentBlocks.length) return overlayParentBlocks;
-    }
-
-    return [];
-  };
 
   // 初始化时设置上次选中的组件
   props.children.some((item) => item.focus && props.selectComp(item));

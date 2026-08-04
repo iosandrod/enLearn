@@ -20,7 +20,6 @@ export type AppAccountSummary = {
   is_primary_owner: boolean;
   name: string | null;
   slug: string | null;
-  personal_account: boolean;
   metadata?: Record<string, unknown> | null;
   created_at?: string | null;
   updated_at?: string | null;

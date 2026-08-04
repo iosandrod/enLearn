@@ -6,13 +6,16 @@ import {
   normalizePostgresConnectionString
 } from '../src/common/utils/env';
 
-const migrationPath = resolve(
+const migrationPaths = [
+  '20260804090000_account_set_login.sql',
+  '20260804160000_remove_personal_accounts.sql'
+].map((migration) => resolve(
   process.cwd(),
   process.cwd().toLowerCase().endsWith('api') ? '..' : '.',
   'supabase',
   'migrations',
-  '20260804090000_account_set_login.sql'
-);
+  migration
+));
 const env = getEnv();
 const rawConnectionString = process.env.DIRECT_URL ?? env.DIRECT_URL ?? env.DATABASE_URL;
 
@@ -22,7 +25,9 @@ if (!rawConnectionString) {
 const connectionString = normalizePostgresConnectionString(rawConnectionString);
 
 async function main() {
-  const sql = await readFile(migrationPath, 'utf8');
+  const migrations = await Promise.all(
+    migrationPaths.map(async (path) => ({ path, sql: await readFile(path, 'utf8') }))
+  );
   const client = new Client({
     connectionString,
     connectionTimeoutMillis: 30_000,
@@ -34,7 +39,10 @@ async function main() {
   await client.connect();
   try {
     await client.query('begin');
-    await client.query(sql);
+    for (const migration of migrations) {
+      await client.query(migration.sql);
+      console.log(`Applied ${migration.path.split(/[\\/]/).at(-1)}.`);
+    }
     await client.query('commit');
     console.log('Account-set migration applied.');
   } catch (error) {

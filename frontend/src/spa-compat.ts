@@ -14,7 +14,9 @@ const stateStore = new Map<string, Ref<unknown>>();
 const ACCESS_TOKEN_KEY = 'enlearn_access_token';
 const REFRESH_TOKEN_KEY = 'enlearn_refresh_token';
 const ACTIVE_ACCOUNT_KEY = 'enlearn_active_account_id';
+const DEV_IMPERSONATOR_REFRESH_TOKEN_KEY = 'enlearn_dev_impersonator_refresh_token';
 let refreshSessionPromise: Promise<boolean> | null = null;
+let devImpersonatorRecoveryPromise: Promise<boolean> | null = null;
 
 function getApiBaseUrl() {
   return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002/api').replace(/\/+$/, '');
@@ -96,7 +98,10 @@ function isAuthFailure(statusCode: number, message: string) {
 }
 
 function canRefreshForPath(apiPath: string) {
-  return !apiPath.startsWith('/auth/refresh') && !apiPath.startsWith('/auth/signin') && !apiPath.startsWith('/auth/signup');
+  return !apiPath.startsWith('/auth/refresh') &&
+    !apiPath.startsWith('/auth/signin') &&
+    !apiPath.startsWith('/auth/signup') &&
+    !apiPath.startsWith('/auth/account-options');
 }
 
 function resolveRequestMethod(
@@ -168,6 +173,40 @@ async function refreshStoredSession() {
   return refreshSessionPromise;
 }
 
+async function recoverDevImpersonatorSession() {
+  if (!import.meta.env.DEV) return false;
+  const refreshToken = sessionStorage.getItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY) || '';
+  if (!refreshToken) return false;
+
+  if (!devImpersonatorRecoveryPromise) {
+    devImpersonatorRecoveryPromise = (async () => {
+      const response = await fetch(`${getApiBaseUrl()}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+      const payload = parseResponsePayload(await response.text());
+      if (!response.ok) {
+        sessionStorage.removeItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY);
+        return false;
+      }
+
+      const session = (payload as { session?: { refresh_token?: string } | null } | null)?.session;
+      persistAuthSession(payload);
+      if (session?.refresh_token) {
+        sessionStorage.setItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY, session.refresh_token);
+      }
+      return Boolean((payload as { session?: { access_token?: string } } | null)?.session?.access_token);
+    })()
+      .catch(() => false)
+      .finally(() => {
+        devImpersonatorRecoveryPromise = null;
+      });
+  }
+
+  return devImpersonatorRecoveryPromise;
+}
+
 async function fetchBackend<T>(url: string, options: FetchOptions = {}, didRetryAuth = false) {
   const apiPath = normalizeApiPath(withQuery(url, options.query));
   const { query: _query, body, ...requestOptions } = options;
@@ -179,7 +218,12 @@ async function fetchBackend<T>(url: string, options: FetchOptions = {}, didRetry
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  if (accountId && !headers.has('X-Account-Id') && !apiPath.startsWith('/auth/select-account')) {
+  if (
+    accountId &&
+    !headers.has('X-Account-Id') &&
+    !apiPath.startsWith('/auth/select-account') &&
+    !apiPath.startsWith('/auth/account-options')
+  ) {
     headers.set('X-Account-Id', accountId);
   }
 
@@ -206,6 +250,12 @@ async function fetchBackend<T>(url: string, options: FetchOptions = {}, didRetry
       const refreshed = await refreshStoredSession();
       if (refreshed) {
         return fetchBackend<T>(url, options, true);
+      }
+
+      const restoredImpersonator = await recoverDevImpersonatorSession();
+      if (restoredImpersonator) {
+        window.location.reload();
+        return new Promise<T>(() => undefined);
       }
     }
 

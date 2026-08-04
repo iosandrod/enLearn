@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Headers, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Inject, Post, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
+  DevImpersonateAuthDto,
   EmailPasswordAuthDto,
   OAuthUrlDto,
   RefreshSessionDto,
@@ -16,6 +17,11 @@ export class AuthController {
   @Post('signin')
   signInWithPassword(@Body() dto: SignInPasswordAuthDto) {
     return this.authService.signInWithPassword(dto);
+  }
+
+  @Get('account-options')
+  listLoginAccountOptions(@Query('login') login?: string) {
+    return this.authService.listLoginAccountOptions(login);
   }
 
   @Post('signup')
@@ -36,6 +42,20 @@ export class AuthController {
   @Post('refresh')
   refreshSession(@Body() dto: RefreshSessionDto) {
     return this.authService.refreshSession(dto);
+  }
+
+  @Post('dev-impersonate')
+  impersonateDevUser(
+    @Body() dto: DevImpersonateAuthDto,
+    @Headers('authorization') authorization?: string,
+    @Headers('x-request-id') requestId?: string,
+    @Headers('x-account-id') accountId?: string
+  ) {
+    return this.authService.impersonateDevUser(dto, {
+      authorization,
+      requestId,
+      accountId
+    });
   }
 
   @Get('me')

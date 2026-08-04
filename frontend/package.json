@@ -8,6 +8,9 @@
     "test:keep-alive": "node tests/keep-alive-regression.mjs",
     "test:navigation": "node tests/database-navigation-regression.mjs",
     "test:grid-header-menu": "node tests/grid-header-context-menu-regression.mjs",
+    "test:signin-account": "node tests/signin-account-field-regression.mjs",
+    "test:dev-impersonation": "node tests/dev-impersonation-regression.mjs",
+    "test:system-settings": "node tests/system-settings-page-regression.mjs",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
@@ -33,8 +36,8 @@
     "vue": "^3.5.40",
     "vue-router": "^4.6.4",
     "vuedraggable": "^4.1.0",
-    "vxe-pc-ui": "latest",
-    "vxe-table": "latest",
+    "vxe-pc-ui": "4.16.24",
+    "vxe-table": "4.20.9",
     "vxe-table-plugin-search-panel": "workspace:*"
   },
   "devDependencies": {

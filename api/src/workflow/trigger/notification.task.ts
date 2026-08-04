@@ -1,9 +1,13 @@
 import { task, tasks, wait } from '@trigger.dev/sdk';
-import { Pool, type PoolClient, type QueryResultRow } from 'pg';
+import { type Pool, type PoolClient, type QueryResultRow } from 'pg';
 import {
-  isTransientPostgresError,
   retryTransientPostgresOperation
 } from '../common/postgres-resilience';
+import {
+  createWorkflowPostgresPool,
+  resolveWorkflowDatabaseUrl,
+  withHealthyPostgresClient
+} from '../common/postgres-pool';
 
 export const NOTIFICATION_DISPATCH_TASK_ID = 'notification.dispatch';
 export const NOTIFICATION_RETRY_DELIVERY_TASK_ID = 'notification.retryDelivery';
@@ -916,35 +920,18 @@ async function markEventFailed(client: PoolClient, eventId: string, message: str
 }
 
 function createNotificationPool(taskName: string) {
-  const connectionString = process.env.DATABASE_URL ?? process.env.DIRECT_URL;
+  const connectionString = resolveWorkflowDatabaseUrl(process.env);
   if (!connectionString) {
-    throw new Error(`DIRECT_URL or DATABASE_URL is required by the ${taskName}.`);
+    throw new Error(`DATABASE_URL or DIRECT_URL is required by the ${taskName}.`);
   }
-  const pool = new Pool({
-    connectionString,
+  return createWorkflowPostgresPool(connectionString, {
     max: 2,
-    keepAlive: true,
-    keepAliveInitialDelayMillis: 5_000,
-    idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 30_000
+    name: taskName
   });
-  pool.on('error', (error) => {
-    console.warn(`[notification-task] Postgres idle client error: ${error.message}`);
-  });
-  return pool;
 }
 
 async function withClient<T>(pool: Pool, callback: (client: PoolClient) => Promise<T>) {
-  const client = await retryTransientPostgresOperation(() => pool.connect());
-  let failure: unknown;
-  try {
-    return await callback(client);
-  } catch (error) {
-    failure = error;
-    throw error;
-  } finally {
-    client.release(isTransientPostgresError(failure) ? true : undefined);
-  }
+  return withHealthyPostgresClient(pool, callback);
 }
 
 function readRecipientIds(payload: Record<string, unknown>) {

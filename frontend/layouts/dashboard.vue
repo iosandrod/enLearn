@@ -16,7 +16,10 @@
           @click="toggleAccountMenu"
         >
           <i class="ri-building-2-line" aria-hidden="true" />
-          <span class="admin-account-switcher__code">
+          <span
+            class="admin-account-switcher__code"
+            :title="auth.activeAccount.value?.code ?? '---'"
+          >
             {{ auth.activeAccount.value?.code ?? '---' }}
           </span>
           <span class="admin-account-switcher__name">
@@ -64,19 +67,28 @@
               :class="{ 'is-active': account.account_id === auth.activeAccount.value?.account_id }"
               @click="switchAccount(account.account_id)"
             >
-              <span class="admin-account-switcher__item-code">{{ account.code ?? '---' }}</span>
+              <span
+                class="admin-account-switcher__item-code"
+                :title="account.code ?? '---'"
+              >
+                {{ account.code ?? '---' }}
+              </span>
               <span class="admin-account-switcher__item-meta">
-                <strong>{{ account.name ?? '未命名账套' }}</strong>
+                <strong :title="account.name ?? '未命名账套'">
+                  {{ account.name ?? '未命名账套' }}
+                </strong>
                 <small>{{ account.account_role === 'owner' ? '账套主管' : '账套成员' }}</small>
               </span>
-              <span v-if="!isAccountEnabled(account)" class="admin-account-switcher__status">
-                {{ account.status === 'archived' ? '已归档' : '已停用' }}
+              <span class="admin-account-switcher__item-state">
+                <span v-if="!isAccountEnabled(account)" class="admin-account-switcher__status">
+                  {{ account.status === 'archived' ? '已归档' : '已停用' }}
+                </span>
+                <i
+                  v-else-if="account.account_id === auth.activeAccount.value?.account_id"
+                  class="ri-check-line"
+                  aria-hidden="true"
+                />
               </span>
-              <i
-                v-else-if="account.account_id === auth.activeAccount.value?.account_id"
-                class="ri-check-line"
-                aria-hidden="true"
-              />
             </button>
 
             <p v-if="!filteredAccounts.length" class="admin-account-switcher__empty">
@@ -128,6 +140,20 @@
       </div>
 
       <div class="admin-top-actions">
+        <button
+          class="admin-system-settings-button"
+          type="button"
+          :disabled="systemSettingsOpening"
+          :aria-busy="systemSettingsOpening"
+          title="系统设置"
+          @click="openSystemSettingsDialog"
+        >
+          <i
+            :class="systemSettingsOpening ? 'ri-loader-4-line admin-spin' : 'ri-settings-3-line'"
+            aria-hidden="true"
+          />
+          <span>系统设置</span>
+        </button>
         <ChatPopup />
         <NotificationBell />
         <div v-if="showApprovalTestSwitcher" class="admin-user-switcher" @click.stop>
@@ -159,7 +185,7 @@
             <header>
               <div>
                 <strong>切换测试身份</strong>
-                <span>仅影响审批测试，不改变登录权限</span>
+                <span>开发环境模拟登录，会同步切换本地 Token</span>
               </div>
               <button
                 type="button"
@@ -195,6 +221,7 @@
                 role="option"
                 :aria-selected="user.id === activeDevUserId"
                 :class="{ 'is-active': user.id === activeDevUserId }"
+                :disabled="devUserSwitching"
                 @click="selectDevTestUser(user.id)"
               >
                 <span class="admin-user-switcher__avatar">{{ user.name.slice(0, 1).toUpperCase() }}</span>
@@ -264,6 +291,8 @@
         <slot />
       </main>
     </div>
+
+    <GlobalDialogHost />
   </div>
 </template>
 
@@ -276,6 +305,11 @@ import type {
   LowCodePageRecord,
   LowCodePageSchema,
 } from '@enlearn/lowcode-framework/types/lowcode';
+import {
+  confirmLowCodePage,
+  findGlobalDialog,
+  GlobalDialogHost,
+} from '@enlearn/lowcode-framework/runtime';
 import { getLowCodePage } from '../utils/lowCodePages';
 import type { AppAccountSummary } from '../composables/useAuthState';
 
@@ -310,6 +344,8 @@ type TopToolGroup = AdminRouteNode & {
 
 type NavigationPlacement = 'sidebar' | 'top-tool' | 'container' | 'hidden';
 
+const SYSTEM_SETTINGS_DIALOG_ID = 'system-settings-editor-dialog';
+
 const auth = useAuth();
 const serviceApi = useServiceApi();
 const route = useRoute();
@@ -317,12 +353,7 @@ const router = useRouter();
 const isDev = import.meta.env.DEV;
 const devTestUsers = computed(() => auth.devTestUsers.value);
 const activeDevTestUser = computed(() => auth.activeDevTestUser.value);
-const activeDevUserId = computed({
-  get: () => auth.activeDevTestUserId.value,
-  set: (userId: string) => {
-    auth.switchDevTestUser(userId);
-  }
-});
+const activeDevUserId = computed(() => auth.activeDevTestUserId.value);
 const showApprovalTestSwitcher = computed(
   () => isDev && route.path.startsWith('/dashboard/workflow')
 );
@@ -339,6 +370,7 @@ const testUserMenuOpen = ref(false);
 const testUserSearch = ref('');
 const testUserSearchInput = ref<HTMLInputElement | null>(null);
 const devUsersLoading = ref(false);
+const devUserSwitching = ref(false);
 const devUsersError = ref('');
 const filteredDevTestUsers = computed(() => {
   const keyword = testUserSearch.value.trim().toLowerCase();
@@ -349,6 +381,7 @@ const filteredDevTestUsers = computed(() => {
   );
 });
 const routeError = ref('');
+const systemSettingsOpening = ref(false);
 const routes = ref<AdminRouteNode[]>([]);
 const expandedGroups = reactive<Record<string, boolean>>({});
 const visitedTabs = ref<Array<{ title: string; path: string }>>([]);
@@ -411,7 +444,11 @@ function ensureDevTestUserSelected() {
   const defaultUserId =
     devTestUsers.value.find((user) => user.id === auth.user.value?.id)?.id ??
     devTestUsers.value[0]?.id;
-  if (defaultUserId) auth.switchDevTestUser(defaultUserId);
+  if (defaultUserId) {
+    void auth.switchDevTestUser(defaultUserId).catch((error) => {
+      devUsersError.value = error instanceof Error ? error.message : '测试身份切换失败';
+    });
+  }
 }
 
 async function loadDevTestUsers() {
@@ -420,11 +457,7 @@ async function loadDevTestUsers() {
   devUsersError.value = '';
 
   try {
-    const users = await serviceApi.invoke<Record<string, unknown>[]>(
-      'admin',
-      'listApprovalTestUsers'
-    );
-    auth.setDevTestUsers(Array.isArray(users) ? users : []);
+    await auth.loadDevTestUsers();
   } catch (error) {
     devUsersError.value = error instanceof Error ? error.message : '测试用户加载失败';
     console.warn('Dev user switcher could not load admin users.', error);
@@ -449,10 +482,25 @@ function toggleTestUserMenu() {
   }
 }
 
-function selectDevTestUser(userId: string) {
-  activeDevUserId.value = userId;
-  testUserMenuOpen.value = false;
-  testUserSearch.value = '';
+async function selectDevTestUser(userId: string) {
+  if (devUserSwitching.value || userId === activeDevUserId.value) {
+    testUserMenuOpen.value = false;
+    return;
+  }
+
+  devUserSwitching.value = true;
+  devUsersError.value = '';
+  try {
+    await auth.switchDevTestUser(userId);
+    testUserMenuOpen.value = false;
+    testUserSearch.value = '';
+    routes.value = [];
+    await reloadRoutes();
+  } catch (error) {
+    devUsersError.value = error instanceof Error ? error.message : '测试身份切换失败';
+  } finally {
+    devUserSwitching.value = false;
+  }
 }
 
 function getLowCodeDesignerLoadPageBus() {
@@ -781,6 +829,40 @@ function isTopToolActive(item: AdminRouteNode) {
 
 function toggleTopTool(code: string) {
   openTopToolCode.value = openTopToolCode.value === code ? '' : code;
+}
+
+async function openSystemSettingsDialog() {
+  if (
+    systemSettingsOpening.value ||
+    findGlobalDialog(SYSTEM_SETTINGS_DIALOG_ID)
+  ) {
+    return;
+  }
+
+  systemSettingsOpening.value = true;
+  routeError.value = '';
+
+  try {
+    await confirmLowCodePage({
+      pageCode: 'system-settings-edit',
+      includeData: true,
+      serviceApi: serviceApi as Parameters<typeof confirmLowCodePage>[0]['serviceApi'],
+      router: router as Parameters<typeof confirmLowCodePage>[0]['router'],
+      route: route as Parameters<typeof confirmLowCodePage>[0]['route'],
+      locale: 'zh-CN',
+      title: '系统设置',
+      confirmLabel: '完成',
+      cancelLabel: '关闭',
+      dialog: {
+        id: SYSTEM_SETTINGS_DIALOG_ID,
+      },
+    });
+  } catch (error) {
+    routeError.value =
+      error instanceof Error ? error.message : '系统设置编辑页打开失败。';
+  } finally {
+    systemSettingsOpening.value = false;
+  }
 }
 
 function buildRouteSavePayload(item: AdminRouteNode, title: string) {

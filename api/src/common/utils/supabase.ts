@@ -36,7 +36,6 @@ export type AccountSummary = {
   is_primary_owner: boolean;
   name: string | null;
   slug: string | null;
-  personal_account: boolean;
   metadata?: Record<string, unknown> | null;
   created_at?: string | null;
   updated_at?: string | null;
@@ -92,7 +91,6 @@ function normalizeAccounts(value: unknown): AccountSummary[] {
         is_primary_owner: account.is_primary_owner === true,
         name: typeof account.name === 'string' ? account.name : null,
         slug: typeof account.slug === 'string' ? account.slug : null,
-        personal_account: account.personal_account === true,
         metadata: isRecord(account.metadata) ? account.metadata : null,
         created_at: typeof account.created_at === 'string' ? account.created_at : null,
         updated_at: typeof account.updated_at === 'string' ? account.updated_at : null,

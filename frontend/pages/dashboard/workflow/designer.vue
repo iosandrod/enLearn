@@ -267,6 +267,9 @@ const startedTaskId = ref('');
 const startedTaskStatus = ref('');
 const testRunSummary = ref('');
 const actionsMenuOpen = ref(false);
+const approvalTestPollTimeoutMs = 90_000;
+const approvalTestPollIntervalMs = 2_000;
+let approvalTestPollGeneration = 0;
 
 const nodeTypeCoverageLabels = [
   { type: 'start', label: '开始' },
@@ -324,6 +327,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  approvalTestPollGeneration += 1;
   window.removeEventListener('click', closeActionMenu);
 });
 
@@ -582,6 +586,7 @@ async function startOrderWorkflow() {
 async function runMinimalApprovalOneClickTest() {
   isApiBusy.value = true;
   resetRuntimeState();
+  const pollGeneration = approvalTestPollGeneration;
   message.value = '正在发起审批一键测试...';
   messageClass.value = 'workflow-help';
 
@@ -594,8 +599,6 @@ async function runMinimalApprovalOneClickTest() {
       .filter((userId) => userId && userId !== testUserId)
       .slice(0, 3);
     const result = await invokeWorkflowService<ApprovalFlowTestResult>('runApprovalFlowTest', {
-      timeoutMs: 90000,
-      intervalMs: 2000,
       userId: testUserId,
       approverIds,
       schema
@@ -607,25 +610,50 @@ async function runMinimalApprovalOneClickTest() {
     savedModelId.value = result.modelId;
     publishedDefinitionId.value = result.definitionId;
     startedInstanceId.value = result.instanceId;
-    startedTaskId.value =
-      result.nextTask?.id ??
-      result.pendingTasks?.[0]?.id ??
-      result.finalTasks.find((task) => task.status === 'pending' || task.status === 'claimed')?.id ??
-      '';
-    const displayedTaskStatus = result.finalTasks.find((task) => task.id === startedTaskId.value)?.status;
-    startedTaskStatus.value =
-      displayedTaskStatus ? workflowStatusLabel(displayedTaskStatus) : workflowStatusLabel(result.instanceStatus);
+    startedTaskStatus.value = workflowStatusLabel(result.instanceStatus);
+    testRunSummary.value = '实例已启动，正在等待审批待办';
+    message.value = `测试实例 ${result.instanceId} 已启动，正在等待 Trigger.dev 生成审批待办...`;
 
-    if (result.instanceStatus === 'running' && startedTaskId.value) {
-      const assigneeId = result.nextTask?.assigneeId ?? result.pendingTasks?.[0]?.assigneeId ?? '';
+    const initialInstance: WorkflowRuntimeInstance = {
+      id: result.instanceId,
+      status: result.instanceStatus,
+      triggerRunId: result.triggerRunId,
+      tasks: result.finalTasks
+    };
+    const polledInstance = hasPendingWorkflowTask(initialInstance) || initialInstance.status !== 'running'
+      ? initialInstance
+      : await waitForApprovalTestState(
+          result.instanceId,
+          pollGeneration,
+          approvalTestPollTimeoutMs,
+          approvalTestPollIntervalMs
+        );
+
+    if (pollGeneration !== approvalTestPollGeneration) return;
+
+    if (!polledInstance) {
+      testRunSummary.value = '实例已发起，待办仍在生成';
+      startedTaskStatus.value = workflowStatusLabel(result.instanceStatus);
+      message.value = `测试实例 ${result.instanceId} 已成功启动，但暂未读取到审批待办。实例不会重复发起，可稍后刷新查看。`;
+      messageClass.value = 'workflow-help';
+      return;
+    }
+
+    updateRuntimeFromInstance(polledInstance);
+    const pendingTask = polledInstance.tasks?.find(
+      (task) => task.status === 'pending' || task.status === 'claimed'
+    );
+
+    if (polledInstance.status === 'running' && pendingTask) {
+      const assigneeId = pendingTask.assigneeId ?? '';
       const approverLabel = auth.devTestUsers.value.find((user) => user.id === assigneeId)?.name ?? assigneeId;
       testRunSummary.value = `已发起审批，待 ${approverLabel || '审批人'} 处理`;
       message.value = `测试审批已发起。请切换到审批人 ${approverLabel || assigneeId}，从消息提醒进入审批页面处理。`;
-    } else if (result.passed || result.instanceStatus === 'approved') {
+    } else if (polledInstance.status === 'approved') {
       testRunSummary.value = '流程已自动结束';
-      message.value = `测试审批已完成：实例 ${result.instanceId} 已${workflowStatusLabel(result.instanceStatus)}。`;
+      message.value = `测试审批已完成：实例 ${result.instanceId} 已${workflowStatusLabel(polledInstance.status)}。`;
     } else {
-      throw new Error(`测试审批已发起但未生成待办，实例状态：${workflowStatusLabel(result.instanceStatus)}`);
+      throw new Error(`测试审批实例已结束，状态：${workflowStatusLabel(polledInstance.status)}`);
     }
     messageClass.value = 'workflow-success';
   } catch (error) {
@@ -719,10 +747,49 @@ function createDesignerTestVariables(businessKey: string, currentUserId: string)
 }
 
 function resetRuntimeState() {
+  approvalTestPollGeneration += 1;
   startedInstanceId.value = '';
   startedTaskId.value = '';
   startedTaskStatus.value = '';
   testRunSummary.value = '';
+}
+
+async function waitForApprovalTestState(
+  instanceId: string,
+  generation: number,
+  timeoutMs: number,
+  intervalMs: number
+) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() <= deadline && generation === approvalTestPollGeneration) {
+    try {
+      const instance = await invokeWorkflowService<WorkflowRuntimeInstance>('getInstance', {
+        instanceId
+      });
+      if (hasPendingWorkflowTask(instance) || instance.status !== 'running') {
+        return instance;
+      }
+    } catch {
+      // A single gateway or database disconnect must not turn an already-started run into a failure.
+    }
+
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) break;
+    await delay(Math.min(intervalMs, remainingMs));
+  }
+
+  return undefined;
+}
+
+function hasPendingWorkflowTask(instance: WorkflowRuntimeInstance) {
+  return Boolean(
+    instance.tasks?.some((task) => task.status === 'pending' || task.status === 'claimed')
+  );
+}
+
+function delay(ms: number) {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 }
 
 function updateRuntimeFromInstance(instance: WorkflowRuntimeInstance) {

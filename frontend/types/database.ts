@@ -364,8 +364,6 @@ export type AdminUserPermissionRow = {
   account_names: string;
   account_roles: string[];
   account_count: number;
-  personal_account_id: string | null;
-  personal_account_name: string | null;
   is_primary_account_owner: boolean;
 };
 
@@ -649,10 +647,6 @@ export interface Database {
         Returns: AdminUserPermissionRow[];
       };
       get_system_config: {
-        Args: Record<string, never>;
-        Returns: Json;
-      };
-      get_personal_account: {
         Args: Record<string, never>;
         Returns: Json;
       };

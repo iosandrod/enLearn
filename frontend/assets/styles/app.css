@@ -196,9 +196,13 @@ a {
 }
 
 .admin-account-switcher__code {
-  min-width: 34px;
+  min-width: 0;
+  max-width: 104px;
+  overflow: hidden;
   color: #e9f5ff;
   font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-account-switcher__name {
@@ -275,7 +279,7 @@ a {
   display: grid;
   width: 100%;
   min-height: 52px;
-  grid-template-columns: 48px minmax(0, 1fr) auto 18px;
+  grid-template-columns: 108px minmax(0, 1fr) minmax(18px, auto);
   align-items: center;
   gap: 9px;
   border: 0;
@@ -298,21 +302,42 @@ a {
 }
 
 .admin-account-switcher__item-code {
-  display: grid;
+  display: block;
+  width: 100%;
+  min-width: 0;
   min-height: 27px;
-  place-items: center;
+  overflow: hidden;
   border: 1px solid #b9d4e8;
   border-radius: 3px;
   background: #f3f9fd;
   color: #176ea9;
+  padding: 0 6px;
   font-size: 11px;
   font-weight: 800;
+  line-height: 25px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-account-switcher__item-meta strong {
+  display: block;
+  min-width: 0;
   overflow: hidden;
+  line-height: 18px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.admin-account-switcher__item-meta small {
+  display: block;
+  line-height: 16px;
+}
+
+.admin-account-switcher__item-state {
+  display: grid;
+  min-width: 18px;
+  justify-items: end;
 }
 
 .admin-account-switcher__status,
@@ -345,6 +370,36 @@ a {
   flex: none;
   margin-left: auto;
   font-size: 12px;
+}
+
+.admin-system-settings-button {
+  display: inline-flex;
+  height: 24px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid rgb(255 255 255 / 38%);
+  border-radius: 4px;
+  background: rgb(255 255 255 / 10%);
+  color: #ffffff;
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.admin-system-settings-button:hover:not(:disabled),
+.admin-system-settings-button:focus-visible {
+  border-color: rgb(255 255 255 / 62%);
+  background: rgb(255 255 255 / 20%);
+  outline: none;
+}
+
+.admin-system-settings-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
 }
 
 .admin-tool-launcher {
@@ -997,7 +1052,7 @@ a {
 .lowcode-runtime-page > .lc-runtime-block--fill,
 .lc-tab-pane-stack > .lc-runtime-block--fill {
   display: flex;
-  flex: 1 1 0;
+  flex: 1;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
@@ -1937,6 +1992,8 @@ a {
   }
 
   .admin-top-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
     margin-left: auto;
   }
 

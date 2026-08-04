@@ -22,7 +22,7 @@
     "./designer": "./src/designer/index.ts",
     "./materials": "./src/materials/index.ts",
     "./runtime/global-dialog": "./src/runtime/global-dialog.ts",
-    "./runtime/page-reference-dialog": "./src/runtime/page-reference-dialog.ts",
+    "./runtime/page-reference-dialog": "./src/runtime/page-reference-dialog.tsx",
     "./runtime/directives": "./src/runtime/directives.ts",
     "./core/host": "./src/core/host.ts",
     "./types/lowcode": "./src/types/lowcode.ts",

@@ -39,7 +39,7 @@ const tldrawVueRoot = resolve(__dirname, '..', 'packages', 'tldraw-vue');
 const tldrawVueSrcRoot = resolve(tldrawVueRoot, 'src');
 const tldrawVueEntry = existsSync(resolve(tldrawVueSrcRoot, 'index.ts'))
   ? resolve(tldrawVueSrcRoot, 'index.ts')
-  : resolve(__dirname, 'src', 'stubs', 'tldraw-vue-phase-one.ts');
+  : resolve(__dirname, 'src', 'stubs', 'tldraw-vue-phase-one.tsx');
 const tldrawVueStyle = existsSync(resolve(tldrawVueSrcRoot, 'styles.css'))
   ? resolve(tldrawVueSrcRoot, 'styles.css')
   : resolve(__dirname, 'src', 'stubs', 'tldraw-vue-phase-one.css');
@@ -143,7 +143,7 @@ export default defineConfig({
       { find: /^~\/types\/lowcode$/, replacement: `${toVitePath(lowcodeFrameworkRoot)}/types/lowcode.ts` },
       { find: /^@\/types\/lowcode$/, replacement: `${toVitePath(lowcodeFrameworkRoot)}/types/lowcode.ts` },
       { find: '@enlearn/lowcode-framework/runtime/global-dialog', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'global-dialog.ts') },
-      { find: '@enlearn/lowcode-framework/runtime/page-reference-dialog', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'page-reference-dialog.ts') },
+      { find: '@enlearn/lowcode-framework/runtime/page-reference-dialog', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'page-reference-dialog.tsx') },
       { find: '@enlearn/lowcode-framework/runtime/directives', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'directives.ts') },
       { find: '@enlearn/lowcode-framework/runtime', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'index.ts') },
       { find: '@enlearn/lowcode-framework/designer', replacement: resolve(lowcodeFrameworkRoot, 'designer', 'index.ts') },
@@ -203,7 +203,7 @@ export default defineConfig({
         find: '@vue-flow/core',
         replacement: resolve(__dirname, '..', 'packages', 'trigger-workflow-editor', 'node_modules', '@vue-flow', 'core'),
       },
-      { find: 'vue/jsx-runtime', replacement: resolve(__dirname, 'runtime/vue-jsx-runtime.ts') },
+      { find: 'vue/jsx-runtime', replacement: resolve(__dirname, 'runtime/vue-jsx-runtime.tsx') },
       { find: /^@\/editor(\/.*)?$/, replacement: `${resolve(tldrawVueSrcRoot, 'editor')}$1` },
       { find: /^@\/print(\/.*)?$/, replacement: `${resolve(tldrawVueSrcRoot, 'print')}$1` },
       { find: /^@\/vue(\/.*)?$/, replacement: `${resolve(tldrawVueSrcRoot, 'vue')}$1` },
@@ -211,7 +211,7 @@ export default defineConfig({
       { find: '~', replacement: __dirname },
       { find: '@', replacement: __dirname },
     ],
-    dedupe: ['vue', 'react', 'react-dom', 'vxe-pc-ui', 'vxe-table'],
+    dedupe: ['vue', 'react', 'react-dom', '@vxe-ui/core', 'vxe-pc-ui', 'vxe-table'],
   },
   optimizeDeps: {
     include: ['vue', 'vue-router'],

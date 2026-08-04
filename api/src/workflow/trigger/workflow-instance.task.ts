@@ -5,13 +5,14 @@ import {
 } from '../runtime/runtime.engine.types';
 import { createStandalonePostgresWorkflowRuntimeStore } from '../runtime/runtime.postgres-store';
 import { executeWorkflowInstance, type WorkflowWaitDriver } from '../runtime/workflow.executor';
+import { resolveWorkflowDatabaseUrl } from '../common/postgres-pool';
 
 export const workflowInstanceTask = task({
   id: WORKFLOW_INSTANCE_TASK_ID,
   run: async (payload: WorkflowInstanceTaskPayload) => {
-    const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+    const connectionString = resolveWorkflowDatabaseUrl(process.env);
     if (!connectionString) {
-      throw new Error('DIRECT_URL or DATABASE_URL is required by the Trigger.dev workflow task.');
+      throw new Error('DATABASE_URL or DIRECT_URL is required by the Trigger.dev workflow task.');
     }
 
     const runtime = createStandalonePostgresWorkflowRuntimeStore(connectionString);

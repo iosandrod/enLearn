@@ -140,8 +140,9 @@ export class TriggerCredentialsService implements OnModuleDestroy {
         max: 3,
         keepAlive: true,
         keepAliveInitialDelayMillis: 10_000,
-        idleTimeoutMillis: 30_000,
-        connectionTimeoutMillis: 10_000
+        idleTimeoutMillis: 15_000,
+        connectionTimeoutMillis: 10_000,
+        maxLifetimeSeconds: 300
       });
       this.pool.on('error', (error) => {
         this.logger.warn(`Trigger credential database idle client error: ${error.message}`);

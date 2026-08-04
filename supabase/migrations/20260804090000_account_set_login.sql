@@ -399,10 +399,40 @@ as $$
   from basejump.account_user memberships
   join basejump.accounts accounts on accounts.id = memberships.account_id
   left join public.account_user_preferences preferences on preferences.user_id = auth.uid()
-  where memberships.user_id = auth.uid();
+  where memberships.user_id = auth.uid()
+    and accounts.personal_account = false;
 $$;
 
 grant execute on function public.get_accounts() to authenticated;
+
+create or replace function public.get_login_account_options(login_user_id uuid)
+returns json
+language sql
+security definer
+stable
+set search_path = public, basejump
+as $$
+  select coalesce(
+    json_agg(
+      json_build_object(
+        'account_id', accounts.id,
+        'code', accounts.code,
+        'name', accounts.name,
+        'base_currency', accounts.base_currency
+      )
+      order by accounts.code asc, accounts.name asc
+    ),
+    '[]'::json
+  )
+  from basejump.account_user memberships
+  join basejump.accounts accounts on accounts.id = memberships.account_id
+  where memberships.user_id = get_login_account_options.login_user_id
+    and accounts.personal_account = false
+    and accounts.status = 'active';
+$$;
+
+revoke all on function public.get_login_account_options(uuid) from public, anon, authenticated;
+grant execute on function public.get_login_account_options(uuid) to service_role;
 
 create or replace function public.select_account_set_with_preference(account_id uuid, set_default boolean)
 returns json

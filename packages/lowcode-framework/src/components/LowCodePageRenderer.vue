@@ -743,11 +743,12 @@ async function loadPageData(nextPage: LowCodePageRecord) {
 
     const source = getDataSource(block.sourceKey ?? block.submitSourceKey);
     const sourceValue = source ? resolvedData[source.key] : undefined;
+    const sourceRecord = Array.isArray(sourceValue) ? sourceValue[0] : sourceValue;
 
-    if (isRecord(sourceValue)) {
+    if (isRecord(sourceRecord)) {
       formModels[block.id] = {
         ...formModels[block.id],
-        ...sourceValue
+        ...sourceRecord
       };
     }
   }

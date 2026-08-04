@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
+import { type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
 import type {
   AddSignTaskInput,
   CloseInstanceResult,
@@ -33,10 +33,11 @@ import type {
   WorkflowTaskRecord,
   WorkflowVariableRecord
 } from './runtime.types';
+import { retryTransientPostgresOperation } from '../common/postgres-resilience';
 import {
-  isTransientPostgresError,
-  retryTransientPostgresOperation
-} from '../common/postgres-resilience';
+  createWorkflowPostgresPool,
+  withHealthyPostgresClient
+} from '../common/postgres-pool';
 
 export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
   constructor(private readonly database: RuntimeDatabase) {}
@@ -1045,32 +1046,14 @@ function isUuid(value: string) {
 }
 
 export function createStandalonePostgresWorkflowRuntimeStore(connectionString: string) {
-  const pool = new Pool({
-    connectionString,
-    max: 5,
-    keepAlive: true,
-    keepAliveInitialDelayMillis: 5_000,
-    idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 30_000
-  });
-  pool.on('error', (error) => {
-    console.warn(`[workflow-runtime] Postgres idle client error: ${error.message}`);
+  const pool = createWorkflowPostgresPool(connectionString, {
+    max: 2,
+    name: 'workflow-trigger-runtime'
   });
   const database: RuntimeDatabase = {
     query: <T extends QueryResultRow = QueryResultRow>(text: string, values?: unknown[]) =>
       retryTransientPostgresOperation(() => pool.query<T>(text, values)),
-    withClient: async (callback) => {
-      const client = await retryTransientPostgresOperation(() => pool.connect());
-      let failure: unknown;
-      try {
-        return await callback(client);
-      } catch (error) {
-        failure = error;
-        throw error;
-      } finally {
-        client.release(isTransientPostgresError(failure) ? true : undefined);
-      }
-    }
+    withClient: (callback) => withHealthyPostgresClient(pool, callback)
   };
   return {
     store: new PostgresWorkflowRuntimeStore(database),

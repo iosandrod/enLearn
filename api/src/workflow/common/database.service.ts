@@ -1,10 +1,12 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
+import { type Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
 import { getWorkflowEnv } from './env';
+import { retryTransientPostgresOperation } from './postgres-resilience';
 import {
-  isTransientPostgresError,
-  retryTransientPostgresOperation
-} from './postgres-resilience';
+  createWorkflowPostgresPool,
+  resolveWorkflowDatabaseUrl,
+  withHealthyPostgresClient
+} from './postgres-pool';
 
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {
@@ -13,20 +15,13 @@ export class DatabaseService implements OnModuleDestroy {
 
   constructor() {
     const env = getWorkflowEnv();
-    const connectionString = env.DIRECT_URL ?? env.DATABASE_URL;
+    const connectionString = resolveWorkflowDatabaseUrl(env);
     if (!connectionString) return;
 
-    this.pool = new Pool({
-      connectionString,
-      max: 10,
-      keepAlive: true,
-      keepAliveInitialDelayMillis: 10_000,
-      idleTimeoutMillis: 30_000,
-      connectionTimeoutMillis: 30_000
-    });
-
-    this.pool.on('error', (error) => {
-      this.logger.warn(`Postgres idle client error: ${error.message}`);
+    this.pool = createWorkflowPostgresPool(connectionString, {
+      max: 5,
+      name: 'workflow-service',
+      onIdleClientError: (message) => this.logger.warn(message)
     });
   }
 
@@ -50,16 +45,7 @@ export class DatabaseService implements OnModuleDestroy {
       throw new Error('DATABASE_URL is required for workflow database operations.');
     }
 
-    const client = await retryTransientPostgresOperation(() => this.pool!.connect());
-    let failure: unknown;
-    try {
-      return await callback(client);
-    } catch (error) {
-      failure = error;
-      throw error;
-    } finally {
-      client.release(isTransientPostgresError(failure) ? true : undefined);
-    }
+    return withHealthyPostgresClient(this.pool, callback);
   }
 
   async onModuleDestroy() {

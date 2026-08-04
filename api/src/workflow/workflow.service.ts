@@ -1,19 +1,57 @@
-import { BadGatewayException, BadRequestException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
-import { BaseService } from '../common/base.service';
+import {
+  BaseService,
+  type HookContext,
+  type ListItemsHandler,
+  type ResourceConfigMap,
+  type ServiceHooks
+} from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { assertAccountUsers } from '../common/utils/account-context';
 import { requireAdmin } from '../common/utils/supabase';
+import {
+  normalizeWorkflowDraftSchema,
+  validateWorkflowDraftSchema
+} from './workflow.model';
 import {
   WORKFLOW_REQUEST_PATTERN,
   WORKFLOW_SERVICE_CLIENT,
   type WorkflowApiEnvelope,
   type WorkflowRequest
 } from './workflow.transport';
+import { workflowResources } from './workflow.resources';
 
 type PostData = Record<string, unknown>;
+type WorkflowHandler = (postData: PostData, context: ServiceContext) => Promise<unknown>;
+
+const WORKFLOW_JOB_TYPES = new Set(['once', 'cron', 'interval', 'manual', 'service_task']);
+
+const RESOURCE_LIST_FIELDS: Record<string, string[]> = {
+  wf_model: ['id', 'code', 'name', 'documentType', 'status'],
+  wf_model_version: ['id', 'modelId', 'version'],
+  wf_process_definition: ['id', 'modelId', 'code', 'name', 'version', 'documentType', 'status'],
+  wf_process_instance: [
+    'id',
+    'definitionId',
+    'businessKey',
+    'documentType',
+    'documentId',
+    'status',
+    'initiatorId'
+  ],
+  wf_job: ['id', 'code', 'name', 'type', 'status'],
+  wf_job_run: ['id', 'jobId', 'triggerRunId', 'status']
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -34,11 +72,53 @@ function readOptionalRecord(value: unknown, name: string) {
   throw new BadRequestException(`${name} must be an object.`);
 }
 
+function readPositiveInteger(value: unknown, name: string) {
+  if (value === undefined || value === null || value === '') return undefined;
+  const parsed = typeof value === 'number' ? value : Number(value);
+  if (Number.isInteger(parsed) && parsed > 0) return parsed;
+  throw new BadRequestException(`${name} must be a positive integer.`);
+}
+
 function stripUndefined(input: Record<string, unknown>) {
   return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined));
 }
 
-function resolveListQuery(postData: PostData) {
+function toSnakeCase(value: string) {
+  return value.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
+}
+
+function toCamelCase(value: string) {
+  return value.replace(/_([a-z0-9])/g, (_, character: string) => character.toUpperCase());
+}
+
+function toSerializableValue(value: unknown) {
+  return value instanceof Date ? value.toISOString() : value;
+}
+
+function mapWorkflowRow(resourceName: string, value: unknown) {
+  if (!isRecord(value)) return value;
+
+  const row = Object.fromEntries(
+    Object.entries(value)
+      .filter(([, fieldValue]) => fieldValue !== null)
+      .map(([field, fieldValue]) => [toCamelCase(field), toSerializableValue(fieldValue)])
+  );
+
+  if (resourceName === 'wf_job' && isRecord(row.payload)) {
+    const intervalSeconds = readPositiveInteger(row.payload.intervalSeconds, 'payload.intervalSeconds');
+    if (intervalSeconds) row.intervalSeconds = intervalSeconds;
+  }
+
+  return row;
+}
+
+function mapWorkflowResult(resourceName: string, value: unknown) {
+  return Array.isArray(value)
+    ? value.map((item) => mapWorkflowRow(resourceName, item))
+    : mapWorkflowRow(resourceName, value);
+}
+
+function resolveRpcListQuery(postData: PostData) {
   const filters = isRecord(postData.filters) ? postData.filters : {};
   const { tenantId: _tenantId, tenant_id: _tenantIdSnake, ...safePostData } = postData;
   const { tenantId: _filterTenantId, tenant_id: _filterTenantIdSnake, ...safeFilters } = filters;
@@ -48,8 +128,151 @@ function resolveListQuery(postData: PostData) {
   };
 }
 
+function normalizeResourceListInput(resourceName: string, postData: PostData) {
+  const sourceFilters = isRecord(postData.filters) ? postData.filters : {};
+  const filters: Record<string, unknown> = {};
+
+  for (const [field, value] of Object.entries(sourceFilters)) {
+    const databaseField = toSnakeCase(field);
+    if (databaseField !== 'tenant_id') filters[databaseField] = value;
+  }
+
+  for (const field of RESOURCE_LIST_FIELDS[resourceName] ?? []) {
+    const databaseField = toSnakeCase(field);
+    const value = postData[field] ?? postData[databaseField];
+    if (value !== undefined && databaseField !== 'tenant_id') {
+      filters[databaseField] = value;
+    }
+  }
+
+  const sorts = Array.isArray(postData.sorts)
+    ? postData.sorts.map((sort) =>
+        isRecord(sort) && typeof sort.field === 'string'
+          ? { ...sort, field: toSnakeCase(sort.field) }
+          : sort
+      )
+    : postData.sorts;
+  const rawSearchFields = postData.searchFields ?? postData.search_fields;
+  const searchFields = Array.isArray(rawSearchFields)
+    ? rawSearchFields.map((field: unknown) =>
+        typeof field === 'string' ? toSnakeCase(field) : field
+      )
+    : rawSearchFields;
+  const orderBy = readOptionalString(postData.orderBy ?? postData.order_by);
+
+  return {
+    ...postData,
+    resource: resourceName,
+    filters,
+    ...(sorts ? { sorts } : {}),
+    ...(searchFields ? { searchFields } : {}),
+    ...(orderBy ? { orderBy: toSnakeCase(orderBy) } : {})
+  };
+}
+
 @Injectable()
 export class WorkflowService extends BaseService {
+  private readonly compatibilityHandlers: Record<string, WorkflowHandler> = {
+    getModel: (postData, context) => this.getModel(postData, context),
+    saveModel: (postData, context) => this.saveModel(postData, context),
+    updateModel: (postData, context) => this.updateModel(postData, context),
+    disableDefinition: (postData, context) => this.disableDefinition(postData, context),
+    createJob: (postData, context) => this.createJob(postData, context),
+    getJob: (postData, context) => this.getJob(postData, context)
+  };
+
+  private readonly actionHandlers: Record<string, WorkflowHandler> = {
+    publishModel: (postData, context) => this.invokeAction({
+      method: 'POST',
+      path: `/models/${readString(postData.modelId, 'modelId')}/publish`,
+      body: readOptionalRecord(postData.body, 'body') ??
+        stripUndefined({ remark: postData.remark })
+    }, postData, context),
+    getDefinitionCapabilities: (postData, context) => this.invokeAction(
+      { method: 'GET', path: '/definitions/capabilities' },
+      postData,
+      context
+    ),
+    getInstance: (postData, context) => this.invokeAction({
+      method: 'GET',
+      path: `/instances/${readString(postData.instanceId, 'instanceId')}`
+    }, postData, context),
+    getInstanceTimeline: (postData, context) => this.invokeAction({
+      method: 'GET',
+      path: `/instances/${readString(postData.instanceId, 'instanceId')}/timeline`
+    }, postData, context),
+    startInstance: (postData, context) => this.invokeAction(
+      { method: 'POST', path: '/instances', body: postData },
+      postData,
+      context
+    ),
+    withdrawInstance: (postData, context) => this.invokeAction({
+      method: 'POST',
+      path: `/instances/${readString(postData.instanceId, 'instanceId')}/withdraw`,
+      body: stripUndefined({ comment: postData.comment })
+    }, postData, context),
+    terminateInstance: (postData, context) => this.invokeAction({
+      method: 'POST',
+      path: `/instances/${readString(postData.instanceId, 'instanceId')}/terminate`,
+      body: stripUndefined({ comment: postData.comment })
+    }, postData, context),
+    updateJobStatus: (postData, context) => this.invokeAction({
+      method: 'POST',
+      path: `/jobs/${readString(postData.jobId, 'jobId')}/status`,
+      body: { status: readString(postData.status, 'status') }
+    }, postData, context),
+    runJob: (postData, context) => this.invokeAction({
+      method: 'POST',
+      path: `/jobs/${readString(postData.jobId, 'jobId')}/run`,
+      body: readOptionalRecord(postData.body, 'body') ??
+        stripUndefined({ payload: postData.payload })
+    }, postData, context),
+    getTask: (postData, context) => this.invokeAction({
+      method: 'GET',
+      path: `/tasks/${readString(postData.taskId, 'taskId')}`
+    }, postData, context),
+    claimTask: (postData, context) => this.invokeAction({
+      method: 'POST',
+      path: `/tasks/${readString(postData.taskId, 'taskId')}/claim`,
+      body: {}
+    }, postData, context),
+    approveTask: (postData, context) => this.invokeAction({
+      method: 'POST',
+      path: `/tasks/${readString(postData.taskId, 'taskId')}/approve`,
+      body: stripUndefined({ comment: postData.comment, variables: postData.variables })
+    }, postData, context),
+    rejectTask: (postData, context) => this.invokeAction({
+      method: 'POST',
+      path: `/tasks/${readString(postData.taskId, 'taskId')}/reject`,
+      body: stripUndefined({ comment: postData.comment, targetNodeId: postData.targetNodeId })
+    }, postData, context),
+    transferTask: (postData, context) => this.invokeAction({
+      method: 'POST',
+      path: `/tasks/${readString(postData.taskId, 'taskId')}/transfer`,
+      body: stripUndefined({ targetUserId: postData.targetUserId, comment: postData.comment })
+    }, postData, context),
+    addSignTask: (postData, context) => this.invokeAction({
+      method: 'POST',
+      path: `/tasks/${readString(postData.taskId, 'taskId')}/add-sign`,
+      body: stripUndefined({ targetUserId: postData.targetUserId, comment: postData.comment })
+    }, postData, context),
+    getHistoryTimeline: (postData, context) => this.invokeAction({
+      method: 'GET',
+      path: `/history/instances/${readString(postData.instanceId, 'instanceId')}/timeline`
+    }, postData, context),
+    runApprovalFlowTest: (postData, context) => this.invokeAction({
+      method: 'POST',
+      path: '/tests/approval-flow/run',
+      body: stripUndefined({
+        userId: postData.userId,
+        approverIds: postData.approverIds,
+        schema: postData.schema,
+        timeoutMs: postData.timeoutMs,
+        intervalMs: postData.intervalMs
+      })
+    }, postData, context)
+  };
+
   constructor(
     @Inject(WORKFLOW_SERVICE_CLIENT)
     private readonly workflowClient: ClientProxy
@@ -57,7 +280,360 @@ export class WorkflowService extends BaseService {
     super();
   }
 
-  protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
+  protected override resources(): ResourceConfigMap {
+    return workflowResources;
+  }
+
+  protected override hooks(): ServiceHooks {
+    const outputHooks = {
+      afterAction: this.normalizeResourceResult
+    };
+
+    return {
+      wf_model: {
+        beforeCreate: this.normalizeModelPayload,
+        beforeUpdate: this.normalizeModelPayload,
+        ...outputHooks
+      },
+      wf_model_version: outputHooks,
+      wf_process_definition: outputHooks,
+      wf_process_instance: outputHooks,
+      wf_job: {
+        beforeCreate: this.normalizeJobPayload,
+        beforeUpdate: this.normalizeJobPayload,
+        ...outputHooks
+      },
+      wf_job_run: outputHooks
+    };
+  }
+
+  protected override listItemHandlers(): Record<string, ListItemsHandler> {
+    return {
+      models: (postData, context) => this.listResource('wf_model', postData, context),
+      definitions: (postData, context) =>
+        this.listResource('wf_process_definition', postData, context),
+      instances: (postData, context) =>
+        this.listResource('wf_process_instance', postData, context),
+      startedInstances: (postData, context) =>
+        this.listResource(
+          'wf_process_instance',
+          {
+            ...postData,
+            filters: {
+              ...(isRecord(postData.filters) ? postData.filters : {}),
+              initiatorId: context.userId
+            }
+          },
+          context
+        ),
+      jobs: (postData, context) => this.listResource('wf_job', postData, context),
+      jobRuns: (postData, context) => this.listResource('wf_job_run', postData, context),
+      todoTasks: (postData, context) =>
+        this.invokeWorkflowList('/tasks/todo', postData, context),
+      doneTasks: (postData, context) =>
+        this.invokeWorkflowList('/tasks/done', postData, context),
+      ccTasks: (postData, context) =>
+        this.invokeWorkflowList('/tasks/cc', postData, context),
+      startedTasks: (postData, context) =>
+        this.invokeWorkflowList('/tasks/started', postData, context)
+    };
+  }
+
+  protected override async executeAction(
+    method: string,
+    postData: PostData,
+    context: ServiceContext
+  ) {
+    const compatibilityHandler = this.compatibilityHandlers[method];
+    if (compatibilityHandler) return compatibilityHandler(postData, context);
+
+    const actionHandler = this.actionHandlers[method];
+    if (!actionHandler) return super.executeAction(method, postData, context);
+
+    await this.assertActionAccess(method, postData, context);
+    return actionHandler(postData, context);
+  }
+
+  protected override async createItem(postData: PostData, context: ServiceContext) {
+    const normalizedPostData = this.normalizeCrudPostData(postData);
+    return super.createItem(normalizedPostData, context);
+  }
+
+  protected override async updateItem(postData: PostData, context: ServiceContext) {
+    const normalizedPostData = this.normalizeCrudPostData(postData);
+    return super.updateItem(normalizedPostData, context);
+  }
+
+  protected override async saveItem(postData: PostData, context: ServiceContext) {
+    const normalizedPostData = this.normalizeCrudPostData(postData);
+    return super.saveItem(normalizedPostData, context);
+  }
+
+  private normalizeResourceResult = (ctx: HookContext) => {
+    ctx.result = mapWorkflowResult(ctx.resourceName, ctx.result);
+  };
+
+  private normalizeModelPayload = (ctx: HookContext) => {
+    const code = readOptionalString(ctx.data.code);
+    const name = readOptionalString(ctx.data.name);
+    const documentType = ctx.data.document_type ?? ctx.data.documentType;
+    const schema = ctx.data.draft_schema ?? ctx.data.draftSchema ?? ctx.data.schema;
+
+    if (code) ctx.data.code = code;
+    if (name) ctx.data.name = name;
+    if (documentType !== undefined) {
+      ctx.data.document_type = readOptionalString(documentType) || null;
+    }
+    delete ctx.data.documentType;
+    delete ctx.data.draftSchema;
+    delete ctx.data.schema;
+
+    if (schema !== undefined) {
+      if (!isRecord(schema)) throw new BadRequestException('schema must be an object.');
+      if (!code || !name) {
+        throw new BadRequestException('code and name are required when updating workflow schema.');
+      }
+      const dto = {
+        code,
+        name,
+        ...(readOptionalString(documentType)
+          ? { documentType: readOptionalString(documentType) }
+          : {}),
+        schema
+      };
+      const draftSchema = normalizeWorkflowDraftSchema(dto);
+      validateWorkflowDraftSchema(draftSchema, false);
+      ctx.data.draft_schema = draftSchema;
+    }
+  };
+
+  private normalizeJobPayload = (ctx: HookContext) => {
+    const type = readOptionalString(ctx.data.type);
+    if (type && !WORKFLOW_JOB_TYPES.has(type)) {
+      throw new BadRequestException(`Unsupported workflow job type: ${type}`);
+    }
+
+    if (ctx.action === 'create') {
+      ctx.data.code = readString(ctx.data.code, 'code');
+      ctx.data.name = readString(ctx.data.name, 'name');
+      ctx.data.type = readString(type, 'type');
+    } else if (ctx.data.name !== undefined) {
+      ctx.data.name = readString(ctx.data.name, 'name');
+    }
+
+    const hasPayload = ctx.data.payload !== undefined;
+    const hasInterval =
+      ctx.data.intervalSeconds !== undefined || ctx.data.interval_seconds !== undefined;
+    if (ctx.action === 'create' || hasPayload || hasInterval) {
+      const payload = readOptionalRecord(ctx.data.payload, 'payload') ?? {};
+      const intervalSeconds = readPositiveInteger(
+        ctx.data.intervalSeconds ?? ctx.data.interval_seconds ?? payload.intervalSeconds,
+        'intervalSeconds'
+      );
+      if (type === 'interval' || (!type && intervalSeconds)) {
+        const normalizedInterval = intervalSeconds ?? 60;
+        if (normalizedInterval % 60 !== 0 || normalizedInterval / 60 > 59) {
+          throw new BadRequestException(
+            'Trigger.dev interval jobs must use a whole number of minutes from 1 to 59.'
+          );
+        }
+        payload.intervalSeconds = normalizedInterval;
+      }
+      ctx.data.payload = payload;
+    }
+
+    const cronExpr = readOptionalString(ctx.data.cron_expr ?? ctx.data.cronExpr);
+    if (type === 'cron' && !cronExpr) {
+      throw new BadRequestException('Cron job requires cronExpr.');
+    }
+    if (ctx.data.cron_expr !== undefined || ctx.data.cronExpr !== undefined || type === 'cron') {
+      ctx.data.cron_expr = cronExpr || null;
+    }
+
+    const triggerTaskId = readOptionalString(
+      ctx.data.trigger_task_id ?? ctx.data.triggerTaskId
+    );
+    if (ctx.action === 'create' || triggerTaskId) {
+      ctx.data.trigger_task_id = triggerTaskId ||
+        (type === 'service_task' ? 'workflow.service.execute' : 'workflow.job.run');
+    }
+
+    if (ctx.data.timezone !== undefined || ctx.action === 'create') {
+      ctx.data.timezone = readOptionalString(ctx.data.timezone) || 'Asia/Shanghai';
+    }
+    if (ctx.data.retry_policy !== undefined || ctx.data.retryPolicy !== undefined) {
+      ctx.data.retry_policy =
+        readOptionalRecord(ctx.data.retry_policy ?? ctx.data.retryPolicy, 'retryPolicy') ??
+        { maxAttempts: 3 };
+    }
+    if (ctx.data.timeout_seconds !== undefined || ctx.data.timeoutSeconds !== undefined) {
+      ctx.data.timeout_seconds =
+        readPositiveInteger(
+          ctx.data.timeout_seconds ?? ctx.data.timeoutSeconds,
+          'timeoutSeconds'
+        ) ?? null;
+    }
+    if (ctx.data.concurrency_key !== undefined || ctx.data.concurrencyKey !== undefined) {
+      ctx.data.concurrency_key =
+        readOptionalString(ctx.data.concurrency_key ?? ctx.data.concurrencyKey) || null;
+    }
+
+    delete ctx.data.intervalSeconds;
+    delete ctx.data.interval_seconds;
+    delete ctx.data.triggerTaskId;
+    delete ctx.data.cronExpr;
+    delete ctx.data.retryPolicy;
+    delete ctx.data.timeoutSeconds;
+    delete ctx.data.concurrencyKey;
+  };
+
+  private resolveWorkflowResourceName(postData: PostData) {
+    return this.tryResolveResource(postData)?.name ?? 'workflow';
+  }
+
+  private normalizeCrudPostData(postData: PostData) {
+    const resourceName = this.resolveWorkflowResourceName(postData);
+    if (resourceName === 'workflow') return postData;
+
+    const rawData = isRecord(postData.data)
+      ? postData.data
+      : Object.fromEntries(
+          Object.entries(postData).filter(([field]) => ![
+            'resource',
+            'itemType',
+            'item_type',
+            'tableName',
+            'table_name',
+            'id',
+            'ids',
+            'filters',
+            'sorts',
+            'limit',
+            'page',
+            'pageSize',
+            'page_size',
+            'offset'
+          ].includes(field))
+        );
+    const data = Object.fromEntries(
+      Object.entries(rawData).map(([field, value]) => [toSnakeCase(field), value])
+    );
+
+    return {
+      ...postData,
+      resource: resourceName,
+      data
+    };
+  }
+
+  private async listResource(
+    resourceName: string,
+    postData: PostData,
+    context: ServiceContext
+  ) {
+    return super.listItems(normalizeResourceListInput(resourceName, postData), context);
+  }
+
+  private async getModel(postData: PostData, context: ServiceContext) {
+    const modelId = readString(postData.modelId ?? postData.id, 'modelId');
+    const [model] = await this.listResource(
+      'wf_model',
+      { filters: { id: modelId }, limit: 1 },
+      context
+    ) as PostData[];
+    if (!model) throw new NotFoundException('Workflow model not found.');
+
+    const versions = await this.listResource(
+      'wf_model_version',
+      { filters: { modelId }, limit: 1000 },
+      context
+    );
+    return { ...model, versions };
+  }
+
+  private async saveModel(postData: PostData, context: ServiceContext) {
+    const code = readString(postData.code, 'code');
+    const explicitId = readOptionalString(postData.modelId ?? postData.id);
+    let modelId = explicitId;
+
+    if (!modelId) {
+      const [existing] = await this.listResource(
+        'wf_model',
+        { filters: { code }, limit: 1 },
+        context
+      ) as PostData[];
+      modelId = readOptionalString(existing?.id);
+    }
+
+    return this.saveItem({
+      resource: 'wf_model',
+      ...(modelId ? { id: modelId } : {}),
+      data: {
+        code,
+        name: postData.name,
+        documentType: postData.documentType,
+        schema: postData.schema
+      }
+    }, context);
+  }
+
+  private updateModel(postData: PostData, context: ServiceContext) {
+    return this.updateItem({
+      resource: 'wf_model',
+      id: readString(postData.modelId ?? postData.id, 'modelId'),
+      data: {
+        code: postData.code,
+        name: postData.name,
+        documentType: postData.documentType,
+        schema: postData.schema
+      }
+    }, context);
+  }
+
+  private disableDefinition(postData: PostData, context: ServiceContext) {
+    return this.updateItem({
+      resource: 'wf_process_definition',
+      id: readString(postData.definitionId ?? postData.id, 'definitionId'),
+      data: { status: 'disabled' }
+    }, context);
+  }
+
+  private createJob(postData: PostData, context: ServiceContext) {
+    return this.createItem({ resource: 'wf_job', data: postData }, context);
+  }
+
+  private async getJob(postData: PostData, context: ServiceContext) {
+    const jobId = readString(postData.jobId ?? postData.id, 'jobId');
+    const [job] = await this.listResource(
+      'wf_job',
+      { filters: { id: jobId }, limit: 1 },
+      context
+    ) as PostData[];
+    if (!job) throw new NotFoundException('Workflow job not found.');
+    return job;
+  }
+
+  private invokeWorkflowList(path: string, postData: PostData, context: ServiceContext) {
+    return this.invokeWorkflowService(
+      { method: 'GET', path, query: resolveRpcListQuery(postData) },
+      postData,
+      context
+    );
+  }
+
+  private invokeAction(
+    request: WorkflowRequest,
+    postData: PostData,
+    context: ServiceContext
+  ) {
+    return this.invokeWorkflowService(request, postData, context);
+  }
+
+  private async assertActionAccess(
+    method: string,
+    postData: PostData,
+    context: ServiceContext
+  ) {
     if (method === 'transferTask' || method === 'addSignTask') {
       const targetUserId = readString(postData.targetUserId, 'targetUserId');
       await assertAccountUsers(
@@ -67,174 +643,21 @@ export class WorkflowService extends BaseService {
       );
     }
 
-    if (method === 'runApprovalFlowTest') {
-      if (process.env.NODE_ENV === 'production') {
-        throw new ForbiddenException('Approval flow test identities are disabled in production.');
-      }
-      await requireAdmin(context, 'workflow.definitions.manage');
-      const requestedUserId = readOptionalString(postData.userId);
-      const approverIds = Array.isArray(postData.approverIds)
-        ? postData.approverIds.map(readOptionalString).filter(Boolean)
-        : [];
-      await assertAccountUsers(
-        context,
-        [...(requestedUserId ? [requestedUserId] : []), ...approverIds],
-        'Every approval test user must belong to the active account set.'
-      );
+    if (method !== 'runApprovalFlowTest') return;
+    if (process.env.NODE_ENV === 'production') {
+      throw new ForbiddenException('Approval flow test identities are disabled in production.');
     }
 
-    const request = this.resolveRequest(method, postData);
-    return this.invokeWorkflowService(request, postData, context);
-  }
-
-  private resolveRequest(method: string, postData: PostData): WorkflowRequest {
-    switch (method) {
-      case 'getModel':
-        return { method: 'GET', path: `/models/${readString(postData.modelId, 'modelId')}` };
-      case 'saveModel':
-        return { method: 'POST', path: '/models', body: postData };
-      case 'updateModel': {
-        const modelId = readString(postData.modelId, 'modelId');
-        const { modelId: _modelId, ...body } = postData;
-        return { method: 'PUT', path: `/models/${modelId}`, body };
-      }
-      case 'publishModel':
-        return {
-          method: 'POST',
-          path: `/models/${readString(postData.modelId, 'modelId')}/publish`,
-          body: readOptionalRecord(postData.body, 'body') ?? stripUndefined({ remark: postData.remark })
-        };
-      case 'getDefinitionCapabilities':
-        return { method: 'GET', path: '/definitions/capabilities' };
-      case 'disableDefinition':
-        return {
-          method: 'POST',
-          path: `/definitions/${readString(postData.definitionId, 'definitionId')}/disable`,
-          body: {}
-        };
-      case 'getInstance':
-        return { method: 'GET', path: `/instances/${readString(postData.instanceId, 'instanceId')}` };
-      case 'getInstanceTimeline':
-        return {
-          method: 'GET',
-          path: `/instances/${readString(postData.instanceId, 'instanceId')}/timeline`
-        };
-      case 'startInstance':
-        return { method: 'POST', path: '/instances', body: postData };
-      case 'withdrawInstance':
-        return {
-          method: 'POST',
-          path: `/instances/${readString(postData.instanceId, 'instanceId')}/withdraw`,
-          body: stripUndefined({ comment: postData.comment })
-        };
-      case 'terminateInstance':
-        return {
-          method: 'POST',
-          path: `/instances/${readString(postData.instanceId, 'instanceId')}/terminate`,
-          body: stripUndefined({ comment: postData.comment })
-        };
-      case 'createJob':
-        return { method: 'POST', path: '/jobs', body: postData };
-      case 'getJob':
-        return { method: 'GET', path: `/jobs/${readString(postData.jobId, 'jobId')}` };
-      case 'updateJobStatus':
-        return {
-          method: 'POST',
-          path: `/jobs/${readString(postData.jobId, 'jobId')}/status`,
-          body: { status: readString(postData.status, 'status') }
-        };
-      case 'runJob':
-        return {
-          method: 'POST',
-          path: `/jobs/${readString(postData.jobId, 'jobId')}/run`,
-          body: readOptionalRecord(postData.body, 'body') ?? stripUndefined({ payload: postData.payload })
-        };
-      case 'getTask':
-        return { method: 'GET', path: `/tasks/${readString(postData.taskId, 'taskId')}` };
-      case 'claimTask':
-        return {
-          method: 'POST',
-          path: `/tasks/${readString(postData.taskId, 'taskId')}/claim`,
-          body: {}
-        };
-      case 'approveTask':
-        return {
-          method: 'POST',
-          path: `/tasks/${readString(postData.taskId, 'taskId')}/approve`,
-          body: stripUndefined({ comment: postData.comment, variables: postData.variables })
-        };
-      case 'rejectTask':
-        return {
-          method: 'POST',
-          path: `/tasks/${readString(postData.taskId, 'taskId')}/reject`,
-          body: stripUndefined({ comment: postData.comment, targetNodeId: postData.targetNodeId })
-        };
-      case 'transferTask':
-        return {
-          method: 'POST',
-          path: `/tasks/${readString(postData.taskId, 'taskId')}/transfer`,
-          body: stripUndefined({ targetUserId: postData.targetUserId, comment: postData.comment })
-        };
-      case 'addSignTask':
-        return {
-          method: 'POST',
-          path: `/tasks/${readString(postData.taskId, 'taskId')}/add-sign`,
-          body: stripUndefined({ targetUserId: postData.targetUserId, comment: postData.comment })
-        };
-      case 'getHistoryTimeline':
-        return {
-          method: 'GET',
-          path: `/history/instances/${readString(postData.instanceId, 'instanceId')}/timeline`
-        };
-      case 'runApprovalFlowTest':
-        return {
-          method: 'POST',
-          path: '/tests/approval-flow/run',
-          body: stripUndefined({
-            userId: postData.userId,
-            approverIds: postData.approverIds,
-            schema: postData.schema,
-            timeoutMs: postData.timeoutMs,
-            intervalMs: postData.intervalMs
-          })
-        };
-      default:
-        throw new BadRequestException(`Unsupported workflow method: ${method}`);
-    }
-  }
-
-  protected override async handleListItems(postData: PostData, context: ServiceContext) {
-    const request = this.resolveListItemsRequest(postData);
-    return this.invokeWorkflowService(request, postData, context);
-  }
-
-  private resolveListItemsRequest(postData: PostData): WorkflowRequest {
-    const query = resolveListQuery(postData);
-
-    switch (readOptionalString(postData.itemType ?? postData.item_type ?? postData.type)) {
-      case 'models':
-        return { method: 'GET', path: '/models', query };
-      case 'definitions':
-        return { method: 'GET', path: '/definitions', query };
-      case 'instances':
-        return { method: 'GET', path: '/instances', query };
-      case 'startedInstances':
-        return { method: 'GET', path: '/instances/started', query };
-      case 'jobs':
-        return { method: 'GET', path: '/jobs', query };
-      case 'jobRuns':
-        return { method: 'GET', path: '/jobs/runs', query };
-      case 'todoTasks':
-        return { method: 'GET', path: '/tasks/todo', query };
-      case 'doneTasks':
-        return { method: 'GET', path: '/tasks/done', query };
-      case 'ccTasks':
-        return { method: 'GET', path: '/tasks/cc', query };
-      case 'startedTasks':
-        return { method: 'GET', path: '/tasks/started', query };
-      default:
-        throw new BadRequestException('Unsupported workflow listItems itemType.');
-    }
+    await requireAdmin(context, 'workflow.definitions.manage');
+    const requestedUserId = readOptionalString(postData.userId);
+    const approverIds = Array.isArray(postData.approverIds)
+      ? postData.approverIds.map(readOptionalString).filter(Boolean)
+      : [];
+    await assertAccountUsers(
+      context,
+      [...(requestedUserId ? [requestedUserId] : []), ...approverIds],
+      'Every approval test user must belong to the active account set.'
+    );
   }
 
   private async invokeWorkflowService(

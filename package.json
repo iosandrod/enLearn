@@ -19,6 +19,11 @@
     "api:dev": "pnpm --dir api dev",
     "api:build": "pnpm --dir api build",
     "api:start": "pnpm --dir api start",
+    "mobile:dev": "pnpm --dir mobile-app web:dev",
+    "mobile:typecheck": "pnpm --dir mobile-app typecheck",
+    "mobile:build": "pnpm --dir mobile-app hippy:build",
+    "mobile:web:build": "pnpm --dir mobile-app web:build",
+    "services:dev": "concurrently --kill-others-on-fail --names gateway,domain,workflow --prefix-colors blue,green,magenta \"pnpm api:dev\" \"pnpm domain-service:dev\" \"pnpm workflow-api:dev\"",
     "domain-service:dev": "pnpm --dir api domain:dev",
     "domain-service:build": "pnpm --dir api domain:build",
     "domain-service:start": "pnpm --dir api domain:start",
@@ -59,5 +64,13 @@
     "workflow-api:trigger:dev": "pnpm --dir api workflow:trigger:dev",
     "workflow-api:trigger:deploy": "pnpm --dir api workflow:trigger:deploy"
   },
-  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
+  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67",
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  },
+  "pnpm": {
+    "overrides": {
+      "@hippy/vue-router-next-history>vue-router": "4.5.1"
+    }
+  }
 }

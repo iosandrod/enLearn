@@ -32,8 +32,10 @@ const ACCESS_TOKEN_KEY = 'enlearn_access_token';
 const REFRESH_TOKEN_KEY = 'enlearn_refresh_token';
 const ACTIVE_ACCOUNT_KEY = 'enlearn_active_account_id';
 const DEV_AUTO_LOGIN_DISABLED_KEY = 'enlearn_dev_auto_login_disabled';
+const DEV_IMPERSONATOR_REFRESH_TOKEN_KEY = 'enlearn_dev_impersonator_refresh_token';
 
 let initPromise: Promise<void> | null = null;
+let devImpersonatorSessionPromise: Promise<string> | null = null;
 
 function shouldUseDevAutoLogin() {
   if (!import.meta.env.DEV) return false;
@@ -50,16 +52,42 @@ function getApiBaseUrl() {
   return String(import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002/api').replace(/\/+$/, '');
 }
 
-function persistAuthTokens(payload: AppAuthPayload) {
+function readSessionTokens(payload: AppAuthPayload) {
   const session = payload.session as
     | (AppAuthPayload['session'] & { access_token?: string; refresh_token?: string })
     | null;
-  const accessToken = session?.access_token;
+
+  return {
+    accessToken: session?.access_token ?? '',
+    refreshToken: session?.refresh_token ?? ''
+  };
+}
+
+function persistAuthTokens(payload: AppAuthPayload) {
+  const { accessToken, refreshToken } = readSessionTokens(payload);
   if (import.meta.server || !accessToken) return;
   window.localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-  if (session.refresh_token) {
-    window.localStorage.setItem(REFRESH_TOKEN_KEY, session.refresh_token);
+  if (refreshToken) {
+    window.localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  } else {
+    window.localStorage.removeItem(REFRESH_TOKEN_KEY);
   }
+}
+
+function persistDevImpersonatorTokens(payload: AppAuthPayload) {
+  if (import.meta.server || !import.meta.env.DEV) return '';
+  const { accessToken, refreshToken } = readSessionTokens(payload);
+  if (!accessToken) return '';
+
+  if (refreshToken) {
+    window.sessionStorage.setItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY, refreshToken);
+  }
+  return accessToken;
+}
+
+function clearDevImpersonatorTokens() {
+  if (import.meta.server) return;
+  window.sessionStorage.removeItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY);
 }
 
 function readAuthErrorMessage(payload: unknown, fallback: string) {
@@ -74,10 +102,22 @@ function readAuthErrorMessage(payload: unknown, fallback: string) {
   return String(message ?? record.statusMessage ?? record.error ?? fallback);
 }
 
-async function postAuthJson<TPayload>(path: string, body: Record<string, unknown>) {
+async function postAuthJson<TPayload>(
+  path: string,
+  body: Record<string, unknown>,
+  options: { authorization?: string; accountId?: string } = {}
+) {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (options.authorization) {
+    headers.Authorization = `Bearer ${options.authorization}`;
+  }
+  if (options.accountId) {
+    headers['X-Account-Id'] = options.accountId;
+  }
+
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body),
   });
   const text = await response.text();
@@ -101,6 +141,51 @@ async function postAuthJson<TPayload>(path: string, body: Record<string, unknown
   return payload as TPayload;
 }
 
+async function invokeDevService<TPayload>(
+  serviceName: string,
+  serviceMethod: string,
+  postData: Record<string, unknown>,
+  options: { authorization: string; accountId: string }
+) {
+  const response = await fetch(`${getApiBaseUrl()}/service`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${options.authorization}`,
+      'X-Account-Id': options.accountId
+    },
+    body: JSON.stringify({ serviceName, serviceMethod, postData })
+  });
+  const text = await response.text();
+  let payload: unknown = null;
+
+  if (text) {
+    try {
+      payload = JSON.parse(text) as unknown;
+    } catch {
+      payload = { message: text };
+    }
+  }
+
+  if (!response.ok) {
+    throw createError({
+      statusCode: response.status,
+      statusMessage: readAuthErrorMessage(payload, response.statusText)
+    });
+  }
+
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    'data' in payload &&
+    'success' in payload
+  ) {
+    return (payload as { data: TPayload }).data;
+  }
+
+  return payload as TPayload;
+}
+
 function enableDevAutoLogin() {
   if (import.meta.server || !import.meta.env.DEV) return;
   window.sessionStorage.removeItem(DEV_AUTO_LOGIN_DISABLED_KEY);
@@ -109,10 +194,6 @@ function enableDevAutoLogin() {
 function disableDevAutoLogin() {
   if (import.meta.server || !import.meta.env.DEV) return;
   window.sessionStorage.setItem(DEV_AUTO_LOGIN_DISABLED_KEY, '1');
-}
-
-function isDevAutoLoginUser(email?: string | null) {
-  return email?.trim().toLowerCase() === ADMIN_LOGIN_EMAIL;
 }
 
 function applyAuthPayload(payload: AppAuthPayload, options: { activateFallback?: boolean } = {}) {
@@ -303,30 +384,27 @@ export function useAuth() {
 
   async function runInit(force = false) {
     if (import.meta.server) return;
-    if (ready.value && !force && user.value && activeAccount.value) {
-      if (!shouldUseDevAutoLogin() || isDevAutoLoginUser(user.value.email)) return;
-    }
+    if (ready.value && !force && user.value && activeAccount.value) return;
 
-    if (shouldUseDevAutoLogin() && !isDevAutoLoginUser(user.value?.email)) {
+    const hasStoredSession = Boolean(
+      window.localStorage.getItem(ACCESS_TOKEN_KEY) ||
+      window.localStorage.getItem(REFRESH_TOKEN_KEY)
+    );
+
+    if (hasStoredSession) {
       try {
-        await signInWithPassword(DEV_AUTO_LOGIN_CREDENTIALS, { devAutoLogin: true });
+        const payload = await $fetch<AppAuthPayload>('/api/auth/me');
+        applyAuthPayload(payload);
         restoreDevTestUser();
         return;
       } catch (error) {
-        console.warn('Dev auto login failed.', error);
-      }
-    }
-
-    try {
-      const payload = await $fetch<AppAuthPayload>('/api/auth/me');
-      applyAuthPayload(payload);
-      restoreDevTestUser();
-    } catch (error) {
-      if (isUnauthenticatedError(error)) {
-        clearAuthPayload();
-      } else {
-        console.warn('Auth session check failed.', error);
-        ready.value = true;
+        if (isUnauthenticatedError(error)) {
+          clearAuthPayload();
+        } else {
+          console.warn('Auth session check failed.', error);
+          ready.value = true;
+          return;
+        }
       }
     }
 
@@ -337,6 +415,8 @@ export function useAuth() {
       } catch (error) {
         console.warn('Dev auto login failed.', error);
       }
+    } else if (!user.value) {
+      clearAuthPayload();
     }
   }
 
@@ -353,8 +433,11 @@ export function useAuth() {
   async function signInWithPassword(credentials: {
     email: string;
     password: string;
+    accountId?: string;
+    setDefault?: boolean;
   }, options: { devAutoLogin?: boolean } = {}) {
     if (options.devAutoLogin) enableDevAutoLogin();
+    clearDevImpersonatorTokens();
     const payload = await postAuthJson<AppAuthPayload>('/auth/signin', {
       ...credentials,
       email: normalizeLoginEmail(credentials.email)
@@ -450,12 +533,93 @@ export function useAuth() {
     window.localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
   }
 
-  function switchDevTestUser(userId: string) {
-    if (!shouldUseDevAutoLogin()) return;
+  async function getDevImpersonatorAccessToken() {
+    if (import.meta.server || !shouldUseDevAutoLogin()) return '';
+
+    const savedRefreshToken = window.sessionStorage.getItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY) ?? '';
+    if (savedRefreshToken) {
+      if (!devImpersonatorSessionPromise) {
+        devImpersonatorSessionPromise = postAuthJson<AppAuthPayload>('/auth/refresh', {
+          refreshToken: savedRefreshToken
+        })
+          .then(persistDevImpersonatorTokens)
+          .catch(() => {
+            clearDevImpersonatorTokens();
+            return '';
+          })
+          .finally(() => {
+            devImpersonatorSessionPromise = null;
+          });
+      }
+
+      const refreshedAccessToken = await devImpersonatorSessionPromise;
+      if (refreshedAccessToken) return refreshedAccessToken;
+    }
+
+    const currentAccessToken = window.localStorage.getItem(ACCESS_TOKEN_KEY) ?? '';
+    const currentRefreshToken = window.localStorage.getItem(REFRESH_TOKEN_KEY) ?? '';
+    if (currentAccessToken && currentRefreshToken) {
+      window.sessionStorage.setItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY, currentRefreshToken);
+    }
+    return currentAccessToken;
+  }
+
+  async function loadDevTestUsers() {
+    if (!shouldUseDevAutoLogin()) return [] as DevTestUser[];
+    const accountId = activeAccount.value?.account_id;
+    const authorization = await getDevImpersonatorAccessToken();
+    if (!accountId || !authorization) return [] as DevTestUser[];
+
+    const rows = await invokeDevService<AdminUserRow[]>(
+      'admin',
+      'listApprovalTestUsers',
+      {},
+      { authorization, accountId }
+    );
+    setDevTestUsers(Array.isArray(rows) ? rows : []);
+    return devTestUsers.value;
+  }
+
+  async function switchDevTestUser(userId: string) {
+    if (!shouldUseDevAutoLogin()) return false;
     const testUser = devTestUsers.value.find((item) => item.id === userId);
-    if (!testUser) return;
+    const accountId = activeAccount.value?.account_id;
+    if (!testUser || !accountId) return false;
+
+    const currentUserId = user.value?.id ?? '';
+    if (testUser.id === currentUserId) {
+      window.localStorage.setItem(DEV_TEST_USER_KEY, testUser.id);
+      activeDevTestUserId.value = testUser.id;
+      return false;
+    }
+
+    const authorization = await getDevImpersonatorAccessToken();
+    if (!authorization) {
+      throw createError({
+        statusCode: 401,
+        statusMessage: '模拟登录凭据已失效，请重新登录管理员账号。'
+      });
+    }
+
+    if (!window.sessionStorage.getItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY)) {
+      const currentRefreshToken = window.localStorage.getItem(REFRESH_TOKEN_KEY) ?? '';
+      if (currentRefreshToken) {
+        window.sessionStorage.setItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY, currentRefreshToken);
+      }
+    }
+
+    const payload = await postAuthJson<AppAuthPayload>('/auth/dev-impersonate', {
+      userId: testUser.id,
+      accountId
+    }, { authorization, accountId });
+    persistAuthTokens(payload);
+    applyAuthPayload(payload);
     window.localStorage.setItem(DEV_TEST_USER_KEY, testUser.id);
     activeDevTestUserId.value = testUser.id;
+    window.dispatchEvent(new CustomEvent('enlearn:auth-user-changed', {
+      detail: { userId: testUser.id, accountId }
+    }));
+    return true;
   }
 
   function setDevTestUsers(rows: AdminUserRow[]) {
@@ -482,6 +646,7 @@ export function useAuth() {
   async function signOut() {
     disableDevAutoLogin();
     await $fetch('/api/auth/signout', { method: 'POST' });
+    clearDevImpersonatorTokens();
     window.localStorage.removeItem(DEV_TEST_USER_KEY);
     window.localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
     activeDevTestUserId.value = '';
@@ -519,6 +684,7 @@ export function useAuth() {
     activeDevTestUser,
     activeDevTestUserId,
     setDevTestUsers,
+    loadDevTestUsers,
     switchDevTestUser,
     signOut
   };

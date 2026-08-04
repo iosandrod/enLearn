@@ -9,8 +9,6 @@ type ApprovalFlowTestInput = {
   userId?: unknown;
   approverIds?: unknown;
   schema?: unknown;
-  timeoutMs?: unknown;
-  intervalMs?: unknown;
 };
 
 type ApprovalFlowTestSchema = Record<string, unknown> & {
@@ -45,8 +43,6 @@ export class ApprovalFlowTestService {
     const schema = prepareApprovalFlowTestSchema(input.schema, suffix, userId, requestedApproverIds);
     const approverIds = collectWorkflowUserAssignees(schema);
     const testData = createApprovalFlowTestData(businessKey, userId, approverIds, schema);
-    const timeoutMs = clampNumber(input.timeoutMs, 10_000, 180_000, 90_000);
-    const intervalMs = clampNumber(input.intervalMs, 500, 10_000, 2_000);
 
     const model = await this.definitionService.saveModel(
       {
@@ -77,28 +73,24 @@ export class ApprovalFlowTestService {
       testActor
     );
 
-    const taskState = await this.waitForPendingTaskState(
-      instance.id,
-      timeoutMs,
-      intervalMs
+    const pendingTasks = instance.tasks.filter(
+      (task) => task.status === 'pending' || task.status === 'claimed'
     );
-    const detail = taskState.detail;
-    const pendingTasks = taskState.pendingTasks;
     const nextTask = pendingTasks[0];
     const timeline = await this.runtimeService.getTimeline(instance.id);
 
     return {
       started: true,
-      passed: detail.status === 'approved',
+      passed: instance.status === 'approved',
       modelId: model.id,
       definitionId: published.definition.id,
-      instanceId: detail.id,
-      instanceStatus: detail.status,
-      triggerRunId: detail.triggerRunId,
+      instanceId: instance.id,
+      instanceStatus: instance.status,
+      triggerRunId: instance.triggerRunId,
       approvedSteps: [],
       pendingTasks,
       ...(nextTask ? { nextTask, nextTaskRoute: `/dashboard/workflow/tasks/${nextTask.id}` } : {}),
-      finalTasks: detail.tasks,
+      finalTasks: instance.tasks,
       timeline,
       testData: {
         tenantId,
@@ -109,28 +101,6 @@ export class ApprovalFlowTestService {
         variables: testData.variables
       }
     };
-  }
-
-  private async waitForPendingTaskState(
-    instanceId: string,
-    timeoutMs: number,
-    intervalMs: number
-  ) {
-    return poll(
-      async () => {
-        const detail = await this.runtimeService.getInstance(instanceId);
-        const pendingTasks = detail.tasks.filter(
-          (task) => task.status === 'pending' || task.status === 'claimed'
-        );
-        if (pendingTasks.length || detail.status !== 'running') {
-          return { detail, pendingTasks };
-        }
-        return undefined;
-      },
-      timeoutMs,
-      intervalMs,
-      'pending approval task'
-    );
   }
 }
 
@@ -296,30 +266,6 @@ function createApprovalFlowTestData(
       userId
     }
   };
-}
-
-async function poll<T>(
-  resolver: () => Promise<T | undefined>,
-  timeoutMs: number,
-  intervalMs: number,
-  label: string
-) {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() <= deadline) {
-    const value = await resolver();
-    if (value) return value;
-    await delay(intervalMs);
-  }
-  throw new Error(`Timed out waiting for ${label}. Check the workflow service and Trigger.dev worker.`);
-}
-
-function delay(ms: number) {
-  return new Promise<void>((resolve) => setTimeout(resolve, ms));
-}
-
-function clampNumber(value: unknown, min: number, max: number, fallback: number) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
-  return Math.max(min, Math.min(max, value));
 }
 
 function readString(value: unknown) {

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
 import TableSearchPanel from '../dist/index.js'
 
 const hooks = []
@@ -52,5 +53,11 @@ assert.equal(typeof gridMethods.openTableSearchPanel, 'function')
 
 interceptors.get('mounted')({ $table: table })
 interceptors.get('beforeUnmount')({ $table: table })
+
+const style = await readFile(new URL('../dist/style.css', import.meta.url), 'utf8')
+assert.match(style, /var\(--vxe-ui-layout-background-color/)
+assert.match(style, /var\(--vxe-ui-font-primary-color/)
+assert.match(style, /var\(--vxe-ui-input-border-color/)
+assert.doesNotMatch(style, /background:\s*#252526/)
 
 console.log('Table search panel plugin contract test passed.')

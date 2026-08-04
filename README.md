@@ -62,6 +62,12 @@ cd C:\Users\11516\Desktop\project\enLearn
 pnpm workflow-api:dev
 ```
 
+Or start the API gateway and all backend microservices together:
+
+```bash
+pnpm services:dev
+```
+
 The local Trigger.dev stack requires Redis 6 or newer. The legacy Windows
 Redis 3 service is not compatible with Trigger.dev's Lua queue scripts.
 

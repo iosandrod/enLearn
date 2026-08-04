@@ -182,19 +182,18 @@ function sourceSqlForEntity(entity: ListItemsEntity) {
       account_summary as (
         select
           memberships.user_id,
-          array_agg(accounts.id order by accounts.personal_account desc, accounts.created_at asc) as account_ids,
+          array_agg(accounts.id order by accounts.created_at asc) as account_ids,
           string_agg(
             coalesce(accounts.name, accounts.slug, accounts.id::text),
             ', '
-            order by accounts.personal_account desc, accounts.created_at asc
+            order by accounts.created_at asc
           ) as account_names,
           array_agg(distinct memberships.account_role::text order by memberships.account_role::text) as account_roles,
           count(*)::integer as account_count,
-          (array_agg(accounts.id order by accounts.created_at asc) filter (where accounts.personal_account))[1] as personal_account_id,
-          (array_agg(accounts.name order by accounts.created_at asc) filter (where accounts.personal_account))[1] as personal_account_name,
           bool_or(accounts.primary_owner_user_id = memberships.user_id) as is_primary_account_owner
         from basejump.account_user memberships
         join basejump.accounts accounts on accounts.id = memberships.account_id
+        where accounts.personal_account = false
         group by memberships.user_id
       )
       select
@@ -213,8 +212,6 @@ function sourceSqlForEntity(entity: ListItemsEntity) {
         coalesce(account_summary.account_names, '') as account_names,
         coalesce(account_summary.account_roles, '{}'::text[]) as account_roles,
         coalesce(account_summary.account_count, 0) as account_count,
-        account_summary.personal_account_id,
-        account_summary.personal_account_name,
         coalesce(account_summary.is_primary_account_owner, false) as is_primary_account_owner
       from public.users users
       left join auth.users auth_users on auth_users.id = users.id

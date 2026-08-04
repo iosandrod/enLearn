@@ -1,5 +1,8 @@
 <template>
-  <section class="content-panel lc-node-button-group">
+  <section
+    class="content-panel lc-node-button-group"
+    @contextmenu.stop.prevent="openButtonGroupContextMenu"
+  >
     <div class="lc-button-group" :style="groupStyle">
       <vxe-button
         v-for="action in block.actions"
@@ -14,12 +17,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { VxeUI } from 'vxe-pc-ui';
 import type { VxeButtonProps } from 'vxe-pc-ui';
 import type {
   LowCodeButtonGroupAction,
   LowCodePageButtonGroupBlock,
 } from '../../../types/lowcode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
+
+type RuntimeDesignerButton = Omit<LowCodeButtonGroupAction, 'children'> & {
+  directivesJson: string;
+  children?: RuntimeDesignerButton[];
+};
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageButtonGroupBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
@@ -108,6 +117,58 @@ function handleRootClick(action: LowCodeButtonGroupAction) {
 function handleDropdownClick(params: { option?: Record<string, unknown> }) {
   const action = (params.option as { action?: LowCodeButtonGroupAction } | undefined)?.action;
   if (action) handleAction(action);
+}
+
+function toDesignerButton(action: LowCodeButtonGroupAction): RuntimeDesignerButton {
+  const { children, directives, ...button } = action;
+
+  return {
+    ...button,
+    directivesJson: JSON.stringify(directives ?? []),
+    ...(children?.length
+      ? { children: children.map((child) => toDesignerButton(child)) }
+      : {}),
+  };
+}
+
+async function openButtonDesigner() {
+  const { $$buttonGroupDesigner } = await import(
+    '../../../visual-editor/components/button-group-designer/button-group-designer.service'
+  );
+
+  void $$buttonGroupDesigner({
+    title: '设计按钮',
+    business: {
+      blockId: props.block.id,
+      title: props.block.title ?? '按钮组',
+      description: props.block.description ?? '',
+      align: props.block.align ?? 'left',
+      gap: props.block.gap ?? 8,
+    },
+    buttons: props.block.actions.map((action) => toDesignerButton(action)),
+  });
+}
+
+function openButtonGroupContextMenu(event: MouseEvent) {
+  VxeUI.contextMenu.openByEvent(event, {
+    className: 'enlearn-context-menu',
+    options: [
+      [
+        {
+          code: 'design-buttons',
+          name: '设计按钮',
+          prefixIcon: 'ri-settings-3-line',
+        },
+      ],
+    ],
+    events: {
+      optionClick({ option }) {
+        if (option.code === 'design-buttons') {
+          void openButtonDesigner();
+        }
+      },
+    },
+  });
 }
 
 function handleAction(action: LowCodeButtonGroupAction) {

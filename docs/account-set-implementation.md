@@ -4,11 +4,10 @@
 
 本功能采用用友、金蝶等 ERP 常见的“登录账号 + 业务账套”模型：
 
-1. 用户先输入账号和密码，完成身份认证。
-2. 系统返回该用户有权访问的账套列表。
-3. 用户选择本次工作的账套。
-4. 服务端重新验证账套成员关系和账套状态。
-5. 账套启用成功后，后续所有业务请求都在该账套上下文中执行。
+1. 登录页加载当前启用的业务账套作为第三个输入框选项。
+2. 用户填写账号、密码并选择本次工作的账套。
+3. 服务端验证身份后实时校验账套成员关系和账套状态。
+4. 账套启用成功后，后续所有业务请求都在该账套上下文中执行。
 
 这里的“启用账套”是为当前会话选择业务上下文，并不是把一个停用账套修改为启用状态。
 
@@ -18,12 +17,12 @@
 
 ```mermaid
 flowchart LR
-  A[登录页] -->|账号和密码| B[AuthController]
+  A[登录页] -->|加载启用账套| E[(PostgreSQL)]
+  A -->|账号、密码和 accountId| B[AuthController]
   B --> C[Supabase Auth]
   C -->|用户和会话| D[AuthService]
   D -->|get_accounts| E[(PostgreSQL)]
-  D -->|用户及账套列表| A
-  A -->|选择 accountId| F[select-account]
+  D -->|启用所选账套| F[select-account]
   F --> G[requireActiveAccount]
   G -->|校验成员和状态| E
   G -->|可信账套上下文| H[工作台]
@@ -51,6 +50,8 @@ flowchart LR
 ### 3.1 账套主数据
 
 账套继续复用 `basejump.accounts`，新增或规范化以下字段：
+
+系统不再提供个人账户功能。新用户注册时只创建身份记录，账套访问权由管理员通过 `basejump.account_user` 分配；登录、切换和权限校验只处理 `personal_account = false` 的业务账套。
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
@@ -130,9 +131,25 @@ tenant_id = account_id::text
 
 新业务表优先使用 `account_id uuid`，避免继续扩大字符串租户字段的使用范围。
 
-## 4. 两阶段登录实现
+## 4. 单页登录实现
 
-### 4.1 第一阶段：身份认证
+### 4.1 登录表单与账套选项
+
+登录页先调用：
+
+```http
+GET /api/auth/account-options?login=admin
+```
+
+接口通过服务端身份管理接口解析登录账号，再调用仅授予 `service_role` 的 `get_login_account_options(uuid)` 查询其当前可访问且已启用的账套。响应只包含 `account_id`、编码、名称和本位币，供第三个输入框展示；不会返回成员角色或用户权限。用户最终能否进入该账套仍由登录提交后的服务端实时校验决定。
+
+登录页位于 `frontend/pages/signin.vue`，同一张表单包含：
+
+- 登录账号；
+- 登录密码；
+- 选择账套。
+
+### 4.2 一次提交完成认证和账套启用
 
 接口：
 
@@ -142,17 +159,20 @@ Content-Type: application/json
 
 {
   "email": "admin",
-  "password": "123456"
+  "password": "123456",
+  "accountId": "00000000-0000-4000-8000-000000000001",
+  "setDefault": true
 }
 ```
 
 处理过程：
 
 1. `AuthService.signInWithPassword` 调用 Supabase Auth。
-2. 认证成功后调用 `get_accounts()` 获取当前用户的全部账套。
-3. 返回用户、会话、账套列表和基础权限。
-4. 此时 `activeAccount` 为 `null`，`accountRequired` 为 `true`。
-5. 用户不能因为密码验证成功就直接进入工作台。
+2. 认证成功后实时调用 `get_accounts()` 获取当前用户的全部账套。
+3. 校验 `accountId` 确实属于该用户并且状态为 `active`。
+4. 调用 `select_account_set_with_preference` 更新最近账套、按需更新默认账套并记录审计事件。
+5. 返回用户、会话、账套列表、账套级权限和已启用的 `activeAccount`。
+6. 任何一步失败都不会进入工作台。
 
 返回结构的关键部分如下：
 
@@ -171,19 +191,16 @@ Content-Type: application/json
       "is_last_used": false
     }
   ],
-  "activeAccount": null,
-  "accountRequired": true
+  "activeAccount": {
+    "account_id": "00000000-0000-4000-8000-000000000001",
+    "code": "001",
+    "name": "默认制造账套"
+  },
+  "accountRequired": false
 }
 ```
 
-前端登录页位于 `frontend/pages/signin.vue`。界面维护两个步骤：
-
-- `credentials`：输入登录账号和密码；
-- `account`：搜索并选择账套。
-
-停用或归档账套仍可显示，但对应选项不可点击，方便用户了解自己为什么无法进入。
-
-### 4.2 第二阶段：选择账套
+### 4.3 已登录会话重新选择账套
 
 接口：
 
@@ -223,7 +240,7 @@ Content-Type: application/json
 }
 ```
 
-### 4.3 会话恢复
+### 4.4 会话恢复
 
 页面刷新时，前端读取本地保存的 `enlearn_active_account_id`，并调用：
 
@@ -251,7 +268,7 @@ X-Account-Id: <account-id>
 X-Account-Id: <当前账套 UUID>
 ```
 
-`/auth/select-account` 是例外，因为选择账套时尚未建立当前账套，请求使用 body 中的候选 `accountId`，服务端再做验证。
+`/auth/account-options` 和 `/auth/select-account` 不附带旧账套请求头；前者使用登录账号加载第三个输入框选项，后者使用 body 中的候选 `accountId`，服务端再做验证。
 
 ### 5.2 网关实时校验
 
@@ -447,7 +464,7 @@ accountEpoch
 auth.user.value && auth.activeAccount.value
 ```
 
-只有身份、没有账套时，用户会被送回登录页第二阶段，而不是进入业务页面。
+只有身份、没有账套时，用户会被送回登录页，并只显示账套选择输入框，而不是进入业务页面。
 
 ### 9.3 工作台切换
 
@@ -573,6 +590,8 @@ using (public.has_account_permission(account_id, 'example.manage'))
 
 ## 12. 迁移、验证与运行
 
+个人账户下线迁移为 `supabase/migrations/20260804160000_remove_personal_accounts.sql`。它会停止新用户个人账户触发器、删除个人账户 RPC 与历史个人账户记录，并重建只面向业务账套的查询函数。
+
 ### 12.1 应用迁移
 
 ```bash
@@ -622,13 +641,13 @@ pnpm build
 
 | 文件 | 作用 |
 | --- | --- |
-| `frontend/pages/signin.vue` | 两阶段登录界面 |
+| `frontend/pages/signin.vue` | 账号、密码、账套单页登录界面 |
 | `frontend/composables/useAuth.ts` | 登录、恢复、选择和切换账套 |
 | `frontend/composables/useAuthState.ts` | 前端认证及账套状态 |
 | `frontend/src/spa-compat.ts` | 自动添加 `X-Account-Id` |
 | `frontend/layouts/dashboard.vue` | 工作台账套切换器 |
 | `api/src/auth/auth.controller.ts` | 认证及选账套接口 |
-| `api/src/auth/auth.service.ts` | 两阶段登录服务逻辑 |
+| `api/src/auth/auth.service.ts` | 登录认证、账套选项和账套启用逻辑 |
 | `api/src/common/utils/account-context.ts` | 账套 ID、成员和状态校验 |
 | `api/src/gateway/service-gateway.controller.ts` | 业务请求账套网关 |
 | `api/src/common/base.service.ts` | 通用 CRUD 账套隔离 |

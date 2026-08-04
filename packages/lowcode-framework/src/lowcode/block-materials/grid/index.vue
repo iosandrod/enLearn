@@ -1,7 +1,7 @@
 <template>
   <article class="content-panel">
     <LowCodeGrid
-      :schema="block.schema"
+      :schema="pageGridSchema"
       :rows="resolveGridRows(block, resolvedData, searchFilters)"
       :loading="loadingGridId === block.id"
       :fill="block.layout?.fillRemaining === true"
@@ -18,13 +18,23 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import LowCodeGrid from '../../../components/LowCodeGrid.vue';
 import { resolveGridRows } from '../helpers';
 import type { LowCodeGridRowAction, LowCodePageGridBlock } from '../../../types/lowcode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
+import { createPageGridMenuConfig } from './page-grid-menu';
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageGridBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
+
+const pageGridSchema = computed(() => ({
+  ...props.block.schema,
+  grid: {
+    ...props.block.schema.grid,
+    menuConfig: createPageGridMenuConfig(props.block.schema.grid.menuConfig),
+  },
+}));
 
 type GridRuntimeEventPayload = {
   key: string;
@@ -74,6 +84,10 @@ function shouldPublishDesignedGridEvent(key: string) {
       'radioChange',
       'checkboxChange',
       'checkboxAll',
+      'headerMenuClick',
+      'bodyMenuClick',
+      'footerMenuClick',
+      'menuClick',
     ].includes(key)
   ) return true;
   if (!props.block.schema.events && !props.block.schema.eventNames) return true;

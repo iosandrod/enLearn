@@ -106,8 +106,6 @@ export class AccountService extends BaseService {
     return {
       accounts: (postData, context) => this.listAccounts(postData, context),
       account: (postData, context) => this.listAccount(postData, context),
-      personalAccount: (postData, context) => this.listPersonalAccount(postData, context),
-      personal_account: (postData, context) => this.listPersonalAccount(postData, context),
       members: (postData, context) => this.listMembers(postData, context)
     };
   }
@@ -136,13 +134,6 @@ export class AccountService extends BaseService {
     const accountId = readString(postData.account_id ?? postData.accountId, 'account_id');
     this.assertSelectedAccount(accountId, context);
     const result = await client.rpc('get_account', { account_id: accountId });
-    const account = assertRpcSucceeded(result, null as Record<string, unknown> | null);
-    return account ? [account] : [];
-  }
-
-  private async listPersonalAccount(_postData: PostData, context: ServiceContext) {
-    const { client } = await getCurrentUser(context);
-    const result = await client.rpc('get_personal_account');
     const account = assertRpcSucceeded(result, null as Record<string, unknown> | null);
     return account ? [account] : [];
   }

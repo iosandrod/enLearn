@@ -11,11 +11,6 @@ import type { VisualEditorBlockData } from '../../visual-editor.utils';
 import { visualConfig } from '../../../visual.config';
 
 type DesignedBlockRenderer = (blocks: VisualEditorBlockData[], keySuffix?: string) => ReturnType<typeof h>[];
-type ButtonContextmenuHandler = (
-  event: MouseEvent,
-  block: VisualEditorBlockData,
-  buttonIndex: number,
-) => void;
 
 const CompRender = defineComponent({
   name: 'CompRender',
@@ -23,10 +18,6 @@ const CompRender = defineComponent({
     element: {
       type: Object as PropType<VisualEditorBlockData>,
       default: () => ({}),
-    },
-    onButtonContextmenu: {
-      type: Function as PropType<ButtonContextmenuHandler>,
-      default: undefined,
     },
   },
   setup(props) {
@@ -37,35 +28,19 @@ const CompRender = defineComponent({
         model: {},
         block: props.element,
         custom: {
-          renderDesignedBlock: (element: VisualEditorBlockData, keySuffix = '') =>
-            renderDesignedBlock(element, keySuffix, props.onButtonContextmenu),
-          renderDesignedBlocks: ((blocks: VisualEditorBlockData[], keySuffix = '') =>
-            renderDesignedBlocks(
-              blocks,
-              keySuffix,
-              props.onButtonContextmenu,
-            )) as DesignedBlockRenderer,
-          onButtonContextmenu: props.onButtonContextmenu
-            ? (event: MouseEvent, buttonIndex: number) =>
-                props.onButtonContextmenu?.(event, props.element, buttonIndex)
-            : undefined,
+          renderDesignedBlock,
+          renderDesignedBlocks: renderDesignedBlocks as DesignedBlockRenderer,
         },
       })();
   },
 });
 
-function renderDesignedBlock(
-  element: VisualEditorBlockData,
-  keySuffix = '',
-  onButtonContextmenu?: ButtonContextmenuHandler,
-) {
+function renderDesignedBlock(element: VisualEditorBlockData, keySuffix = '') {
   const slots = element.props?.slots || {};
   const slotRenderers = Object.keys(slots).reduce<Record<string, () => ReturnType<typeof h>[]>>(
     (prev, slotKey) => {
       prev[slotKey] = () =>
-        (slots[slotKey]?.children || []).map((child) =>
-          renderDesignedBlock(child, keySuffix, onButtonContextmenu),
-        );
+        (slots[slotKey]?.children || []).map((child) => renderDesignedBlock(child, keySuffix));
       return prev;
     },
     {},
@@ -76,20 +51,13 @@ function renderDesignedBlock(
     {
       key: `${element._vid}${keySuffix}`,
       element,
-      onButtonContextmenu,
     },
     slotRenderers,
   );
 }
 
-function renderDesignedBlocks(
-  blocks: VisualEditorBlockData[],
-  keySuffix = '',
-  onButtonContextmenu?: ButtonContextmenuHandler,
-) {
-  return blocks.map((block) =>
-    renderDesignedBlock(block, keySuffix, onButtonContextmenu),
-  );
+function renderDesignedBlocks(blocks: VisualEditorBlockData[], keySuffix = '') {
+  return blocks.map((block) => renderDesignedBlock(block, keySuffix));
 }
 
 export default CompRender;
