@@ -105,6 +105,26 @@ async function main() {
   assertResult(editPageResult.error, 'Save option-source edit page');
   if (!editPageResult.data) throw new Error('Option-source edit page was not returned.');
 
+  const savedEditResult = await supabase
+    .from('lowcode_pages')
+    .select('schema')
+    .eq('id', editPageResult.data.id)
+    .single();
+  assertResult(savedEditResult.error, 'Verify option-source edit page');
+  const savedSchema = savedEditResult.data?.schema as
+    | { blocks?: Array<Record<string, unknown>> }
+    | undefined;
+  const savedTabs = savedSchema?.blocks?.find(
+    (block) => block.id === 'option-source-edit-tabs'
+  )?.tabs as Array<{ blocks?: Array<Record<string, unknown>> }> | undefined;
+  const savedForm = savedTabs
+    ?.flatMap((tab) => tab.blocks ?? [])
+    .find((block) => block.id === 'option-source-edit-form');
+  const savedActions = (savedForm?.schema as { actions?: unknown[] } | undefined)?.actions;
+  if (!Array.isArray(savedActions) || savedActions.length !== 0) {
+    throw new Error('Verify option-source edit page: form actions were not removed.');
+  }
+
   const versionResult = await supabase.from('lowcode_page_versions').upsert(
     {
       page_id: editPageResult.data.id,
@@ -136,6 +156,7 @@ async function main() {
     edit_route: editPageResult.data.route,
     edit_page_type: editPageResult.data.page_type,
     block_count: Array.isArray(schema.blocks) ? schema.blocks.length : 0,
+    form_action_count: savedActions.length,
     version,
   }));
 }

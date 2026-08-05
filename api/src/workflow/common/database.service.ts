@@ -20,7 +20,7 @@ export class DatabaseService implements OnModuleDestroy {
 
     this.pool = createWorkflowPostgresPool(connectionString, {
       max: 5,
-      name: 'workflow-service',
+      name: 'workflow-domain',
       onIdleClientError: (message) => this.logger.warn(message)
     });
   }

@@ -15,6 +15,13 @@ const editMigrationSource = await readFile(
   ),
   'utf8'
 );
+const tablePreferencesMigrationSource = await readFile(
+  new URL(
+    '../../supabase/migrations/20260805103000_system_settings_table_preferences.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
 const adminServiceSource = await readFile(
   new URL('../../api/src/admin-service/admin.service.ts', import.meta.url),
   'utf8'
@@ -69,6 +76,16 @@ assert.match(
   'A single-row list data source must hydrate the low-code settings form.'
 );
 assert.match(
+  rendererSource,
+  /function mergeFormModelValues\([\s\S]*isRecord\(defaultValue\) && isRecord\(value\)[\s\S]*mergeFormModelValues\(defaultValue, value\)/,
+  'Nested settings defaults must be merged with previously saved user values.'
+);
+assert.match(
+  rendererSource,
+  /function collectSharedFormDefaults\([\s\S]*defaultsBySource\[sourceKey\] = mergeFormModelValues/,
+  'Forms split across settings tabs must share one complete source model.'
+);
+assert.match(
   editMigrationSource,
   /'system-settings-edit',[\s\S]*'\/dashboard\/system\/settings\/edit'/,
   'The system settings edit page must be stored as a database-backed low-code page.'
@@ -87,6 +104,26 @@ assert.match(
   editMigrationSource,
   /"id": "system-settings-table-form"[\s\S]*"field": "table_config"[\s\S]*"component": "vxe-switch"/,
   'Table preferences must be editable with purpose-built controls.'
+);
+assert.match(
+  tablePreferencesMigrationSource,
+  /"id": "system-settings-table-tabs"[\s\S]*"key": "table-basic"[\s\S]*"key": "table-row"[\s\S]*"key": "table-column"[\s\S]*"key": "table-pager"[\s\S]*"key": "table-format"/,
+  'Detailed table preferences must be organized into focused tabs.'
+);
+assert.match(
+  tablePreferencesMigrationSource,
+  /"field": "rowHeight"[\s\S]*"field": "headerRowHeight"[\s\S]*"field": "footerRowHeight"/,
+  'Row, header, and footer heights must be configurable independently.'
+);
+assert.match(
+  tablePreferencesMigrationSource,
+  /"field": "emptyText"[\s\S]*"field": "numberDigits"[\s\S]*"field": "dateTimeFormat"[\s\S]*"field": "currency"/,
+  'Default cell formatting preferences must cover empty, numeric, date-time, and currency values.'
+);
+assert.match(
+  tablePreferencesMigrationSource,
+  /update public\.system_config[\s\S]*'\:\:jsonb \|\| table_config/,
+  'Existing users must receive new defaults without losing their saved table preferences.'
 );
 assert.match(
   editMigrationSource,

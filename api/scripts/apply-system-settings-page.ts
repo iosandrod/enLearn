@@ -27,6 +27,13 @@ const editPageMigrationPath = resolve(
   'migrations',
   '20260804190000_system_settings_edit_page.sql'
 );
+const tablePreferencesMigrationPath = resolve(
+  process.cwd(),
+  process.cwd().toLowerCase().endsWith('api') ? '..' : '.',
+  'supabase',
+  'migrations',
+  '20260805103000_system_settings_table_preferences.sql'
+);
 const env = getEnv();
 const rawConnectionString = process.env.DIRECT_URL ?? env.DIRECT_URL ?? env.DATABASE_URL;
 
@@ -54,7 +61,8 @@ async function main() {
         ? []
         : [await readFile(systemConfigMigrationPath, 'utf8')]),
       await readFile(migrationPath, 'utf8'),
-      await readFile(editPageMigrationPath, 'utf8')
+      await readFile(editPageMigrationPath, 'utf8'),
+      await readFile(tablePreferencesMigrationPath, 'utf8')
     ];
 
     for (const sql of migrationSql) {

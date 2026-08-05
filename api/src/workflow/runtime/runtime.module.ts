@@ -8,8 +8,6 @@ import {
   TRIGGER_RUNTIME_STATUS_RUNTIME_SERVICE,
   TriggerRuntimeStatusService
 } from '../trigger/trigger-runtime-status.service';
-import { RuntimeController } from './runtime.controller';
-import { ApprovalConsoleController } from './approval-console.controller';
 import { ApprovalConsoleService } from './approval-console.service';
 import { WORKFLOW_RUNTIME_STORE } from './runtime.engine.types';
 import { PostgresWorkflowRuntimeStore } from './runtime.postgres-store';
@@ -17,7 +15,6 @@ import { RuntimeService } from './runtime.service';
 
 @Module({
   imports: [DefinitionModule],
-  controllers: [RuntimeController, ApprovalConsoleController],
   providers: [
     TriggerDevClient,
     {

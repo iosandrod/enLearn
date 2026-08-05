@@ -13,8 +13,10 @@
     "test:dev-user-login": "node tests/dev-user-login-regression.mjs",
     "test:system-settings": "node tests/system-settings-page-regression.mjs",
     "test:system-option-source-edit": "node tests/system-option-source-edit-page-regression.mjs",
+    "test:json-editor": "node tests/lc-json-editor-dialog-regression.mjs",
     "test:approval-progress": "node tests/approval-progress-page-regression.mjs",
     "test:approval-console": "node tests/approval-console-regression.mjs",
+    "test:lowcode-form-layout": "node tests/lowcode-form-layout-span-regression.mjs",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

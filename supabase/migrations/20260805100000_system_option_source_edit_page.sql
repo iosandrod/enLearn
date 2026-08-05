@@ -214,19 +214,7 @@ insert into public.lowcode_pages (
                       }
                     }
                   ],
-                  "actions": [
-                    {
-                      "code": "submit",
-                      "label": "保存",
-                      "type": "submit",
-                      "status": "primary"
-                    },
-                    {
-                      "code": "reset",
-                      "label": "重置",
-                      "type": "reset"
-                    }
-                  ]
+                  "actions": []
                 }
               }
             ]

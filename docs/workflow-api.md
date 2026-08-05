@@ -2,13 +2,24 @@
 
 ## 1. 接口风格
 
-审批流后端作为独立 NestJS 微服务提供 REST API。第一期接口以 JSON 为主，后续可以接入统一服务网关。
+审批流由 API 网关内的 `WorkflowService` 直接调用领域服务，不再运行独立工作流微服务。
+对外统一使用服务网关：
 
-统一前缀：
-
-```text
-/api/workflow
+```http
+POST /api/service
 ```
+
+请求体示例：
+
+```json
+{
+  "serviceName": "workflow",
+  "serviceMethod": "getApprovalConsole",
+  "postData": {}
+}
+```
+
+下文的 `/api/workflow/...` 路径仅保留为领域动作的历史映射说明，不再是可调用接口。
 
 通用请求头：
 

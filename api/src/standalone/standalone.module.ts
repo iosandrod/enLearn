@@ -14,14 +14,7 @@ import { NotificationModule } from '../notification-service/notification.module'
 import { PaymentModule } from '../payment-service/payment.module';
 import { PostsModule } from '../posts-service/posts.module';
 import { UserModule } from '../user-service/user.module';
-import { DatabaseModule } from '../workflow/common/database.module';
-import { DefinitionModule } from '../workflow/definition/definition.module';
-import { JobModule } from '../workflow/job/job.module';
-import { RuntimeModule } from '../workflow/runtime/runtime.module';
-import { WorkflowService } from '../workflow/workflow.service';
-import { WORKFLOW_SERVICE_CLIENT } from '../workflow/workflow.transport';
-import { WorkflowRpcController } from '../workflow-service/workflow.rpc.controller';
-import { LocalWorkflowClient } from './local-workflow-client';
+import { WorkflowModule } from '../workflow/workflow.module';
 import { StandaloneServiceRouter } from './standalone-service-router.service';
 
 @Module({
@@ -37,21 +30,11 @@ import { StandaloneServiceRouter } from './standalone-service-router.service';
     EntityDesignModule,
     FilesModule,
     ChatModule,
-    DatabaseModule,
-    DefinitionModule,
-    RuntimeModule,
-    JobModule
+    WorkflowModule
   ],
   controllers: [ServiceGatewayController],
   providers: [
     DomainServiceRouter,
-    WorkflowRpcController,
-    LocalWorkflowClient,
-    {
-      provide: WORKFLOW_SERVICE_CLIENT,
-      useExisting: LocalWorkflowClient
-    },
-    WorkflowService,
     StandaloneServiceRouter,
     {
       provide: ServiceRouterService,

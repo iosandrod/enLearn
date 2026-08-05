@@ -24,10 +24,15 @@ assert.match(
   /collectNavigationRoots\(nodes, 'sidebar'\)/,
   'The sidebar must be projected independently from database navigation metadata.'
 );
+assert.doesNotMatch(
+  layoutSource,
+  /window\.addEventListener\('focus'/,
+  'Changing browser focus must not reload unchanged database navigation.'
+);
 assert.match(
   layoutSource,
-  /window\.addEventListener\('focus', handleWindowFocus\)/,
-  'The dashboard must refresh database navigation when its browser window regains focus.'
+  /if \(routesReloadPromise\) return routesReloadPromise;/,
+  'Concurrent database navigation refreshes must share one request.'
 );
 assert.match(
   migrationSource,

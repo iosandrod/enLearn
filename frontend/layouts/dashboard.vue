@@ -412,6 +412,7 @@ const filteredDevTestUsers = computed(() => {
 const routeError = ref('');
 const systemSettingsOpening = ref(false);
 const routes = ref<AdminRouteNode[]>([]);
+let routesReloadPromise: Promise<void> | null = null;
 const expandedGroups = reactive<Record<string, boolean>>({});
 const visitedTabs = ref<VisitedTab[]>([]);
 const menuFilter = ref('');
@@ -769,25 +770,33 @@ const activeTitle = computed<string>(
     )?.title ??
     '工作台'
 );
-async function reloadRoutes() {
-  routeError.value = '';
+function reloadRoutes() {
+  if (routesReloadPromise) return routesReloadPromise;
 
-  try {
-    const data = await serviceApi.listItems<AdminRouteNode[]>('admin', {
-      tableName: 'admin_routes',
-      clientMode: 'admin',
-      sorts: [
-        { field: 'sort_order', direction: 'asc' },
-        { field: 'created_at', direction: 'asc' },
-      ],
-      limit: 1000,
-    });
-    routes.value = Array.isArray(data) ? buildRouteTree(data) : [];
-  } catch (error) {
-    routes.value = [];
-    routeError.value =
-      error instanceof Error ? error.message : '数据库菜单加载失败。';
-  }
+  routesReloadPromise = (async () => {
+    routeError.value = '';
+
+    try {
+      const data = await serviceApi.listItems<AdminRouteNode[]>('admin', {
+        tableName: 'admin_routes',
+        clientMode: 'admin',
+        sorts: [
+          { field: 'sort_order', direction: 'asc' },
+          { field: 'created_at', direction: 'asc' },
+        ],
+        limit: 1000,
+      });
+      routes.value = Array.isArray(data) ? buildRouteTree(data) : [];
+    } catch (error) {
+      routes.value = [];
+      routeError.value =
+        error instanceof Error ? error.message : '数据库菜单加载失败。';
+    }
+  })().finally(() => {
+    routesReloadPromise = null;
+  });
+
+  return routesReloadPromise;
 }
 
 function toggleGroup(code: string) {
@@ -1250,10 +1259,6 @@ function handleAdminRoutesUpdated() {
   reloadRoutes();
 }
 
-function handleWindowFocus() {
-  void reloadRoutes();
-}
-
 function handleMenuContextKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     closeMenuContext();
@@ -1279,14 +1284,12 @@ onMounted(async () => {
   await reloadRoutes();
   rememberTab();
   window.addEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
-  window.addEventListener('focus', handleWindowFocus);
   window.addEventListener('click', closeFloatingPanels);
   window.addEventListener('keydown', handleMenuContextKeydown);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
-  window.removeEventListener('focus', handleWindowFocus);
   window.removeEventListener('click', closeFloatingPanels);
   window.removeEventListener('keydown', handleMenuContextKeydown);
 });

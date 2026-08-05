@@ -800,26 +800,59 @@ function deriveFormModel(
   block: LowCodePageFormBlock | LowCodePageSearchFormBlock,
   row?: Record<string, unknown>
 ) {
-  const nextModel = {
-    ...(block.initialValues ?? {})
-  };
+  return mergeFormModelValues(block.initialValues ?? {}, row ?? {});
+}
 
-  if (row && isRecord(row)) {
-    Object.assign(nextModel, row);
+function mergeFormModelValues(
+  defaults: Record<string, unknown>,
+  values: Record<string, unknown>
+) {
+  const nextModel = cloneRuntimeValue(defaults);
+
+  for (const [key, value] of Object.entries(values)) {
+    const defaultValue = nextModel[key];
+    nextModel[key] = isRecord(defaultValue) && isRecord(value)
+      ? mergeFormModelValues(defaultValue, value)
+      : cloneRuntimeValue(value);
   }
 
   return nextModel;
 }
 
+function collectSharedFormDefaults(blocks: LowCodePageBlock[]) {
+  const defaultsBySource: Record<string, Record<string, unknown>> = {};
+
+  for (const block of blocks) {
+    if (block.kind !== 'form') continue;
+    const sourceKey = block.sourceKey ?? block.submitSourceKey;
+    if (!sourceKey) continue;
+
+    defaultsBySource[sourceKey] = mergeFormModelValues(
+      defaultsBySource[sourceKey] ?? {},
+      block.initialValues ?? {}
+    );
+  }
+
+  return defaultsBySource;
+}
+
 async function loadPageData(nextPage: LowCodePageRecord) {
   const entries = Object.entries(nextPage.schema.dataSources ?? {});
+  const pageBlocks = flattenPageBlocks(nextPage.schema);
+  const sharedFormDefaults = collectSharedFormDefaults(pageBlocks);
 
   clearObject(resolvedData);
   clearObject(formModels);
   clearObject(searchFilters);
 
-  for (const block of flattenPageBlocks(nextPage.schema)) {
-    if (block.kind === 'form' || block.kind === 'searchForm') {
+  for (const block of pageBlocks) {
+    if (block.kind === 'form') {
+      const sourceKey = block.sourceKey ?? block.submitSourceKey;
+      formModels[block.id] = deriveFormModel(
+        block,
+        sourceKey ? sharedFormDefaults[sourceKey] : undefined
+      );
+    } else if (block.kind === 'searchForm') {
       formModels[block.id] = deriveFormModel(block);
     }
   }
@@ -850,7 +883,7 @@ async function loadPageData(nextPage: LowCodePageRecord) {
     );
   });
 
-  for (const block of flattenPageBlocks(nextPage.schema)) {
+  for (const block of pageBlocks) {
     if (block.kind !== 'form') continue;
 
     const source = getDataSource(block.sourceKey ?? block.submitSourceKey);
@@ -858,10 +891,10 @@ async function loadPageData(nextPage: LowCodePageRecord) {
     const sourceRecord = Array.isArray(sourceValue) ? sourceValue[0] : sourceValue;
 
     if (isRecord(sourceRecord)) {
-      formModels[block.id] = {
-        ...formModels[block.id],
-        ...sourceRecord
-      };
+      formModels[block.id] = mergeFormModelValues(
+        formModels[block.id] ?? {},
+        sourceRecord
+      );
     }
   }
 
@@ -921,7 +954,6 @@ async function publishRuntimeEvent(event: LowCodeRuntimeEvent) {
 
 async function handlePublishedRuntimeEvent(event: LowCodeRuntimeEvent) {
   const directives = resolveEventDirectives(event, props.page.schema.eventHandlers);
-
   for (const directive of directives) {
     try {
       await executeRuntimeDirective(directive, event);
@@ -1503,6 +1535,16 @@ async function handleFormAction(
   }
 }
 
+function hasEnabledRefreshDirective(action: LowCodeAction | LowCodeButtonGroupAction) {
+  return normalizeLowCodeDirectives(action.directives).some((directive) =>
+    !directive.disabled && [
+      'refreshDataSource',
+      'refreshDataSources',
+      'refreshPage',
+    ].includes(directive.type.trim())
+  );
+}
+
 async function handleToolbarAction(action: LowCodeAction | LowCodeButtonGroupAction) {
   if (action.route) {
     await host.getRouter().push(resolveRuntimeRoute(action.route));
@@ -1510,6 +1552,7 @@ async function handleToolbarAction(action: LowCodeAction | LowCodeButtonGroupAct
   }
 
   if (action.code === 'refresh') {
+    if (hasEnabledRefreshDirective(action)) return;
     await loadPageData(props.page);
   }
 }

@@ -3,14 +3,13 @@
     <template v-for="(node, index) in nodes" :key="nodeKey(node, index)">
       <div
         v-if="node.kind === 'row'"
-        class="lc-form-row"
-        :style="{ gap: gapValue(node.gutter) }"
+        class="lc-form-row lc-form-row--span-grid"
+        :style="rowStyle(node)"
       >
         <div
           v-for="(column, columnIndex) in node.columns"
           :key="columnIndex"
           class="lc-form-col"
-          :style="columnStyle(column)"
         >
           <LowCodeFormLayout
             :nodes="column.blocks"
@@ -71,18 +70,28 @@ function gapValue(value: unknown) {
   return Number.isFinite(numeric) && numeric >= 0 ? `${numeric}px` : undefined;
 }
 
-function columnStyle(column: LowCodeFormLayoutColumn) {
+function columnWeight(column: LowCodeFormLayoutColumn) {
   const span = Number(column.span);
 
   if (!Number.isFinite(span) || span <= 0) {
-    return undefined;
+    return 1;
   }
 
-  const basis = `${Math.min(span, 24) / 24 * 100}%`;
+  return Math.min(24, Math.max(1, Math.round(span)));
+}
 
+function columnTemplate(columns: LowCodeFormLayoutColumn[]) {
+  if (!columns.length) return 'minmax(0, 1fr)';
+
+  return columns
+    .map((column) => `minmax(0, ${columnWeight(column)}fr)`)
+    .join(' ');
+}
+
+function rowStyle(node: Extract<LowCodeFormLayoutNode, { kind: 'row' }>) {
   return {
-    flex: `0 0 ${basis}`,
-    maxWidth: basis
+    gap: gapValue(node.gutter),
+    '--lc-form-row-template': columnTemplate(node.columns)
   };
 }
 </script>

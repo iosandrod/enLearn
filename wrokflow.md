@@ -2,13 +2,13 @@
 sequenceDiagram
     participant UI as "审批前端"
     participant API as "API Gateway"
-    participant WF as "Workflow Service"
+    participant WF as "Workflow Domain"
     participant DB as "业务 PostgreSQL"
     participant TD as "Trigger.dev 3030"
     participant Worker as "Trigger Worker"
 
     UI->>API: runApprovalFlowTest
-    API->>WF: Redis workflow.request
+    API->>WF: Direct service call
     WF->>DB: 保存并发布流程
     WF->>DB: 创建运行实例
     WF->>TD: tasks.trigger(workflow.instance.run)

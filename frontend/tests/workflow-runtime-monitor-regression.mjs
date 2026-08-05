@@ -9,10 +9,6 @@ const workflowServiceSource = await readFile(
   new URL('../../api/src/workflow/workflow.service.ts', import.meta.url),
   'utf8'
 );
-const rpcControllerSource = await readFile(
-  new URL('../../api/src/workflow-service/workflow.rpc.controller.ts', import.meta.url),
-  'utf8'
-);
 
 assert.match(
   designerSource,
@@ -31,13 +27,14 @@ assert.match(
 );
 assert.match(
   workflowServiceSource,
-  /getRuntimeStatus:[\s\S]*path: '\/runtime\/status'/,
-  'The gateway service must expose the runtime status action.'
+  /case 'getRuntimeStatus':[\s\S]*triggerRuntimeStatus\.getStatus\(this\.resolveActor\(context\)\.tenantId\)/,
+  'The gateway service must invoke the runtime status domain service directly.'
 );
 assert.match(
-  rpcControllerSource,
-  /resource === 'runtime'[\s\S]*idOrAction === 'status'[\s\S]*triggerRuntimeStatus\.getStatus\(actor\.tenantId\)/,
+  workflowServiceSource,
+  /case 'getApprovalConsole':[\s\S]*approvalConsoleService\.listInstances/,
   'Runtime status must be scoped to the authenticated tenant.'
 );
+assert.doesNotMatch(workflowServiceSource, /path:\s*['"`]\/|workflowClient\.send|WORKFLOW_REQUEST_PATTERN/);
 
 console.log('Workflow Trigger.dev runtime monitor regression test passed.');

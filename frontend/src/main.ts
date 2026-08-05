@@ -37,8 +37,10 @@ import SiteFooter from '../components/SiteFooter.vue';
 import SiteHeader from '../components/SiteHeader.vue';
 import { useAuth } from '../composables/useAuth';
 import { router } from './router';
-
+import './mainStyle.ts'
 const DEV_SERVICE_WORKER_RELOAD_KEY = 'enlearn_dev_service_worker_reloaded';
+
+
 
 async function cleanupDevServiceWorkers() {
   if (!import.meta.env.DEV || !('serviceWorker' in navigator)) return;

@@ -627,6 +627,11 @@ defineExpose({
   align-items: flex-start;
 }
 
+.lc-form-layout > .lc-form-row.lc-form-row--span-grid {
+  display: grid;
+  grid-template-columns: var(--lc-form-row-template, minmax(0, 1fr));
+}
+
 .lc-form-col {
   flex: 1 1 0;
   width: 100%;
@@ -724,6 +729,10 @@ defineExpose({
 
   .lc-form-row {
     flex-direction: column;
+  }
+
+  .lc-form-layout > .lc-form-row.lc-form-row--span-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .lc-form-col {

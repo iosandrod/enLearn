@@ -9,9 +9,7 @@ import { registerChatSocket } from './chat-service/chat.socket';
 import { StandaloneAppModule } from './standalone/standalone.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(StandaloneAppModule, {
-    cors: true
-  });
+  const app = await NestFactory.create(StandaloneAppModule);
 
   app.enableCors({
     origin: true,

@@ -4,6 +4,7 @@ import {
   Controller,
   Headers,
   Inject,
+  HttpCode,
   Logger,
   Post,
   UnauthorizedException
@@ -102,6 +103,7 @@ export class ServiceGatewayController {
   ) {}
 
   @Post('service')
+  @HttpCode(200)
   async service(
     @Body() body: ServiceInvokeDto,
     @Headers('authorization') authorization?: string,

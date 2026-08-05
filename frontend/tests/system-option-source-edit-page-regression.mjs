@@ -12,6 +12,26 @@ const adminServiceSource = await readFile(
   new URL('../../api/src/admin-service/admin.service.ts', import.meta.url),
   'utf8'
 );
+const schemaMatch = migrationSource.match(/\$json\$\s*([\s\S]*?)\s*\$json\$::jsonb/);
+assert.ok(schemaMatch, 'The option-source edit page schema must be embedded in the migration.');
+const pageSchema = JSON.parse(schemaMatch[1]);
+
+function findBlock(blocks, id) {
+  for (const block of blocks ?? []) {
+    if (block.id === id) return block;
+
+    const nestedBlocks = [
+      ...(Array.isArray(block.blocks) ? block.blocks : []),
+      ...(Array.isArray(block.tabs)
+        ? block.tabs.flatMap((tab) => (Array.isArray(tab.blocks) ? tab.blocks : []))
+        : []),
+    ];
+    const nestedMatch = findBlock(nestedBlocks, id);
+    if (nestedMatch) return nestedMatch;
+  }
+
+  return undefined;
+}
 
 assert.match(
   migrationSource,
@@ -27,6 +47,13 @@ assert.match(
   migrationSource,
   /"id": "option-source-edit-form"[\s\S]*"sourceKey": "optionSource"[\s\S]*"submitSourceKey": "optionSource"/,
   'The main form must read and save the option-source record.'
+);
+const optionSourceForm = findBlock(pageSchema.blocks, 'option-source-edit-form');
+assert.ok(optionSourceForm, 'The option-source edit form must exist.');
+assert.deepEqual(
+  optionSourceForm.schema.actions,
+  [],
+  'The option-source edit form must not render Save or Reset buttons.'
 );
 for (const field of [
   'code',

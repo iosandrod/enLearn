@@ -9,9 +9,7 @@ import { responseCompressionMiddleware } from './common/middleware/compression.m
 import { getEnv } from './common/utils/env';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    cors: true
-  });
+  const app = await NestFactory.create(AppModule);
 
   app.enableCors({
     origin: true,

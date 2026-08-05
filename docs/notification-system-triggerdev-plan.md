@@ -1036,7 +1036,6 @@ pnpm --dir services/workflow-api trigger:dev
 ```bash
 pnpm dev
 pnpm api:dev
-pnpm workflow-api:dev
 ```
 
 验收页面：

@@ -17,16 +17,21 @@ const [page, router, migration, viewer, workflowService, dashboardLayout] = awai
 ]);
 
 assert.match(router, /path: '\/dashboard\/approval\/console'/);
-assert.match(page, /审批流总控制台/);
+assert.match(page, /流程实例/);
 assert.match(page, /ApprovalRuntimeViewer/);
 assert.match(page, /approval-console-workspace/);
 assert.match(page, /approval-console-instance-list/);
+assert.equal((page.match(/<ApprovalRuntimeViewer\b/g) ?? []).length, 1);
 assert.match(page, /grid-template-columns: clamp\(340px, 27vw, 430px\) minmax\(0, 1fr\)/);
 assert.match(page, /approval-console-flow-viewer \{ height: 100%; min-height: 0; \}/);
 assert.match(page, /getApprovalConsole/);
 assert.match(page, /getApprovalConsoleDetail/);
-assert.match(page, /terminateInstance/);
-assert.match(page, /管理员从审批流总控制台终止流程/);
+assert.doesNotMatch(page, /approval-console-header/);
+assert.doesNotMatch(page, /approval-console-summary/);
+assert.doesNotMatch(page, /approval-console-filters/);
+assert.doesNotMatch(page, /approval-console-detail__header/);
+assert.doesNotMatch(page, /approval-console-inspector/);
+assert.doesNotMatch(page, /terminateInstance/);
 
 for (const status of ['completed', 'waiting', 'rejected', 'failed', 'skipped', 'pending']) {
   assert.match(viewer, new RegExp(`['\"]${status}['\"]|--${status}`));
@@ -36,9 +41,10 @@ assert.match(migration, /'approval-flow-console'/);
 assert.match(migration, /'\/dashboard\/approval\/console'/);
 assert.match(migration, /where parent\.code = 'approval-management-root'/);
 assert.match(migration, /'workflow\.runtime\.manage'/);
-assert.match(workflowService, /getApprovalConsole:/);
-assert.match(workflowService, /getApprovalConsoleDetail:/);
+assert.match(workflowService, /case 'getApprovalConsole':[\s\S]*approvalConsoleService\.listInstances/);
+assert.match(workflowService, /case 'getApprovalConsoleDetail':[\s\S]*approvalConsoleService\.getInstanceDetail/);
 assert.match(workflowService, /assertRuntimeManagementAccess/);
+assert.doesNotMatch(workflowService, /path:\s*['"`]\/console\/instances/);
 assert.match(
   dashboardLayout,
   /class="admin-approval-console-button"[\s\S]*:to="APPROVAL_CONSOLE_PATH"[\s\S]*审批总控/

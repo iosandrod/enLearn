@@ -14,12 +14,10 @@ Run the Nest API:
 pnpm api:dev
 ```
 
-Run the Redis-backed domain microservices and workflow microservice in separate
-terminals:
+Run the Redis-backed domain service in a separate terminal:
 
 ```bash
 pnpm domain-service:dev
-pnpm workflow-api:dev
 ```
 
 The API defaults to `http://localhost:3002/api/service`. Send all service calls
@@ -43,26 +41,23 @@ The frontend app lives in `frontend/`. Shared content, public assets, and Supaba
 
 ## Workflow Engine
 
-`api/src/workflow-service` hosts the workflow microservice. It uses Redis for
-gateway-to-service communication and Trigger.dev as the internal workflow
-engine. enLearn users do not authenticate with Trigger.dev directly; the
-backend resolves the project ref, environment secret, and admin PAT from the
-Trigger.dev database and keeps them in an in-process cache.
+Workflow actions are handled inside the API gateway and call the workflow
+domain services directly. Trigger.dev remains the internal execution engine;
+enLearn users do not authenticate with Trigger.dev directly. The backend
+resolves the project ref, environment secret, and admin PAT from the Trigger.dev
+database and keeps them in an in-process cache.
 
-Start Redis before starting the workflow service. The default connection is
-`redis://127.0.0.1:6379`; override it with `REDIS_URL`.
-
-Start or reuse the local Trigger.dev webapp first, then start the workflow service:
+Start or reuse the local Trigger.dev webapp first, then start the API gateway:
 
 ```bash
 cd C:\Users\11516\Desktop\project\trigger.dev-main
 pnpm run dev --filter webapp
 
 cd C:\Users\11516\Desktop\project\enLearn
-pnpm workflow-api:dev
+pnpm api:dev
 ```
 
-Or start the API gateway and all backend microservices together:
+Or start the API gateway and domain service together:
 
 ```bash
 pnpm services:dev

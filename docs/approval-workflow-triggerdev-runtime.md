@@ -1,6 +1,6 @@
 # 审批流 Trigger.dev 持久化运行时
 
-当前审批流后端运行时已完全切换为 Trigger.dev 持久化执行模型。`workflow-api` 不再自己维护流程推进器、内存待办、BullMQ worker 或 Redis timer。
+当前审批流后端运行时已完全切换为 Trigger.dev 持久化执行模型。API 网关内的工作流领域模块不再自己维护流程推进器、内存待办、BullMQ worker 或 Redis timer，也不再通过 Redis 转发工作流请求。
 
 运行时采用失败即停止策略：Trigger.dev 不可用时，发起流程、创建 waitpoint 或恢复 waitpoint 会直接失败，不会降级为进程内流程、waitpoint、timer 或通知分发。这样可以保证所有可运行实例都具备持久化和重启恢复能力。
 
@@ -10,24 +10,24 @@
 |---|---|
 | `packages/approval-workflow` | Vue 设计器、查看器、任务面板、时间线组件 |
 | `packages/workflow-schema` | 流程 DSL 类型、标准化、校验、编译工具 |
-| `services/workflow-api` | 流程定义发布、PostgreSQL 业务投影、待办/历史/权限 REST API |
+| `api/src/workflow` | 流程定义发布、PostgreSQL 业务投影、待办/历史/权限领域服务 |
 | Trigger.dev | 唯一后端执行引擎，负责流程 run、人工审批 waitpoint、timer wait、重试、恢复、日志 |
 | PostgreSQL | 业务查询真源，保存定义、实例、节点、任务、候选人、变量、意见、历史事件 |
 
 ```mermaid
 sequenceDiagram
   participant Client as Client / UI
-  participant API as workflow-api
+  participant API as API Gateway / Workflow Domain
   participant PG as PostgreSQL
   participant Trigger as Trigger.dev
 
-  Client->>API: POST /api/workflow/instances
+  Client->>API: POST /api/service (workflow.startInstance)
   API->>PG: insert wf_process_instance / wf_variable
   API->>Trigger: tasks.trigger("workflow.instance.run")
   API->>PG: save trigger_run_id
   Trigger->>PG: create node/task projection
   Trigger->>Trigger: wait.createToken + wait.forToken
-  Client->>API: POST /api/workflow/tasks/{id}/approve
+  Client->>API: POST /api/service (workflow.approveTask)
   API->>PG: complete wf_task + write variables/history
   API->>Trigger: wait.completeToken(tokenId, decision)
   Trigger->>Trigger: resume workflow.instance.run
