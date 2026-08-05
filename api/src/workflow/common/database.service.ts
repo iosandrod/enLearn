@@ -1,9 +1,9 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { type Pool, type PoolClient, type QueryResult, type QueryResultRow } from 'pg';
 import { getWorkflowEnv } from './env';
-import { retryTransientPostgresOperation } from './postgres-resilience';
 import {
   createWorkflowPostgresPool,
+  queryWithHealthyPostgresClient,
   resolveWorkflowDatabaseUrl,
   withHealthyPostgresClient
 } from './postgres-pool';
@@ -37,7 +37,7 @@ export class DatabaseService implements OnModuleDestroy {
       throw new Error('DATABASE_URL is required for workflow database operations.');
     }
 
-    return retryTransientPostgresOperation(() => this.pool!.query<T>(text, values));
+    return queryWithHealthyPostgresClient<T>(this.pool, text, values);
   }
 
   async withClient<T>(callback: (client: PoolClient) => Promise<T>) {

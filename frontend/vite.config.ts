@@ -152,6 +152,7 @@ export default defineConfig({
       { find: '@enlearn/lowcode-framework/core', replacement: resolve(lowcodeFrameworkRoot, 'core', 'index.ts') },
       { find: '@enlearn/lowcode-framework/types/lowcode', replacement: resolve(lowcodeFrameworkRoot, 'types', 'lowcode.ts') },
       { find: '@enlearn/lowcode-framework/lowcode/schema', replacement: resolve(lowcodeFrameworkRoot, 'lowcode', 'schema.ts') },
+      { find: '@enlearn/lowcode-framework/components/json-dialog-input', replacement: resolve(lowcodeFrameworkRoot, 'components', 'JsonDialogInput.vue') },
       { find: '@enlearn/lowcode-framework', replacement: lowcodeFrameworkRoot },
       { find: '@enlearn/approval-workflow', replacement: approvalWorkflowRoot },
       { find: '@enlearn/chat-widget', replacement: chatWidgetRoot },

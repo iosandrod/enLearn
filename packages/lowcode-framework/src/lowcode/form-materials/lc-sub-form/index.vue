@@ -133,8 +133,7 @@ function isLowCodeFormSchema(value: unknown): value is LowCodeFormSchema {
 .lc-sub-form :deep(.vxe-color-picker),
 .lc-sub-form :deep(.lc-array-table),
 .lc-sub-form :deep(.lc-sub-form),
-.lc-sub-form :deep(.lc-json-editor),
-.lc-sub-form :deep(.lc-json-editor .vxe-textarea) {
+.lc-sub-form :deep(.lc-json-editor) {
   width: 100%;
   max-width: 100%;
   min-width: 0;

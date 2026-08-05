@@ -23,6 +23,7 @@
     "./styles/*": "./src/styles/*"
   },
   "dependencies": {
+    "@enlearn/lowcode-framework": "workspace:*",
     "@enlearn/workflow-schema": "workspace:*",
     "@vue-flow/core": "^1.48.2"
   },

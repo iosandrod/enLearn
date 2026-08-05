@@ -44,6 +44,13 @@ const dialogHostSource = await readFile(
   ),
   'utf8'
 );
+const pageDialogSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/runtime/page-reference-dialog.tsx',
+    import.meta.url
+  ),
+  'utf8'
+);
 
 assert.match(
   migrationSource,
@@ -142,8 +149,23 @@ assert.match(
 );
 assert.match(
   dashboardLayoutSource,
-  /confirmLowCodePage\(\{[\s\S]*pageCode:\s*'system-settings-edit'/,
-  'The topbar button must open the low-code system settings edit page.'
+  /confirmLowCodePage\(\{[\s\S]*pageCode:\s*'system-settings-edit'[\s\S]*submitOnConfirm:\s*true/,
+  'The topbar button must save the low-code system settings page before closing it.'
+);
+assert.match(
+  rendererSource,
+  /function collectFormSubmissionGroups\([\s\S]*groups\.set\(sourceKey[\s\S]*function buildFormSubmissionValues\([\s\S]*mergeChangedFormValue/,
+  'Forms sharing a data source must be merged into one save payload without overwriting changes from another settings tab.'
+);
+assert.match(
+  rendererSource,
+  /defineExpose\(\{[\s\S]*submitForms[\s\S]*async function submitForms\(\)[\s\S]*saveFormSource/,
+  'The page renderer must expose an awaited form submission operation to dialog hosts.'
+);
+assert.match(
+  pageDialogSource,
+  /submitOnConfirm\?: boolean[\s\S]*await rendererRef\.value\?\.submitForms\(\)[\s\S]*if \(!submitted\) return false/,
+  'A submit-on-confirm dialog must remain open when the page save fails.'
 );
 assert.match(
   dashboardLayoutSource,

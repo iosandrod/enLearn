@@ -12,7 +12,11 @@ export default defineConfig({
       cssFileName: 'style'
     },
     rollupOptions: {
-      external: ['vue', '@vue-flow/core']
+      external: [
+        'vue',
+        '@vue-flow/core',
+        '@enlearn/lowcode-framework/components/json-dialog-input'
+      ]
     }
   }
 });

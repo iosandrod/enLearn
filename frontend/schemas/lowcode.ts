@@ -93,11 +93,12 @@ export const lowCodePageEditorSchema: LowCodeFormSchema = {
     {
       field: 'schemaJson',
       label: 'Schema JSON',
-      component: 'vxe-textarea',
+      component: 'lc-json-editor',
       props: {
         placeholder: 'Paste the page schema JSON here',
         rows: 16,
-        resize: 'vertical'
+        jsonRootType: 'object',
+        jsonValueMode: 'string'
       },
       rules: [{ required: true, message: 'Schema JSON is required' }],
       span: 2

@@ -1,24 +1,61 @@
 <template>
   <article class="content-panel">
     <LowCodeForm
-      v-model="formModels[block.id]"
+      :model-value="formModel"
       :schema="block.schema"
       :option-sources="resolvedData"
-      :loading="loadingBlockId === block.id"
+      :loading="isLoading"
+      :label-context-menu="Boolean(runtimeBlockEditor)"
+      @update:model-value="updateFormModel"
       @submit="handleSubmit"
       @action="handleAction"
       @field-change="handleFieldChange"
+      @label-context-menu="openFormContextMenu"
     />
   </article>
 </template>
 
 <script setup lang="ts">
+import { computed, inject } from 'vue';
 import LowCodeForm from '../../../components/LowCodeForm.vue';
 import type { LowCodeAction, LowCodeField, LowCodePageSearchFormBlock } from '../../../types/lowcode';
+import { lowCodeRuntimeBlockEditorKey } from '../../../runtime/block-editor';
+import { useLowCodePageRuntime } from '../../../runtime/page-runtime';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
+import {
+  openRuntimeFormContextMenu,
+  openRuntimeFormDesigner,
+} from '../runtime-form-designer';
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageSearchFormBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
+const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
+const pageRuntime = useLowCodePageRuntime(false);
+const resolvedData = computed(
+  () => pageRuntime?.state.sources ?? props.resolvedData
+);
+const formModel = computed(
+  () => pageRuntime?.state.forms[props.block.id] ?? props.formModels[props.block.id] ?? {}
+);
+const isLoading = computed(
+  () => (pageRuntime?.state.status.loadingBlockId ?? props.loadingBlockId) === props.block.id
+);
+
+function updateFormModel(values: Record<string, unknown>) {
+  if (pageRuntime) {
+    pageRuntime.replaceForm(props.block.id, values);
+    return;
+  }
+
+  props.formModels[props.block.id] = values;
+}
+
+function openFormContextMenu(event: MouseEvent) {
+  if (!runtimeBlockEditor) return;
+  openRuntimeFormContextMenu(event, () => {
+    void openRuntimeFormDesigner(props.block, 'search', runtimeBlockEditor);
+  });
+}
 
 function emitRuntimeEvent(name: string, payload: Record<string, unknown>) {
   emit('runtimeEvent', {

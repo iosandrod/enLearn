@@ -458,6 +458,8 @@ export type LowCodePageFormBlock = LowCodeMaterialVersionedBlock & {
   sourceKey?: string;
   submitSourceKey?: string;
   initialValues?: Record<string, unknown>;
+  formDesignerModel?: Record<string, unknown>;
+  formDesignerUpdatedAt?: number;
 };
 
 export type LowCodePageSearchFormBlock = LowCodeMaterialVersionedBlock & {
@@ -468,6 +470,8 @@ export type LowCodePageSearchFormBlock = LowCodeMaterialVersionedBlock & {
   schema: LowCodeFormSchema;
   targetSourceKey?: string;
   initialValues?: Record<string, unknown>;
+  formDesignerModel?: Record<string, unknown>;
+  formDesignerUpdatedAt?: number;
 };
 
 export type LowCodePageGridBlock = LowCodeMaterialVersionedBlock & {

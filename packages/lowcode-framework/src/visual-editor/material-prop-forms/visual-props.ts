@@ -213,6 +213,8 @@ function createFieldFromVisualProp(
       props: {
         rows: 8,
         resize: 'vertical',
+        jsonRootType: propConfig.jsonRootType,
+        jsonValueMode: propConfig.jsonValueMode,
       },
     };
   }

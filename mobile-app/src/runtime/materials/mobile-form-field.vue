@@ -44,14 +44,79 @@
     </div>
 
     <textarea
-      v-else-if="kind === 'textarea' || kind === 'json'"
-      :class="['field-input', 'field-textarea', { 'is-json': kind === 'json' }]"
+      v-else-if="kind === 'textarea'"
+      class="field-input field-textarea"
       :value="textareaValue"
       :placeholder="placeholder"
       :rows="textareaRows"
       :disabled="interactiveDisabled"
       @change="commitTextarea(readInputEventValue($event))"
     />
+
+    <div v-else-if="kind === 'json'" class="json-control">
+      <div class="json-preview-row">
+        <input
+          class="field-input json-preview"
+          type="text"
+          :value="jsonPreviewValue"
+          :placeholder="placeholder"
+          disabled
+        />
+        <button
+          type="button"
+          class="json-edit-button"
+          :disabled="disabled"
+          :aria-label="jsonEditorActionLabel"
+          @click="openJsonEditor"
+        >
+          <span class="json-edit-icon">{}</span>
+        </button>
+      </div>
+
+      <dialog
+        v-if="jsonEditorOpen"
+        class="json-dialog"
+        transparent
+        :animated="true"
+        animation-type="fade"
+        @request-close="closeJsonEditor"
+      >
+        <div class="json-dialog-mask" @click="closeJsonEditor">
+          <div class="json-dialog-panel" @click.stop>
+            <div class="json-dialog-heading">
+              <span class="json-dialog-title">{{ jsonEditorActionLabel }} - {{ field.label }}</span>
+              <button type="button" class="json-dialog-close" aria-label="关闭" @click="closeJsonEditor">
+                <span class="json-dialog-close-text">×</span>
+              </button>
+            </div>
+            <textarea
+              class="field-input field-textarea json-dialog-editor"
+              :value="jsonDraft"
+              :placeholder="placeholder"
+              :rows="textareaRows"
+              :disabled="readonly"
+              @input="updateJsonDraft(readInputEventValue($event))"
+            />
+            <span v-if="jsonDraftError" class="field-error json-dialog-error">
+              {{ jsonDraftError }}
+            </span>
+            <div class="json-dialog-actions">
+              <button type="button" class="json-dialog-action" @click="closeJsonEditor">
+                <span class="json-dialog-action-text">{{ readonly ? '关闭' : '取消' }}</span>
+              </button>
+              <button
+                v-if="!readonly"
+                type="button"
+                class="json-dialog-action is-primary"
+                @click="commitJsonDraft"
+              >
+                <span class="json-dialog-action-text is-primary">确定</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </dialog>
+    </div>
 
     <input
       v-else-if="kind === 'text' || kind === 'password'"
@@ -285,6 +350,9 @@ const emit = defineEmits<{
 const panelOpen = ref(false);
 const searchText = ref('');
 const localError = ref('');
+const jsonEditorOpen = ref(false);
+const jsonDraft = ref('');
+const jsonDraftError = ref('');
 
 const kind = computed(() => formControlKind(props.field.component));
 const fieldProps = computed(() => props.field.props ?? {});
@@ -298,12 +366,15 @@ const maxLength = computed(() => readFormNumber(
   fieldProps.value.maxlength ?? fieldProps.value.maxLength,
 ));
 const inputDisplayValue = computed(() => String(props.modelValue ?? ''));
-const textareaValue = computed(() => (
-  kind.value === 'json' ? formatJsonFormValue(props.modelValue) : String(props.modelValue ?? '')
-));
+const textareaValue = computed(() => String(props.modelValue ?? ''));
+const jsonPreviewValue = computed(() => formatJsonPreviewValue(props.modelValue));
+const jsonEditorActionLabel = computed(() => readonly.value ? '查看 JSON' : '编辑 JSON');
 const textareaRows = computed(() => Math.min(
   12,
-  Math.max(3, Math.round(readFormNumber(fieldProps.value.rows, kind.value === 'json' ? 6 : 4) ?? 4)),
+  Math.max(
+    3,
+    Math.round(readFormNumber(fieldProps.value.rows, kind.value === 'json' ? 6 : 4) ?? 4),
+  ),
 ));
 const multiple = computed(() => (
   kind.value === 'checkbox' || readFormBoolean(fieldProps.value.multiple)
@@ -404,22 +475,64 @@ function stepNumber(direction: -1 | 1) {
 }
 
 function commitTextarea(value: string) {
-  if (kind.value !== 'json') {
-    commitInput(value);
-    return;
-  }
+  commitInput(value);
+}
 
-  if (!value.trim()) {
-    localError.value = '';
+function formatJsonPreviewValue(value: unknown) {
+  const text = formatJsonFormValue(value).trim();
+  if (!text) return '';
+
+  try {
+    return JSON.stringify(JSON.parse(text));
+  } catch {
+    return text.replace(/\s+/g, ' ');
+  }
+}
+
+function openJsonEditor() {
+  if (disabled.value) return;
+  jsonDraft.value = formatJsonFormValue(props.modelValue);
+  jsonDraftError.value = '';
+  jsonEditorOpen.value = true;
+}
+
+function closeJsonEditor() {
+  jsonEditorOpen.value = false;
+  jsonDraftError.value = '';
+}
+
+function updateJsonDraft(value: string) {
+  jsonDraft.value = value;
+  jsonDraftError.value = '';
+}
+
+function commitJsonDraft() {
+  const text = jsonDraft.value.trim();
+  if (!text) {
     commitValue(undefined);
+    closeJsonEditor();
     return;
   }
 
   try {
-    localError.value = '';
-    commitValue(JSON.parse(value));
+    const parsed = JSON.parse(text) as unknown;
+    const rootType = String(fieldProps.value.jsonRootType ?? 'any');
+    if (rootType === 'object' && (!isFormRecord(parsed))) {
+      jsonDraftError.value = 'JSON 顶层必须是对象';
+      return;
+    }
+    if (rootType === 'array' && !Array.isArray(parsed)) {
+      jsonDraftError.value = 'JSON 顶层必须是数组';
+      return;
+    }
+
+    const valueMode = String(fieldProps.value.jsonValueMode ?? 'preserve');
+    const keepString = valueMode === 'string'
+      || (valueMode === 'preserve' && typeof props.modelValue === 'string');
+    commitValue(keepString ? text : parsed);
+    closeJsonEditor();
   } catch {
-    localError.value = 'JSON 格式不正确';
+    jsonDraftError.value = 'JSON 格式不正确，请检查后重试';
   }
 }
 
@@ -528,6 +641,7 @@ watch(() => props.field.field, () => {
   panelOpen.value = false;
   searchText.value = '';
   localError.value = '';
+  closeJsonEditor();
 });
 </script>
 
@@ -585,11 +699,6 @@ watch(() => props.field.field, () => {
   text-align-vertical: top;
 }
 
-.field-textarea.is-json {
-  height: 148px;
-  font-size: 12px;
-}
-
 .mobile-field.is-disabled .field-input,
 .mobile-field.is-disabled .select-trigger,
 .mobile-field.is-readonly .field-input,
@@ -601,6 +710,7 @@ watch(() => props.field.field, () => {
 .switch-row,
 .switch-control,
 .number-control,
+.json-preview-row,
 .select-trigger,
 .choice-item,
 .option-item,
@@ -610,6 +720,149 @@ watch(() => props.field.field, () => {
   display: flex;
   flex-direction: row;
   align-items: center;
+}
+
+.json-control,
+.json-dialog-mask,
+.json-dialog-panel {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.json-preview-row {
+  width: 100%;
+  min-width: 0;
+}
+
+.json-preview {
+  flex: 1;
+  min-width: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.json-edit-button {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #edf3f7;
+  border-width: 1px;
+  border-left-width: 0;
+  border-style: solid;
+  border-color: #ccd3d8;
+  border-radius: 5px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.json-edit-icon {
+  color: #245f87;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: bold;
+}
+
+.json-dialog {
+  width: 100%;
+  height: 100%;
+}
+
+.json-dialog-mask {
+  flex: 1;
+  padding: 16px;
+  justify-content: center;
+  background-color: rgba(15, 23, 42, 0.54);
+}
+
+.json-dialog-panel {
+  max-height: 86%;
+  padding: 14px;
+  background-color: #ffffff;
+  border-radius: 6px;
+}
+
+.json-dialog-heading,
+.json-dialog-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.json-dialog-heading {
+  min-height: 36px;
+  margin-bottom: 10px;
+  justify-content: space-between;
+}
+
+.json-dialog-title {
+  flex: 1;
+  min-width: 0;
+  color: #17212b;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: bold;
+}
+
+.json-dialog-close {
+  width: 34px;
+  height: 34px;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #edf1f3;
+  border-radius: 4px;
+}
+
+.json-dialog-close-text {
+  color: #52606b;
+  font-size: 22px;
+  line-height: 26px;
+}
+
+.json-dialog-editor {
+  height: 280px;
+  font-size: 12px;
+}
+
+.json-dialog-error {
+  margin-top: 6px;
+}
+
+.json-dialog-actions {
+  margin-top: 12px;
+  justify-content: flex-end;
+}
+
+.json-dialog-action {
+  min-width: 72px;
+  height: 38px;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #edf1f3;
+  border-radius: 4px;
+}
+
+.json-dialog-action.is-primary {
+  background-color: #176ea8;
+}
+
+.json-dialog-action-text {
+  color: #35414c;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.json-dialog-action-text.is-primary {
+  color: #ffffff;
 }
 
 .switch-control {

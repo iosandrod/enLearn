@@ -27,6 +27,7 @@ import { useDotProp } from '../../../../../../hooks/useDotProp';
 import { VisualEditorProps, VisualEditorPropsType } from '../../../../../../visual-editor.props';
 import { useVisualData } from '../../../../../../hooks/useVisualData';
 import { VisualEditorBlockData, VisualEditorComponent } from '../../../../../../visual-editor.utils';
+import JsonDialogInput from '../../../../../../../components/JsonDialogInput.vue';
 
 export const PropConfig = defineComponent({
   props: {
@@ -51,33 +52,18 @@ export const PropConfig = defineComponent({
 
       propObj[prop] ??= propConfig.defaultValue;
       const renderJsonInput = () => {
-        const jsonText = computed({
-          get: () => {
-            if (typeof propObj[prop] === 'string') return propObj[prop];
-            try {
-              return JSON.stringify(propObj[prop] ?? {}, null, 2);
-            } catch {
-              return '{}';
-            }
-          },
-          set: (value: string) => {
-            try {
-              propObj[prop] = value.trim() ? JSON.parse(value) : {};
-            } catch {
-              propObj[prop] = value;
-            }
-          },
-        });
-
         return (
-          <ElInput
-            modelValue={jsonText.value}
-            type="textarea"
-            rows={8}
+          <JsonDialogInput
+            modelValue={propObj[prop]}
+            name={propName}
+            label={propConfig.label}
             placeholder={propConfig.tips || propConfig.label}
+            rows={8}
+            rootType={propConfig.jsonRootType}
+            valueMode={propConfig.jsonValueMode || 'preserve'}
             {...{
-              'onUpdate:modelValue': (value: string) => {
-                jsonText.value = value;
+              'onUpdate:modelValue': (value: unknown) => {
+                propObj[prop] = value;
               },
             }}
           />

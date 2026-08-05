@@ -439,6 +439,8 @@ function convertRuntimeBlockToVisual(
                 runtimeActionToVisualButton(action as LowCodeButtonGroupAction),
               )
             : undefined,
+        formDesignerModel: cloneJson(block.formDesignerModel),
+        formDesignerUpdatedAt: block.formDesignerUpdatedAt,
         fields,
       },
     });

@@ -380,12 +380,14 @@ function createButtonArrayColumns() {
     {
       field: 'directivesJson',
       title: 'directives JSON',
-      component: 'vxe-textarea',
+      component: 'lc-json-editor',
       minWidth: 260,
       defaultValue: '[]',
       props: {
         rows: 3,
         placeholder: '[]',
+        jsonRootType: 'array',
+        jsonValueMode: 'string',
       },
     },
   ];

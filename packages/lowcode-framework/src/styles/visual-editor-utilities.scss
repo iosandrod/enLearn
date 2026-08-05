@@ -859,8 +859,7 @@
 .grid-designer-column-form-card .lc-field > .vxe-select,
 .grid-designer-column-form-card .lc-field > .lc-array-table,
 .grid-designer-column-form-card .lc-field > .lc-sub-form,
-.grid-designer-column-form-card .lc-field > .lc-json-editor,
-.grid-designer-column-form-card .lc-json-editor > .vxe-textarea {
+.grid-designer-column-form-card .lc-field > .lc-json-editor {
   width: 100%;
   max-width: 100%;
 }
@@ -1124,8 +1123,7 @@
 .grid-designer-info-card .lc-field > .vxe-textarea,
 .grid-designer-info-card .lc-field > .vxe-select,
 .grid-designer-info-card .lc-field > .lc-sub-form,
-.grid-designer-info-card .lc-field > .lc-json-editor,
-.grid-designer-info-card .lc-json-editor > .vxe-textarea {
+.grid-designer-info-card .lc-field > .lc-json-editor {
   width: 100%;
   max-width: 100%;
   min-width: 0;

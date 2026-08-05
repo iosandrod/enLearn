@@ -1138,10 +1138,6 @@ function cloneValue(value: unknown) {
   vertical-align: top;
 }
 
-.lc-array-table__grid :deep(.lc-json-editor .vxe-textarea) {
-  width: 100%;
-}
-
 .lc-array-table__object-cell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

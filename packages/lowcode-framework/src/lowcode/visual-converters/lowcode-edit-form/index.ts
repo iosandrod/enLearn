@@ -119,6 +119,12 @@ const converter: VisualToLowCodeConverter = {
       ...(sourceKey ? { sourceKey } : {}),
       ...(submitSourceKey ? { submitSourceKey } : {}),
       ...(Object.keys(initialValues).length ? { initialValues } : {}),
+      ...(isPlainRecord(props.formDesignerModel)
+        ? { formDesignerModel: props.formDesignerModel }
+        : {}),
+      ...(typeof props.formDesignerUpdatedAt === 'number'
+        ? { formDesignerUpdatedAt: props.formDesignerUpdatedAt }
+        : {}),
       schema: {
         fields,
         ...(layout ? { layout } : {}),

@@ -8,6 +8,7 @@
     :rules="formRules"
     :custom-layout="true"
     @submit="handleVxeSubmit"
+    @contextmenu="handleLabelContextMenu"
   >
     <LowCodeFormLayout
       v-if="layoutNodes.length"
@@ -52,7 +53,7 @@
       </div>
     </div>
 
-    <div v-if="formActions.length" class="lc-actions">
+    <!-- <div v-if="formActions.length" class="lc-actions">
       <vxe-button
         v-for="action in formActions"
         :key="action.code"
@@ -63,7 +64,7 @@
       >
         {{ action.label }}
       </vxe-button>
-    </div>
+    </div> -->
   </vxe-form>
 </template>
 
@@ -141,6 +142,7 @@ const props = defineProps({
   tooltipConfig: Object as PropType<Record<string, unknown>>,
   collapseConfig: Object as PropType<Record<string, unknown>>,
   params: Object as PropType<Record<string, unknown>>,
+  labelContextMenu: Boolean,
 });
 
 const emit = defineEmits<{
@@ -155,6 +157,7 @@ const emit = defineEmits<{
       values: Record<string, unknown>;
     },
   ];
+  labelContextMenu: [event: MouseEvent];
 }>();
 
 const attrs = useAttrs();
@@ -534,6 +537,21 @@ function handleVxeSubmit() {
   void handleSubmit();
 }
 
+function handleLabelContextMenu(event: MouseEvent) {
+  if (!props.labelContextMenu) return;
+
+  const target = event.target;
+  const currentTarget = event.currentTarget;
+  if (!(target instanceof Element) || !(currentTarget instanceof Element)) return;
+
+  const title = target.closest('.vxe-form--item-title');
+  if (!title || title.closest('.lc-form') !== currentTarget) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  emit('labelContextMenu', event);
+}
+
 async function handleAction(action: LowCodeAction) {
   if (action.type === 'submit') {
     await handleSubmit();
@@ -587,7 +605,7 @@ defineExpose({
 .lc-form-grid,
 .lc-form-layout {
   display: grid;
-  gap: 12px 16px;
+  gap: 6px 8px;
 }
 
 .lc-form-grid {
@@ -703,8 +721,7 @@ defineExpose({
 .lc-field > .vxe-color-picker,
 .lc-field > .lc-array-table,
 .lc-field > .lc-sub-form,
-.lc-field > .lc-json-editor,
-.lc-json-editor > .vxe-textarea {
+.lc-field > .lc-json-editor {
   width: 100%;
   max-width: 100%;
 }

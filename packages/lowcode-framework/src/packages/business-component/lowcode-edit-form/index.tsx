@@ -5,6 +5,7 @@ import type {
 } from '../../../visual-editor/visual-editor.utils';
 import {
   createEditorInputProp,
+  createEditorJsonProp,
   createEditorTableProp,
 } from '../../../visual-editor/visual-editor.props';
 
@@ -208,9 +209,11 @@ export default {
       label: '保存方法',
       defaultValue: 'saveUser',
     }),
-    postDataJson: createEditorInputProp({
+    postDataJson: createEditorJsonProp({
       label: '请求参数 JSON',
       defaultValue: '{}',
+      rootType: 'object',
+      valueMode: 'string',
     }),
     /* columns: createEditorInputNumberProp({
       label: '列数',

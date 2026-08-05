@@ -21,6 +21,11 @@
     "./runtime": "./src/runtime/index.ts",
     "./designer": "./src/designer/index.ts",
     "./materials": "./src/materials/index.ts",
+    "./components/json-dialog-input": {
+      "types": "./src/components/json-dialog-input.d.ts",
+      "import": "./src/components/JsonDialogInput.vue",
+      "default": "./src/components/JsonDialogInput.vue"
+    },
     "./runtime/global-dialog": "./src/runtime/global-dialog.ts",
     "./runtime/page-reference-dialog": "./src/runtime/page-reference-dialog.tsx",
     "./runtime/directives": "./src/runtime/directives.ts",

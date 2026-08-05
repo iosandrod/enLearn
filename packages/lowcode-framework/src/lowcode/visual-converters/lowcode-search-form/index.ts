@@ -2,6 +2,7 @@ import type { LowCodePageBlock } from '../../../types/lowcode';
 import type { VisualToLowCodeConverter } from '../types';
 import {
   isDefined,
+  isPlainRecord,
   normalizeField,
   normalizeRows,
   readFormDesignerLayout,
@@ -31,6 +32,12 @@ const converter: VisualToLowCodeConverter = {
       kind: 'searchForm',
       title: readString(props.title, 'Query Conditions'),
       targetSourceKey: sourceKey,
+      ...(isPlainRecord(props.formDesignerModel)
+        ? { formDesignerModel: props.formDesignerModel }
+        : {}),
+      ...(typeof props.formDesignerUpdatedAt === 'number'
+        ? { formDesignerUpdatedAt: props.formDesignerUpdatedAt }
+        : {}),
       schema: {
         fields,
         ...(layout ? { layout } : {}),

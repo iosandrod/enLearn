@@ -317,6 +317,9 @@ importers:
 
   packages/approval-workflow:
     dependencies:
+      '@enlearn/lowcode-framework':
+        specifier: workspace:*
+        version: link:../lowcode-framework
       '@enlearn/workflow-schema':
         specifier: workspace:*
         version: link:../workflow-schema
@@ -549,6 +552,9 @@ importers:
 
   packages/trigger-workflow-editor:
     dependencies:
+      '@enlearn/lowcode-framework':
+        specifier: workspace:*
+        version: link:../lowcode-framework
       '@vue-flow/core':
         specifier: ^1.48.2
         version: 1.48.2(vue@3.5.40(typescript@5.9.3))

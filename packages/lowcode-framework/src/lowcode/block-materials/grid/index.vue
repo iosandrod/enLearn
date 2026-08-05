@@ -2,8 +2,8 @@
   <article class="content-panel">
     <LowCodeGrid
       :schema="pageGridSchema"
-      :rows="resolveGridRows(block, resolvedData, searchFilters)"
-      :loading="loadingGridId === block.id"
+      :rows="rows"
+      :loading="isLoading"
       :fill="block.layout?.fillRemaining === true"
       @edit="handleEdit"
       @delete="handleDelete"
@@ -18,15 +18,36 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import LowCodeGrid from '../../../components/LowCodeGrid.vue';
 import { resolveGridRows } from '../helpers';
 import type { LowCodeGridRowAction, LowCodePageGridBlock } from '../../../types/lowcode';
+import { useLowCodePageRuntime } from '../../../runtime/page-runtime';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 import { createPageGridMenuConfig } from './page-grid-menu';
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageGridBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
+const pageRuntime = useLowCodePageRuntime(false);
+const runtimeSources = computed(
+  () => pageRuntime?.state.sources ?? props.resolvedData
+);
+const runtimeSearches = computed(
+  () => pageRuntime?.state.searches ?? props.searchFilters
+);
+const rows = computed(() =>
+  resolveGridRows(props.block, runtimeSources.value, runtimeSearches.value)
+);
+const isLoading = computed(
+  () => (pageRuntime?.state.status.loadingGridId ?? props.loadingGridId) === props.block.id
+);
+const rowKey = computed(() => {
+  const rowConfig = isRecord(props.block.schema.grid.rowConfig)
+    ? props.block.schema.grid.rowConfig
+    : {};
+  const keyField = rowConfig.keyField;
+  return typeof keyField === 'string' && keyField.trim() ? keyField.trim() : 'id';
+});
 
 const pageGridSchema = computed(() => ({
   ...props.block.schema,
@@ -38,10 +59,33 @@ const pageGridSchema = computed(() => ({
 
 type GridRuntimeEventPayload = {
   key: string;
-  row?: Record<string, unknown>;
+  row?: Record<string, unknown> | null;
   actionCode?: string;
   rawEvent: Record<string, unknown>;
 };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function syncGridRows() {
+  pageRuntime?.setGridRows(props.block.id, rows.value, {
+    sourceKey: props.block.sourceKey,
+    rowKey: rowKey.value,
+  });
+}
+
+function syncGridEvent(payload: GridRuntimeEventPayload) {
+  if (!pageRuntime) return;
+  syncGridRows();
+  pageRuntime.applyGridEvent(props.block.id, payload);
+}
+
+watch(
+  [rows, rowKey, () => props.block.sourceKey],
+  syncGridRows,
+  { immediate: true }
+);
 
 function emitRuntimeEvent(name: string, payload: Record<string, unknown>) {
   emit('runtimeEvent', {
@@ -135,9 +179,10 @@ function handleRowAction(payload: {
 }
 
 function handleRowCurrentChange(payload: {
-  row: Record<string, unknown>;
+  row: Record<string, unknown> | null;
   rawEvent: Record<string, unknown>;
 }) {
+  syncGridEvent({ key: 'rowCurrentChange', ...payload });
   if (!shouldPublishDesignedGridEvent('rowCurrentChange')) return;
 
   emitRuntimeEvent(getGridEventName('rowCurrentChange', 'grid.rowCurrentChange'), {
@@ -151,6 +196,7 @@ function handleRowDblclick(payload: {
   row: Record<string, unknown>;
   rawEvent: Record<string, unknown>;
 }) {
+  syncGridEvent({ key: 'rowDblclick', ...payload });
   if (!shouldPublishDesignedGridEvent('rowDblclick')) return;
 
   emitRuntimeEvent(getGridEventName('rowDblclick', 'grid.rowDblclick'), {
@@ -164,6 +210,7 @@ function handleCellDblclick(payload: {
   row: Record<string, unknown>;
   rawEvent: Record<string, unknown>;
 }) {
+  syncGridEvent({ key: 'cellDblclick', ...payload });
   if (!shouldPublishDesignedGridEvent('cellDblclick')) return;
 
   emitRuntimeEvent(getGridEventName('cellDblclick', 'grid.cellDblclick'), {
@@ -174,6 +221,7 @@ function handleCellDblclick(payload: {
 }
 
 function handleGridEvent(payload: GridRuntimeEventPayload) {
+  syncGridEvent(payload);
   if (shouldPublishDesignedGridEvent(payload.key)) {
     emitRuntimeEvent(getGridEventName(payload.key, `grid.${payload.key}`), {
       ...payload,

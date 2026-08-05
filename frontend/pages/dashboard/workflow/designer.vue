@@ -134,7 +134,16 @@
               复制
             </button>
           </div>
-          <textarea v-model="schemaText" spellcheck="false" @change="applySchemaText" />
+          <JsonDialogInput
+            :model-value="schemaText"
+            name="workflowSchema"
+            label="Workflow Schema JSON"
+            title="编辑 Workflow Schema JSON"
+            :rows="18"
+            root-type="object"
+            value-mode="string"
+            @update:model-value="applySchemaJsonValue"
+          />
         </section>
       </aside>
     </div>
@@ -399,6 +408,7 @@ import {
   type WorkflowModel,
   type WorkflowSchemaIssue
 } from '@enlearn/approval-workflow';
+import JsonDialogInput from '@enlearn/lowcode-framework/components/json-dialog-input';
 
 const localStorageKey = computed(() =>
   `enlearn.workflow.designer.${auth.activeAccount.value?.account_id ?? 'unselected'}.default`
@@ -1081,6 +1091,12 @@ async function publishCurrentWorkflow() {
   return published;
 }
 
+function applySchemaJsonValue(value: unknown) {
+  schemaText.value =
+    typeof value === 'string' ? value : JSON.stringify(value ?? {}, null, 2);
+  applySchemaText();
+}
+
 function createDesignerTestVariables(businessKey: string, currentUserId: string) {
   return {
     ...ORDER_APPROVAL_TEST_VARIABLES,
@@ -1609,20 +1625,6 @@ function formatRuntimeTime(value?: string) {
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.workflow-panel--json textarea {
-  min-height: 150px;
-  width: 100%;
-  resize: vertical;
-  border: 1px solid #cbd5e1;
-  border-radius: 5px;
-  background: #0f172a;
-  color: #e2e8f0;
-  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
-  font-size: 12px;
-  line-height: 1.55;
-  padding: 10px;
 }
 
 .workflow-link-button {

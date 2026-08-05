@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, provide, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, provide, watch } from 'vue';
 import type {
   LowCodeAction,
   LowCodeButtonGroupAction,
@@ -63,6 +63,7 @@ import type {
   LowCodeRuntimeEvent
 } from '../types/lowcode';
 import type { LowCodeRuntimeBlock } from '../lowcode/block-materials';
+import { resolveGridRows } from '../lowcode/block-materials/helpers';
 import GlobalDialogHost from './GlobalDialogHost';
 import LowCodeOverlayHost from './LowCodeOverlayHost.vue';
 import {
@@ -94,6 +95,10 @@ import {
   lowCodeRuntimeBlockEditorKey,
   type LowCodeRuntimeBlockUpdate,
 } from '../runtime/block-editor';
+import {
+  createLowCodePageRuntime,
+  lowCodePageRuntimeKey,
+} from '../runtime/page-runtime';
 
 const props = withDefaults(defineProps<{
   page: LowCodePageRecord & {
@@ -119,16 +124,47 @@ const host = useLowCodeHost(() => ({
   messages: props.messages,
   theme: props.theme,
 }));
-const loadingBlockId = ref('');
-const loadingGridId = ref('');
-const message = ref('');
-const messageClass = ref('lc-help');
-const dataLoading = ref(false);
-const resolvedData = reactive<Record<string, unknown>>({});
-const formModels = reactive<Record<string, Record<string, unknown>>>({});
-const searchFilters = reactive<Record<string, Record<string, unknown>>>({});
+const runtime = createLowCodePageRuntime();
+provide(lowCodePageRuntimeKey, runtime);
+
+const resolvedData = computed(() => runtime.state.sources);
+const formModels = computed(() => runtime.state.forms);
+const searchFilters = computed(() => runtime.state.searches);
+const gridStates = computed(() => runtime.state.grids);
+const loadingBlockId = computed({
+  get: () => runtime.state.status.loadingBlockId,
+  set: (value: string) => {
+    runtime.state.status.loadingBlockId = value;
+  },
+});
+const loadingGridId = computed({
+  get: () => runtime.state.status.loadingGridId,
+  set: (value: string) => {
+    runtime.state.status.loadingGridId = value;
+  },
+});
+const message = computed({
+  get: () => runtime.state.status.message,
+  set: (value: string) => {
+    runtime.state.status.message = value;
+  },
+});
+const messageClass = computed({
+  get: () => runtime.state.status.messageClass,
+  set: (value: string) => {
+    runtime.state.status.messageClass = value;
+  },
+});
+const dataLoading = computed({
+  get: () => runtime.state.status.dataLoading,
+  set: (value: boolean) => {
+    runtime.state.status.dataLoading = value;
+  },
+});
 const runtimeEventBus = createLowCodeEventBus();
+const formBaselines: Record<string, Record<string, unknown>> = {};
 let loadSequence = 0;
+let runtimePageId = '';
 
 provide(lowCodeRuntimeBlockEditorKey, {
   updateBlock: persistRuntimeBlockUpdate,
@@ -137,10 +173,13 @@ provide(lowCodeRuntimeBlockEditorKey, {
 defineExpose({
   getSnapshot: () => ({
     page: props.page,
-    resolvedData: cloneRuntimeValue(resolvedData),
-    formModels: cloneRuntimeValue(formModels),
-    searchFilters: cloneRuntimeValue(searchFilters),
+    runtime: runtime.snapshot(),
+    resolvedData: cloneRuntimeValue(resolvedData.value),
+    formModels: cloneRuntimeValue(formModels.value),
+    searchFilters: cloneRuntimeValue(searchFilters.value),
+    gridStates: cloneRuntimeValue(gridStates.value),
   }),
+  submitForms,
 });
 
 const themeClass = computed(() => host.getTheme().className);
@@ -178,10 +217,6 @@ function markLastBlockFill<T extends LowCodePageBlock>(blocks: T[]) {
         }
       : block
   );
-}
-
-function clearObject(target: Record<string, unknown>) {
-  Object.keys(target).forEach((key) => delete target[key]);
 }
 
 function cloneRuntimeValue<T>(value: T): T {
@@ -231,7 +266,7 @@ function resolveExpression(
   const scope = toExpressionScope(scopeOrRow);
   const eventPayload = scope.event?.payload ?? {};
   const currentBlockId = scope.event?.blockId ?? '';
-  const currentForm = currentBlockId ? formModels[currentBlockId] ?? {} : {};
+  const currentForm = currentBlockId ? formModels.value[currentBlockId] ?? {} : {};
   const currentRoute = host.getRoute();
   const expressionRoot = {
     row: scope.row ?? (isRecord(eventPayload.row) ? eventPayload.row : {}),
@@ -241,10 +276,11 @@ function resolveExpression(
       path: currentRoute.path ?? '',
       fullPath: currentRoute.fullPath ?? ''
     },
-    data: resolvedData,
+    data: resolvedData.value,
     form: currentForm,
-    forms: formModels,
-    search: searchFilters,
+    forms: formModels.value,
+    search: searchFilters.value,
+    grids: gridStates.value,
     event: {
       ...eventPayload,
       name: scope.event?.name,
@@ -475,7 +511,7 @@ function mergeDataSourceSearchFilters(
   key: string,
   postData: Record<string, unknown>
 ) {
-  const sourceFilters = searchFilters[key];
+  const sourceFilters = searchFilters.value[key];
 
   if (!sourceFilters || !Object.keys(sourceFilters).length) {
     return postData;
@@ -623,7 +659,7 @@ async function refreshDataSources(sourceKeys: string[] = []) {
     if (result.status === 'fulfilled') {
       const [resolvedKey, value] = result.value;
       if (typeof value !== 'undefined') {
-        resolvedData[resolvedKey] = value;
+        runtime.setSource(resolvedKey, value);
       }
       return;
     }
@@ -637,6 +673,8 @@ async function refreshDataSources(sourceKeys: string[] = []) {
     message.value = errors[0];
     messageClass.value = 'lc-error';
   }
+
+  syncPageGridStates();
 
   return errors;
 }
@@ -670,6 +708,69 @@ function flattenPageBlocks(schema: LowCodePageRecord['schema']) {
   ]);
 }
 
+function initializePageGridStates(blocks: LowCodePageBlock[]) {
+  const gridBlocks = blocks.filter(
+    (block): block is LowCodePageGridBlock => block.kind === 'grid'
+  );
+  const gridIds = new Set(gridBlocks.map((block) => block.id));
+
+  Object.keys(runtime.state.grids).forEach((blockId) => {
+    if (!gridIds.has(blockId)) delete runtime.state.grids[blockId];
+  });
+
+  gridBlocks.forEach((block) => {
+    runtime.ensureGrid(block.id, {
+      sourceKey: block.sourceKey,
+      rowKey: getGridRowKey(block),
+    });
+  });
+}
+
+function syncPageGridStates(schema: LowCodePageRecord['schema'] = props.page.schema) {
+  const blocks = flattenPageBlocks(schema);
+  initializePageGridStates(blocks);
+
+  blocks.forEach((block) => {
+    if (block.kind !== 'grid') return;
+    runtime.setGridRows(
+      block.id,
+      resolveGridRows(block, resolvedData.value, searchFilters.value),
+      {
+        sourceKey: block.sourceKey,
+        rowKey: getGridRowKey(block),
+      }
+    );
+  });
+}
+
+function captureGridInteractionState() {
+  return Object.fromEntries(
+    Object.entries(runtime.state.grids).map(([blockId, grid]) => [
+      blockId,
+      {
+        currentRow: grid.currentRow,
+        selectedRows: [...grid.selectedRows],
+        contextRow: grid.contextRow,
+        currentCell: grid.currentCell
+          ? { row: grid.currentCell.row, field: grid.currentCell.field }
+          : null,
+      },
+    ])
+  );
+}
+
+function restoreGridInteractionState(
+  states: ReturnType<typeof captureGridInteractionState>
+) {
+  Object.entries(states).forEach(([blockId, state]) => {
+    if (!runtime.state.grids[blockId]) return;
+    runtime.setGridCurrentRow(blockId, state.currentRow);
+    runtime.setGridSelectedRows(blockId, state.selectedRows);
+    runtime.setGridContextRow(blockId, state.contextRow);
+    runtime.setGridCurrentCell(blockId, state.currentCell);
+  });
+}
+
 function getFormBlockTarget(block: LowCodePageGridBlock) {
   const blocks = flattenPageBlocks(props.page.schema);
 
@@ -699,7 +800,7 @@ async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
   );
 
   if (!targetBlock) {
-    throw new Error(`未找到按钮组 ${update.blockId}`);
+    throw new Error(`未找到页面区块 ${update.blockId}`);
   }
 
   Object.assign(targetBlock, cloneRuntimeValue(update.changes));
@@ -711,8 +812,8 @@ async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
 
     Object.values(visualPages).forEach((visualPage) => {
       if (!isRecord(visualPage)) return;
-      updateVisualButtonGroupBlocks(visualPage.blocks, update);
-      updateVisualButtonGroupBlocks(visualPage.overlays, update);
+      updateVisualButtonGroupBlocks(visualPage.blocks, targetBlock, update);
+      updateVisualButtonGroupBlocks(visualPage.overlays, targetBlock, update);
     });
   }
 
@@ -737,14 +838,16 @@ async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
     );
 
     Object.assign(props.page, saved);
-    message.value = '按钮配置已保存。';
+    message.value = targetBlock.kind === 'form' || targetBlock.kind === 'searchForm'
+      ? '表单配置已保存。'
+      : '按钮配置已保存。';
     messageClass.value = 'lc-help';
 
     return flattenPageBlocks(props.page.schema).find(
       (block) => block.id === (update.changes.id ?? update.blockId)
     ) ?? targetBlock;
   } catch (error) {
-    message.value = error instanceof Error ? error.message : '按钮配置保存失败。';
+    message.value = error instanceof Error ? error.message : '页面配置保存失败。';
     messageClass.value = 'lc-error';
     throw error;
   }
@@ -752,6 +855,7 @@ async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
 
 function updateVisualButtonGroupBlocks(
   value: unknown,
+  targetBlock: LowCodePageBlock,
   update: LowCodeRuntimeBlockUpdate
 ) {
   if (!Array.isArray(value)) return;
@@ -760,10 +864,7 @@ function updateVisualButtonGroupBlocks(
     if (!isRecord(candidate)) return;
 
     const visualProps = isRecord(candidate.props) ? candidate.props : {};
-    if (
-      candidate.componentKey === 'lowcode-button-group' &&
-      visualProps.blockId === update.blockId
-    ) {
+    if (candidate.componentKey === 'lowcode-button-group' && visualProps.blockId === update.blockId) {
       const changes = update.changes;
       const actions = Array.isArray(changes.actions) ? changes.actions : [];
       visualProps.blockId = changes.id ?? visualProps.blockId;
@@ -775,12 +876,49 @@ function updateVisualButtonGroupBlocks(
       candidate.props = visualProps;
     }
 
+    if (
+      (targetBlock.kind === 'form' || targetBlock.kind === 'searchForm') &&
+      visualProps.blockId === update.blockId &&
+      ['form', 'lowcode-edit-form', 'lowcode-search-form'].includes(String(candidate.componentKey))
+    ) {
+      const schema = isRecord(update.changes.schema) ? update.changes.schema : {};
+      const fields = Array.isArray(schema.fields) ? schema.fields : [];
+      visualProps.fields = fields.map(runtimeFormFieldToVisualField);
+      visualProps.formDesignerModel = cloneRuntimeValue(update.changes.formDesignerModel);
+      visualProps.formDesignerUpdatedAt = update.changes.formDesignerUpdatedAt ?? Date.now();
+      candidate.props = visualProps;
+    }
+
     const slots = isRecord(visualProps.slots) ? visualProps.slots : {};
     Object.values(slots).forEach((slot) => {
-      if (isRecord(slot)) updateVisualButtonGroupBlocks(slot.children, update);
+      if (isRecord(slot)) updateVisualButtonGroupBlocks(slot.children, targetBlock, update);
     });
-    updateVisualButtonGroupBlocks(visualProps.overlays, update);
+    updateVisualButtonGroupBlocks(visualProps.overlays, targetBlock, update);
   });
+}
+
+function runtimeFormFieldToVisualField(value: unknown): Record<string, unknown> {
+  const field = isRecord(value) ? value : {};
+  const props = isRecord(field.props) ? cloneRuntimeValue(field.props) : {};
+  const rules = Array.isArray(field.rules) ? field.rules.filter(isRecord) : [];
+  const optionProps = isRecord(field.optionProps) ? field.optionProps : {};
+
+  return {
+    field: readString(field.field),
+    label: readString(field.label),
+    component: readString(field.component, 'vxe-input'),
+    placeholder: readString(props.placeholder),
+    required: rules.some((rule) => rule.required === true),
+    span: field.span ?? '',
+    help: readString(field.help),
+    optionsSourceKey: readString(field.optionsSourceKey),
+    optionLabel: readString(optionProps.label),
+    optionValue: readString(optionProps.value),
+    optionChildren: readString(optionProps.children),
+    optionsJson: JSON.stringify(Array.isArray(field.options) ? field.options : []),
+    propsJson: JSON.stringify(props),
+    ...(Object.keys(props).length ? { props } : {}),
+  };
 }
 
 function runtimeButtonToVisualButton(value: unknown): Record<string, unknown> {
@@ -819,6 +957,172 @@ function mergeFormModelValues(
   return nextModel;
 }
 
+function runtimeValuesEqual(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) return true;
+
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return left.length === right.length && left.every(
+      (item, index) => runtimeValuesEqual(item, right[index])
+    );
+  }
+
+  if (isRecord(left) && isRecord(right)) {
+    const leftKeys = Object.keys(left);
+    const rightKeys = Object.keys(right);
+    return leftKeys.length === rightKeys.length && leftKeys.every(
+      (key) => key in right && runtimeValuesEqual(left[key], right[key])
+    );
+  }
+
+  return false;
+}
+
+function mergeChangedFormValue(
+  target: unknown,
+  baseline: unknown,
+  current: unknown
+): { changed: boolean; value: unknown } {
+  if (runtimeValuesEqual(baseline, current)) {
+    return { changed: false, value: target };
+  }
+
+  if (isRecord(baseline) && isRecord(current)) {
+    const value = isRecord(target) ? cloneRuntimeValue(target) : {};
+    let changed = false;
+
+    for (const key of new Set([...Object.keys(baseline), ...Object.keys(current)])) {
+      if (!(key in current)) {
+        delete value[key];
+        changed = true;
+        continue;
+      }
+
+      const merged = mergeChangedFormValue(value[key], baseline[key], current[key]);
+      if (!merged.changed) continue;
+      value[key] = merged.value;
+      changed = true;
+    }
+
+    return { changed, value };
+  }
+
+  return { changed: true, value: cloneRuntimeValue(current) };
+}
+
+function captureFormBaselines() {
+  Object.keys(formBaselines).forEach((blockId) => delete formBaselines[blockId]);
+  Object.entries(formModels.value).forEach(([blockId, values]) => {
+    formBaselines[blockId] = cloneRuntimeValue(values);
+  });
+}
+
+function readDataSourceRecord(sourceKey: string) {
+  const sourceValue = resolvedData.value[sourceKey];
+  if (Array.isArray(sourceValue)) return isRecord(sourceValue[0]) ? sourceValue[0] : undefined;
+  if (isRecord(sourceValue) && Array.isArray(sourceValue.rows)) {
+    return isRecord(sourceValue.rows[0]) ? sourceValue.rows[0] : undefined;
+  }
+  return isRecord(sourceValue) ? sourceValue : undefined;
+}
+
+function collectFormSubmissionGroups() {
+  const groups = new Map<string, LowCodePageFormBlock[]>();
+
+  for (const block of flattenPageBlocks(props.page.schema)) {
+    if (block.kind !== 'form') continue;
+    const sourceKey = block.submitSourceKey ?? block.sourceKey;
+    if (!sourceKey || !getDataSource(sourceKey)?.saveMethod) continue;
+    groups.set(sourceKey, [...(groups.get(sourceKey) ?? []), block]);
+  }
+
+  return groups;
+}
+
+function buildFormSubmissionValues(
+  sourceKey: string,
+  blocks: LowCodePageFormBlock[]
+) {
+  const sourceRecord = readDataSourceRecord(sourceKey);
+  const values = sourceRecord ? cloneRuntimeValue(sourceRecord) : {};
+
+  for (const block of blocks) {
+    const current = formModels.value[block.id] ?? {};
+    const baseline = formBaselines[block.id] ?? {};
+
+    for (const field of block.schema.fields) {
+      const fieldName = readString(field.field);
+      if (!fieldName || fieldName in values) continue;
+      if (fieldName in baseline) values[fieldName] = cloneRuntimeValue(baseline[fieldName]);
+      else if (fieldName in current) values[fieldName] = cloneRuntimeValue(current[fieldName]);
+    }
+  }
+
+  for (const block of blocks) {
+    const current = formModels.value[block.id] ?? {};
+    const baseline = formBaselines[block.id] ?? {};
+
+    for (const field of block.schema.fields) {
+      const fieldName = readString(field.field);
+      if (!fieldName || !(fieldName in current)) continue;
+      const merged = mergeChangedFormValue(
+        values[fieldName],
+        baseline[fieldName],
+        current[fieldName]
+      );
+      if (merged.changed) values[fieldName] = merged.value;
+    }
+  }
+
+  return values;
+}
+
+async function saveFormSource(
+  sourceKey: string,
+  values: Record<string, unknown>
+) {
+  const source = getDataSource(sourceKey);
+  if (!source) throw new Error(`Data source ${sourceKey} is unavailable.`);
+
+  const request = resolveDataSourceRequest(source.key, source);
+  const serviceName = request.serviceName;
+  const serviceMethod = source.saveMethod ?? request.serviceMethod;
+
+  if (!serviceName || !serviceMethod || (!source.saveMethod && isListItemsRequest(serviceName, serviceMethod))) {
+    throw new Error(`Data source ${source.key} is missing save service.`);
+  }
+
+  return host.getServiceApi().invoke(serviceName, serviceMethod, {
+    ...(source.postData ?? {}),
+    ...values,
+  });
+}
+
+async function submitForms() {
+  const groups = collectFormSubmissionGroups();
+  if (!groups.size) return true;
+
+  message.value = '';
+
+  try {
+    for (const [sourceKey, blocks] of groups) {
+      loadingBlockId.value = blocks[0]?.id ?? '';
+      await saveFormSource(sourceKey, buildFormSubmissionValues(sourceKey, blocks));
+    }
+
+    await loadPageData(props.page);
+    message.value = host.t('runtime.form.saved');
+    messageClass.value = 'lc-help';
+    return true;
+  } catch (error) {
+    message.value =
+      error instanceof Error ? error.message : host.t('runtime.form.submitFailed');
+    messageClass.value = 'lc-error';
+    return false;
+  } finally {
+    loadingBlockId.value = '';
+  }
+}
+
 function collectSharedFormDefaults(blocks: LowCodePageBlock[]) {
   const defaultsBySource: Record<string, Record<string, unknown>> = {};
 
@@ -840,24 +1144,29 @@ async function loadPageData(nextPage: LowCodePageRecord) {
   const entries = Object.entries(nextPage.schema.dataSources ?? {});
   const pageBlocks = flattenPageBlocks(nextPage.schema);
   const sharedFormDefaults = collectSharedFormDefaults(pageBlocks);
+  const preserveGrids = runtimePageId === nextPage.id;
+  const gridInteractionState = preserveGrids ? captureGridInteractionState() : {};
 
-  clearObject(resolvedData);
-  clearObject(formModels);
-  clearObject(searchFilters);
+  runtime.resetData({ preserveGrids });
+  runtimePageId = nextPage.id;
+  initializePageGridStates(pageBlocks);
 
   for (const block of pageBlocks) {
     if (block.kind === 'form') {
       const sourceKey = block.sourceKey ?? block.submitSourceKey;
-      formModels[block.id] = deriveFormModel(
+      runtime.replaceForm(block.id, deriveFormModel(
         block,
         sourceKey ? sharedFormDefaults[sourceKey] : undefined
-      );
+      ));
     } else if (block.kind === 'searchForm') {
-      formModels[block.id] = deriveFormModel(block);
+      runtime.replaceForm(block.id, deriveFormModel(block));
     }
   }
 
   if (!entries.length) {
+    syncPageGridStates(nextPage.schema);
+    restoreGridInteractionState(gridInteractionState);
+    captureFormBaselines();
     return [];
   }
 
@@ -873,7 +1182,7 @@ async function loadPageData(nextPage: LowCodePageRecord) {
     if (result.status === 'fulfilled') {
       const [resolvedKey, value] = result.value;
       if (typeof value !== 'undefined') {
-        resolvedData[resolvedKey] = value;
+        runtime.setSource(resolvedKey, value);
       }
       return;
     }
@@ -887,16 +1196,20 @@ async function loadPageData(nextPage: LowCodePageRecord) {
     if (block.kind !== 'form') continue;
 
     const source = getDataSource(block.sourceKey ?? block.submitSourceKey);
-    const sourceValue = source ? resolvedData[source.key] : undefined;
+    const sourceValue = source ? resolvedData.value[source.key] : undefined;
     const sourceRecord = Array.isArray(sourceValue) ? sourceValue[0] : sourceValue;
 
     if (isRecord(sourceRecord)) {
-      formModels[block.id] = mergeFormModelValues(
-        formModels[block.id] ?? {},
+      runtime.replaceForm(block.id, mergeFormModelValues(
+        formModels.value[block.id] ?? {},
         sourceRecord
-      );
+      ));
     }
   }
+
+  syncPageGridStates(nextPage.schema);
+  restoreGridInteractionState(gridInteractionState);
+  captureFormBaselines();
 
   return errors;
 }
@@ -1129,12 +1442,13 @@ function applyDataSourceDirective(
   const [sourceKey] = resolveDirectiveSourceKeys(directive, event);
   if (!sourceKey) return;
 
-  resolvedData[sourceKey] = mergeDataSourceValue(
-    resolvedData[sourceKey],
+  runtime.setSource(sourceKey, mergeDataSourceValue(
+    resolvedData.value[sourceKey],
     resolveDirectiveData(directive, event),
     directive,
     event
-  );
+  ));
+  syncPageGridStates();
 }
 
 function applyGridRowsDirective(
@@ -1150,12 +1464,13 @@ function applyGridRowsDirective(
   const nextValue = resolveDirectiveData(directive, event);
 
   if (target.sourceKey) {
-    resolvedData[target.sourceKey] = mergeDataSourceValue(
-      resolvedData[target.sourceKey],
+    runtime.setSource(target.sourceKey, mergeDataSourceValue(
+      resolvedData.value[target.sourceKey],
       nextValue,
       directive,
       event
-    );
+    ));
+    syncPageGridStates();
     return;
   }
 
@@ -1165,6 +1480,7 @@ function applyGridRowsDirective(
     directive,
     event
   ) as Record<string, unknown>[];
+  syncPageGridStates();
 }
 
 function applyFormValuesDirective(
@@ -1180,14 +1496,11 @@ function applyFormValuesDirective(
   );
 
   if (directive.mode === 'replace') {
-    formModels[blockId] = { ...nextValues };
+    runtime.replaceForm(blockId, nextValues);
     return;
   }
 
-  formModels[blockId] = {
-    ...(formModels[blockId] ?? {}),
-    ...nextValues,
-  };
+  runtime.patchForm(blockId, nextValues);
 }
 
 function applyFormFieldDirective(
@@ -1198,10 +1511,9 @@ function applyFormFieldDirective(
   const field = resolveDirectiveString(directive.field, event);
   if (!blockId || !field) return;
 
-  formModels[blockId] = {
-    ...(formModels[blockId] ?? {}),
+  runtime.patchForm(blockId, {
     [field]: resolveRuntimeValue(directive.value, directiveScope(event)),
-  };
+  });
 }
 
 async function applySearchFiltersDirective(
@@ -1215,13 +1527,8 @@ async function applySearchFiltersDirective(
     directive.values ?? directive.value ?? event.payload?.values,
     event
   );
-  searchFilters[sourceKey] =
-    directive.mode === 'replace'
-      ? { ...values }
-      : {
-          ...(searchFilters[sourceKey] ?? {}),
-          ...values,
-        };
+  if (directive.mode === 'replace') runtime.replaceSearch(sourceKey, values);
+  else runtime.patchSearch(sourceKey, values);
 
   await refreshDataSources([sourceKey]);
 }
@@ -1275,12 +1582,13 @@ async function invokeServiceDirective(
   const assignTo = resolveDirectiveString(directive.assignTo, event);
 
   if (assignTo) {
-    resolvedData[assignTo] = mergeDataSourceValue(
-      resolvedData[assignTo],
+    runtime.setSource(assignTo, mergeDataSourceValue(
+      resolvedData.value[assignTo],
       result,
       directive,
       event
-    );
+    ));
+    syncPageGridStates();
   }
 
   if (directive.refreshSourceKeys?.length) {
@@ -1496,18 +1804,7 @@ async function handleFormSubmit(
   message.value = '';
 
   try {
-    const request = resolveDataSourceRequest(source.key, source);
-    const serviceName = request.serviceName;
-    const serviceMethod = source.saveMethod ?? request.serviceMethod;
-
-    if (!serviceName || !serviceMethod || (!source.saveMethod && isListItemsRequest(serviceName, serviceMethod))) {
-      throw new Error(`Data source ${source.key} is missing save service.`);
-    }
-
-    await host.getServiceApi().invoke(serviceName, serviceMethod, {
-      ...(source.postData ?? {}),
-      ...values
-    });
+    await saveFormSource(source.key, values);
     message.value = host.t('runtime.form.saved');
     messageClass.value = 'lc-help';
     await loadPageData(props.page);
@@ -1562,7 +1859,7 @@ async function handleSearchSubmit(
   values: Record<string, unknown>
 ) {
   if (!block.targetSourceKey) return;
-  searchFilters[block.targetSourceKey] = { ...values };
+  runtime.replaceSearch(block.targetSourceKey, values);
   await refreshDataSources([block.targetSourceKey]);
 }
 
@@ -1572,7 +1869,7 @@ async function handleSearchAction(
   values: Record<string, unknown>
 ) {
   if (action.type === 'reset' && block.targetSourceKey) {
-    searchFilters[block.targetSourceKey] = {};
+    runtime.replaceSearch(block.targetSourceKey, {});
     await refreshDataSources([block.targetSourceKey]);
     return;
   }
@@ -1606,7 +1903,7 @@ async function handleGridEdit(
     return;
   }
 
-  formModels[formBlock.id] = deriveFormModel(formBlock, row);
+  runtime.replaceForm(formBlock.id, deriveFormModel(formBlock, row));
   message.value = '';
 }
 

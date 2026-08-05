@@ -2,6 +2,7 @@ import { resolveComponent } from 'vue';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
   createEditorInputProp,
+  createEditorJsonProp,
   createEditorSelectProp,
   createEditorSwitchProp,
   createEditorTableProp,
@@ -241,9 +242,11 @@ export default {
       label: '删除方法',
       defaultValue: '',
     }),
-    postDataJson: createEditorInputProp({
+    postDataJson: createEditorJsonProp({
       label: '请求参数 JSON',
       defaultValue: '{\n  "tableName": "profiles"\n}',
+      rootType: 'object',
+      valueMode: 'string',
     }),
     showRowActions: createEditorSwitchProp({
       label: '显示行操作',

@@ -28,7 +28,7 @@ import {
   type GlobalDialogLowCodeBlocksConfig,
   type GlobalDialogMaybeRef,
   type GlobalDialogResult,
-} from '../runtime/global-dialog';
+} from '../runtime/global-dialog-core';
 import type { LowCodePageBlock, LowCodeRuntimeEvent } from '../types/lowcode';
 import '../styles/global-dialog.scss';
 

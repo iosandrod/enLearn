@@ -9,6 +9,7 @@ import {
   type NodeMouseEvent
 } from '@vue-flow/core';
 import { VxeUI, type VxeContextMenuDefines } from 'vxe-pc-ui';
+import JsonDialogInput from '@enlearn/lowcode-framework/components/json-dialog-input';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import {
@@ -165,8 +166,6 @@ const flowEdges = ref<ApprovalFlowEdge[]>(workflowToFlowEdges(currentModel.value
 const isSyncingFromModel = ref(false);
 const flowCanvasRef = ref<HTMLElement | null>(null);
 const selectedNodeId = ref<string | null>(null);
-const configDraft = ref('{}');
-const configError = ref('');
 const draggingPaletteType = ref<WorkflowNodeType | null>(null);
 const isCanvasDragOver = ref(false);
 const pointerPaletteDrag = ref<PointerPaletteDrag | null>(null);
@@ -483,17 +482,6 @@ watch(
   },
   {
     deep: true
-  }
-);
-
-watch(
-  selectedNode,
-  (node) => {
-    configDraft.value = JSON.stringify(node?.config ?? {}, null, 2);
-    configError.value = '';
-  },
-  {
-    immediate: true
   }
 );
 
@@ -1162,21 +1150,9 @@ function updateSelectedNodeDescription(event: Event) {
   patchSelectedNode({ description: description || undefined });
 }
 
-function applySelectedConfig() {
+function updateSelectedConfig(value: unknown) {
   if (!selectedNode.value || props.readonly) return;
-
-  try {
-    const nextConfig = configDraft.value.trim() ? JSON.parse(configDraft.value) : {};
-    if (!isRecord(nextConfig)) {
-      configError.value = '配置必须是 JSON 对象';
-      return;
-    }
-
-    configError.value = '';
-    patchSelectedNode({ config: nextConfig });
-  } catch (error) {
-    configError.value = error instanceof Error ? error.message : 'JSON 格式错误';
-  }
+  patchSelectedNode({ config: isRecord(value) ? value : {} });
 }
 
 function generateConditionBranches(nodeId = selectedNode.value?.id) {
@@ -2347,30 +2323,22 @@ defineExpose({
 
           <label class="approval-designer__field">
             <span>配置 JSON</span>
-            <textarea
-              v-model="configDraft"
-              class="approval-designer__textarea approval-designer__textarea--code nodrag nowheel"
+            <JsonDialogInput
+              class="nodrag nowheel"
+              :model-value="selectedNode.config ?? {}"
+              name="nodeConfig"
+              label="配置 JSON"
+              title="编辑节点配置 JSON"
               :readonly="readonly"
-              rows="10"
-              @input="configError = ''"
+              :rows="10"
+              standalone
+              root-type="object"
+              value-mode="parsed"
+              @update:model-value="updateSelectedConfig"
             />
           </label>
-          <p
-            v-if="configError"
-            class="approval-designer__form-error"
-          >
-            {{ configError }}
-          </p>
 
           <div class="approval-designer__inspector-actions">
-            <button
-              type="button"
-              class="approval-designer__button"
-              :disabled="readonly"
-              @click="applySelectedConfig"
-            >
-              应用配置
-            </button>
             <button
               type="button"
               class="approval-designer__button"
@@ -3089,13 +3057,6 @@ defineExpose({
 .approval-designer__textarea {
   min-height: 64px;
   resize: vertical;
-}
-
-.approval-designer__textarea--code {
-  min-height: 152px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
-  font-size: 11px;
-  line-height: 16px;
 }
 
 .approval-designer__details {

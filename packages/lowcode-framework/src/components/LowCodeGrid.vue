@@ -19,6 +19,7 @@
         :loading="loading"
         @current-row-change="handleCurrentChange"
         @cell-click="(payload) => handleGenericGridEvent('cellClick', payload)"
+        @cell-menu="(payload) => handleGenericGridEvent('cellMenu', payload)"
         @cell-dblclick="handleCellDblclick"
         @row-dblclick="handleRowDblclick"
         @radio-change="(payload) => handleGenericGridEvent('radioChange', payload)"
@@ -94,7 +95,7 @@ const emit = defineEmits<{
   edit: [row: Record<string, unknown>];
   delete: [row: Record<string, unknown>];
   rowAction: [payload: { action: LowCodeGridRowAction; row: Record<string, unknown> }];
-  rowCurrentChange: [payload: { row: Record<string, unknown>; rawEvent: Record<string, unknown> }];
+  rowCurrentChange: [payload: { row: Record<string, unknown> | null; rawEvent: Record<string, unknown> }];
   rowDblclick: [payload: { row: Record<string, unknown>; rawEvent: Record<string, unknown> }];
   cellDblclick: [payload: { row: Record<string, unknown>; rawEvent: Record<string, unknown> }];
   gridEvent: [payload: LowCodeGridEventPayload];
@@ -166,6 +167,14 @@ function readRow(payload: unknown) {
   return isRecord(payload.row) ? payload.row : undefined;
 }
 
+function readChangedRow(payload: unknown) {
+  if (!isRecord(payload)) return null;
+  if ('newValue' in payload) {
+    return isRecord(payload.newValue) ? payload.newValue : null;
+  }
+  return readRow(payload) ?? null;
+}
+
 function readActionCode(payload: unknown) {
   if (!isRecord(payload)) return '';
 
@@ -194,11 +203,8 @@ function emitRowAction(action: LowCodeGridRowAction, row: Record<string, unknown
 }
 
 function handleCurrentChange(payload: unknown) {
-  const row = readRow(payload);
-  if (!row) return;
-
   emit('rowCurrentChange', {
-    row,
+    row: readChangedRow(payload),
     rawEvent: isRecord(payload) ? payload : {},
   });
 }

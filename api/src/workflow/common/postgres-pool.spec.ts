@@ -3,10 +3,13 @@ import type { Pool } from 'pg';
 import {
   acquireHealthyPostgresClient,
   createWorkflowPostgresPool,
+  queryWithHealthyPostgresClient,
   resolveWorkflowDatabaseUrl
 } from './postgres-pool';
 
 async function main() {
+  const passthroughSleep = async () => undefined;
+
   assert.equal(
     resolveWorkflowDatabaseUrl({ DATABASE_URL: 'pooled', DIRECT_URL: 'direct' }),
     'pooled'
@@ -49,6 +52,52 @@ async function main() {
   assert.equal(connectionAttempts, 2);
   assert.deepEqual(releases, [true]);
   client.release();
+
+  const queryReleases: unknown[] = [];
+  const queryTexts: string[] = [];
+  const queryClient = {
+    query: async (text: string) => {
+      queryTexts.push(text);
+      return text === 'select 1'
+        ? { rows: [{ '?column?': 1 }] }
+        : { rows: [{ id: 'row-1' }] };
+    },
+    release: (destroy?: unknown) => queryReleases.push(destroy)
+  };
+  const queryPool = {
+    connect: async () => queryClient
+  } as unknown as Pool;
+
+  const queryResult = await queryWithHealthyPostgresClient<{ id: string }>(
+    queryPool,
+    'select id from example where id = $1',
+    ['row-1']
+  );
+  assert.deepEqual(queryTexts, ['select 1', 'select id from example where id = $1']);
+  assert.deepEqual(queryResult.rows, [{ id: 'row-1' }]);
+  assert.deepEqual(queryReleases, [undefined]);
+
+  const timeoutReleases: unknown[] = [];
+  let timeoutConnectionAttempts = 0;
+  const timeoutPool = {
+    connect: async () => {
+      timeoutConnectionAttempts += 1;
+      return {
+        query: async () => new Promise(() => undefined),
+        release: (destroy?: unknown) => timeoutReleases.push(destroy)
+      };
+    }
+  } as unknown as Pool;
+
+  await assert.rejects(
+    () => acquireHealthyPostgresClient(timeoutPool, {
+      timeoutMs: 5,
+      retry: { sleep: passthroughSleep }
+    }),
+    /health check timed out/
+  );
+  assert.equal(timeoutConnectionAttempts, 3);
+  assert.deepEqual(timeoutReleases, [true, true, true]);
 
   console.log('workflow PostgreSQL pool health tests passed');
 }

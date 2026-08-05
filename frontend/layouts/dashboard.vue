@@ -993,6 +993,7 @@ async function openSystemSettingsDialog() {
       title: '系统设置',
       confirmLabel: '完成',
       cancelLabel: '关闭',
+      submitOnConfirm: true,
       dialog: {
         id: SYSTEM_SETTINGS_DIALOG_ID,
       },

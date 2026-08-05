@@ -441,10 +441,9 @@ function convertDesignedBlockToLayoutNode(
       .map((slot) => ({
         span: readNumber(slot.span),
         blocks: convertDesignedBlocksToLayout(slot.children as VisualEditorBlockData[]),
-      }))
-      .filter((column) => column.blocks.length > 0);
+      }));
 
-    return columns.length
+    return columns.some((column) => column.blocks.length > 0)
       ? {
           kind: 'row',
           gutter: readNumber(block.props?.gutter),

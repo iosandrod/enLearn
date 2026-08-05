@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
 import { VxeUI } from 'vxe-pc-ui';
+import JsonDialogInput from '@enlearn/lowcode-framework/components/json-dialog-input';
 import {
   VueFlow,
   useVueFlow,
@@ -77,8 +78,6 @@ const flowEdges = ref<TriggerFlowEdge[]>(triggerWorkflowToFlowEdges(currentModel
 const selectedNodeId = ref<string | null>(null);
 const selectedEdgeId = ref<string | null>(null);
 const activeInspectorTab = ref<'config' | 'compiled'>('config');
-const configDraft = ref('{}');
-const configError = ref('');
 const syncing = ref(false);
 let sequence = 0;
 
@@ -125,15 +124,6 @@ watch(
     emitModel(next);
   },
   { deep: true }
-);
-
-watch(
-  selectedNode,
-  (node) => {
-    configDraft.value = JSON.stringify(node?.config ?? {}, null, 2);
-    configError.value = '';
-  },
-  { immediate: true }
 );
 
 function emitModel(model: TriggerWorkflowModel) {
@@ -443,17 +433,10 @@ function updateNodeConfig(path: string[], value: unknown) {
   replaceNode({ ...node, config });
 }
 
-function applyConfigJson() {
+function updateConfigJson(value: unknown) {
   const node = selectedNode.value;
   if (!node || props.readonly) return;
-  try {
-    const config = JSON.parse(configDraft.value) as unknown;
-    if (!isObject(config)) throw new Error('Config must be a JSON object.');
-    configError.value = '';
-    replaceNode({ ...node, config });
-  } catch (error) {
-    configError.value = error instanceof Error ? error.message : String(error);
-  }
+  replaceNode({ ...node, config: isObject(value) ? value : {} });
 }
 
 function replaceNode(node: TriggerWorkflowNode) {
@@ -719,7 +702,16 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
         </div>
 
         <div v-if="activeInspectorTab === 'compiled'" class="trigger-editor__compiled">
-          <textarea readonly :value="compiledText" />
+          <JsonDialogInput
+            :model-value="compiledText"
+            name="compiledPlan"
+            label="Compiled plan"
+            title="View compiled plan JSON"
+            :rows="18"
+            readonly
+            standalone
+            value-mode="string"
+          />
         </div>
 
         <div v-else-if="selectedNode" class="trigger-editor__form">
@@ -798,11 +790,20 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
 
           <label>
             <span>Raw config</span>
-            <textarea v-model="configDraft" class="trigger-editor__json" :disabled="readonly" />
+            <JsonDialogInput
+              :model-value="selectedNode.config ?? {}"
+              name="rawConfig"
+              label="Raw config"
+              title="Edit raw config JSON"
+              :readonly="readonly"
+              :rows="14"
+              standalone
+              root-type="object"
+              value-mode="parsed"
+              @update:model-value="updateConfigJson"
+            />
           </label>
-          <p v-if="configError" class="trigger-editor__error">{{ configError }}</p>
-          <div class="trigger-editor__form-actions">
-            <button type="button" :disabled="readonly" @click="applyConfigJson">Apply JSON</button>
+          <div class="trigger-editor__form-actions trigger-editor__form-actions--end">
             <button type="button" class="trigger-editor__danger" :disabled="readonly" @click="deleteSelection">Delete</button>
           </div>
         </div>
@@ -1244,35 +1245,16 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
   gap: 8px;
 }
 
-.trigger-editor__json {
-  min-height: 160px !important;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
-  font-size: 11px !important;
-}
-
-.trigger-editor__error {
-  margin: -4px 0 0;
-  color: #dc2626;
-  font-size: 11px;
-}
-
 .trigger-editor__form-actions {
   justify-content: space-between;
 }
 
-.trigger-editor__compiled {
-  height: calc(100% - 46px);
+.trigger-editor__form-actions--end {
+  justify-content: flex-end;
 }
 
-.trigger-editor__compiled textarea {
-  height: 100%;
-  min-height: 420px;
-  resize: none;
-  background: #0f172a;
-  color: #dbeafe;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 11px;
-  line-height: 17px;
+.trigger-editor__compiled {
+  padding: 12px;
 }
 
 .trigger-editor__issues ul {

@@ -3,7 +3,11 @@ import DesignerUI, { ElButton, ElDialog, ElMessage } from '../common/designer-ui
 import { cloneDeep } from 'lodash-es';
 import VisualEditorProvider from '../../../components/VisualEditorProvider.vue';
 import { visualConfig } from '../../../visual.config';
-import type { LowCodeField, LowCodeFormSchema } from '../../../types/lowcode';
+import type {
+  LowCodeField,
+  LowCodeFormLayoutNode,
+  LowCodeFormSchema,
+} from '../../../types/lowcode';
 import { readFormDesignerLayout } from '../../../lowcode/visual-converters/helpers';
 import {
   createNewBlock,
@@ -37,8 +41,10 @@ interface FormDesignerServiceOption {
   title?: string;
   mode?: FormDesignerMode;
   fields?: FormDesignerField[];
+  layout?: LowCodeFormLayoutNode[];
+  columns?: number;
   designerModel?: VisualEditorModelValue | null;
-  onConfirm: (value: FormDesignerResult) => void;
+  onConfirm: (value: FormDesignerResult) => Promise<void> | void;
   onCancel?: () => void;
 }
 
@@ -383,11 +389,10 @@ function createFieldBlock(field: FormDesignerField, index: number) {
     block.props.type = 'password';
   }
 
-  if (runtimeComponent === 'vxe-tree-select') {
-    block.props.__lowcodeComponent = 'vxe-tree-select';
-  }
-
-  if (runtimeComponent === 'lc-json-editor' || runtimeComponent === 'lc-number-input') {
+  if (
+    !['vxe-textarea', 'vxe-password-input'].includes(runtimeComponent) &&
+    editorToRuntimeComponent[componentKey] !== runtimeComponent
+  ) {
     block.props.__lowcodeComponent = runtimeComponent;
   }
 
@@ -433,6 +438,10 @@ function createFieldBlock(field: FormDesignerField, index: number) {
     if (componentKey === 'radio' || componentKey === 'checkbox') {
       block.props.options = options;
     }
+
+    if (!['picker', 'radio', 'checkbox'].includes(componentKey)) {
+      block.props.__lowcodeOptions = options;
+    }
   }
 
   return block;
@@ -464,11 +473,125 @@ function normalizeFields(fields: unknown): FormDesignerField[] {
   });
 }
 
-function createFormModel(fields: FormDesignerField[], title = '表单设计'): VisualEditorModelValue {
+function createLayoutSlots(
+  columns: Array<{ span?: number | string; blocks: LowCodeFormLayoutNode[] }>,
+  fieldBlocks: Map<string, VisualEditorBlockData>,
+) {
+  const weights = columns.map((column) => normalizeSpan(column.span) || 1);
+  const totalWeight = weights.reduce((total, weight) => total + weight, 0);
+  const normalizedSpans = weights.map((weight) =>
+    Math.max(1, Math.round((24 * weight) / totalWeight)),
+  );
+  const spanDelta = 24 - normalizedSpans.reduce((total, span) => total + span, 0);
+  normalizedSpans[normalizedSpans.length - 1] += spanDelta;
+  const slots = columns.reduce<Record<string, unknown>>((result, column, index) => {
+    const span = normalizedSpans[index];
+    result[`slot${index}`] = {
+      key: `slot${index}`,
+      span,
+      children: layoutNodesToBlocks(column.blocks, fieldBlocks),
+    };
+    return result;
+  }, {});
+
+  return {
+    value: normalizedSpans.join(':'),
+    ...slots,
+  };
+}
+
+function layoutNodesToBlocks(
+  nodes: LowCodeFormLayoutNode[],
+  fieldBlocks: Map<string, VisualEditorBlockData>,
+): VisualEditorBlockData[] {
+  return nodes.flatMap((node) => {
+    if (node.kind === 'field') {
+      const block = fieldBlocks.get(node.field);
+      if (!block) return [];
+      fieldBlocks.delete(node.field);
+      return [block];
+    }
+
+    if (node.kind === 'stack') {
+      return layoutNodesToBlocks(node.blocks, fieldBlocks);
+    }
+
+    const component = visualConfig.componentMap.layout;
+    if (!component || !node.columns.length) return [];
+    const block = createNewBlock(cloneDeep(component));
+    block.props.gutter = node.gutter ?? '';
+    block.props.slots = createLayoutSlots(node.columns, fieldBlocks);
+    return [block];
+  });
+}
+
+function createColumnLayout(fields: FormDesignerField[], columns: number): LowCodeFormLayoutNode[] {
+  const columnCount = Math.min(24, Math.max(1, Math.round(columns)));
+  const rows: LowCodeFormLayoutNode[] = [];
+  let currentColumns: Array<{ span: number; blocks: LowCodeFormLayoutNode[] }> = [];
+  let occupiedColumns = 0;
+
+  fields.forEach((field) => {
+    const fieldSpan = Math.min(columnCount, Math.max(1, Math.round(Number(field.span) || 1)));
+    if (currentColumns.length && occupiedColumns + fieldSpan > columnCount) {
+      if (occupiedColumns < columnCount) {
+        currentColumns.push({
+          span: Math.max(1, Math.round((24 * (columnCount - occupiedColumns)) / columnCount)),
+          blocks: [],
+        });
+      }
+      rows.push({ kind: 'row', columns: currentColumns });
+      currentColumns = [];
+      occupiedColumns = 0;
+    }
+
+    currentColumns.push({
+      span: Math.max(1, Math.round((24 * fieldSpan) / columnCount)),
+      blocks: [{ kind: 'field', field: field.field }],
+    });
+    occupiedColumns += fieldSpan;
+
+    if (occupiedColumns >= columnCount) {
+      rows.push({ kind: 'row', columns: currentColumns });
+      currentColumns = [];
+      occupiedColumns = 0;
+    }
+  });
+
+  if (currentColumns.length) {
+    if (occupiedColumns < columnCount) {
+      currentColumns.push({
+        span: Math.max(1, Math.round((24 * (columnCount - occupiedColumns)) / columnCount)),
+        blocks: [],
+      });
+    }
+    rows.push({ kind: 'row', columns: currentColumns });
+  }
+  return rows;
+}
+
+function createFormModel(
+  fields: FormDesignerField[],
+  title = '表单设计',
+  layout?: LowCodeFormLayoutNode[],
+  columns?: number,
+): VisualEditorModelValue {
   const normalizedFields = fields.length ? fields : [createDefaultField()];
-  const blocks = normalizedFields
+  const fieldBlocks = normalizedFields
     .map((field, index) => createFieldBlock(field, index))
     .filter(Boolean) as VisualEditorBlockData[];
+  const fieldBlockMap = new Map(
+    fieldBlocks.map((block) => [readString(block.props?.name), block]),
+  );
+  const initialLayout = Array.isArray(layout) && layout.length
+    ? layout
+    : Number(columns) > 1
+      ? createColumnLayout(normalizedFields, Number(columns))
+      : [];
+  const laidOutBlocks = initialLayout.length
+    ? layoutNodesToBlocks(cloneDeep(initialLayout), fieldBlockMap)
+    : [];
+  const blocks = [...laidOutBlocks, ...fieldBlockMap.values()];
 
   return {
     pages: {
@@ -496,6 +619,8 @@ function resolveInitialModel(option: FormDesignerServiceOption) {
   return createFormModel(
     normalizeFields(cloneDeep(option.fields)),
     option.title || '表单设计',
+    cloneDeep(option.layout),
+    option.columns,
   );
 }
 
@@ -526,6 +651,8 @@ function getRuntimeComponent(block: VisualEditorBlockData) {
 }
 
 function getOptionsJson(block: VisualEditorBlockData, runtimeComponent: string) {
+  const preservedOptions = stringifyOptions(block.props?.__lowcodeOptions);
+  if (preservedOptions) return preservedOptions;
   if (!optionComponents.has(runtimeComponent)) return '';
 
   if (block.componentKey === 'picker') {
@@ -656,7 +783,7 @@ const ServiceComponent = defineComponent({
     };
 
     const handler = {
-      onConfirm: () => {
+      onConfirm: async () => {
         const snapshot = providerRef.value?.getSnapshot();
         if (!snapshot) {
           ElMessage.error('表单设计器还未初始化完成');
@@ -666,10 +793,15 @@ const ServiceComponent = defineComponent({
         const fields = extractFields(snapshot.currentPage);
         if (!validateFields(fields)) return;
 
-        state.option.onConfirm({
-          fields,
-          designerModel: snapshot.model,
-        });
+        try {
+          await state.option.onConfirm({
+            fields,
+            designerModel: snapshot.model,
+          });
+        } catch (error) {
+          ElMessage.error(error instanceof Error ? error.message : '表单配置保存失败');
+          return;
+        }
         methods.hide();
       },
       onCancel: () => {
@@ -739,7 +871,11 @@ const ServiceComponent = defineComponent({
   },
 });
 
-export const $$formDesigner = (option: Omit<FormDesignerServiceOption, 'onConfirm'>) => {
+export const $$formDesigner = (
+  option: Omit<FormDesignerServiceOption, 'onConfirm'> & {
+    onConfirm?: FormDesignerServiceOption['onConfirm'];
+  },
+) => {
   const dfd = defer<FormDesignerResult>();
   const el = document.createElement('div');
   document.body.appendChild(el);
@@ -767,7 +903,8 @@ export const $$formDesigner = (option: Omit<FormDesignerServiceOption, 'onConfir
   ins.service({
     ...option,
     onCancel: cleanup,
-    onConfirm: (value) => {
+    onConfirm: async (value) => {
+      await option.onConfirm?.(value);
       dfd.resolve(value);
       cleanup();
     },

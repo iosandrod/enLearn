@@ -20,7 +20,11 @@ import {
   openGlobalDialog,
   type GlobalDialogConfig,
   type GlobalDialogResult,
-} from './global-dialog';
+} from './global-dialog-core';
+import type {
+  LowCodePageRuntimeGridState,
+  LowCodePageRuntimeState,
+} from './page-runtime';
 
 export type LowCodePageReferenceSelectEvent =
   | 'rowDblclick'
@@ -72,17 +76,21 @@ export type LowCodePageReferenceDialogResult =
 
 export type LowCodePageConfirmSnapshot = {
   page: LowCodePageRecord;
+  runtime: LowCodePageRuntimeState;
   resolvedData: Record<string, unknown>;
   formModels: Record<string, Record<string, unknown>>;
   searchFilters: Record<string, Record<string, unknown>>;
+  gridStates: Record<string, LowCodePageRuntimeGridState>;
 };
 
 export type LowCodePageConfirmPayload = {
   page: LowCodePageRecord;
   snapshot?: LowCodePageConfirmSnapshot;
+  runtime?: LowCodePageRuntimeState;
   resolvedData: Record<string, unknown>;
   formModels: Record<string, Record<string, unknown>>;
   searchFilters: Record<string, Record<string, unknown>>;
+  gridStates: Record<string, LowCodePageRuntimeGridState>;
   row?: Record<string, unknown>;
   currentRow?: Record<string, unknown>;
   selectedRow?: Record<string, unknown>;
@@ -99,6 +107,7 @@ export type LowCodePageConfirmDialogConfig = LowCodePageReferenceDialogConfig & 
   confirmLabel?: string;
   cancelLabel?: string;
   confirmAction?: string;
+  submitOnConfirm?: boolean;
   includeEventHistory?: boolean;
   maxEventHistory?: number;
   onRuntimeEvent?: (
@@ -114,6 +123,7 @@ export type LowCodePageConfirmDialogResult =
 
 type LowCodePageRendererExpose = {
   getSnapshot: () => LowCodePageConfirmSnapshot;
+  submitForms: () => Promise<boolean>;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -378,9 +388,11 @@ export async function openLowCodePageConfirmDialog(
     return {
       page,
       ...(snapshot ? { snapshot } : {}),
+      ...(snapshot?.runtime ? { runtime: snapshot.runtime } : {}),
       resolvedData: snapshot?.resolvedData ?? {},
       formModels: snapshot?.formModels ?? {},
       searchFilters: snapshot?.searchFilters ?? {},
+      gridStates: snapshot?.gridStates ?? {},
       ...(row ? { row } : {}),
       ...(currentRow ? { currentRow } : {}),
       ...(selectedRow ? { selectedRow } : {}),
@@ -405,6 +417,9 @@ export async function openLowCodePageConfirmDialog(
     const row = readEventRow(event);
     const rows = readEventRows(event);
     const eventKey = readEventKey(event);
+    const gridState = event.blockId
+      ? rendererRef.value?.getSnapshot().gridStates[event.blockId]
+      : undefined;
 
     if (eventKey === 'rowCurrentChange' && row) {
       currentRow = cloneRecord(row);
@@ -421,6 +436,22 @@ export async function openLowCodePageConfirmDialog(
     if (rows.length) {
       selectedRows = rows;
       selectedRow = cloneRecord(rows[0]) ?? selectedRow;
+    }
+
+    if (gridState) {
+      currentRow = cloneRecord(gridState.currentRow);
+      if (gridState.selectedRows.length) {
+        selectedRows = cloneRows(gridState.selectedRows);
+        selectedRow = cloneRecord(gridState.selectedRows[0]) ?? selectedRow;
+      } else if (
+        (eventKey === 'rowCurrentChange' && !gridState.currentRow) ||
+        eventKey === 'radioChange' ||
+        eventKey === 'checkboxChange' ||
+        eventKey === 'checkboxAll'
+      ) {
+        selectedRows = [];
+        selectedRow = undefined;
+      }
     }
 
     await config.onRuntimeEvent?.(event, createPayload());
@@ -450,9 +481,15 @@ export async function openLowCodePageConfirmDialog(
         label: config.confirmLabel ?? '确定',
         role: 'custom',
         status: 'primary',
-        onClick: () => {
-          const payload = createPayload();
+        onClick: async () => {
+          let payload = createPayload();
           if (requireSelection && !payload.row && !payload.selectedRows.length) return false;
+
+          if (config.submitOnConfirm) {
+            const submitted = await rendererRef.value?.submitForms();
+            if (!submitted) return false;
+            payload = createPayload();
+          }
 
           return {
             close: true,

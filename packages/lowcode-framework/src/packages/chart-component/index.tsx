@@ -6,6 +6,7 @@ import { useGlobalProperties } from '../../hooks/useGlobalProperties';
 import {
   createEditorColorProp,
   createEditorInputProp,
+  createEditorJsonProp,
   createEditorSelectProp,
 } from '../../visual-editor/visual-editor.props';
 
@@ -308,30 +309,42 @@ function createChartComponent(preset: ChartPreset): VisualEditorComponent {
         options: kindOptions,
       }),
       color: createEditorColorProp({ label: '主色', defaultValue: preset.color }),
-      categoriesJson: createEditorInputProp({
+      categoriesJson: createEditorJsonProp({
         label: '类目 JSON',
         defaultValue: JSON.stringify(categories),
+        rootType: 'array',
+        valueMode: 'string',
       }),
-      seriesDataJson: createEditorInputProp({
+      seriesDataJson: createEditorJsonProp({
         label: '数值 JSON',
         defaultValue: JSON.stringify(seriesData),
+        rootType: 'array',
+        valueMode: 'string',
       }),
-      pieDataJson: createEditorInputProp({
+      pieDataJson: createEditorJsonProp({
         label: '饼图数据 JSON',
         defaultValue: JSON.stringify(pieData),
+        rootType: 'array',
+        valueMode: 'string',
       }),
-      radarIndicatorsJson: createEditorInputProp({
+      radarIndicatorsJson: createEditorJsonProp({
         label: '雷达指标 JSON',
         defaultValue: JSON.stringify(radarIndicators),
+        rootType: 'array',
+        valueMode: 'string',
       }),
-      radarDataJson: createEditorInputProp({
+      radarDataJson: createEditorJsonProp({
         label: '雷达数值 JSON',
         defaultValue: JSON.stringify(radarData),
+        rootType: 'array',
+        valueMode: 'string',
       }),
-      optionJson: createEditorInputProp({
+      optionJson: createEditorJsonProp({
         label: '完整 option JSON',
         defaultValue: '',
         tips: '填写后会覆盖上方配置',
+        rootType: 'object',
+        valueMode: 'string',
       }),
     },
   };

@@ -8,8 +8,8 @@
       :options="options"
       @update:model-value="handleUpdate"
     />
-    <span v-if="field.help" class="lc-help">{{ field.help }}</span>
-    <span v-if="error" class="lc-error">{{ error }}</span>
+    <!-- <span v-if="field.help" class="lc-help">{{ field.help }}</span>
+    <span v-if="error" class="lc-error">{{ error }}</span> -->
   </div>
 </template>
 

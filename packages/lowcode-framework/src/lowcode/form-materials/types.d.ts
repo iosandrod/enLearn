@@ -13,4 +13,3 @@ export type LowCodeFormMaterial = {
     aliases?: string[];
     order?: number;
 };
-//# sourceMappingURL=types.d.ts.map

@@ -1,0 +1,14 @@
+node_modules
+package-lock.json
+dist
+dist-demo
+.vite
+
+*.zip
+.Ds_store
+*.tgz
+*.log
+.vscode
+.idea
+.env.local
+artifacts
