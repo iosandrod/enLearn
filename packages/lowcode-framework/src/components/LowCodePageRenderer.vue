@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, provide, reactive, ref, watch } from 'vue';
 import type {
   LowCodeAction,
   LowCodeButtonGroupAction,
@@ -90,6 +90,10 @@ import {
   openLowCodePageReferenceDialog,
   type LowCodePageReferenceDialogConfig,
 } from '../runtime/page-reference-dialog';
+import {
+  lowCodeRuntimeBlockEditorKey,
+  type LowCodeRuntimeBlockUpdate,
+} from '../runtime/block-editor';
 
 const props = withDefaults(defineProps<{
   page: LowCodePageRecord & {
@@ -125,6 +129,10 @@ const formModels = reactive<Record<string, Record<string, unknown>>>({});
 const searchFilters = reactive<Record<string, Record<string, unknown>>>({});
 const runtimeEventBus = createLowCodeEventBus();
 let loadSequence = 0;
+
+provide(lowCodeRuntimeBlockEditorKey, {
+  updateBlock: persistRuntimeBlockUpdate,
+});
 
 defineExpose({
   getSnapshot: () => ({
@@ -682,6 +690,110 @@ function getFormBlockTarget(block: LowCodePageGridBlock) {
 
 function findRuntimeBlock(blockId: string) {
   return flattenPageBlocks(props.page.schema).find((block) => block.id === blockId);
+}
+
+async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
+  const nextSchema = cloneRuntimeValue(props.page.schema);
+  const targetBlock = flattenPageBlocks(nextSchema).find(
+    (block) => block.id === update.blockId
+  );
+
+  if (!targetBlock) {
+    throw new Error(`未找到按钮组 ${update.blockId}`);
+  }
+
+  Object.assign(targetBlock, cloneRuntimeValue(update.changes));
+
+  if (isRecord(nextSchema.visualEditor)) {
+    const visualPages = isRecord(nextSchema.visualEditor.pages)
+      ? nextSchema.visualEditor.pages
+      : {};
+
+    Object.values(visualPages).forEach((visualPage) => {
+      if (!isRecord(visualPage)) return;
+      updateVisualButtonGroupBlocks(visualPage.blocks, update);
+      updateVisualButtonGroupBlocks(visualPage.overlays, update);
+    });
+  }
+
+  const nextVersion = (props.page.version ?? 0) + 1;
+  const publishedAt = (nextSchema.status ?? props.page.status) === 'published'
+    ? new Date().toISOString()
+    : props.page.published_at;
+
+  try {
+    const saved = await host.getServiceApi().invoke<LowCodePageRecord>(
+      'lowcode',
+      'saveItem',
+      {
+        resource: 'lowcode_pages',
+        id: props.page.id,
+        data: {
+          schema: nextSchema,
+          version: nextVersion,
+          published_at: publishedAt,
+        },
+      }
+    );
+
+    Object.assign(props.page, saved);
+    message.value = '按钮配置已保存。';
+    messageClass.value = 'lc-help';
+
+    return flattenPageBlocks(props.page.schema).find(
+      (block) => block.id === (update.changes.id ?? update.blockId)
+    ) ?? targetBlock;
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '按钮配置保存失败。';
+    messageClass.value = 'lc-error';
+    throw error;
+  }
+}
+
+function updateVisualButtonGroupBlocks(
+  value: unknown,
+  update: LowCodeRuntimeBlockUpdate
+) {
+  if (!Array.isArray(value)) return;
+
+  value.forEach((candidate) => {
+    if (!isRecord(candidate)) return;
+
+    const visualProps = isRecord(candidate.props) ? candidate.props : {};
+    if (
+      candidate.componentKey === 'lowcode-button-group' &&
+      visualProps.blockId === update.blockId
+    ) {
+      const changes = update.changes;
+      const actions = Array.isArray(changes.actions) ? changes.actions : [];
+      visualProps.blockId = changes.id ?? visualProps.blockId;
+      visualProps.title = changes.title ?? '';
+      visualProps.description = changes.description ?? '';
+      visualProps.align = changes.align ?? 'left';
+      visualProps.gap = changes.gap ?? 8;
+      visualProps.buttons = actions.map(runtimeButtonToVisualButton);
+      candidate.props = visualProps;
+    }
+
+    const slots = isRecord(visualProps.slots) ? visualProps.slots : {};
+    Object.values(slots).forEach((slot) => {
+      if (isRecord(slot)) updateVisualButtonGroupBlocks(slot.children, update);
+    });
+    updateVisualButtonGroupBlocks(visualProps.overlays, update);
+  });
+}
+
+function runtimeButtonToVisualButton(value: unknown): Record<string, unknown> {
+  const action = isRecord(value) ? value : {};
+  const { children, directives, ...button } = action;
+
+  return {
+    ...cloneRuntimeValue(button),
+    directivesJson: JSON.stringify(Array.isArray(directives) ? directives : []),
+    children: Array.isArray(children)
+      ? children.map(runtimeButtonToVisualButton)
+      : [],
+  };
 }
 
 function deriveFormModel(

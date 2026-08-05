@@ -30,6 +30,10 @@ a {
   overscroll-behavior: contain;
 }
 
+.vxe-context-menu--wrapper.enlearn-tab-context-menu {
+  min-width: 156px;
+}
+
 .vxe-context-menu--item-wrapper.enlearn-context-menu-option--danger
   .vxe-context-menu--item-inner:not(.is--disabled) {
   color: #b42318;
@@ -372,6 +376,7 @@ a {
   font-size: 12px;
 }
 
+.admin-approval-console-button,
 .admin-system-settings-button {
   display: inline-flex;
   height: 24px;
@@ -390,11 +395,18 @@ a {
   cursor: pointer;
 }
 
+.admin-approval-console-button:hover,
+.admin-approval-console-button:focus-visible,
+.admin-approval-console-button.is-active,
 .admin-system-settings-button:hover:not(:disabled),
 .admin-system-settings-button:focus-visible {
   border-color: rgb(255 255 255 / 62%);
   background: rgb(255 255 255 / 20%);
   outline: none;
+}
+
+.admin-approval-console-button.is-active {
+  background: rgb(16 78 132 / 32%);
 }
 
 .admin-system-settings-button:disabled {

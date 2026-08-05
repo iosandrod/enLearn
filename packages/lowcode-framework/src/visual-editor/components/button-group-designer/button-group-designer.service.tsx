@@ -36,6 +36,7 @@ type ButtonGroupDesignerServiceOption = {
   title?: string;
   business?: Partial<ButtonGroupDesignerBusinessInfo> | null;
   buttons?: ButtonGroupDesignerButton[] | null;
+  onConfirm?: (result: ButtonGroupDesignerResult) => Promise<void> | void;
 };
 
 type ButtonGroupDesignerState = {
@@ -197,6 +198,11 @@ function normalizeButtonForResult(
     normalizeButtonForResult(child, [...indexPath, index + 1]),
   );
   const next: ButtonGroupDesignerButton = {
+    ...Object.fromEntries(
+      Object.entries(button)
+        .filter(([key, value]) => key !== '__id' && typeof value !== 'undefined')
+        .map(([key, value]) => [key, cloneDeep(value)]),
+    ),
     code,
     label,
     type: readString(button.type, 'button'),
@@ -209,8 +215,11 @@ function normalizeButtonForResult(
 
   if (children.length) {
     next.children = children;
+  } else {
+    delete next.children;
   }
 
+  delete next.__id;
   return next;
 }
 
@@ -302,6 +311,20 @@ function validateAndBuildResult(formModels: Record<string, Record<string, unknow
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function createButtonRow(label = '按钮'): ButtonGroupDesignerButton {
+  return {
+    label,
+    code: '',
+    status: '',
+    type: 'button',
+    route: '',
+    eventName: '',
+    disabled: false,
+    directivesJson: '[]',
+    children: [],
+  };
 }
 
 function createButtonArrayColumns() {
@@ -401,6 +424,16 @@ function createDesignerBlocks(): LowCodePageBlock[] {
                           command: 'add',
                           status: 'primary',
                         },
+                        {
+                          code: 'add-dropdown',
+                          label: '新增下拉按钮',
+                          command: 'add',
+                          status: 'primary',
+                          row: {
+                            ...createButtonRow('下拉按钮'),
+                            children: [createButtonRow('下拉项')],
+                          },
+                        },
                       ],
                       toolbarAlign: 'left',
                       rowKey: '__id',
@@ -418,17 +451,7 @@ function createDesignerBlocks(): LowCodePageBlock[] {
                       copyable: true,
                       removable: true,
                       actionWidth: 156,
-                      defaultRow: {
-                        label: '按钮',
-                        code: '',
-                        status: '',
-                        type: 'button',
-                        route: '',
-                        eventName: '',
-                        disabled: false,
-                        directivesJson: '[]',
-                        children: [],
-                      },
+                      defaultRow: createButtonRow(),
                       columns: createButtonArrayColumns(),
                     },
                   },
@@ -524,9 +547,16 @@ export function $$buttonGroupDesigner(option: ButtonGroupDesignerServiceOption) 
         label: '确定',
         role: 'custom',
         status: 'primary',
-        onClick: () => {
+        onClick: async () => {
           const result = validateAndBuildResult(formModels);
           if (!result) return false;
+
+          try {
+            await option.onConfirm?.(result);
+          } catch (error) {
+            ElMessage.error(error instanceof Error ? error.message : '按钮配置保存失败');
+            return false;
+          }
 
           return {
             close: true,

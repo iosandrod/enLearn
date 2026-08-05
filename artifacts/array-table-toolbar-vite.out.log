@@ -14,3 +14,24 @@ Port 3000 is in use, trying another one...
   [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.36:[1m3001[22m/[39m
 [2m06:41:55[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2m.codex-build-check/index.html[22m
 [2m06:42:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2m.codex-build-check/index.html[22m
+[2m13:52:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m13:52:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
+[2m13:52:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m13:55:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css, /layouts/dashboard.vue[22m
+[2m13:55:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m13:55:57[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
+[2m13:56:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m14:46:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/visual-editor/components/button-group-designer/button-group-designer.service.tsx[22m
+[2m14:46:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m14:46:26[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/lowcode/block-materials/button-group/index.vue[22m
+[2m14:46:42[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m14:47:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/lowcode/block-materials/button-group/index.vue[22m
+[2m14:49:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m14:49:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m14:49:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m14:49:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m14:49:49[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m14:51:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m14:51:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m14:51:45[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
+[2m14:52:03[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m

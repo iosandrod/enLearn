@@ -1,33 +1,49 @@
 <template>
-  <div class="mobile-form-block">
-    <div v-if="block.title || block.description" class="form-header">
-      <span v-if="block.title" class="form-title">{{ block.title }}</span>
+  <div class="mobile-form-block" @layout="handleLayout">
+    <div v-if="block.title || block.description || schema.title" class="form-header">
+      <span v-if="block.title || schema.title" class="form-title">
+        {{ block.title || schema.title }}
+      </span>
       <span v-if="block.description" class="form-description">{{ block.description }}</span>
     </div>
 
-    <div v-for="field in schema.fields" :key="field.field" class="form-field">
-      <span class="field-label">{{ field.label }}</span>
-
-      <button
-        v-if="isBooleanField(field.component)"
-        :class="['boolean-control', { 'is-active': Boolean(model[field.field]) }]"
-        @click="toggleBoolean(field)"
-      >
-        <span class="boolean-control-text">{{ model[field.field] ? '已开启' : '已关闭' }}</span>
-      </button>
-
-      <input
-        v-else
-        class="field-input"
-        :type="inputType(field.component)"
-        :value="String(model[field.field] ?? '')"
-        :placeholder="String(field.props?.placeholder ?? '')"
-        :multiline="isMultiline(field.component)"
-        @change="updateField(field, readInputValue($event))"
+    <div v-if="layoutNodes.length" class="form-layout">
+      <MobileFormLayout
+        :nodes="layoutNodes"
+        :fields-by-key="fieldsByKey"
+        :model="model"
+        :errors="errors"
+        :option-sources="resolvedData"
+        :disabled="formDisabled"
+        :readonly="formReadonly"
+        :compact="effectiveColumns === 1"
+        @field-update="updateField"
       />
+    </div>
 
-      <span v-if="errors[field.field]" class="field-error">{{ errors[field.field] }}</span>
-      <span v-else-if="field.help" class="field-help">{{ field.help }}</span>
+    <div v-else class="form-grid">
+      <div
+        v-for="(row, rowIndex) in formRows"
+        :key="`row-${rowIndex}`"
+        class="form-row"
+      >
+        <div
+          v-for="cell in row.cells"
+          :key="cell.field.field"
+          class="form-cell"
+          :style="cellStyle(cell.span)"
+        >
+          <MobileFormField
+            :field="cell.field"
+            :model-value="model[cell.field.field]"
+            :option-sources="resolvedData"
+            :error="errors[cell.field.field]"
+            :disabled="formDisabled"
+            :readonly="formReadonly"
+            @update:model-value="(value) => updateField(cell.field, value)"
+          />
+        </div>
+      </div>
     </div>
 
     <div v-if="schema.actions.length" class="form-actions">
@@ -35,6 +51,7 @@
         v-for="action in schema.actions"
         :key="action.code"
         :class="['form-action', `is-${action.status ?? 'default'}`]"
+        :disabled="action.disabled"
         @click="handleAction(action)"
       >
         <span class="form-action-text">{{ action.label }}</span>
@@ -44,8 +61,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, watch } from '@vue/runtime-core';
+import { computed, reactive, ref, watch } from '@vue/runtime-core';
+import type { CSSProperties } from 'vue';
+import type { HippyLayoutEvent } from '@hippy/vue-next';
 
+import MobileFormField from './mobile-form-field.vue';
+import MobileFormLayout from './mobile-form-layout.vue';
+import {
+  buildMobileFormRows,
+  cloneFormValue,
+  readFormBoolean,
+  resolveResponsiveFormColumns,
+  validateMobileFormValues,
+} from '../mobile-form';
 import type {
   MobileMaterialEmits,
   MobileMaterialProps,
@@ -56,100 +84,126 @@ import type {
 
 const props = defineProps<MobileMaterialProps>();
 const emit = defineEmits<MobileMaterialEmits>();
-const errors = reactive<Record<string, string>>({});
 
-const schema = computed<SharedLowCodeFormSchema>(() => props.block.schema ?? {
-  fields: [],
-  actions: [],
+const errors = reactive<Record<string, string>>({});
+const formWidth = ref(0);
+
+const schema = computed<SharedLowCodeFormSchema>(() => {
+  const configured = props.block.schema ?? {};
+  return {
+    ...configured,
+    fields: Array.isArray(configured.fields) ? configured.fields : [],
+    actions: Array.isArray(configured.actions) ? configured.actions : [],
+  };
 });
 const model = computed(() => {
   if (!props.formModels[props.block.id]) {
-    props.formModels[props.block.id] = { ...(props.block.initialValues ?? {}) };
+    props.formModels[props.block.id] = cloneFormValue(props.block.initialValues ?? {});
   }
   return props.formModels[props.block.id];
 });
+const fieldsByKey = computed(() => schema.value.fields.reduce<Record<string, SharedLowCodeField>>(
+  (fields, field) => {
+    fields[field.field] = field;
+    return fields;
+  },
+  {},
+));
+const layoutNodes = computed(() => (
+  Array.isArray(schema.value.layout) ? schema.value.layout : []
+));
+const effectiveColumns = computed(() => resolveResponsiveFormColumns(
+  schema.value.columns,
+  formWidth.value,
+));
+const formRows = computed(() => buildMobileFormRows(
+  schema.value.fields,
+  effectiveColumns.value,
+));
+const formDisabled = computed(() => readFormBoolean(
+  props.block.disabled ?? props.block.schema?.disabled,
+));
+const formReadonly = computed(() => readFormBoolean(
+  props.block.readonly ?? props.block.schema?.readonly,
+));
+const eventPrefix = computed(() => props.block.kind === 'searchForm' ? 'searchForm' : 'form');
 
-function isMultiline(component: string) {
-  return component === 'vxe-textarea';
+function cellStyle(span: number): CSSProperties {
+  const width = `${span / effectiveColumns.value * 100}%`;
+  return {
+    width,
+    flexBasis: width,
+  };
 }
 
-function isBooleanField(component: string) {
-  return component === 'vxe-switch';
-}
-
-function inputType(component: string) {
-  if (component === 'vxe-password-input') return 'password';
-  if (component === 'lc-number-input') return 'number';
-  return 'text';
-}
-
-function readInputValue(event: unknown) {
-  if (event && typeof event === 'object' && 'value' in event) {
-    return (event as { value?: unknown }).value;
-  }
-
-  return '';
+function handleLayout(event: HippyLayoutEvent) {
+  if (typeof event.width === 'number' && event.width > 0) formWidth.value = event.width;
 }
 
 function publishFieldChange(field: SharedLowCodeField, value: unknown, previousValue: unknown) {
   emit('runtimeEvent', {
-    name: 'form.fieldChange',
+    name: `${eventPrefix.value}.fieldChange`,
     blockId: props.block.id,
     blockKind: props.block.kind,
     timestamp: Date.now(),
     payload: {
-      values: { ...model.value },
-      value,
-      previousValue,
       field: field.field,
+      fieldConfig: field,
+      value: cloneFormValue(value),
+      previousValue: cloneFormValue(previousValue),
+      values: cloneFormValue(model.value),
       directives: field.events?.change ?? field.events?.onChange ?? [],
     },
   });
 }
 
 function updateField(field: SharedLowCodeField, value: unknown) {
-  const previousValue = model.value[field.field];
-  model.value[field.field] = value;
+  const previousValue = cloneFormValue(model.value[field.field]);
+  model.value[field.field] = cloneFormValue(value);
   delete errors[field.field];
   publishFieldChange(field, value, previousValue);
 }
 
-function toggleBoolean(field: SharedLowCodeField) {
-  updateField(field, !Boolean(model.value[field.field]));
-}
-
 function validate() {
+  const nextErrors = validateMobileFormValues(schema.value, model.value);
   Object.keys(errors).forEach((key) => delete errors[key]);
-
-  schema.value.fields.forEach((field) => {
-    const value = model.value[field.field];
-    const required = field.rules?.find((rule) => rule.required);
-    if (required && (value === undefined || value === null || String(value).trim() === '')) {
-      errors[field.field] = required.message;
-    }
-  });
-
+  Object.assign(errors, nextErrors);
   return Object.keys(errors).length === 0;
 }
 
-function handleAction(action: SharedLowCodeAction) {
-  if ((action.type === 'submit' || action.code === 'submit') && !validate()) return;
+function resetModel() {
+  Object.keys(model.value).forEach((key) => delete model.value[key]);
+  Object.assign(model.value, cloneFormValue(props.block.initialValues ?? {}));
+  Object.keys(errors).forEach((key) => delete errors[key]);
+}
 
-  if (action.type === 'reset' || action.code === 'reset') {
-    Object.keys(model.value).forEach((key) => delete model.value[key]);
-    Object.assign(model.value, props.block.initialValues ?? {});
-  }
+function actionDirectives(action: SharedLowCodeAction) {
+  return action.directives
+    ?? (action.route ? [{ type: 'navigate', route: action.route }] : []);
+}
+
+function handleAction(action: SharedLowCodeAction) {
+  if (action.disabled) return;
+
+  const isSubmit = action.type === 'submit' || action.code === 'submit';
+  const isReset = action.type === 'reset' || action.code === 'reset';
+  if (isSubmit && !validate()) return;
+  if (isReset) resetModel();
+
+  const defaultEventName = isSubmit
+    ? `${eventPrefix.value}.submit`
+    : `${eventPrefix.value}.action`;
 
   emit('runtimeEvent', {
-    name: action.eventName ?? (action.type === 'submit' ? 'form.submit' : 'form.action'),
+    name: action.eventName ?? defaultEventName,
     blockId: props.block.id,
     blockKind: props.block.kind,
     timestamp: Date.now(),
     payload: {
       action,
       actionCode: action.code,
-      directives: action.directives ?? (action.route ? [{ type: 'navigate', route: action.route }] : []),
-      values: { ...model.value },
+      directives: actionDirectives(action),
+      values: cloneFormValue(model.value),
     },
   });
 }
@@ -157,13 +211,16 @@ function handleAction(action: SharedLowCodeAction) {
 watch(
   () => props.block.id,
   () => {
-    props.formModels[props.block.id] = { ...(props.block.initialValues ?? {}) };
-  }
+    props.formModels[props.block.id] = cloneFormValue(props.block.initialValues ?? {});
+    Object.keys(errors).forEach((key) => delete errors[key]);
+  },
 );
 </script>
 
 <style scoped>
 .mobile-form-block {
+  width: 100%;
+  min-width: 0;
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -175,7 +232,7 @@ watch(
 }
 
 .form-header {
-  margin-bottom: 8px;
+  margin-bottom: 9px;
   display: flex;
   flex-direction: column;
 }
@@ -194,78 +251,48 @@ watch(
   line-height: 18px;
 }
 
-.form-field {
-  margin-top: 10px;
+.form-grid,
+.form-layout {
+  width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
-.field-label {
-  margin-bottom: 6px;
-  color: #35414c;
-  font-size: 12px;
-  line-height: 18px;
+.form-row {
+  width: 100%;
+  min-width: 0;
+  margin-top: 11px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
 }
 
-.field-input {
-  min-height: 44px;
-  padding-right: 11px;
-  padding-left: 11px;
-  color: #17212b;
-  font-size: 14px;
-  background-color: #f8f9fa;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #ccd3d8;
-  border-radius: 5px;
+.form-cell {
+  min-width: 0;
+  padding-right: 7px;
+  padding-left: 7px;
 }
 
-.boolean-control {
-  width: 92px;
-  height: 38px;
-  align-items: center;
-  justify-content: center;
-  background-color: #e3e7ea;
-  border-radius: 19px;
+.form-row > .form-cell:first-child {
+  padding-left: 0;
 }
 
-.boolean-control.is-active {
-  background-color: #0b7957;
-}
-
-.boolean-control-text {
-  color: #35414c;
-  font-size: 12px;
-}
-
-.boolean-control.is-active .boolean-control-text {
-  color: #ffffff;
-}
-
-.field-help,
-.field-error {
-  margin-top: 4px;
-  font-size: 11px;
-  line-height: 16px;
-}
-
-.field-help {
-  color: #7a858f;
-}
-
-.field-error {
-  color: #b63b36;
+.form-row > .form-cell:last-child {
+  padding-right: 0;
 }
 
 .form-actions {
-  margin-top: 16px;
+  margin-top: 18px;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: flex-end;
 }
 
 .form-action {
   min-height: 42px;
+  margin-top: 6px;
   margin-left: 8px;
   padding-right: 16px;
   padding-left: 16px;
@@ -276,15 +303,23 @@ watch(
 }
 
 .form-action.is-primary {
-  background-color: #1e67d6;
+  background-color: #176ea8;
 }
 
 .form-action.is-success {
   background-color: #0b7957;
 }
 
+.form-action.is-warning {
+  background-color: #a66a00;
+}
+
 .form-action.is-danger {
   background-color: #b63b36;
+}
+
+.form-action.is-info {
+  background-color: #496b82;
 }
 
 .form-action-text {
@@ -294,7 +329,9 @@ watch(
 
 .form-action.is-primary .form-action-text,
 .form-action.is-success .form-action-text,
-.form-action.is-danger .form-action-text {
+.form-action.is-warning .form-action-text,
+.form-action.is-danger .form-action-text,
+.form-action.is-info .form-action-text {
   color: #ffffff;
 }
 </style>

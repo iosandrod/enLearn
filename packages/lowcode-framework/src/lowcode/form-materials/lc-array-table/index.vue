@@ -223,6 +223,7 @@ type ArrayTableToolbarButton = VxeButtonProps & {
   code: string | number;
   label: string;
   command?: string;
+  row?: Record<string, unknown>;
   visible?: boolean;
 };
 
@@ -254,6 +255,7 @@ const rows = ref<Record<string, unknown>[]>([]);
 const tableRef = ref<{
   recalculate?: (refull?: boolean) => Promise<unknown> | void;
   refreshColumn?: () => Promise<unknown> | void;
+  setCurrentRow?: (row: Record<string, unknown>) => Promise<unknown> | void;
   setTreeExpand?: (row: Record<string, unknown>, expanded: boolean) => Promise<unknown> | void;
 }>();
 
@@ -285,6 +287,7 @@ const rowConfig = computed(() => {
   return {
     ...config,
     keyField,
+    isCurrent: config.isCurrent !== false,
   };
 });
 const rowKey = computed(() => readString(rowConfig.value.keyField, '__rowKey'));
@@ -306,11 +309,13 @@ const treeChildrenField = computed(() =>
 );
 const toolbarButtons = computed(() => readToolbarButtons(fieldProps.value.toolbarButtons));
 const toolbarButtonOptions = computed<VxeButtonProps[]>(() =>
-  toolbarButtons.value.map(({ code, label, command: _command, ...buttonProps }) => ({
-    ...buttonProps,
-    name: code,
-    content: buttonProps.content ?? label,
-  }))
+  toolbarButtons.value.map(
+    ({ code, label, command: _command, row: _row, visible: _visible, ...buttonProps }) => ({
+      ...buttonProps,
+      name: code,
+      content: buttonProps.content ?? label,
+    })
+  )
 );
 const addChildText = computed(() => readString(fieldProps.value.addChildText, '新增子项'));
 const tableHeight = computed(() => readSize(fieldProps.value.height));
@@ -418,10 +423,12 @@ function normalizeRow(value: unknown, index: number): Record<string, unknown> {
   return row;
 }
 
-function createDefaultRow() {
-  const row = isRecord(fieldProps.value.defaultRow)
-    ? cloneRecord(fieldProps.value.defaultRow)
-    : {};
+function createDefaultRow(toolbarRow?: Record<string, unknown>) {
+  const row = isRecord(toolbarRow)
+    ? cloneRecord(toolbarRow)
+    : isRecord(fieldProps.value.defaultRow)
+      ? cloneRecord(fieldProps.value.defaultRow)
+      : {};
   const rowIndex = rows.value.length + 1;
 
   columns.value.forEach((column) => {
@@ -441,9 +448,10 @@ function createDefaultRow() {
   return row;
 }
 
-function addRow() {
-  const row = createDefaultRow();
+function addRow(toolbarRow?: Record<string, unknown>) {
+  const row = createDefaultRow(toolbarRow);
   rows.value.push(row);
+  ensureChildRowKeys(row);
   commitRows();
   emitConfiguredEvent('onRowAdd', rowEventPayload(row));
   return row;
@@ -454,7 +462,7 @@ function handleToolbarButtonClick(payload: ArrayTableToolbarClickParams) {
   const button = toolbarButtons.value.find((item) => item.code === clickedCode);
   if (!button || button.disabled) return;
 
-  const row = button.command === 'add' ? addRow() : undefined;
+  const row = button.command === 'add' ? addRow(button.row) : undefined;
   emitConfiguredEvent('onToolbarAction', {
     action: button,
     actionCode: button.code,
@@ -462,6 +470,13 @@ function handleToolbarButtonClick(payload: ArrayTableToolbarClickParams) {
     ...(row ? { row, index: getRowIndex(row) } : {}),
     rows: rows.value,
     field: props.field,
+  });
+}
+
+function ensureChildRowKeys(row: Record<string, unknown>) {
+  getChildRows(row).forEach((child, index) => {
+    ensureRowKey(child, index);
+    ensureChildRowKeys(child);
   });
 }
 
@@ -1012,6 +1027,9 @@ function emitConfiguredEvent(name: string, payload: Record<string, unknown>) {
 
 function handleCellClick(payload: unknown) {
   if (!isRecord(payload) || !isRecord(payload.row)) return;
+  if (rowConfig.value.isCurrent !== false) {
+    tableRef.value?.setCurrentRow?.(payload.row);
+  }
   emitConfiguredEvent('onRowClick', rowEventPayload(payload.row, payload));
 }
 

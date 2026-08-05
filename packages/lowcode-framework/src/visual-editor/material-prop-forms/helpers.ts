@@ -32,6 +32,7 @@ type ArrayTableFieldInput = FieldInput & {
       code: string | number;
       label: string;
       command?: string;
+      row?: Record<string, unknown>;
       visible?: boolean;
     }
   >;

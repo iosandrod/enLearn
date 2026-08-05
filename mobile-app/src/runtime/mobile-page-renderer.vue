@@ -240,6 +240,23 @@ async function handleRuntimeEvent(event: MobileRuntimeEvent) {
     .filter((handler) => matchesHandler(event, handler))
     .flatMap((handler) => handler.directives);
 
+  if (event.name === 'searchForm.submit' && event.blockId) {
+    const block = collectBlocks(props.page.schema.blocks).find(
+      (item) => item.id === event.blockId && item.kind === 'searchForm'
+    );
+    const targetSourceKey = block?.targetSourceKey;
+    const hasInlineSearchDirective = inlineDirectives.some(
+      (directive) => directive.type === 'setSearchFilters'
+    );
+    if (targetSourceKey && !hasInlineSearchDirective) {
+      const values = event.payload?.values;
+      searchFilters[targetSourceKey] = values && typeof values === 'object' && !Array.isArray(values)
+        ? { ...values }
+        : {};
+      await loadDataSources([targetSourceKey], true);
+    }
+  }
+
   for (const directive of [...inlineDirectives, ...configuredDirectives]) {
     try {
       await executeDirective(directive, event);

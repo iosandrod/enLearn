@@ -27,13 +27,28 @@ assert.match(
 );
 assert.match(
   arrayTableSource,
+  /const rowConfig = computed\([\s\S]*?isCurrent: config\.isCurrent !== false/,
+  'The reusable array table must highlight the current row by default while allowing an explicit opt-out.',
+);
+assert.match(
+  arrayTableSource,
+  /function handleCellClick\([\s\S]*?rowConfig\.value\.isCurrent !== false[\s\S]*?setCurrentRow\?\.\(payload\.row\)/,
+  'Clicking an array-table cell must explicitly select its row, including clicks inside cell editors.',
+);
+assert.match(
+  arrayTableSource,
   /<vxe-button-group[\s\S]*?:options="toolbarButtonOptions"[\s\S]*?@click="handleToolbarButtonClick"/,
   'The reusable array table toolbar must render a button group.',
 );
 assert.match(
   arrayTableSource,
-  /function handleToolbarButtonClick\([\s\S]*?payload\.option\?\.name \?\? payload\.name[\s\S]*?button\.command === 'add' \? addRow\(\)/,
-  'The button group must dispatch its add command through the array-table component.',
+  /function handleToolbarButtonClick\([\s\S]*?payload\.option\?\.name \?\? payload\.name[\s\S]*?button\.command === 'add' \? addRow\(button\.row\)/,
+  'The button group must dispatch its add command and optional row template through the array-table component.',
+);
+assert.match(
+  arrayTableSource,
+  /function addRow\(toolbarRow\?[^)]*\)[\s\S]*?createDefaultRow\(toolbarRow\)[\s\S]*?ensureChildRowKeys\(row\)/,
+  'Rows created from toolbar templates must receive nested tree-row keys.',
 );
 assert.doesNotMatch(
   arrayTableSource,
@@ -69,6 +84,11 @@ assert.match(
   designerSource,
   /toolbarButtons: \[[\s\S]*?label: '新增按钮',[\s\S]*?command: 'add'/,
   'The button designer must configure its toolbar through the button-group protocol.',
+);
+assert.match(
+  designerSource,
+  /code: 'add-dropdown',[\s\S]*?label: '新增下拉按钮',[\s\S]*?command: 'add',[\s\S]*?children: \[createButtonRow\('下拉项'\)\]/,
+  'The button designer must expose a command that creates a dropdown button with a child item.',
 );
 assert.doesNotMatch(
   designerSource,

@@ -55,129 +55,118 @@
       </button>
     </div>
 
-    <section class="approval-console-instances">
-      <form class="approval-console-filters" @submit.prevent="loadConsole(true)">
-        <label class="console-search-field">
-          <i class="ri-search-line" aria-hidden="true" />
-          <input
-            v-model="filters.search"
-            type="search"
-            placeholder="搜索标题、业务键、单据、模板或发起人"
-          />
-        </label>
-        <label>
-          <span>流程状态</span>
-          <select v-model="filters.status">
-            <option value="">全部状态</option>
-            <option v-for="status in filterStatuses" :key="status" :value="status">
-              {{ instanceStatusLabel(status) }}
-            </option>
-          </select>
-        </label>
-        <label>
-          <span>审批模板</span>
-          <select v-model="filters.definitionId">
-            <option value="">全部模板</option>
-            <option v-for="definition in consoleData.definitions" :key="definition.id" :value="definition.id">
-              {{ definition.name }} · v{{ definition.version }}
-            </option>
-          </select>
-        </label>
-        <label>
-          <span>开始日期</span>
-          <input v-model="filters.startedFrom" type="date" />
-        </label>
-        <label>
-          <span>结束日期</span>
-          <input v-model="filters.startedTo" type="date" />
-        </label>
-        <button type="submit" class="console-primary-button" :disabled="loading">
-          <i class="ri-filter-3-line" aria-hidden="true" />
-          查询
-        </button>
-        <button type="button" class="console-quiet-button" @click="resetFilters">
-          重置
-        </button>
-      </form>
+    <div class="approval-console-workspace">
+      <aside class="approval-console-instances">
+        <header class="approval-console-list-header">
+          <div>
+            <strong>流程实例</strong>
+            <span>共 {{ consoleData.total }} 条</span>
+          </div>
+          <span v-if="loading"><i class="ri-loader-4-line is-spinning" /> 加载中</span>
+          <span v-else>选择流程查看运行图</span>
+        </header>
 
-      <div class="approval-console-table-head">
-        <div>
-          <strong>流程实例</strong>
-          <span>共 {{ consoleData.total }} 条</span>
-        </div>
-        <span v-if="loading">正在读取实例...</span>
-        <span v-else>点击一行查看完整运行图</span>
-      </div>
+        <form class="approval-console-filters" @submit.prevent="loadConsole(true)">
+          <label class="console-search-field">
+            <span>关键词</span>
+            <i class="ri-search-line" aria-hidden="true" />
+            <input
+              v-model="filters.search"
+              type="search"
+              placeholder="标题、业务键、模板或发起人"
+            />
+          </label>
+          <div class="approval-console-filter-row approval-console-filter-row--dates">
+            <label>
+              <span>流程状态</span>
+              <select v-model="filters.status">
+                <option value="">全部状态</option>
+                <option v-for="status in filterStatuses" :key="status" :value="status">
+                  {{ instanceStatusLabel(status) }}
+                </option>
+              </select>
+            </label>
+            <label>
+              <span>审批模板</span>
+              <select v-model="filters.definitionId">
+                <option value="">全部模板</option>
+                <option v-for="definition in consoleData.definitions" :key="definition.id" :value="definition.id">
+                  {{ definition.name }} · v{{ definition.version }}
+                </option>
+              </select>
+            </label>
+          </div>
+          <div class="approval-console-filter-row">
+            <label>
+              <span>开始日期</span>
+              <input v-model="filters.startedFrom" type="date" />
+            </label>
+            <label>
+              <span>结束日期</span>
+              <input v-model="filters.startedTo" type="date" />
+            </label>
+          </div>
+          <div class="approval-console-filter-actions">
+            <button type="submit" class="console-primary-button" :disabled="loading">
+              <i class="ri-filter-3-line" aria-hidden="true" />
+              查询
+            </button>
+            <button type="button" class="console-quiet-button" @click="resetFilters">
+              重置
+            </button>
+          </div>
+        </form>
 
-      <div class="approval-console-table-wrap">
-        <table class="approval-console-table">
-          <thead>
-            <tr>
-              <th>状态</th>
-              <th>审批实例</th>
-              <th>审批模板</th>
-              <th>当前节点</th>
-              <th>进度</th>
-              <th>发起人</th>
-              <th>发起时间</th>
-              <th>Trigger Run</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="instance in consoleData.rows"
-              :key="instance.id"
-              :class="{ active: instance.id === selectedInstanceId }"
-              tabindex="0"
-              @click="selectInstance(instance.id)"
-              @keydown.enter="selectInstance(instance.id)"
-            >
-              <td>
-                <span :class="['console-status', `is-${instance.status}`]">
-                  <i />{{ instanceStatusLabel(instance.status) }}
-                </span>
-              </td>
-              <td>
-                <strong class="console-cell-title">{{ instance.title }}</strong>
-                <small>{{ instance.businessKey }}</small>
-              </td>
-              <td>
-                <strong>{{ instance.definitionName }}</strong>
-                <small>{{ instance.definitionCode }} · v{{ instance.definitionVersion }}</small>
-              </td>
-              <td>
-                <span v-if="instance.currentNodeNames.length" class="console-current-node">
-                  {{ instance.currentNodeNames.join('、') }}
-                </span>
-                <span v-else class="console-muted">{{ instance.status === 'running' ? '正在调度' : '-' }}</span>
+        <div class="approval-console-instance-list" role="listbox" aria-label="审批流程实例">
+          <button
+            v-for="instance in consoleData.rows"
+            :key="instance.id"
+            type="button"
+            :class="['approval-console-instance-item', { active: instance.id === selectedInstanceId }]"
+            :aria-selected="instance.id === selectedInstanceId"
+            @click="selectInstance(instance.id)"
+          >
+            <span class="approval-console-instance-item__top">
+              <span :class="['console-status', `is-${instance.status}`]">
+                <i />{{ instanceStatusLabel(instance.status) }}
+              </span>
+              <time>{{ formatTime(instance.startedAt) }}</time>
+            </span>
+            <strong class="approval-console-instance-item__title">{{ instance.title }}</strong>
+            <span class="approval-console-instance-item__template">
+              {{ instance.definitionName }} · v{{ instance.definitionVersion }}
+            </span>
+            <span class="approval-console-instance-item__node">
+              <span>
+                <i class="ri-node-tree" aria-hidden="true" />
+                {{ instance.currentNodeNames.join('、') || (instance.status === 'running' ? '正在调度' : '流程已结束') }}
                 <small v-if="instance.activeTaskCount">{{ instance.activeTaskCount }} 个待办</small>
-              </td>
-              <td>
-                <div class="console-progress">
-                  <span><i :style="{ width: `${nodeProgress(instance)}%` }" /></span>
-                  <small>{{ instance.completedNodeCount }}/{{ instance.nodeCount }}</small>
-                </div>
-              </td>
-              <td>
-                <strong>{{ instance.initiatorName || shortId(instance.initiatorId) }}</strong>
-                <small>{{ instance.initiatorEmail || '-' }}</small>
-              </td>
-              <td>{{ formatTime(instance.startedAt) }}</td>
-              <td class="console-mono">{{ shortId(instance.triggerRunId, 12) }}</td>
-            </tr>
-            <tr v-if="!loading && !consoleData.rows.length">
-              <td colspan="8" class="console-empty-cell">
-                <i class="ri-inbox-2-line" aria-hidden="true" />
-                <strong>没有匹配的审批实例</strong>
-                <span>调整筛选条件后重新查询</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+              </span>
+              <b>{{ instance.completedNodeCount }}/{{ instance.nodeCount }}</b>
+            </span>
+            <span class="console-progress approval-console-instance-item__progress">
+              <span><i :style="{ width: `${nodeProgress(instance)}%` }" /></span>
+            </span>
+            <span class="approval-console-instance-item__footer">
+              <span :title="instance.initiatorEmail || instance.initiatorId">
+                <i class="ri-user-line" aria-hidden="true" />
+                {{ instance.initiatorName || shortId(instance.initiatorId) }}
+              </span>
+              <span class="console-mono" :title="instance.triggerRunId">
+                {{ shortId(instance.triggerRunId, 13) }}
+              </span>
+            </span>
+          </button>
 
-    <section v-if="selectedInstance" class="approval-console-detail">
+          <div v-if="!loading && !consoleData.rows.length" class="console-empty-cell">
+            <i class="ri-inbox-2-line" aria-hidden="true" />
+            <strong>没有匹配的审批实例</strong>
+            <span>调整筛选条件后重新查询</span>
+          </div>
+        </div>
+      </aside>
+
+      <main v-if="selectedInstance" class="approval-console-detail">
       <header class="approval-console-detail__header">
         <div>
           <div class="approval-console-detail__title-row">
@@ -198,7 +187,6 @@
         </dl>
       </header>
 
-      <div class="approval-console-detail__workspace">
         <section class="approval-console-flow-panel">
           <header>
             <div>
@@ -209,6 +197,7 @@
           </header>
           <ApprovalRuntimeViewer
             v-if="consoleDetail"
+            :key="selectedInstanceId"
             class="approval-console-flow-viewer"
             :model="consoleDetail.definition.schema"
             :node-states="consoleDetail.nodeStates"
@@ -221,7 +210,7 @@
           </div>
         </section>
 
-        <aside class="approval-console-inspector">
+        <section class="approval-console-inspector">
           <nav class="approval-console-tabs" aria-label="审批实例详情">
             <button
               v-for="tab in detailTabs"
@@ -314,15 +303,15 @@
               </p>
             </div>
           </div>
-        </aside>
-      </div>
-    </section>
+        </section>
+      </main>
 
-    <section v-else-if="!loading" class="approval-console-no-selection">
-      <i class="ri-node-tree" aria-hidden="true" />
-      <strong>选择一个审批实例</strong>
-      <span>流程图、审批节点和 Trigger.dev 状态会显示在这里</span>
-    </section>
+      <main v-else-if="!loading" class="approval-console-no-selection">
+        <i class="ri-node-tree" aria-hidden="true" />
+        <strong>选择一个审批实例</strong>
+        <span>流程图、审批节点和 Trigger.dev 状态会显示在这里</span>
+      </main>
+    </div>
   </section>
 </template>
 
@@ -734,9 +723,14 @@ onMounted(async () => {
   await loadConsole(false);
 });
 
+let observedAccountEpoch = auth.accountEpoch.value;
 watch(
   () => auth.accountEpoch.value,
-  () => void loadConsole(false)
+  (nextAccountEpoch) => {
+    if (nextAccountEpoch === observedAccountEpoch) return;
+    observedAccountEpoch = nextAccountEpoch;
+    void loadConsole(false);
+  }
 );
 </script>
 
@@ -901,20 +895,51 @@ watch(
 .approval-console-summary .is-failed span i { color: #dc2626; }
 .approval-console-summary .is-terminated span i { color: #64748b; }
 
-.approval-console-instances { overflow: hidden; }
+.approval-console-workspace {
+  display: grid;
+  min-width: 0;
+  height: clamp(760px, calc(100vh - 220px), 920px);
+  min-height: 760px;
+  grid-template-columns: clamp(340px, 27vw, 430px) minmax(0, 1fr);
+  gap: 7px;
+}
+
+.approval-console-instances {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.approval-console-list-header {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid #dbe2ea;
+  padding: 7px 10px;
+}
+
+.approval-console-list-header div { display: flex; align-items: baseline; gap: 6px; }
+.approval-console-list-header strong { color: #101828; font-size: 13px; }
+.approval-console-list-header span { color: #667085; font-size: 9px; }
 
 .approval-console-filters {
   display: grid;
-  grid-template-columns: minmax(220px, 1.7fr) repeat(4, minmax(132px, 0.7fr)) auto auto;
-  align-items: end;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
   border-bottom: 1px solid #dbe2ea;
   background: #fbfcfd;
-  padding: 7px 9px;
+  padding: 8px 9px;
 }
 
 .approval-console-filters label { display: grid; min-width: 0; gap: 3px; }
 .approval-console-filters label > span { color: #667085; font-size: 9px; font-weight: 800; }
+.approval-console-filter-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.approval-console-filter-actions { display: flex; justify-content: flex-end; gap: 5px; }
+.approval-console-filter-actions .console-primary-button { min-width: 72px; }
 .approval-console-filters input,
 .approval-console-filters select {
   width: 100%;
@@ -937,59 +962,45 @@ watch(
 .console-search-field i { position: absolute; bottom: 7px; left: 8px; color: #98a2b3; font-size: 13px; }
 .console-search-field input { padding-left: 27px; }
 
-.approval-console-table-head {
-  display: flex;
-  min-height: 34px;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 5px 9px;
+.approval-console-instance-list {
+  min-height: 0;
+  overflow: auto;
+  background: #f8fafc;
 }
 
-.approval-console-table-head div { display: flex; align-items: center; gap: 7px; }
-.approval-console-table-head strong { color: #101828; font-size: 12px; }
-.approval-console-table-head span { color: #667085; font-size: 10px; }
-
-.approval-console-table-wrap { max-height: 270px; overflow: auto; border-top: 1px solid #e4e9f0; }
-.approval-console-table { width: 100%; min-width: 1160px; border-collapse: collapse; table-layout: fixed; }
-.approval-console-table th,
-.approval-console-table td {
-  overflow: hidden;
-  border-bottom: 1px solid #e4e9f0;
+.approval-console-instance-item {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 5px;
+  border: 0;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
   color: #475467;
-  font-size: 10px;
-  line-height: 15px;
-  padding: 7px 8px;
+  cursor: pointer;
+  font: inherit;
+  padding: 10px 11px;
   text-align: left;
-  text-overflow: ellipsis;
-  vertical-align: middle;
 }
 
-.approval-console-table th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: #f7f9fc;
-  color: #526072;
-  font-weight: 900;
-}
-
-.approval-console-table th:nth-child(1) { width: 90px; }
-.approval-console-table th:nth-child(2) { width: 220px; }
-.approval-console-table th:nth-child(3) { width: 165px; }
-.approval-console-table th:nth-child(4) { width: 150px; }
-.approval-console-table th:nth-child(5) { width: 120px; }
-.approval-console-table th:nth-child(6) { width: 175px; }
-.approval-console-table th:nth-child(7) { width: 145px; }
-.approval-console-table th:nth-child(8) { width: 120px; }
-.approval-console-table tbody tr { cursor: pointer; outline: none; }
-.approval-console-table tbody tr:hover { background: #f8fafc; }
-.approval-console-table tbody tr.active { background: #ecfdf5; box-shadow: inset 3px 0 0 #0f766e; }
-.approval-console-table td strong,
-.approval-console-table td small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.approval-console-table td strong { color: #182230; font-size: 11px; }
-.approval-console-table td small { margin-top: 1px; color: #98a2b3; font-size: 9px; }
-.console-cell-title { font-size: 11px !important; }
+.approval-console-instance-item:hover { background: #f8fafc; }
+.approval-console-instance-item.active { background: #ecfdf5; box-shadow: inset 3px 0 0 #0f766e; }
+.approval-console-instance-item__top,
+.approval-console-instance-item__node,
+.approval-console-instance-item__footer { display: flex; min-width: 0; align-items: center; justify-content: space-between; gap: 8px; }
+.approval-console-instance-item__top time { color: #98a2b3; font-size: 9px; white-space: nowrap; }
+.approval-console-instance-item__title { overflow: hidden; color: #182230; font-size: 12px; line-height: 17px; text-overflow: ellipsis; white-space: nowrap; }
+.approval-console-instance-item__template { overflow: hidden; color: #667085; font-size: 9px; line-height: 14px; text-overflow: ellipsis; white-space: nowrap; }
+.approval-console-instance-item__node { margin-top: 1px; color: #344054; font-size: 10px; }
+.approval-console-instance-item__node > span { display: flex; min-width: 0; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.approval-console-instance-item__node > span > i { color: #2563eb; font-size: 12px; }
+.approval-console-instance-item__node small { color: #1d4ed8; font-size: 8px; }
+.approval-console-instance-item__node b { color: #667085; font-size: 9px; }
+.approval-console-instance-item__progress { width: 100%; }
+.approval-console-instance-item__progress > span { width: 100%; }
+.approval-console-instance-item__footer { color: #98a2b3; font-size: 9px; }
+.approval-console-instance-item__footer > span { display: inline-flex; min-width: 0; align-items: center; gap: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.approval-console-instance-item__footer > span:first-child { max-width: 55%; }
 .console-muted { color: #98a2b3; }
 .console-current-node { color: #1d4ed8; font-weight: 800; }
 .console-mono { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
@@ -1021,11 +1032,17 @@ watch(
 .console-progress > span i { display: block; height: 100%; border-radius: inherit; background: #16a34a; }
 .console-progress small { margin: 0 !important; }
 
-.console-empty-cell { height: 150px; text-align: center !important; }
+.console-empty-cell { display: grid; min-height: 190px; place-content: center; text-align: center !important; }
 .console-empty-cell i, .console-empty-cell strong, .console-empty-cell span { display: block; margin: 3px auto; }
 .console-empty-cell i { color: #98a2b3; font-size: 24px; }
 
-.approval-console-detail { overflow: hidden; }
+.approval-console-detail {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr) 210px;
+  overflow: hidden;
+}
 .approval-console-detail__header {
   display: flex;
   min-height: 58px;
@@ -1045,14 +1062,13 @@ watch(
 .approval-console-detail__header dt { color: #98a2b3; font-size: 9px; }
 .approval-console-detail__header dd { max-width: 170px; overflow: hidden; margin: 0; color: #344054; font-size: 10px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
 
-.approval-console-detail__workspace { display: grid; grid-template-columns: minmax(0, 1fr) 380px; min-height: 530px; }
-.approval-console-flow-panel { display: grid; min-width: 0; grid-template-rows: auto minmax(0, 1fr); border-right: 1px solid #d9e1ea; }
+.approval-console-flow-panel { display: grid; min-width: 0; min-height: 0; grid-template-rows: auto minmax(0, 1fr); border-bottom: 1px solid #d9e1ea; }
 .approval-console-flow-panel > header { display: flex; min-height: 41px; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid #d9e1ea; padding: 5px 9px; }
 .approval-console-flow-panel > header div { display: grid; gap: 1px; }
 .approval-console-flow-panel > header strong { color: #182230; font-size: 11px; }
 .approval-console-flow-panel > header span { color: #667085; font-size: 9px; }
-.approval-console-flow-viewer { height: 487px; }
-.approval-console-detail-loading { display: flex; min-height: 480px; align-items: center; justify-content: center; gap: 7px; color: #667085; font-size: 11px; }
+.approval-console-flow-viewer { height: 100%; min-height: 0; }
+.approval-console-detail-loading { display: flex; min-height: 0; align-items: center; justify-content: center; gap: 7px; color: #667085; font-size: 11px; }
 
 .approval-console-inspector { display: grid; min-width: 0; min-height: 0; grid-template-rows: auto minmax(0, 1fr); }
 .approval-console-tabs { display: flex; overflow-x: auto; gap: 1px; border-bottom: 1px solid #d9e1ea; padding: 5px 5px 0; }
@@ -1060,7 +1076,7 @@ watch(
 .approval-console-tabs button.active { border-bottom-color: #0f766e; color: #0f766e; }
 .approval-console-tabs button span { min-width: 17px; border-radius: 999px; background: #e9eef4; color: #526072; font-size: 8px; line-height: 17px; padding: 0 4px; text-align: center; }
 .approval-console-tabs button.active span { background: #ccfbf1; color: #0f766e; }
-.approval-console-inspector__body { max-height: 487px; overflow: auto; }
+.approval-console-inspector__body { min-height: 0; overflow: auto; }
 
 .console-record-list { display: grid; }
 .console-record-list > button { display: grid; width: 100%; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: start; gap: 7px; border: 0; border-bottom: 1px solid #e4e9f0; background: #ffffff; color: #344054; cursor: pointer; padding: 9px; text-align: left; }
@@ -1124,9 +1140,8 @@ watch(
 @keyframes console-spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 1280px) {
-  .approval-console-filters { grid-template-columns: minmax(220px, 1.5fr) repeat(2, minmax(135px, 0.7fr)) auto auto; }
-  .approval-console-filters label:nth-of-type(4), .approval-console-filters label:nth-of-type(5) { display: none; }
-  .approval-console-detail__workspace { grid-template-columns: minmax(0, 1fr) 330px; }
+  .approval-console-workspace { grid-template-columns: 350px minmax(0, 1fr); }
+  .approval-console-detail__header dl div:last-child { display: none; }
 }
 
 @media (max-width: 900px) {
@@ -1135,14 +1150,12 @@ watch(
   .approval-console-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .approval-console-summary button:nth-child(3) { border-right: 0; }
   .approval-console-summary button:nth-child(-n + 3) { border-bottom: 1px solid #e3e8ef; }
-  .approval-console-filters { grid-template-columns: minmax(0, 1fr) minmax(120px, 0.6fr) auto auto; }
-  .approval-console-filters label:nth-of-type(3) { display: none; }
+  .approval-console-workspace { grid-template-columns: 310px minmax(0, 1fr); }
+  .approval-console-filter-row { grid-template-columns: 1fr; }
+  .approval-console-filter-row--dates { display: none; }
   .approval-console-detail__header { align-items: flex-start; flex-direction: column; }
   .approval-console-detail__header dl { width: 100%; overflow-x: auto; }
-  .approval-console-detail__workspace { grid-template-columns: 1fr; }
-  .approval-console-flow-panel { border-right: 0; border-bottom: 1px solid #d9e1ea; }
-  .approval-console-flow-viewer { height: 480px; }
-  .approval-console-inspector__body { max-height: 400px; }
+  .approval-console-detail__header dl div:last-child { display: grid; }
 }
 
 @media (max-width: 620px) {
@@ -1153,10 +1166,11 @@ watch(
   .approval-console-updated { display: none; }
   .approval-console-summary button { min-height: 54px; padding: 6px 8px; }
   .approval-console-summary strong { font-size: 17px; }
-  .approval-console-filters { grid-template-columns: minmax(0, 1fr) auto auto; }
-  .approval-console-filters label:nth-of-type(2) { display: none; }
-  .approval-console-table-head > span { display: none; }
+  .approval-console-workspace { height: auto; grid-template-columns: 1fr; min-height: 0; }
+  .approval-console-instances { max-height: 520px; }
+  .approval-console-filter-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .approval-console-detail__header dl { gap: 12px; }
-  .approval-console-flow-viewer { height: 430px; }
+  .approval-console-detail { grid-template-rows: auto 520px 280px; }
+  .approval-console-filter-row--dates { display: grid; }
 }
 </style>

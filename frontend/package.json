@@ -6,6 +6,7 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 3000",
     "test:keep-alive": "node tests/keep-alive-regression.mjs",
+    "test:dashboard-tabs": "node tests/dashboard-tab-context-menu-regression.mjs",
     "test:navigation": "node tests/database-navigation-regression.mjs",
     "test:grid-header-menu": "node tests/grid-header-context-menu-regression.mjs",
     "test:signin-account": "node tests/signin-account-field-regression.mjs",

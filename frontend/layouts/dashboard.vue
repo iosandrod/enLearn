@@ -140,6 +140,16 @@
       </div>
 
       <div class="admin-top-actions">
+        <RouterLink
+          v-if="canOpenApprovalConsole"
+          class="admin-approval-console-button"
+          :class="{ 'is-active': route.path === APPROVAL_CONSOLE_PATH }"
+          :to="APPROVAL_CONSOLE_PATH"
+          title="进入审批流总控制台"
+        >
+          <i class="ri-flow-chart" aria-hidden="true" />
+          <span>审批总控</span>
+        </RouterLink>
         <button
           class="admin-system-settings-button"
           type="button"
@@ -281,6 +291,9 @@
             :key="tab.path"
             class="admin-tab"
             :to="tab.path"
+            aria-haspopup="menu"
+            @contextmenu.prevent.stop="openTabContextMenu($event, tab)"
+            @keydown="handleTabContextKeydown($event, tab)"
           >
             {{ tab.title }}
           </RouterLink>
@@ -310,7 +323,11 @@ import {
   findGlobalDialog,
   GlobalDialogHost,
 } from '@enlearn/lowcode-framework/runtime';
-import { formatDashboardTabTitle } from '../utils/dashboardTabs';
+import {
+  closeDashboardTabs,
+  formatDashboardTabTitle,
+} from '../utils/dashboardTabs';
+import type { DashboardTabCloseScope } from '../utils/dashboardTabs';
 import { getLowCodePage } from '../utils/lowCodePages';
 import type { AppAccountSummary } from '../composables/useAuthState';
 
@@ -349,9 +366,11 @@ type VisitedTab = {
   title: string;
   path: string;
   pageType?: LowCodePageRecord['page_type'];
+  pageCode?: string;
 };
 
 const SYSTEM_SETTINGS_DIALOG_ID = 'system-settings-editor-dialog';
+const APPROVAL_CONSOLE_PATH = '/dashboard/approval/console';
 
 const auth = useAuth();
 const serviceApi = useServiceApi();
@@ -363,6 +382,9 @@ const activeDevTestUser = computed(() => auth.activeDevTestUser.value);
 const activeDevUserId = computed(() => auth.activeDevTestUserId.value);
 const showApprovalTestSwitcher = computed(
   () => isDev && route.path.startsWith('/dashboard/workflow')
+);
+const canOpenApprovalConsole = computed(() =>
+  auth.permissions.value.includes('workflow.runtime.manage')
 );
 const displayUserLabel = computed(() => {
   const profile = auth.profile.value ?? {};
@@ -826,6 +848,108 @@ function openMenuContext(payload: MenuContextPayload) {
   });
 }
 
+function findVisitedTabRoute(path: string) {
+  return [...flatMenu.value, ...topToolGroups.value.flatMap((group) => group.tools)]
+    .find((item) => item.path === path);
+}
+
+function resolveVisitedTabPageCode(tab: VisitedTab) {
+  return tab.pageCode ?? findVisitedTabRoute(tab.path)?.page_code ?? '';
+}
+
+function openTabContextMenu(event: MouseEvent, tab: VisitedTab) {
+  openTabContextMenuAt(event.clientX, event.clientY, tab);
+}
+
+function handleTabContextKeydown(event: KeyboardEvent, tab: VisitedTab) {
+  if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  const target = event.currentTarget as HTMLElement | null;
+  const bounds = target?.getBoundingClientRect();
+  openTabContextMenuAt(
+    bounds ? bounds.left + Math.min(bounds.width / 2, 36) : 0,
+    bounds ? bounds.bottom : 0,
+    tab,
+  );
+}
+
+function openTabContextMenuAt(x: number, y: number, tab: VisitedTab) {
+  const targetIndex = visitedTabs.value.findIndex((item) => item.path === tab.path);
+  if (targetIndex < 0) return;
+  const pageCode = resolveVisitedTabPageCode(tab);
+
+  VxeUI.contextMenu.open({
+    x,
+    y,
+    className: 'enlearn-context-menu enlearn-tab-context-menu',
+    options: [
+      [
+        {
+          code: 'close-current',
+          name: '关闭当前',
+          prefixIcon: 'ri-close-line',
+        },
+        {
+          code: 'close-left',
+          name: '关闭左侧',
+          prefixIcon: 'ri-skip-left-line',
+          disabled: targetIndex === 0,
+        },
+        {
+          code: 'close-right',
+          name: '关闭右侧',
+          prefixIcon: 'ri-skip-right-line',
+          disabled: targetIndex === visitedTabs.value.length - 1,
+        },
+        {
+          code: 'close-others',
+          name: '关闭其他',
+          prefixIcon: 'ri-close-circle-line',
+          disabled: visitedTabs.value.length === 1,
+        },
+      ],
+      [
+        {
+          code: 'open-visual-designer',
+          name: '可视化设计',
+          prefixIcon: 'ri-layout-grid-line',
+          disabled: !pageCode,
+        },
+      ],
+    ],
+    events: {
+      optionClick({ option }) {
+        if (option.code === 'close-current') void closeVisitedTabs(tab, 'current');
+        if (option.code === 'close-left') void closeVisitedTabs(tab, 'left');
+        if (option.code === 'close-right') void closeVisitedTabs(tab, 'right');
+        if (option.code === 'close-others') void closeVisitedTabs(tab, 'others');
+        if (option.code === 'open-visual-designer') {
+          void openLowCodeDesignerByCode(pageCode);
+        }
+      },
+    },
+  });
+}
+
+async function closeVisitedTabs(tab: VisitedTab, scope: DashboardTabCloseScope) {
+  const targetIndex = visitedTabs.value.findIndex((item) => item.path === tab.path);
+  const remainingTabs = closeDashboardTabs(visitedTabs.value, tab.path, scope);
+  if (remainingTabs.length === visitedTabs.value.length) return;
+
+  const activeTabWasClosed = !remainingTabs.some((item) => item.path === route.path);
+  visitedTabs.value = remainingTabs;
+
+  if (activeTabWasClosed) {
+    const adjacentTab = scope === 'current'
+      ? remainingTabs[Math.min(targetIndex, remainingTabs.length - 1)]
+      : tab;
+    await router.push(adjacentTab?.path ?? '/dashboard');
+    if (!visitedTabs.value.length) rememberTab();
+  }
+}
+
 function closeMenuContext() {
   VxeUI.contextMenu.close();
 }
@@ -984,7 +1108,10 @@ function buildPageSaveData(schema: LowCodePageSchema) {
 }
 
 async function openLowCodeDesigner(item: AdminRouteNode) {
-  const pageCode = resolveLowCodePageCode(item);
+  await openLowCodeDesignerByCode(resolveLowCodePageCode(item));
+}
+
+async function openLowCodeDesignerByCode(pageCode: string) {
   if (!pageCode) return;
   await router.push({ path: `/dashboard/low-code/designer/${pageCode}` });
   publishLowCodeDesignerLoadPage(pageCode);
@@ -1089,10 +1216,13 @@ async function refreshLowCodeTabTitle(path: string, title: string) {
       includeData: false
     });
 
+    if (!visitedTabs.value.some((tab) => tab.path === path)) return;
+
     upsertVisitedTab({
       path,
       title: formatDashboardTabTitle(title, page.page_type),
-      pageType: page.page_type
+      pageType: page.page_type,
+      pageCode: page.code,
     });
   } catch {
     // Keep the menu title for built-in fallback pages and unavailable page metadata.
@@ -1101,10 +1231,12 @@ async function refreshLowCodeTabTitle(path: string, title: string) {
 
 function rememberTab() {
   const existingTab = visitedTabs.value.find((tab) => tab.path === route.path);
+  const pageCode = existingTab?.pageCode ?? findVisitedTabRoute(route.path)?.page_code;
   const current = {
     title: formatDashboardTabTitle(activeTitle.value, existingTab?.pageType),
     path: route.path,
-    ...(existingTab?.pageType ? { pageType: existingTab.pageType } : {})
+    ...(existingTab?.pageType ? { pageType: existingTab.pageType } : {}),
+    ...(pageCode ? { pageCode } : {}),
   };
 
   upsertVisitedTab(current);

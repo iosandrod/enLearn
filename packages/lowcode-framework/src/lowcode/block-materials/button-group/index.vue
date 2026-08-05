@@ -16,13 +16,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 import { VxeUI } from 'vxe-pc-ui';
 import type { VxeButtonProps } from 'vxe-pc-ui';
 import type {
   LowCodeButtonGroupAction,
   LowCodePageButtonGroupBlock,
+  LowCodeRuntimeDirective,
 } from '../../../types/lowcode';
+import { lowCodeRuntimeBlockEditorKey } from '../../../runtime/block-editor';
+import type {
+  ButtonGroupDesignerButton,
+  ButtonGroupDesignerResult,
+} from '../../../visual-editor/components/button-group-designer/button-group-designer.service';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 
 type RuntimeDesignerButton = Omit<LowCodeButtonGroupAction, 'children'> & {
@@ -32,6 +38,7 @@ type RuntimeDesignerButton = Omit<LowCodeButtonGroupAction, 'children'> & {
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageButtonGroupBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
+const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
 
 const justifyContentMap: Record<string, string> = {
   left: 'flex-start',
@@ -120,14 +127,89 @@ function handleDropdownClick(params: { option?: Record<string, unknown> }) {
 }
 
 function toDesignerButton(action: LowCodeButtonGroupAction): RuntimeDesignerButton {
-  const { children, directives, ...button } = action;
+  const { children, content: _content, directives, ...button } = action;
 
   return {
     ...button,
+    label: String(readButtonContent(action)),
     directivesJson: JSON.stringify(directives ?? []),
     ...(children?.length
       ? { children: children.map((child) => toDesignerButton(child)) }
       : {}),
+  };
+}
+
+function readDesignerDirectives(value: unknown): LowCodeRuntimeDirective[] {
+  if (Array.isArray(value)) return value as LowCodeRuntimeDirective[];
+  if (typeof value !== 'string' || !value.trim()) return [];
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? (parsed as LowCodeRuntimeDirective[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function toRuntimeButton(button: ButtonGroupDesignerButton): LowCodeButtonGroupAction {
+  const {
+    __id: _id,
+    children: designerChildren,
+    directives: _directives,
+    directivesJson,
+    ...preservedProps
+  } = button;
+  const code = typeof button.code === 'string' && button.code.trim()
+    ? button.code.trim()
+    : 'button';
+  const label = typeof button.label === 'string' && button.label.trim()
+    ? button.label.trim()
+    : code;
+  const type = button.type === 'submit' || button.type === 'reset' ? button.type : 'button';
+  const status = typeof button.status === 'string' && button.status.trim()
+    ? button.status as LowCodeButtonGroupAction['status']
+    : undefined;
+  const route = typeof button.route === 'string' ? button.route.trim() : '';
+  const eventName = typeof button.eventName === 'string' ? button.eventName.trim() : '';
+  const directives = readDesignerDirectives(directivesJson);
+  const children = Array.isArray(designerChildren)
+    ? designerChildren.map((child) => toRuntimeButton(child))
+    : [];
+
+  const next: Record<string, unknown> = {
+    ...preservedProps,
+    code,
+    label,
+    type,
+    disabled: Boolean(button.disabled),
+  };
+
+  if (status) next.status = status;
+  else delete next.status;
+  if (route) next.route = route;
+  else delete next.route;
+  if (eventName) next.eventName = eventName;
+  else delete next.eventName;
+  if (directives.length) next.directives = directives;
+  else delete next.directives;
+  if (children.length) next.children = children;
+  else delete next.children;
+
+  return next as LowCodeButtonGroupAction;
+}
+
+function createRuntimeBlockChanges(result: ButtonGroupDesignerResult) {
+  const align = ['left', 'center', 'right', 'space-between'].includes(result.business.align)
+    ? result.business.align as LowCodePageButtonGroupBlock['align']
+    : 'left';
+
+  return {
+    id: result.business.blockId,
+    title: result.business.title,
+    description: result.business.description,
+    align,
+    gap: result.business.gap,
+    actions: result.buttons.map((button) => toRuntimeButton(button)),
   };
 }
 
@@ -146,6 +228,16 @@ async function openButtonDesigner() {
       gap: props.block.gap ?? 8,
     },
     buttons: props.block.actions.map((action) => toDesignerButton(action)),
+    onConfirm: async (result) => {
+      if (!runtimeBlockEditor) {
+        throw new Error('当前页面不支持保存按钮配置');
+      }
+
+      await runtimeBlockEditor.updateBlock({
+        blockId: props.block.id,
+        changes: createRuntimeBlockChanges(result),
+      });
+    },
   });
 }
 
