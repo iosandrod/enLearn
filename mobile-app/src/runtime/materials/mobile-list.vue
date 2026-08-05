@@ -57,6 +57,10 @@ const rows = computed<Record<string, unknown>[]>(() => {
     const nested = (source as { rows?: unknown }).rows;
     return Array.isArray(nested) ? nested as Record<string, unknown>[] : [];
   }
+  if (source && typeof source === 'object' && 'data' in source) {
+    const nested = (source as { data?: unknown }).data;
+    return Array.isArray(nested) ? nested as Record<string, unknown>[] : [];
+  }
   return [];
 });
 

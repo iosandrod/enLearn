@@ -18,7 +18,11 @@ import {
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { assertAccountUsers } from '../common/utils/account-context';
-import { requireAdmin } from '../common/utils/supabase';
+import {
+  getCurrentUser,
+  getUserAuthorization,
+  hasRequiredPermission
+} from '../common/utils/supabase';
 import {
   normalizeWorkflowDraftSchema,
   validateWorkflowDraftSchema
@@ -48,6 +52,15 @@ const RESOURCE_LIST_FIELDS: Record<string, string[]> = {
     'documentId',
     'status',
     'initiatorId'
+  ],
+  wf_node_instance: ['id', 'processInstanceId', 'nodeId', 'nodeType', 'status'],
+  wf_task: [
+    'id',
+    'processInstanceId',
+    'nodeInstanceId',
+    'nodeId',
+    'status',
+    'assigneeId'
   ],
   wf_job: ['id', 'code', 'name', 'type', 'status'],
   wf_job_run: ['id', 'jobId', 'triggerRunId', 'status']
@@ -193,6 +206,24 @@ export class WorkflowService extends BaseService {
       postData,
       context
     ),
+    getRuntimeStatus: (postData, context) => this.invokeAction(
+      { method: 'GET', path: '/runtime/status' },
+      postData,
+      context
+    ),
+    getApprovalConsole: (postData, context) => this.invokeAction(
+      {
+        method: 'GET',
+        path: '/console/instances',
+        query: resolveRpcListQuery(postData)
+      },
+      postData,
+      context
+    ),
+    getApprovalConsoleDetail: (postData, context) => this.invokeAction({
+      method: 'GET',
+      path: `/console/instances/${readString(postData.instanceId, 'instanceId')}`
+    }, postData, context),
     getInstance: (postData, context) => this.invokeAction({
       method: 'GET',
       path: `/instances/${readString(postData.instanceId, 'instanceId')}`
@@ -259,17 +290,6 @@ export class WorkflowService extends BaseService {
     getHistoryTimeline: (postData, context) => this.invokeAction({
       method: 'GET',
       path: `/history/instances/${readString(postData.instanceId, 'instanceId')}/timeline`
-    }, postData, context),
-    runApprovalFlowTest: (postData, context) => this.invokeAction({
-      method: 'POST',
-      path: '/tests/approval-flow/run',
-      body: stripUndefined({
-        userId: postData.userId,
-        approverIds: postData.approverIds,
-        schema: postData.schema,
-        timeoutMs: postData.timeoutMs,
-        intervalMs: postData.intervalMs
-      })
     }, postData, context)
   };
 
@@ -298,6 +318,8 @@ export class WorkflowService extends BaseService {
       wf_model_version: outputHooks,
       wf_process_definition: outputHooks,
       wf_process_instance: outputHooks,
+      wf_node_instance: outputHooks,
+      wf_task: outputHooks,
       wf_job: {
         beforeCreate: this.normalizeJobPayload,
         beforeUpdate: this.normalizeJobPayload,
@@ -314,6 +336,9 @@ export class WorkflowService extends BaseService {
         this.listResource('wf_process_definition', postData, context),
       instances: (postData, context) =>
         this.listResource('wf_process_instance', postData, context),
+      nodeInstances: (postData, context) =>
+        this.listResource('wf_node_instance', postData, context),
+      tasks: (postData, context) => this.listResource('wf_task', postData, context),
       startedInstances: (postData, context) =>
         this.listResource(
           'wf_process_instance',
@@ -634,30 +659,34 @@ export class WorkflowService extends BaseService {
     postData: PostData,
     context: ServiceContext
   ) {
-    if (method === 'transferTask' || method === 'addSignTask') {
-      const targetUserId = readString(postData.targetUserId, 'targetUserId');
-      await assertAccountUsers(
-        context,
-        [targetUserId],
-        'The workflow target user must belong to the active account set.'
-      );
+    if (
+      method === 'getRuntimeStatus' ||
+      method === 'getApprovalConsole' ||
+      method === 'getApprovalConsoleDetail' ||
+      method === 'terminateInstance'
+    ) {
+      await this.assertRuntimeManagementAccess(context);
     }
 
-    if (method !== 'runApprovalFlowTest') return;
-    if (process.env.NODE_ENV === 'production') {
-      throw new ForbiddenException('Approval flow test identities are disabled in production.');
-    }
+    if (method !== 'transferTask' && method !== 'addSignTask') return;
 
-    await requireAdmin(context, 'workflow.definitions.manage');
-    const requestedUserId = readOptionalString(postData.userId);
-    const approverIds = Array.isArray(postData.approverIds)
-      ? postData.approverIds.map(readOptionalString).filter(Boolean)
-      : [];
+    const targetUserId = readString(postData.targetUserId, 'targetUserId');
     await assertAccountUsers(
       context,
-      [...(requestedUserId ? [requestedUserId] : []), ...approverIds],
-      'Every approval test user must belong to the active account set.'
+      [targetUserId],
+      'The workflow target user must belong to the active account set.'
     );
+  }
+
+  private async assertRuntimeManagementAccess(context: ServiceContext) {
+    const { client, user } = await getCurrentUser(context);
+    const authorization = await getUserAuthorization(client, user.id, {
+      accountId: context.accountId,
+      refresh: true
+    });
+    if (!hasRequiredPermission(authorization, 'workflow.runtime.manage')) {
+      throw new ForbiddenException('Permission required: workflow.runtime.manage');
+    }
   }
 
   private async invokeWorkflowService(
@@ -679,13 +708,7 @@ export class WorkflowService extends BaseService {
       throw new ForbiddenException('An authenticated workflow user is required.');
     }
 
-    const requestedTestUserId = readOptionalString(postData.userId);
-    const canUseTestIdentity =
-      request.path === '/tests/approval-flow/run' &&
-      process.env.NODE_ENV !== 'production';
-    headers['x-user-id'] = canUseTestIdentity && requestedTestUserId
-      ? requestedTestUserId
-      : authenticatedUserId;
+    headers['x-user-id'] = authenticatedUserId;
     if (context.authorization) headers.authorization = context.authorization;
     if (context.requestId) headers['x-request-id'] = context.requestId;
 

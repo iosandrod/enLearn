@@ -397,17 +397,19 @@ async function createHumanTasks(
 
   const taskInputs: CreateWorkflowTaskInput[] = [];
   for (const [index, candidate] of candidates.entries()) {
+    const workflowTaskId = randomUUID();
     const token = await waits.createToken({
       idempotencyKey: `workflow:${payload.instanceId}:node:${nodeInstance.id}:task:${index}:${candidate.type}:${candidate.id}`,
       tags: [
         `tenant:${payload.tenantId}`,
         `workflow-instance:${payload.instanceId}`,
+        `workflow-task:${workflowTaskId}`,
         `node:${node.id}`,
         `node-instance:${nodeInstance.id}`
       ]
     });
     taskInputs.push({
-      id: randomUUID(),
+      id: workflowTaskId,
       tenantId: payload.tenantId,
       processInstanceId: payload.instanceId,
       nodeInstanceId: nodeInstance.id,

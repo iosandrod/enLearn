@@ -1,9 +1,14 @@
 <template>
   <div class="lc-array-table">
-    <div v-if="showToolbar" :class="['lc-array-table__toolbar', `is-${toolbarAlign}`]">
-      <vxe-button size="mini" status="primary" @click="addRow">
-        {{ addText }}
-      </vxe-button>
+    <div
+      v-if="showToolbar && toolbarButtonOptions.length"
+      :class="['lc-array-table__toolbar', `is-${toolbarAlign}`]"
+    >
+      <vxe-button-group
+        size="mini"
+        :options="toolbarButtonOptions"
+        @click="handleToolbarButtonClick"
+      />
     </div>
 
     <div class="lc-array-table__viewport">
@@ -188,6 +193,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import type { VxeButtonProps } from 'vxe-pc-ui';
 import type {
   LowCodeField,
   LowCodeFieldComponent,
@@ -212,6 +218,18 @@ type ArrayTableColumn = {
 };
 
 type ArrayTableValueMode = 'object' | 'primitive';
+
+type ArrayTableToolbarButton = VxeButtonProps & {
+  code: string | number;
+  label: string;
+  command?: string;
+  visible?: boolean;
+};
+
+type ArrayTableToolbarClickParams = {
+  name?: string | number;
+  option?: VxeButtonProps & Record<string, unknown>;
+};
 
 type RowActionPredicate = boolean | ((payload: Record<string, unknown>) => boolean);
 type RowActionText = string | ((payload: Record<string, unknown>) => string);
@@ -286,7 +304,14 @@ const treeEnabled = computed(() => Boolean(treeConfig.value));
 const treeChildrenField = computed(() =>
   readString(treeConfig.value?.childrenField, 'children')
 );
-const addText = computed(() => readString(fieldProps.value.addText, '新增'));
+const toolbarButtons = computed(() => readToolbarButtons(fieldProps.value.toolbarButtons));
+const toolbarButtonOptions = computed<VxeButtonProps[]>(() =>
+  toolbarButtons.value.map(({ code, label, command: _command, ...buttonProps }) => ({
+    ...buttonProps,
+    name: code,
+    content: buttonProps.content ?? label,
+  }))
+);
 const addChildText = computed(() => readString(fieldProps.value.addChildText, '新增子项'));
 const tableHeight = computed(() => readSize(fieldProps.value.height));
 const showToolbar = computed(() => fieldProps.value.showToolbar !== false);
@@ -417,8 +442,27 @@ function createDefaultRow() {
 }
 
 function addRow() {
-  rows.value.push(createDefaultRow());
+  const row = createDefaultRow();
+  rows.value.push(row);
   commitRows();
+  emitConfiguredEvent('onRowAdd', rowEventPayload(row));
+  return row;
+}
+
+function handleToolbarButtonClick(payload: ArrayTableToolbarClickParams) {
+  const clickedCode = payload.option?.name ?? payload.name;
+  const button = toolbarButtons.value.find((item) => item.code === clickedCode);
+  if (!button || button.disabled) return;
+
+  const row = button.command === 'add' ? addRow() : undefined;
+  emitConfiguredEvent('onToolbarAction', {
+    action: button,
+    actionCode: button.code,
+    command: button.command,
+    ...(row ? { row, index: getRowIndex(row) } : {}),
+    rows: rows.value,
+    field: props.field,
+  });
 }
 
 function addChildRow(parent: Record<string, unknown>) {
@@ -625,6 +669,40 @@ function getEmptyValue(column: ArrayTableColumn) {
 
 function readComponent(value: unknown): ArrayTableColumn['component'] {
   return typeof value === 'string' && value.trim() ? value.trim() : 'vxe-input';
+}
+
+function readToolbarButtons(value: unknown): ArrayTableToolbarButton[] {
+  const source = Array.isArray(value)
+    ? value
+    : [
+        {
+          code: 'add',
+          label: '新增',
+          command: 'add',
+          status: 'primary',
+        },
+      ];
+
+  return source
+    .filter(isRecord)
+    .filter((button) => button.visible !== false)
+    .map((button, index) => {
+      const code = readButtonCode(button.code ?? button.name, `toolbar_${index + 1}`);
+      const label = readString(button.label ?? button.content, String(code));
+      const command = readString(button.command);
+
+      return {
+        ...(button as VxeButtonProps),
+        code,
+        label,
+        ...(command ? { command } : {}),
+      };
+    });
+}
+
+function readButtonCode(value: unknown, fallback: string): string | number {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  return readString(value, fallback);
 }
 
 function readRowActions(value: unknown): ArrayTableRowAction[] {

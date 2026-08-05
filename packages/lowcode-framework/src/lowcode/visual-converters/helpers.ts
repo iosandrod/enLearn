@@ -172,7 +172,16 @@ function normalizeArrayTableProps(rawProps: Record<string, unknown>) {
   return {
     ...restProps,
     columns: normalizeArrayTableColumns(rawProps.columns),
-    addText: readString(rawProps.addText, '新增行'),
+    toolbarButtons: Array.isArray(rawProps.toolbarButtons)
+      ? cloneJson(rawProps.toolbarButtons)
+      : [
+          {
+            code: 'add',
+            label: '新增行',
+            command: 'add',
+            status: 'primary',
+          },
+        ],
     rowConfig: {
       ...rowConfig,
       keyField,

@@ -1992,6 +1992,7 @@ a {
   }
 
   .admin-top-actions {
+    width: 100%;
     flex-wrap: wrap;
     justify-content: flex-end;
     margin-left: auto;

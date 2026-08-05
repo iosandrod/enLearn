@@ -106,7 +106,7 @@ const fieldPropExcludeKeys = new Set<string>([
   'rowConfig.keyField',
   'rowKey',
   'defaultRow',
-  'addText',
+  'toolbarButtons',
   'showToolbar',
   'showActions',
   'toolbarAlign',
@@ -264,10 +264,6 @@ export default {
     __formHelp: createEditorInputProp({
       label: '帮助文本',
       defaultValue: '',
-    }),
-    addText: createEditorInputProp({
-      label: 'Add button text',
-      defaultValue: 'Add row',
     }),
     'rowConfig.keyField': createEditorInputProp({
       label: 'rowConfig.keyField',

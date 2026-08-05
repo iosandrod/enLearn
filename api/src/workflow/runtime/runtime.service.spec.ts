@@ -23,6 +23,7 @@ async function main() {
   await testTriggerFailureIsPreservedWhenFailureProjectionFails();
   await testTriggerSuccessStoresPersistentRunId();
   await testRunIsCanceledWhenRunIdProjectionFails();
+  await testTerminateInstanceCancelsTriggerRun();
   await testAddSignDoesNotFallBackWhenWaitpointCreationFails();
   await testApprovalRecordsWaitpointFailureWithoutContinuing();
   await testPreparedApprovalDoesNotCompleteWaitpointTwice();
@@ -132,6 +133,29 @@ async function testRunIsCanceledWhenRunIdProjectionFails() {
     /run projection failed/
   );
   assert.equal(canceledRunId, 'trigger-run-1');
+}
+
+async function testTerminateInstanceCancelsTriggerRun() {
+  const instance = createInstance();
+  instance.triggerRunId = 'trigger-run-terminate';
+  let canceledRunId: string | undefined;
+  const store = createStore({
+    closeInstance: async () => ({
+      instance: createInstanceDetail({ ...instance, status: 'terminated' }),
+      triggerRunId: instance.triggerRunId
+    })
+  });
+  const trigger = createTriggerClient({
+    cancelRun: async (runId) => {
+      canceledRunId = runId;
+    }
+  });
+  const service = new RuntimeService(createDefinitionService(), store, trigger);
+
+  const terminated = await service.terminateInstance(instance.id, { comment: 'stop' }, actor);
+
+  assert.equal(terminated.status, 'terminated');
+  assert.equal(canceledRunId, 'trigger-run-terminate');
 }
 
 async function testAddSignDoesNotFallBackWhenWaitpointCreationFails() {

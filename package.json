@@ -19,6 +19,8 @@
     "api:dev": "pnpm --dir api dev",
     "api:build": "pnpm --dir api build",
     "api:start": "pnpm --dir api start",
+    "backend:dev": "pnpm --dir api standalone:dev",
+    "backend:start": "pnpm --dir api standalone:start",
     "mobile:dev": "pnpm --dir mobile-app web:dev",
     "mobile:typecheck": "pnpm --dir mobile-app typecheck",
     "mobile:build": "pnpm --dir mobile-app hippy:build",

@@ -1,6 +1,7 @@
 param(
   [string]$ApiUrl = "http://localhost:3030",
-  [string]$EnvFile = ""
+  [string]$EnvFile = "",
+  [int]$MaxConcurrentRuns = 1000000
 )
 
 $ErrorActionPreference = "Stop"
@@ -147,7 +148,7 @@ $env:TRIGGER_ACCESS_TOKEN = $credentials.accessToken
 
 Info "Starting Trigger.dev worker: $ApiUrl"
 try {
-  & $triggerCli dev start -a $ApiUrl --env-file $workerEnvFile
+  & $triggerCli dev start -a $ApiUrl --env-file $workerEnvFile --max-concurrent-runs $MaxConcurrentRuns
 } finally {
   Remove-Item Env:TRIGGER_ACCESS_TOKEN -ErrorAction SilentlyContinue
   Remove-Item -LiteralPath $workerEnvFile -Force -ErrorAction SilentlyContinue

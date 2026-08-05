@@ -394,7 +394,14 @@ function createDesignerBlocks(): LowCodePageBlock[] {
                     span: 24,
                     props: {
                       height: 560,
-                      addText: '新增按钮',
+                      toolbarButtons: [
+                        {
+                          code: 'add',
+                          label: '新增按钮',
+                          command: 'add',
+                          status: 'primary',
+                        },
+                      ],
                       toolbarAlign: 'left',
                       rowKey: '__id',
                       preserveRowKey: true,

@@ -509,7 +509,11 @@ async function deleteSelectedFolder() {
     }).catch(() => false);
     return;
   }
-  if (!window.confirm(`确认删除文件夹「${selectedNodeLabel.value}」？`)) return;
+  const confirmResult = await VxeUI.modal.confirm({
+    title: '确认删除文件夹',
+    content: `确认删除文件夹「${selectedNodeLabel.value}」？`
+  });
+  if (confirmResult !== 'confirm') return;
 
   try {
     await filesApi.deleteFolder(selectedPrefix.value);
@@ -788,7 +792,11 @@ async function remove(file: FileObject) {
     }).catch(() => false);
     return;
   }
-  if (!window.confirm(`确认删除 ${file.originalName}？`)) return;
+  const confirmResult = await VxeUI.modal.confirm({
+    title: '确认删除文件',
+    content: `确认删除 ${file.originalName}？`
+  });
+  if (confirmResult !== 'confirm') return;
 
   try {
     await filesApi.remove(file.id);

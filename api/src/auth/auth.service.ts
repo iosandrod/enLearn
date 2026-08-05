@@ -1,8 +1,6 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
-  NotFoundException,
   UnauthorizedException
 } from '@nestjs/common';
 import type { AuthError, Provider, Session, User } from '@supabase/supabase-js';
@@ -11,11 +9,9 @@ import {
   clearUserAuthorizationCache,
   createSupabaseClient,
   getCurrentUser,
-  getUserAuthorization,
-  requireAdmin
+  getUserAuthorization
 } from '../common/utils/supabase';
 import type {
-  DevImpersonateAuthDto,
   EmailPasswordAuthDto,
   OAuthUrlDto,
   RefreshSessionDto,
@@ -225,76 +221,6 @@ export class AuthService {
     }
 
     return this.buildAuthResponse(data.user, data.session);
-  }
-
-  async impersonateDevUser(dto: DevImpersonateAuthDto, context: ServiceContext) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new NotFoundException('Route not found.');
-    }
-
-    const selected = await requireActiveAccount(context, dto.accountId);
-    await requireAdmin(selected.context, [
-      'workflow.definitions.manage',
-      'workflow.runtime.manage',
-      'admin.users.manage'
-    ]);
-
-    const admin = createSupabaseClient('admin', context);
-    const { data: membershipRows, error: membershipError } = await admin.rpc(
-      'account_user_ids',
-      { account_id: dto.accountId }
-    );
-    if (membershipError) {
-      throw new BadRequestException(membershipError.message);
-    }
-    const isAccountUser = (Array.isArray(membershipRows) ? membershipRows : []).some(
-      (membership: unknown) =>
-        typeof membership === 'string'
-          ? membership === dto.userId
-          : typeof membership === 'object' && membership !== null &&
-            String((membership as Record<string, unknown>).user_id ?? '') === dto.userId
-    );
-    if (!isAccountUser) {
-      throw new ForbiddenException('The selected test user does not belong to this account set.');
-    }
-
-    const { data: userResult, error: userError } = await admin.auth.admin.getUserById(dto.userId);
-    const targetUser = userResult.user;
-    if (userError || !targetUser?.email) {
-      throw new NotFoundException('The selected test user is unavailable for simulated login.');
-    }
-
-    const { data: linkResult, error: linkError } = await admin.auth.admin.generateLink({
-      type: 'magiclink',
-      email: targetUser.email
-    });
-    if (linkError || !linkResult.properties.hashed_token) {
-      throw new BadRequestException(linkError?.message ?? 'Could not create the simulated login token.');
-    }
-
-    const publicClient = createSupabaseClient('public');
-    const { data: sessionResult, error: sessionError } = await publicClient.auth.verifyOtp({
-      token_hash: linkResult.properties.hashed_token,
-      type: 'magiclink'
-    });
-    if (sessionError || !sessionResult.user || !sessionResult.session) {
-      throwAuthError(sessionError, 'Could not start the simulated login session.');
-    }
-    if (sessionResult.user.id !== dto.userId) {
-      throw new UnauthorizedException('Simulated login identity mismatch.');
-    }
-
-    const authorization = `Bearer ${sessionResult.session.access_token}`;
-    const selectedAccount = await this.selectAccount(
-      { accountId: dto.accountId },
-      { authorization, requestId: context.requestId }
-    );
-
-    return {
-      ...selectedAccount,
-      session: toPublicSession(sessionResult.session),
-      impersonated: true
-    };
   }
 
   async me(context: ServiceContext) {

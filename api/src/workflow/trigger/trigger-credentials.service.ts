@@ -93,6 +93,32 @@ export type TriggerEngineStatus = {
   selection: TriggerCredentials['selection'] | null;
 };
 
+export type TriggerWorkerStatus = {
+  activeWorkerCount: number;
+  environmentConcurrencyLimit: number | null;
+  workers: Array<{
+    id: string;
+    name: string;
+    resourceIdentifier: string;
+    lastHeartbeatAt: string;
+    lastDequeueAt?: string;
+  }>;
+};
+
+export type TriggerDatabaseRun = {
+  id: string;
+  status: string;
+  taskIdentifier: string;
+  tags: string[];
+  isQueued: boolean;
+  isExecuting: boolean;
+  isWaiting: boolean;
+  createdAt: string;
+  updatedAt: string;
+  startedAt?: string;
+  finishedAt?: string;
+};
+
 type CachedCredentials = {
   expiresAt: number;
   value: TriggerCredentials;
@@ -258,6 +284,146 @@ export class TriggerCredentialsService implements OnModuleDestroy {
     }
   }
 
+  async getWorkerStatus(environmentId: string): Promise<TriggerWorkerStatus> {
+    if (!this.pool) {
+      return {
+        activeWorkerCount: 0,
+        environmentConcurrencyLimit: null,
+        workers: []
+      };
+    }
+
+    return this.withTriggerClient(async (client) => {
+      const environment = await client.query<{ maximumConcurrencyLimit: number }>(
+        `select "maximumConcurrencyLimit"
+        from "RuntimeEnvironment"
+        where "id" = $1
+        limit 1`,
+        [environmentId]
+      );
+      const workers = await client.query<{
+        id: string;
+        name: string;
+        resourceIdentifier: string;
+        lastHeartbeatAt: Date;
+        lastDequeueAt: Date | null;
+      }>(
+        `select "id", "name", "resourceIdentifier", "lastHeartbeatAt", "lastDequeueAt"
+        from "WorkerInstance"
+        where "environmentId" = $1
+          and "lastHeartbeatAt" >= now() - interval '90 seconds'
+        order by "lastHeartbeatAt" desc`,
+        [environmentId]
+      );
+
+      return {
+        activeWorkerCount: workers.rows.length,
+        environmentConcurrencyLimit:
+          environment.rows[0]?.maximumConcurrencyLimit ?? null,
+        workers: workers.rows.map((worker) => ({
+          id: worker.id,
+          name: worker.name,
+          resourceIdentifier: worker.resourceIdentifier,
+          lastHeartbeatAt: worker.lastHeartbeatAt.toISOString(),
+          ...(worker.lastDequeueAt
+            ? { lastDequeueAt: worker.lastDequeueAt.toISOString() }
+            : {})
+        }))
+      };
+    });
+  }
+
+  async listRecentRuns(
+    environmentId: string,
+    taskIdentifiers: string[],
+    limit: number
+  ): Promise<TriggerDatabaseRun[]> {
+    if (!this.pool) return [];
+
+    return this.withTriggerClient(async (client) => {
+      const result = await client.query<{
+        friendlyId: string;
+        status: string;
+        taskIdentifier: string;
+        runTags: string[] | null;
+        createdAt: Date;
+        updatedAt: Date;
+        startedAt: Date | null;
+        completedAt: Date | null;
+      }>(
+        `select
+          "friendlyId", "status"::text, "taskIdentifier", "runTags",
+          "createdAt", "updatedAt", "startedAt", "completedAt"
+        from "TaskRun"
+        where "runtimeEnvironmentId" = $1
+          and "taskIdentifier" = any($2::text[])
+          and "createdAt" >= now() - interval '7 days'
+        order by "createdAt" desc
+        limit $3`,
+        [environmentId, taskIdentifiers, limit]
+      );
+
+      return result.rows.map((run) => {
+        const status = toTriggerApiRunStatus(run.status);
+        return {
+          id: run.friendlyId,
+          status,
+          taskIdentifier: run.taskIdentifier,
+          tags: run.runTags ?? [],
+          isQueued: ['PENDING_VERSION', 'QUEUED', 'DELAYED'].includes(status),
+          isExecuting: ['DEQUEUED', 'EXECUTING'].includes(status),
+          isWaiting: status === 'WAITING',
+          createdAt: run.createdAt.toISOString(),
+          updatedAt: run.updatedAt.toISOString(),
+          ...(run.startedAt ? { startedAt: run.startedAt.toISOString() } : {}),
+          ...(run.completedAt ? { finishedAt: run.completedAt.toISOString() } : {})
+        };
+      });
+    });
+  }
+
+  async getRun(environmentId: string, friendlyId: string): Promise<TriggerDatabaseRun | null> {
+    if (!this.pool) return null;
+
+    return this.withTriggerClient(async (client) => {
+      const result = await client.query<{
+        friendlyId: string;
+        status: string;
+        taskIdentifier: string;
+        runTags: string[] | null;
+        createdAt: Date;
+        updatedAt: Date;
+        startedAt: Date | null;
+        completedAt: Date | null;
+      }>(
+        `select
+          "friendlyId", "status"::text, "taskIdentifier", "runTags",
+          "createdAt", "updatedAt", "startedAt", "completedAt"
+        from "TaskRun"
+        where "runtimeEnvironmentId" = $1 and "friendlyId" = $2
+        limit 1`,
+        [environmentId, friendlyId]
+      );
+      const run = result.rows[0];
+      if (!run) return null;
+
+      const status = toTriggerApiRunStatus(run.status);
+      return {
+        id: run.friendlyId,
+        status,
+        taskIdentifier: run.taskIdentifier,
+        tags: run.runTags ?? [],
+        isQueued: ['PENDING_VERSION', 'QUEUED', 'DELAYED'].includes(status),
+        isExecuting: ['DEQUEUED', 'EXECUTING'].includes(status),
+        isWaiting: status === 'WAITING',
+        createdAt: run.createdAt.toISOString(),
+        updatedAt: run.updatedAt.toISOString(),
+        ...(run.startedAt ? { startedAt: run.startedAt.toISOString() } : {}),
+        ...(run.completedAt ? { finishedAt: run.completedAt.toISOString() } : {})
+      };
+    });
+  }
+
   async onModuleDestroy() {
     if (!this.externalPool) {
       await this.pool?.end();
@@ -311,6 +477,20 @@ export class TriggerCredentialsService implements OnModuleDestroy {
         await client.query('rollback').catch(() => undefined);
       }
       throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  private async withTriggerClient<T>(callback: (client: PoolClient) => Promise<T>) {
+    if (!this.pool) {
+      throw new Error('Trigger credential database is not configured.');
+    }
+
+    const client = await this.pool.connect();
+    try {
+      await setSearchPath(client, this.config.schema);
+      return await callback(client);
     } finally {
       client.release();
     }
@@ -801,4 +981,18 @@ function positiveInteger(value: string | undefined, fallback: number) {
 
 function trimTrailingSlash(value: string) {
   return value.replace(/\/+$/, '');
+}
+
+function toTriggerApiRunStatus(status: string) {
+  const statuses: Record<string, string> = {
+    PENDING: 'QUEUED',
+    WAITING_FOR_DEPLOY: 'PENDING_VERSION',
+    WAITING_TO_RESUME: 'WAITING',
+    RETRYING_AFTER_FAILURE: 'EXECUTING',
+    PAUSED: 'WAITING',
+    COMPLETED_SUCCESSFULLY: 'COMPLETED',
+    COMPLETED_WITH_ERRORS: 'FAILED',
+    INTERRUPTED: 'CANCELED'
+  };
+  return statuses[status] ?? status;
 }

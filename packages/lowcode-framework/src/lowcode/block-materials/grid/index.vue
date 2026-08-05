@@ -174,11 +174,19 @@ function handleCellDblclick(payload: {
 }
 
 function handleGridEvent(payload: GridRuntimeEventPayload) {
-  if (!shouldPublishDesignedGridEvent(payload.key)) return;
+  if (shouldPublishDesignedGridEvent(payload.key)) {
+    emitRuntimeEvent(getGridEventName(payload.key, `grid.${payload.key}`), {
+      ...payload,
+      directives: getGridEventDirectives(payload.key),
+    });
+  }
 
-  emitRuntimeEvent(getGridEventName(payload.key, `grid.${payload.key}`), {
-    ...payload,
-    directives: getGridEventDirectives(payload.key),
-  });
+  if (
+    payload.key === 'bodyMenuClick' &&
+    payload.actionCode === 'editCurrentRow' &&
+    payload.row
+  ) {
+    emit('gridEdit', { block: props.block, row: payload.row });
+  }
 }
 </script>

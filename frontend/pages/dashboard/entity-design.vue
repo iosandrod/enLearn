@@ -204,6 +204,7 @@ import {
   type NodeMouseEvent
 } from '@vue-flow/core';
 import { h, type Ref } from 'vue';
+import { VxeUI } from 'vxe-pc-ui';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import { LowCodeForm, LcVxeModalRenderer, type LcVxeModalConfig } from '@enlearn/lowcode-framework';
@@ -1382,10 +1383,11 @@ async function saveTable(values: FormValues) {
 
 async function deleteSelectedTable() {
   if (!selectedTable.value) return;
-  const confirmed = window.confirm(
-    `删除实体 ${selectedTable.value.full_name}？默认只删除 metadata，不删除真实表。`
-  );
-  if (!confirmed) return;
+  const confirmResult = await VxeUI.modal.confirm({
+    title: '确认删除实体',
+    content: `删除实体 ${selectedTable.value.full_name}？默认只删除 metadata，不删除真实表。`
+  });
+  if (confirmResult !== 'confirm') return;
   savingTable.value = true;
   try {
     await serviceApi.invoke('entityDesign', 'deleteTable', {
@@ -1464,8 +1466,11 @@ async function saveColumnRows(values: FormValues) {
 
 async function deleteColumnByName(columnName: string) {
   if (!selectedTable.value || !columnName) return false;
-  const confirmed = window.confirm(`删除列 ${columnName}？真实列会同步 DROP COLUMN。`);
-  if (!confirmed) return false;
+  const confirmResult = await VxeUI.modal.confirm({
+    title: '确认删除列',
+    content: `删除列 ${columnName}？真实列会同步 DROP COLUMN。`
+  });
+  if (confirmResult !== 'confirm') return false;
   await serviceApi.invoke('entityDesign', 'deleteColumn', {
     tableId: selectedTable.value.id,
     columnName,

@@ -193,7 +193,14 @@ export const entityColumnsTableFormSchema: LowCodeFormSchema = {
       component: 'lc-array-table',
       help: '在表格中维护字段集合；点击画布字段或编辑表格行时，下方单列表单会同步绑定当前字段。',
       props: {
-        addText: '新增列',
+        toolbarButtons: [
+          {
+            code: 'add',
+            label: '新增列',
+            command: 'add',
+            status: 'primary',
+          },
+        ],
         rowKey: 'columnName',
         defaultRow: {
           id: '',

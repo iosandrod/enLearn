@@ -59,18 +59,6 @@ export class SetSessionDto {
   expiresAt?: number;
 }
 
-export class DevImpersonateAuthDto {
-  @IsString()
-  @IsNotEmpty()
-  @IsUUID()
-  userId!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @IsUUID()
-  accountId!: string;
-}
-
 export class SelectAccountDto {
   @IsString()
   @IsNotEmpty()

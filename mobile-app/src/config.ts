@@ -8,7 +8,7 @@ export type MobileRuntimeConfig = {
 };
 
 type InitProps = Partial<MobileRuntimeConfig> & {
-  superProps?: Partial<MobileRuntimeConfig>;
+  superProps?: Partial<MobileRuntimeConfig> & { path?: string };
 };
 
 const buildConfig: MobileRuntimeConfig = {

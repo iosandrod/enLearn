@@ -56,7 +56,8 @@ app.$start().then(async ({ superProps }) => {
     );
   }
   const pageCode = getRuntimeConfig().pageCode;
-  router.push(pageCode ? `/page/${encodeURIComponent(pageCode)}` : '/');
+  const initialPath = typeof superProps?.path === 'string' ? superProps.path.trim() : '';
+  router.push(initialPath || (pageCode ? `/page/${encodeURIComponent(pageCode)}` : '/'));
 
   BackAndroid.addListener(() => {
     if (router.currentRoute.value.path !== '/') {

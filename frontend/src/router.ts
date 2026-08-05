@@ -34,6 +34,7 @@ const dashboardRoutes: RouteRecordRaw[] = [
   { path: '/dashboard/low-code/designer/:code?', component: () => import('../pages/dashboard/low-code/designer/[code].vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/workflow/designer/:code?', component: () => import('../pages/dashboard/workflow/designer.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/workflow/tasks/:taskId', component: () => import('../pages/dashboard/workflow/tasks/[taskId].vue'), meta: dashboardRouteMeta },
+  { path: '/dashboard/approval/console', component: () => import('../pages/dashboard/approval/console.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/entity-design', component: () => import('../pages/dashboard/entity-design.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/files', component: () => import('../pages/dashboard/files.vue'), meta: dashboardCachedRouteMeta },
   {

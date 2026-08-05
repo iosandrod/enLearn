@@ -19,6 +19,13 @@ const pageGridMenuSource = await readFile(
   ),
   'utf8'
 );
+const pageRendererSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue',
+    import.meta.url
+  ),
+  'utf8'
+);
 
 assert.match(
   gridSource,
@@ -80,6 +87,16 @@ assert.match(
   pageGridSource,
   /'headerMenuClick'[\s\S]*'bodyMenuClick'/,
   'Page grid menu clicks must be published even when the page configures other grid events.'
+);
+assert.match(
+  pageGridSource,
+  /payload\.key === 'bodyMenuClick'[\s\S]*payload\.actionCode === 'editCurrentRow'[\s\S]*emit\('gridEdit', \{ block: props\.block, row: payload\.row \}\)/,
+  'Editing the current row from the body context menu must enter the grid edit flow.'
+);
+assert.match(
+  pageRendererSource,
+  /async function handleGridEdit\([\s\S]*resolveLinkedEditPageRoute\(block, row\)[\s\S]*host\.getRouter\(\)\.push\(linkedEditRoute\)/,
+  'The grid edit flow must navigate to the linked edit page.'
 );
 
 console.log('LowCodeGrid header context menu regression test passed.');

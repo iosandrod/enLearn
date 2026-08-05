@@ -177,6 +177,11 @@ export type LowCodeGridSchema = {
     grid: Record<string, unknown> & {
         columns?: LowCodeGridColumn[];
         rowConfig?: Record<string, unknown>;
+        mobileDisplay?: 'table' | 'card';
+        rowHeight?: number;
+        headerHeight?: number;
+        overscanRowCount?: number;
+        overscanColumnCount?: number;
     };
     rowActions?: {
         edit?: boolean;

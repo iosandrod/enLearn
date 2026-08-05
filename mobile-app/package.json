@@ -12,7 +12,8 @@
     "hippy:build": "pnpm hippy:vendor && node ./scripts/env-polyfill.js webpack --config ./scripts/hippy-webpack.ios.js --config ./scripts/hippy-webpack.android.js",
     "web:dev": "concurrently --kill-others-on-fail --names hippy,web --prefix-colors magenta,cyan \"pnpm hippy:dev\" \"node ./scripts/env-polyfill.js webpack serve --config ./scripts/hippy-webpack.web-renderer.dev.js\"",
     "web:build": "node ./scripts/env-polyfill.js webpack --config ./scripts/hippy-webpack.web-renderer.js",
-    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "test:virtual-table": "node ./tests/virtual-table-regression.mjs"
   },
   "dependencies": {
     "@hippy/vue-next": "3.3.2",

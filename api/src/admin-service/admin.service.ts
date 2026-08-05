@@ -144,8 +144,8 @@ export class AdminService extends BaseService {
     postData: Record<string, unknown>,
     context: ServiceContext
   ) {
-    if (method === 'listApprovalTestUsers') {
-      return this.listApprovalTestUsers(context);
+    if (method === 'listAccountLoginUsers') {
+      return this.listAccountLoginUsers(context);
     }
 
     return super.executeAction(method, postData, context);
@@ -345,12 +345,12 @@ export class AdminService extends BaseService {
         defaults: { source_type: 'dict', status: 'active', sort_order: 0, is_system: false },
         list: { defaultSorts: [{ field: 'sort_order', direction: 'asc' }] },
         create: {
-          allowedFields: ['code', 'name', 'description', 'source_type', 'source_config', 'status', 'sort_order', 'is_system'],
+          allowedFields: ['code', 'name', 'description', 'source_type', 'source_config', 'cache_ttl_seconds', 'status', 'sort_order', 'is_system'],
           requiredFields: ['code', 'name'],
           userFields: { createdBy: 'created_by', updatedBy: 'updated_by' }
         },
         update: {
-          allowedFields: ['code', 'name', 'description', 'source_type', 'source_config', 'status', 'sort_order', 'is_system'],
+          allowedFields: ['code', 'name', 'description', 'source_type', 'source_config', 'cache_ttl_seconds', 'status', 'sort_order', 'is_system'],
           requiredFields: ['code', 'name'],
           userFields: { updatedBy: 'updated_by' }
         }
@@ -535,9 +535,12 @@ export class AdminService extends BaseService {
         beforeDelete: [this.resolveCodeDeleteId]
       },
       system_option_sources: {
+        afterList: [this.attachOptionSourceConfigJson],
         beforeCreate: [this.normalizeOptionSourcePayload],
         beforeUpdate: [this.normalizeOptionSourcePayload],
-        beforeDelete: [this.resolveOptionSourceDeleteId, this.preventDeleteSystemOptionSource]
+        beforeDelete: [this.resolveOptionSourceDeleteId, this.preventDeleteSystemOptionSource],
+        afterCreate: [this.attachOptionSourceConfigJson],
+        afterUpdate: [this.attachOptionSourceConfigJson]
       },
       system_option_items: {
         beforeCreate: [this.normalizeOptionItemPayload, this.assertDictOptionSource],
@@ -553,11 +556,8 @@ export class AdminService extends BaseService {
     return { list: permission, create: permission, update: permission, delete: permission };
   }
 
-  private async listApprovalTestUsers(context: ServiceContext) {
-    const { client } = await requireAdmin(context, [
-      'workflow.definitions.manage',
-      'admin.users.manage'
-    ]);
+  private async listAccountLoginUsers(context: ServiceContext) {
+    const { client } = await requireAdmin(context);
     const { data: permissionRows, error: permissionRowsError } = await client.rpc(
       'get_admin_user_permission_rows'
     );
@@ -798,5 +798,21 @@ export class AdminService extends BaseService {
     const row = ctx.result as Record<string, unknown> | undefined;
     if (!row) return;
     ctx.result = { ...row, metadata_json: toPrettyJson(row.metadata ?? {}) };
+  };
+
+  private attachOptionSourceConfigJson = (ctx: HookContext) => {
+    const attachConfig = (row: Record<string, unknown>) => ({
+      ...row,
+      source_config_json: toPrettyJson(row.source_config ?? {})
+    });
+
+    if (Array.isArray(ctx.result)) {
+      ctx.result = ctx.result.map((row) => isRecord(row) ? attachConfig(row) : row);
+      return;
+    }
+
+    if (isRecord(ctx.result)) {
+      ctx.result = attachConfig(ctx.result);
+    }
   };
 }

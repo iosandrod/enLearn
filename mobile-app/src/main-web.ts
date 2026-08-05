@@ -14,6 +14,7 @@ async function startWebPreview() {
     ?? query.get('code')
     ?? ''
   ).trim();
+  const queryPath = (query.get('path') ?? '/').trim() || '/';
   const runtimeConfig = {
     ...getRuntimeConfig(),
     ...getWebPreviewConfig(),
@@ -32,7 +33,7 @@ async function startWebPreview() {
     id: 'app',
     name: 'EnLearnMobile',
     params: {
-      path: '/',
+      path: queryPath,
       ...runtimeConfig,
     },
   });

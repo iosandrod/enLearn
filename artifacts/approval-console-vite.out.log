@@ -1,0 +1,42 @@
+
+  [32m[1mVITE[22m v8.1.5[39m  [2mready in [0m[1m893[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3010[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.0.12.5:[1m3010[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://100.65.207.11:[1m3010[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.17.176.1:[1m3010[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.137.1:[1m3010[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.36:[1m3010[22m/[39m
+[2m06:36:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/visual-editor/components/button-group-designer/button-group-designer.service.tsx[22m
+[2m06:36:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[2m06:36:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/helpers.ts[22m
+[2m06:36:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[2m06:37:04[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m06:37:21[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/array-table/index.tsx[22m
+[2m06:37:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
+[2m06:37:53[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx[22m
+[2m06:38:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m06:38:30[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m06:38:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/helpers.ts[22m
+[2m06:38:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m06:38:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/visual-editor/components/simulator-editor/simulator-editor.vue[22m
+[2m06:38:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[2m06:38:58[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
+[2m06:39:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/lowcode/visual-converters/helpers.ts[22m
+[2m06:39:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
+[2m06:39:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
+[2m06:39:33[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[2m06:39:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m06:40:16[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m06:40:43[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m06:41:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
+[2m06:41:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m06:41:55[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2m.codex-build-check/index.html[22m
+[2m06:42:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2m.codex-build-check/index.html[22m
+[2m06:42:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
+[2m06:42:38[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m06:43:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m06:44:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue[22m
+[2m06:44:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx[22m
+[2m06:44:53[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m12:05:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m

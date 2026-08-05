@@ -414,7 +414,9 @@ function createFieldBlock(field: FormDesignerField, index: number) {
 
     block.props.__lowcodeComponent = 'lc-array-table';
     block.props.columns = normalizeArrayTableColumns(fieldProps.columns);
-    block.props.addText = readString(fieldProps.addText, '新增行');
+    block.props.toolbarButtons = Array.isArray(fieldProps.toolbarButtons)
+      ? cloneDeep(fieldProps.toolbarButtons)
+      : [{ code: 'add', label: '新增行', command: 'add', status: 'primary' }];
     block.props.rowConfig = readArrayTableRowConfig(fieldProps);
 
     if (isRecord(fieldProps.defaultRow)) {
@@ -573,7 +575,9 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
 
     result.props = {
       columns: normalizeArrayTableColumns(props.columns),
-      addText: readString(props.addText, '新增行'),
+      toolbarButtons: Array.isArray(props.toolbarButtons)
+        ? cloneDeep(props.toolbarButtons)
+        : [{ code: 'add', label: '新增行', command: 'add', status: 'primary' }],
       rowConfig: readArrayTableRowConfig(props),
       ...(isRecord(props.defaultRow) ? { defaultRow: cloneDeep(props.defaultRow) } : {}),
     };

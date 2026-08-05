@@ -77,6 +77,7 @@ import {
   GlobalDialogHost,
   type LowCodePageRecord
 } from '@enlearn/lowcode-framework/runtime';
+import { VxeUI } from 'vxe-pc-ui';
 import TldrawVue, {
   defineVueEditorPlugin,
   type Editor,
@@ -290,7 +291,13 @@ async function createBlankTemplate() {
   if (!editor) return;
 
   const shapeIds = editor.getCurrentPageShapeIdsSorted();
-  if (templateDirty.value && !window.confirm('新建模板会放弃当前未保存的修改，是否继续？')) return;
+  if (templateDirty.value) {
+    const confirmResult = await VxeUI.modal.confirm({
+      title: '新建模板',
+      content: '新建模板会放弃当前未保存的修改，是否继续？'
+    });
+    if (confirmResult !== 'confirm') return;
+  }
 
   suppressDirtyTracking = true;
   try {
@@ -476,8 +483,11 @@ async function loadTemplate(template: PrintTemplateRecord, options: { confirmRep
 
   const shapeIds = editor.getCurrentPageShapeIdsSorted();
   if ((options.confirmReplace ?? true) && templateDirty.value) {
-    const confirmed = window.confirm(`加载“${template.name}”会放弃当前未保存的修改，是否继续？`);
-    if (!confirmed) return;
+    const confirmResult = await VxeUI.modal.confirm({
+      title: '加载模板',
+      content: `加载“${template.name}”会放弃当前未保存的修改，是否继续？`
+    });
+    if (confirmResult !== 'confirm') return;
   }
 
   try {

@@ -25,6 +25,7 @@ const DEV_AUTO_LOGIN_CREDENTIALS = {
   email: 'admin',
   password: '123456'
 } as const;
+const TEST_USER_PASSWORD = '123456';
 const ADMIN_LOGIN_ALIAS = 'admin';
 const ADMIN_LOGIN_EMAIL = '1151685410@qq.com';
 const DEV_TEST_USER_KEY = 'enlearn_dev_test_user';
@@ -32,10 +33,8 @@ const ACCESS_TOKEN_KEY = 'enlearn_access_token';
 const REFRESH_TOKEN_KEY = 'enlearn_refresh_token';
 const ACTIVE_ACCOUNT_KEY = 'enlearn_active_account_id';
 const DEV_AUTO_LOGIN_DISABLED_KEY = 'enlearn_dev_auto_login_disabled';
-const DEV_IMPERSONATOR_REFRESH_TOKEN_KEY = 'enlearn_dev_impersonator_refresh_token';
 
 let initPromise: Promise<void> | null = null;
-let devImpersonatorSessionPromise: Promise<string> | null = null;
 
 function shouldUseDevAutoLogin() {
   if (!import.meta.env.DEV) return false;
@@ -72,22 +71,6 @@ function persistAuthTokens(payload: AppAuthPayload) {
   } else {
     window.localStorage.removeItem(REFRESH_TOKEN_KEY);
   }
-}
-
-function persistDevImpersonatorTokens(payload: AppAuthPayload) {
-  if (import.meta.server || !import.meta.env.DEV) return '';
-  const { accessToken, refreshToken } = readSessionTokens(payload);
-  if (!accessToken) return '';
-
-  if (refreshToken) {
-    window.sessionStorage.setItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY, refreshToken);
-  }
-  return accessToken;
-}
-
-function clearDevImpersonatorTokens() {
-  if (import.meta.server) return;
-  window.sessionStorage.removeItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY);
 }
 
 function readAuthErrorMessage(payload: unknown, fallback: string) {
@@ -437,7 +420,6 @@ export function useAuth() {
     setDefault?: boolean;
   }, options: { devAutoLogin?: boolean } = {}) {
     if (options.devAutoLogin) enableDevAutoLogin();
-    clearDevImpersonatorTokens();
     const payload = await postAuthJson<AppAuthPayload>('/auth/signin', {
       ...credentials,
       email: normalizeLoginEmail(credentials.email)
@@ -533,46 +515,15 @@ export function useAuth() {
     window.localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
   }
 
-  async function getDevImpersonatorAccessToken() {
-    if (import.meta.server || !shouldUseDevAutoLogin()) return '';
-
-    const savedRefreshToken = window.sessionStorage.getItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY) ?? '';
-    if (savedRefreshToken) {
-      if (!devImpersonatorSessionPromise) {
-        devImpersonatorSessionPromise = postAuthJson<AppAuthPayload>('/auth/refresh', {
-          refreshToken: savedRefreshToken
-        })
-          .then(persistDevImpersonatorTokens)
-          .catch(() => {
-            clearDevImpersonatorTokens();
-            return '';
-          })
-          .finally(() => {
-            devImpersonatorSessionPromise = null;
-          });
-      }
-
-      const refreshedAccessToken = await devImpersonatorSessionPromise;
-      if (refreshedAccessToken) return refreshedAccessToken;
-    }
-
-    const currentAccessToken = window.localStorage.getItem(ACCESS_TOKEN_KEY) ?? '';
-    const currentRefreshToken = window.localStorage.getItem(REFRESH_TOKEN_KEY) ?? '';
-    if (currentAccessToken && currentRefreshToken) {
-      window.sessionStorage.setItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY, currentRefreshToken);
-    }
-    return currentAccessToken;
-  }
-
   async function loadDevTestUsers() {
     if (!shouldUseDevAutoLogin()) return [] as DevTestUser[];
     const accountId = activeAccount.value?.account_id;
-    const authorization = await getDevImpersonatorAccessToken();
+    const authorization = window.localStorage.getItem(ACCESS_TOKEN_KEY) ?? '';
     if (!accountId || !authorization) return [] as DevTestUser[];
 
     const rows = await invokeDevService<AdminUserRow[]>(
       'admin',
-      'listApprovalTestUsers',
+      'listAccountLoginUsers',
       {},
       { authorization, accountId }
     );
@@ -593,25 +544,24 @@ export function useAuth() {
       return false;
     }
 
-    const authorization = await getDevImpersonatorAccessToken();
-    if (!authorization) {
+    if (!testUser.email || testUser.email.endsWith('@local')) {
       throw createError({
-        statusCode: 401,
-        statusMessage: '模拟登录凭据已失效，请重新登录管理员账号。'
+        statusCode: 400,
+        statusMessage: '该测试用户没有可用于登录的邮箱。'
       });
     }
 
-    if (!window.sessionStorage.getItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY)) {
-      const currentRefreshToken = window.localStorage.getItem(REFRESH_TOKEN_KEY) ?? '';
-      if (currentRefreshToken) {
-        window.sessionStorage.setItem(DEV_IMPERSONATOR_REFRESH_TOKEN_KEY, currentRefreshToken);
-      }
-    }
-
-    const payload = await postAuthJson<AppAuthPayload>('/auth/dev-impersonate', {
-      userId: testUser.id,
+    const payload = await postAuthJson<AppAuthPayload>('/auth/signin', {
+      email: testUser.email,
+      password: TEST_USER_PASSWORD,
       accountId
-    }, { authorization, accountId });
+    });
+    if (payload.user?.id !== testUser.id) {
+      throw createError({
+        statusCode: 401,
+        statusMessage: '登录结果与所选测试用户不一致。'
+      });
+    }
     persistAuthTokens(payload);
     applyAuthPayload(payload);
     window.localStorage.setItem(DEV_TEST_USER_KEY, testUser.id);
@@ -646,7 +596,6 @@ export function useAuth() {
   async function signOut() {
     disableDevAutoLogin();
     await $fetch('/api/auth/signout', { method: 'POST' });
-    clearDevImpersonatorTokens();
     window.localStorage.removeItem(DEV_TEST_USER_KEY);
     window.localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
     activeDevTestUserId.value = '';

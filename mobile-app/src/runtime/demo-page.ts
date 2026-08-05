@@ -19,11 +19,16 @@ export function createDemoPage(): MobilePageRecord {
     created_at: now,
     updated_at: now,
     resolvedData: {
-      approvals: [
-        { id: '1', title: '采购申请 #A-1048', owner: '赵明', status: '待审批', amount: '¥ 12,800' },
-        { id: '2', title: '差旅报销 #E-2207', owner: '林然', status: '待补充', amount: '¥ 3,460' },
-        { id: '3', title: '合同用印 #C-0182', owner: '陈杰', status: '已通过', amount: '华东合作协议' },
-      ],
+      approvals: Array.from({ length: 1000 }, (_, index) => ({
+        id: String(index + 1),
+        title: `业务申请 #A-${String(index + 1048).padStart(4, '0')}`,
+        owner: ['赵明', '林然', '陈杰', '周宁'][index % 4],
+        department: ['采购部', '财务部', '法务部', '运营部'][index % 4],
+        category: ['采购申请', '差旅报销', '合同用印', '付款申请'][index % 4],
+        status: ['待审批', '待补充', '已通过', '已驳回'][index % 4],
+        amount: (index + 1) * 128.5,
+        createdAt: `2026-08-${String(index % 28 + 1).padStart(2, '0')}`,
+      })),
     },
     schema: {
       schemaVersion: 1,
@@ -63,11 +68,28 @@ export function createDemoPage(): MobilePageRecord {
           sourceKey: 'approvals',
           schema: {
             grid: {
+              height: 420,
+              rowHeight: 48,
+              headerHeight: 44,
+              overscanRowCount: 6,
+              overscanColumnCount: 1,
+              rowConfig: { keyField: 'id', isCurrent: true },
               columns: [
-                { field: 'title', title: '申请' },
-                { field: 'owner', title: '发起人' },
-                { field: 'status', title: '状态' },
-                { field: 'amount', title: '金额/说明' },
+                { type: 'seq', title: '序号', width: 48, align: 'center' },
+                { field: 'title', title: '申请', width: 110, fixed: 'left', sortable: true },
+                { field: 'owner', title: '发起人', width: 100, sortable: true },
+                { field: 'department', title: '部门', width: 110 },
+                { field: 'category', title: '类型', width: 120 },
+                { field: 'status', title: '状态', width: 100, align: 'center' },
+                {
+                  field: 'amount',
+                  title: '金额',
+                  width: 130,
+                  align: 'right',
+                  sortable: true,
+                  formatter: { type: 'currency', currency: 'CNY' },
+                },
+                { field: 'createdAt', title: '申请日期', width: 120, sortable: true },
               ],
             },
             rowActions: {

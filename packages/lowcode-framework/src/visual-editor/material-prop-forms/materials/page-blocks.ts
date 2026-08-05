@@ -111,6 +111,17 @@ const placementOptions = [
   option('左侧', 'left'),
 ];
 
+function createAddToolbarButtons(label: string) {
+  return [
+    {
+      code: 'add',
+      label,
+      command: 'add',
+      status: 'primary' as const,
+    },
+  ];
+}
+
 const fieldColumns = [
   { field: 'field', title: '字段', minWidth: 110, placeholder: 'email' },
   { field: 'label', title: '标签', minWidth: 110, placeholder: '邮箱' },
@@ -274,7 +285,7 @@ export default defineMaterialPropForms([
         path: 'columns',
         label: '表格列',
         defaultValue: gridColumnRows,
-        addText: '新增列',
+        toolbarButtons: createAddToolbarButtons('新增列'),
         rowKey: 'field',
         defaultRow: {
           field: 'field{{index}}',
@@ -368,7 +379,7 @@ export default defineMaterialPropForms([
         path: 'gridEvents',
         label: 'VxeGrid 事件',
         defaultValue: [],
-        addText: '新增事件',
+        toolbarButtons: createAddToolbarButtons('新增事件'),
         rowKey: 'key',
         defaultRow: {
           key: 'row-click',
@@ -394,7 +405,7 @@ export default defineMaterialPropForms([
         path: 'rowActions',
         label: '行按钮',
         defaultValue: [],
-        addText: '新增行按钮',
+        toolbarButtons: createAddToolbarButtons('新增行按钮'),
         rowKey: 'code',
         defaultRow: {
           code: 'rowAction{{index}}',
@@ -423,7 +434,7 @@ export default defineMaterialPropForms([
         path: 'buttons',
         label: '按钮配置',
         defaultValue: buttonRows,
-        addText: '新增按钮',
+        toolbarButtons: createAddToolbarButtons('新增按钮'),
         rowKey: 'code',
         defaultRow: {
           code: 'button{{index}}',
@@ -456,7 +467,7 @@ export default defineMaterialPropForms([
         path: 'fields',
         label: '查询字段',
         defaultValue: [],
-        addText: '新增字段',
+        toolbarButtons: createAddToolbarButtons('新增字段'),
         rowKey: 'field',
         defaultRow: fieldDefaultRow,
         columns: fieldColumns,
@@ -482,7 +493,7 @@ export default defineMaterialPropForms([
         path: 'fields',
         label: '表单字段',
         defaultValue: [],
-        addText: '新增字段',
+        toolbarButtons: createAddToolbarButtons('新增字段'),
         rowKey: 'field',
         defaultRow: fieldDefaultRow,
         columns: fieldColumns,
@@ -492,7 +503,7 @@ export default defineMaterialPropForms([
         path: 'formActions',
         label: '表单按钮',
         defaultValue: formActionRows,
-        addText: '新增按钮',
+        toolbarButtons: createAddToolbarButtons('新增按钮'),
         rowKey: 'code',
         defaultRow: {
           code: 'action{{index}}',
@@ -527,7 +538,7 @@ export default defineMaterialPropForms([
         path: 'fields',
         label: '表单字段',
         defaultValue: [],
-        addText: '新增字段',
+        toolbarButtons: createAddToolbarButtons('新增字段'),
         rowKey: 'field',
         defaultRow: fieldDefaultRow,
         columns: fieldColumns,
@@ -537,7 +548,7 @@ export default defineMaterialPropForms([
         path: 'formActions',
         label: '表单按钮',
         defaultValue: formActionRows,
-        addText: '新增按钮',
+        toolbarButtons: createAddToolbarButtons('新增按钮'),
         rowKey: 'code',
         defaultRow: {
           code: 'action{{index}}',
@@ -556,7 +567,7 @@ export default defineMaterialPropForms([
         path: 'slots.default.children',
         label: '默认插槽节点',
         defaultValue: [],
-        addText: '新增节点',
+        toolbarButtons: createAddToolbarButtons('新增节点'),
         rowKey: 'value',
         defaultRow: {
           label: '节点 {{index}}',
@@ -581,7 +592,7 @@ export default defineMaterialPropForms([
         path: 'panes',
         label: 'TabPane 操作表格',
         defaultValue: tabPaneRows,
-        addText: '新增页签',
+        toolbarButtons: createAddToolbarButtons('新增页签'),
         rowKey: 'name',
         defaultRow: {
           title: '页签 {{index}}',

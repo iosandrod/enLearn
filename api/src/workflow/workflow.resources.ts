@@ -6,6 +6,7 @@ function crudPermissions(permission: string) {
 
 const definitionPermissions = crudPermissions('workflow.definitions.manage');
 const runtimePermissions = crudPermissions('workflow.runtime.manage');
+const runtimeReadPermissions = { list: 'workflow.runtime.manage' };
 
 export const workflowResources: ResourceConfigMap = {
   wf_model: {
@@ -119,6 +120,30 @@ export const workflowResources: ResourceConfigMap = {
       timestamp: false
     },
     delete: {}
+  },
+  wf_node_instance: {
+    tableName: 'wf_node_instance',
+    clientMode: 'user',
+    permissions: runtimeReadPermissions,
+    list: {
+      defaultSorts: [
+        { field: 'started_at', direction: 'asc', nulls: 'last' },
+        { field: 'id', direction: 'asc' }
+      ],
+      defaultPageSize: 200,
+      maxPageSize: 1000
+    }
+  },
+  wf_task: {
+    tableName: 'wf_task',
+    clientMode: 'user',
+    accountField: 'tenant_id',
+    permissions: runtimeReadPermissions,
+    list: {
+      defaultSorts: [{ field: 'created_at', direction: 'asc' }],
+      defaultPageSize: 200,
+      maxPageSize: 1000
+    }
   },
   wf_job: {
     tableName: 'wf_job',

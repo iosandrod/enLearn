@@ -325,7 +325,9 @@ function createTableMaterialField(
     valueKind: 'raw',
     defaultValue: propConfig.defaultValue ?? [],
     props: {
-      addText: '新增',
+      toolbarButtons: [
+        { code: 'add', label: '新增', command: 'add', status: 'primary' },
+      ],
       rowKey: propConfig.table?.showKey || inferRowKey(columns),
       defaultRow: createDefaultRow(columns),
       columns,
@@ -356,7 +358,9 @@ function createCrossSortableMaterialField(
     valueKind: 'raw',
     defaultValue,
     props: {
-      addText: '新增',
+      toolbarButtons: [
+        { code: 'add', label: '新增', command: 'add', status: 'primary' },
+      ],
       rowKey: primitiveMode ? '__rowKey' : inferRowKey(columns),
       defaultRow: createDefaultRow(columns),
       ...(primitiveMode ? { valueMode: 'primitive', valueField: 'value' } : {}),

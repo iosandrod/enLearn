@@ -2,7 +2,7 @@ import MobileActionGroup from './mobile-action-group.vue';
 import MobileContainer from './mobile-container.vue';
 import MobileDetail from './mobile-detail.vue';
 import MobileForm from './mobile-form.vue';
-import MobileList from './mobile-list.vue';
+import MobileGrid from './mobile-grid.vue';
 import MobileSection from './mobile-section.vue';
 import MobileStatCard from './mobile-stat-card.vue';
 import MobileTabs from './mobile-tabs.vue';
@@ -21,7 +21,7 @@ export function registerDefaultMobileMaterials() {
     { type: 'section', component: MobileSection },
     { type: 'form', component: MobileForm },
     { type: 'searchForm', component: MobileForm },
-    { type: 'grid', component: MobileList },
+    { type: 'grid', component: MobileGrid },
     { type: 'detail', component: MobileDetail },
     { type: 'statCard', component: MobileStatCard },
     { type: 'tabs', component: MobileTabs },

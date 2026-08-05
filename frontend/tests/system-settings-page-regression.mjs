@@ -114,6 +114,11 @@ assert.match(
   'The dashboard layout must provide a global dialog host.'
 );
 assert.match(
+  dashboardLayoutSource,
+  /findGlobalDialog\(SYSTEM_SETTINGS_DIALOG_ID\)/,
+  'Repeated topbar clicks must not open duplicate system settings dialogs.'
+);
+assert.match(
   dialogHostSource,
   /registerGlobalDialogHost\(\)[\s\S]*isActiveGlobalDialogHost\(host\.hostId\)/,
   'Nested low-code renderers must not render duplicate global dialogs.'

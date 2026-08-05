@@ -27,6 +27,21 @@ assert.match(
 );
 assert.match(
   arrayTableSource,
+  /<vxe-button-group[\s\S]*?:options="toolbarButtonOptions"[\s\S]*?@click="handleToolbarButtonClick"/,
+  'The reusable array table toolbar must render a button group.',
+);
+assert.match(
+  arrayTableSource,
+  /function handleToolbarButtonClick\([\s\S]*?payload\.option\?\.name \?\? payload\.name[\s\S]*?button\.command === 'add' \? addRow\(\)/,
+  'The button group must dispatch its add command through the array-table component.',
+);
+assert.doesNotMatch(
+  arrayTableSource,
+  /addText/,
+  'The reusable array table must not model its toolbar as one add-button label.',
+);
+assert.match(
+  arrayTableSource,
   /:tree-node="isTreeNodeColumn\(column\)"/,
   'The first configured data column must render the tree expander.',
 );
@@ -49,6 +64,16 @@ assert.match(
   designerSource,
   /childAddable: true,[\s\S]*?addChildText: '新增子按钮'/,
   'The button designer must expose an add-child command.',
+);
+assert.match(
+  designerSource,
+  /toolbarButtons: \[[\s\S]*?label: '新增按钮',[\s\S]*?command: 'add'/,
+  'The button designer must configure its toolbar through the button-group protocol.',
+);
+assert.doesNotMatch(
+  designerSource,
+  /addText/,
+  'The button designer must not customize the array table through addText.',
 );
 assert.doesNotMatch(
   designerSource,

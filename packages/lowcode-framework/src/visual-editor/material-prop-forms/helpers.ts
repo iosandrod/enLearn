@@ -5,6 +5,7 @@ import type {
   MaterialPropFormField,
   MaterialPropValueKind,
 } from './types';
+import type { VxeButtonProps } from 'vxe-pc-ui';
 
 type FieldInput = Partial<Omit<MaterialPropFormField, 'target' | 'valueKind'>> &
   Pick<MaterialPropFormField, 'field' | 'label'> & {
@@ -26,7 +27,14 @@ type ArrayTableColumnInput = {
 
 type ArrayTableFieldInput = FieldInput & {
   columns: ArrayTableColumnInput[];
-  addText?: string;
+  toolbarButtons?: Array<
+    VxeButtonProps & {
+      code: string | number;
+      label: string;
+      command?: string;
+      visible?: boolean;
+    }
+  >;
   rowKey?: string;
   defaultRow?: Record<string, unknown>;
   valueMode?: 'object' | 'primitive';
@@ -71,7 +79,14 @@ export function jsonPropField(field: FieldInput): MaterialPropFormField {
 
 export function arrayTablePropField({
   columns,
-  addText = '新增',
+  toolbarButtons = [
+    {
+      code: 'add',
+      label: '新增',
+      command: 'add',
+      status: 'primary',
+    },
+  ],
   rowKey = '__rowKey',
   defaultRow,
   valueMode,
@@ -85,7 +100,7 @@ export function arrayTablePropField({
     valueKind: 'raw',
     defaultValue: [],
     props: {
-      addText,
+      toolbarButtons,
       rowKey,
       columns,
       ...(defaultRow ? { defaultRow } : {}),

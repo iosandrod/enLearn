@@ -9,7 +9,6 @@ import { JobModule } from '../workflow/job/job.module';
 import { RuleModule } from '../workflow/rule/rule.module';
 import { RuntimeModule } from '../workflow/runtime/runtime.module';
 import { TaskModule } from '../workflow/task/task.module';
-import { ApprovalFlowTestService } from '../workflow/testing/approval-flow-test.service';
 import { WorkflowRpcController } from './workflow.rpc.controller';
 
 @Module({
@@ -24,7 +23,6 @@ import { WorkflowRpcController } from './workflow.rpc.controller';
     JobModule,
     IntegrationModule
   ],
-  controllers: [WorkflowRpcController],
-  providers: [ApprovalFlowTestService]
+  controllers: [WorkflowRpcController]
 })
 export class AppModule {}

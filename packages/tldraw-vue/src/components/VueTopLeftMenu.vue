@@ -519,7 +519,11 @@ async function saveCurrentTemplate() {
 		const nextTemplates = existingTemplates.slice()
 
 		if (existingIndex >= 0) {
-			if (!window.confirm(`已存在模板"${trimmedName}"，是否覆盖？`)) return
+			const confirmResult = await VxeUI.modal.confirm({
+				title: '覆盖模板',
+				content: `已存在模板"${trimmedName}"，是否覆盖？`,
+			})
+			if (confirmResult !== 'confirm') return
 			const current = nextTemplates[existingIndex]
 			nextTemplates[existingIndex] = {
 				...current,
@@ -545,11 +549,12 @@ async function saveCurrentTemplate() {
 
 async function applyTemplate(template: VueTemplateRecord) {
 	const pageShapeIds = props.editor.getCurrentPageShapeIdsSorted()
-	if (
-		pageShapeIds.length > 0 &&
-		!window.confirm(`加载模板"${template.name}"会替换当前页内容，是否继续？`)
-	) {
-		return
+	if (pageShapeIds.length > 0) {
+		const confirmResult = await VxeUI.modal.confirm({
+			title: '加载模板',
+			content: `加载模板"${template.name}"会替换当前页内容，是否继续？`,
+		})
+		if (confirmResult !== 'confirm') return
 	}
 
 	emit('before-action')
@@ -575,7 +580,11 @@ async function applyTemplate(template: VueTemplateRecord) {
 }
 
 async function deleteTemplate(template: VueTemplateRecord) {
-	if (!window.confirm(`删除模板"${template.name}"？`)) return
+	const confirmResult = await VxeUI.modal.confirm({
+		title: '删除模板',
+		content: `删除模板"${template.name}"？`,
+	})
+	if (confirmResult !== 'confirm') return
 
 	try {
 		const nextTemplates = templates.value.filter((item) => item.id !== template.id)

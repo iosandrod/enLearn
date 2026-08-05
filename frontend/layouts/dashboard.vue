@@ -185,7 +185,7 @@
             <header>
               <div>
                 <strong>切换测试身份</strong>
-                <span>开发环境模拟登录，会同步切换本地 Token</span>
+                <span>使用统一测试密码通过正常登录接口切换</span>
               </div>
               <button
                 type="button"
@@ -310,6 +310,7 @@ import {
   findGlobalDialog,
   GlobalDialogHost,
 } from '@enlearn/lowcode-framework/runtime';
+import { formatDashboardTabTitle } from '../utils/dashboardTabs';
 import { getLowCodePage } from '../utils/lowCodePages';
 import type { AppAccountSummary } from '../composables/useAuthState';
 
@@ -343,6 +344,12 @@ type TopToolGroup = AdminRouteNode & {
 };
 
 type NavigationPlacement = 'sidebar' | 'top-tool' | 'container' | 'hidden';
+
+type VisitedTab = {
+  title: string;
+  path: string;
+  pageType?: LowCodePageRecord['page_type'];
+};
 
 const SYSTEM_SETTINGS_DIALOG_ID = 'system-settings-editor-dialog';
 
@@ -384,7 +391,7 @@ const routeError = ref('');
 const systemSettingsOpening = ref(false);
 const routes = ref<AdminRouteNode[]>([]);
 const expandedGroups = reactive<Record<string, boolean>>({});
-const visitedTabs = ref<Array<{ title: string; path: string }>>([]);
+const visitedTabs = ref<VisitedTab[]>([]);
 const menuFilter = ref('');
 const openTopToolCode = ref('');
 const accountMenuOpen = ref(false);
@@ -1054,13 +1061,9 @@ async function openLowCodeEditPage(item: AdminRouteNode) {
   }
 }
 
-function rememberTab() {
-  const current = {
-    title: activeTitle.value,
-    path: route.path
-  };
+function upsertVisitedTab(current: VisitedTab) {
   const existingIndex = visitedTabs.value.findIndex(
-    (tab: { title: string; path: string }) => tab.path === current.path
+    (tab) => tab.path === current.path
   );
 
   if (existingIndex >= 0) {
@@ -1073,6 +1076,42 @@ function rememberTab() {
   }
 
   visitedTabs.value = [...visitedTabs.value, current].slice(-8);
+}
+
+function isLowCodeRuntimeRoute() {
+  return route.matched.some((record) => record.path === '/dashboard/:slug(.*)*');
+}
+
+async function refreshLowCodeTabTitle(path: string, title: string) {
+  try {
+    const page = await getLowCodePage(serviceApi, {
+      route: path,
+      includeData: false
+    });
+
+    upsertVisitedTab({
+      path,
+      title: formatDashboardTabTitle(title, page.page_type),
+      pageType: page.page_type
+    });
+  } catch {
+    // Keep the menu title for built-in fallback pages and unavailable page metadata.
+  }
+}
+
+function rememberTab() {
+  const existingTab = visitedTabs.value.find((tab) => tab.path === route.path);
+  const current = {
+    title: formatDashboardTabTitle(activeTitle.value, existingTab?.pageType),
+    path: route.path,
+    ...(existingTab?.pageType ? { pageType: existingTab.pageType } : {})
+  };
+
+  upsertVisitedTab(current);
+
+  if (isLowCodeRuntimeRoute()) {
+    void refreshLowCodeTabTitle(current.path, activeTitle.value);
+  }
 }
 
 function handleAdminRoutesUpdated() {

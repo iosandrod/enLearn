@@ -10,7 +10,9 @@ import type {
   WorkflowModelQuery
 } from '../workflow/definition/definition.dto';
 import { TriggerCredentialsService } from '../workflow/trigger/trigger-credentials.service';
+import { TriggerRuntimeStatusService } from '../workflow/trigger/trigger-runtime-status.service';
 import { RuntimeService } from '../workflow/runtime/runtime.service';
+import { ApprovalConsoleService } from '../workflow/runtime/approval-console.service';
 import type {
   AddSignTaskDto,
   CompleteTaskDto,
@@ -35,7 +37,6 @@ import {
   type WorkflowApiEnvelope,
   type WorkflowRequest
 } from '../workflow/workflow.transport';
-import { ApprovalFlowTestService } from '../workflow/testing/approval-flow-test.service';
 
 @Controller()
 export class WorkflowRpcController {
@@ -44,12 +45,14 @@ export class WorkflowRpcController {
     private readonly definitionService: DefinitionService,
     @Inject(RuntimeService)
     private readonly runtimeService: RuntimeService,
+    @Inject(ApprovalConsoleService)
+    private readonly approvalConsoleService: ApprovalConsoleService,
     @Inject(JobService)
     private readonly jobService: JobService,
-    @Inject(ApprovalFlowTestService)
-    private readonly approvalFlowTestService: ApprovalFlowTestService,
     @Inject(TriggerCredentialsService)
-    private readonly triggerCredentials: TriggerCredentialsService
+    private readonly triggerCredentials: TriggerCredentialsService,
+    @Inject(TriggerRuntimeStatusService)
+    private readonly triggerRuntimeStatus: TriggerRuntimeStatusService
   ) {}
 
   @MessagePattern(WORKFLOW_REQUEST_PATTERN)
@@ -84,6 +87,19 @@ export class WorkflowRpcController {
     }
 
     const actor = this.resolveActor(request.headers);
+
+    if (resource === 'runtime' && request.method === 'GET' && idOrAction === 'status') {
+      return this.triggerRuntimeStatus.getStatus(actor.tenantId);
+    }
+
+    if (resource === 'console' && idOrAction === 'instances') {
+      if (request.method === 'GET' && !action) {
+        return this.approvalConsoleService.listInstances(actor.tenantId, query);
+      }
+      if (request.method === 'GET' && action) {
+        return this.approvalConsoleService.getInstanceDetail(action, actor.tenantId);
+      }
+    }
 
     if (resource === 'models') {
       if (request.method === 'GET' && !idOrAction) {
@@ -215,15 +231,6 @@ export class WorkflowRpcController {
       }
     }
 
-    if (resource === 'tests') {
-      if (request.method === 'POST' && idOrAction === 'approval-flow' && action === 'run') {
-        return this.approvalFlowTestService.runOneClick(
-          body,
-          actor
-        );
-      }
-    }
-
     throw new NotFoundException(`Unsupported workflow route: ${request.method} ${request.path}`);
   }
 
@@ -246,10 +253,6 @@ export class WorkflowRpcController {
       tenantId: headerTenantId,
       ...(headerUserId ? { userId: headerUserId } : {})
     };
-  }
-
-  private readString(value: unknown) {
-    return typeof value === 'string' ? value : undefined;
   }
 
   private withActorTenant<T extends Record<string, unknown>>(query: T, tenantId: string) {

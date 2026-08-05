@@ -1,32 +1,13 @@
 import { strict as assert } from 'node:assert';
-import { NotFoundException } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-async function main() {
-  const previousNodeEnv = process.env.NODE_ENV;
-  process.env.NODE_ENV = 'production';
+const controllerSource = readFileSync(resolve(__dirname, 'auth.controller.ts'), 'utf8');
+const dtoSource = readFileSync(resolve(__dirname, 'auth.dto.ts'), 'utf8');
+const serviceSource = readFileSync(resolve(__dirname, 'auth.service.ts'), 'utf8');
 
-  try {
-    const service = new AuthService();
-    await assert.rejects(
-      () => service.impersonateDevUser(
-        {
-          userId: '389388b0-d188-4a7a-adfb-9a3dc1d9c0b0',
-          accountId: '00000000-0000-4000-8000-000000000001'
-        },
-        {}
-      ),
-      (error: unknown) => error instanceof NotFoundException
-    );
-  } finally {
-    if (previousNodeEnv === undefined) {
-      delete process.env.NODE_ENV;
-    } else {
-      process.env.NODE_ENV = previousNodeEnv;
-    }
-  }
+assert.doesNotMatch(controllerSource, /dev-impersonate|impersonateDevUser/);
+assert.doesNotMatch(dtoSource, /DevImpersonateAuthDto/);
+assert.doesNotMatch(serviceSource, /impersonateDevUser|generateLink|verifyOtp/);
 
-  console.log('auth development impersonation guard tests passed');
-}
-
-void main();
+console.log('auth development impersonation route removal tests passed');

@@ -11,6 +11,7 @@ type TestWorkflowService = {
   normalizeModelPayload(ctx: HookContext): void;
   normalizeJobPayload(ctx: HookContext): void;
   hooks(): Record<string, Record<string, unknown>>;
+  listItemHandlers(): Record<string, unknown>;
   compatibilityHandlers: Record<string, unknown>;
   actionHandlers: Record<string, unknown>;
 };
@@ -37,9 +38,15 @@ function context(resourceName: string, action: HookContext['action'], data: Reco
 assert.ok(resources.wf_model);
 assert.ok(resources.wf_process_definition);
 assert.ok(resources.wf_process_instance);
+assert.ok(resources.wf_node_instance);
+assert.ok(resources.wf_task);
 assert.ok(resources.wf_job);
 assert.ok(resources.wf_job_run);
 assert.equal(typeof service.hooks().wf_model.afterAction, 'function');
+assert.equal(typeof service.hooks().wf_node_instance.afterAction, 'function');
+assert.equal(typeof service.hooks().wf_task.afterAction, 'function');
+assert.equal(typeof service.listItemHandlers().nodeInstances, 'function');
+assert.equal(typeof service.listItemHandlers().tasks, 'function');
 
 assert.deepEqual(
   service.normalizeCrudPostData({
@@ -105,6 +112,9 @@ assert.throws(
 const expectedActionMethods = [
   'publishModel',
   'getDefinitionCapabilities',
+  'getRuntimeStatus',
+  'getApprovalConsole',
+  'getApprovalConsoleDetail',
   'getInstance',
   'getInstanceTimeline',
   'startInstance',
@@ -118,8 +128,7 @@ const expectedActionMethods = [
   'rejectTask',
   'transferTask',
   'addSignTask',
-  'getHistoryTimeline',
-  'runApprovalFlowTest'
+  'getHistoryTimeline'
 ];
 const actionMethods = Object.keys(service.actionHandlers);
 assert.deepEqual(actionMethods.sort(), expectedActionMethods.sort());
