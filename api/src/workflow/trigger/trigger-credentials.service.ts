@@ -4,6 +4,7 @@ import { basename, resolve } from 'node:path';
 import { Inject, Injectable, Logger, OnModuleDestroy, Optional } from '@nestjs/common';
 import { configure } from '@trigger.dev/sdk';
 import { Pool, type PoolClient } from 'pg';
+import { guardPostgresPoolClientErrorEvents } from '../../common/utils/postgres-client-errors';
 import { getWorkflowEnv } from '../common/env';
 import {
   decryptPersonalAccessToken,
@@ -173,6 +174,10 @@ export class TriggerCredentialsService implements OnModuleDestroy {
       this.pool.on('error', (error) => {
         this.logger.warn(`Trigger credential database idle client error: ${error.message}`);
       });
+    }
+
+    if (this.pool) {
+      guardPostgresPoolClientErrorEvents(this.pool);
     }
   }
 

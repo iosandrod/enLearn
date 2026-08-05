@@ -2,6 +2,7 @@ import { h } from 'vue';
 import { VxeButton } from 'vxe-pc-ui';
 import type { VxeButtonProps } from 'vxe-pc-ui';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
+import { createDefaultButtonGroupEditorRows } from '../../../lowcode/actions/builtins';
 import {
   createEditorInputProp,
   createEditorSelectProp,
@@ -18,44 +19,7 @@ type ButtonGroupItem = Omit<Partial<VxeButtonProps>, 'options'> & {
   text?: boolean;
 };
 
-const defaultButtons: ButtonGroupItem[] = [
-  {
-    code: 'create',
-    label: '新增',
-    status: 'primary',
-    type: 'button',
-    mode: 'button',
-    eventName: 'buttonGroup.create',
-    directivesJson: '[]',
-  },
-  {
-    code: 'more',
-    label: '更多',
-    type: 'button',
-    mode: 'button',
-    eventName: 'buttonGroup.more',
-    directivesJson: '[]',
-    showDropdownIcon: true,
-    children: [
-      {
-        code: 'import',
-        label: '导入',
-        type: 'button',
-        mode: 'button',
-        eventName: 'buttonGroup.import',
-        directivesJson: '[]',
-      },
-      {
-        code: 'export',
-        label: '导出',
-        type: 'button',
-        mode: 'button',
-        eventName: 'buttonGroup.export',
-        directivesJson: '[]',
-      },
-    ],
-  },
-];
+const defaultButtons: ButtonGroupItem[] = createDefaultButtonGroupEditorRows();
 
 const alignOptions = [
   { label: '左对齐', value: 'left' },

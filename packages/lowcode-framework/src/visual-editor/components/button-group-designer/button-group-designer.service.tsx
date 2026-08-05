@@ -2,6 +2,8 @@ import { reactive } from 'vue';
 import { ElMessage } from '../common/designer-ui';
 import { cloneDeep } from 'lodash-es';
 import type { LowCodePageBlock, LowCodeRuntimeDirective } from '../../../types/lowcode';
+import type { ArrayTableToolbarExecutionContext } from '../../../lowcode/form-materials/lc-array-table/index.vue';
+import { createDefaultButtonGroupEditorRows } from '../../../lowcode/actions/builtins';
 import { generateNanoid } from '../../utils';
 import { openGlobalDialog } from '../../../runtime/global-dialog';
 
@@ -49,6 +51,10 @@ type ButtonGroupDesignerState = {
 const BUTTONS_FORM_ID = 'button-group-designer-buttons-form';
 const INFO_FORM_ID = 'button-group-designer-info-form';
 
+function executeAddToolbarAction({ action, addRow }: ArrayTableToolbarExecutionContext) {
+  return addRow(action.row);
+}
+
 const statusOptions = [
   { label: '默认', value: '' },
   { label: '主要 primary', value: 'primary' },
@@ -79,39 +85,7 @@ const defaultBusiness: ButtonGroupDesignerBusinessInfo = {
   gap: 8,
 };
 
-const defaultButtons: ButtonGroupDesignerButton[] = [
-  {
-    code: 'create',
-    label: '新增',
-    status: 'primary',
-    type: 'button',
-    eventName: 'buttonGroup.create',
-    directivesJson: '[]',
-  },
-  {
-    code: 'more',
-    label: '更多',
-    type: 'button',
-    eventName: 'buttonGroup.more',
-    directivesJson: '[]',
-    children: [
-      {
-        code: 'import',
-        label: '导入',
-        type: 'button',
-        eventName: 'buttonGroup.import',
-        directivesJson: '[]',
-      },
-      {
-        code: 'export',
-        label: '导出',
-        type: 'button',
-        eventName: 'buttonGroup.export',
-        directivesJson: '[]',
-      },
-    ],
-  },
-];
+const defaultButtons: ButtonGroupDesignerButton[] = createDefaultButtonGroupEditorRows();
 
 function ensureButtonIds(button: ButtonGroupDesignerButton): ButtonGroupDesignerButton {
   const next: ButtonGroupDesignerButton = {
@@ -423,18 +397,18 @@ function createDesignerBlocks(): LowCodePageBlock[] {
                         {
                           code: 'add',
                           label: '新增按钮',
-                          command: 'add',
                           status: 'primary',
+                          execute: executeAddToolbarAction,
                         },
                         {
                           code: 'add-dropdown',
                           label: '新增下拉按钮',
-                          command: 'add',
                           status: 'primary',
                           row: {
                             ...createButtonRow('下拉按钮'),
                             children: [createButtonRow('下拉项')],
                           },
+                          execute: executeAddToolbarAction,
                         },
                       ],
                       toolbarAlign: 'left',

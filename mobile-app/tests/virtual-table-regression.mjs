@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 
@@ -25,9 +26,46 @@ const {
   getColumnWindow,
   getRowWindow,
   normalizeVirtualColumns,
+  normalizeVirtualSelectionConfig,
   partitionVirtualColumns,
   sortVirtualRows,
+  updateVirtualSelectionKeys,
+  withVirtualSelectionColumn,
 } = virtualTable;
+
+assert.deepEqual(normalizeVirtualSelectionConfig(true), { type: 'checkbox' });
+assert.deepEqual(normalizeVirtualSelectionConfig('single'), { type: 'radio' });
+assert.deepEqual(normalizeVirtualSelectionConfig({ enabled: true, type: 'radio', width: 56 }), {
+  type: 'radio',
+  width: 56,
+  fixed: 'left',
+});
+assert.equal(normalizeVirtualSelectionConfig({ enabled: false }), null);
+
+const configuredSelectionColumns = withVirtualSelectionColumn(
+  [{ field: 'name', title: 'Name' }],
+  { enabled: true, type: 'checkbox' },
+);
+assert.equal(configuredSelectionColumns[0].type, 'checkbox');
+assert.deepEqual(
+  withVirtualSelectionColumn([{ type: 'radio', title: '' }], true),
+  [{ type: 'radio', title: '' }],
+  'an explicit VXE selection column must take precedence over grid selection config',
+);
+
+const selectionColumns = normalizeVirtualColumns([
+  { type: 'checkbox', title: '', width: 48 },
+  { type: 'radio', title: '', width: 48, fixed: 'right' },
+]);
+assert.equal(selectionColumns[0].selection, 'checkbox');
+assert.equal(selectionColumns[0].fixed, 'left');
+assert.equal(selectionColumns[1].selection, 'radio');
+assert.equal(selectionColumns[1].fixed, 'right');
+assert.deepEqual(updateVirtualSelectionKeys([], 'a', true, true), ['a']);
+assert.deepEqual(updateVirtualSelectionKeys(['a'], 'b', true, true), ['a', 'b']);
+assert.deepEqual(updateVirtualSelectionKeys(['a', 'b'], 'a', false, true), ['b']);
+assert.deepEqual(updateVirtualSelectionKeys(['a'], 'b', true, false), ['b']);
+assert.deepEqual(updateVirtualSelectionKeys(['a'], 'a', true, false), ['a']);
 
 const columns = normalizeVirtualColumns([
   { type: 'seq', title: '#', width: 52 },
@@ -105,6 +143,36 @@ assert.deepEqual(
   ).map((row) => row.value),
   ['2026-08-02', '2026-08-10'],
   'date-like strings must not be coerced into partial numbers',
+);
+
+const componentSource = await readFile(
+  path.resolve(testDirectory, '../src/runtime/materials/mobile-virtual-table.vue'),
+  'utf8',
+);
+assert.match(
+  componentSource,
+  /@click\.stop="publishCurrentRow\(item\.row, item\.index\)"/,
+  'fixed cells must own the current-row click because Hippy does not reliably bubble it',
+);
+assert.match(
+  componentSource,
+  /@click\.stop="handleCenterCellClick\(item\.row, item\.index\)"/,
+  'virtualized center cells must own the current-row click',
+);
+assert.match(
+  componentSource,
+  /Date\.now\(\) < suppressCenterClickUntil\.value/,
+  'a horizontal drag must suppress the synthetic cell click that follows it',
+);
+assert.match(
+  componentSource,
+  /backgroundColor: currentRowBackground\(key\)/,
+  'the current-row background must be sent as reactive inline style for Hippy native panes',
+);
+assert.match(
+  componentSource,
+  /@click\.stop="toggleRowSelection\(item\.row, item\.index, column\.selection\)"/,
+  'selection controls must keep their click independent from current-row highlighting',
 );
 
 console.log('virtual-table regression checks passed');

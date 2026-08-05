@@ -14,6 +14,7 @@ import type {
   LowCodePageToolbarBlock,
   LowCodePageTreeBlock,
 } from '../../types/lowcode';
+import { createDefaultButtonGroupActions } from '../actions/builtins';
 
 function withOverrides<T extends { id: string }>(block: T, overrides?: Partial<T>) {
   return {
@@ -105,35 +106,7 @@ export function createDefaultButtonGroupBlock(overrides?: Partial<LowCodePageBut
       title: '按钮组',
       align: 'left',
       gap: 8,
-      actions: [
-        {
-          code: 'create',
-          label: '新增',
-          status: 'primary',
-          type: 'button',
-          eventName: 'buttonGroup.create',
-        },
-        {
-          code: 'more',
-          label: '更多',
-          type: 'button',
-          eventName: 'buttonGroup.more',
-          children: [
-            {
-              code: 'import',
-              label: '导入',
-              type: 'button',
-              eventName: 'buttonGroup.import',
-            },
-            {
-              code: 'export',
-              label: '导出',
-              type: 'button',
-              eventName: 'buttonGroup.export',
-            },
-          ],
-        },
-      ],
+      actions: createDefaultButtonGroupActions(),
     },
     overrides
   );

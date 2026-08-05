@@ -15,6 +15,7 @@
       :service-api="serviceApi"
       :router="router"
       :route="pageRoute"
+      :on-runtime-event="handleRuntimeEvent"
     />
   </section>
 </template>
@@ -25,8 +26,12 @@ import {
   getBuiltinLowCodePageByRoute,
   type LowCodeHostRoute,
 } from '@enlearn/lowcode-framework/runtime';
-import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
+import type {
+  LowCodePageRecord,
+  LowCodeRuntimeEvent,
+} from '@enlearn/lowcode-framework/types/lowcode';
 import { getLowCodePage } from '../../utils/lowCodePages';
+import { notifySystemSettingsChanged } from '../../composables/useSystemSettings';
 
 const props = defineProps<{
   routePath: string;
@@ -70,6 +75,16 @@ function isMissingLowCodePageError(error: unknown) {
     .join(' ');
 
   return statusCode === 404 || message.includes('Low-code page not found');
+}
+
+function handleRuntimeEvent(event: LowCodeRuntimeEvent) {
+  if (
+    event.name === 'form.saved' &&
+    page.value &&
+    ['system-settings', 'system-settings-edit'].includes(page.value.code)
+  ) {
+    notifySystemSettingsChanged();
+  }
 }
 
 async function loadPage() {

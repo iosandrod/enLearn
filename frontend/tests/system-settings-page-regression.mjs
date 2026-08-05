@@ -51,6 +51,37 @@ const pageDialogSource = await readFile(
   ),
   'utf8'
 );
+const appSource = await readFile(new URL('../app.vue', import.meta.url), 'utf8');
+const mainSource = await readFile(new URL('../src/main.ts', import.meta.url), 'utf8');
+const dashboardRouteSource = await readFile(
+  new URL('../pages/dashboard/[...slug].vue', import.meta.url),
+  'utf8'
+);
+const systemSettingsRuntimeSource = await readFile(
+  new URL('../composables/useSystemSettings.ts', import.meta.url),
+  'utf8'
+);
+const systemSettingsContextSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/core/system-settings.ts',
+    import.meta.url
+  ),
+  'utf8'
+);
+const lowCodeGridSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/components/LowCodeGrid.vue',
+    import.meta.url
+  ),
+  'utf8'
+);
+const arrayTableSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue',
+    import.meta.url
+  ),
+  'utf8'
+);
 
 assert.match(
   migrationSource,
@@ -181,6 +212,76 @@ assert.match(
   dialogHostSource,
   /registerGlobalDialogHost\(\)[\s\S]*isActiveGlobalDialogHost\(host\.hostId\)/,
   'Nested low-code renderers must not render duplicate global dialogs.'
+);
+assert.match(
+  appSource,
+  /provideAppSystemSettings\(\)/,
+  'The application root must provide per-user system settings.'
+);
+assert.match(
+  mainSource,
+  /installSystemSettingsListeners\(\)[\s\S]*await initializeSystemSettings\(\)[\s\S]*app\.mount\('#app'\)/,
+  'System settings must be initialized before the root component is mounted.'
+);
+assert.doesNotMatch(
+  appSource,
+  /initializeSystemSettings\(/,
+  'The root component must reuse the settings loaded before mount instead of initializing them again.'
+);
+assert.match(
+  appSource,
+  /watch\([\s\S]*auth\.user\.value\?\.id[\s\S]*loadSystemSettings\(true\)/,
+  'A user change after mount must reload the provided settings context.'
+);
+assert.match(
+  systemSettingsRuntimeSource,
+  /enlearn:auth-user-changed[\s\S]*enlearn:account-changed[\s\S]*handleAuthenticatedScopeChange/,
+  'Authentication and account changes must reload the provided settings context.'
+);
+assert.match(
+  systemSettingsRuntimeSource,
+  /resource:\s*SYSTEM_CONFIG_RESOURCE[\s\S]*normalizeSystemSettings\(row\)[\s\S]*VxeUI\.setConfig/,
+  'System initialization must load the database configuration and apply global VXE defaults.'
+);
+assert.match(
+  systemSettingsRuntimeSource,
+  /if \(loadPromise && loadPromiseUserId === userId\) return loadPromise;/,
+  'Concurrent startup and authentication listeners must share one settings request.'
+);
+assert.match(
+  systemSettingsRuntimeSource,
+  /--app-primary-color[\s\S]*--lc-color-primary[\s\S]*--vxe-ui-font-primary-color/,
+  'Theme colors must be exposed to application, low-code, and VXE components.'
+);
+assert.match(
+  systemSettingsContextSource,
+  /provideSystemSettings[\s\S]*useSystemSettings[\s\S]*mergeSystemTableOptions/,
+  'Shared system settings must be injectable and expose a table-default resolver.'
+);
+assert.match(
+  systemSettingsContextSource,
+  /readExplicitHeight\([\s\S]*options\.rowHeight[\s\S]*systemTableConfig\.rowHeight/,
+  'An explicit table row height must take precedence over the system default.'
+);
+assert.match(
+  lowCodeGridSource,
+  /mergeSystemTableOptions\([\s\S]*resolveSystemTableConfig\(systemSettings\)/,
+  'Low-code grids must consume the injected system table defaults.'
+);
+assert.match(
+  arrayTableSource,
+  /v-bind="tableConfig"[\s\S]*mergeSystemTableOptions\([\s\S]*resolveSystemTableConfig\(systemSettings\)/,
+  'Array tables must consume system table defaults while retaining local overrides.'
+);
+assert.match(
+  dashboardLayoutSource,
+  /event\.name === 'form\.saved'[\s\S]*loadSystemSettings\(true\)/,
+  'Saving the settings dialog must refresh the provided runtime configuration.'
+);
+assert.match(
+  dashboardRouteSource,
+  /event\.name === 'form\.saved'[\s\S]*system-settings-edit[\s\S]*notifySystemSettingsChanged\(\)/,
+  'Saving the standalone system-settings page must refresh the provided runtime configuration.'
 );
 
 console.log('System settings page regression test passed.');

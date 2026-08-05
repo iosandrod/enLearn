@@ -76,6 +76,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import {
+  mergeSystemTableOptions,
+  resolveSystemTableConfig,
+  useSystemSettings,
+} from '../core/system-settings';
 import { normalizeLowCodeGridColumns } from '../utils/lowcode';
 import type {
   LowCodeGridAction,
@@ -100,6 +105,7 @@ const emit = defineEmits<{
   cellDblclick: [payload: { row: Record<string, unknown>; rawEvent: Record<string, unknown> }];
   gridEvent: [payload: LowCodeGridEventPayload];
 }>();
+const systemSettings = useSystemSettings();
 
 type LowCodeGridEventPayload = {
   key: string;
@@ -128,12 +134,16 @@ const tableScrollStyle = computed(() => {
 const gridConfig = computed(() => {
   const baseGrid = props.schema.grid as Record<string, unknown>;
   const columns = props.schema.grid.columns;
+  const resolvedGrid = mergeSystemTableOptions(
+    baseGrid,
+    resolveSystemTableConfig(systemSettings),
+  );
   const nextConfig: Record<string, unknown> = columns?.length
     ? {
-        ...baseGrid,
+        ...resolvedGrid,
         columns: normalizeLowCodeGridColumns(columns) as unknown[]
       }
-    : { ...baseGrid };
+    : { ...resolvedGrid };
 
   if (
     props.schema.events?.rowCurrentChange ||

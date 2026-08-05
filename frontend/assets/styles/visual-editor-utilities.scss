@@ -1,3 +1,22 @@
+:root {
+  --lc-color-primary: #1d73d8;
+  --lc-color-primary-hover: #155eb4;
+  --lc-color-danger: #dc2626;
+  --lc-color-warning: #d97706;
+  --lc-color-success: #047857;
+  --lc-color-info: #0891b2;
+  --lc-color-background: #ffffff;
+  --lc-color-text: #334155;
+  --lc-color-text-strong: #111827;
+  --lc-color-text-muted: #64748b;
+  --lc-color-border: #cbd5e1;
+  --lc-color-border-soft: #e2e8f0;
+  --lc-color-surface: #ffffff;
+  --lc-color-subtle: #f8fafc;
+  --lc-radius-control: 6px;
+  --lc-radius-panel: 8px;
+}
+
 .visual-designer-page {
   display: block;
   height: calc(100vh - 60px);
@@ -1200,10 +1219,10 @@
   display: inline-flex;
   min-height: 30px;
   padding: 0 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: #fff;
-  color: #334155;
+  border: 1px solid var(--lc-color-border);
+  border-radius: var(--lc-radius-control);
+  background: var(--lc-color-surface);
+  color: var(--lc-color-text);
   font-size: 13px;
   line-height: 1;
   cursor: pointer;
@@ -1220,7 +1239,7 @@
 .lc-button:hover:not(:disabled) {
   border-color: #93c5fd;
   background: #eff6ff;
-  color: #1d73d8;
+  color: var(--lc-color-primary);
 }
 
 .lc-button:disabled {
@@ -1229,26 +1248,26 @@
 }
 
 .lc-button--primary {
-  border-color: #1d73d8;
-  background: #1d73d8;
+  border-color: var(--lc-color-primary);
+  background: var(--lc-color-primary);
   color: #fff;
 }
 
 .lc-button--primary:hover:not(:disabled) {
-  border-color: #155eb4;
-  background: #155eb4;
+  border-color: var(--lc-color-primary-hover);
+  background: var(--lc-color-primary-hover);
   color: #fff;
 }
 
 .lc-button--danger {
-  border-color: #dc2626;
-  background: #dc2626;
+  border-color: var(--lc-color-danger);
+  background: var(--lc-color-danger);
   color: #fff;
 }
 
 .lc-button--warning {
-  border-color: #d97706;
-  background: #d97706;
+  border-color: var(--lc-color-warning);
+  background: var(--lc-color-warning);
   color: #fff;
 }
 
@@ -1261,7 +1280,7 @@
   padding: 0 2px;
   border: 0;
   background: transparent;
-  color: #1d73d8;
+  color: var(--lc-color-primary);
 }
 
 .lc-button.is-circle {
@@ -1279,16 +1298,16 @@
   height: 28px;
   padding: 0;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--lc-radius-control);
   background: transparent;
-  color: #64748b;
+  color: var(--lc-color-text-muted);
   cursor: pointer;
   place-items: center;
 }
 
 .lc-icon-button:hover {
   background: #f1f5f9;
-  color: #1d73d8;
+  color: var(--lc-color-primary);
 }
 
 .lc-input,
@@ -1307,10 +1326,10 @@
   min-width: 0;
   min-height: 32px;
   padding: 6px 9px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: #fff;
-  color: #111827;
+  border: 1px solid var(--lc-color-border);
+  border-radius: var(--lc-radius-control);
+  background: var(--lc-color-surface);
+  color: var(--lc-color-text-strong);
   font-size: 13px;
   line-height: 18px;
   box-sizing: border-box;
@@ -1326,7 +1345,7 @@ textarea.lc-input__control {
 .lc-select:focus,
 .lc-color-picker input:focus {
   outline: 2px solid rgb(29 115 216 / 16%);
-  border-color: #1d73d8;
+  border-color: var(--lc-color-primary);
 }
 
 .lc-input.has-prepend .lc-input__control {
@@ -1394,7 +1413,7 @@ textarea.lc-input__control {
 }
 
 .lc-switch.is-checked {
-  background: #1d73d8;
+  background: var(--lc-color-primary);
 }
 
 .lc-switch.is-checked span {
@@ -1578,9 +1597,9 @@ textarea.lc-input__control {
 }
 
 .lc-card {
-  border: 1px solid #d8e0ea;
-  border-radius: 8px;
-  background: #fff;
+  border: 1px solid var(--lc-color-border);
+  border-radius: var(--lc-radius-panel);
+  background: var(--lc-color-surface);
 }
 
 .lc-card__header {

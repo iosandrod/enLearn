@@ -24,14 +24,35 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router';
 import RouteCacheOutlet from './components/RouteCacheOutlet.vue';
 import DashboardLayout from './layouts/dashboard.vue';
 import DefaultLayout from './layouts/default.vue';
+import {
+  loadSystemSettings,
+  provideAppSystemSettings,
+  resetSystemSettings,
+} from './composables/useSystemSettings';
 
 const route = useRoute();
 const auth = useAuth();
+provideAppSystemSettings();
+
+watch(
+  () => auth.user.value?.id ?? '',
+  (userId, previousUserId) => {
+    if (userId === previousUserId) return;
+    if (!userId) {
+      resetSystemSettings();
+      return;
+    }
+    void loadSystemSettings(true).catch((error) => {
+      console.warn('System settings reload failed.', error);
+    });
+  },
+);
+
 const dashboardKeepAliveMax = 8;
 const accountCacheScope = computed(() =>
   `${auth.activeAccount.value?.account_id ?? 'public'}:${auth.accountEpoch.value}`

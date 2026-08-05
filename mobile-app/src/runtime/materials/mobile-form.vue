@@ -61,12 +61,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from '@vue/runtime-core';
+import { computed, onBeforeUnmount, reactive, ref, watch } from '@vue/runtime-core';
 import type { CSSProperties } from 'vue';
 import type { HippyLayoutEvent } from '@hippy/vue-next';
 
 import MobileFormField from './mobile-form-field.vue';
 import MobileFormLayout from './mobile-form-layout.vue';
+import {
+  createLayoutWidthScheduler,
+  getWebLayoutFrameDriver,
+} from '../layout-width';
 import {
   buildMobileFormRows,
   cloneFormValue,
@@ -87,6 +91,13 @@ const emit = defineEmits<MobileMaterialEmits>();
 
 const errors = reactive<Record<string, string>>({});
 const formWidth = ref(0);
+const formWidthScheduler = createLayoutWidthScheduler(
+  () => formWidth.value,
+  (width) => {
+    formWidth.value = width;
+  },
+  getWebLayoutFrameDriver(),
+);
 
 const schema = computed<SharedLowCodeFormSchema>(() => {
   const configured = props.block.schema ?? {};
@@ -137,7 +148,7 @@ function cellStyle(span: number): CSSProperties {
 }
 
 function handleLayout(event: HippyLayoutEvent) {
-  if (typeof event.width === 'number' && event.width > 0) formWidth.value = event.width;
+  formWidthScheduler.schedule(event.width);
 }
 
 function publishFieldChange(field: SharedLowCodeField, value: unknown, previousValue: unknown) {
@@ -215,6 +226,8 @@ watch(
     Object.keys(errors).forEach((key) => delete errors[key]);
   },
 );
+
+onBeforeUnmount(formWidthScheduler.cancel);
 </script>
 
 <style scoped>

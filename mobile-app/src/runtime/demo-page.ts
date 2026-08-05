@@ -54,6 +54,12 @@ export function createDemoPage(): MobilePageRecord {
         status: ['待审批', '待补充', '已通过', '已驳回'][index % 4],
         amount: (index + 1) * 128.5,
         createdAt: `2026-08-${String(index % 28 + 1).padStart(2, '0')}`,
+        project: ['供应链升级', '财务共享中心', '合同数字化', '客户运营平台'][index % 4],
+        priority: ['普通', '紧急', '高优先级'][index % 3],
+        approver: ['王经理', '李主管', '孙总监'][index % 3],
+        costCenter: `CC-${String(index % 24 + 1001)}`,
+        updatedAt: `2026-08-${String(index % 28 + 1).padStart(2, '0')} 16:30`,
+        summary: `申请说明 ${index + 1}`,
       })),
     },
     schema: {
@@ -99,6 +105,7 @@ export function createDemoPage(): MobilePageRecord {
               headerHeight: 44,
               overscanRowCount: 6,
               overscanColumnCount: 1,
+              selection: { enabled: true, type: 'checkbox', fixed: 'left' },
               rowConfig: { keyField: 'id', isCurrent: true },
               columns: [
                 { type: 'seq', title: '序号', width: 48, align: 'center' },
@@ -116,6 +123,12 @@ export function createDemoPage(): MobilePageRecord {
                   formatter: { type: 'currency', currency: 'CNY' },
                 },
                 { field: 'createdAt', title: '申请日期', width: 120, sortable: true },
+                { field: 'project', title: '项目', width: 180 },
+                { field: 'priority', title: '优先级', width: 120, align: 'center' },
+                { field: 'approver', title: '当前审批人', width: 140 },
+                { field: 'costCenter', title: '成本中心', width: 130 },
+                { field: 'updatedAt', title: '更新时间', width: 170, sortable: true },
+                { field: 'summary', title: '申请说明', width: 220 },
               ],
             },
             rowActions: {

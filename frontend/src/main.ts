@@ -35,7 +35,10 @@ import DocsScreen from '../components/DocsScreen.vue';
 import NotificationBell from '../components/NotificationBell.vue';
 import SiteFooter from '../components/SiteFooter.vue';
 import SiteHeader from '../components/SiteHeader.vue';
-import { useAuth } from '../composables/useAuth';
+import {
+  initializeSystemSettings,
+  installSystemSettingsListeners,
+} from '../composables/useSystemSettings';
 import { router } from './router';
 import './mainStyle.ts'
 const DEV_SERVICE_WORKER_RELOAD_KEY = 'enlearn_dev_service_worker_reloaded';
@@ -111,8 +114,9 @@ app.component('VisualEditorProvider', VisualEditorProvider);
 app.config.globalProperties.$$refs = refs;
 window.$$refs = refs;
 
-if (import.meta.env.DEV) {
-  await useAuth().init();
-}
+installSystemSettingsListeners();
+await initializeSystemSettings().catch((error) => {
+  console.warn('System settings initialization failed.', error);
+});
 
 app.mount('#app');

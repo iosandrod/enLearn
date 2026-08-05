@@ -108,3 +108,5 @@ Key: Version | Task | Run
 ○ Aug 05, 20:01:33.370 ->  20260805.4 | workflow.instance.run | run_cmsg1dp0z0049h4u2bdrh6vih.1
 ○ Aug 05, 20:01:37.070 ->  20260805.4 | notification.dispatch | run_cmsg1ds1l004dh4u2ntw4qr15.1
 ○ Aug 05, 20:01:39.781 ->  20260805.4 | notification.dispatch | run_cmsg1ds1l004dh4u2ntw4qr15.1 | Success (1.7s)
+○ Rebuilding local worker…
+○ Local worker ready on branch: default [node] -> 20260805.5

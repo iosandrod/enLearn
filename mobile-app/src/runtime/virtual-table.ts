@@ -1,4 +1,5 @@
 export type VirtualTableAlign = 'left' | 'center' | 'right';
+export type VirtualTableSelectionType = 'checkbox' | 'radio';
 
 export type VirtualTableFormatter =
   | { type?: 'text'; emptyText?: string }
@@ -40,6 +41,14 @@ export type VirtualTableColumn = {
   sortable: boolean;
   formatter?: VirtualTableFormatter | string | ((params: { cellValue: unknown }) => string);
   action?: boolean;
+  selection?: VirtualTableSelectionType;
+};
+
+export type VirtualTableSelectionConfig = {
+  type: VirtualTableSelectionType;
+  title?: string;
+  width?: number | string;
+  fixed?: 'left' | 'right' | '';
 };
 
 export type VirtualRange = {
@@ -80,6 +89,7 @@ export type NormalizeColumnsOptions = {
   defaultWidth?: number;
   sequenceWidth?: number;
   actionWidth?: number;
+  selectionWidth?: number;
 };
 
 export type FitPinnedColumnsOptions = {
@@ -90,6 +100,7 @@ export type FitPinnedColumnsOptions = {
 
 const DEFAULT_COLUMN_WIDTH = 132;
 const DEFAULT_SEQUENCE_WIDTH = 56;
+const DEFAULT_SELECTION_WIDTH = 48;
 const MIN_COLUMN_WIDTH = 48;
 const MAX_COLUMN_WIDTH = 1200;
 
@@ -132,31 +143,43 @@ export function normalizeVirtualColumns(
   const defaultWidth = options.defaultWidth ?? DEFAULT_COLUMN_WIDTH;
   const sequenceWidth = options.sequenceWidth ?? DEFAULT_SEQUENCE_WIDTH;
   const actionWidth = options.actionWidth ?? defaultWidth;
+  const selectionWidth = options.selectionWidth ?? DEFAULT_SELECTION_WIDTH;
 
   return rawColumns
     .filter((column) => column.visible !== false)
     .map((column, sourceIndex): VirtualTableColumn => {
       const isSequence = column.type === 'seq';
       const isAction = column.slots?.default === 'actions';
+      const selection = column.type === 'checkbox' || column.type === 'radio'
+        ? column.type
+        : undefined;
       const field = typeof column.field === 'string' && column.field.trim()
         ? column.field.trim()
         : undefined;
       const key = isAction
         ? `__actions_${sourceIndex}`
+        : selection
+          ? `__${selection}_${sourceIndex}`
         : field ?? (isSequence ? `__seq_${sourceIndex}` : `__column_${sourceIndex}`);
-      const fallbackWidth = isSequence ? sequenceWidth : isAction ? actionWidth : defaultWidth;
+      const fallbackWidth = selection
+        ? selectionWidth
+        : isSequence
+          ? sequenceWidth
+          : isAction
+            ? actionWidth
+            : defaultWidth;
       const fixed = column.fixed === 'left' || column.fixed === 'right'
         ? column.fixed
         : isAction
           ? 'right'
-          : isSequence
+          : isSequence || selection
             ? 'left'
             : '';
       const align = column.align === 'center' || column.align === 'right'
         ? column.align
         : column.align === 'left'
           ? 'left'
-          : isSequence
+          : isSequence || selection
             ? 'center'
             : 'left';
       const headerAlign = column.headerAlign === 'left'
@@ -178,8 +201,73 @@ export function normalizeVirtualColumns(
         sortable: column.sortable === true && Boolean(field),
         ...(column.formatter ? { formatter: column.formatter } : {}),
         ...(isAction ? { action: true } : {}),
+        ...(selection ? { selection } : {}),
       };
     });
+}
+
+export function normalizeVirtualSelectionConfig(
+  value: unknown,
+): VirtualTableSelectionConfig | null {
+  if (value === false || value === null || value === undefined || value === '') return null;
+  if (value === true) return { type: 'checkbox' };
+
+  if (typeof value === 'string') {
+    if (value === 'radio' || value === 'single') return { type: 'radio' };
+    if (value === 'checkbox' || value === 'multiple') return { type: 'checkbox' };
+    return null;
+  }
+
+  if (typeof value !== 'object' || Array.isArray(value)) return null;
+  const config = value as Record<string, unknown>;
+  if (config.enabled === false) return null;
+
+  const rawType = config.type ?? config.mode;
+  const type = rawType === 'radio' || rawType === 'single' ? 'radio' : 'checkbox';
+  const title = typeof config.title === 'string' ? config.title : undefined;
+  const width = typeof config.width === 'number' || typeof config.width === 'string'
+    ? config.width
+    : undefined;
+  const fixed = config.fixed === 'right' || config.fixed === '' ? config.fixed : 'left';
+
+  return {
+    type,
+    ...(title !== undefined ? { title } : {}),
+    ...(width !== undefined ? { width } : {}),
+    fixed,
+  };
+}
+
+export function withVirtualSelectionColumn(
+  columns: RawGridColumn[],
+  value: unknown,
+) {
+  if (columns.some((column) => column.type === 'checkbox' || column.type === 'radio')) {
+    return columns;
+  }
+
+  const config = normalizeVirtualSelectionConfig(value);
+  if (!config) return columns;
+
+  return [{
+    type: config.type,
+    title: config.title ?? '',
+    width: config.width ?? DEFAULT_SELECTION_WIDTH,
+    fixed: config.fixed ?? 'left',
+    align: 'center' as const,
+  }, ...columns];
+}
+
+export function updateVirtualSelectionKeys(
+  keys: string[],
+  key: string,
+  checked: boolean,
+  multiple: boolean,
+) {
+  if (!multiple) return checked ? [key] : [];
+  const nextKeys = keys.filter((item, index) => keys.indexOf(item) === index && item !== key);
+  if (checked) nextKeys.push(key);
+  return nextKeys;
 }
 
 export function partitionVirtualColumns(columns: VirtualTableColumn[]) {

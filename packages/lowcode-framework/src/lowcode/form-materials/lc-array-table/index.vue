@@ -14,15 +14,11 @@
     <div class="lc-array-table__viewport">
       <vxe-table
       ref="tableRef"
-      border
-      show-overflow
       auto-resize
-      size="mini"
       class="lc-array-table__grid"
+      v-bind="tableConfig"
       :data="rows"
-      :row-config="rowConfig"
       :tree-config="treeConfig"
-      :height="tableHeight"
       @cell-click="handleCellClick"
       @row-dblclick="handleRowDblclick"
     >
@@ -194,6 +190,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import type { VxeButtonProps } from 'vxe-pc-ui';
+import {
+  mergeSystemTableOptions,
+  resolveSystemTableConfig,
+  useSystemSettings,
+} from '../../../core/system-settings';
 import type {
   LowCodeField,
   LowCodeFieldComponent,
@@ -219,17 +220,39 @@ type ArrayTableColumn = {
 
 type ArrayTableValueMode = 'object' | 'primitive';
 
+type ArrayTableToolbarExecute = (
+  context: ArrayTableToolbarExecutionContext,
+) => unknown | Promise<unknown>;
+
 type ArrayTableToolbarButton = VxeButtonProps & {
   code: string | number;
   label: string;
   command?: string;
   row?: Record<string, unknown>;
   visible?: boolean;
+  execute?: ArrayTableToolbarExecute;
 };
 
 type ArrayTableToolbarClickParams = {
   name?: string | number;
   option?: VxeButtonProps & Record<string, unknown>;
+};
+
+type ArrayTableToolbarExecutionContext = {
+  action: ArrayTableToolbarButton;
+  actionCode: string | number;
+  command?: string;
+  click: ArrayTableToolbarClickParams;
+  rows: Record<string, unknown>[];
+  field: LowCodeField;
+  addRow: (row?: Record<string, unknown>) => Record<string, unknown>;
+};
+
+export type {
+  ArrayTableToolbarButton,
+  ArrayTableToolbarClickParams,
+  ArrayTableToolbarExecute,
+  ArrayTableToolbarExecutionContext,
 };
 
 type RowActionPredicate = boolean | ((payload: Record<string, unknown>) => boolean);
@@ -258,6 +281,7 @@ const tableRef = ref<{
   setCurrentRow?: (row: Record<string, unknown>) => Promise<unknown> | void;
   setTreeExpand?: (row: Record<string, unknown>, expanded: boolean) => Promise<unknown> | void;
 }>();
+const systemSettings = useSystemSettings();
 
 const fieldProps = computed(() => props.field.props ?? {});
 const valueMode = computed<ArrayTableValueMode>(() =>
@@ -280,16 +304,72 @@ const columns = computed(() => {
 
   return normalizedColumns;
 });
+const explicitTableConfig = computed(() => {
+  const config = isRecord(fieldProps.value.gridOptions)
+    ? cloneRecord(fieldProps.value.gridOptions)
+    : {};
+  const keys = [
+    'size',
+    'stripe',
+    'border',
+    'round',
+    'showHeader',
+    'showFooter',
+    'showOverflow',
+    'showHeaderOverflow',
+    'showFooterOverflow',
+    'height',
+    'minHeight',
+    'maxHeight',
+    'rowHeight',
+    'headerHeight',
+    'headerRowHeight',
+    'footerHeight',
+    'footerRowHeight',
+    'cellConfig',
+    'headerCellConfig',
+    'footerCellConfig',
+    'rowConfig',
+    'columnConfig',
+    'sortConfig',
+    'filterConfig',
+    'tooltipConfig',
+    'virtualXConfig',
+    'virtualYConfig',
+  ];
+
+  keys.forEach((key) => {
+    if (typeof fieldProps.value[key] !== 'undefined') {
+      config[key] = fieldProps.value[key];
+    }
+  });
+
+  return config;
+});
 const rowConfig = computed(() => {
+  const gridRowConfig = isRecord(explicitTableConfig.value.rowConfig)
+    ? explicitTableConfig.value.rowConfig
+    : {};
   const config = isRecord(fieldProps.value.rowConfig) ? fieldProps.value.rowConfig : {};
-  const keyField = readString(config.keyField, readString(fieldProps.value.rowKey, '__rowKey'));
+  const keyField = readString(
+    config.keyField ?? gridRowConfig.keyField,
+    readString(fieldProps.value.rowKey, '__rowKey'),
+  );
 
   return {
+    ...gridRowConfig,
     ...config,
     keyField,
-    isCurrent: config.isCurrent !== false,
+    isCurrent: config.isCurrent ?? gridRowConfig.isCurrent,
   };
 });
+const tableConfig = computed(() => mergeSystemTableOptions(
+  {
+    ...explicitTableConfig.value,
+    rowConfig: rowConfig.value,
+  },
+  resolveSystemTableConfig(systemSettings),
+));
 const rowKey = computed(() => readString(rowConfig.value.keyField, '__rowKey'));
 const treeConfig = computed(() => {
   const source = fieldProps.value.treeConfig;
@@ -310,7 +390,15 @@ const treeChildrenField = computed(() =>
 const toolbarButtons = computed(() => readToolbarButtons(fieldProps.value.toolbarButtons));
 const toolbarButtonOptions = computed<VxeButtonProps[]>(() =>
   toolbarButtons.value.map(
-    ({ code, label, command: _command, row: _row, visible: _visible, ...buttonProps }) => ({
+    ({
+      code,
+      label,
+      command: _command,
+      row: _row,
+      visible: _visible,
+      execute: _execute,
+      ...buttonProps
+    }) => ({
       ...buttonProps,
       name: code,
       content: buttonProps.content ?? label,
@@ -318,7 +406,7 @@ const toolbarButtonOptions = computed<VxeButtonProps[]>(() =>
   )
 );
 const addChildText = computed(() => readString(fieldProps.value.addChildText, '新增子项'));
-const tableHeight = computed(() => readSize(fieldProps.value.height));
+const tableHeight = computed(() => readSize(tableConfig.value.height));
 const showToolbar = computed(() => fieldProps.value.showToolbar !== false);
 const showActions = computed(() => fieldProps.value.showActions !== false);
 const toolbarAlign = computed(() => readToolbarAlign(fieldProps.value.toolbarAlign));
@@ -357,6 +445,7 @@ watch(
     showActions.value,
     actionWidth.value,
     rowActions.value,
+    tableConfig.value,
   ],
   () => resizeTable(),
   { deep: true }
@@ -457,20 +546,30 @@ function addRow(toolbarRow?: Record<string, unknown>) {
   return row;
 }
 
-function handleToolbarButtonClick(payload: ArrayTableToolbarClickParams) {
+async function handleToolbarButtonClick(payload: ArrayTableToolbarClickParams) {
   const clickedCode = payload.option?.name ?? payload.name;
   const button = toolbarButtons.value.find((item) => item.code === clickedCode);
   if (!button || button.disabled) return;
 
-  const row = button.command === 'add' ? addRow(button.row) : undefined;
-  emitConfiguredEvent('onToolbarAction', {
+  const actionPayload = {
     action: button,
     actionCode: button.code,
     command: button.command,
-    ...(row ? { row, index: getRowIndex(row) } : {}),
     rows: rows.value,
     field: props.field,
-  });
+    rawEvent: payload,
+  };
+
+  if (typeof button.execute === 'function') {
+    await button.execute({
+      ...actionPayload,
+      click: payload,
+      addRow,
+    });
+    return;
+  }
+
+  emitConfiguredEvent('onToolbarAction', actionPayload);
 }
 
 function ensureChildRowKeys(row: Record<string, unknown>) {
@@ -686,6 +785,15 @@ function readComponent(value: unknown): ArrayTableColumn['component'] {
   return typeof value === 'string' && value.trim() ? value.trim() : 'vxe-input';
 }
 
+function executeAddToolbarAction({ action, addRow }: ArrayTableToolbarExecutionContext) {
+  return addRow(action.row);
+}
+
+// Persisted schemas may still carry command: 'add'; normalize them to the callback contract.
+const legacyToolbarCommandExecutors: Record<string, ArrayTableToolbarExecute> = {
+  add: executeAddToolbarAction,
+};
+
 function readToolbarButtons(value: unknown): ArrayTableToolbarButton[] {
   const source = Array.isArray(value)
     ? value
@@ -705,12 +813,17 @@ function readToolbarButtons(value: unknown): ArrayTableToolbarButton[] {
       const code = readButtonCode(button.code ?? button.name, `toolbar_${index + 1}`);
       const label = readString(button.label ?? button.content, String(code));
       const command = readString(button.command);
+      const execute = typeof button.execute === 'function'
+        ? button.execute as ArrayTableToolbarExecute
+        : legacyToolbarCommandExecutors[command];
+      const { execute: _execute, ...buttonProps } = button;
 
       return {
-        ...(button as VxeButtonProps),
+        ...(buttonProps as VxeButtonProps),
         code,
         label,
         ...(command ? { command } : {}),
+        ...(execute ? { execute } : {}),
       };
     });
 }
@@ -1027,7 +1140,10 @@ function emitConfiguredEvent(name: string, payload: Record<string, unknown>) {
 
 function handleCellClick(payload: unknown) {
   if (!isRecord(payload) || !isRecord(payload.row)) return;
-  if (rowConfig.value.isCurrent !== false) {
+  const effectiveRowConfig = isRecord(tableConfig.value.rowConfig)
+    ? tableConfig.value.rowConfig
+    : {};
+  if (effectiveRowConfig.isCurrent !== false) {
     tableRef.value?.setCurrentRow?.(payload.row);
   }
   emitConfiguredEvent('onRowClick', rowEventPayload(payload.row, payload));
@@ -1135,7 +1251,7 @@ function cloneValue(value: unknown) {
 
 .lc-array-table__grid :deep(.vxe-body--column),
 .lc-array-table__grid :deep(.vxe-header--column) {
-  vertical-align: top;
+  vertical-align: inherit;
 }
 
 .lc-array-table__object-cell {

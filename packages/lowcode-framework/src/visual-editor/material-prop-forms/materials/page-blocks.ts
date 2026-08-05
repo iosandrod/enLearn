@@ -6,6 +6,7 @@ import {
   propField,
   switchPropField,
 } from '../helpers';
+import { createDefaultButtonGroupEditorRows } from '../../../lowcode/actions/builtins';
 
 const formComponentOptions = [
   option('输入框', 'vxe-input'),
@@ -178,28 +179,7 @@ const gridColumnRows = [
   { field: 'role', title: '角色', minWidth: '120' },
 ];
 
-const buttonRows = [
-  {
-    code: 'create',
-    label: '新增',
-    status: 'primary',
-    type: 'button',
-    eventName: 'buttonGroup.create',
-    directivesJson: [],
-    children: [],
-  },
-  {
-    code: 'more',
-    label: '更多',
-    type: 'button',
-    eventName: 'buttonGroup.more',
-    directivesJson: [],
-    children: [
-      { code: 'import', label: '导入', type: 'button', eventName: 'buttonGroup.import' },
-      { code: 'export', label: '导出', type: 'button', eventName: 'buttonGroup.export' },
-    ],
-  },
-];
+const buttonRows = createDefaultButtonGroupEditorRows({ directivesJson: 'array' });
 
 const formActionRows = [
   {

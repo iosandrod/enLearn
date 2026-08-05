@@ -314,6 +314,7 @@ import { defineComponent, h, resolveComponent } from 'vue';
 import type { PropType } from 'vue';
 import {VxeUI} from 'vxe-pc-ui';
 import { useServiceApi } from '../composables/useServiceApi';
+import { loadSystemSettings } from '../composables/useSystemSettings';
 import type {
   LowCodePageRecord,
   LowCodePageSchema,
@@ -994,6 +995,11 @@ async function openSystemSettingsDialog() {
       confirmLabel: '完成',
       cancelLabel: '关闭',
       submitOnConfirm: true,
+      onRuntimeEvent: async (event) => {
+        if (event.name === 'form.saved') {
+          await loadSystemSettings(true);
+        }
+      },
       dialog: {
         id: SYSTEM_SETTINGS_DIALOG_ID,
       },

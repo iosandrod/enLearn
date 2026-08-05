@@ -1,4 +1,9 @@
 import { resolveComponent } from 'vue';
+import {
+  mergeSystemTableOptions,
+  resolveSystemTableConfig,
+  useSystemSettings,
+} from '../../../core/system-settings';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
   createEditorInputProp,
@@ -54,7 +59,13 @@ const vxeGridPropKeys = [
   'showHeaderOverflow',
   'showFooterOverflow',
   'height',
+  'minHeight',
   'maxHeight',
+  'rowHeight',
+  'headerHeight',
+  'headerRowHeight',
+  'footerHeight',
+  'footerRowHeight',
   'size',
   'loading',
   'round',
@@ -62,6 +73,9 @@ const vxeGridPropKeys = [
   'showFooter',
   'autoResize',
   'syncResize',
+  'cellConfig',
+  'headerCellConfig',
+  'footerCellConfig',
   'rowConfig',
   'columnConfig',
   'sortConfig',
@@ -74,6 +88,9 @@ const vxeGridPropKeys = [
   'radioConfig',
   'treeConfig',
   'expandConfig',
+  'tooltipConfig',
+  'virtualXConfig',
+  'virtualYConfig',
 ] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -126,9 +143,13 @@ function createPreviewData(columns: Record<string, unknown>[]) {
 function createDesignGridProps(
   props: Record<string, unknown>,
   styles: Record<string, unknown>,
-  fillRemaining: boolean
+  fillRemaining: boolean,
+  systemTableConfig = resolveSystemTableConfig(),
 ) {
-  const options = pickVxeGridOptions(props);
+  const options = mergeSystemTableOptions(
+    pickVxeGridOptions(props),
+    systemTableConfig,
+  );
   const columns = normalizeLowCodeGridColumns(
     normalizeRows(props.columns ?? options.columns, defaultColumns) as LowCodeGridColumn[]
   );
@@ -181,6 +202,7 @@ export default {
     );
   },
   render({ props, styles, block }) {
+    const systemSettings = useSystemSettings();
     return () => {
       const VxeGrid = resolveComponent('vxe-grid') as any;
       const fillRemaining =
@@ -188,7 +210,8 @@ export default {
       const gridProps = createDesignGridProps(
         props,
         styles as Record<string, unknown>,
-        fillRemaining
+        fillRemaining,
+        resolveSystemTableConfig(systemSettings),
       );
 
       return (

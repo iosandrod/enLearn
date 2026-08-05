@@ -14,7 +14,8 @@
     "web:build": "node ./scripts/env-polyfill.js webpack --config ./scripts/hippy-webpack.web-renderer.js",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json",
     "test:virtual-table": "node ./tests/virtual-table-regression.mjs",
-    "test:mobile-form": "node ./tests/mobile-form-regression.mjs"
+    "test:mobile-form": "node ./tests/mobile-form-regression.mjs",
+    "test:layout-width": "node ./tests/layout-width-regression.mjs"
   },
   "dependencies": {
     "@hippy/vue-next": "3.3.2",

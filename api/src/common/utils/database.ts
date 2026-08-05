@@ -1,5 +1,6 @@
 import { Pool, type PoolClient } from 'pg';
 import { getEnv } from './env';
+import { guardPostgresPoolClientErrorEvents } from './postgres-client-errors';
 
 let pool: Pool | null = null;
 
@@ -20,6 +21,10 @@ export function getPostgresPool() {
     connectionString,
     max: 5,
     ssl: { rejectUnauthorized: false }
+  });
+  guardPostgresPoolClientErrorEvents(pool);
+  pool.on('error', (error) => {
+    console.warn(`[postgres] Idle client error: ${error.message}`);
   });
 
   return pool;

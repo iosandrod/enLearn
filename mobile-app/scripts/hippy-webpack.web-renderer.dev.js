@@ -18,6 +18,17 @@ module.exports = {
     port: 3100,
     hot: true,
     liveReload: true,
+    client: {
+      overlay: {
+        errors: true,
+        warnings: true,
+        runtimeErrors: (error) => {
+          const message = error instanceof Error ? error.message : String(error);
+          return message !== 'ResizeObserver loop completed with undelivered notifications.'
+            && message !== 'ResizeObserver loop limit exceeded';
+        },
+      },
+    },
   },
   entry: {
     index: ['regenerator-runtime/runtime', path.resolve(pkg.webMain)],

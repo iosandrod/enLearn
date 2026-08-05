@@ -29,6 +29,7 @@
     "./runtime/global-dialog": "./src/runtime/global-dialog.ts",
     "./runtime/page-reference-dialog": "./src/runtime/page-reference-dialog.tsx",
     "./runtime/directives": "./src/runtime/directives.ts",
+    "./actions": "./src/lowcode/actions/index.ts",
     "./core/host": "./src/core/host.ts",
     "./types/lowcode": "./src/types/lowcode.ts",
     "./lowcode/schema": "./src/lowcode/schema.ts",

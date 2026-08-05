@@ -42,8 +42,18 @@ assert.match(
 );
 assert.match(
   arrayTableSource,
-  /function handleToolbarButtonClick\([\s\S]*?payload\.option\?\.name \?\? payload\.name[\s\S]*?button\.command === 'add' \? addRow\(button\.row\)/,
-  'The button group must dispatch its add command and optional row template through the array-table component.',
+  /async function handleToolbarButtonClick\([\s\S]*?payload\.option\?\.name \?\? payload\.name[\s\S]*?typeof button\.execute === 'function'[\s\S]*?await button\.execute\([\s\S]*?emitConfiguredEvent\('onToolbarAction', actionPayload\)/,
+  'The button group must execute button-owned behavior and fall back to its configured toolbar event.',
+);
+assert.doesNotMatch(
+  arrayTableSource,
+  /button\.command === 'add'/,
+  'Toolbar dispatch must not hard-code one command branch.',
+);
+assert.match(
+  arrayTableSource,
+  /function executeAddToolbarAction\(\{ action, addRow \}[\s\S]*?addRow\(action\.row\)[\s\S]*?const legacyToolbarCommandExecutors:[\s\S]*?add: executeAddToolbarAction[\s\S]*?legacyToolbarCommandExecutors\[command\]/,
+  'Legacy command-based toolbar configurations must be adapted to button executors through an extensible registry.',
 );
 assert.match(
   arrayTableSource,
@@ -82,13 +92,13 @@ assert.match(
 );
 assert.match(
   designerSource,
-  /toolbarButtons: \[[\s\S]*?label: '新增按钮',[\s\S]*?command: 'add'/,
-  'The button designer must configure its toolbar through the button-group protocol.',
+  /toolbarButtons: \[[\s\S]*?label: '新增按钮',[\s\S]*?execute: executeAddToolbarAction/,
+  'The button designer must place its add behavior on the toolbar button object.',
 );
 assert.match(
   designerSource,
-  /code: 'add-dropdown',[\s\S]*?label: '新增下拉按钮',[\s\S]*?command: 'add',[\s\S]*?children: \[createButtonRow\('下拉项'\)\]/,
-  'The button designer must expose a command that creates a dropdown button with a child item.',
+  /code: 'add-dropdown',[\s\S]*?label: '新增下拉按钮',[\s\S]*?children: \[createButtonRow\('下拉项'\)\],[\s\S]*?execute: executeAddToolbarAction/,
+  'The button designer must expose an executable action that creates a dropdown button with a child item.',
 );
 assert.doesNotMatch(
   designerSource,

@@ -9,6 +9,7 @@ import {
   isTransientPostgresError,
   retryTransientPostgresOperation
 } from './postgres-resilience';
+import { guardPostgresPoolClientErrorEvents } from '../../common/utils/postgres-client-errors';
 
 type WorkflowDatabaseEnv = {
   DATABASE_URL?: string;
@@ -50,6 +51,7 @@ export function createWorkflowPostgresPool(
     connectionString: poolConnectionString,
     max: options.max ?? 3
   });
+  guardPostgresPoolClientErrorEvents(pool);
 
   pool.on('error', (error) => {
     const message = `${options.name} Postgres idle client error: ${error.message}`;

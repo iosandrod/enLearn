@@ -1110,6 +1110,14 @@ async function submitForms() {
     }
 
     await loadPageData(props.page);
+    await publishRuntimeEvent({
+      name: 'form.saved',
+      blockKind: 'form',
+      timestamp: Date.now(),
+      payload: {
+        sourceKeys: Array.from(groups.keys()),
+      },
+    });
     message.value = host.t('runtime.form.saved');
     messageClass.value = 'lc-help';
     return true;
@@ -1808,6 +1816,16 @@ async function handleFormSubmit(
     message.value = host.t('runtime.form.saved');
     messageClass.value = 'lc-help';
     await loadPageData(props.page);
+    await publishRuntimeEvent({
+      name: 'form.saved',
+      blockId: block.id,
+      blockKind: block.kind,
+      timestamp: Date.now(),
+      payload: {
+        sourceKey: source.key,
+        values,
+      },
+    });
   } catch (error) {
     message.value =
       error instanceof Error ? error.message : host.t('runtime.form.submitFailed');
