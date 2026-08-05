@@ -4,7 +4,7 @@ defineOptions({ name: "GanttThemesWillowDark" });
 import { WillowDark } from "@svar-ui/vue-core";
 import { WillowDark as GridWillowDark } from "@svar-ui/vue-grid";
 
-const props = defineProps<any>({
+const props = defineProps({
 	fonts: { type: Boolean, default: true },
 });
 </script>

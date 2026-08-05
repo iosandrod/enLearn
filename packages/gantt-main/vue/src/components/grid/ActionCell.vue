@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-const props = defineProps<any>({
-	column: {},
-	row: {},
-	cell: {},
-});
+const props = defineProps<{
+	column: {
+		id: string;
+		align?: "left" | "right" | "center";
+	};
+	row: Record<string, any> | number;
+	cell?: unknown;
+}>();
 
 const action = computed(() => props.column.id);
 
@@ -18,6 +21,7 @@ const icon = computed(() => {
 
 const disabled = computed(() => {
 	if (!action.value.includes("add")) return false;
+	if (typeof props.row !== "object") return false;
 	const gValue = props.row.$groupValue;
 	return (
 		(!props.row.$group && typeof gValue !== "undefined") ||

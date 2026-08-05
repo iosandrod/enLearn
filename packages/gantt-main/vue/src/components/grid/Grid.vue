@@ -12,7 +12,7 @@ import TextCell from "./TextCell.vue";
 import ActionCell from "./ActionCell.vue";
 import ResourcesCell from "./ResourcesCell.vue";
 import EditorResourcesCell from "./EditorResourcesCell.vue";
-import { setTaskResources } from "../../helpers/setTaskResources.js";
+import { setTaskResources } from "../../helpers/setTaskResources";
 
 import {
 	getGridMinHeight,
@@ -27,11 +27,11 @@ import {
 
 const vReorder = asDirective(reorder);
 
-const props = defineProps<any>({
+const props = defineProps({
 	readonly: {},
 });
 
-const tableAPI = defineModel("tableAPI");
+const tableAPI = defineModel<any>("tableAPI");
 
 const locale = inject<any>("wx-i18n");
 const _ = locale.getGroup("gantt");

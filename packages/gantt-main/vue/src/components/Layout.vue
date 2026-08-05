@@ -20,7 +20,7 @@ import Resizer from "./Resizer.vue";
 
 const vHotkeys = asDirective(hotkeys);
 
-defineProps<any>({
+defineProps({
 	taskTemplate: {},
 	readonly: {},
 });

@@ -31,7 +31,7 @@ import {
 	prepareZoom,
 } from "../helpers/prepareConfig";
 
-const props = defineProps<any>({
+const props = defineProps({
 	taskTemplate: { default: null },
 	markers: { default: () => [] },
 	taskTypes: { default: () => defaultTaskTypes },
@@ -270,7 +270,7 @@ const reinitStore = () => {
 		gridWidth: resolvedGridWidth.value,
 		cellBorders: props.cellBorders,
 		_compactMode: compactMode.value,
-	});
+	} as any);
 
 	if (init_once && props.init) {
 		props.init(api);
@@ -284,4 +284,9 @@ watchEffect(reinitStore);
 
 <template>
 	<Layout
-		:taskTemplat
+		:taskTemplate="props.taskTemplate"
+		:readonly="props.readonly"
+		v-model:tableAPI="tableAPI"
+		v-model:ganttWidth="ganttWidth"
+	/>
+</template>

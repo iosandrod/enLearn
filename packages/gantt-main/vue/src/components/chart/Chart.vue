@@ -14,7 +14,7 @@ import { createZoomWheelHandler } from '../../helpers/zoom';
 
 const vHotkeys = asDirective(hotkeys);
 
-const props = defineProps<any>({
+const props: any = defineProps({
 	readonly: {},
 	fullWidth: {},
 	fullHeight: {},

@@ -7,7 +7,7 @@ import { subscribe, asDirective } from "@svar-ui/lib-vue";
 
 const vClickOutside = asDirective(clickOutside as any);
 
-const props = defineProps<any>({
+const props = defineProps({
 	onSelectLink: { type: Function },
 	selectedLink: { default: null as any },
 	readonly: {},

@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { Avatar } from "@svar-ui/vue-core";
 
-const props = defineProps<any>({
+const props: any = defineProps({
 	row: {},
 	data: {},
 });

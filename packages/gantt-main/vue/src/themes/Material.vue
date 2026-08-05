@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineOptions({ name: "GanttThemesMaterial" });
 
-defineProps<any>({
+defineProps({
 	fonts: { type: Boolean, default: true },
 });
 </script>

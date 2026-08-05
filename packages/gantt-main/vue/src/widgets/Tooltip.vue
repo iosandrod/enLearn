@@ -5,7 +5,7 @@ import { computed } from "vue";
 import { Tooltip } from "@svar-ui/vue-core";
 import { getID, locateID } from "@svar-ui/lib-dom";
 
-const props = defineProps<any>({
+const props: any = defineProps({
 	api: {},
 	at: { default: "point" },
 	overflow: { default: false },
@@ -85,7 +85,7 @@ function defaultResolver(element, ev) {
 </script>
 
 <template>
-	<Tooltip :at="at" :content="content" :resolver="resolver">
+	<Tooltip v-bind="{ at, content, resolver } as any">
 		<slot />
 	</Tooltip>
 </template>

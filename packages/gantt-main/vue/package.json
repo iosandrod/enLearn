@@ -8,9 +8,14 @@
 	"license": "MIT",
 	"scripts": {
 		"dev": "vite --host 0.0.0.0",
+		"predev": "yarn --cwd ../locales build",
+		"prebuild": "yarn --cwd ../locales build",
+		"prebuild:demo": "yarn --cwd ../locales build",
+		"pretest": "yarn --cwd ../locales build",
+		"pretypecheck": "yarn --cwd ../locales build",
 		"build": "vite build",
 		"build:demo": "vite build --mode demo",
-		"lint": "eslint ./src ./test ./demo",
+		"lint": "jiti ./scripts/run-eslint.ts ./src ./test ./demo",
 		"test": "vitest --run",
 		"typecheck": "vue-tsc --noEmit"
 	},

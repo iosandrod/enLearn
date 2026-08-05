@@ -2,12 +2,12 @@
 import { computed } from "vue";
 import { DatePicker, TimePicker } from "@svar-ui/vue-core";
 
-const props = defineProps<any>({
-	value: {},
-	time: {},
-	format: {},
-	onchange: { type: Function },
-});
+const props = defineProps<{
+	value: Date;
+	time?: boolean;
+	format?: string | ((value: Date) => string);
+	onchange?: (event: { value: Date }) => void;
+}>();
 
 const restProps = computed(() => {
 	const rest = { ...props };

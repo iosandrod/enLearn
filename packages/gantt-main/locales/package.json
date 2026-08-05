@@ -3,9 +3,12 @@
 	"version": "2.7.1",
 	"description": "Locales for SVAR Gantt component",
 	"type": "module",
-	"main": "index.js",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
 	"scripts": {
-		"build": "true",
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc -p tsconfig.json --noEmit",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"keywords": [

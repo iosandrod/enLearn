@@ -13,7 +13,7 @@ import { locale } from "@svar-ui/lib-dom";
 import { subscribeLater } from "@svar-ui/lib-vue";
 import { en } from "@svar-ui/gantt-locales";
 
-const props = defineProps<any>({
+const props = defineProps({
 	api: { default: null },
 	items: { default: () => [] },
 });
@@ -35,14 +35,14 @@ const groupBy = subscribeLater<any>(() => props.api?.getReactiveState()?.groupBy
 const historyActions = ["undo", "redo"];
 
 const finalItems = computed(() => {
-	const fullButtons = getToolbarButtons({ undo: true, splitTasks: true });
+	const fullButtons = getToolbarButtons({ undo: true, splitTasks: true } as any);
 	const buttons = props.items.length
 		? props.items
 		: getToolbarButtons({
 				undo: undo().value,
 				splitTasks: splitTasks().value,
 				group: !!groupBy().value?.field,
-			});
+			} as any);
 	return buttons.map(b => {
 		b = { ...b, disabled: false };
 		b.handler = isHandledAction(fullButtons, b.id)

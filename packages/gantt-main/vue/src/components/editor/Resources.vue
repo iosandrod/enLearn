@@ -13,7 +13,7 @@ import { tempID } from "@svar-ui/lib-state";
 const locale = inject<any>("wx-i18n");
 const _ = locale.getGroup("gantt");
 
-const props = defineProps<any>({
+const props: any = defineProps({
 	api: {},
 	autoSave: {},
 	onextchange: { type: Function },
@@ -42,10 +42,10 @@ function subscribeHandler(taskid) {
 }
 
 const unsubscribers = [
-	activeTask.subscribe<any>(v => {
+	activeTask.subscribe(v => {
 		subscribeHandler(v);
 	}),
-	_assignments.subscribe<any>(() => subscribeHandler($activeTask.value)),
+	_assignments.subscribe(() => subscribeHandler($activeTask.value)),
 ];
 
 onUnmounted(() => {

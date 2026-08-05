@@ -4,7 +4,7 @@ defineOptions({ name: "GanttResourceLoadCell" });
 import { getValue } from "@svar-ui/grid-store";
 import { setID } from "@svar-ui/lib-dom";
 
-const props = defineProps<any>({
+const props: any = defineProps({
 	row: {},
 	column: {},
 });

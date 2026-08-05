@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-const props = defineProps<any>({
+const props: any = defineProps({
 	row: {},
 	column: {},
 	data: {},

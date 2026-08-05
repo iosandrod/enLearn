@@ -11,9 +11,6 @@
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
-		"allowJs": true,
-		"checkJs": false,
-
 		"noImplicitAny": true,
 		"sourceMap": true,
 
@@ -22,5 +19,6 @@
 		"outDir": "dist/"
 	},
 	"watchOptions": {},
-	"include": ["src/**/*.ts"]
+	"include": ["src/**/*.ts"],
+	"exclude": ["src/pro/**"]
 }

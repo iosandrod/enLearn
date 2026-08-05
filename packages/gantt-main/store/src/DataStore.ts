@@ -80,6 +80,24 @@ import type {
 import { isEqual } from "date-fns";
 import { normalizeDates, parseTaskDates } from "./normalizeDates";
 
+type HistoryModule = {
+	resetHistory(): void;
+	startBatch(): void;
+	endBatch(): void;
+};
+
+type GroupingModule = {
+	buildTree(): GanttDataTree;
+};
+
+function normalizeAssignments(assignments: IAssignment[] = []) {
+	return assignments.map(assignment => ({
+		...assignment,
+		id: assignment.id || tempID(),
+		units: assignment.units ?? 100,
+	}));
+}
+
 export default class DataStore extends Store<IData> {
 	public in: EventBus<TMethodsConfig, keyof TMethodsConfig>;
 	private _router: DataRouter<IData, IDataConfig, TMethodsConfig>;
@@ -1864,9 +1882,7 @@ export default class DataStore extends Store<IData> {
 
 	getHistory() {
 		if (!this.getState().undo) return null;
-		return this._modules.get("historyManager") as
-			| HistoryManager
-			| undefined;
+		return this._modules.get("historyManager") as HistoryModule | undefined;
 	}
 	getCalendar(id?: TID): ICalendar | undefined {
 		const { _calendar, _calendars } = this.getState();
@@ -1904,7 +1920,7 @@ export default class DataStore extends Store<IData> {
 
 	getGrouping() {
 		if (!this.getState().groupBy?.field) return null;
-		return this._modules.get("groupManager") as GroupManager | undefined;
+		return this._modules.get("groupManager") as GroupingModule | undefined;
 	}
 
 	serialize(config?: { data: TDataName }) {

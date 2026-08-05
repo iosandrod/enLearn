@@ -16,7 +16,7 @@ const i18nData = l.getRaw();
 const f = i18nData.gantt?.dateFormat || i18nData.formats?.dateFormat;
 const dateFormat = dateToString(f, i18nData.calendar);
 
-const props = defineProps<any>({
+const props: any = defineProps({
 	api: {},
 	autoSave: {},
 	segments: {},

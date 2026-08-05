@@ -4,7 +4,7 @@ defineOptions({ name: "GanttThemesWillow" });
 import { Willow } from "@svar-ui/vue-core";
 import { Willow as GridWillow } from "@svar-ui/vue-grid";
 
-const props = defineProps<any>({
+const props = defineProps({
 	fonts: { type: Boolean, default: true },
 });
 </script>

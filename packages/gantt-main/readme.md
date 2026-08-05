@@ -32,12 +32,13 @@ Run each migration gate independently:
 ```sh
 yarn test
 yarn lint
-yarn --cwd vue typecheck
+yarn typecheck
 yarn build
 ```
 
 `yarn test` covers the included community store, REST provider contracts, and
-Vue public/rendering contracts. `yarn test:upstream` keeps the broader upstream
+Vue public/rendering contracts. `yarn typecheck` validates every package and
+the TypeScript tool configuration. `yarn test:upstream` keeps the broader upstream
 suite available; tests that import `store/src/pro` require PRO sources that are
 not part of this package.
 

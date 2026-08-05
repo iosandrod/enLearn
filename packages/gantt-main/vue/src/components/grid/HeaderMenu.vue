@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { HeaderMenu } from '@svar-ui/vue-grid';
 
-const props = defineProps<any>({
+const props: any = defineProps({
 	columns: { default: null },
 	api: {},
 });

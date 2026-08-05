@@ -18,14 +18,14 @@ import { en } from "@svar-ui/gantt-locales";
 import { en as coreEn } from "@svar-ui/core-locales";
 import { subscribeLater } from "@svar-ui/lib-vue";
 
-const props = defineProps<any>({
+const props = defineProps({
 	options: { default: () => [] },
 	api: { default: null },
 	resolver: { default: null },
 	filter: { default: null },
 	at: { default: "point" },
 	onclick: { type: Function },
-	css: {},
+	css: { type: String, default: "" },
 });
 
 let activeId = null;
@@ -62,7 +62,7 @@ const tasks = computed(() =>
 			: []
 );
 
-const fullOptions = computed(() => getMenuOptions(config.value));
+const fullOptions = computed(() => getMenuOptions(config.value as any));
 
 const customOptions = computed(() =>
 	props.options.length ? props.options : null
@@ -175,7 +175,7 @@ watchEffect(() => {
 });
 
 // built imperatively before the menu opens, not derived from the store (avoids rebuild churn on every store tick)
-const menuOptions = ref([]);
+const menuOptions = ref<any[]>([]);
 
 const menu = ref(null);
 

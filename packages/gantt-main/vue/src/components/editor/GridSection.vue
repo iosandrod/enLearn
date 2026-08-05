@@ -2,14 +2,14 @@
 import { Grid } from "@svar-ui/vue-grid";
 import { locateID } from "@svar-ui/lib-dom";
 
-const props = defineProps<any>({
-	columns: {},
-	data: {},
-	onaction: { type: Function },
-	onedit: { type: Function },
-	sizes: {},
-	oninit: { type: Function },
-});
+const props = defineProps<{
+	columns: any[];
+	data: Record<string, any>[];
+	onaction?: (id: string | number, action: string) => void;
+	onedit: (id: string | number, column: string | number, value: unknown) => void;
+	sizes?: Record<string, number>;
+	oninit?: (api: any) => void;
+}>();
 
 function onClick(e) {
 	const id = locateID(e);
@@ -34,7 +34,7 @@ function init(tApi) {
 			:columns="columns"
 			:data="data"
 			:select="false"
-			:columnStyle="col =>
+			:columnStyle="(col: any) =>
 				`wx-editor-cell wx-text-${col.align} ${col.id === 'delete' ? 'wx-action' : ''}`"
 			:sizes="sizes || {}"
 		/>

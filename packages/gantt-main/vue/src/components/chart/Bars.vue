@@ -11,7 +11,7 @@ import { Button } from "@svar-ui/vue-core";
 import { isSegmentMoveAllowed, extendDragOptions } from "@svar-ui/gantt-store";
 import BarSegments from "./BarSegments.vue";
 
-const props = defineProps<any>({
+const props = defineProps({
 	readonly: {},
 	taskTemplate: {},
 });
@@ -138,7 +138,7 @@ function down(node, point) {
 				const segNode = locate(point, "data-segment");
 				if (segNode) {
 					taskMove.value.segmentIndex =
-						segNode.dataset["segment"] * 1;
+						Number(segNode.dataset["segment"]);
 					extendDragOptions(task, taskMove.value);
 				}
 			}
@@ -1084,4 +1084,7 @@ onUnmounted(() => {
 		var(--wx-gantt-task-slack-border-color),
 		var(--wx-gantt-task-slack-border-color) 1px,
 		var(--wx-gantt-task-slack-color) 1px,
-		var(--wx-gantt-task-slack-color)
+		var(--wx-gantt-task-slack-color) 8px
+	);
+}
+</style>

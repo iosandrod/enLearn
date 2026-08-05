@@ -37,7 +37,7 @@ import {
 } from "../../helpers/grid";
 import { createZoomWheelHandler } from "../../helpers/zoom";
 
-const props = defineProps<any>({
+const props: any = defineProps({
 	api: {},
 	columns: { default: () => getResourceColumns() },
 	mode: { default: "grid" },
@@ -105,10 +105,15 @@ let rightApi;
 
 const finalColumns = computed(() => {
 	if (!props.columns || !props.columns.length) return [];
-	let cols = normalizeResourceColumns(props.columns).map(col => {
+	let cols: any[] = normalizeResourceColumns(props.columns).map(source => {
+		let col: any = source;
 		col = { ...col };
-		const header = col.header;
-		if (typeof header === "object") {
+		const header = col.header as
+			| string
+			| { text?: string; [key: string]: unknown }
+			| null
+			| undefined;
+		if (header && typeof header === "object") {
 			const text = header.text && _(header.text);
 			col.header = { ...header, text };
 		} else col.header = _(header);
@@ -363,7 +368,7 @@ onUnmounted(() => {
 									rowHeight: $cellHeight,
 									headerHeight: $rScales.height / $_headerLength,
 								}"
-								:columnStyle="col => `wx-text-${col.align}`"
+								:columnStyle="(col: any) => `wx-text-${col.align}`"
 								:data="$rResources"
 								:columns="fitColumns"
 								:sortMarks="sortMarks"

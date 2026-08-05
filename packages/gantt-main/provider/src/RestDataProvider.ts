@@ -27,12 +27,12 @@ export default class RestDataProvider extends Rest<TMethodsConfig> {
 		method: string;
 		data: any;
 	}> = [];
-	protected _batchUrl: string;
-	private flushTimeout: any = null;
+	private ganttBatchUrl?: string;
+	private flushTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	constructor(url: string, config?: Partial<TProviderConfig>) {
 		super(url);
-		this._batchUrl = config?.batchURL;
+		this.ganttBatchUrl = config?.batchURL;
 	}
 
 	getHandlers(): ActionMap<TMethodsConfig> {
@@ -181,14 +181,13 @@ export default class RestDataProvider extends Rest<TMethodsConfig> {
 		data?: any,
 		customHeaders?: any
 	): Promise<T> {
-		if (this._batchUrl) {
-			return this.sendBatchRequest(url, method, data, customHeaders);
-		} else {
-			return this.send(url, method, data, customHeaders);
+		if (this.ganttBatchUrl) {
+			return this.sendGanttBatchRequest(url, method, data, customHeaders);
 		}
+		return this.send(url, method, data, customHeaders);
 	}
 
-	private async sendBatchRequest<T>(
+	private async sendGanttBatchRequest<T>(
 		url: string,
 		method: string,
 		data?: any,
@@ -196,40 +195,27 @@ export default class RestDataProvider extends Rest<TMethodsConfig> {
 	): Promise<T> {
 		this.changeQueue.push({ url, method, data });
 
-		if (this.flushTimeout) {
-			clearTimeout(this.flushTimeout);
-		}
+		if (this.flushTimeout) clearTimeout(this.flushTimeout);
 
 		return new Promise<T>(resolve => {
 			this.flushTimeout = setTimeout(async () => {
 				if (this.changeQueue.length > 1) {
-					const batchData = this.changeQueue.map(req => {
-						return {
-							url: req.url,
-							method: req.method,
-							data: {
-								...req.data,
-							},
-						};
-					});
-
+					const batchData = this.changeQueue.map(req => ({
+						url: req.url,
+						method: req.method,
+						data: { ...req.data },
+					}));
 					this.changeQueue = [];
-
-					const result = await this.send<T>(
-						this._batchUrl,
-						"POST",
-						batchData
+					resolve(
+						await this.send<T>(
+							this.ganttBatchUrl,
+							"POST",
+							batchData
+						)
 					);
-					resolve(result);
 				} else {
 					this.changeQueue = [];
-					const result = await this.send<T>(
-						url,
-						method,
-						data,
-						customHeaders
-					);
-					resolve(result);
+					resolve(await this.send<T>(url, method, data, customHeaders));
 				}
 			}, 10);
 		});

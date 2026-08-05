@@ -28,18 +28,19 @@ import DateTimePicker from "./editor/DateTimePicker.vue";
 import Resources from "./editor/Resources.vue";
 import Segments from "./editor/Segments.vue";
 
-registerEditorItem("select", RichSelect);
-registerEditorItem("date", DateTimePicker);
-registerEditorItem("twostate", TwoState);
-registerEditorItem("slider", Slider);
-registerEditorItem("counter", Counter);
-registerEditorItem("links", Links);
-registerEditorItem("checkbox", Checkbox);
-registerEditorItem("resources", Resources);
-registerEditorItem("segments", Segments);
+const registerItem = registerEditorItem as any;
+registerItem("select", RichSelect);
+registerItem("date", DateTimePicker);
+registerItem("twostate", TwoState);
+registerItem("slider", Slider);
+registerItem("counter", Counter);
+registerItem("links", Links);
+registerItem("checkbox", Checkbox);
+registerItem("resources", Resources);
+registerItem("segments", Segments);
 registerToolbarItem("tabs", Tabs);
 
-const props = defineProps<any>({
+const props = defineProps({
 	api: { default: null },
 	items: { default: () => [] },
 	css: { default: "" },
@@ -87,7 +88,7 @@ const baseItems = computed(() =>
 		taskTypes: taskTypes().value,
 		resources: resources().value,
 		splitTasks: splitTasks().value,
-	})
+	} as any)
 );
 
 const linksActions = ref(new Map());
@@ -102,6 +103,7 @@ const externalValues = {
 	taskAssignments: null,
 	predecessors: null,
 	successors: null,
+	segments: null,
 };
 const notSavedValues = ref({ ...externalValues });
 
@@ -232,7 +234,7 @@ function normalizeBar(bar, batches, type) {
 			resources: resources().value,
 			autoSave: props.autoSave,
 			splitTasks: splitTasks().value,
-		});
+		} as any);
 	}
 	bar.items = filterEditorButtons(bar.items, item => {
 		if (item.id === "tabs") {
@@ -317,7 +319,10 @@ function handleChange(ev) {
 	else if (!editorErrors.value && !input) {
 		const item = editorItems.value.find(i => i.key === key);
 		const v = update[key];
-		const isValid = !item.validation || item.validation(v);
+		const validation = item.validation as
+			| ((value: unknown) => boolean)
+			| undefined;
+		const isValid = !validation || validation(v);
 		if (isValid && (!item.required || v)) save(ev.update);
 	}
 }
@@ -326,7 +331,12 @@ function normalizeTask(task, key, input) {
 	if (unscheduledTasks().value && task.type === "summary")
 		task.unscheduled = false;
 
-	prepareEditTask(task, props.api.getState(), props.api.getTaskCalendar(task), key);
+	(prepareEditTask as any)(
+		task,
+		props.api.getState(),
+		props.api.getTaskCalendar(task),
+		key
+	);
 	if (!input) inProgress.value = false;
 	return task;
 }
@@ -340,7 +350,7 @@ function handleValidation(check) {
 	editorErrors.value = check.errors;
 }
 
-function save(values, changes) {
+function save(values, changes?) {
 	delete values.links;
 	delete values.data;
 
@@ -350,7 +360,7 @@ function save(values, changes) {
 	)
 		delete values.duration;
 
-	const data = {
+	const data: any = {
 		id: taskId().value,
 		task: values,
 	};
@@ -385,13 +395,12 @@ function onTabChange(ev) {
 <template>
 	<Locale v-if="task">
 		<Editor
+			v-bind="({ placement, layout } as any)"
 			:css="`wx-gantt-editor ${styleCss} ${css}`"
 			:items="editorItems"
 			:values="task"
 			:topBar="normalizedTopBar"
 			:bottomBar="normalizedBottomBar"
-			:placement="placement"
-			:layout="layout"
 			:readonly="readonly"
 			:autoSave="autoSave"
 			:focus="focus"

@@ -7,6 +7,7 @@ import type {
 	IEventConfig,
 } from "@svar-ui/lib-state";
 import type GanttDataTree from "./GanttDataTree";
+import type { DataTree } from "@svar-ui/lib-state";
 import { Day } from "date-fns";
 import type DataStore from "./DataStore";
 import type { IApi as ITableApi, IColumn, IFilterValues } from "@svar-ui/grid-store";
@@ -18,8 +19,6 @@ import type {
 	ICalendar,
 } from "./schedule-types";
 export type { TaskSlackInfo, ICalendarRule, CalendarConfig, ICalendar };
-import ResourceDataTree from "./pro/ResourceDataTree";
-
 export type TMethodsConfig = IDataMethodsConfig;
 export type { GanttDataTree, TID };
 
@@ -152,6 +151,11 @@ export interface IParsedResource extends IResource {
 	parent: TID;
 	$level: number;
 	data?: IParsedResource[];
+}
+
+export interface IResourceDataTree extends DataTree<IParsedResource> {
+	byId(id: TID): IParsedResource;
+	sort(config: TSort[], columns: IResourceColumn[]): void;
 }
 
 export interface IComputedResource extends IParsedResource {
@@ -401,7 +405,7 @@ export interface IData
 	zoom?: IZoomConfig;
 	tasks: GanttDataTree;
 	links: DataArray<ILink>;
-	resources?: ResourceDataTree;
+	resources?: IResourceDataTree;
 	assignments?: DataArray<IAssignment>;
 	calendars?: GanttCalendarConfig[];
 

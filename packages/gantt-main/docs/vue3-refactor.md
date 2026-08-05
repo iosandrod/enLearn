@@ -31,7 +31,8 @@ domain layer.
 - `yarn start` builds the domain packages and starts the Vue demo.
 - `yarn test` runs the community store/provider and Vue migration suites.
 - `yarn lint` checks the preserved core and the new Vue workspace.
-- `yarn --cwd vue typecheck` validates the Vue package declarations.
+- `yarn typecheck` validates the store, provider, locales, Vue package, and
+  TypeScript tool configuration.
 - `yarn build` creates the store, provider, Vue library, and Vue demo builds.
 
 The upstream checkout includes tests for PRO modules that are not present in

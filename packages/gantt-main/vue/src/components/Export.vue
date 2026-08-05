@@ -5,7 +5,7 @@ import Willow from "../themes/Willow.vue";
 import WillowDark from "../themes/WillowDark.vue";
 import Gantt from "./Gantt.vue";
 
-defineProps<any>({
+defineProps({
 	skin: {},
 	config: { default: () => ({}) },
 });

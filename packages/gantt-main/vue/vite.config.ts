@@ -1,6 +1,8 @@
-import { resolve } from "path";
+import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+
+const fromRoot = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 export default defineConfig(({ mode }) => {
 	const common = {
@@ -10,7 +12,7 @@ export default defineConfig(({ mode }) => {
 		},
 		test: {
 			environment: "jsdom",
-			setupFiles: [resolve(__dirname, "test/setup.ts")],
+			setupFiles: [fromRoot("./test/setup.ts")],
 			include: ["test/**/*.spec.ts"],
 		},
 	};
@@ -29,7 +31,7 @@ export default defineConfig(({ mode }) => {
 		...common,
 		build: {
 			lib: {
-				entry: resolve(__dirname, "src/index.ts"),
+				entry: fromRoot("./src/index.ts"),
 				fileName: format =>
 					format === "cjs" ? "index.cjs" : "index.es.js",
 				formats: ["es", "cjs"],

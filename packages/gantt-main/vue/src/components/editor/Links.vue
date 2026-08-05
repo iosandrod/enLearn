@@ -8,7 +8,7 @@ import GridSection from "./GridSection.vue";
 import LinkTypeCell from "./LinkTypeCell.vue";
 
 const _ = inject<any>("wx-i18n").getGroup("gantt");
-const props = defineProps<any>({
+const props: any = defineProps({
 	api: {},
 	autoSave: {},
 	onextchange: { type: Function },
@@ -166,7 +166,7 @@ function onDeleteAction(id) {
 }
 
 function onEdit(id, column, value) {
-	const update = { [column]: value };
+	const update: Record<string, any> = { [column]: value };
 	if (column === "type" && $schedule.value?.auto) {
 		if (value !== "e2s") update.lag = "";
 	}

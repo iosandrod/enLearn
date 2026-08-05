@@ -3,7 +3,7 @@ import { computed, inject } from "vue";
 import { subscribe } from "@svar-ui/lib-vue";
 import { Avatar } from "@svar-ui/vue-core";
 
-const props = defineProps<any>({
+const props: any = defineProps({
 	row: {},
 });
 

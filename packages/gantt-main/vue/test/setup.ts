@@ -1,11 +1,13 @@
 import { vi } from "vitest";
 
 class ResizeObserverMock {
-	constructor(callback) {
+	callback: ResizeObserverCallback;
+
+	constructor(callback: ResizeObserverCallback) {
 		this.callback = callback;
 	}
 
-	observe(target) {
+	observe(target: HTMLElement) {
 		this.callback([
 			{
 				target,
@@ -13,8 +15,8 @@ class ResizeObserverMock {
 					width: target.offsetWidth,
 					height: target.offsetHeight,
 				},
-			},
-		]);
+			} as unknown as ResizeObserverEntry,
+		], this as unknown as ResizeObserver);
 	}
 	unobserve() {}
 	disconnect() {}
@@ -29,7 +31,7 @@ HTMLCanvasElement.prototype.getContext = vi.fn(() => ({
 	stroke: vi.fn(),
 	strokeStyle: "",
 	translate: vi.fn(),
-}));
+})) as unknown as HTMLCanvasElement["getContext"];
 HTMLCanvasElement.prototype.toDataURL = vi.fn(
 	() => "data:image/png;base64,test"
 );

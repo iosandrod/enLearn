@@ -1,33 +1,39 @@
-// vite.config.ts
-import { resolve } from "path";
-import { existsSync, writeFileSync } from "fs";
-import { defineConfig, loadEnv } from "vite";
+import { existsSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import {
+	defineConfig,
+	loadEnv,
+	type PluginOption,
+	type UserConfig,
+} from "vite";
 import dts from "vite-plugin-dts";
 import conditionalCompile from "vite-plugin-conditional-compile";
 import esbuild from "esbuild";
 
-const minify = {
+const fromRoot = (path: string) => fileURLToPath(new URL(path, import.meta.url));
+
+const minify: PluginOption = {
 	name: "minify",
 	closeBundle: () => {
 		esbuild.buildSync({
-			entryPoints: ["./dist/index.js"],
+			entryPoints: [fromRoot("./dist/index.js")],
 			minify: true,
 			allowOverwrite: true,
-			outfile: "./dist/index.js",
+			outfile: fromRoot("./dist/index.js"),
 		});
 	},
 };
 
-export default function ({ mode }) {
+export default defineConfig(({ mode }) => {
 	process.env = { ...process.env, ...loadEnv(mode, process.cwd(), "WX") };
 	const trial = !!process.env.WX_TRIAL_PACKAGE;
 	const open = process.env.WX_PACKAGE_TYPE == "open";
 	const isProduction = mode !== "development" && mode !== "test";
 
-	const proSchedule = resolve(__dirname, "src/pro/schedule-types.ts");
+	const proSchedule = fromRoot("./src/pro/schedule-types.ts");
 	const usePro = !open && existsSync(proSchedule);
 
-	const config = {
+	const config: UserConfig = {
 		resolve: {
 			alias: usePro
 				? [
@@ -40,7 +46,7 @@ export default function ({ mode }) {
 		},
 		build: {
 			lib: {
-				entry: resolve(__dirname, "src/index.ts"),
+				entry: fromRoot("./src/index.ts"),
 				name: "store",
 				formats: ["es"],
 				fileName: () => `index.js`,
@@ -51,6 +57,7 @@ export default function ({ mode }) {
 		},
 		test: {
 			coverage: {
+				provider: "v8",
 				reporter: ["text"],
 			},
 		},
@@ -64,10 +71,10 @@ export default function ({ mode }) {
 	if (usePro) {
 		config.plugins.push(
 			dts({
-				outDir: resolve(__dirname, "dist/types"),
+				outDir: fromRoot("./dist/types"),
 				afterBuild: () => {
 					writeFileSync(
-						resolve(__dirname, "dist/types/schedule-types.d.ts"),
+						fromRoot("./dist/types/schedule-types.d.ts"),
 						'export * from "./pro/schedule-types";\n'
 					);
 				},
@@ -76,7 +83,7 @@ export default function ({ mode }) {
 	} else {
 		config.plugins.push(
 			dts({
-				outDir: resolve(__dirname, "dist/types"),
+				outDir: fromRoot("./dist/types"),
 				exclude: ["src/pro/**"],
 			})
 		);
@@ -86,5 +93,5 @@ export default function ({ mode }) {
 		config.plugins.push(minify);
 	}
 
-	return defineConfig(config);
-}
+	return config;
+});

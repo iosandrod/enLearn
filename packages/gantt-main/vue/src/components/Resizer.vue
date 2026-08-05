@@ -4,7 +4,7 @@ defineOptions({ name: "GanttResizer" });
 import { computed } from "vue";
 import { subscribe } from "@svar-ui/lib-vue";
 
-const props = defineProps<any>({
+const props: any = defineProps({
 	api: {},
 	position: { default: "after" },
 	size: { default: 4 },
