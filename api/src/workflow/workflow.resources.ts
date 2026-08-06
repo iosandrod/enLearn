@@ -12,7 +12,7 @@ export const workflowResources: ResourceConfigMap = {
   wf_model: {
     tableName: 'wf_model',
     clientMode: 'admin',
-    accountField: 'tenant_id',
+    accountField: 'account_id',
     permissions: definitionPermissions,
     defaults: {
       status: 'draft',
@@ -58,7 +58,7 @@ export const workflowResources: ResourceConfigMap = {
   wf_process_definition: {
     tableName: 'wf_process_definition',
     clientMode: 'user',
-    accountField: 'tenant_id',
+    accountField: 'account_id',
     permissions: definitionPermissions,
     list: {
       defaultSorts: [{ field: 'published_at', direction: 'desc' }],
@@ -90,7 +90,7 @@ export const workflowResources: ResourceConfigMap = {
   wf_process_instance: {
     tableName: 'wf_process_instance',
     clientMode: 'user',
-    accountField: 'tenant_id',
+    accountField: 'account_id',
     permissions: runtimePermissions,
     list: {
       defaultSorts: [{ field: 'started_at', direction: 'desc' }],
@@ -137,7 +137,7 @@ export const workflowResources: ResourceConfigMap = {
   wf_task: {
     tableName: 'wf_task',
     clientMode: 'user',
-    accountField: 'tenant_id',
+    accountField: 'account_id',
     permissions: runtimeReadPermissions,
     list: {
       defaultSorts: [{ field: 'created_at', direction: 'asc' }],
@@ -148,7 +148,7 @@ export const workflowResources: ResourceConfigMap = {
   wf_job: {
     tableName: 'wf_job',
     clientMode: 'user',
-    accountField: 'tenant_id',
+    accountField: 'account_id',
     permissions: runtimePermissions,
     defaults: {
       status: 'draft',
@@ -195,7 +195,7 @@ export const workflowResources: ResourceConfigMap = {
   wf_job_run: {
     tableName: 'wf_job_run',
     clientMode: 'user',
-    accountField: 'tenant_id',
+    accountField: 'account_id',
     permissions: runtimePermissions,
     list: {
       defaultSorts: [{ field: 'created_at', direction: 'desc' }],

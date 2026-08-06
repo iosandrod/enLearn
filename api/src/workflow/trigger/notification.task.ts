@@ -61,7 +61,7 @@ type NotificationCleanupPayload = {
 
 type NotificationEventRow = QueryResultRow & {
   id: string;
-  tenant_id: string;
+  account_id: string;
   event_type: string;
   source_type: string | null;
   source_id: string | null;
@@ -97,7 +97,7 @@ type NotificationPreferenceRow = QueryResultRow & {
 
 type NotificationDeliveryRow = QueryResultRow & {
   id: string;
-  tenant_id: string;
+  account_id: string;
   event_id: string | null;
   message_id: string | null;
   recipient_id: string;
@@ -259,8 +259,8 @@ async function dispatchNotification(
 
     const category = categoryForEvent(event.event_type);
     const recipientIds = readRecipientIds(event.payload).filter(isUuid);
-    const contacts = await readRecipientContacts(client, event.tenant_id, recipientIds);
-    const preferences = await readPreferences(client, event.tenant_id, recipientIds, category);
+    const contacts = await readRecipientContacts(client, event.account_id, recipientIds);
+    const preferences = await readPreferences(client, event.account_id, recipientIds, category);
     const inboxTemplate = await readTemplate(client, event.event_type, 'inbox');
 
     let messageCount = 0;
@@ -288,7 +288,7 @@ async function dispatchNotification(
 
         const template = await readTemplate(client, event.event_type, channel);
         const delivery = await upsertDelivery(client, {
-          tenantId: event.tenant_id,
+          tenantId: event.account_id,
           eventId: event.id,
           messageId,
           recipientId: recipient.id,
@@ -339,7 +339,7 @@ async function retryDeliveries(client: PoolClient, payload: NotificationRetryDel
   const tenantId = payload.tenantId?.trim();
   const limit = Math.min(100, Math.max(1, Math.floor(readNumber(payload.limit, 20))));
   const values: unknown[] = [limit];
-  const tenantCondition = tenantId ? `and tenant_id = $${values.push(tenantId)}` : '';
+  const tenantCondition = tenantId ? `and account_id = $${values.push(tenantId)}` : '';
   const result = await client.query<{ id: string }>(
     `select id
     from public.notification_deliveries
@@ -361,17 +361,17 @@ async function retryDeliveries(client: PoolClient, payload: NotificationRetryDel
 async function remindUnreadMessage(client: PoolClient, payload: NotificationRemindUnreadPayload) {
   const result = await client.query<{
     id: string;
-    tenant_id: string;
+    account_id: string;
     recipient_id: string;
     title: string;
     link_url: string | null;
     read_at: Date | null;
     archived_at: Date | null;
   }>(
-    `select id, tenant_id, recipient_id, title, link_url, read_at, archived_at
+    `select id, account_id, recipient_id, title, link_url, read_at, archived_at
     from public.notification_messages
     where id = $1
-      and ($2::text is null or tenant_id = $2::text)`,
+      and ($2::uuid is null or account_id = $2::uuid)`,
     [payload.messageId, payload.tenantId?.trim() || null]
   );
   const message = result.rows[0];
@@ -383,7 +383,7 @@ async function remindUnreadMessage(client: PoolClient, payload: NotificationRemi
   }
 
   const eventId = await upsertEvent(client, {
-    tenantId: message.tenant_id,
+    tenantId: message.account_id,
     eventType: 'notification.unread.reminder',
     sourceType: 'notification_message',
     sourceId: message.id,
@@ -398,7 +398,7 @@ async function remindUnreadMessage(client: PoolClient, payload: NotificationRemi
   });
 
   return dispatchNotification(client, {
-    tenantId: message.tenant_id,
+    tenantId: message.account_id,
     eventId
   });
 }
@@ -416,7 +416,7 @@ async function createUnreadDigest(client: PoolClient, payload: NotificationDiges
   }>(
     `select recipient_id::text, count(*)::text as total
     from public.notification_messages
-    where tenant_id = $1
+    where account_id = $1
       and read_at is null
       and archived_at is null
       ${recipientCondition}
@@ -462,7 +462,7 @@ async function cleanupNotifications(client: PoolClient, payload: NotificationCle
   const archived = await client.query(
     `update public.notification_messages
     set archived_at = coalesce(archived_at, timezone('utc'::text, now()))
-    where tenant_id = $1
+    where account_id = $1
       and read_at is not null
       and archived_at is null
       and read_at < timezone('utc'::text, now()) - ($2::int * interval '1 day')`,
@@ -471,7 +471,7 @@ async function cleanupNotifications(client: PoolClient, payload: NotificationCle
 
   const deletedDeliveries = await client.query(
     `delete from public.notification_deliveries
-    where tenant_id = $1
+    where account_id = $1
       and status in ('sent', 'canceled')
       and created_at < timezone('utc'::text, now()) - ($2::int * interval '1 day')`,
     [tenantId, deleteDeliveryOlderThanDays]
@@ -500,10 +500,10 @@ async function upsertEvent(
 
   const result = await client.query<{ id: string }>(
     `insert into public.notification_events (
-      tenant_id, event_type, source_type, source_id, actor_id, payload,
+      account_id, event_type, source_type, source_id, actor_id, payload,
       idempotency_key, status
     ) values ($1, $2, $3, $4, $5, $6::jsonb, $7, 'pending')
-    on conflict (tenant_id, idempotency_key)
+    on conflict (account_id, idempotency_key)
     do update set
       event_type = excluded.event_type,
       source_type = excluded.source_type,
@@ -536,7 +536,7 @@ async function readEventForUpdate(
 ) {
   const values: unknown[] = [eventId];
   const normalizedTenantId = tenantId?.trim();
-  const tenantCondition = normalizedTenantId ? `and tenant_id = $${values.push(normalizedTenantId)}` : '';
+  const tenantCondition = normalizedTenantId ? `and account_id = $${values.push(normalizedTenantId)}` : '';
 
   const result = await client.query<NotificationEventRow>(
     `select *
@@ -608,7 +608,7 @@ async function readPreferences(
   const result = await client.query<NotificationPreferenceRow>(
     `select user_id::text, category, inbox_enabled, email_enabled, sms_enabled
     from public.notification_preferences
-    where tenant_id = $1
+    where account_id = $1
       and category = $2
       and user_id = any($3::uuid[])`,
     [tenantId, category, recipientIds]
@@ -627,7 +627,7 @@ function buildMessage(
 ): DispatchMessageInput {
   const payload = event.payload ?? {};
   return {
-    tenantId: event.tenant_id,
+    tenantId: event.account_id,
     eventId: event.id,
     recipientId,
     category: categoryForEvent(event.event_type),
@@ -648,10 +648,10 @@ function buildMessage(
 async function upsertMessage(client: PoolClient, message: DispatchMessageInput) {
   return client.query(
     `insert into public.notification_messages (
-      tenant_id, event_id, recipient_id, category, channel, title, content,
+      account_id, event_id, recipient_id, category, channel, title, content,
       link_url, priority, source_type, source_id, metadata
     ) values ($1, $2, $3, $4, 'inbox', $5, $6, $7, $8, $9, $10, $11::jsonb)
-    on conflict (tenant_id, recipient_id, source_type, source_id, category)
+    on conflict (account_id, recipient_id, source_type, source_id, category)
     do update set
       event_id = excluded.event_id,
       title = excluded.title,
@@ -679,10 +679,10 @@ async function upsertMessage(client: PoolClient, message: DispatchMessageInput) 
 async function upsertDelivery(client: PoolClient, input: DeliveryInput) {
   return client.query(
     `insert into public.notification_deliveries (
-      tenant_id, event_id, message_id, recipient_id, channel, target,
+      account_id, event_id, message_id, recipient_id, channel, target,
       template_code, status
     ) values ($1, $2, $3, $4, $5, $6, $7, 'pending')
-    on conflict (tenant_id, channel, event_id, recipient_id)
+    on conflict (account_id, channel, event_id, recipient_id)
     do update set
       message_id = coalesce(excluded.message_id, notification_deliveries.message_id),
       target = excluded.target,
@@ -732,7 +732,7 @@ async function sendDelivery(client: PoolClient, deliveryId: string) {
       : fallbackTemplate(delivery.channel);
     const message = {
       deliveryId: delivery.id,
-      tenantId: delivery.tenant_id,
+      tenantId: delivery.account_id,
       recipientId: delivery.recipient_id,
       channel: delivery.channel,
       target: delivery.target,
@@ -889,14 +889,14 @@ async function scheduleUnreadReminders(event: NotificationEventRow, messageIds: 
       await tasks.trigger(
         NOTIFICATION_REMIND_UNREAD_TASK_ID,
         {
-          tenantId: event.tenant_id,
+          tenantId: event.account_id,
           messageId,
           delayMinutes: minutes
         },
         {
           idempotencyKey: `notification-remind:${messageId}:${minutes}`,
           tags: [
-            `tenant:${event.tenant_id}`,
+            `tenant:${event.account_id}`,
             `notification-message:${messageId}`,
             'notification:unread-reminder'
           ]

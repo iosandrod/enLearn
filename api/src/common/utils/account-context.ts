@@ -61,12 +61,12 @@ export async function requireActiveAccount(
   };
 }
 
-export function accountTenantId(context: ServiceContext) {
+export function getActiveAccountId(context: ServiceContext) {
   return readAccountId(context.accountId, 'Account context');
 }
 
 export async function listActiveAccountUserIds(context: ServiceContext) {
-  const accountId = accountTenantId(context);
+  const accountId = getActiveAccountId(context);
   await getCurrentUser(context);
   const client = createSupabaseClient('admin', context);
   const { data, error } = await client.rpc('account_user_ids', {

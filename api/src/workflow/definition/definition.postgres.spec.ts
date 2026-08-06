@@ -29,8 +29,8 @@ async function main() {
   const first = await service.saveModel(input, actor);
   const second = await service.saveModel(input, actor);
   assert.equal(first.id, second.id);
-  assert.match(database.lastInsertSql, /on conflict \(tenant_id, code\)/i);
-  assert.doesNotMatch(database.lastInsertSql, /select \* from public\.wf_model where tenant_id/i);
+  assert.match(database.lastInsertSql, /on conflict \(account_id, code\)/i);
+  assert.doesNotMatch(database.lastInsertSql, /select \* from public\.wf_model where account_id/i);
 
   await assert.rejects(
     () => service.saveModel(input, actor, '00000000-0000-0000-0000-000000000099'),
@@ -58,7 +58,7 @@ class ConcurrentInsertDatabase {
     if (!this.row) {
       this.row = {
         id: String(values[0]),
-        tenant_id: String(values[1]),
+        account_id: String(values[1]),
         code: String(values[2]),
         name: String(values[3]),
         document_type: values[4] ? String(values[4]) : null,
@@ -96,7 +96,7 @@ function result<T extends QueryResultRow>(rows: T[]): QueryResult<T> {
 
 type WorkflowModelRow = QueryResultRow & {
   id: string;
-  tenant_id: string;
+  account_id: string;
   code: string;
   name: string;
   document_type: string | null;

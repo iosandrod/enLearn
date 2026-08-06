@@ -51,6 +51,7 @@
     "db:apply-file-storage": "tsx scripts/apply-file-storage-system.ts",
     "db:apply-chat-socket": "tsx scripts/apply-chat-socket-system.ts",
     "db:apply-account-sets": "tsx scripts/apply-account-set-migration.ts",
+    "db:unify-account-id-columns": "tsx scripts/apply-account-id-unification.ts",
     "db:apply-system-settings": "tsx scripts/apply-system-settings-page.ts",
     "db:apply-system-option-source-edit-page": "tsx scripts/apply-system-option-source-edit-page.ts",
     "db:apply-approval-progress": "tsx scripts/apply-approval-progress-page.ts",

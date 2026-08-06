@@ -4,7 +4,7 @@ export type NotificationDeliveryChannel = 'email' | 'sms';
 
 export type NotificationMessageRow = {
   id: string;
-  tenant_id: string;
+  account_id: string;
   event_id: string | null;
   recipient_id: string;
   category: NotificationCategory;
@@ -24,7 +24,7 @@ export type NotificationMessageRow = {
 
 export type NotificationEventRow = {
   id: string;
-  tenant_id: string;
+  account_id: string;
   event_type: string;
   source_type: string | null;
   source_id: string | null;
@@ -40,7 +40,7 @@ export type NotificationEventRow = {
 
 export type NotificationDeliveryRow = {
   id: string;
-  tenant_id: string;
+  account_id: string;
   event_id: string | null;
   message_id: string | null;
   recipient_id: string;
@@ -59,7 +59,7 @@ export type NotificationDeliveryRow = {
 
 export type NotificationPreferenceRow = {
   id: string;
-  tenant_id: string;
+  account_id: string;
   user_id: string;
   category: NotificationCategory;
   inbox_enabled: boolean;

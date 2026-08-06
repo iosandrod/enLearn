@@ -15,3 +15,9 @@ document.documentElement.style.setProperty(
   '--vxe-ui-tabs-header-height-default',
   '30px'
 );
+
+//--vxe-ui-input-height-medium
+document.documentElement.style.setProperty(
+  '--vxe-ui-input-height-medium',
+  '30px'
+);

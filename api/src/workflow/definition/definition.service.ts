@@ -72,7 +72,7 @@ export class DefinitionService {
     if (this.database?.isConfigured) {
       const values: unknown[] = [];
       const conditions: string[] = [];
-      addCondition(conditions, values, 'tenant_id', query.tenantId);
+      addCondition(conditions, values, 'account_id', query.tenantId);
       addCondition(conditions, values, 'document_type', query.documentType);
       addCondition(conditions, values, 'status', query.status);
       const result = await this.database.query<WorkflowModelRow>(
@@ -95,7 +95,7 @@ export class DefinitionService {
   async getModel(modelId: string, tenantId?: string) {
     if (this.database?.isConfigured) {
       const modelResult = await this.database.query<WorkflowModelRow>(
-        'select * from public.wf_model where id = $1 and ($2::text is null or tenant_id = $2)',
+        'select * from public.wf_model where id = $1 and ($2::uuid is null or account_id = $2)',
         [modelId, tenantId ?? null]
       );
       const model = modelResult.rows[0];
@@ -136,10 +136,10 @@ export class DefinitionService {
       const code = dto.code.trim();
       const result = await this.database.query<WorkflowModelRow>(
         `insert into public.wf_model (
-          id, tenant_id, code, name, document_type, status, current_version,
+          id, account_id, code, name, document_type, status, current_version,
           draft_schema, created_by, updated_by, created_at, updated_at
         ) values ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $11)
-        on conflict (tenant_id, code) do update set
+        on conflict (account_id, code) do update set
           code = excluded.code,
           name = excluded.name,
           document_type = excluded.document_type,
@@ -200,7 +200,7 @@ export class DefinitionService {
         await client.query('begin');
         try {
           const modelResult = await client.query<WorkflowModelRow>(
-            'select * from public.wf_model where id = $1 and tenant_id = $2 for update',
+            'select * from public.wf_model where id = $1 and account_id = $2 for update',
             [modelId, actor.tenantId]
           );
           const modelRow = modelResult.rows[0];
@@ -237,7 +237,7 @@ export class DefinitionService {
           const definitionId = randomUUID();
           const definitionResult = await client.query<WorkflowDefinitionRow>(
             `insert into public.wf_process_definition (
-              id, tenant_id, model_id, model_version_id, code, name, version,
+              id, account_id, model_id, model_version_id, code, name, version,
               document_type, schema, status, published_by, published_at
             ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, 'active', $10, $11)
             returning *`,
@@ -340,7 +340,7 @@ export class DefinitionService {
     if (this.database?.isConfigured) {
       const values: unknown[] = [];
       const conditions: string[] = [];
-      addCondition(conditions, values, 'tenant_id', query.tenantId);
+      addCondition(conditions, values, 'account_id', query.tenantId);
       addCondition(conditions, values, 'document_type', query.documentType);
       addCondition(conditions, values, 'status', query.status);
       const result = await this.database.query<WorkflowDefinitionRow>(
@@ -363,7 +363,7 @@ export class DefinitionService {
   async getDefinition(definitionId: string, tenantId?: string) {
     if (this.database?.isConfigured) {
       const result = await this.database.query<WorkflowDefinitionRow>(
-        'select * from public.wf_process_definition where id = $1 and ($2::text is null or tenant_id = $2)',
+        'select * from public.wf_process_definition where id = $1 and ($2::uuid is null or account_id = $2)',
         [definitionId, tenantId ?? null]
       );
       const row = result.rows[0];
@@ -389,7 +389,7 @@ export class DefinitionService {
       const result = await this.database.query<WorkflowDefinitionRow>(
         `update public.wf_process_definition
         set status = 'disabled'
-        where id = $1 and ($2::text is null or tenant_id = $2)
+        where id = $1 and ($2::uuid is null or account_id = $2)
         returning *`,
         [definitionId, tenantId ?? null]
       );
@@ -432,7 +432,7 @@ export class DefinitionService {
 
   private async findDbModelByCode(tenantId: string, code: string) {
     const result = await this.database?.query<WorkflowModelRow>(
-      'select * from public.wf_model where tenant_id = $1 and code = $2',
+      'select * from public.wf_model where account_id = $1 and code = $2',
       [tenantId, code.trim()]
     );
     return result?.rows[0] ? mapModel(result.rows[0]) : undefined;
@@ -441,7 +441,7 @@ export class DefinitionService {
 
 type WorkflowModelRow = QueryResultRow & {
   id: string;
-  tenant_id: string;
+  account_id: string;
   code: string;
   name: string;
   document_type: string | null;
@@ -466,7 +466,7 @@ type WorkflowModelVersionRow = QueryResultRow & {
 
 type WorkflowDefinitionRow = QueryResultRow & {
   id: string;
-  tenant_id: string;
+  account_id: string;
   model_id: string;
   model_version_id: string;
   code: string;
@@ -482,7 +482,7 @@ type WorkflowDefinitionRow = QueryResultRow & {
 function mapModel(row: WorkflowModelRow): WorkflowModelRecord {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     code: row.code,
     name: row.name,
     ...(row.document_type ? { documentType: row.document_type } : {}),
@@ -511,7 +511,7 @@ function mapModelVersion(row: WorkflowModelVersionRow): WorkflowModelVersionReco
 function mapDefinition(row: WorkflowDefinitionRow): WorkflowProcessDefinitionRecord {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     modelId: row.model_id,
     modelVersionId: row.model_version_id,
     code: row.code,

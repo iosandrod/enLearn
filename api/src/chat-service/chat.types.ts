@@ -6,7 +6,7 @@ export type ChatMessageStatus = 'sending' | 'sent' | 'failed' | 'edited' | 'dele
 
 export type ChatConversationRow = {
   id: string;
-  tenant_id: string;
+  account_id: string;
   type: ChatConversationType;
   title: string | null;
   created_by: string | null;
@@ -19,7 +19,7 @@ export type ChatConversationRow = {
 
 export type ChatConversationMemberRow = {
   id: string;
-  tenant_id: string;
+  account_id: string;
   conversation_id: string;
   user_id: string;
   role: ChatMemberRole;
@@ -35,7 +35,7 @@ export type ChatConversationMemberRow = {
 
 export type ChatMessageRow = {
   id: string;
-  tenant_id: string;
+  account_id: string;
   conversation_id: string;
   sender_id: string | null;
   content: string;

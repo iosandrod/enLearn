@@ -9,7 +9,7 @@ import {
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { createSupabaseClient, getCurrentUser } from '../common/utils/supabase';
-import { accountTenantId, assertAccountUsers } from '../common/utils/account-context';
+import { getActiveAccountId, assertAccountUsers } from '../common/utils/account-context';
 import type {
   ChatConversationMemberRow,
   ChatConversationRow,
@@ -79,7 +79,7 @@ function normalizeConversation(
 ) {
   return {
     ...row,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     createdBy: row.created_by,
     lastMessageId: row.last_message_id,
     lastMessageAt: row.last_message_at,
@@ -90,7 +90,7 @@ function normalizeConversation(
     member: member
       ? {
         ...member,
-        tenantId: member.tenant_id,
+        tenantId: member.account_id,
         conversationId: member.conversation_id,
         userId: member.user_id,
         mutedAt: member.muted_at,
@@ -108,7 +108,7 @@ function normalizeConversation(
 function normalizeMessage(row: ChatMessageRow) {
   return {
     ...row,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     conversationId: row.conversation_id,
     senderId: row.sender_id,
     messageType: row.message_type,
@@ -127,11 +127,11 @@ export class ChatService extends BaseService {
     return {
       chat_conversations: {
         tableName: 'chat_conversations',
-        accountField: 'tenant_id',
+        accountField: 'account_id',
         defaults: { type: 'direct', metadata: {} },
         list: { defaultSorts: [{ field: 'last_message_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
         create: {
-          allowedFields: ['tenant_id', 'type', 'title', 'created_by', 'last_message_id', 'last_message_at', 'metadata'],
+          allowedFields: ['account_id', 'type', 'title', 'created_by', 'last_message_id', 'last_message_at', 'metadata'],
           requiredFields: ['type'],
           userFields: { createdBy: 'created_by' }
         },
@@ -141,12 +141,12 @@ export class ChatService extends BaseService {
       },
       chat_conversation_members: {
         tableName: 'chat_conversation_members',
-        accountField: 'tenant_id',
+        accountField: 'account_id',
         ownerField: 'user_id',
         defaults: { role: 'member', status: 'active' },
         list: { defaultSorts: [{ field: 'updated_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 500 },
         create: {
-          allowedFields: ['tenant_id', 'conversation_id', 'user_id', 'role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at'],
+          allowedFields: ['account_id', 'conversation_id', 'user_id', 'role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at'],
           requiredFields: ['conversation_id'],
           userFields: { owner: 'user_id' }
         },
@@ -156,11 +156,11 @@ export class ChatService extends BaseService {
       },
       chat_messages: {
         tableName: 'chat_messages',
-        accountField: 'tenant_id',
+        accountField: 'account_id',
         defaults: { message_type: 'text', attachment_ids: [], status: 'sent', metadata: {} },
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 30, maxPageSize: 100 },
         create: {
-          allowedFields: ['tenant_id', 'conversation_id', 'sender_id', 'content', 'message_type', 'attachment_ids', 'reply_to_id', 'status', 'metadata'],
+          allowedFields: ['account_id', 'conversation_id', 'sender_id', 'content', 'message_type', 'attachment_ids', 'reply_to_id', 'status', 'metadata'],
           requiredFields: ['conversation_id'],
           userFields: { owner: 'sender_id' }
         },
@@ -170,10 +170,10 @@ export class ChatService extends BaseService {
       },
       chat_message_reads: {
         tableName: 'chat_message_reads',
-        accountField: 'tenant_id',
+        accountField: 'account_id',
         ownerField: 'user_id',
         create: {
-          allowedFields: ['tenant_id', 'message_id', 'conversation_id', 'user_id', 'read_at'],
+          allowedFields: ['account_id', 'message_id', 'conversation_id', 'user_id', 'read_at'],
           requiredFields: ['message_id', 'conversation_id'],
           userFields: { owner: 'user_id' }
         },
@@ -220,13 +220,13 @@ export class ChatService extends BaseService {
   }
 
   private normalizeConversationPayload = (ctx: HookContext) => {
-    ctx.data.tenant_id = accountTenantId(ctx.context);
+    ctx.data.account_id = getActiveAccountId(ctx.context);
     ctx.data.type = readConversationType(ctx.data.type, 'group');
     ctx.data.metadata = readJsonObject(ctx.data.metadata);
   };
 
   private normalizeMessagePayload = (ctx: HookContext) => {
-    ctx.data.tenant_id = accountTenantId(ctx.context);
+    ctx.data.account_id = getActiveAccountId(ctx.context);
     ctx.data.message_type = readMessageType(ctx.data.message_type ?? ctx.input.messageType ?? ctx.input.message_type);
     ctx.data.attachment_ids = readStringArray(ctx.data.attachment_ids ?? ctx.input.attachmentIds ?? ctx.input.attachment_ids);
     ctx.data.reply_to_id = readOptionalString(ctx.data.reply_to_id ?? ctx.input.replyToId ?? ctx.input.reply_to_id) || null;
@@ -258,7 +258,7 @@ export class ChatService extends BaseService {
 
   async createDirectConversation(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = accountTenantId(context);
+    const tenantId = getActiveAccountId(context);
     const targetUserId = readString(postData.targetUserId ?? postData.target_user_id, 'targetUserId');
 
     if (targetUserId === user.id) {
@@ -273,7 +273,7 @@ export class ChatService extends BaseService {
     const conversation = await this.runCrud('create', {
       resource: 'chat_conversations',
       data: {
-        tenant_id: tenantId,
+        account_id: tenantId,
         type: 'direct',
         created_by: user.id,
         metadata: {
@@ -293,7 +293,7 @@ export class ChatService extends BaseService {
 
   async createGroupConversation(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = accountTenantId(context);
+    const tenantId = getActiveAccountId(context);
     const title = readString(postData.title, 'title');
     const memberIds = [...new Set([user.id, ...readStringArray(postData.memberIds ?? postData.member_ids)])];
 
@@ -305,7 +305,7 @@ export class ChatService extends BaseService {
     const conversation = await this.runCrud('create', {
       resource: 'chat_conversations',
       data: {
-        tenant_id: tenantId,
+        account_id: tenantId,
         type: readConversationType(postData.type, 'group'),
         title,
         created_by: user.id,
@@ -328,7 +328,7 @@ export class ChatService extends BaseService {
 
   async sendMessage(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = accountTenantId(context);
+    const tenantId = getActiveAccountId(context);
     const conversationId = readString(postData.conversationId ?? postData.conversation_id, 'conversationId');
     const content = readOptionalString(postData.content);
     const messageType = readMessageType(postData.messageType ?? postData.message_type);
@@ -348,7 +348,7 @@ export class ChatService extends BaseService {
     const message = await this.runCrud('create', {
       resource: 'chat_messages',
       data: {
-        tenant_id: tenantId,
+        account_id: tenantId,
         conversation_id: conversationId,
         sender_id: user.id,
         content,
@@ -374,7 +374,7 @@ export class ChatService extends BaseService {
 
   async markRead(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = accountTenantId(context);
+    const tenantId = getActiveAccountId(context);
     const conversationId = readString(postData.conversationId ?? postData.conversation_id, 'conversationId');
     const messageId = readOptionalString(postData.messageId ?? postData.message_id);
     const now = new Date().toISOString();
@@ -384,7 +384,7 @@ export class ChatService extends BaseService {
     await this.runCrud('update', {
       resource: 'chat_conversation_members',
       filters: {
-        tenant_id: tenantId,
+        account_id: tenantId,
         conversation_id: conversationId,
         user_id: user.id
       },
@@ -397,7 +397,7 @@ export class ChatService extends BaseService {
     if (messageId) {
       const existing = await this.firstListItem<Record<string, unknown>>({
         tableName: 'chat_message_reads',
-        filters: { tenant_id: tenantId, message_id: messageId, user_id: user.id },
+        filters: { account_id: tenantId, message_id: messageId, user_id: user.id },
         pageSize: 1
       }, context);
 
@@ -405,7 +405,7 @@ export class ChatService extends BaseService {
         resource: 'chat_message_reads',
         ...(existing?.id ? { id: existing.id } : {}),
         data: {
-          tenant_id: tenantId,
+          account_id: tenantId,
           conversation_id: conversationId,
           message_id: messageId,
           user_id: user.id,
@@ -426,7 +426,7 @@ export class ChatService extends BaseService {
 
   async editMessage(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = accountTenantId(context);
+    const tenantId = getActiveAccountId(context);
     const id = readString(postData.id ?? postData.messageId ?? postData.message_id, 'messageId');
     const content = readString(postData.content, 'content');
     const message = await this.requireMessageOwner(tenantId, id, user.id, context);
@@ -440,7 +440,7 @@ export class ChatService extends BaseService {
 
   async deleteMessage(postData: PostData, context: ServiceContext) {
     const { user } = await getCurrentUser(context);
-    const tenantId = accountTenantId(context);
+    const tenantId = getActiveAccountId(context);
     const id = readString(postData.id ?? postData.messageId ?? postData.message_id, 'messageId');
     const message = await this.requireMessageOwner(tenantId, id, user.id, context);
 
@@ -456,7 +456,7 @@ export class ChatService extends BaseService {
       tableName: 'chat_conversation_members',
       clientMode: 'admin',
       select: 'user_id',
-      filters: { tenant_id: tenantId, conversation_id: conversationId, status: 'active' },
+      filters: { account_id: tenantId, conversation_id: conversationId, status: 'active' },
       pageSize: 500
     }, context ?? {});
 
@@ -472,7 +472,7 @@ export class ChatService extends BaseService {
     const member = await this.firstListItem<ChatConversationMemberRow>({
       tableName: 'chat_conversation_members',
       clientMode: 'admin',
-      filters: { tenant_id: tenantId, conversation_id: conversationId, user_id: userId, status: 'active' },
+      filters: { account_id: tenantId, conversation_id: conversationId, user_id: userId, status: 'active' },
       pageSize: 1
     }, context ?? {});
 
@@ -489,7 +489,7 @@ export class ChatService extends BaseService {
     const message = await this.firstListItem<ChatMessageRow>({
       tableName: 'chat_messages',
       clientMode: 'admin',
-      filters: { tenant_id: tenantId, id: messageId },
+      filters: { account_id: tenantId, id: messageId },
       pageSize: 1
     }, context);
 
@@ -512,7 +512,7 @@ export class ChatService extends BaseService {
     await Promise.all(
       members.map(async (member) => {
         const filters: Record<string, unknown> = {
-          tenant_id: tenantId,
+          account_id: tenantId,
           conversation_id: member.conversation_id,
           sender_id: { op: 'ne', value: member.user_id },
           deleted_at: { op: 'isNull' }
@@ -545,7 +545,7 @@ export class ChatService extends BaseService {
       tableName: 'chat_conversations',
       clientMode: 'admin',
       filters: {
-        tenant_id: tenantId,
+        account_id: tenantId,
         type: 'direct',
         metadata: { op: 'contains', value: { directKey } }
       },
@@ -560,7 +560,7 @@ export class ChatService extends BaseService {
     context: ServiceContext
   ) {
     const rows = members.map((member) => ({
-      tenant_id: tenantId,
+      account_id: tenantId,
       conversation_id: conversationId,
       user_id: member.userId,
       role: member.role,

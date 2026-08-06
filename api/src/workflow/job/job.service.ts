@@ -44,7 +44,7 @@ export class JobService {
     }
     const result = await this.database.query<WorkflowJobRow>(
       `insert into public.wf_job (
-        tenant_id, code, name, type, status, trigger_task_id, cron_expr, timezone,
+        account_id, code, name, type, status, trigger_task_id, cron_expr, timezone,
         payload, retry_policy, timeout_seconds, concurrency_key, created_by
       ) values ($1, $2, $3, $4, 'draft', $5, $6, $7, $8::jsonb, $9::jsonb, $10, $11, $12)
       returning *`,
@@ -70,7 +70,7 @@ export class JobService {
   async listJobs(query: JobQueryDto, actor: WorkflowJobActor) {
     const tenantId = actor.tenantId;
     const values: unknown[] = [tenantId];
-    const conditions = ['tenant_id = $1'];
+    const conditions = ['account_id = $1'];
 
     if (query.type) {
       values.push(query.type);
@@ -96,7 +96,7 @@ export class JobService {
 
   async getJob(jobId: string, actor: WorkflowJobActor) {
     const result = await this.database.query<WorkflowJobRow>(
-      'select * from public.wf_job where id = $1 and tenant_id = $2',
+      'select * from public.wf_job where id = $1 and account_id = $2',
       [jobId, actor.tenantId]
     );
     const row = result.rows[0];
@@ -174,7 +174,7 @@ export class JobService {
       result = await this.database.query<WorkflowJobRow>(
         `update public.wf_job
         set status = $3, schedule_id = $4, updated_at = timezone('utc'::text, now())
-        where id = $1 and tenant_id = $2
+        where id = $1 and account_id = $2
         returning *`,
         [jobId, actor.tenantId, status, scheduleId ?? null]
       );
@@ -251,7 +251,7 @@ export class JobService {
   async listRuns(query: JobRunQueryDto, actor: WorkflowJobActor) {
     const tenantId = actor.tenantId;
     const values: unknown[] = [tenantId];
-    const conditions = ['tenant_id = $1'];
+    const conditions = ['account_id = $1'];
     const limit = Math.min(Math.max(query.limit ?? 20, 1), 200);
 
     if (query.jobId) {
@@ -313,7 +313,7 @@ export class JobService {
     input: Record<string, unknown>;
   }) {
     const result = await this.database.query<WorkflowJobRunRow>(
-      `insert into public.wf_job_run (tenant_id, job_id, trigger_run_id, status, attempt, input)
+      `insert into public.wf_job_run (account_id, job_id, trigger_run_id, status, attempt, input)
       values ($1, $2, $3, $4, 1, $5::jsonb)
       returning *`,
       [
@@ -349,7 +349,7 @@ export class JobService {
 
 type WorkflowJobRow = {
   id: string;
-  tenant_id: string;
+  account_id: string;
   code: string;
   name: string;
   type: WorkflowJobRecord['type'];
@@ -369,7 +369,7 @@ type WorkflowJobRow = {
 
 type WorkflowJobRunRow = {
   id: string;
-  tenant_id: string;
+  account_id: string;
   job_id: string | null;
   trigger_run_id: string | null;
   status: WorkflowJobRunRecord['status'];
@@ -385,7 +385,7 @@ type WorkflowJobRunRow = {
 function mapJob(row: WorkflowJobRow): WorkflowJobRecord {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     code: row.code,
     name: row.name,
     type: row.type,
@@ -408,7 +408,7 @@ function mapJob(row: WorkflowJobRow): WorkflowJobRecord {
 function mapRun(row: WorkflowJobRunRow): WorkflowJobRunRecord {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     ...(row.job_id ? { jobId: row.job_id } : {}),
     ...(row.trigger_run_id ? { triggerRunId: row.trigger_run_id } : {}),
     status: row.status,

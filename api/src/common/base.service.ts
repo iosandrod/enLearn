@@ -2169,7 +2169,7 @@ export abstract class BaseService implements ServiceExecutor {
         'wf_variable'
       ].includes(normalized);
 
-    return tenantScoped ? 'tenant_id' : '';
+    return tenantScoped ? 'account_id' : '';
   }
 
   protected assertSameAccountScope(

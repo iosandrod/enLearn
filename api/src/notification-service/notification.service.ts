@@ -10,7 +10,7 @@ import {
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { createSupabaseClient, getCurrentUser, requireAdmin } from '../common/utils/supabase';
 import {
-  accountTenantId,
+  getActiveAccountId,
   assertAccountUsers,
   listActiveAccountUserIds
 } from '../common/utils/account-context';
@@ -122,7 +122,7 @@ function normalizePreference(row: NotificationPreferenceRow) {
     ...row,
     category_label: categoryLabels[row.category] ?? row.category,
     userId: row.user_id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     inboxEnabled: row.inbox_enabled,
     emailEnabled: row.email_enabled,
     smsEnabled: row.sms_enabled,
@@ -144,12 +144,12 @@ export class NotificationService extends BaseService {
     return {
       notification_messages: {
         tableName: 'notification_messages',
-        accountField: 'tenant_id',
+        accountField: 'account_id',
         ownerField: 'recipient_id',
         defaults: { category: 'system', channel: 'inbox', priority: 'normal', metadata: {} },
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
         create: {
-          allowedFields: ['tenant_id', 'event_id', 'recipient_id', 'category', 'channel', 'title', 'content', 'link_url', 'priority', 'source_type', 'source_id', 'metadata'],
+          allowedFields: ['account_id', 'event_id', 'recipient_id', 'category', 'channel', 'title', 'content', 'link_url', 'priority', 'source_type', 'source_id', 'metadata'],
           requiredFields: ['recipient_id', 'title'],
           userFields: { owner: 'recipient_id' }
         },
@@ -160,12 +160,12 @@ export class NotificationService extends BaseService {
       },
       notification_preferences: {
         tableName: 'notification_preferences',
-        accountField: 'tenant_id',
+        accountField: 'account_id',
         ownerField: 'user_id',
         defaults: { inbox_enabled: true, email_enabled: false, sms_enabled: false, quiet_hours: {} },
         list: { defaultSorts: [{ field: 'category', direction: 'asc' }], defaultPageSize: 100, maxPageSize: 100 },
         create: {
-          allowedFields: ['tenant_id', 'user_id', 'category', 'inbox_enabled', 'email_enabled', 'sms_enabled', 'quiet_hours'],
+          allowedFields: ['account_id', 'user_id', 'category', 'inbox_enabled', 'email_enabled', 'sms_enabled', 'quiet_hours'],
           requiredFields: ['user_id', 'category'],
           userFields: { owner: 'user_id' }
         },
@@ -175,12 +175,12 @@ export class NotificationService extends BaseService {
       },
       notification_deliveries: {
         tableName: 'notification_deliveries',
-        accountField: 'tenant_id',
+        accountField: 'account_id',
         clientMode: 'admin',
         permissions: this.adminCrudPermissions('notification.deliveries.manage'),
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
         create: {
-          allowedFields: ['tenant_id', 'event_id', 'message_id', 'recipient_id', 'channel', 'target', 'template_code', 'status', 'attempt_count', 'provider_message_id', 'error_message', 'next_retry_at', 'sent_at'],
+          allowedFields: ['account_id', 'event_id', 'message_id', 'recipient_id', 'channel', 'target', 'template_code', 'status', 'attempt_count', 'provider_message_id', 'error_message', 'next_retry_at', 'sent_at'],
           requiredFields: ['recipient_id', 'channel']
         },
         update: {
@@ -189,12 +189,12 @@ export class NotificationService extends BaseService {
       },
       notification_events: {
         tableName: 'notification_events',
-        accountField: 'tenant_id',
+        accountField: 'account_id',
         clientMode: 'admin',
         permissions: this.adminCrudPermissions('notification.messages.manage'),
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 1000 },
         create: {
-          allowedFields: ['tenant_id', 'event_type', 'source_type', 'source_id', 'actor_id', 'payload', 'idempotency_key', 'status', 'error_message', 'processed_at'],
+          allowedFields: ['account_id', 'event_type', 'source_type', 'source_id', 'actor_id', 'payload', 'idempotency_key', 'status', 'error_message', 'processed_at'],
           requiredFields: ['event_type', 'idempotency_key']
         },
         update: {
@@ -262,7 +262,7 @@ export class NotificationService extends BaseService {
   }
 
   private normalizeMessagePayload = (ctx: HookContext) => {
-    ctx.data.tenant_id = accountTenantId(ctx.context);
+    ctx.data.account_id = getActiveAccountId(ctx.context);
     ctx.data.category = readCategory(ctx.data.category) ?? 'system';
     ctx.data.channel = 'inbox';
     ctx.data.priority = readPriority(ctx.data.priority);
@@ -307,7 +307,7 @@ export class NotificationService extends BaseService {
       'The notification preference user must belong to the active account set.'
     );
 
-    ctx.data.tenant_id = accountTenantId(ctx.context);
+    ctx.data.account_id = getActiveAccountId(ctx.context);
     ctx.data.user_id = targetUserId;
     const category = readCategory(ctx.data.category ?? ctx.input.category);
     if (category) ctx.data.category = category;
@@ -370,12 +370,12 @@ export class NotificationService extends BaseService {
       [targetUserId],
       'The notification recipient must belong to the active account set.'
     );
-    const tenantId = accountTenantId(context);
+    const tenantId = getActiveAccountId(context);
     const readClient = targetUserId === user.id ? client : resolveAdminClient(client);
     const { data, error, count } = await readClient
       .from('notification_messages')
       .select('category', { count: 'exact' })
-      .eq('tenant_id', tenantId)
+      .eq('account_id', tenantId)
       .eq('recipient_id', targetUserId)
       .is('read_at', null)
       .is('archived_at', null)
@@ -429,7 +429,7 @@ export class NotificationService extends BaseService {
     let query = writeClient
       .from('notification_messages')
       .update({ read_at: new Date().toISOString() })
-      .eq('tenant_id', accountTenantId(context))
+      .eq('account_id', getActiveAccountId(context))
       .eq('recipient_id', targetUserId)
       .is('read_at', null)
       .is('archived_at', null);
@@ -447,7 +447,7 @@ export class NotificationService extends BaseService {
   private async createSystemNotice(postData: PostData, context: ServiceContext) {
     const { client, user } = await requireAdmin(context, 'notification.notices.manage');
     const writeClient = resolveAdminClient(client);
-    const tenantId = accountTenantId(context);
+    const tenantId = getActiveAccountId(context);
     const title = readString(postData.title, 'title');
     const content = readString(postData.content, 'content');
     const linkUrl = readOptionalString(postData.linkUrl ?? postData.link_url) || null;
@@ -460,7 +460,7 @@ export class NotificationService extends BaseService {
     const { data: event, error: eventError } = await writeClient
       .from('notification_events')
       .upsert({
-        tenant_id: tenantId,
+        account_id: tenantId,
         event_type: 'system.notice.created',
         source_type: 'system_notice',
         source_id: noticeId,
@@ -469,7 +469,7 @@ export class NotificationService extends BaseService {
         idempotency_key: `system-notice:${noticeId}`,
         status: 'processed',
         processed_at: new Date().toISOString()
-      }, { onConflict: 'tenant_id,idempotency_key' })
+      }, { onConflict: 'account_id,idempotency_key' })
       .select('*')
       .single();
 
@@ -478,7 +478,7 @@ export class NotificationService extends BaseService {
     if (!recipientIds.length) return { success: true, event, messages: [], count: 0 };
 
     const messages = recipientIds.map((recipientId) => ({
-      tenant_id: tenantId,
+      account_id: tenantId,
       event_id: (event as NotificationEventRow).id,
       recipient_id: recipientId,
       category: 'system',
@@ -494,7 +494,7 @@ export class NotificationService extends BaseService {
 
     const { data, error } = await writeClient
       .from('notification_messages')
-      .upsert(messages, { onConflict: 'tenant_id,recipient_id,source_type,source_id,category' })
+      .upsert(messages, { onConflict: 'account_id,recipient_id,source_type,source_id,category' })
       .select('*');
 
     if (error) throw new BadRequestException(error.message);

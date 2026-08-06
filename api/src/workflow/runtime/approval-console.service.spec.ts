@@ -67,7 +67,7 @@ async function testConsoleListIsTenantScopedAndAggregated() {
   assert.equal(result.summary.running, 1);
   assert.equal(result.summary.total, 1);
   assert.equal(calls[0].values[0], 'tenant-1');
-  assert.match(calls[0].text, /instances\.tenant_id = \$1/);
+  assert.match(calls[0].text, /instances\.account_id = \$1/);
 }
 
 async function testConsoleDetailBuildsNodeStatesAndTriggerRun() {

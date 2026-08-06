@@ -148,12 +148,12 @@ async function runDatabaseChecks(
     const conversationId = randomUUID();
     await query(
       `with conversation as (
-         insert into public.chat_conversations (id, tenant_id, type, created_by, metadata)
+         insert into public.chat_conversations (id, account_id, type, created_by, metadata)
          values ($1, $2, 'direct', $3, '{"accountSetSecurityProbe": true}'::jsonb)
          returning id
        )
        insert into public.chat_conversation_members
-         (tenant_id, conversation_id, user_id, role, status)
+         (account_id, conversation_id, user_id, role, status)
        select $2, id, $3, 'owner', 'active' from conversation`,
       [conversationId, crossAccount.account_id, auth.user.id]
     );

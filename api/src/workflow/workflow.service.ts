@@ -147,8 +147,8 @@ function mapWorkflowResult(resourceName: string, value: unknown) {
 
 function resolveListQuery(postData: PostData) {
   const filters = isRecord(postData.filters) ? postData.filters : {};
-  const { tenantId: _tenantId, tenant_id: _tenantIdSnake, ...safePostData } = postData;
-  const { tenantId: _filterTenantId, tenant_id: _filterTenantIdSnake, ...safeFilters } = filters;
+  const { tenantId: _tenantId, account_id: _tenantIdSnake, ...safePostData } = postData;
+  const { tenantId: _filterTenantId, account_id: _filterTenantIdSnake, ...safeFilters } = filters;
   return {
     ...safePostData,
     ...safeFilters
@@ -161,13 +161,13 @@ function normalizeResourceListInput(resourceName: string, postData: PostData) {
 
   for (const [field, value] of Object.entries(sourceFilters)) {
     const databaseField = toSnakeCase(field);
-    if (databaseField !== 'tenant_id') filters[databaseField] = value;
+    if (databaseField !== 'account_id') filters[databaseField] = value;
   }
 
   for (const field of RESOURCE_LIST_FIELDS[resourceName] ?? []) {
     const databaseField = toSnakeCase(field);
     const value = postData[field] ?? postData[databaseField];
-    if (value !== undefined && databaseField !== 'tenant_id') {
+    if (value !== undefined && databaseField !== 'account_id') {
       filters[databaseField] = value;
     }
   }

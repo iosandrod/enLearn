@@ -407,7 +407,7 @@ function createJob(overrides: Partial<WorkflowJobRecord> = {}): WorkflowJobRecor
 function toRow(job: WorkflowJobRecord) {
   return {
     id: job.id,
-    tenant_id: job.tenantId,
+    account_id: job.tenantId,
     code: job.code,
     name: job.name,
     type: job.type,
@@ -441,7 +441,7 @@ function createRun() {
 function toRunRow(run: ReturnType<typeof createRun>) {
   return {
     id: run.id,
-    tenant_id: run.tenantId,
+    account_id: run.tenantId,
     job_id: run.jobId,
     trigger_run_id: null,
     status: run.status,

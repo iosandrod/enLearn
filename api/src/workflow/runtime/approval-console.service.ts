@@ -53,7 +53,7 @@ export class ApprovalConsoleService {
 
   async listInstances(tenantId: string, query: ApprovalConsoleQuery = {}) {
     const values: unknown[] = [tenantId];
-    const conditions = ['instances.tenant_id = $1'];
+    const conditions = ['instances.account_id = $1'];
     const status = readStatus(query.status);
     const definitionId = readString(query.definitionId);
     const initiatorId = readString(query.initiatorId);
@@ -136,14 +136,14 @@ export class ApprovalConsoleService {
       this.database.query<{ status: ProcessInstanceStatus; count: number }>(
         `select status, count(*)::integer as count
         from public.wf_process_instance
-        where tenant_id = $1
+        where account_id = $1
         group by status`,
         [tenantId]
       ),
       this.database.query<ConsoleDefinitionRow>(
         `select id, code, name, version, status
         from public.wf_process_definition
-        where tenant_id = $1
+        where account_id = $1
         order by name, version desc`,
         [tenantId]
       )
@@ -183,7 +183,7 @@ export class ApprovalConsoleService {
         `select candidates.*
         from public.wf_task_candidate candidates
         join public.wf_task tasks on tasks.id = candidates.task_id
-        where tasks.process_instance_id = $1 and tasks.tenant_id = $2
+        where tasks.process_instance_id = $1 and tasks.account_id = $2
         order by tasks.created_at, candidates.id`,
         [instanceId, tenantId]
       )

@@ -48,7 +48,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
       try {
         const duplicate = await client.query<{ id: string }>(
           `select id from public.wf_process_instance
-          where tenant_id = $1 and business_key = $2 and status = 'running'
+          where account_id = $1 and business_key = $2 and status = 'running'
           limit 1`,
           [input.tenantId, input.businessKey]
         );
@@ -58,7 +58,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
 
         const result = await client.query<ProcessInstanceRow>(
           `insert into public.wf_process_instance (
-            id, tenant_id, definition_id, definition_version, business_key,
+            id, account_id, definition_id, definition_version, business_key,
             document_type, document_id, title, status, initiator_id, trigger_task_id
           ) values ($1, $2, $3, $4, $5, $6, $7, $8, 'running', $9, 'workflow.instance.run')
           returning *`,
@@ -90,9 +90,9 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
         if (input.documentType && input.documentId) {
           await client.query(
             `insert into public.wf_document_binding (
-              tenant_id, document_type, document_id, process_instance_id, status
+              account_id, document_type, document_id, process_instance_id, status
             ) values ($1, $2, $3, $4, 'running')
-            on conflict (tenant_id, document_type, document_id, process_instance_id)
+            on conflict (account_id, document_type, document_id, process_instance_id)
             do update set status = excluded.status`,
             [input.tenantId, input.documentType, input.documentId, input.id]
           );
@@ -141,7 +141,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
   async listInstances(query: WorkflowInstanceQuery = {}) {
     const values: unknown[] = [];
     const conditions: string[] = [];
-    addCondition(conditions, values, 'tenant_id', query.tenantId);
+    addCondition(conditions, values, 'account_id', query.tenantId);
     addCondition(conditions, values, 'status', query.status);
     addCondition(conditions, values, 'document_type', query.documentType);
     addCondition(conditions, values, 'document_id', query.documentId);
@@ -208,7 +208,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
   async listTasks(query: WorkflowTaskQuery = {}) {
     const values: unknown[] = [];
     const conditions: string[] = [];
-    addCondition(conditions, values, 'tenant_id', query.tenantId);
+    addCondition(conditions, values, 'account_id', query.tenantId);
     addCondition(conditions, values, 'assignee_id', query.assigneeId);
     addCondition(conditions, values, 'status', query.status);
 
@@ -247,7 +247,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
     const tenantId = actor.tenantId;
     const userId = actor.userId;
     const values: unknown[] = [tenantId];
-    const conditions = ['tenant_id = $1'];
+    const conditions = ['account_id = $1'];
 
     if (userId) {
       values.push(userId);
@@ -534,7 +534,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
         await assertActiveAccountUsers(client, instance.tenantId, [targetUserId]);
         const result = await client.query<TaskRow>(
           `insert into public.wf_task (
-            id, tenant_id, process_instance_id, node_instance_id, node_id,
+            id, account_id, process_instance_id, node_instance_id, node_id,
             title, status, assignee_id, waitpoint_token_id
           ) values ($1, $2, $3, $4, $5, $6, 'pending', $7, $8)
           returning *`,
@@ -716,7 +716,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
     for (const input of inputs) {
       const result = await this.database.query<TaskRow>(
         `insert into public.wf_task (
-          id, tenant_id, process_instance_id, node_instance_id, node_id,
+          id, account_id, process_instance_id, node_instance_id, node_id,
           title, status, assignee_id, waitpoint_token_id, trigger_run_id
         ) values ($1, $2, $3, $4, $5, $6, 'pending', $7, $8, $9)
         on conflict (waitpoint_token_id)
@@ -790,7 +790,7 @@ export class PostgresWorkflowRuntimeStore implements WorkflowRuntimeStore {
     for (const input of inputs) {
       const result = await this.database.query<CcRow>(
         `insert into public.wf_cc (
-          id, tenant_id, process_instance_id, node_instance_id, node_id,
+          id, account_id, process_instance_id, node_instance_id, node_id,
           title, recipient_id, candidate_type, candidate_id
         ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         on conflict (id) do update set title = excluded.title
@@ -1063,7 +1063,7 @@ export function createStandalonePostgresWorkflowRuntimeStore(connectionString: s
 
 type ProcessInstanceRow = QueryResultRow & {
   id: string;
-  tenant_id: string;
+  account_id: string;
   definition_id: string;
   definition_version: number;
   business_key: string;
@@ -1092,7 +1092,7 @@ type NodeInstanceRow = QueryResultRow & {
 
 type TaskRow = QueryResultRow & {
   id: string;
-  tenant_id: string;
+  account_id: string;
   process_instance_id: string;
   node_instance_id: string;
   node_id: string;
@@ -1127,7 +1127,7 @@ type VariableRow = QueryResultRow & {
 
 type HistoryRow = QueryResultRow & {
   id: string;
-  tenant_id: string;
+  account_id: string;
   process_instance_id: string;
   event_type: string;
   operator_id: string | null;
@@ -1137,7 +1137,7 @@ type HistoryRow = QueryResultRow & {
 
 type CommentRow = QueryResultRow & {
   id: string;
-  tenant_id: string;
+  account_id: string;
   process_instance_id: string;
   task_id: string | null;
   node_id: string | null;
@@ -1149,7 +1149,7 @@ type CommentRow = QueryResultRow & {
 
 type CcRow = QueryResultRow & {
   id: string;
-  tenant_id: string;
+  account_id: string;
   process_instance_id: string;
   node_instance_id: string;
   node_id: string;
@@ -1170,7 +1170,7 @@ function addCondition(conditions: string[], values: unknown[], column: string, v
 function mapProcessInstance(row: ProcessInstanceRow): ProcessInstanceRecord {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     definitionId: row.definition_id,
     definitionVersion: row.definition_version,
     businessKey: row.business_key,
@@ -1203,7 +1203,7 @@ function mapNodeInstance(row: NodeInstanceRow): NodeInstanceRecord {
 function mapTask(row: TaskRow): WorkflowTaskRecord {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     processInstanceId: row.process_instance_id,
     nodeInstanceId: row.node_instance_id,
     nodeId: row.node_id,
@@ -1244,7 +1244,7 @@ function mapVariable(row: VariableRow): WorkflowVariableRecord {
 function mapHistory(row: HistoryRow): WorkflowHistoryEventRecord {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     processInstanceId: row.process_instance_id,
     eventType: row.event_type,
     ...(row.operator_id ? { operatorId: row.operator_id } : {}),
@@ -1256,7 +1256,7 @@ function mapHistory(row: HistoryRow): WorkflowHistoryEventRecord {
 function mapComment(row: CommentRow): WorkflowCommentRecord {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     processInstanceId: row.process_instance_id,
     ...(row.task_id ? { taskId: row.task_id } : {}),
     ...(row.node_id ? { nodeId: row.node_id } : {}),
@@ -1270,7 +1270,7 @@ function mapComment(row: CommentRow): WorkflowCommentRecord {
 function mapCc(row: CcRow): WorkflowCcRecord {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     processInstanceId: row.process_instance_id,
     nodeInstanceId: row.node_instance_id,
     nodeId: row.node_id,
@@ -1313,7 +1313,7 @@ async function insertComment(
 
   await client.query(
     `insert into public.wf_comment (
-      tenant_id, process_instance_id, task_id, node_id, action, operator_id, comment
+      account_id, process_instance_id, task_id, node_id, action, operator_id, comment
     ) values ($1, $2, $3, $4, $5, $6, $7)`,
     [
       instance.tenantId,
@@ -1340,7 +1340,7 @@ async function insertHistory(
 ) {
   await client.query(
     `insert into public.wf_history_event (
-      tenant_id, process_instance_id, event_type, operator_id, payload, idempotency_key
+      account_id, process_instance_id, event_type, operator_id, payload, idempotency_key
     ) values ($1, $2, $3, $4, $5::jsonb, $6)
     on conflict (process_instance_id, idempotency_key)
     where idempotency_key is not null

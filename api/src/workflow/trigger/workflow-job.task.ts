@@ -106,11 +106,11 @@ export const workflowScheduledJobTask = schedules.task({
     try {
       const jobResult = await pool.query<{
         id: string;
-        tenant_id: string;
+        account_id: string;
         trigger_task_id: string;
         payload: Record<string, unknown>;
       }>(
-        `select id, tenant_id, trigger_task_id, payload
+        `select id, account_id, trigger_task_id, payload
         from public.wf_job
         where id = $1 and status = 'enabled'`,
         [jobId]
@@ -121,16 +121,16 @@ export const workflowScheduledJobTask = schedules.task({
       }
 
       const runResult = await pool.query<{ id: string }>(
-        `insert into public.wf_job_run (tenant_id, job_id, status, attempt, input)
+        `insert into public.wf_job_run (account_id, job_id, status, attempt, input)
         values ($1, $2, 'queued', 1, $3::jsonb)
         returning id`,
         [
-          job.tenant_id,
+          job.account_id,
           job.id,
           JSON.stringify({
             ...(job.payload ?? {}),
             jobId: job.id,
-            tenantId: job.tenant_id,
+            tenantId: job.account_id,
             scheduled: true,
             scheduleId: payload.scheduleId,
             scheduledAt: payload.timestamp.toISOString()
@@ -141,7 +141,7 @@ export const workflowScheduledJobTask = schedules.task({
       const triggerPayload = {
         ...(job.payload ?? {}),
         jobId: job.id,
-        tenantId: job.tenant_id,
+        tenantId: job.account_id,
         runId,
         scheduled: true,
         scheduleId: payload.scheduleId,
@@ -152,7 +152,7 @@ export const workflowScheduledJobTask = schedules.task({
         handle = await tasks.trigger(job.trigger_task_id, triggerPayload, {
           idempotencyKey: `workflow-job-run:${runId}`,
           tags: [
-            `tenant:${job.tenant_id}`,
+            `tenant:${job.account_id}`,
             `workflow-job:${job.id}`,
             `workflow-job-run:${runId}`
           ]
