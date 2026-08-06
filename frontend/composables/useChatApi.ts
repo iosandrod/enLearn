@@ -1,7 +1,7 @@
 export type ChatConversation = {
   id: string;
   tenantId: string;
-  tenant_id: string;
+  account_id: string;
   type: 'direct' | 'group' | 'system';
   title: string | null;
   unreadCount: number;
@@ -21,7 +21,7 @@ export type ChatConversation = {
 export type ChatMessage = {
   id: string;
   tenantId: string;
-  tenant_id: string;
+  account_id: string;
   conversationId: string;
   conversation_id: string;
   senderId: string | null;
@@ -89,7 +89,7 @@ export function useChatApi() {
   function normalizeConversation(row: ChatConversation, member?: Record<string, unknown> | null, unreadCount = 0) {
     return {
       ...row,
-      tenantId: row.tenantId ?? row.tenant_id,
+      tenantId: row.tenantId ?? row.account_id,
       lastMessageId: row.lastMessageId ?? row.last_message_id,
       lastMessageAt: row.lastMessageAt ?? row.last_message_at,
       createdAt: row.createdAt ?? row.created_at,
@@ -103,7 +103,7 @@ export function useChatApi() {
   function normalizeMessage(row: ChatMessage) {
     return {
       ...row,
-      tenantId: row.tenantId ?? row.tenant_id,
+      tenantId: row.tenantId ?? row.account_id,
       conversationId: row.conversationId ?? row.conversation_id,
       senderId: row.senderId ?? row.sender_id,
       messageType: row.messageType ?? row.message_type,
@@ -123,7 +123,7 @@ export function useChatApi() {
     const members = await listRows<Record<string, unknown>>({
       tableName: 'chat_conversation_members',
       filters: {
-        tenant_id: tenantId(params),
+        account_id: tenantId(params),
         user_id: userId,
         status: 'active'
       },
@@ -138,7 +138,7 @@ export function useChatApi() {
     const rows = await listRows<ChatConversation>({
       tableName: 'chat_conversations',
       filters: {
-        tenant_id: tenantId(params),
+        account_id: tenantId(params),
         id: { op: 'in', value: conversationIds }
       },
       sorts: [{ field: 'last_message_at', direction: 'desc' }],
@@ -151,7 +151,7 @@ export function useChatApi() {
       const conversationId = readString(member.conversation_id);
       if (!conversationId) return;
       const filters: Record<string, unknown> = {
-        tenant_id: tenantId(params),
+        account_id: tenantId(params),
         conversation_id: conversationId,
         sender_id: { op: 'ne', value: userId },
         deleted_at: { op: 'isNull' }
@@ -181,7 +181,7 @@ export function useChatApi() {
       ...params,
       tableName: 'chat_messages',
       filters: {
-        tenant_id: tenantId(params),
+        account_id: tenantId(params),
         conversation_id: params.conversationId
       },
       sorts: [{ field: 'created_at', direction: 'desc' }],

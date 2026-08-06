@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -24,6 +25,7 @@ const {
   createArrayFormRow,
   findSelectedFormOption,
   flattenFormOptions,
+  formControlKind,
   normalizeArrayFormColumns,
   normalizeArrayFormRows,
   readStoredOptionValue,
@@ -32,6 +34,12 @@ const {
   serializeArrayFormRows,
   validateMobileFormValues,
 } = mobileForm;
+
+assert.equal(
+  formControlKind('lc-checkbox'),
+  'boolean',
+  'a single checkbox should keep a boolean form value',
+);
 
 const departmentField = {
   field: 'department',
@@ -175,5 +183,25 @@ assert.deepEqual(validateMobileFormValues({
   }],
   actions: [],
 }, { amount: 9 }), { amount: 'two digits' }, 'rule.min should retain VXE length semantics');
+
+const componentSource = await readFile(
+  path.resolve(testDirectory, '../src/runtime/materials/mobile-form.vue'),
+  'utf8',
+);
+assert.match(
+  componentSource,
+  /@click="handleActionClick\(action\)"/,
+  'form actions must retain their regular click path',
+);
+assert.match(
+  componentSource,
+  /@touchend="handleActionTouchEnd\(action\)"/,
+  'form actions need a direct touch-end path when Hippy Web receives mouse input',
+);
+assert.match(
+  componentSource,
+  /actionDispatching\.has\(action\.code\)/,
+  'the touch fallback must suppress the synthetic click that follows a native tap',
+);
 
 console.log('mobile-form regression checks passed');

@@ -17,72 +17,17 @@
         <span class="login-title">登录管理平台</span>
         <span class="login-description">请输入登录信息并选择业务账套。</span>
 
-        <div class="login-field">
-          <span class="field-label">登录账号</span>
-          <input
-            class="field-input"
-            type="text"
-            :value="loginAccount"
-            placeholder="admin"
-            @change="handleAccountChange"
-          />
-        </div>
-
-        <div class="login-field">
-          <span class="field-label">登录密码</span>
-          <input
-            class="field-input"
-            type="password"
-            :value="password"
-            placeholder="请输入密码"
-            @change="password = readInputValue($event)"
-          />
-        </div>
-
-        <div class="login-field">
-          <span class="field-label">选择账套</span>
-          <div v-if="accountLoading" class="account-state">
-            <span class="account-state-text">正在加载账套...</span>
-          </div>
-          <div v-else-if="!accounts.length" class="account-state">
-            <span class="account-state-text">{{ loginAccount ? '暂无可用账套' : '请先输入登录账号' }}</span>
-          </div>
-          <div v-else class="account-list">
-            <button
-              v-for="account in accounts"
-              :key="account.account_id"
-              :class="['account-option', { 'is-selected': account.account_id === accountId }]"
-              @click="accountId = account.account_id"
-            >
-              <div :class="['account-radio', { 'is-selected': account.account_id === accountId }]">
-                <div v-if="account.account_id === accountId" class="account-radio-dot" />
-              </div>
-              <div class="account-copy">
-                <span class="account-name">{{ account.name || '未命名账套' }}</span>
-                <span class="account-meta">{{ accountMeta(account) }}</span>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        <button class="preference-row" @click="preferSelectedAccount = !preferSelectedAccount">
-          <div :class="['preference-check', { 'is-checked': preferSelectedAccount }]">
-            <span v-if="preferSelectedAccount" class="preference-check-text">✓</span>
-          </div>
-          <span class="preference-label">下次优先使用该账套</span>
-        </button>
+        <MobileForm
+          :block="loginFormBlock"
+          :resolved-data="loginFormData"
+          :form-models="formModels"
+          :active-action-codes="activeActionCodes"
+          @runtime-event="handleFormEvent"
+        />
 
         <div v-if="message" class="login-error">
           <span class="login-error-text">{{ message }}</span>
         </div>
-
-        <button
-          :class="['login-submit', { 'is-disabled': submitting || accountLoading }]"
-          :disabled="submitting || accountLoading"
-          @click="submitLogin"
-        >
-          <span class="login-submit-text">{{ submitting ? '正在登录...' : '登录' }}</span>
-        </button>
       </div>
 
       <span class="login-footer">EnLearn Manufacturing · 企业管理系统</span>
@@ -91,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from '@vue/runtime-core';
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from '@vue/runtime-core';
 import { useRoute, useRouter } from '@hippy/vue-router-next-history';
 
 import {
@@ -103,6 +48,14 @@ import {
   createMobileAuthApi,
   type MobileAccountOption,
 } from '../runtime/auth-api';
+import MobileForm from '../runtime/materials/mobile-form.vue';
+import type {
+  MobileFormModels,
+  MobileRuntimeBlock,
+  MobileRuntimeEvent,
+} from '../runtime/types';
+
+const LOGIN_FORM_ID = 'mobile-login-form';
 
 const emit = defineEmits<{
   pageTitleChange: [title: string];
@@ -111,27 +64,100 @@ const emit = defineEmits<{
 const route = useRoute();
 const router = useRouter();
 const authApi = createMobileAuthApi();
-const loginAccount = ref('');
-const password = ref('');
-const accountId = ref('');
 const accounts = ref<MobileAccountOption[]>([]);
 const accountLoading = ref(false);
 const submitting = ref(false);
-const preferSelectedAccount = ref(true);
 const message = ref('');
-const restoringLoginAccount = ref(false);
+const formModels = reactive<MobileFormModels>({
+  [LOGIN_FORM_ID]: {
+    email: '',
+    password: '',
+    accountId: '',
+    preferSelectedAccount: true,
+  },
+});
+const activeActionCodes = reactive<Record<string, string>>({});
+const loginModel = computed(() => formModels[LOGIN_FORM_ID]);
+const loginAccount = computed(() => String(loginModel.value.email ?? '').trim());
+const loginFormData = computed<Record<string, unknown>>(() => ({
+  accounts: accounts.value.map((account) => ({
+    ...account,
+    label: accountLabel(account),
+  })),
+}));
+const loginFormBlock = computed<MobileRuntimeBlock>(() => ({
+  id: LOGIN_FORM_ID,
+  kind: 'form',
+  appearance: 'plain',
+  actionLayout: 'stretch',
+  disabled: submitting.value,
+  schema: {
+    columns: 1,
+    fields: [
+      {
+        field: 'email',
+        label: '登录账号',
+        component: 'vxe-input',
+        props: {
+          placeholder: 'admin',
+          trim: true,
+        },
+        rules: [{ required: true, message: '请输入登录账号' }],
+      },
+      {
+        field: 'password',
+        label: '登录密码',
+        component: 'vxe-password-input',
+        props: { placeholder: '请输入密码' },
+        rules: [{ required: true, message: '请输入登录密码' }],
+      },
+      {
+        field: 'accountId',
+        label: '选择账套',
+        component: 'vxe-select',
+        optionsSourceKey: 'accounts',
+        optionProps: {
+          label: 'label',
+          value: 'account_id',
+        },
+        props: {
+          disabled: accountLoading.value || !loginAccount.value || !accounts.value.length,
+          placeholder: accountPlaceholder.value,
+        },
+        rules: [{ required: true, message: '请选择业务账套' }],
+      },
+      {
+        field: 'preferSelectedAccount',
+        label: '账套偏好',
+        showTitle: false,
+        component: 'lc-checkbox',
+        props: {
+          text: '下次优先使用该账套',
+        },
+      },
+    ],
+    actions: [{
+      code: 'submit',
+      label: submitting.value ? '正在登录...' : '登录',
+      type: 'submit',
+      status: 'primary',
+      disabled: submitting.value || accountLoading.value,
+    }],
+  },
+}));
+const accountPlaceholder = computed(() => {
+  if (accountLoading.value) return '正在加载账套...';
+  if (!loginAccount.value) return '请先输入登录账号';
+  if (!accounts.value.length) return '暂无可用账套';
+  return '请选择账套';
+});
 let accountRequestId = 0;
 let accountTimer: ReturnType<typeof setTimeout> | undefined;
 
-function readInputValue(event: unknown) {
-  if (event && typeof event === 'object' && 'value' in event) {
-    return String((event as { value?: unknown }).value ?? '');
-  }
-  return '';
-}
-
-function accountMeta(account: MobileAccountOption) {
-  return [account.code, account.base_currency].filter(Boolean).join(' · ');
+function accountLabel(account: MobileAccountOption) {
+  return [account.name || '未命名账套', account.code, account.base_currency]
+    .filter(Boolean)
+    .join(' · ');
 }
 
 function returnPath() {
@@ -140,15 +166,11 @@ function returnPath() {
   return path.startsWith('/') && !path.startsWith('//') ? path : '/';
 }
 
-function handleAccountChange(event: unknown) {
-  loginAccount.value = readInputValue(event).trim();
-}
-
 async function loadAccountOptions(login = loginAccount.value) {
   const normalizedLogin = login.trim();
   const requestId = ++accountRequestId;
   accounts.value = [];
-  accountId.value = '';
+  loginModel.value.accountId = '';
   message.value = '';
 
   if (!normalizedLogin) {
@@ -166,7 +188,7 @@ async function loadAccountOptions(login = loginAccount.value) {
     );
     const savedAccountId = await readMobileStorage('loginAccountId');
     if (requestId !== accountRequestId) return;
-    accountId.value = accounts.value.find((account) => account.account_id === savedAccountId)
+    loginModel.value.accountId = accounts.value.find((account) => account.account_id === savedAccountId)
       ?.account_id ?? accounts.value[0]?.account_id ?? '';
     if (!accounts.value.length) message.value = '该登录账号没有可用账套，请联系系统管理员。';
   } catch (error) {
@@ -177,33 +199,61 @@ async function loadAccountOptions(login = loginAccount.value) {
   }
 }
 
-async function submitLogin() {
+function scheduleAccountOptions(login: string) {
+  accountRequestId += 1;
+  accounts.value = [];
+  loginModel.value.accountId = '';
+  message.value = '';
+  if (accountTimer) clearTimeout(accountTimer);
+
+  const normalizedLogin = login.trim();
+  if (!normalizedLogin) {
+    accountLoading.value = false;
+    return;
+  }
+
+  accountLoading.value = true;
+  accountTimer = setTimeout(() => {
+    void loadAccountOptions(normalizedLogin);
+  }, 300);
+}
+
+function handleFormEvent(event: MobileRuntimeEvent) {
+  if (event.name === 'form.fieldChange') {
+    message.value = '';
+    if (event.payload?.field === 'email') {
+      scheduleAccountOptions(String(event.payload.value ?? ''));
+    }
+    return;
+  }
+
+  if (event.name === 'form.submit') {
+    void submitLogin(event.payload?.values ?? loginModel.value);
+  }
+}
+
+async function submitLogin(values: Record<string, unknown>) {
   if (submitting.value) return;
   message.value = '';
 
-  if (!loginAccount.value) {
-    message.value = '请输入登录账号。';
-    return;
-  }
-  if (!password.value) {
-    message.value = '请输入登录密码。';
-    return;
-  }
-  if (!accountId.value) {
-    message.value = '请选择业务账套。';
+  const email = String(values.email ?? '').trim();
+  const password = String(values.password ?? '');
+  const accountId = String(values.accountId ?? '');
+  if (!email || !password || !accountId) {
+    message.value = '请完整填写登录信息。';
     return;
   }
 
   submitting.value = true;
   try {
     const payload = await authApi.signIn({
-      email: loginAccount.value,
-      password: password.value,
-      accountId: accountId.value,
-      setDefault: preferSelectedAccount.value,
+      email,
+      password,
+      accountId,
+      setDefault: values.preferSelectedAccount !== false,
     });
     const accessToken = payload.session?.access_token ?? '';
-    const selectedAccountId = payload.activeAccount?.account_id ?? accountId.value;
+    const selectedAccountId = payload.activeAccount?.account_id ?? accountId;
     if (!accessToken || !selectedAccountId) {
       throw new Error('登录成功，但没有返回可用会话或账套。');
     }
@@ -211,14 +261,14 @@ async function submitLogin() {
     await Promise.all([
       writeMobileStorage('accessToken', accessToken),
       writeMobileStorage('accountId', selectedAccountId),
-      writeMobileStorage('loginAccount', loginAccount.value),
+      writeMobileStorage('loginAccount', email),
       writeMobileStorage('loginAccountId', selectedAccountId),
       payload.session?.refresh_token
         ? writeMobileStorage('refreshToken', payload.session.refresh_token)
         : Promise.resolve(),
     ]);
     updateRuntimeAuth(accessToken, selectedAccountId);
-    password.value = '';
+    loginModel.value.password = '';
     await router.replace(returnPath());
   } catch (error) {
     message.value = error instanceof Error ? error.message : '登录失败，请检查登录信息。';
@@ -229,27 +279,9 @@ async function submitLogin() {
 
 onMounted(async () => {
   emit('pageTitleChange', '登录');
-  restoringLoginAccount.value = true;
-  loginAccount.value = await readMobileStorage('loginAccount');
-  restoringLoginAccount.value = false;
-  await loadAccountOptions();
-});
-
-watch(loginAccount, (login, previousLogin) => {
-  if (restoringLoginAccount.value || login === previousLogin) return;
-  accountRequestId += 1;
-  accounts.value = [];
-  accountId.value = '';
-  message.value = '';
-  if (accountTimer) clearTimeout(accountTimer);
-  if (!login) {
-    accountLoading.value = false;
-    return;
-  }
-  accountLoading.value = true;
-  accountTimer = setTimeout(() => {
-    void loadAccountOptions(login);
-  }, 300);
+  const savedLoginAccount = await readMobileStorage('loginAccount');
+  loginModel.value.email = savedLoginAccount;
+  await loadAccountOptions(savedLoginAccount);
 });
 
 onBeforeUnmount(() => {
@@ -262,7 +294,7 @@ onBeforeUnmount(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #f3f6f8;
+  background-color: #edf2f5;
 }
 
 .login-brand {
@@ -280,7 +312,7 @@ onBeforeUnmount(() => {
 .brand-mark {
   width: 50px;
   height: 50px;
-  margin-right: 15px;
+  margin-right: 18px;
   align-items: center;
   justify-content: center;
   background-color: #d8453b;
@@ -297,6 +329,10 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  padding-left: 18px;
+  border-left-width: 1px;
+  border-left-style: solid;
+  border-left-color: #527087;
 }
 
 .brand-product {
@@ -322,9 +358,10 @@ onBeforeUnmount(() => {
 
 .login-workspace {
   flex: 1;
-  padding-top: 26px;
+  min-height: 610px;
+  padding-top: 30px;
   padding-right: 20px;
-  padding-bottom: 18px;
+  padding-bottom: 20px;
   padding-left: 20px;
   display: flex;
   flex-direction: column;
@@ -333,184 +370,42 @@ onBeforeUnmount(() => {
 
 .login-panel {
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
+  padding-top: 24px;
+  padding-right: 24px;
+  padding-bottom: 24px;
+  padding-left: 24px;
   align-self: center;
   display: flex;
   flex-direction: column;
+  background-color: #ffffff;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #d9e1e7;
+  border-radius: 8px;
 }
 
 .login-eyebrow {
-  color: #6a7888;
+  color: #b43c34;
   font-size: 12px;
   line-height: 18px;
+  font-weight: bold;
 }
 
 .login-title {
-  margin-top: 2px;
+  margin-top: 3px;
   color: #172b3d;
-  font-size: 24px;
-  line-height: 32px;
+  font-size: 26px;
+  line-height: 34px;
   font-weight: bold;
 }
 
 .login-description {
-  margin-top: 8px;
-  margin-bottom: 8px;
+  margin-top: 7px;
+  margin-bottom: 12px;
   color: #71808f;
   font-size: 13px;
   line-height: 20px;
-}
-
-.login-field {
-  margin-top: 14px;
-  display: flex;
-  flex-direction: column;
-}
-
-.field-label {
-  margin-bottom: 7px;
-  color: #40566a;
-  font-size: 12px;
-  line-height: 18px;
-}
-
-.field-input {
-  height: 44px;
-  padding-right: 12px;
-  padding-left: 12px;
-  color: #172b3d;
-  font-size: 14px;
-  background-color: #ffffff;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #c7d1d9;
-  border-radius: 4px;
-}
-
-.account-state {
-  min-height: 44px;
-  padding-right: 12px;
-  padding-left: 12px;
-  justify-content: center;
-  background-color: #ffffff;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #c7d1d9;
-  border-radius: 4px;
-}
-
-.account-state-text {
-  color: #8a98a5;
-  font-size: 13px;
-}
-
-.account-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.account-option {
-  min-height: 54px;
-  padding-right: 12px;
-  padding-left: 12px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background-color: #ffffff;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #c7d1d9;
-  border-radius: 4px;
-}
-
-.account-option + .account-option {
-  margin-top: 7px;
-}
-
-.account-option.is-selected {
-  border-color: #1778b9;
-  background-color: #f1f8fc;
-}
-
-.account-radio {
-  width: 18px;
-  height: 18px;
-  margin-right: 11px;
-  align-items: center;
-  justify-content: center;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #9aa9b5;
-  border-radius: 9px;
-}
-
-.account-radio.is-selected {
-  border-color: #1778b9;
-}
-
-.account-radio-dot {
-  width: 8px;
-  height: 8px;
-  background-color: #1778b9;
-  border-radius: 4px;
-}
-
-.account-copy {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.account-name {
-  color: #23394c;
-  font-size: 13px;
-  line-height: 19px;
-  font-weight: bold;
-}
-
-.account-meta {
-  margin-top: 2px;
-  color: #7b8996;
-  font-size: 10px;
-  line-height: 15px;
-}
-
-.preference-row {
-  min-height: 42px;
-  margin-top: 10px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background-color: #f3f6f8;
-}
-
-.preference-check {
-  width: 18px;
-  height: 18px;
-  margin-right: 8px;
-  align-items: center;
-  justify-content: center;
-  background-color: #ffffff;
-  border-width: 1px;
-  border-style: solid;
-  border-color: #aab6c0;
-  border-radius: 3px;
-}
-
-.preference-check.is-checked {
-  border-color: #1778b9;
-  background-color: #1778b9;
-}
-
-.preference-check-text {
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.preference-label {
-  color: #5f6f7f;
-  font-size: 12px;
 }
 
 .login-error {
@@ -531,29 +426,10 @@ onBeforeUnmount(() => {
   line-height: 18px;
 }
 
-.login-submit {
-  height: 46px;
-  margin-top: 12px;
-  align-items: center;
-  justify-content: center;
-  background-color: #1778b9;
-  border-radius: 4px;
-}
-
-.login-submit.is-disabled {
-  background-color: #8eb8d3;
-}
-
-.login-submit-text {
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: bold;
-}
-
 .login-footer {
-  margin-top: 22px;
+  margin-top: 26px;
   align-self: center;
-  color: #91a0ad;
+  color: #788997;
   font-size: 10px;
   line-height: 15px;
 }

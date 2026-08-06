@@ -1,5 +1,13 @@
 <template>
-  <div class="mobile-form-block" @layout="handleLayout">
+  <div
+    :class="[
+      'mobile-form-block',
+      {
+        'is-plain': block.appearance === 'plain',
+      },
+    ]"
+    @layout="handleLayout"
+  >
     <div v-if="block.title || block.description || schema.title" class="form-header">
       <span v-if="block.title || schema.title" class="form-title">
         {{ block.title || schema.title }}
@@ -46,13 +54,20 @@
       </div>
     </div>
 
-    <div v-if="schema.actions.length" class="form-actions">
+    <div
+      v-if="schema.actions.length"
+      :class="[
+        'form-actions',
+        { 'is-stretch': block.actionLayout === 'stretch' },
+      ]"
+    >
       <button
         v-for="action in schema.actions"
         :key="action.code"
         :class="['form-action', `is-${action.status ?? 'default'}`]"
         :disabled="action.disabled"
-        @click="handleAction(action)"
+        @click="handleActionClick(action)"
+        @touchend="handleActionTouchEnd(action)"
       >
         <span class="form-action-text">{{ action.label }}</span>
       </button>
@@ -91,6 +106,7 @@ const emit = defineEmits<MobileMaterialEmits>();
 
 const errors = reactive<Record<string, string>>({});
 const formWidth = ref(0);
+const actionDispatching = new Set<string>();
 const formWidthScheduler = createLayoutWidthScheduler(
   () => formWidth.value,
   (width) => {
@@ -194,29 +210,42 @@ function actionDirectives(action: SharedLowCodeAction) {
 }
 
 function handleAction(action: SharedLowCodeAction) {
-  if (action.disabled) return;
+  if (action.disabled || actionDispatching.has(action.code)) return;
+  actionDispatching.add(action.code);
 
-  const isSubmit = action.type === 'submit' || action.code === 'submit';
-  const isReset = action.type === 'reset' || action.code === 'reset';
-  if (isSubmit && !validate()) return;
-  if (isReset) resetModel();
+  try {
+    const isSubmit = action.type === 'submit' || action.code === 'submit';
+    const isReset = action.type === 'reset' || action.code === 'reset';
+    if (isSubmit && !validate()) return;
+    if (isReset) resetModel();
 
-  const defaultEventName = isSubmit
-    ? `${eventPrefix.value}.submit`
-    : `${eventPrefix.value}.action`;
+    const defaultEventName = isSubmit
+      ? `${eventPrefix.value}.submit`
+      : `${eventPrefix.value}.action`;
 
-  emit('runtimeEvent', {
-    name: action.eventName ?? defaultEventName,
-    blockId: props.block.id,
-    blockKind: props.block.kind,
-    timestamp: Date.now(),
-    payload: {
-      action,
-      actionCode: action.code,
-      directives: actionDirectives(action),
-      values: cloneFormValue(model.value),
-    },
-  });
+    emit('runtimeEvent', {
+      name: action.eventName ?? defaultEventName,
+      blockId: props.block.id,
+      blockKind: props.block.kind,
+      timestamp: Date.now(),
+      payload: {
+        action,
+        actionCode: action.code,
+        directives: actionDirectives(action),
+        values: cloneFormValue(model.value),
+      },
+    });
+  } finally {
+    setTimeout(() => actionDispatching.delete(action.code), 0);
+  }
+}
+
+function handleActionTouchEnd(action: SharedLowCodeAction) {
+  handleAction(action);
+}
+
+function handleActionClick(action: SharedLowCodeAction) {
+  handleAction(action);
 }
 
 watch(
@@ -242,6 +271,13 @@ onBeforeUnmount(formWidthScheduler.cancel);
   border-width: 1px;
   border-style: solid;
   border-color: #dfe4e8;
+}
+
+.mobile-form-block.is-plain {
+  padding: 0;
+  background-color: transparent;
+  border-width: 0;
+  border-radius: 0;
 }
 
 .form-header {
@@ -275,7 +311,7 @@ onBeforeUnmount(formWidthScheduler.cancel);
 .form-row {
   width: 100%;
   min-width: 0;
-  margin-top: 11px;
+  margin-top: 14px;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
@@ -296,7 +332,7 @@ onBeforeUnmount(formWidthScheduler.cancel);
 }
 
 .form-actions {
-  margin-top: 18px;
+  margin-top: 16px;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -304,7 +340,7 @@ onBeforeUnmount(formWidthScheduler.cancel);
 }
 
 .form-action {
-  min-height: 42px;
+  min-height: 46px;
   margin-top: 6px;
   margin-left: 8px;
   padding-right: 16px;
@@ -315,8 +351,18 @@ onBeforeUnmount(formWidthScheduler.cancel);
   border-radius: 5px;
 }
 
+.form-actions.is-stretch {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.form-actions.is-stretch .form-action {
+  width: 100%;
+  margin-left: 0;
+}
+
 .form-action.is-primary {
-  background-color: #176ea8;
+  background-color: #176fa9;
 }
 
 .form-action.is-success {
@@ -338,6 +384,7 @@ onBeforeUnmount(formWidthScheduler.cancel);
 .form-action-text {
   color: #17212b;
   font-size: 13px;
+  font-weight: bold;
 }
 
 .form-action.is-primary .form-action-text,

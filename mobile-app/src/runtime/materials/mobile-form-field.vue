@@ -1,20 +1,28 @@
 <template>
   <div :class="['mobile-field', { 'is-disabled': disabled, 'is-readonly': readonly }]">
-    <div v-if="showLabel" class="field-heading">
+    <div v-if="showLabel && field.showTitle !== false" class="field-heading">
       <span class="field-label">{{ field.label }}</span>
       <span v-if="required" class="field-required">*</span>
     </div>
 
-    <div v-if="kind === 'switch'" class="switch-row">
+    <div v-if="kind === 'switch' || kind === 'boolean'" class="switch-row">
       <button
-        :class="['switch-control', { 'is-active': Boolean(modelValue) }]"
+        :class="[
+          kind === 'boolean' ? 'boolean-control' : 'switch-control',
+          { 'is-active': Boolean(modelValue) },
+        ]"
         :disabled="interactiveDisabled"
         @click="toggleSwitch"
       >
-        <div class="switch-track">
+        <div v-if="kind === 'switch'" class="switch-track">
           <div class="switch-thumb" />
         </div>
-        <span class="switch-text">{{ modelValue ? switchOpenText : switchClosedText }}</span>
+        <div v-else class="boolean-check">
+          <span v-if="modelValue" class="boolean-check-text">✓</span>
+        </div>
+        <span class="switch-text">
+          {{ kind === 'boolean' ? booleanLabel : modelValue ? switchOpenText : switchClosedText }}
+        </span>
       </button>
     </div>
 
@@ -118,16 +126,22 @@
       </dialog>
     </div>
 
-    <input
+    <div
       v-else-if="kind === 'text' || kind === 'password'"
-      class="field-input"
-      :type="kind === 'password' ? 'password' : inputType"
-      :value="inputDisplayValue"
-      :placeholder="placeholder"
-      :maxlength="maxLength"
-      :disabled="interactiveDisabled"
-      @change="commitInput(readInputEventValue($event))"
-    />
+      :class="['text-control', { 'is-focused': inputFocused }]"
+    >
+      <input
+        class="field-input text-input"
+        :type="kind === 'password' ? 'password' : inputType"
+        :value="inputDisplayValue"
+        :placeholder="placeholder"
+        :maxlength="maxLength"
+        :disabled="interactiveDisabled"
+        @focus="inputFocused = true"
+        @blur="inputFocused = false"
+        @change="commitInput(readInputEventValue($event))"
+      />
+    </div>
 
     <div v-else-if="kind === 'select' || kind === 'tree' || kind === 'cascader'" class="select-control">
       <button
@@ -353,6 +367,7 @@ const localError = ref('');
 const jsonEditorOpen = ref(false);
 const jsonDraft = ref('');
 const jsonDraftError = ref('');
+const inputFocused = ref(false);
 
 const kind = computed(() => formControlKind(props.field.component));
 const fieldProps = computed(() => props.field.props ?? {});
@@ -414,6 +429,9 @@ const switchOpenText = computed(() => String(
 ));
 const switchClosedText = computed(() => String(
   fieldProps.value.closeLabel ?? fieldProps.value.closeText ?? '已关闭',
+));
+const booleanLabel = computed(() => String(
+  fieldProps.value.text ?? fieldProps.value.label ?? props.field.label,
 ));
 const numberStep = computed(() => readFormNumber(fieldProps.value.step, 1) ?? 1);
 const numberMin = computed(() => readFormNumber(fieldProps.value.min));
@@ -641,6 +659,7 @@ watch(() => props.field.field, () => {
   panelOpen.value = false;
   searchText.value = '';
   localError.value = '';
+  inputFocused.value = false;
   closeJsonEditor();
 });
 </script>
@@ -692,6 +711,38 @@ watch(() => props.field.field, () => {
   border-radius: 5px;
 }
 
+.text-control {
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: #ffffff;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #b9c5ce;
+  border-radius: 6px;
+}
+
+.text-control.is-focused {
+  border-width: 2px;
+  border-color: #176ea8;
+  background-color: #ffffff;
+}
+
+.text-input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 44px;
+  padding-right: 12px;
+  padding-left: 12px;
+  background-color: transparent;
+  border-width: 0;
+  border-radius: 0;
+}
+
 .field-textarea {
   height: 112px;
   padding-top: 10px;
@@ -707,8 +758,20 @@ watch(() => props.field.field, () => {
   background-color: #eef1f3;
 }
 
+.mobile-field.is-disabled .text-control,
+.mobile-field.is-readonly .text-control {
+  border-color: #d4dce1;
+  background-color: #eef1f3;
+}
+
+.mobile-field.is-disabled .text-input,
+.mobile-field.is-readonly .text-input {
+  background-color: transparent;
+}
+
 .switch-row,
 .switch-control,
+.boolean-control,
 .number-control,
 .json-preview-row,
 .select-trigger,
@@ -870,6 +933,37 @@ watch(() => props.field.field, () => {
   height: 42px;
   align-self: flex-start;
   background-color: transparent;
+}
+
+.boolean-control {
+  min-width: 180px;
+  min-height: 42px;
+  align-self: flex-start;
+  background-color: transparent;
+}
+
+.boolean-check {
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #aab6c0;
+  border-radius: 3px;
+}
+
+.boolean-control.is-active .boolean-check {
+  border-color: #1778b9;
+  background-color: #1778b9;
+}
+
+.boolean-check-text {
+  color: #ffffff;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: bold;
 }
 
 .switch-track {

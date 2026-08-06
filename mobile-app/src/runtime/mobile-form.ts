@@ -8,6 +8,7 @@ export type MobileFormControlKind =
   | 'password'
   | 'textarea'
   | 'number'
+  | 'boolean'
   | 'switch'
   | 'select'
   | 'radio'
@@ -91,6 +92,8 @@ export function formControlKind(component: string): MobileFormControlKind {
       return 'number';
     case 'vxe-switch':
       return 'switch';
+    case 'lc-checkbox':
+      return 'boolean';
     case 'vxe-select':
     case 'lc-option-select':
       return 'select';

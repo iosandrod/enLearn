@@ -23,7 +23,7 @@ export type NotificationUnreadCount = {
 
 export type NotificationPreference = {
   id?: string;
-  tenant_id?: string;
+  account_id?: string;
   tenantId?: string;
   user_id?: string;
   userId?: string;
@@ -127,7 +127,7 @@ function normalizePreference(row: NotificationPreference): NotificationPreferenc
   return {
     ...row,
     category_label: row.category_label ?? categoryLabels[row.category] ?? row.category,
-    tenantId: row.tenantId ?? row.tenant_id,
+    tenantId: row.tenantId ?? row.account_id,
     userId: row.userId ?? row.user_id,
     inboxEnabled: row.inboxEnabled ?? row.inbox_enabled,
     emailEnabled: row.emailEnabled ?? row.email_enabled,
@@ -159,7 +159,7 @@ export function useNotificationApi() {
   function currentUserFilters(postData: Record<string, unknown> = {}) {
     const userId = readString(postData.userId ?? postData.user_id) || currentUserId();
     return {
-      tenant_id: currentAccountId(),
+      account_id: currentAccountId(),
       ...(userId ? { recipient_id: userId } : {})
     };
   }
@@ -227,7 +227,7 @@ export function useNotificationApi() {
       ...postData,
       tableName: 'notification_preferences',
       filters: {
-        tenant_id: tenantId,
+        account_id: tenantId,
         ...(userId ? { user_id: userId } : {}),
         ...normalizeFilters(postData.filters)
       },
@@ -239,7 +239,7 @@ export function useNotificationApi() {
     return notificationCategories.map((category) => normalizePreference(
       byCategory.get(category) ?? {
         id: '',
-        tenant_id: tenantId,
+        account_id: tenantId,
         user_id: userId,
         category,
         inbox_enabled: true,
@@ -256,7 +256,7 @@ export function useNotificationApi() {
     const category = readString(postData.category);
     const existing = (await getPreferences({ tenantId, userId })).find((item) => item.category === category);
     const payload = {
-      tenant_id: tenantId,
+      account_id: tenantId,
       user_id: userId,
       category,
       inbox_enabled: postData.inboxEnabled === undefined && postData.inbox_enabled === undefined
@@ -282,7 +282,7 @@ export function useNotificationApi() {
 
   async function listDeliveries(postData: Record<string, unknown> = {}) {
     const filters = {
-      tenant_id: currentAccountId(),
+      account_id: currentAccountId(),
       ...normalizeFilters(postData.filters),
       ...(readString(postData.status) ? { status: readString(postData.status) } : {}),
       ...(readString(postData.channel) ? { channel: readString(postData.channel) } : {}),

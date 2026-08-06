@@ -129,7 +129,7 @@ export function useChatSocket() {
     const optimisticMessage: ChatMessage = {
       id: requestId,
       tenantId: currentAccountId(),
-      tenant_id: currentAccountId(),
+      account_id: currentAccountId(),
       conversationId: input.conversationId,
       conversation_id: input.conversationId,
       senderId: null,
