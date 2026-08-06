@@ -4,7 +4,11 @@ import {
   NotFoundException
 } from '@nestjs/common';
 import type Stripe from 'stripe';
-import { BaseService, type ListItemsHandler } from '../common/base.service';
+import {
+  BaseService,
+  type ListItemsHandler,
+  type ResourceConfigMap
+} from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { createSupabaseClient, getCurrentUser } from '../common/utils/supabase';
 import {
@@ -41,6 +45,26 @@ function readNumber(value: unknown, name: string, fallback?: number) {
 
 @Injectable()
 export class PaymentService extends BaseService {
+  protected override resources(): ResourceConfigMap {
+    return {
+      customers: {
+        tableName: 'customers',
+        internalActions: ['create', 'update', 'delete', 'action'],
+        primaryKey: 'id',
+        clientMode: 'admin',
+        create: {
+          allowedFields: ['id', 'stripe_customer_id'],
+          requiredFields: ['id', 'stripe_customer_id'],
+          timestamp: false
+        },
+        update: {
+          allowedFields: ['stripe_customer_id'],
+          timestamp: false
+        }
+      }
+    };
+  }
+
   protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
       case 'createCheckoutSession':
@@ -143,7 +167,8 @@ export class PaymentService extends BaseService {
       supabase,
       stripe,
       userId: user.id,
-      email: user.email ?? ''
+      email: user.email ?? '',
+      context
     });
 
     const params: Stripe.Checkout.SessionCreateParams = {
@@ -198,7 +223,8 @@ export class PaymentService extends BaseService {
       supabase,
       stripe,
       userId: user.id,
-      email: user.email ?? ''
+      email: user.email ?? '',
+      context
     });
 
     const { url } = await stripe.billingPortal.sessions.create({
@@ -220,12 +246,14 @@ export class PaymentService extends BaseService {
     supabase,
     stripe,
     userId,
-    email
+    email,
+    context
   }: {
     supabase: ReturnType<typeof createSupabaseClient>;
     stripe: ReturnType<typeof getStripeClient>;
     userId: string;
     email: string;
+    context: ServiceContext;
   }) {
     const { data: existingCustomer, error: lookupError } = await supabase
       .from('customers')
@@ -262,24 +290,20 @@ export class PaymentService extends BaseService {
 
     if (existingCustomer) {
       if (existingCustomer.stripe_customer_id !== stripeCustomerId) {
-        const { error: updateError } = await supabase
-          .from('customers')
-          .update({ stripe_customer_id: stripeCustomerId })
-          .eq('id', userId);
-
-        if (updateError) {
-          throw new BadRequestException(updateError.message);
-        }
+        await this.runCrud('update', {
+          resource: 'customers',
+          id: userId,
+          data: { stripe_customer_id: stripeCustomerId }
+        }, context);
       }
     } else {
-      const { error: insertError } = await supabase.from('customers').insert({
-        id: userId,
-        stripe_customer_id: stripeCustomerId
-      });
-
-      if (insertError) {
-        throw new BadRequestException(insertError.message);
-      }
+      await this.runCrud('create', {
+        resource: 'customers',
+        data: {
+          id: userId,
+          stripe_customer_id: stripeCustomerId
+        }
+      }, context);
     }
 
     return stripeCustomerId;

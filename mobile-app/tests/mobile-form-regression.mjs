@@ -190,18 +190,38 @@ const componentSource = await readFile(
 );
 assert.match(
   componentSource,
-  /@click="handleActionClick\(action\)"/,
+  /@click="handleAction\(action\)"/,
   'form actions must retain their regular click path',
 );
-assert.match(
+assert.doesNotMatch(
   componentSource,
-  /@touchend="handleActionTouchEnd\(action\)"/,
-  'form actions need a direct touch-end path when Hippy Web receives mouse input',
+  /@touchend="handleAction/,
+  'form actions should rely on one click path after the Web View bridge is installed',
+);
+
+const webViewSource = await readFile(
+  path.resolve(testDirectory, '../src/web/hippy-web-view.ts'),
+  'utf8',
 );
 assert.match(
-  componentSource,
-  /actionDispatching\.has\(action\.code\)/,
-  'the touch fallback must suppress the synthetic click that follows a native tap',
+  webViewSource,
+  /this\.dom\.addEventListener\('click', this\.handleNativeClick\)/,
+  'the Web View adapter must bridge desktop mouse clicks',
+);
+assert.match(
+  webViewSource,
+  /Date\.now\(\) - this\.lastNativeTouchEnd < 500/,
+  'the Web View adapter must suppress the synthetic click after a touch tap',
+);
+
+const webEntrySource = await readFile(
+  path.resolve(testDirectory, '../src/main-web.ts'),
+  'utf8',
+);
+assert.match(
+  webEntrySource,
+  /View: DesktopCompatibleView/,
+  'the desktop-compatible View must be registered with Hippy Web Renderer',
 );
 
 console.log('mobile-form regression checks passed');

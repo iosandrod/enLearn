@@ -21,6 +21,7 @@
     "test:lowcode-page-runtime": "node --experimental-strip-types tests/lowcode-page-runtime-regression.mjs",
     "test:action-builtins": "node --experimental-strip-types tests/action-builtins-regression.mjs",
     "test:form-label-menu": "node tests/form-label-runtime-context-menu-regression.mjs",
+    "test:entity-design-tabs": "node tests/entity-design-left-tabs-regression.mjs",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

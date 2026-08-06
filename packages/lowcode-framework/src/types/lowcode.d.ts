@@ -30,6 +30,11 @@ export type LowCodeFormLayoutColumn = {
     span?: number | string;
     blocks: LowCodeFormLayoutNode[];
 };
+export type LowCodeFormLayoutTab = {
+    key: string;
+    label: string;
+    blocks: LowCodeFormLayoutNode[];
+};
 export type LowCodeFormLayoutNode = {
     kind: 'field';
     field: string;
@@ -40,6 +45,10 @@ export type LowCodeFormLayoutNode = {
 } | {
     kind: 'stack';
     blocks: LowCodeFormLayoutNode[];
+} | {
+    kind: 'tabs';
+    defaultKey?: string;
+    tabs: LowCodeFormLayoutTab[];
 };
 export type LowCodeGridFormatter = {
     type: 'text';

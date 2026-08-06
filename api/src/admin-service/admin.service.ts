@@ -9,8 +9,6 @@ import type { ServiceContext } from '../common/interfaces/service-executor';
 import { createSupabaseClient, requireAdmin } from '../common/utils/supabase';
 import { listActiveAccountUserIds } from '../common/utils/account-context';
 
-type OptionSourceType = 'dict' | 'table' | 'view' | 'rpc' | 'sql';
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -30,19 +28,6 @@ function readStringArray(value: unknown) {
   return value
     .map((item) => (typeof item === 'string' ? item.trim() : ''))
     .filter(Boolean);
-}
-
-function readJsonObject(value: unknown, fallback: Record<string, unknown> = {}) {
-  if (isRecord(value)) return value;
-  if (typeof value === 'string' && value.trim()) {
-    try {
-      const parsed = JSON.parse(value);
-      if (isRecord(parsed)) return parsed;
-    } catch {
-      throw new BadRequestException('Invalid JSON payload.');
-    }
-  }
-  return fallback;
 }
 
 function toPrettyJson(value: unknown) {
@@ -69,65 +54,6 @@ function optionTablesRequired(error: { message?: string } | null | undefined) {
     throw new BadRequestException(
       'System option tables are not created yet. Run supabase/migrations/20260728033000_system_option_sources.sql first.'
     );
-  }
-}
-
-function normalizeStatus(value: unknown, allowed: string[], fallback: string) {
-  return typeof value === 'string' && allowed.includes(value) ? value : fallback;
-}
-
-function normalizeOptionSourceType(value: unknown): OptionSourceType {
-  return normalizeStatus(value, ['dict', 'table', 'view', 'rpc', 'sql'], 'dict') as OptionSourceType;
-}
-
-function readConfigString(config: Record<string, unknown>, keys: string[], fallback = '') {
-  for (const key of keys) {
-    const value = readOptionalString(config[key]);
-    if (value) return value;
-  }
-  return fallback;
-}
-
-function assertIdentifier(value: string, fieldName: string) {
-  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(value)) {
-    throw new BadRequestException(`${fieldName} must be a valid identifier.`);
-  }
-}
-
-function assertIdentifierPath(value: string, fieldName: string) {
-  value.split('.').forEach((segment) => assertIdentifier(segment, fieldName));
-}
-
-function readRelationIdentifier(value: unknown, fieldName: string) {
-  const relation = readString(value, fieldName);
-  const parts = relation.split('.');
-  if (parts.length > 2) {
-    throw new BadRequestException(`${fieldName} must be table or schema.table.`);
-  }
-  parts.forEach((part) => assertIdentifier(part, fieldName));
-}
-
-function assertOptionSourceConfig(sourceType: OptionSourceType, config: Record<string, unknown>, status: string) {
-  if (status !== 'active' || sourceType === 'dict') return;
-
-  if (sourceType === 'table' || sourceType === 'view') {
-    const relation = readConfigString(
-      config,
-      sourceType === 'view' ? ['view', 'table', 'relation', 'from'] : ['table', 'relation', 'from']
-    );
-    readRelationIdentifier(relation, 'source_config.table');
-    assertIdentifierPath(readConfigString(config, ['labelField', 'label_field'], 'label'), 'source_config.labelField');
-    assertIdentifierPath(readConfigString(config, ['valueField', 'value_field'], 'value'), 'source_config.valueField');
-    return;
-  }
-
-  if (sourceType === 'rpc') {
-    assertIdentifier(readConfigString(config, ['functionName', 'function_name', 'rpc']), 'source_config.functionName');
-    return;
-  }
-
-  if (sourceType === 'sql' && !readConfigString(config, ['sql', 'query'])) {
-    throw new BadRequestException('source_config.sql is required for SQL option sources.');
   }
 }
 
@@ -278,6 +204,12 @@ export class AdminService extends BaseService {
       admin_roles: {
         tableName: 'admin_roles',
         permissions: this.adminCrudPermissions('admin.roles.manage'),
+        transactionalHooks: true,
+        databaseHooks: {
+          afterCreate: 'public.dynamic_crud_sync_role_permissions',
+          afterUpdate: 'public.dynamic_crud_sync_role_permissions'
+        },
+        databaseHookInputFields: ['permission_codes', 'permissionCodes'],
         defaults: { status: 'active', sort_order: 0, is_system: false },
         list: { defaultSorts: [{ field: 'sort_order', direction: 'asc' }] },
         create: {
@@ -310,6 +242,12 @@ export class AdminService extends BaseService {
       admin_routes: {
         tableName: 'admin_routes',
         permissions: this.adminCrudPermissions('admin.routes.manage'),
+        transactionalHooks: true,
+        databaseHooks: {
+          beforeCreate: 'public.dynamic_crud_normalize_admin_route',
+          beforeUpdate: 'public.dynamic_crud_normalize_admin_route'
+        },
+        databaseHookInputFields: ['type', 'metadata_json', 'metadata'],
         defaults: { route_type: 'page', status: 'active', visible: true, keep_alive: false, sort_order: 0 },
         list: { defaultSorts: [{ field: 'sort_order', direction: 'asc' }, { field: 'created_at', direction: 'asc' }] },
         create: {
@@ -326,6 +264,12 @@ export class AdminService extends BaseService {
       admin_entities: {
         tableName: 'admin_entities',
         permissions: this.adminCrudPermissions('admin.entities.manage'),
+        transactionalHooks: true,
+        databaseHooks: {
+          beforeCreate: 'public.dynamic_crud_normalize_admin_entity',
+          beforeUpdate: 'public.dynamic_crud_normalize_admin_entity'
+        },
+        databaseHookInputFields: ['schema_json', 'schema', 'querySql'],
         defaults: { status: 'active', sort_order: 0 },
         list: { defaultSorts: [{ field: 'sort_order', direction: 'asc' }] },
         create: {
@@ -342,6 +286,14 @@ export class AdminService extends BaseService {
       system_option_sources: {
         tableName: 'system_option_sources',
         permissions: this.adminCrudPermissions('admin.options.manage'),
+        transactionalHooks: true,
+        databaseHooks: {
+          beforeCreate: 'public.dynamic_crud_normalize_option_source',
+          beforeUpdate: 'public.dynamic_crud_normalize_option_source'
+        },
+        databaseHookInputFields: [
+          'sourceType', 'source_config_json', 'source_config', 'sourceConfig'
+        ],
         defaults: { source_type: 'dict', status: 'active', sort_order: 0, is_system: false },
         list: { defaultSorts: [{ field: 'sort_order', direction: 'asc' }] },
         create: {
@@ -358,6 +310,14 @@ export class AdminService extends BaseService {
       system_option_items: {
         tableName: 'system_option_items',
         permissions: this.adminCrudPermissions('admin.options.manage'),
+        transactionalHooks: true,
+        databaseHooks: {
+          beforeCreate: 'public.dynamic_crud_normalize_option_item',
+          beforeUpdate: 'public.dynamic_crud_normalize_option_item'
+        },
+        databaseHookInputFields: [
+          'sourceCode', 'parentValue', 'metadata_json', 'metadata'
+        ],
         defaults: { status: 'active', sort_order: 0, disabled: false, is_system: false },
         list: { defaultSorts: [{ field: 'sort_order', direction: 'asc' }] },
         create: {
@@ -519,32 +479,22 @@ export class AdminService extends BaseService {
   protected override hooks(): ServiceHooks {
     return {
       admin_roles: {
-        afterCreate: [this.syncRolePermissionsHook],
-        afterUpdate: [this.syncRolePermissionsHook],
         beforeDelete: [this.resolveCodeDeleteId]
       },
       admin_permissions: { beforeDelete: [this.resolveCodeDeleteId] },
       admin_routes: {
-        beforeCreate: [this.normalizeRoutePayload],
-        beforeUpdate: [this.normalizeRoutePayload],
         beforeDelete: [this.resolveCodeDeleteId]
       },
       admin_entities: {
-        beforeCreate: [this.normalizeEntityPayload],
-        beforeUpdate: [this.normalizeEntityPayload],
         beforeDelete: [this.resolveCodeDeleteId]
       },
       system_option_sources: {
         afterList: [this.attachOptionSourceConfigJson],
-        beforeCreate: [this.normalizeOptionSourcePayload],
-        beforeUpdate: [this.normalizeOptionSourcePayload],
         beforeDelete: [this.resolveOptionSourceDeleteId, this.preventDeleteSystemOptionSource],
         afterCreate: [this.attachOptionSourceConfigJson],
         afterUpdate: [this.attachOptionSourceConfigJson]
       },
       system_option_items: {
-        beforeCreate: [this.normalizeOptionItemPayload, this.assertDictOptionSource],
-        beforeUpdate: [this.normalizeOptionItemPayload, this.assertDictOptionSource],
         beforeDelete: [this.resolveOptionItemDeleteId, this.preventDeleteSystemOptionItem],
         afterCreate: [this.attachOptionItemMetadataJson],
         afterUpdate: [this.attachOptionItemMetadataJson]
@@ -622,108 +572,6 @@ export class AdminService extends BaseService {
       throw error;
     }));
     ctx.id = readOptionalString(rows[0]?.id);
-  };
-
-  private syncRolePermissionsHook = async (ctx: HookContext) => {
-    const role = ctx.result as Record<string, unknown> | undefined;
-    const roleId = readOptionalString(role?.id);
-    if (!roleId) return;
-
-    const permissionCodes = readStringArray(ctx.input.permission_codes ?? ctx.input.permissionCodes);
-    const allPermissions = asRows(await this.listItems({
-      tableName: 'admin_permissions',
-      select: 'id, code',
-      clientMode: 'admin',
-      limit: 1000
-    }, ctx.context).catch((error) => {
-      metadataTablesRequired(error);
-      throw error;
-    }));
-
-    const permissionIds = allPermissions
-      .filter((permission) => permissionCodes.includes(String(permission.code)))
-      .map((permission) => String(permission.id));
-
-    const { error: deleteMappingsError } = await ctx.client
-      .from('admin_role_permissions')
-      .delete()
-      .eq('role_id', roleId);
-
-    if (deleteMappingsError) {
-      metadataTablesRequired(deleteMappingsError);
-      throw new BadRequestException(deleteMappingsError.message);
-    }
-
-    if (permissionIds.length) {
-      const { error: insertMappingsError } = await ctx.client
-        .from('admin_role_permissions')
-        .insert(permissionIds.map((permissionId) => ({ role_id: roleId, permission_id: permissionId })));
-
-      if (insertMappingsError) {
-        metadataTablesRequired(insertMappingsError);
-        throw new BadRequestException(insertMappingsError.message);
-      }
-    }
-
-    ctx.result = { ...role, permission_codes: permissionCodes };
-  };
-
-  private normalizeRoutePayload = (ctx: HookContext) => {
-    if ('type' in ctx.data && !('route_type' in ctx.data)) {
-      ctx.data.route_type = ctx.data.type;
-      delete ctx.data.type;
-    }
-    if ('metadata_json' in ctx.input || 'metadata' in ctx.input) {
-      ctx.data.metadata = readJsonObject(ctx.input.metadata_json ?? ctx.input.metadata);
-    }
-  };
-
-  private normalizeEntityPayload = (ctx: HookContext) => {
-    if ('schema_json' in ctx.input || 'schema' in ctx.input) {
-      ctx.data.schema = readJsonObject(ctx.input.schema_json ?? ctx.input.schema);
-    }
-    if ('querySql' in ctx.input) {
-      ctx.data.query_sql = readOptionalString(ctx.input.querySql) || null;
-    }
-  };
-
-  private normalizeOptionSourcePayload = (ctx: HookContext) => {
-    ctx.data.source_type = normalizeOptionSourceType(ctx.data.source_type ?? ctx.input.sourceType);
-    ctx.data.source_config = readJsonObject(
-      ctx.input.source_config_json ?? ctx.input.source_config ?? ctx.input.sourceConfig
-    );
-    assertOptionSourceConfig(
-      ctx.data.source_type as OptionSourceType,
-      ctx.data.source_config as Record<string, unknown>,
-      readOptionalString(ctx.data.status) || 'active'
-    );
-  };
-
-  private normalizeOptionItemPayload = (ctx: HookContext) => {
-    if ('sourceCode' in ctx.input) ctx.data.source_code = ctx.input.sourceCode;
-    if ('parentValue' in ctx.input) ctx.data.parent_value = ctx.input.parentValue || null;
-    if ('metadata_json' in ctx.input || 'metadata' in ctx.input) {
-      ctx.data.metadata = readJsonObject(ctx.input.metadata_json ?? ctx.input.metadata);
-    }
-  };
-
-  private assertDictOptionSource = async (ctx: HookContext) => {
-    const sourceCode = readString(ctx.data.source_code, 'source_code');
-    const [source] = asRows(await this.listItems({
-      tableName: 'system_option_sources',
-      select: 'code, source_type',
-      filters: { code: sourceCode },
-      clientMode: 'admin',
-      limit: 1
-    }, ctx.context).catch((error) => {
-      optionTablesRequired(error);
-      throw error;
-    }));
-
-    if (!source) throw new NotFoundException('Option source not found.');
-    if (source.source_type !== 'dict') {
-      throw new BadRequestException('Only dict option sources can save manual items.');
-    }
   };
 
   private preventDeleteSystemOptionSource = async (ctx: HookContext) => {

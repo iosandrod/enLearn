@@ -146,6 +146,15 @@ export class NotificationService extends BaseService {
         tableName: 'notification_messages',
         accountField: 'account_id',
         ownerField: 'recipient_id',
+        transactionalHooks: true,
+        databaseHooks: {
+          beforeCreate: 'public.dynamic_crud_normalize_notification_message',
+          beforeUpdate: 'public.dynamic_crud_normalize_notification_message_update'
+        },
+        databaseHookInputFields: [
+          'linkUrl', 'sourceType', 'sourceId', 'recipientId',
+          'markRead', 'mark_read', 'archive', 'archived', 'readAt', 'archivedAt'
+        ],
         defaults: { category: 'system', channel: 'inbox', priority: 'normal', metadata: {} },
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
         create: {
@@ -162,6 +171,15 @@ export class NotificationService extends BaseService {
         tableName: 'notification_preferences',
         accountField: 'account_id',
         ownerField: 'user_id',
+        transactionalHooks: true,
+        databaseHooks: {
+          beforeCreate: 'public.dynamic_crud_normalize_notification_preference',
+          beforeUpdate: 'public.dynamic_crud_normalize_notification_preference'
+        },
+        databaseHookInputFields: [
+          'userId', 'user_id', 'category', 'inboxEnabled', 'emailEnabled',
+          'smsEnabled', 'quietHours', 'quiet_hours'
+        ],
         defaults: { inbox_enabled: true, email_enabled: false, sms_enabled: false, quiet_hours: {} },
         list: { defaultSorts: [{ field: 'category', direction: 'asc' }], defaultPageSize: 100, maxPageSize: 100 },
         create: {
@@ -177,6 +195,12 @@ export class NotificationService extends BaseService {
         tableName: 'notification_deliveries',
         accountField: 'account_id',
         clientMode: 'admin',
+        transactionalHooks: true,
+        databaseHooks: {
+          beforeCreate: 'public.dynamic_crud_validate_account_recipient',
+          beforeUpdate: 'public.dynamic_crud_normalize_notification_delivery'
+        },
+        databaseHookInputFields: ['recipientId', 'retry'],
         permissions: this.adminCrudPermissions('notification.deliveries.manage'),
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
         create: {
@@ -191,6 +215,8 @@ export class NotificationService extends BaseService {
         tableName: 'notification_events',
         accountField: 'account_id',
         clientMode: 'admin',
+        transactionalHooks: true,
+        databaseHooks: { beforeCreate: 'public.dynamic_crud_validate_notification_event' },
         permissions: this.adminCrudPermissions('notification.messages.manage'),
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 1000 },
         create: {
@@ -221,24 +247,17 @@ export class NotificationService extends BaseService {
   protected override hooks(): ServiceHooks {
     return {
       notification_messages: {
-        beforeCreate: [this.normalizeMessagePayload, this.assertMessageRecipient],
-        beforeUpdate: [this.normalizeMessageUpdatePayload],
         afterCreate: [this.normalizeMessageResult],
         afterUpdate: [this.normalizeMessageResult]
       },
       notification_preferences: {
-        beforeCreate: [this.normalizePreferencePayload],
-        beforeUpdate: [this.normalizePreferencePayload],
         afterCreate: [this.normalizePreferenceResult],
         afterUpdate: [this.normalizePreferenceResult]
       },
       notification_deliveries: {
-        beforeCreate: [this.assertDeliveryRecipient],
-        beforeUpdate: [this.normalizeDeliveryPayload]
+        // Create/update validation and normalization execute inside the CRUD RPC.
       },
-      notification_events: {
-        beforeCreate: [this.assertEventRecipients]
-      }
+      notification_events: {}
     };
   }
 
@@ -261,95 +280,25 @@ export class NotificationService extends BaseService {
     return { list: permission, create: permission, update: permission, delete: permission };
   }
 
-  private normalizeMessagePayload = (ctx: HookContext) => {
-    ctx.data.account_id = getActiveAccountId(ctx.context);
-    ctx.data.category = readCategory(ctx.data.category) ?? 'system';
-    ctx.data.channel = 'inbox';
-    ctx.data.priority = readPriority(ctx.data.priority);
-    ctx.data.metadata = readJsonObject(ctx.data.metadata);
-    if ('linkUrl' in ctx.input) ctx.data.link_url = readOptionalString(ctx.input.linkUrl) || null;
-    if ('sourceType' in ctx.input) ctx.data.source_type = readOptionalString(ctx.input.sourceType) || null;
-    if ('sourceId' in ctx.input) ctx.data.source_id = readOptionalString(ctx.input.sourceId) || null;
-  };
+  protected getNotificationCurrentUser(context: ServiceContext) {
+    return getCurrentUser(context);
+  }
 
-  private assertMessageRecipient = async (ctx: HookContext) => {
-    const recipientId = readOptionalString(ctx.data.recipient_id ?? ctx.input.recipientId);
-    if (!recipientId) return;
-    await assertAccountUsers(
-      ctx.context,
-      [recipientId],
+  protected requireNotificationAdmin(context: ServiceContext) {
+    return requireAdmin(context, ['notification.messages.manage', 'admin.users.manage']);
+  }
+
+  protected assertNotificationAccountUsers(context: ServiceContext, userIds: string[]) {
+    return assertAccountUsers(
+      context,
+      userIds,
       'The notification recipient must belong to the active account set.'
     );
-  };
+  }
 
-  private normalizeMessageUpdatePayload = (ctx: HookContext) => {
-    const now = new Date().toISOString();
-    if (readBoolean(ctx.input.markRead ?? ctx.input.mark_read, false)) {
-      ctx.data.read_at = ctx.data.read_at || now;
-    }
-
-    if (readBoolean(ctx.input.archive ?? ctx.input.archived, false)) {
-      ctx.data.read_at = ctx.data.read_at || now;
-      ctx.data.archived_at = ctx.data.archived_at || now;
-    }
-
-    if ('readAt' in ctx.input) ctx.data.read_at = readOptionalString(ctx.input.readAt) || null;
-    if ('archivedAt' in ctx.input) ctx.data.archived_at = readOptionalString(ctx.input.archivedAt) || null;
-  };
-
-  private normalizePreferencePayload = async (ctx: HookContext) => {
-    const { user } = await getCurrentUser(ctx.context);
-    const targetUserId = readOptionalString(ctx.input.userId ?? ctx.input.user_id ?? ctx.data.user_id) || user.id;
-    if (targetUserId !== user.id) await requireAdmin(ctx.context, 'notification.messages.manage');
-    await assertAccountUsers(
-      ctx.context,
-      [targetUserId],
-      'The notification preference user must belong to the active account set.'
-    );
-
-    ctx.data.account_id = getActiveAccountId(ctx.context);
-    ctx.data.user_id = targetUserId;
-    const category = readCategory(ctx.data.category ?? ctx.input.category);
-    if (category) ctx.data.category = category;
-    if (ctx.action === 'create' && !ctx.data.category) throw new BadRequestException('category is required.');
-    if ('inboxEnabled' in ctx.input) ctx.data.inbox_enabled = readBoolean(ctx.input.inboxEnabled, true);
-    if ('emailEnabled' in ctx.input) ctx.data.email_enabled = readBoolean(ctx.input.emailEnabled, false);
-    if ('smsEnabled' in ctx.input) ctx.data.sms_enabled = readBoolean(ctx.input.smsEnabled, false);
-    if ('quietHours' in ctx.input || 'quiet_hours' in ctx.input) {
-      ctx.data.quiet_hours = readJsonObject(ctx.input.quietHours ?? ctx.input.quiet_hours);
-    }
-  };
-
-  private normalizeDeliveryPayload = (ctx: HookContext) => {
-    if (ctx.input.retry === true) {
-      ctx.data.status = 'pending';
-      ctx.data.error_message = null;
-      ctx.data.next_retry_at = null;
-    }
-  };
-
-  private assertDeliveryRecipient = async (ctx: HookContext) => {
-    const recipientId = readOptionalString(ctx.data.recipient_id ?? ctx.input.recipientId);
-    if (!recipientId) return;
-    await assertAccountUsers(
-      ctx.context,
-      [recipientId],
-      'The notification recipient must belong to the active account set.'
-    );
-  };
-
-  private assertEventRecipients = async (ctx: HookContext) => {
-    const payload = readJsonObject(ctx.data.payload);
-    const recipientIds = [
-      ...readStringArray(payload.recipientIds ?? payload.recipient_ids),
-      ...readStringArray(payload.userIds ?? payload.user_ids)
-    ];
-    await assertAccountUsers(
-      ctx.context,
-      recipientIds,
-      'Every notification recipient must belong to the active account set.'
-    );
-  };
+  protected createNotificationCommandClient(context: ServiceContext) {
+    return createSupabaseClient('admin', context);
+  }
 
   private normalizeMessageResult = (ctx: HookContext) => {
     if (Array.isArray(ctx.result)) ctx.result = (ctx.result as NotificationMessageRow[]).map(normalizeMessage);
@@ -412,35 +361,29 @@ export class NotificationService extends BaseService {
     context: ServiceContext,
     ids: string[] = []
   ) {
-    const { client, user } = await getCurrentUser(context);
+    const { user } = await this.getNotificationCurrentUser(context);
     const targetUserId = readOptionalString(postData.userId ?? postData.user_id) || user.id;
-    let writeClient = client;
 
     if (targetUserId !== user.id) {
-      await requireAdmin(context, ['notification.messages.manage', 'admin.users.manage']);
-      writeClient = resolveAdminClient(client);
+      await this.requireNotificationAdmin(context);
     }
-    await assertAccountUsers(
-      context,
-      [targetUserId],
-      'The notification recipient must belong to the active account set.'
-    );
+    await this.assertNotificationAccountUsers(context, [targetUserId]);
 
-    let query = writeClient
-      .from('notification_messages')
-      .update({ read_at: new Date().toISOString() })
-      .eq('account_id', getActiveAccountId(context))
-      .eq('recipient_id', targetUserId)
-      .is('read_at', null)
-      .is('archived_at', null);
-
-    if (ids.length) query = query.in('id', ids);
     const category = readCategory(postData.category);
-    if (category) query = query.eq('category', category);
-
-    const { data, error } = await query.select('*');
+    const writeClient = this.createNotificationCommandClient(context);
+    const { data, error } = await writeClient.rpc('notification_api_command', {
+      p_action: 'mark_read',
+      p_payload: {
+        account_id: getActiveAccountId(context),
+        recipient_id: targetUserId,
+        ids,
+        category: category ?? null
+      }
+    });
     if (error) throw new BadRequestException(error.message);
-    const messages = ((data ?? []) as NotificationMessageRow[]).map(normalizeMessage);
+    const messages = (Array.isArray(data) ? data : [] as NotificationMessageRow[]).map((row) =>
+      normalizeMessage(row as NotificationMessageRow)
+    );
     return { success: true, count: messages.length, messages };
   }
 
@@ -457,53 +400,33 @@ export class NotificationService extends BaseService {
     const recipientIds = await this.resolveRecipients(postData, context);
     const eventPayload = { title, content, linkUrl, priority, recipientIds, metadata };
 
-    const { data: event, error: eventError } = await writeClient
-      .from('notification_events')
-      .upsert({
+    const { data, error } = await writeClient.rpc('notification_api_command', {
+      p_action: 'create_system_notice',
+      p_payload: {
         account_id: tenantId,
-        event_type: 'system.notice.created',
-        source_type: 'system_notice',
-        source_id: noticeId,
         actor_id: user.id,
-        payload: eventPayload,
-        idempotency_key: `system-notice:${noticeId}`,
-        status: 'processed',
-        processed_at: new Date().toISOString()
-      }, { onConflict: 'account_id,idempotency_key' })
-      .select('*')
-      .single();
-
-    if (eventError) throw new BadRequestException(eventError.message);
-
-    if (!recipientIds.length) return { success: true, event, messages: [], count: 0 };
-
-    const messages = recipientIds.map((recipientId) => ({
-      account_id: tenantId,
-      event_id: (event as NotificationEventRow).id,
-      recipient_id: recipientId,
-      category: 'system',
-      channel: 'inbox',
-      title,
-      content,
-      link_url: linkUrl,
-      priority,
-      source_type: 'system_notice',
-      source_id: noticeId,
-      metadata
-    }));
-
-    const { data, error } = await writeClient
-      .from('notification_messages')
-      .upsert(messages, { onConflict: 'account_id,recipient_id,source_type,source_id,category' })
-      .select('*');
+        notice_id: noticeId,
+        title,
+        content,
+        link_url: linkUrl,
+        priority,
+        metadata,
+        recipient_ids: recipientIds,
+        event_payload: eventPayload
+      }
+    });
 
     if (error) throw new BadRequestException(error.message);
+    if (!isRecord(data) || !isRecord(data.event) || !Array.isArray(data.messages)) {
+      throw new BadRequestException('Notification API RPC returned an invalid result.');
+    }
+    const messages = (data.messages as NotificationMessageRow[]).map(normalizeMessage);
 
     return {
       success: true,
-      event,
-      messages: ((data ?? []) as NotificationMessageRow[]).map(normalizeMessage),
-      count: data?.length ?? 0
+      event: data.event as NotificationEventRow,
+      messages,
+      count: messages.length
     };
   }
 

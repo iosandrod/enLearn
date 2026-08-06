@@ -287,6 +287,9 @@ importers:
       less-loader:
         specifier: ^13.0.0
         version: 13.0.0(less@4.8.1)(webpack@5.109.2)
+      playwright-core:
+        specifier: 1.57.0
+        version: 1.57.0
       regenerator-runtime:
         specifier: ^0.14.1
         version: 0.14.1
@@ -5992,6 +5995,11 @@ packages:
   pinkie@2.0.4:
     resolution: {integrity: sha512-MnUuEycAemtSaeFSjXKW/aroV7akBbY+Sv+RkyqFjgAe73F+MR0TBWKBRDkmfWq/HiFmdavfZ1G7h4SPZXaCSg==}
     engines: {node: '>=0.10.0'}
+
+  playwright-core@1.57.0:
+    resolution: {integrity: sha512-agTcKlMw/mjBWOnD6kFZttAAGHgi/Nw0CZ2o6JqWSbMlI219lAFLZZCyqByTsvVAJq5XA5H8cA6PrvBRpBWEuQ==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   pkce-challenge@5.0.1:
     resolution: {integrity: sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==}
@@ -13091,6 +13099,8 @@ snapshots:
       pinkie: 2.0.4
 
   pinkie@2.0.4: {}
+
+  playwright-core@1.57.0: {}
 
   pkce-challenge@5.0.1: {}
 

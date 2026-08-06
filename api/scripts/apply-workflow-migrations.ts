@@ -17,7 +17,16 @@ async function main() {
     '../../../supabase/migrations/20260726073000_workflow_runtime.sql',
     '../../../supabase/migrations/20260726080000_workflow_task_center.sql',
     '../../../supabase/migrations/20260727043000_workflow_jobs_triggerdev.sql',
-    '../../../supabase/migrations/20260727090000_workflow_triggerdev_runtime.sql'
+    '../../../supabase/migrations/20260727090000_workflow_triggerdev_runtime.sql',
+    '../../../supabase/migrations/20260806130000_workflow_publish_rpc.sql',
+    '../../../supabase/migrations/20260806140000_workflow_job_rpc.sql',
+    '../../../supabase/migrations/20260806150000_workflow_runtime_rpc.sql',
+    '../../../supabase/migrations/20260806160000_workflow_approval_console_rpc.sql',
+    '../../../supabase/migrations/20260806170000_notification_delivery_rpc.sql',
+    '../../../supabase/migrations/20260806180000_lowcode_table_metadata_rpc.sql',
+    '../../../supabase/migrations/20260806190000_workflow_definition_command_rpc.sql',
+    '../../../supabase/migrations/20260806200000_notification_api_rpc.sql',
+    '../../../supabase/migrations/20260806210000_lowcode_generated_page_rpc.sql'
   ].map((item) => resolve(__dirname, item));
   for (const [connectionIndex, connectionString] of connectionStrings.entries()) {
     const client = new Client({ connectionString });

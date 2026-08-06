@@ -89,7 +89,7 @@ interface GridDesignerServiceOption {
   columns?: GridDesignerColumn[];
   gridOptions?: Record<string, unknown> | null;
   gridEvents?: GridDesignerEvent[] | null;
-  onConfirm: (value: GridDesignerResult) => void;
+  onConfirm?: (value: GridDesignerResult) => Promise<void> | void;
 }
 
 type JsonParseResult =
@@ -1344,8 +1344,8 @@ const ServiceComponent = defineComponent({
               label: '确定',
               role: 'custom',
               status: 'primary',
-              onClick: () =>
-                handler.onConfirm()
+              onClick: async () =>
+                (await handler.onConfirm())
                   ? {
                       close: true,
                       action: 'confirm',
@@ -1375,7 +1375,7 @@ const ServiceComponent = defineComponent({
     };
 
     const handler = {
-      onConfirm: () => {
+      onConfirm: async () => {
         try {
           const postData = parseJsonObject(state.business.postDataJson, 'postDataJson');
           assertJsonParsed(postData);
@@ -1393,7 +1393,7 @@ const ServiceComponent = defineComponent({
             assertJsonParsed(parsed);
           }
 
-          state.option.onConfirm({
+          await state.option.onConfirm?.({
             business: cloneDeep(state.business),
             columns: state.columns.map((column, index) => normalizeColumnForResult(column, index)),
             gridOptions: buildGridOptions(state.gridOptions, state.advanced),
@@ -2192,7 +2192,7 @@ const ServiceComponent = defineComponent({
 
 export const $$gridDesigner = (() => {
   let ins: any;
-  return (option: Omit<GridDesignerServiceOption, 'onConfirm'>) => {
+  return (option: GridDesignerServiceOption) => {
     if (!ins) {
       const el = document.createElement('div');
       document.body.appendChild(el);
@@ -2209,7 +2209,10 @@ export const $$gridDesigner = (() => {
     const dfd = defer<GridDesignerResult>();
     ins.service({
       ...option,
-      onConfirm: dfd.resolve,
+      onConfirm: async (result: GridDesignerResult) => {
+        await option.onConfirm?.(result);
+        dfd.resolve(result);
+      },
     });
     return dfd.promise;
   };

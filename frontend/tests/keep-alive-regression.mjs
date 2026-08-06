@@ -84,13 +84,35 @@ const outletSource = await readFile(
 );
 assert.match(
   outletSource,
-  /<KeepAlive\s+:max="max">[\s\S]*v-if="activeCachedRouteComponent"[\s\S]*<\/KeepAlive>/,
+  /<KeepAlive\s+:max="max"\s+:exclude="excludedCacheEntryNames">[\s\S]*v-if="activeCachedRouteComponent"[\s\S]*<\/KeepAlive>/,
   'KeepAlive must stay mounted while non-cacheable routes are rendered.'
 );
 assert.match(
   outletSource,
   /v-if="!keepAlive"/,
   'Non-cacheable routes must render outside the stable KeepAlive boundary.'
+);
+assert.match(
+  outletSource,
+  /name: `RouteCacheEntry\$\{\+\+cacheEntryId\}`/,
+  'Each cached route must use a uniquely named wrapper so it can be evicted independently.'
+);
+assert.match(
+  outletSource,
+  /excludedCacheEntryNameSet\.add\(cacheEntryName\);\s*await nextTick\(\);[\s\S]*excludedCacheEntryNameSet\.delete\(cacheEntryName\)/,
+  'A cache invalidation must exclude the selected route long enough for KeepAlive to prune it.'
+);
+
+const appSource = await readFile(new URL('../app.vue', import.meta.url), 'utf8');
+assert.match(
+  appSource,
+  /return `\$\{accountCacheScope\.value\}:\$\{path\}:v\$\{version\}`/,
+  'Cached route keys must include their invalidation version.'
+);
+assert.match(
+  appSource,
+  /:cache-invalidation="routeCacheInvalidation"/,
+  'The cache outlet must receive targeted invalidation requests.'
 );
 
 const routerSource = await readFile(new URL('../src/router.ts', import.meta.url), 'utf8');

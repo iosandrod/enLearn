@@ -14,7 +14,8 @@ async function main() {
           projectName: first.projectName,
           projectRefPrefix: first.projectRef.slice(0, 8),
           secretKeyPrefix: first.secretKey.slice(0, 7),
-          selection: first.selection
+          selection: first.selection,
+          source: first.source
         },
         null,
         2

@@ -5,6 +5,7 @@ import {
   getRuntimeConfig,
   getWebPreviewConfig,
 } from './config';
+import { DesktopCompatibleView } from './web/hippy-web-view';
 
 async function startWebPreview() {
   const query = new URLSearchParams(window.location.search);
@@ -26,7 +27,9 @@ async function startWebPreview() {
 
   const engine = HippyWebEngine.create({
     modules: {},
-    components: {},
+    components: {
+      View: DesktopCompatibleView,
+    },
   });
 
   engine.start({

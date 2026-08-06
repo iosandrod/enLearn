@@ -3,47 +3,12 @@ import {
   TriggerCredentialsService,
   type TriggerCredentials
 } from './trigger-credentials.service';
-import {
-  decryptPersonalAccessToken,
-  encryptToken,
-  hashToken
-} from './trigger-credentials.crypto';
 
 async function main() {
   await testCacheHitAndForcedRefresh();
   await testConcurrentRefreshCoalescing();
   await testStaleCacheFallback();
-  testPersonalAccessTokenCrypto();
   console.log('workflow-api Trigger.dev credential cache tests passed');
-}
-
-function testPersonalAccessTokenCrypto() {
-  const key = '12345678901234567890123456789012';
-  const token = 'tr_pat_123456789abcdefghijkmnopqrstuvwxyz1234';
-  const encryptedToken = encryptToken(token, key);
-  assert.equal(
-    decryptPersonalAccessToken(
-      { id: 'pat_test', name: 'test', encryptedToken, hashedToken: hashToken(token) },
-      key
-    ),
-    token
-  );
-
-  assert.throws(
-    () =>
-      decryptPersonalAccessToken(
-        { id: 'pat_test', name: 'test', encryptedToken, hashedToken: hashToken(`${token}x`) },
-        key
-      ),
-    /failed validation/
-  );
-  assert.throws(
-    () =>
-      decryptPersonalAccessToken(
-        { id: 'pat_test', name: 'test', encryptedToken, hashedToken: hashToken(token) },
-        'abcdefghijklmnopqrstuvwxyz123456'
-      )
-  );
 }
 
 async function testCacheHitAndForcedRefresh() {
@@ -126,8 +91,8 @@ function credential(sequence: number): TriggerCredentials {
     projectName: 'enlearn-workflow-local',
     projectRef: `proj_test_${sequence}`,
     secretKey: `tr_dev_test_${sequence}`,
-    selection: 'project-name',
-    source: 'trigger-database'
+    selection: 'configured',
+    source: 'environment'
   };
 }
 

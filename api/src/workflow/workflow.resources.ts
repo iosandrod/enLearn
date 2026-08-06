@@ -13,6 +13,15 @@ export const workflowResources: ResourceConfigMap = {
     tableName: 'wf_model',
     clientMode: 'admin',
     accountField: 'account_id',
+    transactionalHooks: true,
+    databaseHooks: {
+      beforeCreate: 'public.dynamic_crud_normalize_workflow_model',
+      beforeUpdate: 'public.dynamic_crud_normalize_workflow_model'
+    },
+    databaseHookInputFields: [
+      'code', 'name', 'document_type', 'documentType',
+      'draft_schema', 'draftSchema', 'schema'
+    ],
     permissions: definitionPermissions,
     defaults: {
       status: 'draft',
@@ -149,6 +158,17 @@ export const workflowResources: ResourceConfigMap = {
     tableName: 'wf_job',
     clientMode: 'user',
     accountField: 'account_id',
+    transactionalHooks: true,
+    databaseHooks: {
+      beforeCreate: 'public.dynamic_crud_normalize_workflow_job',
+      beforeUpdate: 'public.dynamic_crud_normalize_workflow_job'
+    },
+    databaseHookInputFields: [
+      'code', 'name', 'type', 'payload', 'intervalSeconds', 'interval_seconds',
+      'triggerTaskId', 'trigger_task_id', 'cronExpr', 'cron_expr', 'timezone',
+      'retryPolicy', 'retry_policy', 'timeoutSeconds', 'timeout_seconds',
+      'concurrencyKey', 'concurrency_key'
+    ],
     permissions: runtimePermissions,
     defaults: {
       status: 'draft',

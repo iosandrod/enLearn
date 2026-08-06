@@ -18,16 +18,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed, inject, watch } from 'vue';
 import LowCodeGrid from '../../../components/LowCodeGrid.vue';
 import { resolveGridRows } from '../helpers';
 import type { LowCodeGridRowAction, LowCodePageGridBlock } from '../../../types/lowcode';
+import { lowCodeRuntimeBlockEditorKey } from '../../../runtime/block-editor';
 import { useLowCodePageRuntime } from '../../../runtime/page-runtime';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 import { createPageGridMenuConfig } from './page-grid-menu';
+import { openRuntimeGridDesigner } from './runtime-grid-designer';
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageGridBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
+const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
 const pageRuntime = useLowCodePageRuntime(false);
 const runtimeSources = computed(
   () => pageRuntime?.state.sources ?? props.resolvedData
@@ -227,6 +230,14 @@ function handleGridEvent(payload: GridRuntimeEventPayload) {
       ...payload,
       directives: getGridEventDirectives(payload.key),
     });
+  }
+
+  if (
+    payload.key === 'headerMenuClick' &&
+    payload.actionCode === 'tableInfoDesign' &&
+    runtimeBlockEditor
+  ) {
+    void openRuntimeGridDesigner(props.block, runtimeBlockEditor);
   }
 
   if (

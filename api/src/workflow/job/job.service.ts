@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { DatabaseService } from '../common/database.service';
+import { WorkflowSupabaseService } from '../common/workflow-supabase.service';
 import { type CreateJobDto, type JobQueryDto, type JobRunQueryDto, type RunJobDto } from './job.dto';
 import {
   type WorkflowJobActor,
@@ -10,20 +10,15 @@ import {
 import { TriggerDevClient } from '../trigger/trigger-dev.client';
 
 const WORKFLOW_SCHEDULED_JOB_TASK_ID = 'workflow.job.scheduled';
+const WORKFLOW_JOB_RPC = 'workflow_job_command';
 
-function isMissingWorkflowJobTableError(error: unknown) {
-  const databaseError = error as { code?: string; message?: string };
-  return (
-    databaseError.code === '42P01' &&
-    typeof databaseError.message === 'string' &&
-    (databaseError.message.includes('wf_job') || databaseError.message.includes('wf_job_run'))
-  );
-}
+type JsonRecord = Record<string, unknown>;
 
 @Injectable()
 export class JobService {
   constructor(
-    @Inject(DatabaseService) private readonly database: DatabaseService,
+    @Inject(WorkflowSupabaseService)
+    private readonly persistence: WorkflowSupabaseService,
     @Inject(TriggerDevClient) private readonly triggerClient: TriggerDevClient
   ) {}
 
@@ -42,66 +37,41 @@ export class JobService {
     if (dto.type === 'interval') {
       intervalCron(readIntervalSeconds(payload) ?? 60);
     }
-    const result = await this.database.query<WorkflowJobRow>(
-      `insert into public.wf_job (
-        account_id, code, name, type, status, trigger_task_id, cron_expr, timezone,
-        payload, retry_policy, timeout_seconds, concurrency_key, created_by
-      ) values ($1, $2, $3, $4, 'draft', $5, $6, $7, $8::jsonb, $9::jsonb, $10, $11, $12)
-      returning *`,
-      [
-        actor.tenantId,
-        code,
-        name,
-        dto.type,
-        dto.triggerTaskId?.trim() || defaultTriggerTaskId(dto.type),
-        dto.cronExpr?.trim() || null,
-        dto.timezone?.trim() || 'Asia/Shanghai',
-        JSON.stringify(payload),
-        JSON.stringify(dto.retryPolicy ?? { maxAttempts: 3 }),
-        dto.timeoutSeconds ?? null,
-        dto.concurrencyKey?.trim() || null,
-        actor.userId ?? null
-      ]
-    );
 
-    return mapJob(result.rows[0]);
+    const row = await this.command('create_job', {
+      account_id: actor.tenantId,
+      code,
+      name,
+      type: dto.type,
+      trigger_task_id: dto.triggerTaskId?.trim() || defaultTriggerTaskId(dto.type),
+      cron_expr: dto.cronExpr?.trim() || null,
+      timezone: dto.timezone?.trim() || 'Asia/Shanghai',
+      payload,
+      retry_policy: dto.retryPolicy ?? { maxAttempts: 3 },
+      timeout_seconds: dto.timeoutSeconds ?? null,
+      concurrency_key: dto.concurrencyKey?.trim() || null,
+      created_by: actor.userId ?? null
+    });
+
+    return mapJob(assertRecord(row, 'Workflow job RPC returned an invalid job.'));
   }
 
   async listJobs(query: JobQueryDto, actor: WorkflowJobActor) {
-    const tenantId = actor.tenantId;
-    const values: unknown[] = [tenantId];
-    const conditions = ['account_id = $1'];
-
-    if (query.type) {
-      values.push(query.type);
-      conditions.push(`type = $${values.length}`);
-    }
-
-    if (query.status) {
-      values.push(query.status);
-      conditions.push(`status = $${values.length}`);
-    }
-
-    try {
-      const result = await this.database.query<WorkflowJobRow>(
-        `select * from public.wf_job where ${conditions.join(' and ')} order by updated_at desc limit 200`,
-        values
-      );
-      return result.rows.map(mapJob);
-    } catch (error) {
-      if (isMissingWorkflowJobTableError(error)) return [];
-      throw error;
-    }
+    const rows = await this.command('list_jobs', {
+      account_id: actor.tenantId,
+      type: query.type ?? null,
+      status: query.status ?? null
+    });
+    return assertRecordArray(rows, 'Workflow job RPC returned an invalid job list.').map(mapJob);
   }
 
   async getJob(jobId: string, actor: WorkflowJobActor) {
-    const result = await this.database.query<WorkflowJobRow>(
-      'select * from public.wf_job where id = $1 and account_id = $2',
-      [jobId, actor.tenantId]
-    );
-    const row = result.rows[0];
+    const row = await this.command('get_job', {
+      account_id: actor.tenantId,
+      job_id: jobId
+    });
     if (!row) throw new NotFoundException('Workflow job not found.');
-    return mapJob(row);
+    return mapJob(assertRecord(row, 'Workflow job RPC returned an invalid job.'));
   }
 
   async updateJobStatus(jobId: string, status: WorkflowJobRecord['status'], actor: WorkflowJobActor) {
@@ -169,25 +139,23 @@ export class JobService {
 
     if (current.status === status && current.scheduleId === scheduleId) return current;
 
-    let result;
+    let row: unknown;
     try {
-      result = await this.database.query<WorkflowJobRow>(
-        `update public.wf_job
-        set status = $3, schedule_id = $4, updated_at = timezone('utc'::text, now())
-        where id = $1 and account_id = $2
-        returning *`,
-        [jobId, actor.tenantId, status, scheduleId ?? null]
-      );
+      row = await this.command('update_job_status', {
+        account_id: actor.tenantId,
+        job_id: jobId,
+        status,
+        schedule_id: scheduleId ?? null
+      });
     } catch (error) {
       await runCompensation(compensation);
       throw error;
     }
-    const row = result.rows[0];
     if (!row) {
       await runCompensation(compensation);
       throw new NotFoundException('Workflow job not found.');
     }
-    return mapJob(row);
+    return mapJob(assertRecord(row, 'Workflow job RPC returned an invalid job.'));
   }
 
   async runJob(jobId: string, dto: RunJobDto, actor: WorkflowJobActor) {
@@ -233,15 +201,15 @@ export class JobService {
       }
       throw error;
     }
+
     try {
-      const updated = await this.database.query<WorkflowJobRunRow>(
-        `update public.wf_job_run
-        set trigger_run_id = $2
-        where id = $1
-        returning *`,
-        [run.id, handle.id]
-      );
-      return mapRun(updated.rows[0]);
+      const row = await this.command('project_trigger_run', {
+        account_id: actor.tenantId,
+        run_id: run.id,
+        trigger_run_id: handle.id
+      });
+      if (!row) throw new NotFoundException('Workflow job run not found.');
+      return mapRun(assertRecord(row, 'Workflow job RPC returned an invalid run.'));
     } catch (error) {
       await this.cancelRunAfterProjectionFailure(handle.id);
       throw error;
@@ -249,42 +217,20 @@ export class JobService {
   }
 
   async listRuns(query: JobRunQueryDto, actor: WorkflowJobActor) {
-    const tenantId = actor.tenantId;
-    const values: unknown[] = [tenantId];
-    const conditions = ['account_id = $1'];
-    const limit = Math.min(Math.max(query.limit ?? 20, 1), 200);
-
-    if (query.jobId) {
-      values.push(query.jobId);
-      conditions.push(`job_id = $${values.length}`);
-    }
-
-    if (query.status) {
-      values.push(query.status);
-      conditions.push(`status = $${values.length}`);
-    }
-
-    try {
-      const result = await this.database.query<WorkflowJobRunRow>(
-        `select * from public.wf_job_run where ${conditions.join(' and ')} order by created_at desc limit $${values.length + 1}`,
-        [...values, limit]
-      );
-      return result.rows.map(mapRun);
-    } catch (error) {
-      if (isMissingWorkflowJobTableError(error)) return [];
-      throw error;
-    }
+    const rows = await this.command('list_runs', {
+      account_id: actor.tenantId,
+      job_id: query.jobId ?? null,
+      status: query.status ?? null,
+      limit: Math.min(Math.max(query.limit ?? 20, 1), 200)
+    });
+    return assertRecordArray(rows, 'Workflow job RPC returned an invalid run list.').map(mapRun);
   }
 
   async markRunRunning(runId: string) {
-    const result = await this.database.query<WorkflowJobRunRow>(
-      `update public.wf_job_run
-      set status = 'running', started_at = coalesce(started_at, timezone('utc'::text, now()))
-      where id = $1
-      returning *`,
-      [runId]
-    );
-    return result.rows[0] ? mapRun(result.rows[0]) : undefined;
+    const row = await this.command('mark_run_running', { run_id: runId });
+    return row
+      ? mapRun(assertRecord(row, 'Workflow job RPC returned an invalid run.'))
+      : undefined;
   }
 
   async finishRun(
@@ -293,16 +239,14 @@ export class JobService {
     output: Record<string, unknown>,
     errorMessage?: string
   ) {
-    const result = await this.database.query<WorkflowJobRunRow>(
-      `update public.wf_job_run
-      set status = $2, output = $3::jsonb, error_message = $4, finished_at = timezone('utc'::text, now())
-      where id = $1
-      returning *`,
-      [runId, status, JSON.stringify(output), errorMessage ?? null]
-    );
-    const row = result.rows[0];
+    const row = await this.command('finish_run', {
+      run_id: runId,
+      status,
+      output,
+      error_message: errorMessage ?? null
+    });
     if (!row) throw new NotFoundException('Workflow job run not found.');
-    return mapRun(row);
+    return mapRun(assertRecord(row, 'Workflow job RPC returned an invalid run.'));
   }
 
   private async createRun(input: {
@@ -312,19 +256,29 @@ export class JobService {
     status: WorkflowJobRunStatus;
     input: Record<string, unknown>;
   }) {
-    const result = await this.database.query<WorkflowJobRunRow>(
-      `insert into public.wf_job_run (account_id, job_id, trigger_run_id, status, attempt, input)
-      values ($1, $2, $3, $4, 1, $5::jsonb)
-      returning *`,
-      [
-        input.tenantId,
-        input.jobId ?? null,
-        input.triggerRunId ?? null,
-        input.status,
-        JSON.stringify(input.input)
-      ]
-    );
-    return mapRun(result.rows[0]);
+    const row = await this.command('create_run', {
+      account_id: input.tenantId,
+      job_id: input.jobId ?? null,
+      trigger_run_id: input.triggerRunId ?? null,
+      status: input.status,
+      attempt: 1,
+      input: input.input
+    });
+    return mapRun(assertRecord(row, 'Workflow job RPC returned an invalid run.'));
+  }
+
+  private async command(action: string, payload: JsonRecord) {
+    if (!this.persistence.isConfigured) {
+      throw new BadRequestException(
+        'Supabase service-role configuration is required for workflow job persistence.'
+      );
+    }
+    const { data, error } = await this.persistence.client.rpc(WORKFLOW_JOB_RPC, {
+      p_action: action,
+      p_payload: payload
+    });
+    if (error) throw new BadRequestException(error.message);
+    return data;
   }
 
   private async cancelRunAfterProjectionFailure(runId: string) {
@@ -347,79 +301,90 @@ export class JobService {
   }
 }
 
-type WorkflowJobRow = {
-  id: string;
-  account_id: string;
-  code: string;
-  name: string;
-  type: WorkflowJobRecord['type'];
-  status: WorkflowJobRecord['status'];
-  trigger_task_id: string;
-  schedule_id: string | null;
-  cron_expr: string | null;
-  timezone: string;
-  payload: Record<string, unknown>;
-  retry_policy: Record<string, unknown>;
-  timeout_seconds: number | null;
-  concurrency_key: string | null;
-  created_by: string | null;
-  created_at: Date;
-  updated_at: Date;
-};
-
-type WorkflowJobRunRow = {
-  id: string;
-  account_id: string;
-  job_id: string | null;
-  trigger_run_id: string | null;
-  status: WorkflowJobRunRecord['status'];
-  attempt: number;
-  input: Record<string, unknown>;
-  output: Record<string, unknown> | null;
-  error_message: string | null;
-  started_at: Date | null;
-  finished_at: Date | null;
-  created_at: Date;
-};
-
-function mapJob(row: WorkflowJobRow): WorkflowJobRecord {
+function mapJob(row: JsonRecord): WorkflowJobRecord {
+  const payload = readRecord(row.payload);
   return {
-    id: row.id,
-    tenantId: row.account_id,
-    code: row.code,
-    name: row.name,
-    type: row.type,
-    status: row.status,
-    triggerTaskId: row.trigger_task_id,
-    ...(row.schedule_id ? { scheduleId: row.schedule_id } : {}),
-    ...(row.cron_expr ? { cronExpr: row.cron_expr } : {}),
-    timezone: row.timezone,
-    payload: row.payload ?? {},
-    ...(readIntervalSeconds(row.payload) ? { intervalSeconds: readIntervalSeconds(row.payload) } : {}),
-    retryPolicy: row.retry_policy ?? {},
-    ...(row.timeout_seconds ? { timeoutSeconds: row.timeout_seconds } : {}),
-    ...(row.concurrency_key ? { concurrencyKey: row.concurrency_key } : {}),
-    ...(row.created_by ? { createdBy: row.created_by } : {}),
-    createdAt: row.created_at.toISOString(),
-    updatedAt: row.updated_at.toISOString()
+    id: readRequiredString(row.id, 'id'),
+    tenantId: readRequiredString(row.account_id, 'account_id'),
+    code: readRequiredString(row.code, 'code'),
+    name: readRequiredString(row.name, 'name'),
+    type: row.type as WorkflowJobRecord['type'],
+    status: row.status as WorkflowJobRecord['status'],
+    triggerTaskId: readRequiredString(row.trigger_task_id, 'trigger_task_id'),
+    ...(readOptionalString(row.schedule_id) ? { scheduleId: readOptionalString(row.schedule_id) } : {}),
+    ...(readOptionalString(row.cron_expr) ? { cronExpr: readOptionalString(row.cron_expr) } : {}),
+    timezone: readRequiredString(row.timezone, 'timezone'),
+    payload,
+    ...(readIntervalSeconds(payload) ? { intervalSeconds: readIntervalSeconds(payload) } : {}),
+    retryPolicy: readRecord(row.retry_policy),
+    ...(readPositiveNumber(row.timeout_seconds) ? { timeoutSeconds: readPositiveNumber(row.timeout_seconds) } : {}),
+    ...(readOptionalString(row.concurrency_key) ? { concurrencyKey: readOptionalString(row.concurrency_key) } : {}),
+    ...(readOptionalString(row.created_by) ? { createdBy: readOptionalString(row.created_by) } : {}),
+    createdAt: toIso(row.created_at),
+    updatedAt: toIso(row.updated_at)
   };
 }
 
-function mapRun(row: WorkflowJobRunRow): WorkflowJobRunRecord {
+function mapRun(row: JsonRecord): WorkflowJobRunRecord {
   return {
-    id: row.id,
-    tenantId: row.account_id,
-    ...(row.job_id ? { jobId: row.job_id } : {}),
-    ...(row.trigger_run_id ? { triggerRunId: row.trigger_run_id } : {}),
-    status: row.status,
-    attempt: row.attempt,
-    input: row.input ?? {},
-    ...(row.output ? { output: row.output } : {}),
-    ...(row.error_message ? { errorMessage: row.error_message } : {}),
-    ...(row.started_at ? { startedAt: row.started_at.toISOString() } : {}),
-    ...(row.finished_at ? { finishedAt: row.finished_at.toISOString() } : {}),
-    createdAt: row.created_at.toISOString()
+    id: readRequiredString(row.id, 'id'),
+    tenantId: readRequiredString(row.account_id, 'account_id'),
+    ...(readOptionalString(row.job_id) ? { jobId: readOptionalString(row.job_id) } : {}),
+    ...(readOptionalString(row.trigger_run_id) ? { triggerRunId: readOptionalString(row.trigger_run_id) } : {}),
+    status: row.status as WorkflowJobRunRecord['status'],
+    attempt: readPositiveNumber(row.attempt) ?? 1,
+    input: readRecord(row.input),
+    ...(isRecord(row.output) ? { output: row.output } : {}),
+    ...(readOptionalString(row.error_message) ? { errorMessage: readOptionalString(row.error_message) } : {}),
+    ...(row.started_at ? { startedAt: toIso(row.started_at) } : {}),
+    ...(row.finished_at ? { finishedAt: toIso(row.finished_at) } : {}),
+    createdAt: toIso(row.created_at)
   };
+}
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function assertRecord(value: unknown, message: string) {
+  if (!isRecord(value)) throw new BadRequestException(message);
+  return value;
+}
+
+function assertRecordArray(value: unknown, message: string) {
+  if (!Array.isArray(value) || !value.every(isRecord)) throw new BadRequestException(message);
+  return value;
+}
+
+function readRecord(value: unknown) {
+  return isRecord(value) ? value : {};
+}
+
+function readOptionalString(value: unknown) {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function readRequiredString(value: unknown, field: string) {
+  const result = readOptionalString(value);
+  if (!result) throw new BadRequestException(`Workflow job RPC response is missing ${field}.`);
+  return result;
+}
+
+function readPositiveNumber(value: unknown) {
+  const numberValue = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(numberValue) && numberValue > 0 ? numberValue : undefined;
+}
+
+function toIso(value: unknown) {
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value !== 'string' && typeof value !== 'number') {
+    throw new BadRequestException('Workflow job RPC returned an invalid timestamp.');
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new BadRequestException('Workflow job RPC returned an invalid timestamp.');
+  }
+  return date.toISOString();
 }
 
 function defaultTriggerTaskId(type: WorkflowJobRecord['type']) {

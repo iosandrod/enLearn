@@ -23,8 +23,8 @@ On Windows you can run the same bootstrap through:
 scripts\triggerdev-up-bootstrap.bat
 ```
 
-The workflow backend no longer needs a bootstrap or Trigger.dev login. It
-resolves its dynamic credentials directly from Trigger.dev PostgreSQL.
+The workflow backend no longer connects to Trigger.dev PostgreSQL. It uses the
+configured project reference and runtime key through Trigger.dev's API/SDK.
 
 ```bash
 pnpm triggerdev:engine
@@ -36,16 +36,20 @@ On Windows:
 scripts\triggerdev-engine-only.bat
 ```
 
-The enLearn `.env` only needs the public endpoint:
+Configure the public endpoint and runtime project credentials in enLearn or in
+the adjacent Trigger.dev env file:
 
 ```env
 TRIGGER_API_URL=http://localhost:8030
+TRIGGER_PROJECT_REF=proj_...
+TRIGGER_SECRET_KEY=tr_dev_...
+# Optional PAT for dev-status:
+TRIGGER_ACCESS_TOKEN=tr_pat_...
 ```
 
-The backend automatically creates/reuses its named Trigger.dev project,
-environment key, super-admin, and admin PAT, then caches the three dynamic
-credentials for five minutes. `TRIGGER_PROJECT_REF`, `TRIGGER_SECRET_KEY`, and
-`TRIGGER_ACCESS_TOKEN` must not be copied into the enLearn env file.
+The backend reads these credentials from environment files, caches them for
+five minutes, and talks to Trigger.dev through its API/SDK. It no longer reads
+or mutates Trigger.dev's PostgreSQL database.
 
 The Trigger.dev webapp is available at:
 

@@ -1,11 +1,14 @@
 import { strict as assert } from 'node:assert';
-import type { QueryResult, QueryResultRow } from 'pg';
-import type { DatabaseService } from '../common/database.service';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { WorkflowSupabaseService } from '../common/workflow-supabase.service';
 import { DefinitionService } from './definition.service';
 
 async function main() {
-  const database = new ConcurrentInsertDatabase();
-  const service = new DefinitionService(database as unknown as DatabaseService);
+  const database = new ConcurrentUpsertSupabase();
+  const service = new DefinitionService({
+    isConfigured: true,
+    client: database.client
+  } as WorkflowSupabaseService);
   const actor = {
     tenantId: 'default',
     userId: '00000000-0000-0000-0000-000000000001'
@@ -29,84 +32,48 @@ async function main() {
   const first = await service.saveModel(input, actor);
   const second = await service.saveModel(input, actor);
   assert.equal(first.id, second.id);
-  assert.match(database.lastInsertSql, /on conflict \(account_id, code\)/i);
-  assert.doesNotMatch(database.lastInsertSql, /select \* from public\.wf_model where account_id/i);
+  assert.deepEqual(database.actions.slice(0, 2), ['save_model', 'save_model']);
 
   await assert.rejects(
     () => service.saveModel(input, actor, '00000000-0000-0000-0000-000000000099'),
     /Workflow model not found/
   );
 
-  console.log('workflow-api PostgreSQL definition upsert tests passed');
+  console.log('workflow-api Supabase definition upsert tests passed');
 }
 
-class ConcurrentInsertDatabase {
-  readonly isConfigured = true;
-  private row?: WorkflowModelRow;
-  lastInsertSql = '';
+class ConcurrentUpsertSupabase {
+  private row?: Record<string, unknown>;
+  readonly actions: string[] = [];
 
-  async query<T extends QueryResultRow = QueryResultRow>(text: string, values: unknown[] = []) {
-    this.lastInsertSql = text;
-    if (!/insert into public\.wf_model/i.test(text)) {
-      throw new Error(`Unexpected query: ${text}`);
-    }
-
-    const requestedId = values[11] as string | null;
-    if (requestedId && this.row?.id !== requestedId) return result<T>([]);
-
-    const now = new Date(String(values[10]));
-    if (!this.row) {
+  readonly client = {
+    rpc: async (functionName: string, args: { p_action: string; p_payload: Record<string, unknown> }) => {
+      assert.equal(functionName, 'workflow_definition_command');
+      assert.equal(args.p_action, 'save_model');
+      this.actions.push(args.p_action);
+      const payload = args.p_payload;
+      const requestedId = String(payload.model_id ?? '');
+      if (requestedId && requestedId !== this.row?.id) {
+        return { data: null, error: { code: 'P0002', message: 'Workflow model not found.' } };
+      }
+      const now = new Date().toISOString();
       this.row = {
-        id: String(values[0]),
-        account_id: String(values[1]),
-        code: String(values[2]),
-        name: String(values[3]),
-        document_type: values[4] ? String(values[4]) : null,
-        status: 'draft',
-        current_version: 0,
-        draft_schema: JSON.parse(String(values[7])) as Record<string, unknown>,
-        created_by: values[8] ? String(values[8]) : null,
-        updated_by: values[9] ? String(values[9]) : null,
-        created_at: now,
+        id: this.row?.id ?? '00000000-0000-4000-8000-000000000010',
+        account_id: payload.account_id,
+        code: payload.code,
+        name: payload.name,
+        document_type: payload.document_type,
+        draft_schema: payload.draft_schema,
+        status: this.row?.status ?? 'draft',
+        current_version: this.row?.current_version ?? 0,
+        created_by: payload.user_id,
+        updated_by: payload.user_id,
+        created_at: this.row?.created_at ?? now,
         updated_at: now
       };
-    } else {
-      this.row = {
-        ...this.row,
-        name: String(values[3]),
-        document_type: values[4] ? String(values[4]) : null,
-        draft_schema: JSON.parse(String(values[7])) as Record<string, unknown>,
-        updated_by: values[9] ? String(values[9]) : null,
-        updated_at: now
-      };
+      return { data: this.row, error: null };
     }
-    return result<T>([this.row as unknown as T]);
-  }
+  } as unknown as SupabaseClient;
 }
-
-function result<T extends QueryResultRow>(rows: T[]): QueryResult<T> {
-  return {
-    command: 'INSERT',
-    rowCount: rows.length,
-    oid: 0,
-    fields: [],
-    rows
-  };
-}
-
-type WorkflowModelRow = QueryResultRow & {
-  id: string;
-  account_id: string;
-  code: string;
-  name: string;
-  document_type: string | null;
-  status: 'draft' | 'published' | 'disabled' | 'archived';
-  current_version: number;
-  draft_schema: Record<string, unknown>;
-  created_by: string | null;
-  updated_by: string | null;
-  created_at: Date;
-  updated_at: Date;
-};
 
 void main();

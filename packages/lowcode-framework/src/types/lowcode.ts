@@ -52,6 +52,12 @@ export type LowCodeFormLayoutColumn = {
   blocks: LowCodeFormLayoutNode[];
 };
 
+export type LowCodeFormLayoutTab = {
+  key: string;
+  label: string;
+  blocks: LowCodeFormLayoutNode[];
+};
+
 export type LowCodeFormLayoutNode =
   | {
       kind: 'field';
@@ -65,6 +71,11 @@ export type LowCodeFormLayoutNode =
   | {
       kind: 'stack';
       blocks: LowCodeFormLayoutNode[];
+    }
+  | {
+      kind: 'tabs';
+      defaultKey?: string;
+      tabs: LowCodeFormLayoutTab[];
     };
 
 export type LowCodeGridFormatter =

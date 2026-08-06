@@ -55,6 +55,17 @@ assert.match(
   /@contextmenu\.prevent\.stop="openTabContextMenu\(\$event, tab\)"/,
   'Dashboard tabs must open their menu from a native right click.'
 );
+assert.match(layoutSource, /name: '重新加载页面'/);
+assert.match(
+  layoutSource,
+  /if \(option\.code === 'reload-page'\) void reloadVisitedTab\(tab\)/,
+  'The reload menu item must reload the tab selected from the context menu.'
+);
+assert.match(
+  layoutSource,
+  /async function reloadVisitedTab\(tab: VisitedTab\) \{\s*routeCache\.invalidate\(tab\.path\);\s*await nextTick\(\);\s*if \(route\.path !== tab\.path\) await router\.push\(tab\.path\);\s*\}/,
+  'Reloading a tab must invalidate its cache before opening it.'
+);
 assert.match(layoutSource, /name: '关闭当前'/);
 assert.match(layoutSource, /name: '关闭左侧'/);
 assert.match(layoutSource, /name: '关闭右侧'/);

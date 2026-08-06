@@ -516,6 +516,33 @@ function layoutNodesToBlocks(
       return layoutNodesToBlocks(node.blocks, fieldBlocks);
     }
 
+    if (node.kind === 'tabs') {
+      const component = visualConfig.componentMap['vxe-tabs'];
+      if (!component || !node.tabs.length) return [];
+      const block = createNewBlock(cloneDeep(component));
+      const usedSlotKeys = new Set<string>();
+      block.props.panes = node.tabs.map((tab) => ({
+        title: tab.label,
+        name: tab.key,
+      }));
+      block.props.modelValue = node.defaultKey || node.tabs[0]?.key || '';
+      block.props.slots = node.tabs.reduce<Record<string, unknown>>((slots, tab, index) => {
+        const normalizedKey = tab.key
+          .replace(/[^a-zA-Z0-9_-]/g, '_')
+          .replace(/^_+|_+$/g, '');
+        let slotKey = `tab_${normalizedKey || index + 1}`;
+        if (usedSlotKeys.has(slotKey)) slotKey = `${slotKey}_${index + 1}`;
+        usedSlotKeys.add(slotKey);
+        slots[slotKey] = {
+          key: slotKey,
+          label: tab.label,
+          children: layoutNodesToBlocks(tab.blocks, fieldBlocks),
+        };
+        return slots;
+      }, {});
+      return [block];
+    }
+
     const component = visualConfig.componentMap.layout;
     if (!component || !node.columns.length) return [];
     const block = createNewBlock(cloneDeep(component));

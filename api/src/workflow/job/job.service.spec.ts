@@ -1,12 +1,13 @@
 import { strict as assert } from 'node:assert';
 import { BadRequestException } from '@nestjs/common';
-import type { DatabaseService } from '../common/database.service';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { WorkflowSupabaseService } from '../common/workflow-supabase.service';
 import type { TriggerDevClient } from '../trigger/trigger-dev.client';
 import { JobService } from './job.service';
 import type { WorkflowJobRecord } from './job.types';
 
 const actor = {
-  tenantId: 'default',
+  tenantId: '00000000-0000-4000-8000-000000000001',
   userId: '00000000-0000-0000-0000-000000000001'
 };
 
@@ -22,19 +23,19 @@ async function main() {
   await testDisableDeactivatesSchedule();
   await testArchiveDeletesSchedule();
   await testArchiveClearsMissingSchedule();
-  await testCreateScheduleIsDeletedWhenDatabaseUpdateFails();
-  await testExistingScheduleIsDeactivatedWhenDatabaseUpdateFails();
+  await testCreateScheduleIsDeletedWhenRpcUpdateFails();
+  await testExistingScheduleIsDeactivatedWhenRpcUpdateFails();
   await testTriggerFailureIsPreservedWhenFailureProjectionFails();
   await testTriggeredRunIsCanceledWhenRunIdProjectionFails();
-  console.log('workflow-api Trigger.dev job schedule tests passed');
+  console.log('workflow-api Trigger.dev job Supabase RPC tests passed');
 }
 
 async function testCreateRejectsUnsupportedIntervalBeforeWriting() {
-  let queryCalled = false;
+  let rpcCalled = false;
   const service = createService(
     async () => {
-      queryCalled = true;
-      return { rows: [] };
+      rpcCalled = true;
+      return { data: null, error: null };
     },
     createTriggerClient()
   );
@@ -52,14 +53,14 @@ async function testCreateRejectsUnsupportedIntervalBeforeWriting() {
       ),
     BadRequestException
   );
-  assert.equal(queryCalled, false);
+  assert.equal(rpcCalled, false);
 }
 
 async function testEnableCreatesScheduleAndPersistsItsId() {
   const calls: string[] = [];
   const job = createJob();
   const service = createService(
-    sequenceDatabase(job, { ...job, status: 'enabled', scheduleId: 'schedule-1' }),
+    sequenceRpc(job, { ...job, status: 'enabled', scheduleId: 'schedule-1' }),
     createTriggerClient({
       createSchedule: async (options: Parameters<TriggerDevClient['createSchedule']>[0]) => {
         calls.push(`create:${options.cron}:${options.externalId}:${options.deduplicationKey}`);
@@ -78,7 +79,7 @@ async function testCreateConflictRecoversExistingSchedule() {
   const calls: string[] = [];
   const job = createJob();
   const service = createService(
-    sequenceDatabase(job, { ...job, status: 'enabled', scheduleId: 'schedule-existing' }),
+    sequenceRpc(job, { ...job, status: 'enabled', scheduleId: 'schedule-existing' }),
     createTriggerClient({
       createSchedule: async () => {
         throw Object.assign(new Error('Schedule already exists'), { status: 409 });
@@ -104,7 +105,7 @@ async function testEnableReusesExistingSchedule() {
   const calls: string[] = [];
   const job = createJob({ status: 'disabled', scheduleId: 'schedule-1' });
   const service = createService(
-    sequenceDatabase(job, { ...job, status: 'enabled' }),
+    sequenceRpc(job, { ...job, status: 'enabled' }),
     createTriggerClient({
       updateSchedule: async (
         scheduleId: string,
@@ -129,7 +130,7 @@ async function testAlreadyEnabledJobWithoutScheduleIsReconciled() {
   const calls: string[] = [];
   const job = createJob({ status: 'enabled' });
   const service = createService(
-    sequenceDatabase(job, { ...job, scheduleId: 'schedule-1' }),
+    sequenceRpc(job, { ...job, scheduleId: 'schedule-1' }),
     createTriggerClient({
       createSchedule: async () => {
         calls.push('create:schedule-1');
@@ -148,7 +149,7 @@ async function testMissingStoredScheduleRecoversDeduplicatedSchedule() {
   const calls: string[] = [];
   const job = createJob({ status: 'disabled', scheduleId: 'missing-schedule' });
   const service = createService(
-    sequenceDatabase(job, { ...job, status: 'enabled', scheduleId: 'schedule-existing' }),
+    sequenceRpc(job, { ...job, status: 'enabled', scheduleId: 'schedule-existing' }),
     createTriggerClient({
       updateSchedule: async () => {
         throw Object.assign(new Error('Schedule not found'), { status: 404 });
@@ -177,7 +178,7 @@ async function testCreatedScheduleIsDeletedWhenActivationFails() {
   const calls: string[] = [];
   const job = createJob();
   const service = createService(
-    async () => ({ rows: [toRow(job)] }),
+    async () => ({ data: toRow(job), error: null }),
     createTriggerClient({
       createSchedule: async () => ({ id: 'schedule-1' }),
       activateSchedule: async () => {
@@ -198,7 +199,7 @@ async function testExistingScheduleIsDeactivatedWhenActivationFails() {
   const calls: string[] = [];
   const job = createJob({ status: 'disabled', scheduleId: 'schedule-1' });
   const service = createService(
-    async () => ({ rows: [toRow(job)] }),
+    async () => ({ data: toRow(job), error: null }),
     createTriggerClient({
       updateSchedule: async (scheduleId: string) => ({ id: scheduleId }),
       activateSchedule: async () => {
@@ -219,7 +220,7 @@ async function testDisableDeactivatesSchedule() {
   const calls: string[] = [];
   const job = createJob({ status: 'enabled', scheduleId: 'schedule-1' });
   const service = createService(
-    sequenceDatabase(job, { ...job, status: 'disabled' }),
+    sequenceRpc(job, { ...job, status: 'disabled' }),
     createTriggerClient({
       deactivateSchedule: async (scheduleId: string) => {
         calls.push(`deactivate:${scheduleId}`);
@@ -237,7 +238,7 @@ async function testArchiveDeletesSchedule() {
   const calls: string[] = [];
   const job = createJob({ status: 'enabled', scheduleId: 'schedule-1' });
   const service = createService(
-    sequenceDatabase(job, { ...job, status: 'archived', scheduleId: undefined }),
+    sequenceRpc(job, { ...job, status: 'archived', scheduleId: undefined }),
     createTriggerClient({
       deleteSchedule: async (scheduleId: string) => {
         calls.push(`delete:${scheduleId}`);
@@ -255,7 +256,7 @@ async function testArchiveDeletesSchedule() {
 async function testArchiveClearsMissingSchedule() {
   const job = createJob({ status: 'enabled', scheduleId: 'missing-schedule' });
   const service = createService(
-    sequenceDatabase(job, { ...job, status: 'archived', scheduleId: undefined }),
+    sequenceRpc(job, { ...job, status: 'archived', scheduleId: undefined }),
     createTriggerClient({
       deleteSchedule: async () => {
         throw Object.assign(new Error('Schedule not found'), { status: 404 });
@@ -268,11 +269,11 @@ async function testArchiveClearsMissingSchedule() {
   assert.equal(archived.scheduleId, undefined);
 }
 
-async function testCreateScheduleIsDeletedWhenDatabaseUpdateFails() {
+async function testCreateScheduleIsDeletedWhenRpcUpdateFails() {
   const calls: string[] = [];
   const job = createJob();
   const service = createService(
-    sequenceDatabase(job, new Error('database update failed')),
+    sequenceRpc(job, new Error('RPC update failed')),
     createTriggerClient({
       createSchedule: async () => ({ id: 'schedule-1' }),
       deleteSchedule: async (scheduleId: string) => {
@@ -282,15 +283,15 @@ async function testCreateScheduleIsDeletedWhenDatabaseUpdateFails() {
     })
   );
 
-  await assert.rejects(() => service.updateJobStatus(job.id, 'enabled', actor), /database update failed/);
+  await assert.rejects(() => service.updateJobStatus(job.id, 'enabled', actor), /RPC update failed/);
   assert.deepEqual(calls, ['delete:schedule-1']);
 }
 
-async function testExistingScheduleIsDeactivatedWhenDatabaseUpdateFails() {
+async function testExistingScheduleIsDeactivatedWhenRpcUpdateFails() {
   const calls: string[] = [];
   const job = createJob({ status: 'disabled', scheduleId: 'schedule-1' });
   const service = createService(
-    sequenceDatabase(job, new Error('database update failed')),
+    sequenceRpc(job, new Error('RPC update failed')),
     createTriggerClient({
       updateSchedule: async (scheduleId: string) => ({ id: scheduleId }),
       activateSchedule: async (scheduleId: string) => ({ id: scheduleId }),
@@ -301,7 +302,7 @@ async function testExistingScheduleIsDeactivatedWhenDatabaseUpdateFails() {
     })
   );
 
-  await assert.rejects(() => service.updateJobStatus(job.id, 'enabled', actor), /database update failed/);
+  await assert.rejects(() => service.updateJobStatus(job.id, 'enabled', actor), /RPC update failed/);
   assert.deepEqual(calls, ['deactivate:schedule-1']);
 }
 
@@ -312,9 +313,9 @@ async function testTriggerFailureIsPreservedWhenFailureProjectionFails() {
   const service = createService(
     async () => {
       call += 1;
-      if (call === 1) return { rows: [toRow(job)] };
-      if (call === 2) return { rows: [toRunRow(run)] };
-      throw new Error('failure projection failed');
+      if (call === 1) return { data: toRow(job), error: null };
+      if (call === 2) return { data: toRunRow(run), error: null };
+      return { data: null, error: { message: 'failure projection failed' } };
     },
     createTriggerClient({
       triggerTask: async () => {
@@ -334,9 +335,9 @@ async function testTriggeredRunIsCanceledWhenRunIdProjectionFails() {
   const service = createService(
     async () => {
       call += 1;
-      if (call === 1) return { rows: [toRow(job)] };
-      if (call === 2) return { rows: [toRunRow(run)] };
-      throw new Error('run projection failed');
+      if (call === 1) return { data: toRow(job), error: null };
+      if (call === 2) return { data: toRunRow(run), error: null };
+      return { data: null, error: { message: 'run projection failed' } };
     },
     createTriggerClient({
       triggerTask: async () => ({ id: 'trigger-run-1' }),
@@ -350,23 +351,40 @@ async function testTriggeredRunIsCanceledWhenRunIdProjectionFails() {
   assert.equal(canceledRunId, 'trigger-run-1');
 }
 
+type RpcResult = Promise<{ data: unknown; error: { message: string } | null }>;
+
 function createService(
-  query: (text: string, values?: unknown[]) => Promise<{ rows: unknown[] }>,
+  rpc: (action: string, payload: Record<string, unknown>) => RpcResult,
   triggerClient: TriggerDevClient
 ) {
-  const database = { query } as unknown as DatabaseService;
-  return new JobService(database, triggerClient);
+  const client = {
+    rpc: async (
+      functionName: string,
+      args: { p_action: string; p_payload: Record<string, unknown> }
+    ) => {
+      assert.equal(functionName, 'workflow_job_command');
+      return rpc(args.p_action, args.p_payload);
+    }
+  } as unknown as SupabaseClient;
+  const persistence = { isConfigured: true, client } as WorkflowSupabaseService;
+  return new JobService(persistence, triggerClient);
 }
 
-function sequenceDatabase(current: WorkflowJobRecord, next: WorkflowJobRecord | Error) {
+function sequenceRpc(current: WorkflowJobRecord, next: WorkflowJobRecord | Error) {
   let call = 0;
-  return async (_text: string, values: unknown[] = []) => {
+  return async (action: string, payload: Record<string, unknown>) => {
     call += 1;
-    if (call === 1) return { rows: [toRow(current)] };
-    if (next instanceof Error) throw next;
-    assert.deepEqual(values.slice(0, 3), [current.id, actor.tenantId, next.status]);
-    assert.equal(values[3], next.scheduleId ?? null);
-    return { rows: [toRow(next)] };
+    if (call === 1) {
+      assert.equal(action, 'get_job');
+      return { data: toRow(current), error: null };
+    }
+    assert.equal(action, 'update_job_status');
+    if (next instanceof Error) return { data: null, error: { message: next.message } };
+    assert.equal(payload.job_id, current.id);
+    assert.equal(payload.account_id, actor.tenantId);
+    assert.equal(payload.status, next.status);
+    assert.equal(payload.schedule_id, next.scheduleId ?? null);
+    return { data: toRow(next), error: null };
   };
 }
 
@@ -421,8 +439,8 @@ function toRow(job: WorkflowJobRecord) {
     timeout_seconds: job.timeoutSeconds ?? null,
     concurrency_key: job.concurrencyKey ?? null,
     created_by: job.createdBy ?? null,
-    created_at: new Date(job.createdAt),
-    updated_at: new Date(job.updatedAt)
+    created_at: job.createdAt,
+    updated_at: job.updatedAt
   };
 }
 
@@ -451,7 +469,7 @@ function toRunRow(run: ReturnType<typeof createRun>) {
     error_message: null,
     started_at: null,
     finished_at: null,
-    created_at: new Date(run.createdAt)
+    created_at: run.createdAt
   };
 }
 

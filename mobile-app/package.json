@@ -14,7 +14,9 @@
     "web:build": "node ./scripts/env-polyfill.js webpack --config ./scripts/hippy-webpack.web-renderer.js",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json",
     "test:virtual-table": "node ./tests/virtual-table-regression.mjs",
+    "test:virtual-table-scrollbar": "node ./tests/virtual-table-scrollbar-interaction.mjs",
     "test:mobile-form": "node ./tests/mobile-form-regression.mjs",
+    "test:login-web": "node ./tests/login-web-interaction.mjs",
     "test:layout-width": "node ./tests/layout-width-regression.mjs"
   },
   "dependencies": {
@@ -48,6 +50,7 @@
     "html-webpack-plugin": "^5.6.8",
     "less": "^4.3.0",
     "less-loader": "^13.0.0",
+    "playwright-core": "1.57.0",
     "regenerator-runtime": "^0.14.1",
     "ts-loader": "^9.6.2",
     "typescript": "^5.4.5",

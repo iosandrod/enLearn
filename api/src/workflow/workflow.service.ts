@@ -2,7 +2,8 @@ import {
   BadRequestException,
   ForbiddenException,
   Inject,
-  Injectable
+  Injectable,
+  NotFoundException
 } from '@nestjs/common';
 
 import {
@@ -19,9 +20,9 @@ import {
   getUserAuthorization,
   hasRequiredPermission
 } from '../common/utils/supabase';
+import { createSupabaseClient } from '../common/utils/supabase';
 import type {
-  PublishWorkflowModelDto,
-  SaveWorkflowModelDto
+  PublishWorkflowModelDto
 } from './definition/definition.dto';
 import { DefinitionService } from './definition/definition.service';
 import type { CreateJobDto, RunJobDto } from './job/job.dto';
@@ -42,10 +43,6 @@ import type {
 import type { RuntimeActor } from './runtime/runtime.types';
 import { RuntimeService } from './runtime/runtime.service';
 import { TriggerRuntimeStatusService } from './trigger/trigger-runtime-status.service';
-import {
-  normalizeWorkflowDraftSchema,
-  validateWorkflowDraftSchema
-} from './workflow.model';
 import { workflowResources } from './workflow.resources';
 
 type PostData = Record<string, unknown>;
@@ -225,8 +222,6 @@ export class WorkflowService extends BaseService {
 
     return {
       wf_model: {
-        beforeCreate: this.normalizeModelPayload,
-        beforeUpdate: this.normalizeModelPayload,
         ...outputHooks
       },
       wf_model_version: outputHooks,
@@ -235,8 +230,6 @@ export class WorkflowService extends BaseService {
       wf_node_instance: outputHooks,
       wf_task: outputHooks,
       wf_job: {
-        beforeCreate: this.normalizeJobPayload,
-        beforeUpdate: this.normalizeJobPayload,
         ...outputHooks
       },
       wf_job_run: outputHooks
@@ -297,39 +290,31 @@ export class WorkflowService extends BaseService {
   ) {
     switch (method) {
       case 'getModel': {
-        const actor = this.resolveActor(context);
-        return this.definitionService.getModel(
-          readString(postData.modelId ?? postData.id, 'modelId'),
-          actor.tenantId
-        );
+        return this.getModelByCrud(readString(postData.modelId ?? postData.id, 'modelId'), context);
       }
       case 'saveModel': {
-        const actor = this.resolveActor(context);
-        const modelId = readOptionalString(postData.modelId ?? postData.id);
-        return this.definitionService.saveModel(
-          this.readSaveModelDto(postData),
-          actor,
-          modelId || undefined
-        );
+        return this.saveModelByCrud(postData, context);
       }
       case 'updateModel':
-        return this.definitionService.saveModel(
-          this.readSaveModelDto(postData),
-          this.resolveActor(context),
-          readString(postData.modelId ?? postData.id, 'modelId')
+        return this.saveModelByCrud(
+          {
+            ...postData,
+            id: readString(postData.modelId ?? postData.id, 'modelId')
+          },
+          context
         );
       case 'disableDefinition': {
-        const actor = this.resolveActor(context);
-        return this.definitionService.disableDefinition(
+        return this.disableDefinitionByCrud(
           readString(postData.definitionId ?? postData.id, 'definitionId'),
-          actor.tenantId
+          context
         );
       }
       case 'publishModel':
-        return this.definitionService.publishModel(
+        await this.assertDefinitionManagementAccess(context);
+        return this.publishModelByRpc(
           readString(postData.modelId, 'modelId'),
           this.readPublishModelDto(postData),
-          this.resolveActor(context)
+          context
         );
       case 'getDefinitionCapabilities':
         return this.definitionService.getCapabilities();
@@ -378,22 +363,18 @@ export class WorkflowService extends BaseService {
           this.resolveActor(context)
         );
       case 'createJob':
-        return this.jobService.createJob(
-          this.readCreateJobDto(postData),
-          this.resolveActor(context)
-        );
+        return this.createJobByCrud(postData, context);
       case 'getJob':
-        return this.jobService.getJob(
-          readString(postData.jobId ?? postData.id, 'jobId'),
-          this.resolveActor(context)
-        );
+        return this.getJobByCrud(readString(postData.jobId ?? postData.id, 'jobId'), context);
       case 'updateJobStatus':
+        await this.assertRuntimeManagementAccess(context);
         return this.jobService.updateJobStatus(
           readString(postData.jobId, 'jobId'),
           readString(postData.status, 'status') as WorkflowJobRecord['status'],
           this.resolveActor(context)
         );
       case 'runJob':
+        await this.assertRuntimeManagementAccess(context);
         return this.jobService.runJob(
           readString(postData.jobId, 'jobId'),
           this.readRunJobDto(postData),
@@ -459,119 +440,136 @@ export class WorkflowService extends BaseService {
     ctx.result = mapWorkflowResult(ctx.resourceName, ctx.result);
   };
 
-  private normalizeModelPayload = (ctx: HookContext) => {
-    const code = readOptionalString(ctx.data.code);
-    const name = readOptionalString(ctx.data.name);
-    const documentType = ctx.data.document_type ?? ctx.data.documentType;
-    const schema = ctx.data.draft_schema ?? ctx.data.draftSchema ?? ctx.data.schema;
-
-    if (code) ctx.data.code = code;
-    if (name) ctx.data.name = name;
-    if (documentType !== undefined) {
-      ctx.data.document_type = readOptionalString(documentType) || null;
-    }
-    delete ctx.data.documentType;
-    delete ctx.data.draftSchema;
-    delete ctx.data.schema;
-
-    if (schema !== undefined) {
-      if (!isRecord(schema)) throw new BadRequestException('schema must be an object.');
-      if (!code || !name) {
-        throw new BadRequestException('code and name are required when updating workflow schema.');
-      }
-      const dto = {
-        code,
-        name,
-        ...(readOptionalString(documentType)
-          ? { documentType: readOptionalString(documentType) }
-          : {}),
-        schema
-      };
-      const draftSchema = normalizeWorkflowDraftSchema(dto);
-      validateWorkflowDraftSchema(draftSchema, false);
-      ctx.data.draft_schema = draftSchema;
-    }
-  };
-
-  private normalizeJobPayload = (ctx: HookContext) => {
-    const type = readOptionalString(ctx.data.type);
-    if (type && !WORKFLOW_JOB_TYPES.has(type)) {
-      throw new BadRequestException(`Unsupported workflow job type: ${type}`);
+  private async saveModelByCrud(postData: PostData, context: ServiceContext) {
+    this.resolveActor(context);
+    const modelId = readOptionalString(postData.modelId ?? postData.id);
+    if (modelId) {
+      const result = await this.updateItem({
+        ...postData,
+        resource: 'wf_model',
+        id: modelId
+      }, context);
+      if (!result) throw new NotFoundException('Workflow model not found.');
+      return result;
     }
 
-    if (ctx.action === 'create') {
-      ctx.data.code = readString(ctx.data.code, 'code');
-      ctx.data.name = readString(ctx.data.name, 'name');
-      ctx.data.type = readString(type, 'type');
-    } else if (ctx.data.name !== undefined) {
-      ctx.data.name = readString(ctx.data.name, 'name');
+    const code = readString(postData.code, 'code');
+    const [existing] = await this.listItems({
+      resource: 'wf_model',
+      filters: { code },
+      limit: 1
+    }, context) as Array<Record<string, unknown>>;
+
+    if (existing?.id) {
+      const result = await this.updateItem({
+        ...postData,
+        resource: 'wf_model',
+        id: existing.id
+      }, context);
+      if (!result) throw new NotFoundException('Workflow model not found.');
+      return result;
     }
 
-    const hasPayload = ctx.data.payload !== undefined;
-    const hasInterval =
-      ctx.data.intervalSeconds !== undefined || ctx.data.interval_seconds !== undefined;
-    if (ctx.action === 'create' || hasPayload || hasInterval) {
-      const payload = readOptionalRecord(ctx.data.payload, 'payload') ?? {};
-      const intervalSeconds = readPositiveInteger(
-        ctx.data.intervalSeconds ?? ctx.data.interval_seconds ?? payload.intervalSeconds,
-        'intervalSeconds'
-      );
-      if (type === 'interval' || (!type && intervalSeconds)) {
-        const normalizedInterval = intervalSeconds ?? 60;
-        if (normalizedInterval % 60 !== 0 || normalizedInterval / 60 > 59) {
-          throw new BadRequestException(
-            'Trigger.dev interval jobs must use a whole number of minutes from 1 to 59.'
-          );
-        }
-        payload.intervalSeconds = normalizedInterval;
-      }
-      ctx.data.payload = payload;
+    return this.createItem({
+      ...postData,
+      resource: 'wf_model'
+    }, context);
+  }
+
+  private async getModelByCrud(modelId: string, context: ServiceContext) {
+    this.resolveActor(context);
+    const [model] = (await this.listResource(
+      'wf_model',
+      {
+        filters: { id: modelId },
+        limit: 1
+      },
+      context
+    )) as Array<Record<string, unknown>>;
+
+    if (!model) {
+      throw new NotFoundException('Workflow model not found.');
     }
 
-    const cronExpr = readOptionalString(ctx.data.cron_expr ?? ctx.data.cronExpr);
-    if (type === 'cron' && !cronExpr) {
-      throw new BadRequestException('Cron job requires cronExpr.');
-    }
-    if (ctx.data.cron_expr !== undefined || ctx.data.cronExpr !== undefined || type === 'cron') {
-      ctx.data.cron_expr = cronExpr || null;
-    }
+    const versions = (await this.listResource(
+      'wf_model_version',
+      {
+        filters: { modelId },
+        sorts: [{ field: 'version', direction: 'asc' }],
+        limit: 1000
+      },
+      context
+    )) as Array<Record<string, unknown>>;
 
-    const triggerTaskId = readOptionalString(
-      ctx.data.trigger_task_id ?? ctx.data.triggerTaskId
+    return {
+      ...model,
+      versions
+    };
+  }
+
+  private async disableDefinitionByCrud(definitionId: string, context: ServiceContext) {
+    const result = await this.updateItem(
+      {
+        resource: 'wf_process_definition',
+        id: definitionId,
+        status: 'disabled'
+      },
+      context
     );
-    if (ctx.action === 'create' || triggerTaskId) {
-      ctx.data.trigger_task_id = triggerTaskId ||
-        (type === 'service_task' ? 'workflow.service.execute' : 'workflow.job.run');
+    if (!result) throw new NotFoundException('Workflow definition not found.');
+    return result;
+  }
+
+  private async createJobByCrud(postData: PostData, context: ServiceContext) {
+    return this.createItem({
+      ...this.readCreateJobDto(postData),
+      resource: 'wf_job'
+    }, context);
+  }
+
+  private async publishModelByRpc(
+    modelId: string,
+    dto: PublishWorkflowModelDto,
+    context: ServiceContext
+  ) {
+    const actor = this.resolveActor(context);
+    const adminClient = createSupabaseClient('admin', context);
+    const { data, error } = await adminClient.rpc('publish_workflow_model', {
+      p_model_id: modelId,
+      p_account_id: actor.tenantId,
+      p_user_id: actor.userId,
+      p_remark: dto.remark ?? null
+    });
+
+    if (error) {
+      if (error.code === 'P0002') throw new NotFoundException(error.message);
+      if (error.code === '42501') throw new ForbiddenException(error.message);
+      throw new BadRequestException(error.message);
     }
 
-    if (ctx.data.timezone !== undefined || ctx.action === 'create') {
-      ctx.data.timezone = readOptionalString(ctx.data.timezone) || 'Asia/Shanghai';
-    }
-    if (ctx.data.retry_policy !== undefined || ctx.data.retryPolicy !== undefined) {
-      ctx.data.retry_policy =
-        readOptionalRecord(ctx.data.retry_policy ?? ctx.data.retryPolicy, 'retryPolicy') ??
-        { maxAttempts: 3 };
-    }
-    if (ctx.data.timeout_seconds !== undefined || ctx.data.timeoutSeconds !== undefined) {
-      ctx.data.timeout_seconds =
-        readPositiveInteger(
-          ctx.data.timeout_seconds ?? ctx.data.timeoutSeconds,
-          'timeoutSeconds'
-        ) ?? null;
-    }
-    if (ctx.data.concurrency_key !== undefined || ctx.data.concurrencyKey !== undefined) {
-      ctx.data.concurrency_key =
-        readOptionalString(ctx.data.concurrency_key ?? ctx.data.concurrencyKey) || null;
-    }
+    const result = isRecord(data) ? data : {};
+    return {
+      model: mapWorkflowResult('wf_model', result.model),
+      version: mapWorkflowResult('wf_model_version', result.version),
+      definition: mapWorkflowResult('wf_process_definition', result.definition)
+    };
+  }
 
-    delete ctx.data.intervalSeconds;
-    delete ctx.data.interval_seconds;
-    delete ctx.data.triggerTaskId;
-    delete ctx.data.cronExpr;
-    delete ctx.data.retryPolicy;
-    delete ctx.data.timeoutSeconds;
-    delete ctx.data.concurrencyKey;
-  };
+  private async getJobByCrud(jobId: string, context: ServiceContext) {
+    const [job] = (await this.listResource(
+      'wf_job',
+      {
+        filters: { id: jobId },
+        limit: 1
+      },
+      context
+    )) as Array<Record<string, unknown>>;
+
+    if (!job) {
+      throw new NotFoundException('Workflow job not found.');
+    }
+    return job;
+  }
 
   private resolveWorkflowResourceName(postData: PostData) {
     return this.tryResolveResource(postData)?.name ?? 'workflow';
@@ -604,10 +602,18 @@ export class WorkflowService extends BaseService {
     const data = Object.fromEntries(
       Object.entries(rawData).map(([field, value]) => [toSnakeCase(field), value])
     );
+    const hookInputFields = new Set(
+      workflowResources[resourceName]?.databaseHookInputFields ?? []
+    );
 
     return {
       ...postData,
       resource: resourceName,
+      ...Object.fromEntries(
+        Object.entries(rawData).filter(
+          ([field]) => hookInputFields.has(field) && postData[field] === undefined
+        )
+      ),
       data
     };
   }
@@ -617,7 +623,7 @@ export class WorkflowService extends BaseService {
     postData: PostData,
     context: ServiceContext
   ) {
-    return super.listItems(normalizeResourceListInput(resourceName, postData), context);
+    return this.listItems(normalizeResourceListInput(resourceName, postData), context);
   }
 
   private async assertTargetAccountUser(
@@ -633,13 +639,21 @@ export class WorkflowService extends BaseService {
   }
 
   private async assertRuntimeManagementAccess(context: ServiceContext) {
+    await this.assertWorkflowPermission(context, 'workflow.runtime.manage');
+  }
+
+  private async assertDefinitionManagementAccess(context: ServiceContext) {
+    await this.assertWorkflowPermission(context, 'workflow.definitions.manage');
+  }
+
+  private async assertWorkflowPermission(context: ServiceContext, permission: string) {
     const { client, user } = await getCurrentUser(context);
     const authorization = await getUserAuthorization(client, user.id, {
       accountId: context.accountId,
       refresh: true
     });
-    if (!hasRequiredPermission(authorization, 'workflow.runtime.manage')) {
-      throw new ForbiddenException('Permission required: workflow.runtime.manage');
+    if (!hasRequiredPermission(authorization, permission)) {
+      throw new ForbiddenException(`Permission required: ${permission}`);
     }
   }
 
@@ -655,16 +669,6 @@ export class WorkflowService extends BaseService {
     }
 
     return { tenantId, userId };
-  }
-
-  private readSaveModelDto(postData: PostData): SaveWorkflowModelDto {
-    const documentType = readOptionalString(postData.documentType);
-    return {
-      code: readString(postData.code, 'code'),
-      name: readString(postData.name, 'name'),
-      ...(documentType ? { documentType } : {}),
-      schema: readRecord(postData.schema, 'schema')
-    };
   }
 
   private readPublishModelDto(postData: PostData): PublishWorkflowModelDto {

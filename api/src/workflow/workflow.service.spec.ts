@@ -1,7 +1,5 @@
 import assert from 'node:assert/strict';
-import { BadRequestException } from '@nestjs/common';
-
-import type { HookContext, ResourceConfigMap } from '../common/base.service';
+import type { ResourceConfigMap } from '../common/base.service';
 import { WorkflowService } from './workflow.service';
 
 type TestWorkflowService = {
@@ -12,8 +10,6 @@ type TestWorkflowService = {
   ): Promise<unknown>;
   resources(): ResourceConfigMap;
   normalizeCrudPostData(postData: Record<string, unknown>): Record<string, unknown>;
-  normalizeModelPayload(ctx: HookContext): void;
-  normalizeJobPayload(ctx: HookContext): void;
   hooks(): Record<string, Record<string, unknown>>;
   listItemHandlers(): Record<string, unknown>;
 };
@@ -60,20 +56,24 @@ const serviceContext = {
   userId: '00000000-0000-4000-8000-000000000002'
 };
 
-function context(resourceName: string, action: HookContext['action'], data: Record<string, unknown>) {
-  return {
-    action,
-    serviceName: 'Workflow',
-    resourceName,
-    resource: resources[resourceName],
-    input: data,
-    data,
-    filters: undefined,
-    context: {},
-    client: {} as never,
-    ids: [],
-    meta: {}
-  } satisfies HookContext;
+class WorkflowCrudProbe extends WorkflowService {
+  public calls: Array<{ method: string; postData: Record<string, unknown> }> = [];
+  public existing: Record<string, unknown> | undefined;
+
+  protected override async listItems(postData: Record<string, unknown>) {
+    this.calls.push({ method: 'listItems', postData });
+    return this.existing ? [this.existing] : [];
+  }
+
+  protected override async createItem(postData: Record<string, unknown>) {
+    this.calls.push({ method: 'createItem', postData });
+    return { created: postData };
+  }
+
+  protected override async updateItem(postData: Record<string, unknown>) {
+    this.calls.push({ method: 'updateItem', postData });
+    return { updated: postData };
+  }
 }
 
 assert.ok(resources.wf_model);
@@ -101,6 +101,8 @@ assert.deepEqual(
   {
     resource: 'wf_model',
     id: 'model-1',
+    documentType: 'expense',
+    draftSchema: { code: 'expense', name: 'Expense' },
     data: {
       document_type: 'expense',
       draft_schema: { code: 'expense', name: 'Expense' }
@@ -120,56 +122,69 @@ const modelData: Record<string, unknown> = {
     edges: [{ id: 'edge', source: 'start', target: 'end' }]
   }
 };
-service.normalizeModelPayload(context('wf_model', 'create', modelData));
-assert.equal(modelData.document_type, 'expense');
-assert.equal(modelData.documentType, undefined);
-assert.equal(modelData.schema, undefined);
-assert.equal((modelData.draft_schema as Record<string, unknown>).code, 'expense');
-
-const jobData: Record<string, unknown> = {
-  code: 'minute-job',
-  name: 'Minute job',
-  type: 'interval',
-  intervalSeconds: 60,
-  triggerTaskId: 'workflow.demo',
-  retryPolicy: { maxAttempts: 1 }
-};
-service.normalizeJobPayload(context('wf_job', 'create', jobData));
-assert.equal(jobData.trigger_task_id, 'workflow.demo');
-assert.equal(jobData.intervalSeconds, undefined);
-assert.equal((jobData.payload as Record<string, unknown>).intervalSeconds, 60);
-assert.deepEqual(jobData.retry_policy, { maxAttempts: 1 });
-
-assert.throws(
-  () => service.normalizeJobPayload(context('wf_job', 'create', {
-    code: 'seconds-job',
-    name: 'Seconds job',
-    type: 'interval',
-    intervalSeconds: 20
-  })),
-  BadRequestException
+assert.deepEqual(
+  resources.wf_model.databaseHookInputFields,
+  ['code', 'name', 'document_type', 'documentType', 'draft_schema', 'draftSchema', 'schema']
 );
+assert.ok(resources.wf_job.databaseHookInputFields?.includes('intervalSeconds'));
 
 async function testDirectDelegation() {
-  await service.execute('getModel', { modelId: 'model-1' }, serviceContext);
-  assert.deepEqual(delegatedCalls.pop(), {
-    service: 'definition',
-    method: 'getModel',
-    args: ['model-1', serviceContext.accountId]
-  });
+  const crudProbe = new WorkflowCrudProbe(
+    delegate('definitionProbe', []) as never,
+    delegate('runtimeProbe', []) as never,
+    delegate('approvalProbe', []) as never,
+    delegate('jobProbe', []) as never,
+    delegate('runtimeStatusProbe', []) as never
+  );
+  crudProbe.existing = { id: 'model-1' };
+  await crudProbe.execute('getModel', { modelId: 'model-1' }, serviceContext);
+  assert.deepEqual(crudProbe.calls.map((call) => call.method), ['listItems', 'listItems']);
+  assert.equal(crudProbe.calls[0].postData.resource, 'wf_model');
+  assert.deepEqual(crudProbe.calls[0].postData.filters, { id: 'model-1' });
+  assert.equal(crudProbe.calls[1].postData.resource, 'wf_model_version');
+  assert.deepEqual(crudProbe.calls[1].postData.filters, { model_id: 'model-1' });
 
-  await service.execute('saveModel', {
+  crudProbe.calls = [];
+  crudProbe.existing = undefined;
+  await crudProbe.execute('saveModel', {
     code: 'expense',
     name: 'Expense approval',
-    schema: modelData.draft_schema
+    documentType: 'expense',
+    schema: modelData.schema
   }, serviceContext);
-  const saveCall = delegatedCalls.pop();
-  assert.equal(saveCall?.service, 'definition');
-  assert.equal(saveCall?.method, 'saveModel');
-  assert.deepEqual(saveCall?.args[1], {
-    tenantId: serviceContext.accountId,
-    userId: serviceContext.userId
-  });
+  assert.deepEqual(crudProbe.calls.map((call) => call.method), ['listItems', 'createItem']);
+  assert.equal(crudProbe.calls[0].postData.resource, 'wf_model');
+  assert.deepEqual(crudProbe.calls[0].postData.filters, { code: 'expense' });
+  assert.equal(crudProbe.calls[1].postData.resource, 'wf_model');
+
+  crudProbe.calls = [];
+  crudProbe.existing = { id: 'model-1' };
+  await crudProbe.execute('saveModel', {
+    code: 'expense',
+    name: 'Expense approval',
+    schema: modelData.schema
+  }, serviceContext);
+  assert.deepEqual(crudProbe.calls.map((call) => call.method), ['listItems', 'updateItem']);
+  assert.equal(crudProbe.calls[1].postData.id, 'model-1');
+
+  crudProbe.calls = [];
+  await crudProbe.execute('updateModel', {
+    id: 'model-2',
+    code: 'expense',
+    name: 'Expense approval',
+    schema: modelData.schema
+  }, serviceContext);
+  assert.deepEqual(crudProbe.calls.map((call) => call.method), ['updateItem']);
+  assert.equal(crudProbe.calls[0].postData.id, 'model-2');
+
+  crudProbe.calls = [];
+  await crudProbe.execute('createJob', {
+    code: 'job-1',
+    name: 'Job 1',
+    type: 'manual'
+  }, serviceContext);
+  assert.deepEqual(crudProbe.calls.map((call) => call.method), ['createItem']);
+  assert.equal(crudProbe.calls[0].postData.resource, 'wf_job');
 
   await service.execute('getInstance', {
     instanceId: 'instance-1',
@@ -204,13 +219,6 @@ async function testDirectDelegation() {
     title: 'Order approval'
   }, serviceContext);
   assert.equal(delegatedCalls.pop()?.method, 'startInstance');
-
-  await service.execute('createJob', {
-    code: 'job-1',
-    name: 'Job 1',
-    type: 'manual'
-  }, serviceContext);
-  assert.equal(delegatedCalls.pop()?.method, 'createJob');
 
   await service.execute('approveTask', {
     taskId: 'task-1',

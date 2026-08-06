@@ -86,8 +86,8 @@ function createCredentials() {
     projectName: 'enlearn-workflow-local',
     projectRef: 'proj-1',
     secretKey: 'tr_dev_test',
-    selection: 'project-name' as const,
-    source: 'trigger-database' as const
+    selection: 'configured' as const,
+    source: 'environment' as const
   };
   return {
     getCredentials: async () => credential,
@@ -113,12 +113,12 @@ function createCredentials() {
       projectRef: 'proj-1',
       projectName: 'enlearn-workflow-local',
       environment: 'dev' as const,
-      credentialSource: 'trigger-database' as const,
+      credentialSource: 'environment' as const,
       secretKeyConfigured: true,
       accessTokenConfigured: true,
       cached: true,
       cacheExpiresAt: null,
-      selection: 'project-name' as const,
+      selection: 'configured' as const,
       missing: []
     })
   };

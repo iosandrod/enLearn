@@ -149,7 +149,7 @@ export class TriggerRuntimeStatusService {
           }))),
           this.operations.listWaitpoints(),
           this.credentials.getWorkerStatus(credential.environmentId),
-          credential.environment === 'dev'
+          credential.environment === 'dev' && credential.accessToken
             ? this.operations.getDevPresence(
                 credential.apiUrl,
                 credential.projectRef,

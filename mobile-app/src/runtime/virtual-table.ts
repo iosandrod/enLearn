@@ -61,6 +61,13 @@ export type ColumnWindow = VirtualRange & {
   width: number;
 };
 
+export type VirtualScrollbarMetrics = {
+  maxScroll: number;
+  thumbOffset: number;
+  thumbSize: number;
+  thumbTravel: number;
+};
+
 export type SortDirection = 'asc' | 'desc';
 
 export type SortState = {
@@ -434,6 +441,68 @@ export function getRowWindow(
     start: Math.max(0, firstVisible - safeOverscan),
     end: Math.min(rowCount, firstVisible + visibleCount + safeOverscan),
   };
+}
+
+export function getVirtualScrollbarMetrics(
+  rawViewportSize: number,
+  rawContentSize: number,
+  rawScrollOffset: number,
+  rawMinimumThumbSize = 32,
+): VirtualScrollbarMetrics {
+  const viewportSize = Number.isFinite(rawViewportSize) ? Math.max(0, rawViewportSize) : 0;
+  const contentSize = Number.isFinite(rawContentSize)
+    ? Math.max(viewportSize, rawContentSize)
+    : viewportSize;
+  if (viewportSize === 0) {
+    return { maxScroll: 0, thumbOffset: 0, thumbSize: 0, thumbTravel: 0 };
+  }
+
+  const maxScroll = Math.max(0, contentSize - viewportSize);
+  const minimumThumbSize = clamp(rawMinimumThumbSize, 0, viewportSize);
+  const proportionalSize = maxScroll === 0
+    ? viewportSize
+    : viewportSize * viewportSize / contentSize;
+  const thumbSize = clamp(proportionalSize, minimumThumbSize, viewportSize);
+  const thumbTravel = Math.max(0, viewportSize - thumbSize);
+  const scrollOffset = clamp(
+    Number.isFinite(rawScrollOffset) ? rawScrollOffset : 0,
+    0,
+    maxScroll,
+  );
+  const thumbOffset = maxScroll > 0 && thumbTravel > 0
+    ? scrollOffset / maxScroll * thumbTravel
+    : 0;
+
+  return { maxScroll, thumbOffset, thumbSize, thumbTravel };
+}
+
+export function scrollVirtualScrollbarByThumbDelta(
+  metrics: VirtualScrollbarMetrics,
+  rawStartScrollOffset: number,
+  rawThumbDelta: number,
+) {
+  if (metrics.maxScroll <= 0 || metrics.thumbTravel <= 0) return 0;
+  const startScrollOffset = Number.isFinite(rawStartScrollOffset) ? rawStartScrollOffset : 0;
+  const thumbDelta = Number.isFinite(rawThumbDelta) ? rawThumbDelta : 0;
+  return clamp(
+    startScrollOffset + thumbDelta * metrics.maxScroll / metrics.thumbTravel,
+    0,
+    metrics.maxScroll,
+  );
+}
+
+export function scrollVirtualScrollbarToTrackPosition(
+  metrics: VirtualScrollbarMetrics,
+  rawTrackPosition: number,
+) {
+  if (metrics.maxScroll <= 0 || metrics.thumbTravel <= 0) return 0;
+  const trackPosition = Number.isFinite(rawTrackPosition) ? rawTrackPosition : 0;
+  const thumbOffset = clamp(
+    trackPosition - metrics.thumbSize / 2,
+    0,
+    metrics.thumbTravel,
+  );
+  return thumbOffset / metrics.thumbTravel * metrics.maxScroll;
 }
 
 function toDateValue(value: unknown) {

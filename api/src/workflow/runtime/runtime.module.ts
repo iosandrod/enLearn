@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { DatabaseService } from '../common/database.service';
+import { WorkflowSupabaseService } from '../common/workflow-supabase.service';
 import { DefinitionModule } from '../definition/definition.module';
 import { TriggerDevClient } from '../trigger/trigger-dev.client';
 import {
@@ -10,7 +10,7 @@ import {
 } from '../trigger/trigger-runtime-status.service';
 import { ApprovalConsoleService } from './approval-console.service';
 import { WORKFLOW_RUNTIME_STORE } from './runtime.engine.types';
-import { PostgresWorkflowRuntimeStore } from './runtime.postgres-store';
+import { SupabaseWorkflowRuntimeStore } from './runtime.supabase-store';
 import { RuntimeService } from './runtime.service';
 
 @Module({
@@ -19,8 +19,9 @@ import { RuntimeService } from './runtime.service';
     TriggerDevClient,
     {
       provide: WORKFLOW_RUNTIME_STORE,
-      useFactory: (database: DatabaseService) => new PostgresWorkflowRuntimeStore(database),
-      inject: [DatabaseService]
+      useFactory: (persistence: WorkflowSupabaseService) =>
+        new SupabaseWorkflowRuntimeStore(persistence),
+      inject: [WorkflowSupabaseService]
     },
     RuntimeService,
     ApprovalConsoleService,

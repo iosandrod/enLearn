@@ -23,6 +23,11 @@ export const lowCodeResources: ResourceConfigMap = {
   lowcode_pages: {
     tableName: 'lowcode_pages',
     clientMode: 'admin',
+    transactionalHooks: true,
+    databaseHooks: {
+      beforeCreate: 'public.dynamic_crud_normalize_lowcode_page',
+      beforeUpdate: 'public.dynamic_crud_normalize_lowcode_page'
+    },
     permissions: crudPermissions('lowcode.pages.manage'),
     defaults: {
       layout: 'dashboard',

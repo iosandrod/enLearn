@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 
-import { getPostgresPool } from '../src/common/utils/database';
 import { createSupabaseClient } from '../src/common/utils/supabase';
 
 type JsonRecord = Record<string, unknown>;
@@ -32,6 +31,31 @@ async function postJson(path: string, body: JsonRecord, accessToken?: string) {
     headers: {
       'content-type': 'application/json',
       ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {})
+    },
+    body: JSON.stringify(body)
+  });
+  const text = await response.text();
+  let payload: unknown;
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch {
+    payload = { message: text };
+  }
+  return { response, payload };
+}
+
+async function postJsonWithAccount(
+  path: string,
+  body: JsonRecord,
+  accessToken: string,
+  accountId: string
+) {
+  const response = await fetch(`${apiUrl}${path}`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${accessToken}`,
+      'x-account-id': accountId
     },
     body: JSON.stringify(body)
   });
@@ -157,78 +181,51 @@ function buildUpdateRequest(orderId: string, failThirdLine: boolean): JsonRecord
 }
 
 async function readOrderCounts(docNo: string) {
-  const result = await getPostgresPool().query<{
-    order_count: number;
-    line_count: number;
-  }>(
-    `
-      select
-        count(distinct orders.id)::int as order_count,
-        count(lines.id)::int as line_count
-      from public.sales_orders orders
-      left join public.sales_order_lines lines on lines.order_id = orders.id
-      where orders.doc_no = $1
-    `,
-    [docNo]
-  );
-  return result.rows[0];
+  const admin = createSupabaseClient('admin');
+  const { data: orders, error: orderError } = await admin
+    .from('sales_orders')
+    .select('id')
+    .eq('doc_no', docNo);
+  if (orderError) throw new Error(orderError.message);
+  const orderIds = (orders ?? []).map((order) => String(order.id));
+  if (!orderIds.length) return { order_count: 0, line_count: 0 };
+  const { count: lineCount, error: lineError } = await admin
+    .from('sales_order_lines')
+    .select('id', { count: 'exact', head: true })
+    .in('order_id', orderIds);
+  if (lineError) throw new Error(lineError.message);
+  return { order_count: orderIds.length, line_count: lineCount ?? 0 };
 }
 
 async function readOrderState(docNo: string) {
-  const orderResult = await getPostgresPool().query<{
-    id: string;
-    remark: string | null;
-    total_qty: string;
-    updated_at: Date;
-  }>(
-    `
-      select id, remark, total_qty, updated_at
-      from public.sales_orders
-      where doc_no = $1
-    `,
-    [docNo]
-  );
-  const order = orderResult.rows[0];
+  const admin = createSupabaseClient('admin');
+  const { data: order, error: orderError } = await admin
+    .from('sales_orders')
+    .select('id, remark, total_qty, updated_at')
+    .eq('doc_no', docNo)
+    .maybeSingle();
+  if (orderError) throw new Error(orderError.message);
   assert.ok(order, `Sales order ${docNo} must exist.`);
 
-  const linesResult = await getPostgresPool().query<{
-    id: string;
-    line_no: number;
-    item_code: string;
-  }>(
-    `
-      select lines.id, lines.line_no, lines.item_code
-      from public.sales_order_lines lines
-      where lines.order_id = $1
-      order by lines.line_no
-    `,
-    [order.id]
-  );
+  const { data: lines, error: linesError } = await admin
+    .from('sales_order_lines')
+    .select('id, line_no, item_code')
+    .eq('order_id', order.id)
+    .order('line_no');
+  if (linesError) throw new Error(linesError.message);
 
   return {
     id: order.id,
     remark: order.remark,
     totalQty: Number(order.total_qty),
-    updatedAt: order.updated_at.toISOString(),
-    lines: linesResult.rows
+    updatedAt: String(order.updated_at),
+    lines: lines ?? []
   };
 }
 
 async function main() {
-  const pool = getPostgresPool();
   const supabaseAdmin = createSupabaseClient('admin');
   let userId = '';
-
-  const tableCheck = await pool.query<{
-    orders_table: string | null;
-    lines_table: string | null;
-  }>(
-    `select
-      to_regclass('public.sales_orders')::text as orders_table,
-      to_regclass('public.sales_order_lines')::text as lines_table`
-  );
-  assert.equal(tableCheck.rows[0]?.orders_table, 'sales_orders');
-  assert.equal(tableCheck.rows[0]?.lines_table, 'sales_order_lines');
 
   try {
     const { data: createdUser, error: createUserError } =
@@ -242,43 +239,13 @@ async function main() {
     }
     userId = createdUser.user.id;
 
-    await pool.query(
-      `
-        insert into public.admin_user_roles (user_id, role_id)
-        select $1, roles.id
-        from public.admin_roles roles
-        where roles.code = 'system_admin'
-        on conflict (user_id, role_id) do nothing
-      `,
-      [userId]
-    );
-
-    const permissionCheck = await pool.query<{ permission_count: number }>(
-      `
-        select count(1)::int as permission_count
-        from public.admin_user_roles user_roles
-        join public.admin_role_permissions role_permissions
-          on role_permissions.role_id = user_roles.role_id
-        join public.admin_permissions permissions
-          on permissions.id = role_permissions.permission_id
-        where user_roles.user_id = $1
-          and permissions.code = 'sales.orders.manage'
-      `,
-      [userId]
-    );
-    assert.equal(permissionCheck.rows[0]?.permission_count, 1);
-
-    const accountCheck = await pool.query<{ account_id: string }>(
-      `
-        select account_id
-        from basejump.account_user
-        where user_id = $1
-        order by created_at
-        limit 1
-      `,
-      [userId]
-    );
-    const accountId = accountCheck.rows[0]?.account_id;
+    const accessResult = await supabaseAdmin.rpc('prepare_api_smoke_test_access', {
+      p_user_id: userId,
+      p_permission_code: 'sales.orders.manage'
+    });
+    if (accessResult.error) throw new Error(accessResult.error.message);
+    const access = isRecord(accessResult.data) ? accessResult.data : {};
+    const accountId = typeof access.account_id === 'string' ? access.account_id : '';
     assert.ok(accountId, 'The smoke-test user must have a Basejump account.');
 
     const signIn = await postJson('/api/auth/signin', { email, password });
@@ -293,7 +260,7 @@ async function main() {
     console.log('\n[frontend request: expected rollback]');
     console.log(JSON.stringify(failedRequest, null, 2));
 
-    const failedResponse = await postJson('/api/service', failedRequest, accessToken);
+    const failedResponse = await postJsonWithAccount('/api/service', failedRequest, accessToken, accountId);
     assert.equal(failedResponse.response.ok, false, 'The invalid detail request must fail.');
     const failureMessage = readMessage(failedResponse.payload);
     assert.match(failureMessage, /line_no|sales_order_lines_line_no_check/i);
@@ -305,7 +272,7 @@ async function main() {
     console.log('\n[frontend request: expected commit]');
     console.log(JSON.stringify(successRequest, null, 2));
 
-    const successResponse = await postJson('/api/service', successRequest, accessToken);
+    const successResponse = await postJsonWithAccount('/api/service', successRequest, accessToken, accountId);
     if (!successResponse.response.ok) {
       throw new Error(readMessage(successResponse.payload) || 'The valid request failed.');
     }
@@ -324,10 +291,11 @@ async function main() {
     console.log('\n[frontend update request: expected rollback]');
     console.log(JSON.stringify(failedUpdateRequest, null, 2));
 
-    const failedUpdateResponse = await postJson(
+    const failedUpdateResponse = await postJsonWithAccount(
       '/api/service',
       failedUpdateRequest,
-      accessToken
+      accessToken,
+      accountId
     );
     assert.equal(
       failedUpdateResponse.response.ok,
@@ -353,10 +321,11 @@ async function main() {
     console.log('\n[frontend update request: expected commit]');
     console.log(JSON.stringify(successfulUpdateRequest, null, 2));
 
-    const successfulUpdateResponse = await postJson(
+    const successfulUpdateResponse = await postJsonWithAccount(
       '/api/service',
       successfulUpdateRequest,
-      accessToken
+      accessToken,
+      accountId
     );
     if (!successfulUpdateResponse.response.ok) {
       throw new Error(
@@ -381,15 +350,16 @@ async function main() {
     );
     console.log('\nSales order transaction smoke test passed.');
   } finally {
-    await pool.query(
-      `delete from public.sales_orders where doc_no = any($1::text[])`,
-      [[failedDocNo, successDocNo]]
+    await Promise.resolve(
+      supabaseAdmin
+        .from('sales_orders')
+        .delete()
+        .in('doc_no', [failedDocNo, successDocNo])
     ).catch(() => undefined);
 
     if (userId) {
       await supabaseAdmin.auth.admin.deleteUser(userId).catch(() => undefined);
     }
-    await pool.end().catch(() => undefined);
   }
 }
 

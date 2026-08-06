@@ -168,6 +168,7 @@ let runtimePageId = '';
 
 provide(lowCodeRuntimeBlockEditorKey, {
   updateBlock: persistRuntimeBlockUpdate,
+  getDataSource,
 });
 
 defineExpose({
@@ -805,6 +806,13 @@ async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
 
   Object.assign(targetBlock, cloneRuntimeValue(update.changes));
 
+  if (update.dataSources) {
+    nextSchema.dataSources = {
+      ...(nextSchema.dataSources ?? {}),
+      ...cloneRuntimeValue(update.dataSources),
+    };
+  }
+
   if (isRecord(nextSchema.visualEditor)) {
     const visualPages = isRecord(nextSchema.visualEditor.pages)
       ? nextSchema.visualEditor.pages
@@ -840,7 +848,9 @@ async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
     Object.assign(props.page, saved);
     message.value = targetBlock.kind === 'form' || targetBlock.kind === 'searchForm'
       ? '表单配置已保存。'
-      : '按钮配置已保存。';
+      : targetBlock.kind === 'grid'
+        ? '表格配置已保存。'
+        : '按钮配置已保存。';
     messageClass.value = 'lc-help';
 
     return flattenPageBlocks(props.page.schema).find(
@@ -889,12 +899,125 @@ function updateVisualButtonGroupBlocks(
       candidate.props = visualProps;
     }
 
+    if (
+      targetBlock.kind === 'grid' &&
+      visualProps.blockId === update.blockId &&
+      candidate.componentKey === 'lowcode-grid'
+    ) {
+      syncRuntimeGridToVisualProps(visualProps, targetBlock, update);
+      candidate.props = visualProps;
+    }
+
     const slots = isRecord(visualProps.slots) ? visualProps.slots : {};
     Object.values(slots).forEach((slot) => {
       if (isRecord(slot)) updateVisualButtonGroupBlocks(slot.children, targetBlock, update);
     });
     updateVisualButtonGroupBlocks(visualProps.overlays, targetBlock, update);
   });
+}
+
+const visualGridOptionKeys = [
+  'border',
+  'stripe',
+  'showOverflow',
+  'showHeaderOverflow',
+  'showFooterOverflow',
+  'height',
+  'minHeight',
+  'maxHeight',
+  'mobileDisplay',
+  'rowHeight',
+  'headerHeight',
+  'overscanRowCount',
+  'overscanColumnCount',
+  'size',
+  'loading',
+  'round',
+  'showHeader',
+  'showFooter',
+  'autoResize',
+  'syncResize',
+  'rowConfig',
+  'columnConfig',
+  'sortConfig',
+  'filterConfig',
+  'pagerConfig',
+  'toolbarConfig',
+  'proxyConfig',
+  'editConfig',
+  'checkboxConfig',
+  'radioConfig',
+  'treeConfig',
+  'expandConfig',
+];
+
+function isRuntimeGridActionColumn(value: unknown) {
+  if (!isRecord(value)) return false;
+  return isRecord(value.slots) && value.slots.default === 'actions';
+}
+
+function runtimeGridEventsToVisualRows(
+  events: unknown,
+  eventNames: unknown
+) {
+  const eventRecord = isRecord(events) ? events : {};
+  const eventNameRecord = isRecord(eventNames) ? eventNames : {};
+  const keys = Array.from(new Set([
+    ...Object.keys(eventRecord),
+    ...Object.keys(eventNameRecord),
+  ]));
+
+  return keys.map((key) => ({
+    key,
+    enabled: true,
+    eventName: readString(eventNameRecord[key]),
+    directivesJson: JSON.stringify(
+      Array.isArray(eventRecord[key]) ? eventRecord[key] : []
+    ),
+  }));
+}
+
+function syncRuntimeGridToVisualProps(
+  visualProps: Record<string, unknown>,
+  targetBlock: LowCodePageGridBlock,
+  update: LowCodeRuntimeBlockUpdate
+) {
+  const schema = isRecord(update.changes.schema)
+    ? update.changes.schema
+    : targetBlock.schema;
+  const grid = isRecord(schema.grid) ? schema.grid : {};
+  const columns = Array.isArray(grid.columns) ? grid.columns : [];
+  const sourceKey = readString(update.changes.sourceKey, targetBlock.sourceKey ?? 'records');
+  const source = update.dataSources?.[sourceKey] ?? props.page.schema.dataSources?.[sourceKey];
+  const rowActions = isRecord(schema.rowActions) ? schema.rowActions : {};
+
+  visualGridOptionKeys.forEach((key) => delete visualProps[key]);
+  Object.entries(grid).forEach(([key, value]) => {
+    if (key !== 'columns') visualProps[key] = cloneRuntimeValue(value);
+  });
+
+  visualProps.blockId = update.changes.id ?? visualProps.blockId;
+  visualProps.title = update.changes.title ?? schema.title ?? '';
+  visualProps.sourceKey = sourceKey;
+  visualProps.serviceName = source?.serviceName ?? '';
+  visualProps.serviceMethod = source?.serviceMethod ?? '';
+  visualProps.saveMethod = source?.saveMethod ?? '';
+  visualProps.deleteMethod = source?.deleteMethod ?? '';
+  visualProps.postDataJson = JSON.stringify(source?.postData ?? {}, null, 2);
+  visualProps.showRowActions = Boolean(
+    rowActions.edit !== false ||
+      rowActions.delete !== false ||
+      (Array.isArray(rowActions.actions) && rowActions.actions.length) ||
+      columns.some(isRuntimeGridActionColumn)
+  );
+  visualProps.columns = cloneRuntimeValue(
+    columns.filter((column) => !isRuntimeGridActionColumn(column))
+  );
+  visualProps.gridEvents = runtimeGridEventsToVisualRows(
+    schema.events,
+    schema.eventNames
+  );
+  visualProps.gridDesignerUpdatedAt = update.changes.gridDesignerUpdatedAt ?? Date.now();
 }
 
 function runtimeFormFieldToVisualField(value: unknown): Record<string, unknown> {

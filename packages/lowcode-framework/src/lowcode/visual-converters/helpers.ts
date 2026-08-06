@@ -452,6 +452,41 @@ function convertDesignedBlockToLayoutNode(
       : null;
   }
 
+  if (block.componentKey === 'vxe-tabs') {
+    const props = isPlainRecord(block.props) ? block.props : {};
+    const panes = normalizeRows(props.panes);
+    const slots = isPlainRecord(props.slots) ? props.slots : {};
+    const usedSlotKeys = new Set<string>();
+    const tabs = panes.map((pane, index) => {
+      const key = readString(pane.name, `tab${index + 1}`);
+      let slotKey = toTabsSlotKey(key, index);
+
+      if (usedSlotKeys.has(slotKey)) {
+        slotKey = `${slotKey}_${index + 1}`;
+      }
+      usedSlotKeys.add(slotKey);
+
+      const rawSlot = slots[slotKey];
+      const slot = isPlainRecord(rawSlot) ? rawSlot : {};
+
+      return {
+        key,
+        label: readString(pane.title, `页签 ${index + 1}`),
+        blocks: convertDesignedBlocksToLayout(
+          Array.isArray(slot.children) ? slot.children as VisualEditorBlockData[] : []
+        ),
+      };
+    });
+
+    return tabs.length
+      ? {
+          kind: 'tabs',
+          defaultKey: readString(props.modelValue, tabs[0]?.key),
+          tabs,
+        }
+      : null;
+  }
+
   const nestedBlocks = normalizeSlotItems(block.props?.slots).flatMap((slot) =>
     convertDesignedBlocksToLayout(slot.children as VisualEditorBlockData[])
   );

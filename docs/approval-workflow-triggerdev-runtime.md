@@ -165,11 +165,11 @@ TRIGGER_API_URL=http://localhost:3030
 # Optional: TRIGGER_ENVIRONMENT=dev
 ```
 
-`TRIGGER_PROJECT_REF`, `TRIGGER_SECRET_KEY`, and the admin
-`TRIGGER_ACCESS_TOKEN` are resolved from Trigger.dev PostgreSQL on first use and
-cached in process. The Trigger.dev database connection and its fixed
-`ENCRYPTION_KEY` come from `TRIGGER_ENV_FILE` (auto-discovered from
-`../trigger.dev-main/.env` locally).
+`TRIGGER_PROJECT_REF` and `TRIGGER_SECRET_KEY` are read from the enLearn env or
+`TRIGGER_ENV_FILE` (auto-discovered from `../trigger.dev-main/.env` locally) and
+cached in process. `TRIGGER_ACCESS_TOKEN` is optional and enables PAT-only
+status endpoints. The workflow backend does not connect to Trigger.dev's
+PostgreSQL database.
 
 常用命令：
 

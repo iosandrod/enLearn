@@ -7,6 +7,7 @@
             :route-component="Component"
             :keep-alive="shouldKeepAliveRoute(viewRoute)"
             :cache-key="resolveRouteCacheKey(viewRoute)"
+            :cache-invalidation="routeCacheInvalidation"
             :route-key="resolveRouteKey(viewRoute)"
             :max="dashboardKeepAliveMax"
           />
@@ -34,9 +35,11 @@ import {
   provideAppSystemSettings,
   resetSystemSettings,
 } from './composables/useSystemSettings';
+import { useRouteCache } from './composables/useRouteCache';
 
 const route = useRoute();
 const auth = useAuth();
+const routeCache = useRouteCache();
 provideAppSystemSettings();
 
 watch(
@@ -60,6 +63,15 @@ const accountCacheScope = computed(() =>
 const layoutKey = computed(() =>
   route.meta.layout === 'dashboard' ? `dashboard:${accountCacheScope.value}` : String(route.meta.layout ?? 'default')
 );
+const routeCacheInvalidation = computed(() => {
+  const request = routeCache.invalidation.value;
+  if (!request) return null;
+
+  return {
+    id: request.id,
+    cacheKey: buildRouteCacheKey(request.path, request.previousVersion),
+  };
+});
 
 const layoutComponent = computed(() => {
   if (route.meta.layout === false) return null;
@@ -71,11 +83,15 @@ function shouldKeepAliveRoute(viewRoute: RouteLocationNormalizedLoaded) {
   return viewRoute.meta.keepAlive === true;
 }
 
+function buildRouteCacheKey(path: string, version = routeCache.getVersion(path)) {
+  return `${accountCacheScope.value}:${path}:v${version}`;
+}
+
 function resolveRouteCacheKey(viewRoute: RouteLocationNormalizedLoaded) {
-  return `${accountCacheScope.value}:${viewRoute.path}`;
+  return buildRouteCacheKey(viewRoute.path);
 }
 
 function resolveRouteKey(viewRoute: RouteLocationNormalizedLoaded) {
-  return `${accountCacheScope.value}:${viewRoute.fullPath}`;
+  return `${accountCacheScope.value}:${viewRoute.fullPath}:v${routeCache.getVersion(viewRoute.path)}`;
 }
 </script>

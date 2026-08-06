@@ -25,10 +25,13 @@ const {
   fitPinnedColumns,
   getColumnWindow,
   getRowWindow,
+  getVirtualScrollbarMetrics,
   normalizeVirtualColumns,
   normalizeVirtualSelectionConfig,
   partitionVirtualColumns,
   sortVirtualRows,
+  scrollVirtualScrollbarByThumbDelta,
+  scrollVirtualScrollbarToTrackPosition,
   updateVirtualSelectionKeys,
   withVirtualSelectionColumn,
 } = virtualTable;
@@ -104,6 +107,29 @@ assert.deepEqual(
   'row window should contain visible rows plus overscan',
 );
 
+const scrollbarMetrics = getVirtualScrollbarMetrics(300, 1200, 450, 32);
+assert.deepEqual(scrollbarMetrics, {
+  maxScroll: 900,
+  thumbOffset: 112.5,
+  thumbSize: 75,
+  thumbTravel: 225,
+});
+assert.equal(
+  scrollVirtualScrollbarByThumbDelta(scrollbarMetrics, 450, 50),
+  650,
+  'dragging the thumb must scale track movement into content movement',
+);
+assert.equal(
+  scrollVirtualScrollbarToTrackPosition(scrollbarMetrics, 150),
+  450,
+  'pressing the track must center the thumb at the pressed position',
+);
+assert.deepEqual(
+  getVirtualScrollbarMetrics(300, 200, 0, 32),
+  { maxScroll: 0, thumbOffset: 0, thumbSize: 300, thumbTravel: 0 },
+  'a non-overflowing axis must still render a full-size disabled thumb',
+);
+
 const offsets = buildColumnOffsets([
   { width: 100 },
   { width: 120 },
@@ -166,6 +192,16 @@ assert.match(
 );
 assert.match(
   componentSource,
+  /class="table-header"[\s\S]*?class="center-viewport"[\s\S]*?@touchstart="handleCenterTouchStart"/,
+  'the center header must support horizontal dragging',
+);
+assert.match(
+  componentSource,
+  /class="center-viewport body-pane"[\s\S]*?@touchstart="handleCenterTouchStart"/,
+  'each center body row must support horizontal dragging',
+);
+assert.match(
+  componentSource,
   /backgroundColor: currentRowBackground\(key\)/,
   'the current-row background must be sent as reactive inline style for Hippy native panes',
 );
@@ -173,6 +209,27 @@ assert.match(
   componentSource,
   /@click\.stop="toggleRowSelection\(item\.row, item\.index, column\.selection\)"/,
   'selection controls must keep their click independent from current-row highlighting',
+);
+
+assert.match(
+  componentSource,
+  /class="scrollbar-thumb horizontal-scrollbar-thumb"[\s\S]*?handleScrollbarThumbTouchStart\('x'/,
+  'the horizontal scrollbar must expose a draggable thumb',
+);
+assert.match(
+  componentSource,
+  /class="scrollbar-thumb vertical-scrollbar-thumb"[\s\S]*?handleScrollbarThumbTouchStart\('y'/,
+  'the vertical scrollbar must expose a draggable thumb',
+);
+assert.match(
+  componentSource,
+  /scrollVirtualScrollbarToTrackPosition/,
+  'pressing either scrollbar track must reposition its thumb',
+);
+assert.doesNotMatch(
+  componentSource,
+  /enlearnHorizontalScroll/,
+  'table scrolling must not depend on a Web-only ScrollView extension',
 );
 
 console.log('virtual-table regression checks passed');

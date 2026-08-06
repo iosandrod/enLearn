@@ -1,9 +1,10 @@
 import { runs, schedules, task, tasks } from '@trigger.dev/sdk';
-import { type Pool } from 'pg';
-import {
-  createWorkflowPostgresPool,
-  resolveWorkflowDatabaseUrl
-} from '../common/postgres-pool';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
+import { getEnv } from '../../common/utils/env';
+
+const WORKFLOW_JOB_RPC = 'workflow_job_command';
+type JsonRecord = Record<string, unknown>;
 
 export const workflowGenericJobTask = task({
   id: 'workflow.job.run',
@@ -13,34 +14,25 @@ export const workflowGenericJobTask = task({
       throw new Error('runId is required by workflow.job.run.');
     }
 
-    const pool = createJobPool('workflow.job.run');
+    const supabase = createWorkerSupabaseClient('workflow.job.run');
     let started = false;
     try {
-      await pool.query(
-        `update public.wf_job_run
-        set status = 'running', started_at = coalesce(started_at, timezone('utc'::text, now()))
-        where id = $1`,
-        [runId]
-      );
+      const running = await command(supabase, 'mark_run_running', { run_id: runId });
+      if (!running) throw new Error('Workflow job run not found.');
       started = true;
       const output = {
         handledBy: 'workflow.job.run',
         payload
       };
-      await pool.query(
-        `update public.wf_job_run
-        set status = 'succeeded',
-            output = $2::jsonb,
-            finished_at = timezone('utc'::text, now())
-        where id = $1`,
-        [runId, JSON.stringify(output)]
-      );
+      await command(supabase, 'finish_run', {
+        run_id: runId,
+        status: 'succeeded',
+        output
+      });
       return output;
     } catch (error) {
-      if (started) await markJobRunFailedBestEffort(pool, runId, error);
+      if (started) await markJobRunFailedBestEffort(supabase, runId, error);
       throw error;
-    } finally {
-      await pool.end();
     }
   }
 });
@@ -53,20 +45,16 @@ export const workflowSupabaseUsersLogTask = task({
       throw new Error('runId is required by workflow.supabase.users.log.');
     }
 
-    const pool = createJobPool('workflow.supabase.users.log');
+    const supabase = createWorkerSupabaseClient('workflow.supabase.users.log');
     let started = false;
     try {
-      await pool.query(
-        `update public.wf_job_run
-        set status = 'running', started_at = coalesce(started_at, timezone('utc'::text, now()))
-        where id = $1`,
-        [runId]
-      );
+      const running = await command(supabase, 'mark_run_running', { run_id: runId });
+      if (!running) throw new Error('Workflow job run not found.');
       started = true;
 
       const limit = readPositiveInteger(payload.limit, 20);
-      const result = await pool.query('select * from public.users limit $1', [limit]);
-      const users = result.rows.map(sanitizeUserRow);
+      const result = await command(supabase, 'list_users', { limit });
+      const users = readRecordArray(result).map(sanitizeUserRow);
       const output = {
         handledBy: 'workflow.supabase.users.log',
         runId,
@@ -76,20 +64,15 @@ export const workflowSupabaseUsersLogTask = task({
       };
       console.log('[workflow-worker][supabase-users-log]', JSON.stringify(output, null, 2));
 
-      await pool.query(
-        `update public.wf_job_run
-        set status = 'succeeded',
-            output = $2::jsonb,
-            finished_at = timezone('utc'::text, now())
-        where id = $1`,
-        [runId, JSON.stringify(output)]
-      );
+      await command(supabase, 'finish_run', {
+        run_id: runId,
+        status: 'succeeded',
+        output
+      });
       return output;
     } catch (error) {
-      if (started) await markJobRunFailedBestEffort(pool, runId, error);
+      if (started) await markJobRunFailedBestEffort(supabase, runId, error);
       throw error;
-    } finally {
-      await pool.end();
     }
   }
 });
@@ -102,80 +85,77 @@ export const workflowScheduledJobTask = schedules.task({
       throw new Error('Schedule externalId is required by workflow.job.scheduled.');
     }
 
-    const pool = createJobPool('workflow.job.scheduled');
-    try {
-      const jobResult = await pool.query<{
-        id: string;
-        account_id: string;
-        trigger_task_id: string;
-        payload: Record<string, unknown>;
-      }>(
-        `select id, account_id, trigger_task_id, payload
-        from public.wf_job
-        where id = $1 and status = 'enabled'`,
-        [jobId]
-      );
-      const job = jobResult.rows[0];
-      if (!job) {
-        return { skipped: true, jobId, reason: 'Job is missing or disabled.' };
-      }
+    const supabase = createWorkerSupabaseClient('workflow.job.scheduled');
+    const scheduledAt = payload.timestamp.toISOString();
+    const occurrenceKey = [jobId, payload.scheduleId, scheduledAt].join(':');
+    const preparation = assertRecord(
+      await command(supabase, 'prepare_scheduled_run', {
+        job_id: jobId,
+        schedule_id: payload.scheduleId,
+        scheduled_at: scheduledAt,
+        occurrence_key: occurrenceKey
+      }),
+      'Workflow scheduled-run RPC returned an invalid result.'
+    );
 
-      const runResult = await pool.query<{ id: string }>(
-        `insert into public.wf_job_run (account_id, job_id, status, attempt, input)
-        values ($1, $2, 'queued', 1, $3::jsonb)
-        returning id`,
-        [
-          job.account_id,
-          job.id,
-          JSON.stringify({
-            ...(job.payload ?? {}),
-            jobId: job.id,
-            tenantId: job.account_id,
-            scheduled: true,
-            scheduleId: payload.scheduleId,
-            scheduledAt: payload.timestamp.toISOString()
-          })
-        ]
-      );
-      const runId = runResult.rows[0].id;
-      const triggerPayload = {
-        ...(job.payload ?? {}),
-        jobId: job.id,
-        tenantId: job.account_id,
-        runId,
-        scheduled: true,
-        scheduleId: payload.scheduleId,
-        scheduledAt: payload.timestamp.toISOString()
+    if (preparation.skipped === true) {
+      return {
+        skipped: true,
+        jobId,
+        reason: typeof preparation.reason === 'string'
+          ? preparation.reason
+          : 'Job is missing or disabled.'
       };
-      let handle: { id: string };
-      try {
-        handle = await tasks.trigger(job.trigger_task_id, triggerPayload, {
-          idempotencyKey: `workflow-job-run:${runId}`,
-          tags: [
-            `tenant:${job.account_id}`,
-            `workflow-job:${job.id}`,
-            `workflow-job-run:${runId}`
-          ]
-        });
-      } catch (error) {
-        await markJobRunFailedBestEffort(pool, runId, error);
-        throw error;
-      }
-
-      try {
-        await pool.query(
-          `update public.wf_job_run set trigger_run_id = $2 where id = $1`,
-          [runId, handle.id]
-        );
-      } catch (error) {
-        await cancelRunAfterProjectionFailure(handle.id);
-        await markJobRunFailedBestEffort(pool, runId, error);
-        throw error;
-      }
-      return { jobId: job.id, runId, triggerRunId: handle.id };
-    } finally {
-      await pool.end();
     }
+
+    const job = assertRecord(preparation.job, 'Workflow scheduled-run RPC omitted the job.');
+    const run = assertRecord(preparation.run, 'Workflow scheduled-run RPC omitted the run.');
+    const runId = readRequiredString(run.id, 'run.id');
+    const triggerRunId = typeof run.trigger_run_id === 'string' && run.trigger_run_id.trim()
+      ? run.trigger_run_id.trim()
+      : undefined;
+    if (triggerRunId) {
+      return { jobId, runId, triggerRunId, reused: true };
+    }
+
+    const triggerTaskId = readRequiredString(job.trigger_task_id, 'job.trigger_task_id');
+    const accountId = readRequiredString(job.account_id, 'job.account_id');
+    const triggerPayload = {
+      ...assertRecord(
+        preparation.triggerPayload,
+        'Workflow scheduled-run RPC omitted the trigger payload.'
+      ),
+      runId
+    };
+
+    let handle: { id: string };
+    try {
+      handle = await tasks.trigger(triggerTaskId, triggerPayload, {
+        idempotencyKey: `workflow-job-run:${runId}`,
+        tags: [
+          `tenant:${accountId}`,
+          `workflow-job:${jobId}`,
+          `workflow-job-run:${runId}`
+        ]
+      });
+    } catch (error) {
+      await markJobRunFailedBestEffort(supabase, runId, error);
+      throw error;
+    }
+
+    try {
+      const projected = await command(supabase, 'project_trigger_run', {
+        account_id: accountId,
+        run_id: runId,
+        trigger_run_id: handle.id
+      });
+      if (!projected) throw new Error('Workflow job run not found while projecting Trigger run.');
+    } catch (error) {
+      await cancelRunAfterProjectionFailure(handle.id);
+      await markJobRunFailedBestEffort(supabase, runId, error);
+      throw error;
+    }
+    return { jobId, runId, triggerRunId: handle.id };
   }
 });
 
@@ -189,9 +169,39 @@ export const workflowLegacyTimerTask = task({
   })
 });
 
+async function command(client: SupabaseClient, action: string, payload: JsonRecord) {
+  const { data, error } = await client.rpc(WORKFLOW_JOB_RPC, {
+    p_action: action,
+    p_payload: payload
+  });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 function readPositiveInteger(value: unknown, fallback: number) {
   const numberValue = typeof value === 'number' ? value : Number(value);
   return Number.isInteger(numberValue) && numberValue > 0 ? numberValue : fallback;
+}
+
+function isRecord(value: unknown): value is JsonRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function assertRecord(value: unknown, message: string) {
+  if (!isRecord(value)) throw new Error(message);
+  return value;
+}
+
+function readRecordArray(value: unknown) {
+  if (!Array.isArray(value) || !value.every(isRecord)) {
+    throw new Error('Workflow users RPC returned an invalid list.');
+  }
+  return value;
+}
+
+function readRequiredString(value: unknown, name: string) {
+  if (typeof value === 'string' && value.trim()) return value.trim();
+  throw new Error(`Workflow job RPC response is missing ${name}.`);
 }
 
 function sanitizeUserRow(row: Record<string, unknown>) {
@@ -216,27 +226,34 @@ function maskPhone(value: unknown) {
   return `${value.slice(0, 3)}****${value.slice(-4)}`;
 }
 
-function createJobPool(taskName: string) {
-  const connectionString = resolveWorkflowDatabaseUrl(process.env);
-  if (!connectionString) {
-    throw new Error(`DATABASE_URL or DIRECT_URL is required by ${taskName}.`);
+function createWorkerSupabaseClient(taskName: string) {
+  const env = getEnv();
+  const url = env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL ?? env.SUPABASE_PROJECT_URL;
+  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url?.trim() || !serviceRoleKey?.trim()) {
+    throw new Error(`SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required by ${taskName}.`);
   }
-  return createWorkflowPostgresPool(connectionString, {
-    max: 2,
-    name: taskName
+
+  return createClient(url, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
   });
 }
 
-async function markJobRunFailedBestEffort(pool: Pool, runId: string, error: unknown) {
+async function markJobRunFailedBestEffort(
+  client: SupabaseClient,
+  runId: string,
+  error: unknown
+) {
   try {
-    await pool.query(
-      `update public.wf_job_run
-      set status = 'failed',
-          error_message = $2,
-          finished_at = timezone('utc'::text, now())
-      where id = $1`,
-      [runId, error instanceof Error ? error.message : String(error)]
-    );
+    await command(client, 'finish_run', {
+      run_id: runId,
+      status: 'failed',
+      output: {},
+      error_message: error instanceof Error ? error.message : String(error)
+    });
   } catch {
     return;
   }

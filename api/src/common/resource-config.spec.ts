@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 
 import type { ResourceConfigMap } from './base.service';
+import type { ServiceContext } from './interfaces/service-executor';
 import { AdminService } from '../admin-service/admin.service';
 import { ChatService } from '../chat-service/chat.service';
 import { EntityDesignService } from '../entity-design-service/entity-design.service';
@@ -14,6 +15,10 @@ type ServiceWithResources = {
   resources(): ResourceConfigMap;
 };
 
+type AdminServiceWithDynamicConfig = ServiceWithResources & {
+  buildDynamicCrudConfig(ctx: Record<string, unknown>): Record<string, unknown>;
+};
+
 const services = [
   new AdminService(),
   new ChatService(),
@@ -23,6 +28,8 @@ const services = [
   new NotificationService(),
   new PostsService()
 ] as unknown as ServiceWithResources[];
+
+const lowcodeService = services[4];
 
 services.push({ resources: () => workflowResources });
 
@@ -36,5 +43,63 @@ for (const service of services) {
     );
   }
 }
+
+const adminService = new AdminService() as unknown as AdminServiceWithDynamicConfig;
+const adminResources = adminService.resources();
+const roleResource = adminResources.admin_roles;
+const dynamicRoleConfig = adminService.buildDynamicCrudConfig({
+  action: 'create',
+  serviceName: 'admin',
+  resourceName: 'admin_roles',
+  resource: roleResource,
+  input: {},
+  data: {},
+  filters: undefined,
+  context: {} as ServiceContext,
+  client: {},
+  ids: [],
+  meta: {}
+});
+const serializedRole = (
+  dynamicRoleConfig.resources as Record<string, Record<string, unknown>>
+).admin_roles;
+const roleHooks = serializedRole.hooks as Record<string, Array<Record<string, unknown>>>;
+assert.equal(
+  roleHooks.afterCreate[0]?.function,
+  'public.dynamic_crud_sync_role_permissions'
+);
+assert.deepEqual(roleResource.databaseHookInputFields, ['permission_codes', 'permissionCodes']);
+
+const createConfig = serializedRole.create as Record<string, unknown>;
+assert.deepEqual(createConfig.input_allowed_fields, roleResource.create?.allowedFields);
+assert.ok((createConfig.allowed_fields as string[]).includes('created_at'));
+assert.ok((createConfig.allowed_fields as string[]).includes('created_by'));
+
+const transactionalResources = [
+  'admin_roles',
+  'admin_routes',
+  'admin_entities'
+];
+for (const resourceName of transactionalResources) {
+  assert.equal(adminResources[resourceName]?.transactionalHooks, true);
+  assert.ok(adminResources[resourceName]?.databaseHooks);
+}
+assert.ok(adminResources.admin_routes.databaseHookInputFields?.includes('type'));
+
+const lowcodeResources = lowcodeService.resources();
+assert.equal(lowcodeResources.lowcode_pages.transactionalHooks, true);
+assert.equal(
+  (lowcodeResources.lowcode_pages.databaseHooks?.beforeCreate as string),
+  'public.dynamic_crud_normalize_lowcode_page'
+);
+assert.equal(workflowResources.wf_model.transactionalHooks, true);
+assert.equal(
+  workflowResources.wf_model.databaseHooks?.beforeCreate,
+  'public.dynamic_crud_normalize_workflow_model'
+);
+assert.equal(
+  workflowResources.wf_job.databaseHooks?.beforeCreate,
+  'public.dynamic_crud_normalize_workflow_job'
+);
 
 console.log('resource configuration tests passed');

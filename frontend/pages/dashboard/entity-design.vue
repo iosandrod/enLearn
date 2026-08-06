@@ -36,19 +36,6 @@
           class="panel-section"
           :class="panel.className"
         >
-          <div class="panel-heading">
-            <button
-              v-if="panel.addAction"
-              type="button"
-              :title="panel.addAction.title"
-              :disabled="panel.addAction.disabled"
-              @click="panel.addAction.onClick"
-            >
-              <i :class="panel.addAction.icon || 'ri-add-line'" />
-            </button>
-            <strong v-else-if="typeof panel.badge !== 'undefined'">{{ panel.badge }}</strong>
-          </div>
-
           <p v-if="panel.hint" class="panel-hint">{{ panel.hint }}</p>
 
           <LowCodeForm
@@ -153,23 +140,6 @@
           class="panel-section"
           :class="panel.className"
         >
-          <div class="panel-heading">
-            <div>
-              <span>{{ panel.kicker }}</span>
-              <h2>{{ panel.title }}</h2>
-            </div>
-            <button
-              v-if="panel.addAction"
-              type="button"
-              :title="panel.addAction.title"
-              :disabled="panel.addAction.disabled"
-              @click="panel.addAction.onClick"
-            >
-              <i :class="panel.addAction.icon || 'ri-add-line'" />
-            </button>
-            <strong v-else-if="typeof panel.badge !== 'undefined'">{{ panel.badge }}</strong>
-          </div>
-
           <p v-if="panel.hint" class="panel-hint">{{ panel.hint }}</p>
 
           <LowCodeForm
@@ -598,6 +568,24 @@ const leftPanelSchema = computed<LowCodeFormSchema>(() => ({
       },
     },
   ],
+  layout: [
+    {
+      kind: 'tabs',
+      defaultKey: 'table-detail',
+      tabs: [
+        {
+          key: 'table-detail',
+          label: tableForm.value.id ? '实体信息' : '新建实体',
+          blocks: [{ kind: 'field', field: 'table' }],
+        },
+        {
+          key: 'table-list',
+          label: `实体列表 (${tables.value.length})`,
+          blocks: [{ kind: 'field', field: 'tables' }],
+        },
+      ],
+    },
+  ],
   actions: [],
 }));
 const rightPanelSchema = computed<LowCodeFormSchema>(() => ({
@@ -682,16 +670,11 @@ const leftPanelSchemas = computed<EntityDesignerFormPanel[]>(() => [
     id: 'entity-left-schema',
     kicker: 'Table',
     title: tableForm.value.id ? '编辑表' : '新建表',
-    badge: tables.value.length,
-    addAction: {
-      title: '新建表',
-      icon: 'ri-add-line',
-      onClick: resetTableForm,
-    },
     form: {
       model: leftPanelModel,
       schema: leftPanelSchema.value,
       loading: savingTable.value,
+      className: 'entity-left-tabs-form',
     },
   },
 ]);

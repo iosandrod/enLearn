@@ -1,7 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { BaseService, type ListItemsHandler } from '../common/base.service';
+import {
+  BaseService,
+  type ListItemsHandler,
+  type ResourceConfigMap
+} from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
-import { createSupabaseClient, getCurrentUser } from '../common/utils/supabase';
+import { getCurrentUser } from '../common/utils/supabase';
 
 type PostData = Record<string, unknown>;
 
@@ -19,6 +23,21 @@ function readString(value: unknown, name: string, fallback = '') {
 
 @Injectable()
 export class UserService extends BaseService {
+  protected override resources(): ResourceConfigMap {
+    return {
+      users: {
+        tableName: 'users',
+        internalActions: ['create', 'update', 'delete', 'action'],
+        primaryKey: 'id',
+        ownerField: 'id',
+        update: {
+          allowedFields: ['full_name', 'avatar_url'],
+          timestamp: true
+        }
+      }
+    };
+  }
+
   protected override async executeAction(method: string, postData: PostData, context: ServiceContext) {
     switch (method) {
       case 'updateProfile':
@@ -82,16 +101,25 @@ export class UserService extends BaseService {
       throw new BadRequestException(authError.message);
     }
 
-    const { error: dbError } = await client
-      .from('users')
-      .update({
+    try {
+      await this.runCrud('update', {
+        resource: 'users',
+        id: user.id,
+        data: {
         full_name: fullName,
         avatar_url: avatarUrl || null
-      })
-      .eq('id', user.id);
-
-    if (dbError) {
-      throw new BadRequestException(dbError.message);
+        }
+      }, context);
+    } catch (error) {
+      // Auth metadata was already updated. Restore it when the profile projection
+      // fails so callers do not observe a split update across the two systems.
+      await client.auth.updateUser({
+        data: {
+          full_name: user.user_metadata?.full_name,
+          avatar_url: user.user_metadata?.avatar_url
+        }
+      }).catch(() => undefined);
+      throw error;
     }
 
     return {

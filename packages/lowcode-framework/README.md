@@ -1014,7 +1014,12 @@ type LowCodeFormSchema = {
 type LowCodeFormLayoutNode =
   | { kind: 'field'; field: string }
   | { kind: 'row'; gutter?: number | string; columns: LowCodeFormLayoutColumn[] }
-  | { kind: 'stack'; blocks: LowCodeFormLayoutNode[] };
+  | { kind: 'stack'; blocks: LowCodeFormLayoutNode[] }
+  | {
+      kind: 'tabs';
+      defaultKey?: string;
+      tabs: Array<{ key: string; label: string; blocks: LowCodeFormLayoutNode[] }>;
+    };
 ```
 
 ### 表格 Schema

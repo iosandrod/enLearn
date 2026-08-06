@@ -8,7 +8,7 @@ import {
   type ServicePostData
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
-import { createSupabaseClient, getCurrentUser } from '../common/utils/supabase';
+import { getCurrentUser } from '../common/utils/supabase';
 import { getActiveAccountId, assertAccountUsers } from '../common/utils/account-context';
 import type {
   ChatConversationMemberRow,
@@ -127,7 +127,18 @@ export class ChatService extends BaseService {
     return {
       chat_conversations: {
         tableName: 'chat_conversations',
+        internalActions: ['create', 'update', 'delete', 'action'],
+        clientMode: 'admin',
         accountField: 'account_id',
+        transactionalHooks: true,
+        databaseHooks: { beforeCreate: 'public.dynamic_crud_normalize_chat_conversation' },
+        detailRelations: {
+          chat_conversation_members: {
+            foreignKey: 'conversation_id',
+            parentKey: 'id',
+            inheritFields: ['account_id']
+          }
+        },
         defaults: { type: 'direct', metadata: {} },
         list: { defaultSorts: [{ field: 'last_message_at', direction: 'desc' }], defaultPageSize: 20, maxPageSize: 100 },
         create: {
@@ -141,14 +152,19 @@ export class ChatService extends BaseService {
       },
       chat_conversation_members: {
         tableName: 'chat_conversation_members',
+        internalActions: ['create', 'update', 'delete', 'action'],
+        clientMode: 'admin',
         accountField: 'account_id',
-        ownerField: 'user_id',
+        transactionalHooks: true,
+        databaseHooks: {
+          beforeCreate: 'public.dynamic_crud_validate_chat_conversation_member'
+        },
         defaults: { role: 'member', status: 'active' },
         list: { defaultSorts: [{ field: 'updated_at', direction: 'desc' }], defaultPageSize: 100, maxPageSize: 500 },
         create: {
           allowedFields: ['account_id', 'conversation_id', 'user_id', 'role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at'],
           requiredFields: ['conversation_id'],
-          userFields: { owner: 'user_id' }
+          userFields: {}
         },
         update: {
           allowedFields: ['role', 'status', 'muted_at', 'pinned_at', 'last_read_message_id', 'last_read_at']
@@ -156,7 +172,17 @@ export class ChatService extends BaseService {
       },
       chat_messages: {
         tableName: 'chat_messages',
+        internalActions: ['create', 'update', 'delete', 'action'],
         accountField: 'account_id',
+        transactionalHooks: true,
+        databaseHooks: {
+          beforeCreate: 'public.dynamic_crud_normalize_chat_message',
+          beforeUpdate: 'public.dynamic_crud_normalize_chat_message_update'
+        },
+        databaseHookInputFields: [
+          'messageType', 'message_type', 'attachmentIds', 'attachment_ids',
+          'replyToId', 'reply_to_id', 'edit', 'edited', 'delete', 'deleted'
+        ],
         defaults: { message_type: 'text', attachment_ids: [], status: 'sent', metadata: {} },
         list: { defaultSorts: [{ field: 'created_at', direction: 'desc' }], defaultPageSize: 30, maxPageSize: 100 },
         create: {
@@ -170,6 +196,7 @@ export class ChatService extends BaseService {
       },
       chat_message_reads: {
         tableName: 'chat_message_reads',
+        internalActions: ['create', 'update', 'delete', 'action'],
         accountField: 'account_id',
         ownerField: 'user_id',
         create: {
@@ -187,13 +214,10 @@ export class ChatService extends BaseService {
   protected override hooks(): ServiceHooks {
     return {
       chat_conversations: {
-        beforeCreate: [this.normalizeConversationPayload],
         afterCreate: [this.normalizeConversationResult],
         afterUpdate: [this.normalizeConversationResult]
       },
       chat_messages: {
-        beforeCreate: [this.normalizeMessagePayload],
-        beforeUpdate: [this.normalizeMessageUpdatePayload],
         afterCreate: [this.normalizeMessageResult],
         afterUpdate: [this.normalizeMessageResult]
       }
@@ -219,33 +243,6 @@ export class ChatService extends BaseService {
     }
   }
 
-  private normalizeConversationPayload = (ctx: HookContext) => {
-    ctx.data.account_id = getActiveAccountId(ctx.context);
-    ctx.data.type = readConversationType(ctx.data.type, 'group');
-    ctx.data.metadata = readJsonObject(ctx.data.metadata);
-  };
-
-  private normalizeMessagePayload = (ctx: HookContext) => {
-    ctx.data.account_id = getActiveAccountId(ctx.context);
-    ctx.data.message_type = readMessageType(ctx.data.message_type ?? ctx.input.messageType ?? ctx.input.message_type);
-    ctx.data.attachment_ids = readStringArray(ctx.data.attachment_ids ?? ctx.input.attachmentIds ?? ctx.input.attachment_ids);
-    ctx.data.reply_to_id = readOptionalString(ctx.data.reply_to_id ?? ctx.input.replyToId ?? ctx.input.reply_to_id) || null;
-    ctx.data.metadata = readJsonObject(ctx.data.metadata);
-  };
-
-  private normalizeMessageUpdatePayload = (ctx: HookContext) => {
-    if (ctx.input.edit === true || ctx.input.edited === true) {
-      ctx.data.status = 'edited';
-      ctx.data.edited_at = ctx.data.edited_at || new Date().toISOString();
-    }
-
-    if (ctx.input.delete === true || ctx.input.deleted === true) {
-      ctx.data.content = '';
-      ctx.data.status = 'deleted';
-      ctx.data.deleted_at = ctx.data.deleted_at || new Date().toISOString();
-    }
-  };
-
   private normalizeConversationResult = (ctx: HookContext) => {
     if (Array.isArray(ctx.result)) ctx.result = (ctx.result as ChatConversationRow[]).map((row) => normalizeConversation(row));
     else if (ctx.result) ctx.result = normalizeConversation(ctx.result as ChatConversationRow);
@@ -270,7 +267,7 @@ export class ChatService extends BaseService {
     if (existing) return normalizeConversation(existing);
 
     const directMemberIds = [user.id, targetUserId].sort();
-    const conversation = await this.runCrud('create', {
+    return this.runCrud('create', {
       resource: 'chat_conversations',
       data: {
         account_id: tenantId,
@@ -279,16 +276,18 @@ export class ChatService extends BaseService {
         metadata: {
           directMemberIds,
           directKey: directMemberIds.join(':')
-        }
+        },
+        __details: [{
+          resource: 'chat_conversation_members',
+          foreignKey: 'conversation_id',
+          inheritFields: ['account_id'],
+          rows: [
+            { user_id: user.id, role: 'owner', status: 'active' },
+            { user_id: targetUserId, role: 'member', status: 'active' }
+          ]
+        }]
       }
-    }, context) as ReturnType<typeof normalizeConversation>;
-
-    await this.insertMembers(tenantId, String(conversation.id), [
-      { userId: user.id, role: 'owner' },
-      { userId: targetUserId, role: 'member' }
-    ], context);
-
-    return conversation;
+    }, context) as Promise<ReturnType<typeof normalizeConversation>>;
   }
 
   async createGroupConversation(postData: PostData, context: ServiceContext) {
@@ -302,28 +301,26 @@ export class ChatService extends BaseService {
     }
     await this.assertAccountMembers(tenantId, memberIds, context);
 
-    const conversation = await this.runCrud('create', {
+    return this.runCrud('create', {
       resource: 'chat_conversations',
       data: {
         account_id: tenantId,
         type: readConversationType(postData.type, 'group'),
         title,
         created_by: user.id,
-        metadata: readJsonObject(postData.metadata)
+        metadata: readJsonObject(postData.metadata),
+        __details: [{
+          resource: 'chat_conversation_members',
+          foreignKey: 'conversation_id',
+          inheritFields: ['account_id'],
+          rows: memberIds.map((memberId) => ({
+            user_id: memberId,
+            role: memberId === user.id ? 'owner' : 'member',
+            status: 'active'
+          }))
+        }]
       }
-    }, context) as ReturnType<typeof normalizeConversation>;
-
-    await this.insertMembers(
-      tenantId,
-      String(conversation.id),
-      memberIds.map((memberId) => ({
-        userId: memberId,
-        role: memberId === user.id ? 'owner' : 'member'
-      })),
-      context
-    );
-
-    return conversation;
+    }, context) as Promise<ReturnType<typeof normalizeConversation>>;
   }
 
   async sendMessage(postData: PostData, context: ServiceContext) {
@@ -551,25 +548,6 @@ export class ChatService extends BaseService {
       },
       pageSize: 1
     }, context);
-  }
-
-  private async insertMembers(
-    tenantId: string,
-    conversationId: string,
-    members: Array<{ userId: string; role: string }>,
-    context: ServiceContext
-  ) {
-    const rows = members.map((member) => ({
-      account_id: tenantId,
-      conversation_id: conversationId,
-      user_id: member.userId,
-      role: member.role,
-      status: 'active'
-    }));
-
-    const adminClient = createSupabaseClient('admin', context);
-    const { error } = await adminClient.from('chat_conversation_members').insert(rows);
-    if (error) throw new BadRequestException(error.message);
   }
 
   private async assertAccountMembers(

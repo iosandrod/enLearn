@@ -66,8 +66,7 @@
         :key="action.code"
         :class="['form-action', `is-${action.status ?? 'default'}`]"
         :disabled="action.disabled"
-        @click="handleActionClick(action)"
-        @touchend="handleActionTouchEnd(action)"
+        @click="handleAction(action)"
       >
         <span class="form-action-text">{{ action.label }}</span>
       </button>
@@ -238,14 +237,6 @@ function handleAction(action: SharedLowCodeAction) {
   } finally {
     setTimeout(() => actionDispatching.delete(action.code), 0);
   }
-}
-
-function handleActionTouchEnd(action: SharedLowCodeAction) {
-  handleAction(action);
-}
-
-function handleActionClick(action: SharedLowCodeAction) {
-  handleAction(action);
 }
 
 watch(

@@ -1,12 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   BaseService,
-  type HookContext,
-  type ResourceConfigMap,
-  type ServiceHooks
+  type ResourceConfigMap
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
-import { withPostgresClient } from '../common/utils/database';
 import { requireAdmin } from '../common/utils/supabase';
 import {
   asRows,
@@ -16,8 +13,9 @@ import {
 import { lowCodeResources } from './lowcode.resources';
 import type { LowCodePageRow } from './lowcode.types';
 import {
-  buildTableListPageSchemaFromDatabase,
-  listDatabaseTableOptions
+  buildTableListPageSchemaFromMetadata,
+  mapDatabaseTableOptions,
+  readTableRef
 } from './table-page-generator';
 
 @Injectable()
@@ -25,37 +23,6 @@ export class LowCodeService extends BaseService {
   protected override resources(): ResourceConfigMap {
     return lowCodeResources;
   }
-
-  protected override hooks(): ServiceHooks {
-    return {
-      lowcode_pages: {
-        beforeCreate: [this.normalizePageType],
-        beforeUpdate: [this.normalizePageType]
-      }
-    };
-  }
-
-  private normalizePageType = (ctx: HookContext) => {
-    const schema = ctx.data.schema;
-    const schemaPageType = schema && typeof schema === 'object' && !Array.isArray(schema)
-      ? (schema as Record<string, unknown>).pageType
-      : undefined;
-    const candidate = ctx.data.page_type ?? schemaPageType;
-
-    if (candidate === undefined && ctx.action === 'update') return;
-
-    if (
-      candidate !== undefined &&
-      candidate !== 'list' &&
-      candidate !== 'edit' &&
-      candidate !== 'detail' &&
-      candidate !== 'custom'
-    ) {
-      throw new BadRequestException('page_type must be list, edit, detail, or custom.');
-    }
-
-    ctx.data.page_type = candidate ?? 'custom';
-  };
 
   protected override async executeAction(method: string, postData: Record<string, unknown>, context: ServiceContext) {
     switch (method) {
@@ -71,15 +38,20 @@ export class LowCodeService extends BaseService {
   }
 
   private async listTablePageOptions(context: ServiceContext) {
-    await requireAdmin(context, ['lowcode.pages.manage', 'admin.entities.manage']);
-    return withPostgresClient((client) => listDatabaseTableOptions(client));
+    const { client } = await requireAdmin(context, ['lowcode.pages.manage', 'admin.entities.manage']);
+    const { data, error } = await client.rpc('read_lowcode_table_metadata', {
+      p_action: 'list_tables',
+      p_payload: {}
+    });
+    if (error) throw new BadRequestException(error.message);
+    return mapDatabaseTableOptions(data);
   }
 
   private async generateTableListPageSchema(
     postData: Record<string, unknown>,
     context: ServiceContext
   ) {
-    await requireAdmin(context, ['lowcode.pages.manage', 'admin.entities.manage']);
+    const { client } = await requireAdmin(context, ['lowcode.pages.manage', 'admin.entities.manage']);
     const tableName = readString(postData.tableName ?? postData.table_name);
     const code = readString(postData.code);
     const route = readString(postData.route);
@@ -91,16 +63,20 @@ export class LowCodeService extends BaseService {
     }
 
     try {
-      return await withPostgresClient((client) =>
-        buildTableListPageSchemaFromDatabase(client, {
+      const table = readTableRef(tableName);
+      const { data, error } = await client.rpc('read_lowcode_table_metadata', {
+        p_action: 'inspect_table',
+        p_payload: { schema_name: table.schema, table_name: table.name }
+      });
+      if (error) throw new Error(error.message);
+      return buildTableListPageSchemaFromMetadata(data, {
           tableName,
           ...(code ? { code } : {}),
           ...(route ? { route } : {}),
           ...(title ? { title } : {}),
           ...(description ? { description } : {}),
           status: normalizeGeneratedStatus(postData.status)
-        })
-      );
+        });
     } catch (error) {
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Could not generate page schema.'

@@ -66,22 +66,18 @@ pnpm services:dev
 The local Trigger.dev stack requires Redis 6 or newer. The legacy Windows
 Redis 3 service is not compatible with Trigger.dev's Lua queue scripts.
 
-Only the endpoint belongs in the enLearn `.env`:
+Configure the endpoint and runtime project credentials in enLearn or in the
+adjacent Trigger.dev env file:
 
 ```env
 TRIGGER_API_URL=http://localhost:3030
+TRIGGER_PROJECT_REF=proj_...
+TRIGGER_SECRET_KEY=tr_dev_...
+# Optional, for PAT-only status endpoints:
+TRIGGER_ACCESS_TOKEN=tr_pat_...
 ```
 
-By default the backend reads `DATABASE_URL` and `ENCRYPTION_KEY` from the
-adjacent `../trigger.dev-main/.env`. Set `TRIGGER_ENV_FILE` when that file lives
-elsewhere. On first use it creates/reuses the `enlearn-workflow-local` project,
-its runtime key, a Trigger.dev super-admin, and that admin's PAT. None of
-`TRIGGER_PROJECT_REF`, `TRIGGER_SECRET_KEY`, or `TRIGGER_ACCESS_TOKEN` is written
-to the enLearn env file.
-
-`DATABASE_URL` and the fixed 32-byte `ENCRYPTION_KEY` remain Trigger.dev
-infrastructure settings. The encryption key is required to decrypt the PAT
-stored in Trigger.dev PostgreSQL; it is not one of the dynamic credentials.
-
-Run `pnpm --dir api workflow:trigger:credentials` to verify database resolution
-and the in-process cache without printing complete secrets.
+Set `TRIGGER_ENV_FILE` when the Trigger.dev env file lives elsewhere. The
+backend uses Trigger.dev's API/SDK only and does not connect to Trigger.dev's
+PostgreSQL database. Run `pnpm --dir api workflow:trigger:credentials` to verify
+environment resolution and the in-process cache without printing secrets.

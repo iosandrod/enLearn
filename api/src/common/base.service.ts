@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
-import type { PoolClient } from 'pg';
 import type { ServiceContext, ServiceExecutor } from './interfaces/service-executor';
 import {
   createSupabaseClient,
@@ -8,7 +8,8 @@ import {
   getUserAuthorization,
   hasRequiredPermission
 } from './utils/supabase';
-import { getPostgresPool } from './utils/database';
+
+const DYNAMIC_CRUD_RPC = 'execute_dynamic_crud';
 
 export type ListFilterLogic = 'and' | 'or';
 
@@ -144,6 +145,21 @@ export type ResourceAfterSaveRelation = {
   allowedWhereFields?: string[];
 };
 
+export type ResourceDatabaseHooks = Partial<Record<
+  | 'beforeCreate'
+  | 'afterCreate'
+  | 'beforeUpdate'
+  | 'afterUpdate'
+  | 'beforeDelete'
+  | 'afterDelete',
+  string | string[] | ResourceDatabaseHookConfig | ResourceDatabaseHookConfig[]
+>>;
+
+export type ResourceDatabaseHookConfig = {
+  function: string;
+  args?: Record<string, unknown>;
+};
+
 type PreparedAfterSaveUpdate = {
   action: 'update';
   resourceName: string;
@@ -156,6 +172,7 @@ type PreparedAfterSaveUpdate = {
 export type ResourceConfig = {
   code?: string;
   tableName: string;
+  internalActions?: ServiceAction[];
   primaryKey?: string;
   select?: string;
   clientMode?: 'user' | 'admin';
@@ -165,6 +182,9 @@ export type ResourceConfig = {
   defaults?: Record<string, unknown> | ((ctx: CrudContext) => Record<string, unknown> | Promise<Record<string, unknown>>);
   detailRelations?: Record<string, ResourceDetailRelation>;
   afterSaveRelations?: Record<string, ResourceAfterSaveRelation>;
+  databaseHooks?: ResourceDatabaseHooks;
+  databaseHookInputFields?: string[];
+  transactionalHooks?: boolean;
   list?: ResourceListConfig;
   create?: ResourceActionConfig;
   update?: ResourceActionConfig;
@@ -226,16 +246,36 @@ export abstract class BaseService implements ServiceExecutor {
     try {
       switch (method) {
         case 'listItems':
+          this.assertPublicResourceAccess(postData, 'list');
           return this.listItems(postData, context);
         case 'createItem':
+          this.assertPublicResourceAccess(postData, 'create');
           return this.createItem(postData, context);
         case 'updateItem':
+          this.assertPublicResourceAccess(postData, 'update');
           return this.updateItem(postData, context);
         case 'deleteItem':
+          this.assertPublicResourceAccess(postData, 'delete');
           return this.deleteItem(postData, context);
         case 'saveItem':
+          {
+            const publicResource = this.tryResolveResource(postData);
+            const primaryKey = publicResource
+              ? this.primaryKey(publicResource.config)
+              : 'id';
+            const data = this.readRecord(postData.data);
+            this.assertPublicResourceAccess(
+              postData,
+              this.readOptionalString(
+                postData.id ?? postData[primaryKey] ?? data.id ?? data[primaryKey]
+              )
+                ? 'update'
+                : 'create'
+            );
+          }
           return this.saveItem(postData, context);
         case 'runAction':
+          this.assertPublicResourceAccess(postData, 'action');
           return this.runResourceAction(postData, context);
         default:
           return this.executeAction(method, postData, context);
@@ -364,7 +404,12 @@ export abstract class BaseService implements ServiceExecutor {
     const ctx = await this.createCrudContext(action, postData, context, resource);
 
     try {
-      await this.runHooks(ctx, ['beforeAction', this.hookName('before', action)]);
+      const databaseOwnedWriteHooks =
+        action !== 'list' && ctx.resource.transactionalHooks === true;
+      await this.runHooks(ctx, [
+        'beforeAction',
+        ...(databaseOwnedWriteHooks ? [] : [this.hookName('before', action)])
+      ]);
       await this.assertPermission(ctx);
 
       if (action === 'list') ctx.result = await this.performList(ctx);
@@ -415,9 +460,19 @@ export abstract class BaseService implements ServiceExecutor {
     if (resource.clientMode === 'admin') {
       return createSupabaseClient('admin', context);
     }
+    return (await getCurrentUser(context)).client;
+  }
 
-    const { client } = await getCurrentUser(context);
-    return client;
+  protected assertPublicResourceAccess(
+    postData: ServicePostData,
+    action: ServiceAction
+  ) {
+    const resource = this.tryResolveResource(postData);
+    if (resource?.config.internalActions?.includes(action)) {
+      throw new ForbiddenException(
+        `${action} on resource ${resource.name} is only available through its service method.`
+      );
+    }
   }
 
   protected async tryReadCurrentUser(context: ServiceContext, resource: ResourceConfig) {
@@ -430,6 +485,247 @@ export abstract class BaseService implements ServiceExecutor {
     }
 
     return (await getCurrentUser(context)).user;
+  }
+
+  protected serializeDynamicResourceConfig(resourceName: string, resource: ResourceConfig) {
+    const hooks = Object.fromEntries(
+      Object.entries(resource.databaseHooks ?? {}).map(([name, handlers]) => [
+        name,
+        ([] as Array<string | ResourceDatabaseHookConfig>)
+          .concat(handlers ?? [])
+          .map((handler) => {
+          const functionName = typeof handler === 'string' ? handler : handler.function;
+          this.assertIdentifierPath(functionName, `databaseHooks.${name}`);
+          return {
+            function: functionName,
+            args: typeof handler === 'string' ? {} : handler.args ?? {}
+          };
+        })
+      ])
+    );
+
+    const serializeAction = (
+      action: 'create' | 'update' | 'delete',
+      config: ResourceActionConfig | ResourceDeleteConfig | undefined
+    ) => {
+      if (!config) return null;
+
+      const managedFields = new Set<string>();
+      if (action !== 'delete' && config.timestamp !== false) {
+        managedFields.add('updated_at');
+        if (action === 'create') managedFields.add('created_at');
+      }
+      if (action === 'create' && config.userFields?.createdBy) {
+        managedFields.add(config.userFields.createdBy);
+      }
+      if (action !== 'delete' && config.userFields?.updatedBy) {
+        managedFields.add(config.userFields.updatedBy);
+      }
+      if (action !== 'delete' && config.userFields?.owner) {
+        managedFields.add(config.userFields.owner);
+      }
+      if (action === 'delete' && config.userFields?.deletedBy) {
+        managedFields.add(config.userFields.deletedBy);
+      }
+      if (action === 'create' && resource.ownerField) managedFields.add(resource.ownerField);
+      if (action !== 'delete' && resource.accountField) managedFields.add(resource.accountField);
+
+      const deleteConfig = action === 'delete' ? config as ResourceDeleteConfig : undefined;
+      const deleteAllowedFields = deleteConfig?.softDelete
+        ? [
+            deleteConfig.deletedAtField ?? 'deleted_at',
+            ...(deleteConfig.statusField ? [deleteConfig.statusField] : []),
+            ...(deleteConfig.userFields?.deletedBy
+              ? [deleteConfig.userFields.deletedBy]
+              : [])
+          ]
+        : [];
+
+      return {
+        allowed_fields: action === 'delete'
+          ? [...new Set([...deleteAllowedFields, ...managedFields])]
+          : config.allowedFields
+            ? [...new Set([...config.allowedFields, ...managedFields])]
+            : null,
+        input_allowed_fields: action === 'delete' ? [] : config.allowedFields ?? null,
+        managed_fields: [...managedFields],
+        hook_input_fields: resource.databaseHookInputFields ?? [],
+        required_fields: config.requiredFields ?? [],
+        timestamp: action !== 'delete' && config.timestamp !== false,
+        ...(deleteConfig
+          ? {
+              soft_delete: deleteConfig.softDelete === true,
+              deleted_at_field: deleteConfig.deletedAtField ?? 'deleted_at',
+              status_field: deleteConfig.statusField ?? null,
+              deleted_status: deleteConfig.deletedStatus ?? null,
+              deleted_by_field: deleteConfig.userFields?.deletedBy ?? null
+            }
+          : {})
+      };
+    };
+
+    return {
+      code: resource.code ?? resourceName,
+      table_name: resource.tableName,
+      primary_key: this.primaryKey(resource),
+      owner_field: resource.ownerField ?? null,
+      account_field: resource.accountField ?? null,
+      client_mode: resource.clientMode ?? 'user',
+      hooks,
+      create: serializeAction('create', resource.create),
+      update: serializeAction('update', resource.update),
+      delete: serializeAction('delete', resource.delete)
+    };
+  }
+
+  protected buildDynamicCrudConfig(ctx: CrudContext) {
+    const resources = this.resources();
+    const included = new Set<string>([ctx.resourceName]);
+
+    for (const [name, relation] of Object.entries(ctx.resource.detailRelations ?? {})) {
+      included.add(relation.resource ?? name);
+    }
+    for (const relation of Object.entries(ctx.resource.afterSaveRelations ?? {})) {
+      included.add(relation[1].resource ?? relation[0]);
+    }
+
+    const serializedResources = Object.fromEntries(
+      [...included]
+        .filter(Boolean)
+        .map((name) => {
+          const config = resources[name];
+          if (!config) throw new BadRequestException(`Unknown dynamic CRUD resource: ${name}.`);
+          return [name, this.serializeDynamicResourceConfig(name, config)];
+        })
+    );
+
+    const config = {
+      resource_name: ctx.resourceName,
+      resources: serializedResources,
+      detail_relations: Object.fromEntries(
+        Object.entries(ctx.resource.detailRelations ?? {}).map(([name, relation]) => [
+          name,
+          {
+            resource: relation.resource ?? name,
+            foreign_key: relation.foreignKey,
+            parent_key: relation.parentKey ?? this.primaryKey(ctx.resource),
+            inherit_fields: relation.inheritFields ?? [],
+            update_mode: relation.updateMode ?? null
+          }
+        ])
+      ),
+      after_save_relations: Object.fromEntries(
+        Object.entries(ctx.resource.afterSaveRelations ?? {}).map(([name, relation]) => [
+          name,
+          {
+            resource: relation.resource ?? name,
+            actions: relation.actions,
+            allowed_fields: relation.allowedFields,
+            allowed_where_fields: relation.allowedWhereFields ?? null
+          }
+        ])
+      )
+    };
+    return {
+      ...config,
+      config_hash: this.hashDynamicCrudConfig(config)
+    };
+  }
+
+  protected hashDynamicCrudConfig(value: unknown) {
+    const stableJson = JSON.stringify(value, (_key, nested) => {
+      if (!nested || Array.isArray(nested) || typeof nested !== 'object') return nested;
+      return Object.fromEntries(Object.entries(nested as Record<string, unknown>).sort(
+        ([left], [right]) => left < right ? -1 : left > right ? 1 : 0
+      ));
+    });
+    return createHash('sha256').update(stableJson).digest('hex');
+  }
+
+  protected async callDynamicCrudRpc(
+    ctx: CrudContext,
+    action: 'create' | 'update' | 'delete',
+    operation: Record<string, unknown>
+  ) {
+    if (ctx.resource.clientMode === 'admin' && !ctx.context.authorization) {
+      throw new ForbiddenException(
+        'Authenticated request context is required for admin-mode CRUD.'
+      );
+    }
+    const hookInput = action === 'delete'
+      ? {}
+      : {
+          ...this.buildDatabaseHookInput(ctx.resource, this.readRecord(ctx.input.data)),
+          ...this.buildDatabaseHookInput(ctx.resource, ctx.input)
+        };
+    const config = this.buildDynamicCrudConfig(ctx);
+    if (ctx.context.authorization) {
+      const adminClient = createSupabaseClient('admin', ctx.context);
+      const { data: registeredHash, error: hashError } = await adminClient.rpc(
+        'get_dynamic_crud_resource_hash',
+        {
+          p_resource_name: ctx.resourceName,
+          p_table_name: ctx.resource.tableName
+        }
+      );
+      if (hashError || registeredHash !== config.config_hash) {
+        const { error: registrationError } = await adminClient.rpc(
+          'register_dynamic_crud_resource',
+          {
+            p_resource_name: ctx.resourceName,
+            p_table_name: ctx.resource.tableName,
+            p_config_hash: config.config_hash,
+            p_config: config
+          }
+        );
+        if (registrationError) {
+          throw new BadRequestException(
+            `Could not register dynamic CRUD resource: ${registrationError.message}`
+          );
+        }
+      }
+    }
+    const userClient = ctx.context.authorization && ctx.resource.clientMode !== 'admin'
+      ? (await getCurrentUser(ctx.context)).client
+      : undefined;
+    const rpcClient = ctx.resource.clientMode === 'admin'
+      ? ctx.client
+      : userClient ?? ctx.client;
+    const { data, error } = await rpcClient.rpc(DYNAMIC_CRUD_RPC, {
+      p_action: action,
+      p_table_name: ctx.resource.tableName,
+      p_config: config,
+      p_operation: {
+        ...operation,
+        hook_input: hookInput,
+        ...(ctx.user?.id ? { actor_user_id: ctx.user.id } : {})
+      },
+      p_account_id: ctx.context.accountId ?? null
+    });
+
+    if (error) {
+      if (error.code === '42501') throw new ForbiddenException(error.message);
+      if (error.code === 'P0001' && /expected .* affected row/i.test(error.message)) {
+        throw new ConflictException(error.message);
+      }
+      throw new BadRequestException(error.message);
+    }
+
+    return data;
+  }
+
+  protected buildDatabaseHookInput(
+    resource: ResourceConfig,
+    source: Record<string, unknown>
+  ) {
+    return Object.fromEntries(
+      (resource.databaseHookInputFields ?? [])
+        .filter((field) => {
+          this.assertIdentifier(field, 'databaseHookInputFields');
+          return Object.prototype.hasOwnProperty.call(source, field);
+        })
+        .map((field) => [field, source[field]])
+    );
   }
 
   protected async performList(ctx: CrudContext) {
@@ -485,20 +781,8 @@ export abstract class BaseService implements ServiceExecutor {
 
     type PreparedItem = {
       payload: Record<string, unknown>;
+      hookInput: Record<string, unknown>;
       details: PreparedDetail[];
-    };
-
-    const quoteIdentifier = (value: string, fieldName: string) => {
-      this.assertIdentifier(value, fieldName);
-      return `"${value}"`;
-    };
-
-    const quoteRelation = (value: string, fieldName: string) => {
-      const parts = value.split('.').map((part) => part.trim()).filter(Boolean);
-      if (parts.length < 1 || parts.length > 2) {
-        throw new BadRequestException(fieldName + ' must be table or schema.table.');
-      }
-      return parts.map((part) => quoteIdentifier(part, fieldName)).join('.');
     };
 
     const prepareDetails = async (source: Record<string, unknown>) => {
@@ -647,8 +931,14 @@ export abstract class BaseService implements ServiceExecutor {
           Object.entries(source).filter(([field]) => field !== '__details')
         );
         const payload = await this.buildWritePayload(ctx, 'create', mainSource);
-        this.assertRequiredFields(payload, ctx.resource.create?.requiredFields ?? []);
-        return { payload, details };
+        if (!ctx.resource.transactionalHooks) {
+          this.assertRequiredFields(payload, ctx.resource.create?.requiredFields ?? []);
+        }
+        return {
+          payload,
+          hookInput: this.buildDatabaseHookInput(ctx.resource, source),
+          details
+        };
       })
     );
     const afterSaveActions = await this.prepareAfterSaveActions(ctx);
@@ -656,150 +946,26 @@ export abstract class BaseService implements ServiceExecutor {
       throw new BadRequestException('afterSave requires exactly one saved item.');
     }
 
-    const client = await getPostgresPool().connect();
-    let transactionStarted = false;
-    let releaseError: Error | undefined;
-
-    const insertRows = async (
-      tableName: string,
-      rows: Record<string, unknown>[]
-    ): Promise<Record<string, unknown>[]> => {
-      if (!rows.length) return [];
-
-      const relationSql = quoteRelation(tableName, 'tableName');
-      const insertedRows = new Array<Record<string, unknown>>(rows.length);
-      const groups = new Map<
-        string,
-        { columns: string[]; items: Array<{ index: number; row: Record<string, unknown> }> }
-      >();
-
-      rows.forEach((row, index) => {
-        const normalizedRow = Object.fromEntries(
-          Object.entries(row).filter(([, value]) => value !== undefined)
-        );
-        const columns = Object.keys(normalizedRow).sort();
-        const signature = JSON.stringify(columns);
-        const group = groups.get(signature) ?? { columns, items: [] };
-        group.items.push({ index, row: normalizedRow });
-        groups.set(signature, group);
-      });
-
-      for (const group of groups.values()) {
-        if (!group.columns.length) {
-          for (const item of group.items) {
-            const result = await client.query(
-              `insert into ${relationSql} default values returning *`
-            );
-            insertedRows[item.index] = result.rows[0] as Record<string, unknown>;
-          }
-          continue;
-        }
-
-        const values: unknown[] = [];
-        const valueRows = group.items.map(({ row }) => {
-          const placeholders = group.columns.map((column) => {
-            values.push(row[column]);
-            return `$${values.length}`;
-          });
-          return `(${placeholders.join(', ')})`;
-        });
-        const columnsSql = group.columns
-          .map((column) => quoteIdentifier(column, 'column'))
-          .join(', ');
-        const result = await client.query(
-          `insert into ${relationSql} (${columnsSql}) values ${valueRows.join(', ')} returning *`,
-          values
-        );
-
-        result.rows.forEach((row, resultIndex) => {
-          insertedRows[group.items[resultIndex].index] = row as Record<string, unknown>;
-        });
-      }
-
-      return insertedRows;
-    };
-
-    try {
-      await client.query('begin');
-      transactionStarted = true;
-      if (ctx.resource.clientMode !== 'admin' && ctx.user) {
-        await client.query(
-          `select
-            set_config('request.jwt.claims', $1, true),
-            set_config('request.jwt.claim.sub', $2, true),
-            set_config('request.jwt.claim.role', 'authenticated', true)`,
-          [JSON.stringify({ sub: ctx.user.id, role: 'authenticated' }), ctx.user.id]
-        );
-        await client.query('set local role authenticated');
-      }
-
-      const insertedParents: Record<string, unknown>[] = [];
-      for (const item of preparedItems) {
-        const [parent] = await insertRows(ctx.resource.tableName, [item.payload]);
-        if (!parent) throw new BadRequestException('The created parent row was not returned.');
-
-        for (const detail of item.details) {
-          const parentValue = parent[detail.parentKey];
-          if (parentValue === undefined || parentValue === null) {
-            throw new BadRequestException(
-              `Parent field ${detail.parentKey} is required for detail resource ${detail.resourceName}.`
-            );
-          }
-
-          const linkedPayloads = detail.payloads.map((payload) => {
-            const linkedPayload = { ...payload, [detail.foreignKey]: parentValue };
-            for (const field of detail.inheritFields) {
-              if (parent[field] === undefined) {
-                throw new BadRequestException(
-                  `Parent field ${field} is required for detail resource ${detail.resourceName}.`
-                );
-              }
-              linkedPayload[field] = parent[field];
-            }
-            this.assertRequiredFields(
-              linkedPayload,
-              detail.resource.create?.requiredFields ?? []
-            );
-            return linkedPayload;
-          });
-
-          await insertRows(detail.resource.tableName, linkedPayloads);
-        }
-
-        insertedParents.push(parent);
-      }
-
-      if (afterSaveActions.length) {
-        await this.executeAfterSaveActions(
-          client,
-          ctx,
-          afterSaveActions,
-          insertedParents[0]
-        );
-      }
-
-      await client.query('commit');
-      transactionStarted = false;
-      return insertedParents.length === 1 ? insertedParents[0] : insertedParents;
-    } catch (error) {
-      if (transactionStarted) {
-        try {
-          await client.query('rollback');
-          transactionStarted = false;
-        } catch (rollbackError) {
-          releaseError = rollbackError instanceof Error
-            ? rollbackError
-            : new Error('PostgreSQL rollback failed.');
-        }
-      }
-
-      if (error instanceof BadRequestException || error instanceof ConflictException) throw error;
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Create transaction failed.'
-      );
-    } finally {
-      client.release(releaseError);
-    }
+    return this.callDynamicCrudRpc(ctx, 'create', {
+      items: preparedItems.map((item) => ({
+        data: item.payload,
+        ...(Object.keys(item.hookInput).length ? { hook_input: item.hookInput } : {}),
+        details: item.details.map((detail) => ({
+          resource: detail.resourceName,
+          foreign_key: detail.foreignKey,
+          parent_key: detail.parentKey,
+          inherit_fields: detail.inheritFields,
+          rows: detail.payloads
+        }))
+      })),
+      after_save: afterSaveActions.map((action) => ({
+        action: action.action,
+        resource: action.resourceName,
+        data: action.data,
+        where: action.where,
+        expect: action.expectedAffectedRows
+      }))
+    });
   }
 
   protected readCreateDataItems(ctx: CrudContext) {
@@ -833,20 +999,8 @@ export abstract class BaseService implements ServiceExecutor {
     type PreparedBatchItem = {
       itemId: string;
       payload: Record<string, unknown>;
+      hookInput: Record<string, unknown>;
       details: PreparedDetail[];
-    };
-
-    const quoteIdentifier = (value: string, fieldName: string) => {
-      this.assertIdentifier(value, fieldName);
-      return `"${value}"`;
-    };
-
-    const quoteRelation = (value: string, fieldName: string) => {
-      const parts = value.split('.').map((part) => part.trim()).filter(Boolean);
-      if (parts.length < 1 || parts.length > 2) {
-        throw new BadRequestException(fieldName + ' must be table or schema.table.');
-      }
-      return parts.map((part) => quoteIdentifier(part, fieldName)).join('.');
     };
 
     const prepareDetails = async (source: Record<string, unknown>) => {
@@ -1028,11 +1182,12 @@ export abstract class BaseService implements ServiceExecutor {
             )
           );
           const itemPayload = await this.buildWritePayload(ctx, 'update', mainSource);
-          this.assertRequiredFields(
-            itemPayload,
-            ctx.resource.update?.requiredFields ?? []
-          );
-          return { itemId, payload: itemPayload, details: itemDetails };
+          return {
+            itemId,
+            payload: itemPayload,
+            hookInput: this.buildDatabaseHookInput(ctx.resource, source),
+            details: itemDetails
+          };
         })
       );
     } else {
@@ -1053,342 +1208,48 @@ export abstract class BaseService implements ServiceExecutor {
         )
       );
       payload = await this.buildWritePayload(ctx, 'update', mainSource);
-      this.assertRequiredFields(payload, ctx.resource.update?.requiredFields ?? []);
     }
     const afterSaveActions = await this.prepareAfterSaveActions(ctx);
     if (afterSaveActions.length && (isBatchUpdate || !id)) {
       throw new BadRequestException('afterSave on update requires a single id.');
     }
 
-    const client = await getPostgresPool().connect();
-    let transactionStarted = false;
-    let releaseError: Error | undefined;
+    const serializeDetails = (items: PreparedDetail[]) =>
+      items.map((detail) => ({
+        resource: detail.resourceName,
+        mode: 'replace',
+        foreign_key: detail.foreignKey,
+        parent_key: detail.parentKey,
+        inherit_fields: detail.inheritFields,
+        rows: detail.payloads
+      }));
 
-    const insertRows = async (
-      tableName: string,
-      rows: Record<string, unknown>[]
-    ): Promise<Record<string, unknown>[]> => {
-      if (!rows.length) return [];
-
-      const relationSql = quoteRelation(tableName, 'tableName');
-      const insertedRows = new Array<Record<string, unknown>>(rows.length);
-      const groups = new Map<
-        string,
-        { columns: string[]; items: Array<{ index: number; row: Record<string, unknown> }> }
-      >();
-
-      rows.forEach((row, index) => {
-        const normalizedRow = Object.fromEntries(
-          Object.entries(row).filter(([, value]) => value !== undefined)
-        );
-        const columns = Object.keys(normalizedRow).sort();
-        const signature = JSON.stringify(columns);
-        const group = groups.get(signature) ?? { columns, items: [] };
-        group.items.push({ index, row: normalizedRow });
-        groups.set(signature, group);
-      });
-
-      for (const group of groups.values()) {
-        if (!group.columns.length) {
-          for (const item of group.items) {
-            const result = await client.query(
-              `insert into ${relationSql} default values returning *`
-            );
-            insertedRows[item.index] = result.rows[0] as Record<string, unknown>;
-          }
-          continue;
-        }
-
-        const values: unknown[] = [];
-        const valueRows = group.items.map(({ row }) => {
-          const placeholders = group.columns.map((column) => {
-            values.push(row[column]);
-            return `$${values.length}`;
-          });
-          return `(${placeholders.join(', ')})`;
-        });
-        const columnsSql = group.columns
-          .map((column) => quoteIdentifier(column, 'column'))
-          .join(', ');
-        const result = await client.query(
-          `insert into ${relationSql} (${columnsSql}) values ${valueRows.join(', ')} returning *`,
-          values
-        );
-
-        result.rows.forEach((row, resultIndex) => {
-          insertedRows[group.items[resultIndex].index] = row as Record<string, unknown>;
-        });
-      }
-
-      return insertedRows;
-    };
-
-    const appendFilter = (
-      conditions: string[],
-      values: unknown[],
-      field: string,
-      value: unknown
-    ) => {
-      if (!field || value === undefined || value === '') return;
-      const fieldSql = quoteIdentifier(field, 'filter field');
-      const bind = (operand: unknown) => {
-        values.push(operand);
-        return `$${values.length}`;
-      };
-
-      if (Array.isArray(value)) {
-        if (value.length) {
-          conditions.push(`${fieldSql} in (${value.map((item) => bind(item)).join(', ')})`);
-        }
-        return;
-      }
-      if (value === null) {
-        conditions.push(`${fieldSql} is null`);
-        return;
-      }
-
-      if (this.isRecord(value)) {
-        const op = this.readOptionalString(value.op).replace(/_/g, '').toLowerCase();
-        const operand = value.value;
-        if (op === 'isnull') {
-          conditions.push(`${fieldSql} is null`);
-          return;
-        }
-        if (op === 'isnotnull') {
-          conditions.push(`${fieldSql} is not null`);
-          return;
-        }
-        if (operand === undefined || operand === '') return;
-        if (op === 'eq') conditions.push(`${fieldSql} = ${bind(operand)}`);
-        else if (op === 'ne') conditions.push(`${fieldSql} <> ${bind(operand)}`);
-        else if (op === 'gt') conditions.push(`${fieldSql} > ${bind(operand)}`);
-        else if (op === 'gte') conditions.push(`${fieldSql} >= ${bind(operand)}`);
-        else if (op === 'lt') conditions.push(`${fieldSql} < ${bind(operand)}`);
-        else if (op === 'lte') conditions.push(`${fieldSql} <= ${bind(operand)}`);
-        else if (op === 'in' || op === 'notin') {
-          const operands = Array.isArray(operand) ? operand : [];
-          if (operands.length) {
-            const operator = op === 'in' ? 'in' : 'not in';
-            conditions.push(
-              `${fieldSql} ${operator} (${operands.map((item) => bind(item)).join(', ')})`
-            );
-          }
-        } else if (op === 'between') {
-          const operands = Array.isArray(operand) ? operand : [];
-          if (operands.length >= 2) {
-            conditions.push(
-              `${fieldSql} between ${bind(operands[0])} and ${bind(operands[1])}`
-            );
-          }
-        } else if (op === 'like' || op === 'ilike' || op === 'notlike' || op === 'notilike') {
-          const operator = op === 'like'
-            ? 'like'
-            : op === 'ilike'
-              ? 'ilike'
-              : op === 'notlike'
-                ? 'not like'
-                : 'not ilike';
-          conditions.push(`${fieldSql} ${operator} ${bind(`%${String(operand)}%`)}`);
-        } else if (op === 'startswith') {
-          conditions.push(`${fieldSql} like ${bind(`${String(operand)}%`)}`);
-        } else if (op === 'endswith') {
-          conditions.push(`${fieldSql} like ${bind(`%${String(operand)}`)}`);
-        } else if (op === 'contains') {
-          conditions.push(`${fieldSql} @> ${bind(operand)}`);
-        } else if (op === 'containedby') {
-          conditions.push(`${fieldSql} <@ ${bind(operand)}`);
-        } else if (op === 'overlaps') {
-          conditions.push(`${fieldSql} && ${bind(operand)}`);
-        } else {
-          throw new BadRequestException('Unsupported filter operator: ' + value.op);
-        }
-        return;
-      }
-
-      conditions.push(`${fieldSql} = ${bind(value)}`);
-    };
-
-    const updateRows = async (
-      updatePayload: Record<string, unknown>,
-      selector: { id?: string; ids?: string[]; filters?: Record<string, unknown> }
-    ) => {
-      const entries = Object.entries(updatePayload).filter(([, value]) => value !== undefined);
-      if (!entries.length) throw new BadRequestException('No writable update fields were provided.');
-
-      const values: unknown[] = [];
-      const setSql = entries.map(([field, value]) => {
-        values.push(value);
-        return `${quoteIdentifier(field, 'column')} = $${values.length}`;
-      });
-      const conditions: string[] = [];
-
-      if (selector.id) {
-        appendFilter(conditions, values, primaryKey, selector.id);
-      } else if (selector.ids?.length) {
-        appendFilter(conditions, values, primaryKey, selector.ids);
-      } else {
-        for (const [field, value] of Object.entries(selector.filters ?? {})) {
-          appendFilter(conditions, values, field, value);
-        }
-      }
-
-      const selectorConditionCount = conditions.length;
-      if (ctx.resource.accountField) {
-        appendFilter(
-          conditions,
-          values,
-          ctx.resource.accountField,
-          this.accountValue(ctx.context, ctx.resource.accountField)
-        );
-      }
-      if (ctx.resource.ownerField && ctx.user) {
-        appendFilter(conditions, values, ctx.resource.ownerField, ctx.user.id);
-      }
-      if (!selectorConditionCount) {
-        throw new BadRequestException('At least one effective update condition is required.');
-      }
-
-      const result = await client.query(
-        `update ${quoteRelation(ctx.resource.tableName, 'tableName')} ` +
-          `set ${setSql.join(', ')} where ${conditions.join(' and ')} returning *`,
-        values
-      );
-      return result.rows as Record<string, unknown>[];
-    };
-
-    const replaceDetails = async (
-      parent: Record<string, unknown>,
-      detailGroups: PreparedDetail[]
-    ) => {
-      for (const detail of detailGroups) {
-        const parentValue = parent[detail.parentKey];
-        if (parentValue === undefined || parentValue === null) {
-          throw new BadRequestException(
-            `Parent field ${detail.parentKey} is required for detail resource ${detail.resourceName}.`
-          );
-        }
-
-        const deleteValues: unknown[] = [parentValue];
-        const deleteConditions = [
-          `${quoteIdentifier(detail.foreignKey, 'detail foreignKey')} = $1`
-        ];
-        if (detail.resource.accountField) {
-          deleteValues.push(this.accountValue(ctx.context, detail.resource.accountField));
-          deleteConditions.push(
-            `${quoteIdentifier(detail.resource.accountField, 'detail account field')} = $${deleteValues.length}`
-          );
-        }
-        for (const field of detail.inheritFields) {
-          if (parent[field] === undefined) {
-            throw new BadRequestException(
-              `Parent field ${field} is required for detail resource ${detail.resourceName}.`
-            );
-          }
-          deleteValues.push(parent[field]);
-          deleteConditions.push(
-            `${quoteIdentifier(field, 'detail inherit field')} = $${deleteValues.length}`
-          );
-        }
-
-        await client.query(
-          `delete from ${quoteRelation(detail.resource.tableName, 'detail tableName')} ` +
-            `where ${deleteConditions.join(' and ')}`,
-          deleteValues
-        );
-
-        const linkedPayloads = detail.payloads.map((detailPayload) => {
-          const linkedPayload = { ...detailPayload, [detail.foreignKey]: parentValue };
-          for (const field of detail.inheritFields) {
-            linkedPayload[field] = parent[field];
-          }
-          this.assertRequiredFields(
-            linkedPayload,
-            detail.resource.create?.requiredFields ?? []
-          );
-          return linkedPayload;
-        });
-        await insertRows(detail.resource.tableName, linkedPayloads);
-      }
-    };
-
-    try {
-      await client.query('begin');
-      transactionStarted = true;
-      if (ctx.resource.clientMode !== 'admin' && ctx.user) {
-        await client.query(
-          `select
-            set_config('request.jwt.claims', $1, true),
-            set_config('request.jwt.claim.sub', $2, true),
-            set_config('request.jwt.claim.role', 'authenticated', true)`,
-          [JSON.stringify({ sub: ctx.user.id, role: 'authenticated' }), ctx.user.id]
-        );
-        await client.query('set local role authenticated');
-      }
-
-      if (isBatchUpdate) {
-        const updatedRows: Record<string, unknown>[] = [];
-        for (const item of preparedBatchItems) {
-          const [updated] = await updateRows(item.payload, { id: item.itemId });
-          if (!updated) {
-            throw new BadRequestException(
-              `No ${ctx.resourceName} row matched ${primaryKey}: ${item.itemId}.`
-            );
-          }
-          await replaceDetails(updated, item.details);
-          updatedRows.push(updated);
-        }
-
-        await client.query('commit');
-        transactionStarted = false;
-        return updatedRows;
-      }
-
-      const updatedRows = await updateRows(payload ?? {}, {
-        ...(id ? { id } : {}),
-        ...(!id && ids.length ? { ids } : {}),
-        ...(!id && !ids.length ? { filters } : {})
-      });
-      if (details.length) {
-        const [updated] = updatedRows;
-        if (!updated) {
-          throw new BadRequestException(
-            `No ${ctx.resourceName} row matched ${primaryKey}: ${id}.`
-          );
-        }
-        await replaceDetails(updated, details);
-      }
-      if (afterSaveActions.length) {
-        const [saved] = updatedRows;
-        if (!saved) {
-          throw new BadRequestException(
-            `No ${ctx.resourceName} row matched ${primaryKey}: ${id}.`
-          );
-        }
-        await this.executeAfterSaveActions(client, ctx, afterSaveActions, saved);
-      }
-
-      await client.query('commit');
-      transactionStarted = false;
-      return id ? updatedRows[0] : updatedRows;
-    } catch (error) {
-      if (transactionStarted) {
-        try {
-          await client.query('rollback');
-          transactionStarted = false;
-        } catch (rollbackError) {
-          releaseError = rollbackError instanceof Error
-            ? rollbackError
-            : new Error('PostgreSQL rollback failed.');
-        }
-      }
-
-      if (error instanceof BadRequestException || error instanceof ConflictException) throw error;
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Update transaction failed.'
-      );
-    } finally {
-      client.release(releaseError);
-    }
+    return this.callDynamicCrudRpc(ctx, 'update', {
+      primary_key: primaryKey,
+      batch_items: isBatchUpdate
+        ? preparedBatchItems.map((item) => ({
+            id: item.itemId,
+            data: item.payload,
+            ...(Object.keys(item.hookInput).length ? { hook_input: item.hookInput } : {}),
+            details: serializeDetails(item.details)
+          }))
+        : [],
+      data: payload ?? {},
+      selector: {
+        id: id ?? null,
+        ids,
+        filters
+      },
+      details: serializeDetails(details),
+      after_save: afterSaveActions.map((action) => ({
+        action: action.action,
+        resource: action.resourceName,
+        data: action.data,
+        where: action.where,
+        expect: action.expectedAffectedRows
+      })),
+      return_single: Boolean(id)
+    });
   }
 
   protected async prepareAfterSaveActions(
@@ -1499,7 +1360,6 @@ export abstract class BaseService implements ServiceExecutor {
       };
       await this.assertPermission(targetContext);
       const payload = await this.buildWritePayload(targetContext, 'update', data);
-      this.assertRequiredFields(payload, resolved.config.update.requiredFields ?? []);
 
       const rawExpected = rawAction.expect ??
         rawAction.expectedAffectedRows ??
@@ -1526,78 +1386,6 @@ export abstract class BaseService implements ServiceExecutor {
     }
 
     return prepared;
-  }
-
-  protected async executeAfterSaveActions(
-    client: PoolClient,
-    ctx: CrudContext,
-    actions: PreparedAfterSaveUpdate[],
-    saved: Record<string, unknown>
-  ) {
-    const quoteIdentifier = (value: string, fieldName: string) => {
-      this.assertIdentifier(value, fieldName);
-      return `"${value}"`;
-    };
-    const quoteRelation = (value: string, fieldName: string) => {
-      const parts = value.split('.').map((part) => part.trim()).filter(Boolean);
-      if (parts.length < 1 || parts.length > 2) {
-        throw new BadRequestException(fieldName + ' must be table or schema.table.');
-      }
-      return parts.map((part) => quoteIdentifier(part, fieldName)).join('.');
-    };
-
-    for (const [index, action] of actions.entries()) {
-      const data = this.resolveAfterSaveReferences(action.data, saved);
-      const where = this.resolveAfterSaveReferences(action.where, saved);
-      const dataEntries = Object.entries(data).filter(([, value]) => value !== undefined);
-      if (!dataEntries.length) {
-        throw new BadRequestException(`afterSave[${index}] has no resolved update fields.`);
-      }
-
-      const values: unknown[] = [];
-      const bind = (value: unknown) => {
-        values.push(value);
-        return `$${values.length}`;
-      };
-      const setSql = dataEntries.map(([field, value]) =>
-        `${quoteIdentifier(field, 'afterSave data field')} = ${bind(value)}`
-      );
-      const conditions = Object.entries(where).map(([field, value]) => {
-        const fieldSql = quoteIdentifier(field, 'afterSave where field');
-        return value === null ? `${fieldSql} is null` : `${fieldSql} = ${bind(value)}`;
-      });
-      if (action.resource.accountField) {
-        conditions.push(
-          `${quoteIdentifier(action.resource.accountField, 'afterSave account field')} = ${bind(
-            this.accountValue(ctx.context, action.resource.accountField)
-          )}`
-        );
-      }
-      if (action.resource.ownerField && ctx.user) {
-        conditions.push(
-          `${quoteIdentifier(action.resource.ownerField, 'afterSave owner field')} = ${bind(ctx.user.id)}`
-        );
-      }
-      if (!conditions.length) {
-        throw new BadRequestException(`afterSave[${index}] requires an effective where condition.`);
-      }
-
-      const result = await client.query(
-        `update ${quoteRelation(action.resource.tableName, 'afterSave tableName')} ` +
-          `set ${setSql.join(', ')} where ${conditions.join(' and ')} returning *`,
-        values
-      );
-      const affectedRows = result.rowCount ?? result.rows.length;
-      if (
-        action.expectedAffectedRows !== undefined &&
-        affectedRows !== action.expectedAffectedRows
-      ) {
-        throw new ConflictException(
-          `afterSave[${index}] expected ${action.expectedAffectedRows} affected row(s), ` +
-          `but updated ${affectedRows}.`
-        );
-      }
-    }
   }
 
   protected assertAfterSaveReferences(value: unknown, fieldName: string): void {
@@ -1639,38 +1427,6 @@ export abstract class BaseService implements ServiceExecutor {
     }
   }
 
-  protected resolveAfterSaveReferences(
-    value: Record<string, unknown>,
-    saved: Record<string, unknown>
-  ): Record<string, unknown>;
-  protected resolveAfterSaveReferences(value: unknown, saved: Record<string, unknown>): any;
-  protected resolveAfterSaveReferences(value: unknown, saved: Record<string, unknown>): any {
-    if (Array.isArray(value)) {
-      return value.map((item) => this.resolveAfterSaveReferences(item, saved));
-    }
-    if (!this.isRecord(value)) return value;
-
-    if (Object.prototype.hasOwnProperty.call(value, '$ref')) {
-      const reference = this.readOptionalString(value.$ref);
-      const path = reference.split('.').slice(1);
-      let resolved: unknown = saved;
-      for (const field of path) {
-        resolved = this.isRecord(resolved) ? resolved[field] : undefined;
-      }
-      if (resolved === undefined) {
-        throw new BadRequestException(`Could not resolve afterSave reference: ${reference}.`);
-      }
-      return resolved;
-    }
-
-    return Object.fromEntries(
-      Object.entries(value).map(([field, nested]) => [
-        field,
-        this.resolveAfterSaveReferences(nested, saved)
-      ])
-    );
-  }
-
   protected readBatchUpdateDataItems(ctx: CrudContext) {
     const rawItems = ctx.input.data ?? ctx.input.items ?? ctx.input.rows;
     if (!Array.isArray(rawItems)) return [] as Record<string, unknown>[];
@@ -1686,47 +1442,14 @@ export abstract class BaseService implements ServiceExecutor {
       throw new BadRequestException('id, ids, or filters is required.');
     }
 
-    const deleteConfig = ctx.resource.delete ?? {};
-    let query;
-
-    if (deleteConfig.softDelete) {
-      const payload: Record<string, unknown> = {};
-      payload[deleteConfig.deletedAtField ?? 'deleted_at'] = new Date().toISOString();
-      if (deleteConfig.statusField && deleteConfig.deletedStatus) {
-        payload[deleteConfig.statusField] = deleteConfig.deletedStatus;
-      }
-      if (deleteConfig.userFields?.deletedBy && ctx.user) {
-        payload[deleteConfig.userFields.deletedBy] = ctx.user.id;
-      }
-      query = ctx.client.from(ctx.resource.tableName).update(payload);
-    } else {
-      query = ctx.client.from(ctx.resource.tableName).delete();
-    }
-
-    if (id) {
-      query = query.eq(this.primaryKey(ctx.resource), id);
-    } else if (ids.length) {
-      query = query.in(this.primaryKey(ctx.resource), ids);
-    } else {
-      for (const [field, value] of Object.entries(filters)) {
-        query = this.applySupabaseFilter(query, field, value);
-      }
-    }
-
-    if (ctx.resource.ownerField && ctx.user) {
-      query = query.eq(ctx.resource.ownerField, ctx.user.id);
-    }
-
-    if (ctx.resource.accountField) {
-      query = query.eq(
-        ctx.resource.accountField,
-        this.accountValue(ctx.context, ctx.resource.accountField)
-      );
-    }
-
-    const { error } = await query;
-    if (error) throw new BadRequestException(error.message);
-    return { success: true, ...(id ? { id } : {}), ...(ids.length ? { ids } : {}), ...(!id && !ids.length ? { filters } : {}) };
+    return this.callDynamicCrudRpc(ctx, 'delete', {
+      selector: {
+        id: id ?? null,
+        ids,
+        filters
+      },
+      return_single: Boolean(id)
+    });
   }
 
   protected async buildWritePayload(

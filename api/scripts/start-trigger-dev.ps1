@@ -100,51 +100,27 @@ if (!(Test-Path -LiteralPath $triggerEnvFile)) {
 }
 
 $triggerEnv = Read-DotEnv $triggerEnvFile
-$databaseUrl = $triggerEnv["DATABASE_URL"]
-if ([string]::IsNullOrWhiteSpace($databaseUrl)) {
-  throw "Trigger.dev DATABASE_URL is missing from $triggerEnvFile"
-}
-$encryptionKey = $triggerEnv["ENCRYPTION_KEY"]
-if ([string]::IsNullOrWhiteSpace($encryptionKey)) {
-  throw "Trigger.dev ENCRYPTION_KEY is missing from $triggerEnvFile"
-}
 $projectName = $sourceEnv["TRIGGER_PROJECT_NAME"]
 if ([string]::IsNullOrWhiteSpace($projectName)) { $projectName = "enlearn-workflow-local" }
+$projectRef = $sourceEnv["TRIGGER_PROJECT_REF"]
+if ([string]::IsNullOrWhiteSpace($projectRef)) { $projectRef = $triggerEnv["TRIGGER_PROJECT_REF"] }
+$secretKey = $sourceEnv["TRIGGER_SECRET_KEY"]
+if ([string]::IsNullOrWhiteSpace($secretKey)) { $secretKey = $triggerEnv["TRIGGER_SECRET_KEY"] }
+$accessToken = $sourceEnv["TRIGGER_ACCESS_TOKEN"]
+if ([string]::IsNullOrWhiteSpace($accessToken)) { $accessToken = $triggerEnv["TRIGGER_ACCESS_TOKEN"] }
+if ([string]::IsNullOrWhiteSpace($projectRef) -or [string]::IsNullOrWhiteSpace($secretKey)) {
+  throw "TRIGGER_PROJECT_REF and TRIGGER_SECRET_KEY are required in $EnvFile or $triggerEnvFile"
+}
+if ([string]::IsNullOrWhiteSpace($accessToken)) {
+  throw "TRIGGER_ACCESS_TOKEN is required by the Trigger.dev CLI in $EnvFile or $triggerEnvFile"
+}
 
-$env:TRIGGER_DATABASE_URL = $databaseUrl
-$env:TRIGGER_ENCRYPTION_KEY = $encryptionKey
 $env:TRIGGER_PROJECT_NAME = $projectName
 $env:TRIGGER_API_URL = $ApiUrl
-if (![string]::IsNullOrWhiteSpace($sourceEnv["TRIGGER_DATABASE_SCHEMA"])) {
-  $env:TRIGGER_DATABASE_SCHEMA = $sourceEnv["TRIGGER_DATABASE_SCHEMA"]
-} else {
-  Remove-Item Env:TRIGGER_DATABASE_SCHEMA -ErrorAction SilentlyContinue
-}
-$tsxCli = Join-Path $apiDir "node_modules\.bin\tsx.cmd"
-if (!(Test-Path -LiteralPath $tsxCli)) {
-  $tsxCli = "tsx"
-}
-$previousErrorActionPreference = $ErrorActionPreference
-$ErrorActionPreference = "Continue"
-$credentialsJson = (& $tsxCli scripts/resolve-trigger-cli-credentials.ts 2>&1)
-$credentialsExitCode = $LASTEXITCODE
-$ErrorActionPreference = $previousErrorActionPreference
-if ($credentialsExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($credentialsJson)) {
-  throw "Unable to resolve Trigger.dev CLI credentials for '$projectName'."
-}
-try {
-  $credentialsLine = @($credentialsJson) | Where-Object { $_.ToString().Trim().StartsWith('{') } | Select-Object -Last 1
-  $credentials = $credentialsLine | ConvertFrom-Json
-} catch {
-  throw "Trigger.dev CLI credential resolver returned invalid JSON."
-}
-if ([string]::IsNullOrWhiteSpace($credentials.projectRef) -or [string]::IsNullOrWhiteSpace($credentials.accessToken)) {
-  throw "Trigger.dev CLI credential resolver did not return both projectRef and accessToken."
-}
 
 $workerEnvFile = Join-Path $apiDir ".trigger.worker.env"
-Write-WorkerEnv -SourceEnvFile $EnvFile -TargetEnvFile $workerEnvFile -ProjectRef $credentials.projectRef.Trim()
-$env:TRIGGER_ACCESS_TOKEN = $credentials.accessToken
+Write-WorkerEnv -SourceEnvFile $EnvFile -TargetEnvFile $workerEnvFile -ProjectRef $projectRef.Trim()
+$env:TRIGGER_ACCESS_TOKEN = $accessToken
 
 Info "Starting Trigger.dev worker: $ApiUrl"
 try {

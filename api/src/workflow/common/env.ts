@@ -24,13 +24,13 @@ export type WorkflowApiEnv = {
   TRIGGER_ADMIN_EMAIL?: string;
   TRIGGER_ADMIN_NAME?: string;
   TRIGGER_CREDENTIAL_CACHE_TTL_MS?: string;
-  TRIGGER_DATABASE_SCHEMA?: string;
-  TRIGGER_DATABASE_URL?: string;
-  TRIGGER_ENCRYPTION_KEY?: string;
+  TRIGGER_ACCESS_TOKEN?: string;
   TRIGGER_ENV_FILE?: string;
   TRIGGER_ENVIRONMENT?: string;
-  TRIGGER_PAT_NAME?: string;
+  TRIGGER_ENVIRONMENT_ID?: string;
   TRIGGER_PROJECT_NAME?: string;
+  TRIGGER_PROJECT_REF?: string;
+  TRIGGER_SECRET_KEY?: string;
   TRIGGER_API_URL?: string;
   PORT?: string;
 };

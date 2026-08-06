@@ -39,7 +39,14 @@
           </div>
         </div>
 
-        <div class="center-viewport" :style="centerViewportStyle">
+        <div
+          class="center-viewport"
+          :style="centerViewportStyle"
+          @touchstart="handleCenterTouchStart"
+          @touchmove="handleCenterTouchMove"
+          @touchend="handleCenterTouchEnd"
+          @touchcancel="handleCenterTouchEnd"
+        >
           <div
             v-if="visibleCenterColumns.length"
             class="table-row center-window"
@@ -98,6 +105,7 @@
         ref="verticalScrollRef"
         class="vertical-scroll"
         :style="verticalScrollStyle"
+        :showsVerticalScrollIndicator="false"
         :scrollEventThrottle="16"
         @scroll="handleVerticalScroll"
       >
@@ -147,7 +155,7 @@
             <div
               class="center-viewport body-pane"
               :style="bodyPaneStyle(centerViewportStyle, item.key)"
-              @touchStart="handleCenterTouchStart"
+              @touchstart="handleCenterTouchStart"
               @touchmove="handleCenterTouchMove"
               @touchend="handleCenterTouchEnd"
               @touchcancel="handleCenterTouchEnd"
@@ -230,20 +238,48 @@
       </div>
 
       <div
-        v-if="hasHorizontalOverflow"
-        ref="horizontalScrollRef"
-        class="horizontal-scroll"
-        :style="horizontalScrollStyle"
-        :horizontal="true"
-        :scrollEnabled="true"
-        :showsHorizontalScrollIndicator="true"
-        :scrollEventThrottle="16"
-        @scroll="handleHorizontalScroll"
+        ref="horizontalScrollbarTrackRef"
+        :class="['scrollbar-track', 'horizontal-scrollbar', {
+          'is-disabled': !hasHorizontalOverflow,
+        }]"
+        :style="horizontalScrollbarStyle"
+        @touchstart="handleScrollbarTrackTouchStart('x', $event)"
+        @touchmove="handleScrollbarTouchMove('x', $event)"
+        @touchend="handleScrollbarTouchEnd('x', $event)"
+        @touchcancel="handleScrollbarTouchEnd('x', $event)"
       >
-        <div class="horizontal-scroll-content" :style="horizontalContentStyle">
-          <div class="horizontal-scroll-thumb" />
-        </div>
+        <div
+          class="scrollbar-thumb horizontal-scrollbar-thumb"
+          :style="horizontalScrollbarThumbStyle"
+          @touchstart.stop="handleScrollbarThumbTouchStart('x', $event)"
+          @touchmove.stop="handleScrollbarTouchMove('x', $event)"
+          @touchend.stop="handleScrollbarTouchEnd('x', $event)"
+          @touchcancel.stop="handleScrollbarTouchEnd('x', $event)"
+        />
       </div>
+
+      <div
+        ref="verticalScrollbarTrackRef"
+        :class="['scrollbar-track', 'vertical-scrollbar', {
+          'is-disabled': !hasVerticalOverflow,
+        }]"
+        :style="verticalScrollbarStyle"
+        @touchstart="handleScrollbarTrackTouchStart('y', $event)"
+        @touchmove="handleScrollbarTouchMove('y', $event)"
+        @touchend="handleScrollbarTouchEnd('y', $event)"
+        @touchcancel="handleScrollbarTouchEnd('y', $event)"
+      >
+        <div
+          class="scrollbar-thumb vertical-scrollbar-thumb"
+          :style="verticalScrollbarThumbStyle"
+          @touchstart.stop="handleScrollbarThumbTouchStart('y', $event)"
+          @touchmove.stop="handleScrollbarTouchMove('y', $event)"
+          @touchend.stop="handleScrollbarTouchEnd('y', $event)"
+          @touchcancel.stop="handleScrollbarTouchEnd('y', $event)"
+        />
+      </div>
+
+      <div class="scrollbar-corner" :style="scrollbarCornerStyle" />
     </div>
   </div>
 </template>
@@ -251,7 +287,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from '@vue/runtime-core';
 import type { CSSProperties } from 'vue';
-import type { HippyElement, HippyLayoutEvent, HippyTouchEvent } from '@hippy/vue-next';
+import {
+  Native,
+  type HippyElement,
+  type HippyLayoutEvent,
+  type HippyTouchEvent,
+} from '@hippy/vue-next';
 
 import type {
   MobileMaterialEmits,
@@ -269,10 +310,13 @@ import {
   formatVirtualCellValue,
   getColumnWindow,
   getRowWindow,
+  getVirtualScrollbarMetrics,
   normalizeVirtualColumns,
   normalizeVirtualSelectionConfig,
   partitionVirtualColumns,
   readPositiveNumber,
+  scrollVirtualScrollbarByThumbDelta,
+  scrollVirtualScrollbarToTrackPosition,
   sortVirtualRows,
   sumColumnWidths,
   updateVirtualSelectionKeys,
@@ -290,6 +334,10 @@ const DEFAULT_TABLE_HEIGHT = 360;
 const DEFAULT_ROW_HEIGHT = 48;
 const DEFAULT_HEADER_HEIGHT = 44;
 const HORIZONTAL_SCROLLBAR_HEIGHT = 18;
+const VERTICAL_SCROLLBAR_WIDTH = 18;
+const MINIMUM_SCROLLBAR_THUMB_SIZE = 32;
+
+type ScrollbarAxis = 'x' | 'y';
 
 type RowItem = {
   row: Record<string, unknown>;
@@ -304,11 +352,16 @@ const selectedRowKey = ref('');
 const selectedRowKeys = ref<string[]>([]);
 const sortState = ref<SortState | null>(null);
 const verticalScrollRef = ref<HippyElement | null>(null);
-const horizontalScrollRef = ref<HippyElement | null>(null);
+const horizontalScrollbarTrackRef = ref<HippyElement | null>(null);
+const verticalScrollbarTrackRef = ref<HippyElement | null>(null);
 const centerTouchX = ref<number | null>(null);
 const centerTouchStartX = ref<number | null>(null);
 const centerTouchMoved = ref(false);
 const suppressCenterClickUntil = ref(0);
+const activeScrollbarAxis = ref<ScrollbarAxis | null>(null);
+const scrollbarDragStartCoordinate = ref(0);
+const scrollbarDragStartOffset = ref(0);
+let scrollbarInteractionToken = 0;
 const tableWidthScheduler = createLayoutWidthScheduler(
   () => tableWidth.value,
   (width) => {
@@ -405,11 +458,12 @@ const displayColumns = computed<RawGridColumn[]>(() => {
   }
   return configured;
 });
+const tableContentWidth = computed(() => Math.max(0, tableWidth.value - VERTICAL_SCROLLBAR_WIDTH));
 const columns = computed(() => fitPinnedColumns(
   normalizeVirtualColumns(displayColumns.value, {
     actionWidth: Math.max(104, rowActions.value.length * 62 + 16),
   }),
-  tableWidth.value,
+  tableContentWidth.value,
 ));
 const columnPartitions = computed(() => partitionVirtualColumns(columns.value));
 const leftColumns = computed(() => columnPartitions.value.left);
@@ -420,7 +474,7 @@ const centerWidth = computed(() => sumColumnWidths(centerColumns.value));
 const rightWidth = computed(() => sumColumnWidths(rightColumns.value));
 const centerViewportWidth = computed(() => Math.max(
   0,
-  tableWidth.value - leftWidth.value - rightWidth.value,
+  tableContentWidth.value - leftWidth.value - rightWidth.value,
 ));
 const centerOffsets = computed(() => buildColumnOffsets(centerColumns.value));
 const centerWindow = computed(() => getColumnWindow(
@@ -434,14 +488,28 @@ const visibleCenterColumns = computed(() => centerColumns.value.slice(
   centerWindow.value.end,
 ));
 const hasHorizontalOverflow = computed(() => centerWidth.value > centerViewportWidth.value + 1);
-const horizontalScrollbarHeight = computed(() => (
-  hasHorizontalOverflow.value ? HORIZONTAL_SCROLLBAR_HEIGHT : 0
-));
 const bodyViewportHeight = computed(() => Math.max(
   1,
-  tableHeight.value - headerHeight.value - horizontalScrollbarHeight.value,
+  tableHeight.value - headerHeight.value - HORIZONTAL_SCROLLBAR_HEIGHT,
 ));
 const sortedRows = computed(() => sortVirtualRows(rows.value, sortState.value));
+const verticalContentHeight = computed(() => Math.max(
+  bodyViewportHeight.value,
+  sortedRows.value.length * rowHeight.value,
+));
+const horizontalScrollbarMetrics = computed(() => getVirtualScrollbarMetrics(
+  centerViewportWidth.value,
+  centerWidth.value,
+  scrollLeft.value,
+  MINIMUM_SCROLLBAR_THUMB_SIZE,
+));
+const verticalScrollbarMetrics = computed(() => getVirtualScrollbarMetrics(
+  bodyViewportHeight.value,
+  verticalContentHeight.value,
+  scrollTop.value,
+  MINIMUM_SCROLLBAR_THUMB_SIZE,
+));
+const hasVerticalOverflow = computed(() => verticalScrollbarMetrics.value.maxScroll > 0);
 const selectableRowKeys = computed(() => sortedRows.value.map((row, index) => rowKey(row, index)));
 const selectedRowKeySet = computed(() => new Set(selectedRowKeys.value));
 const allRowsSelected = computed(() => (
@@ -467,13 +535,17 @@ const visibleRows = computed<RowItem[]>(() => sortedRows.value
   }));
 
 const tableFrameStyle = computed<CSSProperties>(() => ({ height: `${tableHeight.value}px` }));
-const headerStyle = computed<CSSProperties>(() => ({ height: `${headerHeight.value}px` }));
+const headerStyle = computed<CSSProperties>(() => ({
+  right: `${VERTICAL_SCROLLBAR_WIDTH}px`,
+  height: `${headerHeight.value}px`,
+}));
 const verticalScrollStyle = computed<CSSProperties>(() => ({
   top: `${headerHeight.value}px`,
+  right: `${VERTICAL_SCROLLBAR_WIDTH}px`,
   height: `${bodyViewportHeight.value}px`,
 }));
 const verticalContentStyle = computed<CSSProperties>(() => ({
-  height: `${Math.max(bodyViewportHeight.value, sortedRows.value.length * rowHeight.value)}px`,
+  height: `${verticalContentHeight.value}px`,
 }));
 const emptyStateStyle = computed<CSSProperties>(() => ({ height: `${bodyViewportHeight.value}px` }));
 const leftPaneStyle = computed<CSSProperties>(() => ({ width: `${leftWidth.value}px` }));
@@ -489,14 +561,27 @@ const centerHeaderWindowStyle = computed<CSSProperties>(() => ({
   transform: `translateX(${centerWindow.value.offset - scrollLeft.value}px)`,
 }));
 const centerBodyWindowStyle = centerHeaderWindowStyle;
-const horizontalScrollStyle = computed<CSSProperties>(() => ({
+const horizontalScrollbarStyle = computed<CSSProperties>(() => ({
   left: `${leftWidth.value}px`,
-  right: `${rightWidth.value}px`,
-  height: `${horizontalScrollbarHeight.value}px`,
+  right: `${rightWidth.value + VERTICAL_SCROLLBAR_WIDTH}px`,
+  height: `${HORIZONTAL_SCROLLBAR_HEIGHT}px`,
 }));
-const horizontalContentStyle = computed<CSSProperties>(() => ({
-  width: `${centerWidth.value}px`,
-  height: `${horizontalScrollbarHeight.value}px`,
+const verticalScrollbarStyle = computed<CSSProperties>(() => ({
+  top: `${headerHeight.value}px`,
+  width: `${VERTICAL_SCROLLBAR_WIDTH}px`,
+  height: `${bodyViewportHeight.value}px`,
+}));
+const horizontalScrollbarThumbStyle = computed<CSSProperties>(() => ({
+  width: `${horizontalScrollbarMetrics.value.thumbSize}px`,
+  transform: `translateX(${horizontalScrollbarMetrics.value.thumbOffset}px)`,
+}));
+const verticalScrollbarThumbStyle = computed<CSSProperties>(() => ({
+  height: `${verticalScrollbarMetrics.value.thumbSize}px`,
+  transform: `translateY(${verticalScrollbarMetrics.value.thumbOffset}px)`,
+}));
+const scrollbarCornerStyle = computed<CSSProperties>(() => ({
+  width: `${VERTICAL_SCROLLBAR_WIDTH}px`,
+  height: `${HORIZONTAL_SCROLLBAR_HEIGHT}px`,
 }));
 
 function rowKey(row: Record<string, unknown>, index: number) {
@@ -585,29 +670,28 @@ function scrollOffset(event: Event, axis: 'x' | 'y') {
 }
 
 function handleVerticalScroll(event: Event) {
-  scrollTop.value = Math.max(0, scrollOffset(event, 'y'));
+  scrollTop.value = Math.min(
+    verticalScrollbarMetrics.value.maxScroll,
+    Math.max(0, scrollOffset(event, 'y')),
+  );
 }
 
-function handleHorizontalScroll(event: Event) {
-  const maxScroll = Math.max(0, centerWidth.value - centerViewportWidth.value);
-  scrollLeft.value = Math.min(maxScroll, Math.max(0, scrollOffset(event, 'x')));
-}
-
-function touchClientX(event: Event) {
+function touchCoordinate(event: Event, axis: ScrollbarAxis) {
   const touchEvent = event as Event & Pick<HippyTouchEvent, 'touches'>;
-  const value = touchEvent.touches?.[0]?.clientX;
+  const touch = touchEvent.touches?.[0];
+  const value = axis === 'x' ? touch?.clientX : touch?.clientY;
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
 function handleCenterTouchStart(event: Event) {
-  const clientX = touchClientX(event) ?? null;
+  const clientX = touchCoordinate(event, 'x') ?? null;
   centerTouchX.value = clientX;
   centerTouchStartX.value = clientX;
   centerTouchMoved.value = false;
 }
 
 function handleCenterTouchMove(event: Event) {
-  const nextX = touchClientX(event);
+  const nextX = touchCoordinate(event, 'x');
   if (nextX === undefined || centerTouchX.value === null || !hasHorizontalOverflow.value) return;
 
   if (
@@ -617,16 +701,14 @@ function handleCenterTouchMove(event: Event) {
     centerTouchMoved.value = true;
   }
 
-  const maxScroll = Math.max(0, centerWidth.value - centerViewportWidth.value);
   const nextScrollLeft = Math.min(
-    maxScroll,
+    horizontalScrollbarMetrics.value.maxScroll,
     Math.max(0, scrollLeft.value + centerTouchX.value - nextX),
   );
   centerTouchX.value = nextX;
   if (nextScrollLeft === scrollLeft.value) return;
 
   scrollLeft.value = nextScrollLeft;
-  void nextTick(() => horizontalScrollRef.value?.scrollTo(nextScrollLeft, 0, false));
 }
 
 function handleCenterTouchEnd() {
@@ -637,16 +719,123 @@ function handleCenterTouchEnd() {
 }
 
 function resetVerticalScroll() {
-  scrollTop.value = 0;
-  void nextTick(() => verticalScrollRef.value?.scrollTo(0, 0, false));
+  setVerticalScroll(0);
 }
 
 function syncHorizontalScroll() {
-  const maxScroll = Math.max(0, centerWidth.value - centerViewportWidth.value);
-  const nextScrollLeft = Math.min(maxScroll, scrollLeft.value);
+  const nextScrollLeft = Math.min(horizontalScrollbarMetrics.value.maxScroll, scrollLeft.value);
   if (nextScrollLeft === scrollLeft.value) return;
   scrollLeft.value = nextScrollLeft;
-  void nextTick(() => horizontalScrollRef.value?.scrollTo(nextScrollLeft, 0, false));
+}
+
+function syncVerticalScroll() {
+  const nextScrollTop = Math.min(verticalScrollbarMetrics.value.maxScroll, scrollTop.value);
+  if (nextScrollTop === scrollTop.value) return;
+  setVerticalScroll(nextScrollTop);
+}
+
+function setHorizontalScroll(value: number) {
+  scrollLeft.value = Math.min(
+    horizontalScrollbarMetrics.value.maxScroll,
+    Math.max(0, value),
+  );
+}
+
+function setVerticalScroll(value: number) {
+  const nextScrollTop = Math.min(
+    verticalScrollbarMetrics.value.maxScroll,
+    Math.max(0, value),
+  );
+  scrollTop.value = nextScrollTop;
+  verticalScrollRef.value?.scrollTo(0, nextScrollTop, false);
+}
+
+function scrollbarMetrics(axis: ScrollbarAxis) {
+  return axis === 'x'
+    ? horizontalScrollbarMetrics.value
+    : verticalScrollbarMetrics.value;
+}
+
+function scrollbarOffset(axis: ScrollbarAxis) {
+  return axis === 'x' ? scrollLeft.value : scrollTop.value;
+}
+
+function setScrollbarOffset(axis: ScrollbarAxis, value: number) {
+  if (axis === 'x') setHorizontalScroll(value);
+  else setVerticalScroll(value);
+}
+
+function beginScrollbarDrag(axis: ScrollbarAxis, event: Event) {
+  const coordinate = touchCoordinate(event, axis);
+  if (coordinate === undefined || scrollbarMetrics(axis).maxScroll <= 0) return undefined;
+
+  event.stopPropagation();
+  activeScrollbarAxis.value = axis;
+  scrollbarDragStartCoordinate.value = coordinate;
+  scrollbarDragStartOffset.value = scrollbarOffset(axis);
+  scrollbarInteractionToken += 1;
+  return { coordinate, token: scrollbarInteractionToken };
+}
+
+function handleScrollbarThumbTouchStart(axis: ScrollbarAxis, event: Event) {
+  beginScrollbarDrag(axis, event);
+}
+
+function handleScrollbarTrackTouchStart(axis: ScrollbarAxis, event: Event) {
+  const interaction = beginScrollbarDrag(axis, event);
+  if (!interaction) return;
+  void positionScrollbarAtTrackTouch(axis, interaction.coordinate, interaction.token);
+}
+
+async function positionScrollbarAtTrackTouch(
+  axis: ScrollbarAxis,
+  coordinate: number,
+  interactionToken: number,
+) {
+  const track = axis === 'x'
+    ? horizontalScrollbarTrackRef.value
+    : verticalScrollbarTrackRef.value;
+  if (!track) return;
+
+  try {
+    const rect = await Native.getBoundingClientRect(
+      track as unknown as Parameters<typeof Native.getBoundingClientRect>[0],
+    );
+    if (scrollbarInteractionToken !== interactionToken) return;
+
+    const rawOrigin = axis === 'x' ? rect.left ?? rect.x : rect.top ?? rect.y;
+    if (typeof rawOrigin !== 'number' || !Number.isFinite(rawOrigin)) return;
+    const nextOffset = scrollVirtualScrollbarToTrackPosition(
+      scrollbarMetrics(axis),
+      coordinate - rawOrigin,
+    );
+    setScrollbarOffset(axis, nextOffset);
+    scrollbarDragStartCoordinate.value = coordinate;
+    scrollbarDragStartOffset.value = nextOffset;
+  } catch {
+    // A disappearing table can invalidate native measurement during navigation.
+  }
+}
+
+function handleScrollbarTouchMove(axis: ScrollbarAxis, event: Event) {
+  if (activeScrollbarAxis.value !== axis) return;
+  const coordinate = touchCoordinate(event, axis);
+  if (coordinate === undefined) return;
+
+  event.stopPropagation();
+  event.preventDefault();
+  scrollbarInteractionToken += 1;
+  setScrollbarOffset(axis, scrollVirtualScrollbarByThumbDelta(
+    scrollbarMetrics(axis),
+    scrollbarDragStartOffset.value,
+    coordinate - scrollbarDragStartCoordinate.value,
+  ));
+}
+
+function handleScrollbarTouchEnd(axis: ScrollbarAxis, event: Event) {
+  if (activeScrollbarAxis.value !== axis) return;
+  event.stopPropagation();
+  activeScrollbarAxis.value = null;
 }
 
 function isRowSelected(key: string) {
@@ -804,6 +993,7 @@ function publishRowAction(action: SharedLowCodeAction, row: Record<string, unkno
 }
 
 watch([centerWidth, centerViewportWidth], syncHorizontalScroll);
+watch([verticalContentHeight, bodyViewportHeight], syncVerticalScroll);
 
 watch(rows, (nextRows) => {
   resetVerticalScroll();
@@ -812,7 +1002,10 @@ watch(rows, (nextRows) => {
   selectedRowKeys.value = selectedRowKeys.value.filter((key) => availableKeys.has(key));
 });
 
-onBeforeUnmount(tableWidthScheduler.cancel);
+onBeforeUnmount(() => {
+  scrollbarInteractionToken += 1;
+  tableWidthScheduler.cancel();
+});
 </script>
 
 <style scoped>
@@ -1088,31 +1281,61 @@ onBeforeUnmount(tableWidthScheduler.cancel);
   color: #a12a2a;
 }
 
-.horizontal-scroll {
+.scrollbar-track {
   position: absolute;
-  bottom: 0;
   z-index: 7;
-  overflow-x: scroll;
-  background-color: #e9eef2;
+  overflow: hidden;
+  background-color: #e1e6e9;
+}
+
+.horizontal-scrollbar {
+  bottom: 0;
   border-top-width: 1px;
   border-top-style: solid;
-  border-top-color: #cbd4da;
-  touch-action: pan-x;
+  border-top-color: #b9c4ca;
 }
 
-.horizontal-scroll-content {
-  flex-shrink: 0;
-  position: relative;
+.vertical-scrollbar {
+  right: 0;
+  border-left-width: 1px;
+  border-left-style: solid;
+  border-left-color: #b9c4ca;
 }
 
-.horizontal-scroll-thumb {
+.scrollbar-thumb {
   position: absolute;
-  top: 7px;
-  right: 4px;
+  background-color: #607784;
+  border-radius: 4px;
+}
+
+.horizontal-scrollbar-thumb {
+  top: 4px;
+  left: 0;
+  height: 9px;
+}
+
+.vertical-scrollbar-thumb {
+  top: 0;
   left: 4px;
-  height: 3px;
-  background-color: #7f919f;
-  border-radius: 2px;
+  width: 9px;
+}
+
+.scrollbar-track.is-disabled .scrollbar-thumb {
+  background-color: #b9c3c9;
+}
+
+.scrollbar-corner {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+  background-color: #cfd7dc;
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: #b9c4ca;
+  border-left-width: 1px;
+  border-left-style: solid;
+  border-left-color: #b9c4ca;
 }
 
 .empty-state {

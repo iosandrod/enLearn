@@ -1,4 +1,3 @@
-import type { PoolClient } from 'pg';
 import { migrateLowCodePageSchema, type LowCodePageSchema } from './lowcode.schema';
 
 export type DatabaseTableRef = {
@@ -51,21 +50,6 @@ type TablePageSchemaOptions = {
   primaryKey?: string;
   entityCode?: string;
 };
-
-const INTERNAL_SCHEMAS = new Set([
-  'auth',
-  'extensions',
-  'graphql',
-  'graphql_public',
-  'information_schema',
-  'net',
-  'pg_catalog',
-  'pgsodium',
-  'realtime',
-  'storage',
-  'supabase_functions',
-  'vault'
-]);
 
 const textFormatter = { type: 'text', emptyText: '-' };
 const numberFormatter = { type: 'number', locale: 'zh-CN', emptyText: '0' };
@@ -234,48 +218,15 @@ function statusFilterActions(sourceKey: string, columns: DatabaseColumn[]) {
   ];
 }
 
-export async function listDatabaseTableOptions(
-  client: PoolClient
-): Promise<DatabaseTableOption[]> {
-  const { rows } = await client.query<{
-    table_schema: string;
-    table_name: string;
-    table_comment: string | null;
-    entity_code: string | null;
-    entity_title: string | null;
-    route_path: string | null;
-    page_code: string | null;
-    primary_key: string | null;
-  }>(`
-    select
-      ns.nspname as table_schema,
-      cls.relname as table_name,
-      obj_description(cls.oid, 'pg_class') as table_comment,
-      entities.code as entity_code,
-      entities.title as entity_title,
-      entities.route_path,
-      entities.page_code,
-      entities.primary_key
-    from pg_class cls
-    join pg_namespace ns on ns.oid = cls.relnamespace
-    left join public.admin_entities entities
-      on entities.table_name in (ns.nspname || '.' || cls.relname, cls.relname)
-    where cls.relkind in ('r', 'p', 'v', 'm')
-      and ns.nspname <> all($1::text[])
-    order by
-      case when entities.sort_order is null then 1 else 0 end,
-      entities.sort_order nulls last,
-      ns.nspname,
-      cls.relname
-  `, [[...INTERNAL_SCHEMAS]]);
-
-  return rows.map((row) => {
+export function mapDatabaseTableOptions(value: unknown): DatabaseTableOption[] {
+  const rows = Array.isArray(value) ? value : [];
+  return rows.filter(isRecord).map((row) => {
     const table: DatabaseTableRef = {
-      schema: row.table_schema,
-      name: row.table_name,
-      fullName: `${row.table_schema}.${row.table_name}`
+      schema: readStringValue(row.table_schema),
+      name: readStringValue(row.table_name),
+      fullName: `${readStringValue(row.table_schema)}.${readStringValue(row.table_name)}`
     };
-    const title = row.entity_title?.trim() || tableTitle(table, row.table_comment ?? '');
+    const title = readStringValue(row.entity_title) || tableTitle(table, readStringValue(row.table_comment));
 
     return {
       label: `${title} (${table.fullName})`,
@@ -284,186 +235,55 @@ export async function listDatabaseTableOptions(
       schema: table.schema,
       name: table.name,
       title,
-      comment: row.table_comment ?? '',
-      ...(row.entity_code ? { entityCode: row.entity_code } : {}),
-      ...(row.page_code ? { pageCode: row.page_code } : {}),
-      ...(row.route_path ? { routePath: row.route_path } : {}),
-      ...(row.primary_key ? { primaryKey: row.primary_key } : {})
+      comment: readStringValue(row.table_comment),
+      ...(readStringValue(row.entity_code) ? { entityCode: readStringValue(row.entity_code) } : {}),
+      ...(readStringValue(row.page_code) ? { pageCode: readStringValue(row.page_code) } : {}),
+      ...(readStringValue(row.route_path) ? { routePath: readStringValue(row.route_path) } : {}),
+      ...(readStringValue(row.primary_key) ? { primaryKey: readStringValue(row.primary_key) } : {})
     };
-  });
+  }).filter((row) => row.schema && row.name);
 }
 
-export async function readTableColumns(
-  client: PoolClient,
-  table: DatabaseTableRef
-): Promise<DatabaseColumn[]> {
-  const { rows } = await client.query<{
-    column_name: string;
-    ordinal_position: number;
-    data_type: string;
-    udt_name: string;
-    is_nullable: string;
-    column_default: string | null;
-    column_comment: string | null;
-    is_primary_key: boolean;
-  }>(`
-    select
-      cols.column_name,
-      cols.ordinal_position,
-      cols.data_type,
-      cols.udt_name,
-      cols.is_nullable,
-      cols.column_default,
-      col_description(cls.oid, attr.attnum) as column_comment,
-      exists (
-        select 1
-        from information_schema.table_constraints tc
-        join information_schema.key_column_usage kcu
-          on kcu.constraint_schema = tc.constraint_schema
-          and kcu.constraint_name = tc.constraint_name
-          and kcu.table_schema = tc.table_schema
-          and kcu.table_name = tc.table_name
-        where tc.constraint_type = 'PRIMARY KEY'
-          and tc.table_schema = cols.table_schema
-          and tc.table_name = cols.table_name
-          and kcu.column_name = cols.column_name
-      ) as is_primary_key
-    from information_schema.columns cols
-    join pg_namespace ns on ns.nspname = cols.table_schema
-    join pg_class cls on cls.relnamespace = ns.oid and cls.relname = cols.table_name
-    join pg_attribute attr on attr.attrelid = cls.oid and attr.attname = cols.column_name
-    where cols.table_schema = $1
-      and cols.table_name = $2
-    order by cols.ordinal_position
-  `, [table.schema, table.name]);
-
-  return rows.map((row) => ({
-    name: row.column_name,
-    ordinalPosition: row.ordinal_position,
-    dataType: row.data_type,
-    udtName: row.udt_name,
-    isNullable: row.is_nullable === 'YES',
-    hasDefault: Boolean(row.column_default),
-    comment: row.column_comment ?? '',
-    isPrimaryKey: row.is_primary_key === true
-  }));
-}
-
-export async function readTableComment(client: PoolClient, table: DatabaseTableRef) {
-  const { rows } = await client.query<{ table_comment: string | null }>(`
-    select obj_description(cls.oid, 'pg_class') as table_comment
-    from pg_class cls
-    join pg_namespace ns on ns.oid = cls.relnamespace
-    where ns.nspname = $1
-      and cls.relname = $2
-      and cls.relkind in ('r', 'p', 'v', 'm')
-  `, [table.schema, table.name]);
-
-  if (!rows.length) {
-    throw new Error(`Table "${table.fullName}" does not exist.`);
+export function normalizeTablePageInspection(value: unknown) {
+  if (!isRecord(value) || !isRecord(value.table)) {
+    throw new Error('Low-code table metadata RPC returned an invalid inspection.');
   }
-
-  return rows[0].table_comment ?? '';
-}
-
-export async function readChildRelations(
-  client: PoolClient,
-  parentTable: DatabaseTableRef
-): Promise<DatabaseChildRelation[]> {
-  const { rows } = await client.query<{
-    constraint_name: string;
-    child_schema: string;
-    child_table: string;
-    child_column: string;
-    parent_column: string;
-    ordinal_position: number;
-  }>(`
-    select
-      tc.constraint_name,
-      kcu.table_schema as child_schema,
-      kcu.table_name as child_table,
-      kcu.column_name as child_column,
-      ccu.column_name as parent_column,
-      kcu.ordinal_position
-    from information_schema.table_constraints tc
-    join information_schema.key_column_usage kcu
-      on kcu.constraint_schema = tc.constraint_schema
-      and kcu.constraint_name = tc.constraint_name
-      and kcu.table_schema = tc.table_schema
-      and kcu.table_name = tc.table_name
-    join information_schema.constraint_column_usage ccu
-      on ccu.constraint_schema = tc.constraint_schema
-      and ccu.constraint_name = tc.constraint_name
-    where tc.constraint_type = 'FOREIGN KEY'
-      and ccu.table_schema = $1
-      and ccu.table_name = $2
-    order by kcu.table_schema, kcu.table_name, tc.constraint_name, kcu.ordinal_position
-  `, [parentTable.schema, parentTable.name]);
-
-  const byConstraint = new Map<string, DatabaseChildRelation>();
-
-  for (const row of rows) {
-    const key = `${row.child_schema}.${row.child_table}.${row.constraint_name}`;
-    const existing = byConstraint.get(key);
-
-    if (existing) {
-      existing.childColumns.push(row.child_column);
-      existing.parentColumns.push(row.parent_column);
-      continue;
-    }
-
-    byConstraint.set(key, {
-      constraintName: row.constraint_name,
-      childTable: {
-        schema: row.child_schema,
-        name: row.child_table,
-        fullName: `${row.child_schema}.${row.child_table}`
-      },
-      childColumns: [row.child_column],
-      parentColumns: [row.parent_column]
-    });
+  const table: DatabaseTableRef = {
+    schema: readStringValue(value.table.schema),
+    name: readStringValue(value.table.name),
+    fullName: readStringValue(value.table.fullName)
+  };
+  if (!table.schema || !table.name || !table.fullName) {
+    throw new Error('Low-code table metadata RPC returned an invalid table reference.');
   }
-
-  return [...byConstraint.values()];
-}
-
-export async function inspectTablePage(
-  client: PoolClient,
-  tableName: string
-) {
-  const table = readTableRef(tableName);
-  const columns = await readTableColumns(client, table);
-  const childRelations = await readChildRelations(client, table);
-  const comment = await readTableComment(client, table);
-  const { rows: entityRows } = await client.query<{ code: string }>(
-    `
-      select code
-      from public.admin_entities
-      where table_name in ($1, $2)
-      order by sort_order asc, created_at asc
-      limit 1
-    `,
-    [table.fullName, table.name]
-  );
-  const children: Array<
-    DatabaseChildRelation & { columns: DatabaseColumn[]; title: string }
-  > = [];
-
-  for (const relation of childRelations) {
-    children.push({
-      ...relation,
-      columns: await readTableColumns(client, relation.childTable),
-      title: tableTitle(relation.childTable, await readTableComment(client, relation.childTable))
-    });
-  }
-
+  const columns = readColumns(value.columns);
+  const childRelations = Array.isArray(value.childRelations)
+    ? value.childRelations.filter(isRecord).map((relation) => {
+        if (!isRecord(relation.childTable)) {
+          throw new Error('Low-code table metadata RPC returned an invalid child relation.');
+        }
+        return {
+          constraintName: readStringValue(relation.constraintName),
+          childTable: {
+            schema: readStringValue(relation.childTable.schema),
+            name: readStringValue(relation.childTable.name),
+            fullName: readStringValue(relation.childTable.fullName)
+          },
+          childColumns: readStringArray(relation.childColumns),
+          parentColumns: readStringArray(relation.parentColumns),
+          columns: readColumns(relation.columns),
+          title: readStringValue(relation.title)
+        };
+      })
+    : [];
+  const comment = readStringValue(value.comment);
   return {
     table,
     columns,
-    childRelations: children,
+    childRelations,
     title: tableTitle(table, comment),
     comment,
-    entityCode: entityRows[0]?.code
+    entityCode: readStringValue(value.entityCode) || undefined
   };
 }
 
@@ -654,13 +474,13 @@ export function buildTableListPageSchema(options: TablePageSchemaOptions): LowCo
   });
 }
 
-export async function buildTableListPageSchemaFromDatabase(
-  client: PoolClient,
+export function buildTableListPageSchemaFromMetadata(
+  metadata: unknown,
   options: Omit<TablePageSchemaOptions, 'table' | 'columns' | 'childRelations'> & {
     tableName: string;
   }
 ) {
-  const inspection = await inspectTablePage(client, options.tableName);
+  const inspection = normalizeTablePageInspection(metadata);
   return buildTableListPageSchema({
     ...options,
     table: inspection.table,
@@ -670,4 +490,29 @@ export async function buildTableListPageSchemaFromDatabase(
     description: options.description ?? inspection.comment,
     entityCode: options.entityCode ?? inspection.entityCode
   });
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readStringValue(value: unknown) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function readStringArray(value: unknown) {
+  return Array.isArray(value) ? value.map(readStringValue).filter(Boolean) : [];
+}
+
+function readColumns(value: unknown): DatabaseColumn[] {
+  return Array.isArray(value) ? value.filter(isRecord).map((column) => ({
+    name: readStringValue(column.name),
+    ordinalPosition: Number(column.ordinalPosition) || 0,
+    dataType: readStringValue(column.dataType),
+    udtName: readStringValue(column.udtName),
+    isNullable: column.isNullable === true,
+    hasDefault: column.hasDefault === true,
+    comment: readStringValue(column.comment),
+    isPrimaryKey: column.isPrimaryKey === true
+  })).filter((column) => column.name) : [];
 }

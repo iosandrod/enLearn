@@ -32,6 +32,33 @@
         </template>
       </LowCodeFormLayout>
 
+      <div v-else-if="node.kind === 'tabs'" class="lc-form-tabs">
+        <vxe-tabs
+          :model-value="activeTabKey(node, index)"
+          size="small"
+          :padding="false"
+          @update:model-value="(key) => setActiveTab(node, index, String(key))"
+        >
+          <vxe-tab-pane
+            v-for="tab in node.tabs"
+            :key="tab.key"
+            :name="tab.key"
+            :title="tab.label"
+          >
+            <div class="lc-form-tab-pane">
+              <LowCodeFormLayout
+                :nodes="tab.blocks"
+                :fields-by-key="fieldsByKey"
+              >
+                <template #field="{ field }">
+                  <slot name="field" :field="field" />
+                </template>
+              </LowCodeFormLayout>
+            </div>
+          </vxe-tab-pane>
+        </vxe-tabs>
+      </div>
+
       <slot
         v-else-if="fieldsByKey[node.field]"
         name="field"
@@ -42,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+import { reactive } from 'vue';
 import type {
   LowCodeField,
   LowCodeFormLayoutColumn,
@@ -61,8 +89,33 @@ defineSlots<{
   field(props: { field: LowCodeField }): unknown;
 }>();
 
+const activeTabKeys = reactive<Record<string, string>>({});
+
 function nodeKey(node: LowCodeFormLayoutNode, index: number) {
   return node.kind === 'field' ? `${node.field}-${index}` : `${node.kind}-${index}`;
+}
+
+function activeTabKey(
+  node: Extract<LowCodeFormLayoutNode, { kind: 'tabs' }>,
+  index: number
+) {
+  const key = nodeKey(node, index);
+  const tabKeys = node.tabs.map((tab) => tab.key);
+  const currentKey = activeTabKeys[key];
+
+  if (currentKey && tabKeys.includes(currentKey)) return currentKey;
+  if (node.defaultKey && tabKeys.includes(node.defaultKey)) return node.defaultKey;
+  return tabKeys[0] ?? '';
+}
+
+function setActiveTab(
+  node: Extract<LowCodeFormLayoutNode, { kind: 'tabs' }>,
+  index: number,
+  key: string
+) {
+  if (node.tabs.some((tab) => tab.key === key)) {
+    activeTabKeys[nodeKey(node, index)] = key;
+  }
 }
 
 function gapValue(value: unknown) {
@@ -95,3 +148,16 @@ function rowStyle(node: Extract<LowCodeFormLayoutNode, { kind: 'row' }>) {
   };
 }
 </script>
+
+<style>
+.lc-form-tabs,
+.lc-form-tabs > .vxe-tabs,
+.lc-form-tab-pane {
+  width: 100%;
+  min-width: 0;
+}
+
+.lc-form-tab-pane {
+  padding-top: 12px;
+}
+</style>

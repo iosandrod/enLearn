@@ -314,6 +314,7 @@ import { defineComponent, h, resolveComponent } from 'vue';
 import type { PropType } from 'vue';
 import {VxeUI} from 'vxe-pc-ui';
 import { useServiceApi } from '../composables/useServiceApi';
+import { useRouteCache } from '../composables/useRouteCache';
 import { loadSystemSettings } from '../composables/useSystemSettings';
 import type {
   LowCodePageRecord,
@@ -375,6 +376,7 @@ const APPROVAL_CONSOLE_PATH = '/dashboard/approval/console';
 
 const auth = useAuth();
 const serviceApi = useServiceApi();
+const routeCache = useRouteCache();
 const route = useRoute();
 const router = useRouter();
 const isDev = import.meta.env.DEV;
@@ -897,6 +899,11 @@ function openTabContextMenuAt(x: number, y: number, tab: VisitedTab) {
     options: [
       [
         {
+          code: 'reload-page',
+          name: '重新加载页面',
+          prefixIcon: 'ri-refresh-line',
+        },
+        {
           code: 'close-current',
           name: '关闭当前',
           prefixIcon: 'ri-close-line',
@@ -931,6 +938,7 @@ function openTabContextMenuAt(x: number, y: number, tab: VisitedTab) {
     ],
     events: {
       optionClick({ option }) {
+        if (option.code === 'reload-page') void reloadVisitedTab(tab);
         if (option.code === 'close-current') void closeVisitedTabs(tab, 'current');
         if (option.code === 'close-left') void closeVisitedTabs(tab, 'left');
         if (option.code === 'close-right') void closeVisitedTabs(tab, 'right');
@@ -941,6 +949,12 @@ function openTabContextMenuAt(x: number, y: number, tab: VisitedTab) {
       },
     },
   });
+}
+
+async function reloadVisitedTab(tab: VisitedTab) {
+  routeCache.invalidate(tab.path);
+  await nextTick();
+  if (route.path !== tab.path) await router.push(tab.path);
 }
 
 async function closeVisitedTabs(tab: VisitedTab, scope: DashboardTabCloseScope) {
