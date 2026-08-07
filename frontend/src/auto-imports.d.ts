@@ -83,6 +83,7 @@ declare global {
   const usePostsApi: typeof import('../composables/usePostsApi').usePostsApi
   const useResourceApi: typeof import('../composables/useResourceApi').useResourceApi
   const useRoute: typeof import('vue-router').useRoute
+  const useRouteCache: typeof import('../composables/useRouteCache').useRouteCache
   const useRouter: typeof import('vue-router').useRouter
   const useSeoMeta: typeof import('@/src/spa-compat').useSeoMeta
   const useServiceApi: typeof import('../composables/useServiceApi').useServiceApi
@@ -114,6 +115,9 @@ declare global {
   // @ts-ignore
   export type { NotificationMessage, NotificationUnreadCount, NotificationPreference, NotificationDelivery } from '../composables/useNotificationApi'
   import('../composables/useNotificationApi')
+  // @ts-ignore
+  export type { RouteCacheInvalidation } from '../composables/useRouteCache'
+  import('../composables/useRouteCache')
 }
 
 // for vue template auto import
@@ -198,6 +202,7 @@ declare module 'vue' {
     readonly usePostsApi: UnwrapRef<typeof import('../composables/usePostsApi')['usePostsApi']>
     readonly useResourceApi: UnwrapRef<typeof import('../composables/useResourceApi')['useResourceApi']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
+    readonly useRouteCache: UnwrapRef<typeof import('../composables/useRouteCache')['useRouteCache']>
     readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
     readonly useSeoMeta: UnwrapRef<typeof import('@/src/spa-compat')['useSeoMeta']>
     readonly useServiceApi: UnwrapRef<typeof import('../composables/useServiceApi')['useServiceApi']>

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Button script Monaco smoke</title>
+  </head>
+  <body>
+    <output id="result">pending</output>
+    <script type="module">
+      import { Monaco } from '../../packages/lowcode-framework/src/visual-editor/components/common/monaco-editor/monaco.ts';
+      import {
+        BUTTON_SCRIPT_LANGUAGE_ID,
+        createButtonScriptMonacoModel,
+        getButtonScriptCompletionsAtOffset,
+        getButtonScriptMonacoDiagnostics,
+        getButtonScriptModelValue,
+        registerButtonScriptMonacoTypes,
+        setButtonScriptModelValue,
+      } from '../../packages/lowcode-framework/src/visual-editor/components/button-group-designer/button-script-monaco.ts';
+
+      const output = document.querySelector('#result');
+      try {
+        const javascriptOptionsBefore = JSON.stringify(
+          Monaco.languages.typescript.javascriptDefaults.getCompilerOptions(),
+        );
+        const typeScriptOptionsBefore = JSON.stringify(
+          Monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
+        );
+        const javascriptExtraLibsBefore = Object.keys(
+          Monaco.languages.typescript.javascriptDefaults.getExtraLibs(),
+        );
+        const typeScriptExtraLibsBefore = Object.keys(
+          Monaco.languages.typescript.typescriptDefaults.getExtraLibs(),
+        );
+        registerButtonScriptMonacoTypes();
+
+        const model = createButtonScriptMonacoModel('this.$source.');
+        const completions = await getButtonScriptCompletionsAtOffset(
+          model,
+          model.getValueLength(),
+        );
+        const names = completions?.entries?.map((entry) => entry.name) ?? [];
+
+        setButtonScriptModelValue(model, 'this.');
+        const thisCompletions = await getButtonScriptCompletionsAtOffset(
+          model,
+          model.getValueLength(),
+        );
+        const thisNames = thisCompletions?.entries?.map((entry) => entry.name) ?? [];
+
+        setButtonScriptModelValue(model, 'window; document; await this.$page.refresh();');
+        const scriptDiagnostics = await getButtonScriptMonacoDiagnostics(model);
+        const languageId = model.getLanguageId();
+        const extractedValue = getButtonScriptModelValue(model);
+
+        const javascriptModel = Monaco.editor.createModel(
+          'window; document; const value = Promise.resolve(1);',
+          'javascript',
+          Monaco.Uri.parse('file:///ordinary-javascript-smoke.js'),
+        );
+        await import('monaco-editor/esm/vs/language/typescript/tsMode.js').then(
+          (mode) => mode.setupJavaScript(
+            Monaco.languages.typescript.javascriptDefaults,
+          ),
+        );
+        const javascriptWorker = await Monaco.languages.typescript.getJavaScriptWorker();
+        const javascriptService = await javascriptWorker(javascriptModel.uri);
+        const javascriptDiagnostics = await javascriptService.getSemanticDiagnostics(
+          javascriptModel.uri.toString(),
+        );
+        const javascriptOptionsAfter = JSON.stringify(
+          Monaco.languages.typescript.javascriptDefaults.getCompilerOptions(),
+        );
+        const typeScriptOptionsAfter = JSON.stringify(
+          Monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
+        );
+        const javascriptExtraLibsAfter = Object.keys(
+          Monaco.languages.typescript.javascriptDefaults.getExtraLibs(),
+        );
+        const typeScriptExtraLibsAfter = Object.keys(
+          Monaco.languages.typescript.typescriptDefaults.getExtraLibs(),
+        );
+
+        model.dispose();
+        javascriptModel.dispose();
+        output.textContent = JSON.stringify({
+          ok:
+            languageId === BUTTON_SCRIPT_LANGUAGE_ID &&
+            names.includes('refresh') &&
+            names.includes('set') &&
+            thisNames.includes('$api') &&
+            thisNames.includes('event') &&
+            scriptDiagnostics.some((item) => item.code === '2304') &&
+            scriptDiagnostics.some((item) => item.code === '2584') &&
+            javascriptDiagnostics.length === 0 &&
+            javascriptOptionsAfter === javascriptOptionsBefore &&
+            typeScriptOptionsAfter === typeScriptOptionsBefore &&
+            JSON.stringify(javascriptExtraLibsAfter) ===
+              JSON.stringify(javascriptExtraLibsBefore) &&
+            JSON.stringify(typeScriptExtraLibsAfter) ===
+              JSON.stringify(typeScriptExtraLibsBefore) &&
+            extractedValue === 'window; document; await this.$page.refresh();',
+          names,
+          thisNames,
+          scriptDiagnostics,
+          javascriptDiagnostics,
+          javascriptOptionsBefore,
+          javascriptOptionsAfter,
+          typeScriptOptionsBefore,
+          typeScriptOptionsAfter,
+          javascriptExtraLibsBefore,
+          javascriptExtraLibsAfter,
+          typeScriptExtraLibsBefore,
+          typeScriptExtraLibsAfter,
+          languageId,
+          extractedValue,
+        });
+      } catch (error) {
+        output.textContent = JSON.stringify({
+          ok: false,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    </script>
+  </body>
+</html>

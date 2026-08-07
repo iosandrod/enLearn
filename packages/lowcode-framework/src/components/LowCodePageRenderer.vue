@@ -14,12 +14,12 @@
       :search-filters="searchFilters"
       :loading-block-id="loadingBlockId"
       :loading-grid-id="loadingGridId"
-      @form-submit="({ block: formBlock, values }) => handleFormSubmit(formBlock, values)"
+      @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
       @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
       @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
       @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
       @toolbar-action="({ action }) => handleToolbarAction(action)"
-      @search-submit="({ block: searchBlock, values }) => handleSearchSubmit(searchBlock, values)"
+      @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
       @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
       @runtime-event="publishRuntimeEvent"
     />
@@ -32,12 +32,12 @@
       :search-filters="searchFilters"
       :loading-block-id="loadingBlockId"
       :loading-grid-id="loadingGridId"
-      @form-submit="({ block: formBlock, values }) => handleFormSubmit(formBlock, values)"
+      @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
       @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
       @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
       @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
       @toolbar-action="({ action }) => handleToolbarAction(action)"
-      @search-submit="({ block: searchBlock, values }) => handleSearchSubmit(searchBlock, values)"
+      @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
       @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
       @runtime-event="publishRuntimeEvent"
     />
@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, provide, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, provide, watch } from 'vue';
 import type {
   LowCodeAction,
   LowCodeButtonGroupAction,
@@ -91,6 +91,13 @@ import {
   openLowCodePageReferenceDialog,
   type LowCodePageReferenceDialogConfig,
 } from '../runtime/page-reference-dialog';
+import {
+  executeLowCodeScript,
+  invokeRegisteredLowCodeScriptApi,
+  preloadLowCodeScriptRuntime,
+  type LowCodeScriptCapabilityRequest,
+  type LowCodeScriptContextSnapshot,
+} from '../runtime/scripts';
 import {
   lowCodeRuntimeBlockEditorKey,
   type LowCodeRuntimeBlockUpdate,
@@ -162,9 +169,14 @@ const dataLoading = computed({
   },
 });
 const runtimeEventBus = createLowCodeEventBus();
+const pendingActionEvents = new WeakMap<object, Promise<void>>();
 const formBaselines: Record<string, Record<string, unknown>> = {};
 let loadSequence = 0;
 let runtimePageId = '';
+
+onMounted(() => {
+  void preloadLowCodeScriptRuntime().catch(() => undefined);
+});
 
 provide(lowCodeRuntimeBlockEditorKey, {
   updateBlock: persistRuntimeBlockUpdate,
@@ -680,6 +692,15 @@ async function refreshDataSources(sourceKeys: string[] = []) {
   return errors;
 }
 
+function cloneScriptValue<T>(value: T, fallback: T): T {
+  try {
+    const serialized = JSON.stringify(value);
+    return typeof serialized === 'string' ? JSON.parse(serialized) as T : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 function getChildBlocks(block: LowCodePageBlock): LowCodePageBlock[] {
   const children: LowCodePageBlock[] = [];
 
@@ -1005,8 +1026,8 @@ function syncRuntimeGridToVisualProps(
   visualProps.deleteMethod = source?.deleteMethod ?? '';
   visualProps.postDataJson = JSON.stringify(source?.postData ?? {}, null, 2);
   visualProps.showRowActions = Boolean(
-    rowActions.edit !== false ||
-      rowActions.delete !== false ||
+    rowActions.edit === true ||
+      rowActions.delete === true ||
       (Array.isArray(rowActions.actions) && rowActions.actions.length) ||
       columns.some(isRuntimeGridActionColumn)
   );
@@ -1388,12 +1409,31 @@ const unsubscribeRuntimeEvents = runtimeEventBus.subscribe(handlePublishedRuntim
 onBeforeUnmount(unsubscribeRuntimeEvents);
 
 async function publishRuntimeEvent(event: LowCodeRuntimeEvent) {
+  const action = isRecord(event.payload?.action) ? event.payload.action : undefined;
+  const execution = publishRuntimeEventNow(event);
+  if (action) pendingActionEvents.set(action, execution);
+
+  try {
+    await execution;
+  } finally {
+    if (action && pendingActionEvents.get(action) === execution) {
+      pendingActionEvents.delete(action);
+    }
+  }
+}
+
+async function publishRuntimeEventNow(event: LowCodeRuntimeEvent) {
   try {
     await runtimeEventBus.publish(event);
     await props.onRuntimeEvent?.(event);
   } catch (error) {
     reportRuntimeDirectiveError(error);
   }
+}
+
+async function waitForActionEvent(action?: LowCodeAction | LowCodeButtonGroupAction) {
+  if (!action) return;
+  await pendingActionEvents.get(action as object);
 }
 
 async function handlePublishedRuntimeEvent(event: LowCodeRuntimeEvent) {
@@ -1406,6 +1446,274 @@ async function handlePublishedRuntimeEvent(event: LowCodeRuntimeEvent) {
       break;
     }
   }
+
+  const eventAction = isRecord(event.payload?.action) ? event.payload.action : undefined;
+  const actionScript = readString(event.payload?.script ?? eventAction?.script);
+  if (actionScript) {
+    try {
+      await executeButtonScript(actionScript, event);
+    } catch (error) {
+      reportRuntimeDirectiveError(error);
+    }
+  }
+}
+
+function readScriptStringArg(args: unknown[], index: number, label: string) {
+  const value = readString(args[index]);
+  if (!value) throw new Error(`脚本 API 参数 ${label} 不能为空。`);
+  return value;
+}
+
+function readScriptRecordArg(args: unknown[], index: number) {
+  return isRecord(args[index]) ? cloneRuntimeValue(args[index]) : {};
+}
+
+function readScriptRowsArg(args: unknown[], index: number) {
+  return Array.isArray(args[index])
+    ? args[index].filter(isRecord).map((row) => cloneRuntimeValue(row))
+    : [];
+}
+
+function sanitizeScriptDialogConfig(value: Record<string, unknown>): GlobalDialogConfig {
+  const allowedKeys = new Set([
+    'id',
+    'title',
+    'width',
+    'height',
+    'className',
+    'props',
+    'showFooter',
+    'model',
+    'form',
+    'grid',
+    'content',
+    'actions',
+  ]);
+  const config = Object.fromEntries(
+    Object.entries(cloneRuntimeValue(value)).filter(([key]) => allowedKeys.has(key)),
+  ) as GlobalDialogConfig;
+
+  if (isRecord(config.props)) {
+    config.props = Object.fromEntries(
+      Object.entries(config.props).filter(([, item]) => typeof item !== 'function'),
+    );
+  }
+
+  return config;
+}
+
+function sanitizeScriptAction(value: unknown) {
+  if (!isRecord(value)) return undefined;
+
+  const {
+    script: _script,
+    directives: _directives,
+    children: _children,
+    ...action
+  } = value;
+  return cloneScriptValue(action, {});
+}
+
+function sanitizeScriptEventPayload(value: unknown) {
+  const payload = isRecord(value) ? cloneScriptValue(value, {}) : {};
+  const safeAction = sanitizeScriptAction(payload.action);
+  delete payload.script;
+  delete payload.directives;
+  if (safeAction) payload.action = safeAction;
+  else delete payload.action;
+  return payload;
+}
+
+function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSnapshot {
+  const route = host.getRoute();
+  const eventPayload = cloneScriptValue(event.payload ?? {}, {});
+  const safeAction = sanitizeScriptAction(eventPayload.action);
+  delete eventPayload.script;
+  delete eventPayload.directives;
+  if (safeAction) eventPayload.action = safeAction;
+  else delete eventPayload.action;
+
+  return cloneScriptValue({
+    page: {
+      id: props.page.id,
+      code: props.page.code,
+      route: props.page.route,
+      title: props.page.title,
+      pageType: props.page.page_type,
+      version: props.page.version,
+    },
+    route: {
+      query: route.query ?? {},
+      params: route.params ?? {},
+      path: route.path ?? '',
+      fullPath: route.fullPath ?? '',
+    },
+    data: resolvedData.value,
+    forms: formModels.value,
+    searches: searchFilters.value,
+    grids: gridStates.value,
+    event: {
+      ...eventPayload,
+      name: event.name,
+      blockId: event.blockId,
+      blockKind: event.blockKind,
+      timestamp: event.timestamp,
+    },
+    policy: {
+      apiNames: Array.isArray(props.page.schema.scriptPolicy?.apiNames)
+        ? props.page.schema.scriptPolicy.apiNames.filter(
+            (name): name is string => typeof name === 'string' && Boolean(name.trim()),
+          )
+        : [],
+      capabilities: Array.isArray(props.page.schema.scriptPolicy?.capabilities)
+        ? props.page.schema.scriptPolicy.capabilities
+        : undefined,
+    },
+  }, {
+    page: {},
+    route: {},
+    data: {},
+    forms: {},
+    searches: {},
+    grids: {},
+    event: {},
+    policy: { apiNames: [] },
+  });
+}
+
+async function handleScriptCapability(
+  request: LowCodeScriptCapabilityRequest,
+  context: LowCodeScriptContextSnapshot,
+  event: LowCodeRuntimeEvent,
+) {
+  const args = request.args;
+  const allowedCapabilities = context.policy?.capabilities;
+  if (allowedCapabilities && !allowedCapabilities.includes(request.name)) {
+    throw new Error(`脚本能力 "${request.name}" 未经当前页面授权。`);
+  }
+
+  switch (request.name) {
+    case 'api.invoke': {
+      const apiName = readScriptStringArg(args, 0, 'name');
+      return invokeRegisteredLowCodeScriptApi(
+        apiName,
+        readScriptRecordArg(args, 1),
+        context,
+      );
+    }
+    case 'source.refresh': {
+      const sourceKey = readScriptStringArg(args, 0, 'sourceKey');
+      if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
+      const errors = await refreshDataSources([sourceKey]);
+      if (errors.length) throw new Error(errors[0]);
+      return cloneScriptValue(resolvedData.value[sourceKey], null);
+    }
+    case 'source.refreshAll': {
+      const errors = await refreshDataSources();
+      if (errors.length) throw new Error(errors[0]);
+      return cloneScriptValue(resolvedData.value, {});
+    }
+    case 'source.set': {
+      const sourceKey = readScriptStringArg(args, 0, 'sourceKey');
+      if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
+      runtime.setSource(sourceKey, cloneRuntimeValue(args[1]));
+      syncPageGridStates();
+      return true;
+    }
+    case 'form.patch': {
+      const blockId = readScriptStringArg(args, 0, 'blockId');
+      const block = findRuntimeBlock(blockId);
+      if (!block || (block.kind !== 'form' && block.kind !== 'searchForm')) {
+        throw new Error(`表单 "${blockId}" 不存在。`);
+      }
+      runtime.patchForm(blockId, readScriptRecordArg(args, 1));
+      return cloneScriptValue(runtime.state.forms[blockId], {});
+    }
+    case 'form.replace': {
+      const blockId = readScriptStringArg(args, 0, 'blockId');
+      const block = findRuntimeBlock(blockId);
+      if (!block || (block.kind !== 'form' && block.kind !== 'searchForm')) {
+        throw new Error(`表单 "${blockId}" 不存在。`);
+      }
+      runtime.replaceForm(blockId, readScriptRecordArg(args, 1));
+      return cloneScriptValue(runtime.state.forms[blockId], {});
+    }
+    case 'grid.setRows': {
+      const blockId = readScriptStringArg(args, 0, 'blockId');
+      const block = findRuntimeBlock(blockId);
+      if (!block || block.kind !== 'grid') throw new Error(`表格 "${blockId}" 不存在。`);
+      const rows = readScriptRowsArg(args, 1);
+      if (block.sourceKey) runtime.setSource(block.sourceKey, rows);
+      else runtime.setGridRows(blockId, rows, { rowKey: getGridRowKey(block) });
+      syncPageGridStates();
+      return rows;
+    }
+    case 'search.patch': {
+      const sourceKey = readScriptStringArg(args, 0, 'sourceKey');
+      if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
+      runtime.patchSearch(sourceKey, readScriptRecordArg(args, 1));
+      return cloneScriptValue(runtime.state.searches[sourceKey], {});
+    }
+    case 'search.replace': {
+      const sourceKey = readScriptStringArg(args, 0, 'sourceKey');
+      if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
+      runtime.replaceSearch(sourceKey, readScriptRecordArg(args, 1));
+      return cloneScriptValue(runtime.state.searches[sourceKey], {});
+    }
+    case 'page.refresh': {
+      const errors = await loadPageData(props.page);
+      if (errors.length) throw new Error(errors[0]);
+      return true;
+    }
+    case 'router.push': {
+      const target = args[0];
+      if (typeof target !== 'string' && !isRecord(target)) {
+        throw new Error('路由参数必须是字符串或对象。');
+      }
+      await host.getRouter().push(cloneRuntimeValue(target));
+      return true;
+    }
+    case 'message.success':
+    case 'message.info':
+    case 'message.warning':
+    case 'message.error': {
+      const nextMessage = readScriptStringArg(args, 0, 'message');
+      message.value = nextMessage;
+      messageClass.value = request.name === 'message.error' ? 'lc-error' : 'lc-help';
+      return true;
+    }
+    case 'dialog.open': {
+      if (!isRecord(args[0])) throw new Error('弹框配置必须是对象。');
+      const config = sanitizeScriptDialogConfig(args[0]);
+      if (!readString(config.title)) throw new Error('弹框标题不能为空。');
+      const result = await openLowCodeGlobalDialog(config);
+      return cloneScriptValue<Record<string, unknown>>(
+        result as unknown as Record<string, unknown>,
+        { action: 'close', values: {} },
+      );
+    }
+    case 'event.emit': {
+      const name = readScriptStringArg(args, 0, 'eventName');
+      await publishRuntimeEvent({
+        name,
+        blockId: event.blockId,
+        blockKind: event.blockKind,
+        timestamp: Date.now(),
+        payload: sanitizeScriptEventPayload(args[1]),
+      });
+      return true;
+    }
+    default:
+      throw new Error(`脚本能力 "${request.name}" 未注册。`);
+  }
+}
+
+async function executeButtonScript(script: string, event: LowCodeRuntimeEvent) {
+  const context = createScriptContext(event);
+  await executeLowCodeScript(
+    { script, context },
+    (request) => handleScriptCapability(request, context, event),
+  );
 }
 
 function reportRuntimeDirectiveError(error: unknown) {
@@ -1922,8 +2230,10 @@ async function executeRuntimeDirective(
 
 async function handleFormSubmit(
   block: LowCodeRuntimeBlock,
-  values: Record<string, unknown>
+  values: Record<string, unknown>,
+  action?: LowCodeAction,
 ) {
+  await waitForActionEvent(action);
   if (block.kind !== 'form') return;
   const source = getDataSource(block.submitSourceKey ?? block.sourceKey);
 
@@ -1963,6 +2273,7 @@ async function handleFormAction(
   action: LowCodeAction,
   values: Record<string, unknown>
 ) {
+  await waitForActionEvent(action);
   if (action.route) {
     await host.getRouter().push(resolveRuntimeRoute(action.route, values));
     return;
@@ -1984,6 +2295,7 @@ function hasEnabledRefreshDirective(action: LowCodeAction | LowCodeButtonGroupAc
 }
 
 async function handleToolbarAction(action: LowCodeAction | LowCodeButtonGroupAction) {
+  await waitForActionEvent(action);
   if (action.route) {
     await host.getRouter().push(resolveRuntimeRoute(action.route));
     return;
@@ -1997,8 +2309,10 @@ async function handleToolbarAction(action: LowCodeAction | LowCodeButtonGroupAct
 
 async function handleSearchSubmit(
   block: LowCodePageSearchFormBlock,
-  values: Record<string, unknown>
+  values: Record<string, unknown>,
+  action?: LowCodeAction,
 ) {
+  await waitForActionEvent(action);
   if (!block.targetSourceKey) return;
   runtime.replaceSearch(block.targetSourceKey, values);
   await refreshDataSources([block.targetSourceKey]);
@@ -2009,6 +2323,7 @@ async function handleSearchAction(
   action: LowCodeAction,
   values: Record<string, unknown>
 ) {
+  await waitForActionEvent(action);
   if (action.type === 'reset' && block.targetSourceKey) {
     runtime.replaceSearch(block.targetSourceKey, {});
     await refreshDataSources([block.targetSourceKey]);

@@ -74,16 +74,18 @@ function handleSubmit(values: Record<string, unknown>) {
   emitRuntimeEvent(action?.eventName ?? 'form.submit', {
     action,
     actionCode: action?.code ?? 'submit',
+    script: action?.script ?? '',
     values,
     directives: action?.directives ?? [],
   });
-  emit('formSubmit', { block: props.block, values });
+  emit('formSubmit', { block: props.block, values, action });
 }
 
 function handleAction(action: LowCodeAction, values: Record<string, unknown>) {
   emitRuntimeEvent(action.eventName ?? 'form.action', {
     action,
     actionCode: action.code,
+    script: action.script ?? '',
     values,
     directives: action.directives ?? [],
   });

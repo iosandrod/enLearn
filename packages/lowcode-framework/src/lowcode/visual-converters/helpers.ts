@@ -23,6 +23,7 @@ const componentMap: Record<string, LowCodeField['component']> = {
   'vxe-radio-group': 'vxe-radio-group',
   'vxe-tree-select': 'vxe-tree-select',
   'lc-json-editor': 'lc-json-editor',
+  'lc-monaco-editor': 'lc-monaco-editor',
   'lc-number-input': 'lc-number-input',
   'array-table': 'lc-array-table',
   'lc-array-table': 'lc-array-table',

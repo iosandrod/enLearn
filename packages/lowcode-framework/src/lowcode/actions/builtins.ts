@@ -180,6 +180,24 @@ function toActionEditorRow(
   };
 }
 
+export function createBuiltinLowCodeActionEditorRow(
+  key: BuiltinLowCodeActionKey,
+  options: { directivesJson: 'array' },
+): LowCodeBuiltinActionEditorRow<LowCodeRuntimeDirective[]>;
+export function createBuiltinLowCodeActionEditorRow(
+  key: BuiltinLowCodeActionKey,
+  options?: { directivesJson?: 'string' },
+): LowCodeBuiltinActionEditorRow<string>;
+export function createBuiltinLowCodeActionEditorRow(
+  key: BuiltinLowCodeActionKey,
+  options: { directivesJson?: 'array' | 'string' } = {},
+) {
+  return toActionEditorRow(
+    createBuiltinLowCodeAction(key),
+    options.directivesJson ?? 'string',
+  );
+}
+
 export function createDefaultButtonGroupEditorRows(options: {
   directivesJson: 'array';
 }): LowCodeBuiltinActionEditorRow<LowCodeRuntimeDirective[]>[];

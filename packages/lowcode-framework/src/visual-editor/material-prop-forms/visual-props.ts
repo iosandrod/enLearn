@@ -452,6 +452,7 @@ function getColumnOptions(field: string): LowCodeOption[] {
       toSelectOption('密码框', 'vxe-password-input'),
       toSelectOption('数字输入', 'lc-number-input'),
       toSelectOption('JSON 编辑器', 'lc-json-editor'),
+      toSelectOption('代码编辑器', 'lc-monaco-editor'),
       toSelectOption('表格输入', 'lc-array-table'),
       toSelectOption('子表单', 'lc-sub-form'),
     ];

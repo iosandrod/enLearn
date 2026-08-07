@@ -266,6 +266,7 @@ function runtimeActionToVisualButton(action: LowCodeButtonGroupAction): Record<s
     status: action.status ?? '',
     route: action.route ?? '',
     eventName: action.eventName ?? '',
+    script: action.script ?? '',
     icon: action.icon ?? '',
     mode: action.mode ?? (action.text ? 'text' : 'button'),
     prefixIcon: action.prefixIcon ?? '',

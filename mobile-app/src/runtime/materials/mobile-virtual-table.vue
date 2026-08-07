@@ -14,7 +14,7 @@
       @layout="handleTableLayout"
     >
       <div class="table-header" :style="headerStyle">
-        <div v-if="leftColumns.length" class="fixed-pane left-pane" :style="leftPaneStyle">
+        <div v-if="leftColumns.length" class="fixed-pane left-pane" :style="leftHeaderPaneStyle">
           <div class="table-row" :style="leftRowStyle">
             <button
               v-for="column in leftColumns"
@@ -32,7 +32,9 @@
                 <span v-else-if="someRowsSelected" class="selection-mark">−</span>
               </div>
               <template v-else>
-                <span class="cell-text">{{ column.title }}</span>
+                <span class="cell-text" :numberOfLines="1" ellipsizeMode="tail">
+                  {{ column.title }}
+                </span>
                 <span v-if="column.sortable" class="sort-indicator">{{ sortIndicator(column) }}</span>
               </template>
             </button>
@@ -41,26 +43,22 @@
 
         <div
           class="center-viewport"
-          :style="centerViewportStyle"
-          @touchstart="handleCenterTouchStart"
-          @touchmove="handleCenterTouchMove"
-          @touchend="handleCenterTouchEnd"
-          @touchcancel="handleCenterTouchEnd"
+          :style="centerHeaderPaneStyle"
         >
           <div
-            v-if="visibleCenterColumns.length"
+            v-if="visibleCenterColumnItems.length"
             class="table-row center-window"
             :style="centerHeaderWindowStyle"
           >
             <button
-              v-for="column in visibleCenterColumns"
-              :key="column.key"
-              :class="headerCellClass(column)"
-              :style="cellStyle(column, true)"
-              @click="toggleSort(column)"
+              v-for="item in visibleCenterColumnItems"
+              :key="item.column.key"
+              :class="headerCellClass(item.column)"
+              :style="centerCellStyle(item, true)"
+              @click="toggleSort(item.column)"
             >
               <div
-                v-if="column.selection === 'checkbox'"
+                v-if="item.column.selection === 'checkbox'"
                 :class="selectionControlClass(allRowsSelected, someRowsSelected)"
                 @click.stop="toggleAllRows"
               >
@@ -68,14 +66,18 @@
                 <span v-else-if="someRowsSelected" class="selection-mark">−</span>
               </div>
               <template v-else>
-                <span class="cell-text">{{ column.title }}</span>
-                <span v-if="column.sortable" class="sort-indicator">{{ sortIndicator(column) }}</span>
+                <span class="cell-text" :numberOfLines="1" ellipsizeMode="tail">
+                  {{ item.column.title }}
+                </span>
+                <span v-if="item.column.sortable" class="sort-indicator">
+                  {{ sortIndicator(item.column) }}
+                </span>
               </template>
             </button>
           </div>
         </div>
 
-        <div v-if="rightColumns.length" class="fixed-pane right-pane" :style="rightPaneStyle">
+        <div v-if="rightColumns.length" class="fixed-pane right-pane" :style="rightHeaderPaneStyle">
           <div class="table-row" :style="rightRowStyle">
             <button
               v-for="column in rightColumns"
@@ -93,7 +95,9 @@
                 <span v-else-if="someRowsSelected" class="selection-mark">−</span>
               </div>
               <template v-else>
-                <span class="cell-text">{{ column.title }}</span>
+                <span class="cell-text" :numberOfLines="1" ellipsizeMode="tail">
+                  {{ column.title }}
+                </span>
                 <span v-if="column.sortable" class="sort-indicator">{{ sortIndicator(column) }}</span>
               </template>
             </button>
@@ -102,12 +106,12 @@
       </div>
 
       <div
-        ref="verticalScrollRef"
         class="vertical-scroll"
         :style="verticalScrollStyle"
-        :showsVerticalScrollIndicator="false"
-        :scrollEventThrottle="16"
-        @scroll="handleVerticalScroll"
+        @touchstart="handleBodyTouchStart"
+        @touchmove="handleBodyTouchMove"
+        @touchend="handleBodyTouchEnd"
+        @touchcancel="handleBodyTouchCancel"
       >
         <div class="vertical-content" :style="verticalContentStyle">
           <div
@@ -118,25 +122,71 @@
             <span class="empty-state-text">暂无数据</span>
           </div>
 
+          <div class="center-viewport body-pane" :style="centerBodyPaneStyle">
+            <div class="center-body-window" :style="centerBodyWindowStyle">
+              <div
+                v-for="item in visibleRows"
+                :key="item.key"
+                :class="['body-row-layer', { 'is-selected': item.key === selectedRowKey }]"
+                :style="bodyRowStyle(item.index, item.key)"
+                @click="handleCurrentRowClick(item.row, item.index)"
+              >
+                <div
+                  v-for="columnItem in visibleCenterColumnItems"
+                  :key="columnItem.column.key"
+                  :class="bodyCellClass(columnItem.column)"
+                  :style="centerCellStyle(columnItem)"
+                  @click.stop="handleCurrentRowClick(item.row, item.index)"
+                >
+                  <button
+                    v-if="columnItem.column.selection"
+                    :class="selectionControlClass(
+                      isRowSelected(item.key),
+                      false,
+                      columnItem.column.selection,
+                    )"
+                    @click.stop="toggleRowSelection(
+                      item.row,
+                      item.index,
+                      columnItem.column.selection,
+                    )"
+                  >
+                    <span v-if="isRowSelected(item.key)" class="selection-mark">
+                      {{ columnItem.column.selection === 'radio' ? '●' : '✓' }}
+                    </span>
+                  </button>
+                  <span
+                    v-else
+                    class="cell-text"
+                    :numberOfLines="1"
+                    ellipsizeMode="tail"
+                  >
+                    {{ readCell(item.row, columnItem.column, item.index) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div
-            v-for="item in visibleRows"
-            :key="item.key"
-            :class="['body-row-layer', { 'is-selected': item.key === selectedRowKey }]"
-            :style="bodyRowStyle(item.index, item.key)"
-            @click="publishCurrentRow(item.row, item.index)"
+            v-if="leftColumns.length"
+            class="fixed-pane left-pane body-pane"
+            :style="leftBodyPaneStyle"
           >
             <div
-              v-if="leftColumns.length"
-              class="fixed-pane left-pane body-pane"
-              :style="bodyPaneStyle(leftPaneStyle, item.key)"
+              v-for="item in visibleRows"
+              :key="item.key"
+              :class="['body-row-layer', { 'is-selected': item.key === selectedRowKey }]"
+              :style="bodyRowStyle(item.index, item.key)"
+              @click="handleCurrentRowClick(item.row, item.index)"
             >
               <div class="table-row" :style="leftRowStyle">
                 <div
                   v-for="column in leftColumns"
                   :key="column.key"
                   :class="bodyCellClass(column)"
-                  :style="cellStyle(column)"
-                  @click.stop="publishCurrentRow(item.row, item.index)"
+                  :style="fixedCellStyle(column, item.key)"
+                  @click.stop="handleCurrentRowClick(item.row, item.index)"
                 >
                   <button
                     v-if="column.selection"
@@ -147,56 +197,37 @@
                       {{ column.selection === 'radio' ? '●' : '✓' }}
                     </span>
                   </button>
-                  <span v-else class="cell-text">{{ readCell(item.row, column, item.index) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="center-viewport body-pane"
-              :style="bodyPaneStyle(centerViewportStyle, item.key)"
-              @touchstart="handleCenterTouchStart"
-              @touchmove="handleCenterTouchMove"
-              @touchend="handleCenterTouchEnd"
-              @touchcancel="handleCenterTouchEnd"
-            >
-              <div
-                v-if="visibleCenterColumns.length"
-                class="table-row center-window"
-                :style="centerBodyWindowStyle"
-              >
-                <div
-                  v-for="column in visibleCenterColumns"
-                  :key="column.key"
-                  :class="bodyCellClass(column)"
-                  :style="cellStyle(column)"
-                  @click.stop="handleCenterCellClick(item.row, item.index)"
-                >
-                  <button
-                    v-if="column.selection"
-                    :class="selectionControlClass(isRowSelected(item.key), false, column.selection)"
-                    @click.stop="toggleRowSelection(item.row, item.index, column.selection)"
+                  <span
+                    v-else
+                    class="cell-text"
+                    :numberOfLines="1"
+                    ellipsizeMode="tail"
                   >
-                    <span v-if="isRowSelected(item.key)" class="selection-mark">
-                      {{ column.selection === 'radio' ? '●' : '✓' }}
-                    </span>
-                  </button>
-                  <span v-else class="cell-text">{{ readCell(item.row, column, item.index) }}</span>
+                    {{ readCell(item.row, column, item.index) }}
+                  </span>
                 </div>
               </div>
             </div>
+          </div>
 
+          <div
+            v-if="rightColumns.length"
+            class="fixed-pane right-pane body-pane"
+            :style="rightBodyPaneStyle"
+          >
             <div
-              v-if="rightColumns.length"
-              class="fixed-pane right-pane body-pane"
-              :style="bodyPaneStyle(rightPaneStyle, item.key)"
+              v-for="item in visibleRows"
+              :key="item.key"
+              :class="['body-row-layer', { 'is-selected': item.key === selectedRowKey }]"
+              :style="bodyRowStyle(item.index, item.key)"
+              @click="handleCurrentRowClick(item.row, item.index)"
             >
               <div class="table-row" :style="rightRowStyle">
                 <template v-for="column in rightColumns" :key="column.key">
                   <div
                     v-if="column.action"
                     class="table-cell body-cell action-cell"
-                    :style="cellStyle(column)"
+                    :style="fixedCellStyle(column, item.key)"
                   >
                     <button
                       v-for="action in rowActions"
@@ -211,7 +242,7 @@
                   <div
                     v-else-if="column.selection"
                     class="table-cell body-cell is-center"
-                    :style="cellStyle(column)"
+                    :style="fixedCellStyle(column, item.key)"
                   >
                     <button
                       :class="selectionControlClass(isRowSelected(item.key), false, column.selection)"
@@ -225,10 +256,12 @@
                   <div
                     v-else
                     :class="bodyCellClass(column)"
-                    :style="cellStyle(column)"
-                    @click.stop="publishCurrentRow(item.row, item.index)"
+                    :style="fixedCellStyle(column, item.key)"
+                    @click.stop="handleCurrentRowClick(item.row, item.index)"
                   >
-                    <span class="cell-text">{{ readCell(item.row, column, item.index) }}</span>
+                    <span class="cell-text" :numberOfLines="1" ellipsizeMode="tail">
+                      {{ readCell(item.row, column, item.index) }}
+                    </span>
                   </div>
                 </template>
               </div>
@@ -306,8 +339,8 @@ import {
 } from '../layout-width';
 import {
   buildColumnOffsets,
+  createVirtualCellValueReader,
   fitPinnedColumns,
-  formatVirtualCellValue,
   getColumnWindow,
   getRowWindow,
   getVirtualScrollbarMetrics,
@@ -315,6 +348,11 @@ import {
   normalizeVirtualSelectionConfig,
   partitionVirtualColumns,
   readPositiveNumber,
+  retainColumnWindow,
+  retainVirtualRange,
+  reuseColumnWindow,
+  reuseVirtualRange,
+  shouldStartVirtualPan,
   scrollVirtualScrollbarByThumbDelta,
   scrollVirtualScrollbarToTrackPosition,
   sortVirtualRows,
@@ -322,9 +360,11 @@ import {
   updateVirtualSelectionKeys,
   withVirtualSelectionColumn,
   type RawGridColumn,
+  type ColumnWindow,
   type SortState,
   type VirtualTableColumn,
   type VirtualTableSelectionType,
+  type VirtualRange,
 } from '../virtual-table';
 
 const props = defineProps<MobileMaterialProps>();
@@ -336,13 +376,36 @@ const DEFAULT_HEADER_HEIGHT = 44;
 const HORIZONTAL_SCROLLBAR_HEIGHT = 18;
 const VERTICAL_SCROLLBAR_WIDTH = 18;
 const MINIMUM_SCROLLBAR_THUMB_SIZE = 32;
+const PAN_START_DISTANCE = 6;
+const PAN_MOMENTUM_FRAME_MS = 16;
+const PAN_MOMENTUM_FRICTION = 0.96;
+const PAN_MOMENTUM_STOP_VELOCITY = 0.035;
+const PAN_MOMENTUM_MAX_VELOCITY = 5;
+const PAN_CLICK_SUPPRESSION_MS = 300;
 
 type ScrollbarAxis = 'x' | 'y';
+
+type BodyPanState = {
+  startX: number;
+  startY: number;
+  lastX: number;
+  lastY: number;
+  lastTime: number;
+  velocityX: number;
+  velocityY: number;
+  moved: boolean;
+};
 
 type RowItem = {
   row: Record<string, unknown>;
   index: number;
   key: string;
+};
+
+type CenterColumnItem = {
+  column: VirtualTableColumn;
+  index: number;
+  offset: number;
 };
 
 const tableWidth = ref(0);
@@ -351,17 +414,24 @@ const scrollLeft = ref(0);
 const selectedRowKey = ref('');
 const selectedRowKeys = ref<string[]>([]);
 const sortState = ref<SortState | null>(null);
-const verticalScrollRef = ref<HippyElement | null>(null);
 const horizontalScrollbarTrackRef = ref<HippyElement | null>(null);
 const verticalScrollbarTrackRef = ref<HippyElement | null>(null);
-const centerTouchX = ref<number | null>(null);
-const centerTouchStartX = ref<number | null>(null);
-const centerTouchMoved = ref(false);
-const suppressCenterClickUntil = ref(0);
 const activeScrollbarAxis = ref<ScrollbarAxis | null>(null);
 const scrollbarDragStartCoordinate = ref(0);
 const scrollbarDragStartOffset = ref(0);
 let scrollbarInteractionToken = 0;
+let bodyPanState: BodyPanState | null = null;
+let bodyMomentumVelocityX = 0;
+let bodyMomentumVelocityY = 0;
+let bodyMomentumLastTime = 0;
+let bodyMomentumFrame: number | null = null;
+let bodyMomentumTimer: ReturnType<typeof setTimeout> | null = null;
+let suppressRowClickUntil = 0;
+let pendingScrollLeft = 0;
+let pendingScrollTop = 0;
+let scrollCommitFrame: number | null = null;
+let scrollCommitTimer: ReturnType<typeof setTimeout> | null = null;
+const readCell = createVirtualCellValueReader();
 const tableWidthScheduler = createLayoutWidthScheduler(
   () => tableWidth.value,
   (width) => {
@@ -401,6 +471,19 @@ const overscanColumnCount = computed(() => Math.floor(readPositiveNumber(
   1,
   20,
 )));
+const horizontalTouchScrollSpeed = computed(() => readPositiveNumber(
+  gridConfig.value.horizontalTouchScrollSpeed ?? gridConfig.value.touchScrollSpeed,
+  1,
+  0.5,
+  3,
+));
+const verticalTouchScrollSpeed = computed(() => readPositiveNumber(
+  gridConfig.value.verticalTouchScrollSpeed ?? gridConfig.value.touchScrollSpeed,
+  1.15,
+  0.5,
+  3,
+));
+const touchMomentumEnabled = computed(() => gridConfig.value.touchMomentum !== false);
 
 const rows = computed<Record<string, unknown>[]>(() => {
   const source = props.block.sourceKey ? props.resolvedData[props.block.sourceKey] : props.block.rows;
@@ -477,16 +560,39 @@ const centerViewportWidth = computed(() => Math.max(
   tableContentWidth.value - leftWidth.value - rightWidth.value,
 ));
 const centerOffsets = computed(() => buildColumnOffsets(centerColumns.value));
-const centerWindow = computed(() => getColumnWindow(
-  centerOffsets.value,
-  scrollLeft.value,
-  centerViewportWidth.value,
-  overscanColumnCount.value,
+const centerWindow = computed<ColumnWindow>((previous) => reuseColumnWindow(
+  previous,
+  retainColumnWindow(
+    previous,
+    getColumnWindow(
+      centerOffsets.value,
+      scrollLeft.value,
+      centerViewportWidth.value,
+      overscanColumnCount.value,
+    ),
+    centerOffsets.value,
+    { leading: 1, trailing: 1 },
+  ),
 ));
-const visibleCenterColumns = computed(() => centerColumns.value.slice(
-  centerWindow.value.start,
-  centerWindow.value.end,
-));
+const visibleCenterColumnItems = computed<CenterColumnItem[]>((previous) => {
+  const next = centerColumns.value
+    .slice(centerWindow.value.start, centerWindow.value.end)
+    .map((column, localIndex) => {
+      const index = centerWindow.value.start + localIndex;
+      return {
+        column,
+        index,
+        offset: centerOffsets.value[index] ?? 0,
+      };
+    });
+  return previous
+    && previous.length === next.length
+    && previous.every((item, index) => (
+      item.column === next[index].column && item.offset === next[index].offset
+    ))
+    ? previous
+    : next;
+});
 const hasHorizontalOverflow = computed(() => centerWidth.value > centerViewportWidth.value + 1);
 const bodyViewportHeight = computed(() => Math.max(
   1,
@@ -520,19 +626,36 @@ const someRowsSelected = computed(() => (
   !allRowsSelected.value
   && selectableRowKeys.value.some((key) => selectedRowKeySet.value.has(key))
 ));
-const rowWindow = computed(() => getRowWindow(
-  sortedRows.value.length,
-  scrollTop.value,
-  bodyViewportHeight.value,
-  rowHeight.value,
-  overscanRowCount.value,
+const rowWindow = computed<VirtualRange>((previous) => reuseVirtualRange(
+  previous,
+  retainVirtualRange(
+    previous,
+    getRowWindow(
+      sortedRows.value.length,
+      scrollTop.value,
+      bodyViewportHeight.value,
+      rowHeight.value,
+      overscanRowCount.value,
+    ),
+    sortedRows.value.length,
+    { leading: 2, trailing: 2 },
+  ),
 ));
-const visibleRows = computed<RowItem[]>(() => sortedRows.value
-  .slice(rowWindow.value.start, rowWindow.value.end)
-  .map((row, localIndex) => {
-    const index = rowWindow.value.start + localIndex;
-    return { row, index, key: rowKey(row, index) };
-  }));
+const visibleRows = computed<RowItem[]>((previous) => {
+  const next = sortedRows.value
+    .slice(rowWindow.value.start, rowWindow.value.end)
+    .map((row, localIndex) => {
+      const index = rowWindow.value.start + localIndex;
+      return { row, index, key: rowKey(row, index) };
+    });
+  return previous
+    && previous.length === next.length
+    && previous.every((item, index) => (
+      item.row === next[index].row && item.index === next[index].index
+    ))
+    ? previous
+    : next;
+});
 
 const tableFrameStyle = computed<CSSProperties>(() => ({ height: `${tableHeight.value}px` }));
 const headerStyle = computed<CSSProperties>(() => ({
@@ -545,7 +668,11 @@ const verticalScrollStyle = computed<CSSProperties>(() => ({
   height: `${bodyViewportHeight.value}px`,
 }));
 const verticalContentStyle = computed<CSSProperties>(() => ({
-  height: `${verticalContentHeight.value}px`,
+  height: `${Math.max(
+    bodyViewportHeight.value,
+    (rowWindow.value.end - rowWindow.value.start) * rowHeight.value,
+  )}px`,
+  transform: `translateY(${rowWindow.value.start * rowHeight.value - scrollTop.value}px)`,
 }));
 const emptyStateStyle = computed<CSSProperties>(() => ({ height: `${bodyViewportHeight.value}px` }));
 const leftPaneStyle = computed<CSSProperties>(() => ({ width: `${leftWidth.value}px` }));
@@ -556,11 +683,64 @@ const centerViewportStyle = computed<CSSProperties>(() => ({
   left: `${leftWidth.value}px`,
   right: `${rightWidth.value}px`,
 }));
-const centerHeaderWindowStyle = computed<CSSProperties>(() => ({
-  width: `${centerWindow.value.width}px`,
-  transform: `translateX(${centerWindow.value.offset - scrollLeft.value}px)`,
+const leftHeaderPaneStyle = computed<CSSProperties>(() => ({
+  ...leftPaneStyle.value,
+  height: `${headerHeight.value}px`,
+  overflow: 'hidden',
+  opacity: 1,
+  zIndex: 10,
+  backgroundColor: '#e9eef2',
 }));
-const centerBodyWindowStyle = centerHeaderWindowStyle;
+const centerHeaderPaneStyle = computed<CSSProperties>(() => ({
+  ...centerViewportStyle.value,
+  width: `${centerViewportWidth.value}px`,
+  height: `${headerHeight.value}px`,
+  overflow: 'hidden',
+  zIndex: 1,
+}));
+const rightHeaderPaneStyle = computed<CSSProperties>(() => ({
+  ...rightPaneStyle.value,
+  height: `${headerHeight.value}px`,
+  overflow: 'hidden',
+  opacity: 1,
+  zIndex: 10,
+  backgroundColor: '#e9eef2',
+}));
+const centerHeaderWindowStyle = computed<CSSProperties>(() => ({
+  width: `${centerWidth.value}px`,
+  height: `${headerHeight.value}px`,
+  transform: `translateX(${-scrollLeft.value}px)`,
+}));
+const centerBodyWindowStyle = computed<CSSProperties>(() => ({
+  width: `${centerWidth.value}px`,
+  height: `${Math.max(
+    bodyViewportHeight.value,
+    (rowWindow.value.end - rowWindow.value.start) * rowHeight.value,
+  )}px`,
+  transform: `translateX(${-scrollLeft.value}px)`,
+}));
+const leftBodyPaneStyle = computed<CSSProperties>(() => ({
+  ...leftPaneStyle.value,
+  height: `${Math.max(
+    bodyViewportHeight.value,
+    (rowWindow.value.end - rowWindow.value.start) * rowHeight.value,
+  )}px`,
+  overflow: 'hidden',
+  opacity: 1,
+  zIndex: 10,
+  backgroundColor: '#ffffff',
+}));
+const rightBodyPaneStyle = computed<CSSProperties>(() => ({
+  ...rightPaneStyle.value,
+  height: `${Math.max(
+    bodyViewportHeight.value,
+    (rowWindow.value.end - rowWindow.value.start) * rowHeight.value,
+  )}px`,
+  overflow: 'hidden',
+  opacity: 1,
+  zIndex: 10,
+  backgroundColor: '#ffffff',
+}));
 const horizontalScrollbarStyle = computed<CSSProperties>(() => ({
   left: `${leftWidth.value}px`,
   right: `${rightWidth.value + VERTICAL_SCROLLBAR_WIDTH}px`,
@@ -630,50 +810,47 @@ function cellStyle(column: VirtualTableColumn, header = false): CSSProperties {
   };
 }
 
+function centerCellStyle(item: CenterColumnItem, header = false): CSSProperties {
+  return {
+    ...cellStyle(item.column, header),
+    position: 'absolute',
+    top: '0px',
+    left: `${item.offset}px`,
+  };
+}
+
+function fixedCellStyle(column: VirtualTableColumn, key: string): CSSProperties {
+  return {
+    ...cellStyle(column),
+    backgroundColor: currentRowBackground(key),
+  };
+}
+
 function currentRowBackground(key: string) {
   return key === selectedRowKey.value ? '#e8f2ff' : '#ffffff';
 }
 
 function bodyRowStyle(index: number, key: string): CSSProperties {
   return {
-    top: `${index * rowHeight.value}px`,
+    top: `${(index - rowWindow.value.start) * rowHeight.value}px`,
     height: `${rowHeight.value}px`,
     backgroundColor: currentRowBackground(key),
   };
 }
 
-function bodyPaneStyle(
-  paneStyle: CSSProperties,
-  key: string,
-): CSSProperties {
-  return {
-    ...paneStyle,
-    backgroundColor: currentRowBackground(key),
-  };
-}
-
-function readCell(row: Record<string, unknown>, column: VirtualTableColumn, rowIndex: number) {
-  if (column.type === 'seq') return String(rowIndex + 1);
-  const value = column.field ? row[column.field] : undefined;
-  const formatted = formatVirtualCellValue(value, column.formatter);
-  return formatted === null || formatted === undefined || formatted === '' ? '--' : String(formatted);
-}
+const centerBodyPaneStyle = computed<CSSProperties>(() => ({
+  ...centerViewportStyle.value,
+  width: `${centerViewportWidth.value}px`,
+  height: `${Math.max(
+    bodyViewportHeight.value,
+    (rowWindow.value.end - rowWindow.value.start) * rowHeight.value,
+  )}px`,
+  overflow: 'hidden',
+  zIndex: 1,
+}));
 
 function handleTableLayout(event: HippyLayoutEvent) {
   tableWidthScheduler.schedule(event.width);
-}
-
-function scrollOffset(event: Event, axis: 'x' | 'y') {
-  const hippyEvent = event as Event & Pick<HippyTouchEvent, 'offsetX' | 'offsetY'>;
-  const value = axis === 'x' ? hippyEvent.offsetX : hippyEvent.offsetY;
-  return typeof value === 'number' && Number.isFinite(value) ? value : 0;
-}
-
-function handleVerticalScroll(event: Event) {
-  scrollTop.value = Math.min(
-    verticalScrollbarMetrics.value.maxScroll,
-    Math.max(0, scrollOffset(event, 'y')),
-  );
 }
 
 function touchCoordinate(event: Event, axis: ScrollbarAxis) {
@@ -683,71 +860,226 @@ function touchCoordinate(event: Event, axis: ScrollbarAxis) {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
 }
 
-function handleCenterTouchStart(event: Event) {
-  const clientX = touchCoordinate(event, 'x') ?? null;
-  centerTouchX.value = clientX;
-  centerTouchStartX.value = clientX;
-  centerTouchMoved.value = false;
+function handleBodyTouchStart(event: Event) {
+  const x = touchCoordinate(event, 'x');
+  const y = touchCoordinate(event, 'y');
+  if (x === undefined || y === undefined) return;
+
+  stopBodyMomentum();
+  flushPendingScroll();
+  bodyPanState = {
+    startX: x,
+    startY: y,
+    lastX: x,
+    lastY: y,
+    lastTime: Date.now(),
+    velocityX: 0,
+    velocityY: 0,
+    moved: false,
+  };
 }
 
-function handleCenterTouchMove(event: Event) {
+function handleBodyTouchMove(event: Event) {
+  const state = bodyPanState;
   const nextX = touchCoordinate(event, 'x');
-  if (nextX === undefined || centerTouchX.value === null || !hasHorizontalOverflow.value) return;
+  const nextY = touchCoordinate(event, 'y');
+  if (!state || nextX === undefined || nextY === undefined) return;
 
-  if (
-    centerTouchStartX.value !== null
-    && Math.abs(nextX - centerTouchStartX.value) >= 6
-  ) {
-    centerTouchMoved.value = true;
+  if (!state.moved) {
+    if (!shouldStartVirtualPan(
+      nextX - state.startX,
+      nextY - state.startY,
+      {
+        horizontal: hasHorizontalOverflow.value,
+        vertical: hasVerticalOverflow.value,
+        startDistance: PAN_START_DISTANCE,
+      },
+    )) return;
+    state.moved = true;
   }
 
-  const nextScrollLeft = Math.min(
-    horizontalScrollbarMetrics.value.maxScroll,
-    Math.max(0, scrollLeft.value + centerTouchX.value - nextX),
-  );
-  centerTouchX.value = nextX;
-  if (nextScrollLeft === scrollLeft.value) return;
+  event.stopPropagation();
+  event.preventDefault();
 
-  scrollLeft.value = nextScrollLeft;
+  const now = Date.now();
+  const elapsed = Math.max(1, now - state.lastTime);
+  const previousLeft = pendingScrollLeft;
+  const previousTop = pendingScrollTop;
+  queueTableScroll(
+    previousLeft + (state.lastX - nextX) * horizontalTouchScrollSpeed.value,
+    previousTop + (state.lastY - nextY) * verticalTouchScrollSpeed.value,
+  );
+  const velocityX = (pendingScrollLeft - previousLeft) / elapsed;
+  const velocityY = (pendingScrollTop - previousTop) / elapsed;
+  state.velocityX = state.velocityX * 0.35 + velocityX * 0.65;
+  state.velocityY = state.velocityY * 0.35 + velocityY * 0.65;
+  state.lastX = nextX;
+  state.lastY = nextY;
+  state.lastTime = now;
 }
 
-function handleCenterTouchEnd() {
-  if (centerTouchMoved.value) suppressCenterClickUntil.value = Date.now() + 250;
-  centerTouchX.value = null;
-  centerTouchStartX.value = null;
-  centerTouchMoved.value = false;
+function handleBodyTouchEnd() {
+  const state = bodyPanState;
+  bodyPanState = null;
+  if (!state?.moved) return;
+
+  flushPendingScroll();
+  suppressRowClickUntil = Date.now() + PAN_CLICK_SUPPRESSION_MS;
+  if (touchMomentumEnabled.value) startBodyMomentum(state.velocityX, state.velocityY);
+}
+
+function handleBodyTouchCancel() {
+  bodyPanState = null;
+  flushPendingScroll();
+}
+
+function stopBodyMomentum() {
+  if (bodyMomentumFrame !== null && typeof globalThis.cancelAnimationFrame === 'function') {
+    globalThis.cancelAnimationFrame(bodyMomentumFrame);
+  }
+  if (bodyMomentumTimer !== null) clearTimeout(bodyMomentumTimer);
+  bodyMomentumFrame = null;
+  bodyMomentumTimer = null;
+  bodyMomentumVelocityX = 0;
+  bodyMomentumVelocityY = 0;
+}
+
+function clampMomentumVelocity(value: number, boost: number) {
+  return Math.min(
+    PAN_MOMENTUM_MAX_VELOCITY,
+    Math.max(-PAN_MOMENTUM_MAX_VELOCITY, value * boost),
+  );
+}
+
+function startBodyMomentum(rawVelocityX: number, rawVelocityY: number) {
+  const velocityX = clampMomentumVelocity(rawVelocityX, 1.08);
+  const velocityY = clampMomentumVelocity(rawVelocityY, 1.35);
+  if (
+    Math.abs(velocityX) < PAN_MOMENTUM_STOP_VELOCITY
+    && Math.abs(velocityY) < PAN_MOMENTUM_STOP_VELOCITY
+  ) return;
+
+  stopBodyMomentum();
+  bodyMomentumVelocityX = velocityX;
+  bodyMomentumVelocityY = velocityY;
+  bodyMomentumLastTime = Date.now();
+  scheduleBodyMomentumFrame();
+}
+
+function scheduleBodyMomentumFrame() {
+  if (typeof globalThis.requestAnimationFrame === 'function') {
+    bodyMomentumFrame = globalThis.requestAnimationFrame(runBodyMomentumFrame);
+    return;
+  }
+  bodyMomentumTimer = setTimeout(runBodyMomentumFrame, PAN_MOMENTUM_FRAME_MS);
+}
+
+function runBodyMomentumFrame() {
+  bodyMomentumFrame = null;
+  bodyMomentumTimer = null;
+
+  const now = Date.now();
+  const elapsed = Math.min(34, Math.max(8, now - bodyMomentumLastTime));
+  const previousLeft = pendingScrollLeft;
+  const previousTop = pendingScrollTop;
+  setTableScrollImmediate(
+    previousLeft + bodyMomentumVelocityX * elapsed,
+    previousTop + bodyMomentumVelocityY * elapsed,
+  );
+  if (Math.abs(pendingScrollLeft - previousLeft) < 0.1) bodyMomentumVelocityX = 0;
+  if (Math.abs(pendingScrollTop - previousTop) < 0.1) bodyMomentumVelocityY = 0;
+
+  const friction = Math.pow(PAN_MOMENTUM_FRICTION, elapsed / PAN_MOMENTUM_FRAME_MS);
+  bodyMomentumVelocityX *= friction;
+  bodyMomentumVelocityY *= friction;
+  bodyMomentumLastTime = now;
+  if (
+    Math.abs(bodyMomentumVelocityX) < PAN_MOMENTUM_STOP_VELOCITY
+    && Math.abs(bodyMomentumVelocityY) < PAN_MOMENTUM_STOP_VELOCITY
+  ) {
+    stopBodyMomentum();
+    return;
+  }
+  scheduleBodyMomentumFrame();
 }
 
 function resetVerticalScroll() {
   setVerticalScroll(0);
 }
 
+function clampHorizontalScroll(value: number) {
+  return Math.min(horizontalScrollbarMetrics.value.maxScroll, Math.max(0, value));
+}
+
+function clampVerticalScroll(value: number) {
+  return Math.min(verticalScrollbarMetrics.value.maxScroll, Math.max(0, value));
+}
+
+function cancelScrollCommit() {
+  if (scrollCommitFrame !== null && typeof globalThis.cancelAnimationFrame === 'function') {
+    globalThis.cancelAnimationFrame(scrollCommitFrame);
+  }
+  if (scrollCommitTimer !== null) clearTimeout(scrollCommitTimer);
+  scrollCommitFrame = null;
+  scrollCommitTimer = null;
+}
+
+function commitPendingScroll() {
+  scrollCommitFrame = null;
+  scrollCommitTimer = null;
+  if (scrollLeft.value !== pendingScrollLeft) scrollLeft.value = pendingScrollLeft;
+  if (scrollTop.value !== pendingScrollTop) scrollTop.value = pendingScrollTop;
+}
+
+function scheduleScrollCommit() {
+  if (scrollCommitFrame !== null || scrollCommitTimer !== null) return;
+  if (typeof globalThis.requestAnimationFrame === 'function') {
+    scrollCommitFrame = globalThis.requestAnimationFrame(commitPendingScroll);
+    return;
+  }
+  scrollCommitTimer = setTimeout(commitPendingScroll, PAN_MOMENTUM_FRAME_MS);
+}
+
+function flushPendingScroll() {
+  cancelScrollCommit();
+  commitPendingScroll();
+}
+
+function queueTableScroll(left: number, top: number) {
+  pendingScrollLeft = clampHorizontalScroll(left);
+  pendingScrollTop = clampVerticalScroll(top);
+  scheduleScrollCommit();
+}
+
+function setTableScrollImmediate(left: number, top: number) {
+  cancelScrollCommit();
+  pendingScrollLeft = clampHorizontalScroll(left);
+  pendingScrollTop = clampVerticalScroll(top);
+  commitPendingScroll();
+}
+
 function syncHorizontalScroll() {
-  const nextScrollLeft = Math.min(horizontalScrollbarMetrics.value.maxScroll, scrollLeft.value);
-  if (nextScrollLeft === scrollLeft.value) return;
-  scrollLeft.value = nextScrollLeft;
+  pendingScrollLeft = clampHorizontalScroll(pendingScrollLeft);
+  if (scrollLeft.value === pendingScrollLeft) return;
+  scrollLeft.value = pendingScrollLeft;
 }
 
 function syncVerticalScroll() {
-  const nextScrollTop = Math.min(verticalScrollbarMetrics.value.maxScroll, scrollTop.value);
-  if (nextScrollTop === scrollTop.value) return;
-  setVerticalScroll(nextScrollTop);
+  pendingScrollTop = clampVerticalScroll(pendingScrollTop);
+  if (scrollTop.value === pendingScrollTop) return;
+  scrollTop.value = pendingScrollTop;
 }
 
 function setHorizontalScroll(value: number) {
-  scrollLeft.value = Math.min(
-    horizontalScrollbarMetrics.value.maxScroll,
-    Math.max(0, value),
-  );
+  cancelScrollCommit();
+  pendingScrollLeft = clampHorizontalScroll(value);
+  if (scrollLeft.value !== pendingScrollLeft) scrollLeft.value = pendingScrollLeft;
 }
 
 function setVerticalScroll(value: number) {
-  const nextScrollTop = Math.min(
-    verticalScrollbarMetrics.value.maxScroll,
-    Math.max(0, value),
-  );
-  scrollTop.value = nextScrollTop;
-  verticalScrollRef.value?.scrollTo(0, nextScrollTop, false);
+  cancelScrollCommit();
+  pendingScrollTop = clampVerticalScroll(value);
+  if (scrollTop.value !== pendingScrollTop) scrollTop.value = pendingScrollTop;
 }
 
 function scrollbarMetrics(axis: ScrollbarAxis) {
@@ -757,7 +1089,7 @@ function scrollbarMetrics(axis: ScrollbarAxis) {
 }
 
 function scrollbarOffset(axis: ScrollbarAxis) {
-  return axis === 'x' ? scrollLeft.value : scrollTop.value;
+  return axis === 'x' ? pendingScrollLeft : pendingScrollTop;
 }
 
 function setScrollbarOffset(axis: ScrollbarAxis, value: number) {
@@ -769,6 +1101,9 @@ function beginScrollbarDrag(axis: ScrollbarAxis, event: Event) {
   const coordinate = touchCoordinate(event, axis);
   if (coordinate === undefined || scrollbarMetrics(axis).maxScroll <= 0) return undefined;
 
+  stopBodyMomentum();
+  flushPendingScroll();
+  bodyPanState = null;
   event.stopPropagation();
   activeScrollbarAxis.value = axis;
   scrollbarDragStartCoordinate.value = coordinate;
@@ -825,29 +1160,24 @@ function handleScrollbarTouchMove(axis: ScrollbarAxis, event: Event) {
   event.stopPropagation();
   event.preventDefault();
   scrollbarInteractionToken += 1;
-  setScrollbarOffset(axis, scrollVirtualScrollbarByThumbDelta(
+  const nextOffset = scrollVirtualScrollbarByThumbDelta(
     scrollbarMetrics(axis),
     scrollbarDragStartOffset.value,
     coordinate - scrollbarDragStartCoordinate.value,
-  ));
+  );
+  if (axis === 'x') queueTableScroll(nextOffset, pendingScrollTop);
+  else queueTableScroll(pendingScrollLeft, nextOffset);
 }
 
 function handleScrollbarTouchEnd(axis: ScrollbarAxis, event: Event) {
   if (activeScrollbarAxis.value !== axis) return;
   event.stopPropagation();
+  flushPendingScroll();
   activeScrollbarAxis.value = null;
 }
 
 function isRowSelected(key: string) {
   return selectedRowKeySet.value.has(key);
-}
-
-function handleCenterCellClick(
-  row: Record<string, unknown>,
-  rowIndex: number,
-) {
-  if (Date.now() < suppressCenterClickUntil.value) return;
-  publishCurrentRow(row, rowIndex);
 }
 
 function selectedRows() {
@@ -975,6 +1305,11 @@ function publishCurrentRow(row: Record<string, unknown>, rowIndex: number) {
   publishGridEvent('rowCurrentChange', { row, rawEvent: {} });
 }
 
+function handleCurrentRowClick(row: Record<string, unknown>, rowIndex: number) {
+  if (Date.now() < suppressRowClickUntil) return;
+  publishCurrentRow(row, rowIndex);
+}
+
 function publishRowAction(action: SharedLowCodeAction, row: Record<string, unknown>) {
   if (action.disabled) return;
 
@@ -996,6 +1331,7 @@ watch([centerWidth, centerViewportWidth], syncHorizontalScroll);
 watch([verticalContentHeight, bodyViewportHeight], syncVerticalScroll);
 
 watch(rows, (nextRows) => {
+  readCell.clear();
   resetVerticalScroll();
   selectedRowKey.value = '';
   const availableKeys = new Set(nextRows.map((row, index) => rowKey(row, index)));
@@ -1004,6 +1340,9 @@ watch(rows, (nextRows) => {
 
 onBeforeUnmount(() => {
   scrollbarInteractionToken += 1;
+  stopBodyMomentum();
+  cancelScrollCommit();
+  readCell.clear();
   tableWidthScheduler.cancel();
 });
 </script>
@@ -1083,7 +1422,7 @@ onBeforeUnmount(() => {
   position: absolute;
   right: 0;
   left: 0;
-  overflow-y: scroll;
+  overflow: hidden;
   background-color: #ffffff;
 }
 
@@ -1120,8 +1459,17 @@ onBeforeUnmount(() => {
 }
 
 .fixed-pane {
-  z-index: 3;
+  z-index: 10;
+  opacity: 1;
   background-color: #ffffff;
+}
+
+.fixed-pane .body-cell {
+  background-color: #ffffff;
+}
+
+.body-row-layer.is-selected .fixed-pane .body-cell {
+  background-color: #e8f2ff;
 }
 
 .table-header .fixed-pane {
@@ -1144,15 +1492,18 @@ onBeforeUnmount(() => {
 
 .center-viewport {
   z-index: 1;
+  overflow: hidden;
 }
 
 .table-row,
-.center-window {
+.center-window,
+.center-body-window {
   display: flex;
   flex-direction: row;
 }
 
-.center-window {
+.center-window,
+.center-body-window {
   position: absolute;
   top: 0;
   left: 0;
@@ -1200,7 +1551,10 @@ onBeforeUnmount(() => {
 }
 
 .cell-text {
+  max-width: 100%;
   min-width: 0;
+  flex-shrink: 1;
+  overflow: hidden;
   color: #34414c;
   font-size: 12px;
   line-height: 18px;

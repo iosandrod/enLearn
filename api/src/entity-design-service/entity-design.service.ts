@@ -37,6 +37,13 @@ const SUPPORTED_DATA_TYPES = new Set([
 const RPC_NAMES = {
   listDesign: 'entity_design_list',
   listPhysicalTables: 'entity_design_list_physical_tables',
+  listViews: 'entity_design_list_views',
+  listViewColumns: 'entity_design_list_view_columns',
+  validateView: 'entity_design_validate_view',
+  saveView: 'entity_design_save_view',
+  publishView: 'entity_design_publish_view',
+  archiveView: 'entity_design_archive_view',
+  deleteView: 'entity_design_delete_view',
   syncPhysicalColumns: 'entity_design_sync_physical_columns',
   syncPhysicalTables: 'entity_design_sync_physical_tables',
   saveTable: 'entity_design_save_table',
@@ -95,7 +102,7 @@ function readJsonObject(value: unknown, fallback: JsonRecord = {}) {
 }
 
 function assertIdentifier(value: string, name: string) {
-  if (!IDENTIFIER_PATTERN.test(value)) {
+  if (!IDENTIFIER_PATTERN.test(value) || value.length > 63) {
     throw new BadRequestException(`${name} must be a valid identifier.`);
   }
 }
@@ -177,6 +184,63 @@ function normalizeTableSelector(postData: JsonRecord) {
   throw new BadRequestException('tableId, tableCode, or tableName is required.');
 }
 
+function readInputValue(postData: JsonRecord, ...keys: string[]) {
+  const filters = isRecord(postData.filters) ? postData.filters : {};
+  for (const key of keys) {
+    if (postData[key] !== undefined && postData[key] !== '') return postData[key];
+    if (filters[key] !== undefined && filters[key] !== '') return filters[key];
+  }
+  return undefined;
+}
+
+function normalizeViewSelector(postData: JsonRecord, required = true) {
+  const id = readOptionalString(readInputValue(postData, 'id', 'viewId', 'view_id'));
+  if (id) return { id };
+
+  const code = readOptionalString(readInputValue(postData, 'code', 'viewCode', 'view_code'));
+  if (code) return { code };
+
+  const schemaName = readOptionalString(
+    readInputValue(postData, 'schemaName', 'schema_name')
+  ) || 'public';
+  const viewName = readOptionalString(
+    readInputValue(postData, 'viewName', 'view_name')
+  );
+  if (viewName) {
+    assertIdentifier(schemaName, 'schemaName');
+    assertIdentifier(viewName, 'viewName');
+    return { schema_name: schemaName, view_name: viewName };
+  }
+
+  if (!required) return {};
+  throw new BadRequestException('id, viewCode, or viewName is required.');
+}
+
+function normalizeViewStatus(value: unknown, fallback = '') {
+  const status = readOptionalString(value);
+  if (!status) return fallback;
+  if (['draft', 'published', 'archived'].includes(status)) return status;
+  throw new BadRequestException(`Unsupported view status: ${status}.`);
+}
+
+function hasBlankViewIdFilter(postData: JsonRecord) {
+  if (!isRecord(postData.filters)) return false;
+  if (!Object.prototype.hasOwnProperty.call(postData.filters, 'id')) return false;
+  return !readOptionalString(postData.filters.id);
+}
+
+function isViewAction(method: string) {
+  return [
+    'listViews',
+    'listViewColumns',
+    'validateView',
+    'saveView',
+    'publishView',
+    'archiveView',
+    'deleteView'
+  ].includes(method);
+}
+
 function isMissingEntityMetadataError(error: unknown) {
   if (!isRecord(error)) return false;
   const code = String(error.code ?? '');
@@ -188,7 +252,7 @@ function isMissingEntityMetadataError(error: unknown) {
 }
 
 function entityMetadataRequiredMessage() {
-  return 'Entity design RPC functions are not installed. Run supabase/migrations/20260806110000_entity_design_rpc.sql first.';
+  return 'Entity design RPC functions are not installed. Apply the latest entity-design and view-management migrations first.';
 }
 
 @Injectable()
@@ -254,11 +318,29 @@ export class EntityDesignService extends BaseService {
     context: ServiceContext
   ) {
     try {
+      const viewClient = isViewAction(method)
+        ? (await this.assertViewAccess(context)).client
+        : undefined;
+
       switch (method) {
         case 'listDesign':
           return this.listDesign(context);
         case 'listPhysicalTables':
           return this.listPhysicalTables(context);
+        case 'listViews':
+          return this.listViews(postData, viewClient!);
+        case 'listViewColumns':
+          return this.listViewColumns(postData, viewClient!);
+        case 'validateView':
+          return this.validateView(postData, viewClient!);
+        case 'saveView':
+          return this.saveView(postData, viewClient!);
+        case 'publishView':
+          return this.publishView(postData, viewClient!);
+        case 'archiveView':
+          return this.archiveView(postData, viewClient!);
+        case 'deleteView':
+          return this.deleteView(postData, viewClient!);
         case 'syncPhysicalColumns':
           return this.syncPhysicalColumns(postData, context);
         case 'syncPhysicalTables':
@@ -289,6 +371,14 @@ export class EntityDesignService extends BaseService {
     const { client } = await requireAdmin(
       { ...context, accountId: undefined },
       ['entity.design.manage', 'admin.entities.manage']
+    );
+    return { client };
+  }
+
+  protected async assertViewAccess(context: ServiceContext) {
+    const { client } = await requireAdmin(
+      { ...context, accountId: undefined },
+      ['entity.views.manage']
     );
     return { client };
   }
@@ -325,6 +415,89 @@ export class EntityDesignService extends BaseService {
   private async listPhysicalTables(context: ServiceContext) {
     const { client } = await this.assertAccess(context);
     return this.callRpc(client, RPC_NAMES.listPhysicalTables);
+  }
+
+  private async listViews(postData: JsonRecord, client: SupabaseClient) {
+    if (hasBlankViewIdFilter(postData)) return [];
+
+    return this.callRpc(client, RPC_NAMES.listViews, {
+      ...normalizeViewSelector(postData, false),
+      status: normalizeViewStatus(readInputValue(postData, 'status')) || null,
+      search: readOptionalString(readInputValue(postData, 'search')) || null
+    });
+  }
+
+  private async listViewColumns(postData: JsonRecord, client: SupabaseClient) {
+    if (hasBlankViewIdFilter(postData)) return [];
+
+    return this.callRpc(
+      client,
+      RPC_NAMES.listViewColumns,
+      normalizeViewSelector(postData)
+    );
+  }
+
+  private async validateView(postData: JsonRecord, client: SupabaseClient) {
+    const definitionSql = readString(
+      postData.definitionSql ?? postData.definition_sql,
+      'definitionSql'
+    );
+    return this.callRpc(client, RPC_NAMES.validateView, {
+      definition_sql: definitionSql
+    });
+  }
+
+  private async saveView(postData: JsonRecord, client: SupabaseClient) {
+    const schemaName = readOptionalString(
+      postData.schemaName ?? postData.schema_name
+    ) || 'public';
+    const viewName = readString(
+      postData.viewName ?? postData.view_name,
+      'viewName'
+    );
+    const code = readString(postData.code, 'code', viewName);
+    assertIdentifier(schemaName, 'schemaName');
+    assertIdentifier(viewName, 'viewName');
+    assertIdentifier(code, 'code');
+
+    return this.callRpc(client, RPC_NAMES.saveView, {
+      id: readOptionalString(postData.id) || null,
+      code,
+      schema_name: schemaName,
+      view_name: viewName,
+      title: readString(postData.title, 'title', viewName),
+      description: readOptionalString(postData.description) || null,
+      definition_sql: readOptionalString(
+        postData.definitionSql ?? postData.definition_sql
+      ),
+      status: normalizeViewStatus(postData.status) || null,
+      security_invoker: true,
+      metadata: readJsonObject(postData.metadata ?? postData.metadata_json)
+    });
+  }
+
+  private async publishView(postData: JsonRecord, client: SupabaseClient) {
+    return this.callRpc(
+      client,
+      RPC_NAMES.publishView,
+      normalizeViewSelector(postData)
+    );
+  }
+
+  private async archiveView(postData: JsonRecord, client: SupabaseClient) {
+    return this.callRpc(
+      client,
+      RPC_NAMES.archiveView,
+      normalizeViewSelector(postData)
+    );
+  }
+
+  private async deleteView(postData: JsonRecord, client: SupabaseClient) {
+    return this.callRpc(
+      client,
+      RPC_NAMES.deleteView,
+      normalizeViewSelector(postData)
+    );
   }
 
   private async syncPhysicalColumns(postData: JsonRecord, context: ServiceContext) {

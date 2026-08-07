@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import {
   BUILTIN_LOW_CODE_ACTION_KEYS,
   createBuiltinLowCodeAction,
+  createBuiltinLowCodeActionEditorRow,
   createDefaultButtonGroupActions,
   createDefaultButtonGroupEditorRows,
   getBuiltinLowCodeActionPresets,
@@ -43,6 +44,23 @@ const arrayRows = createDefaultButtonGroupEditorRows({ directivesJson: 'array' }
 assert.equal(jsonRows[0].directivesJson, '[]');
 assert.deepEqual(arrayRows[0].directivesJson, []);
 assert.equal(jsonRows[1].children[0].directivesJson, '[]');
+
+const editEditorRow = createBuiltinLowCodeActionEditorRow(
+  BUILTIN_LOW_CODE_ACTION_KEYS.EDIT,
+);
+assert.equal(editEditorRow.label, '编辑');
+assert.equal(editEditorRow.directivesJson, '[]');
+assert.deepEqual(editEditorRow.children, []);
+
+const moreEditorRow = createBuiltinLowCodeActionEditorRow(
+  BUILTIN_LOW_CODE_ACTION_KEYS.MORE,
+  { directivesJson: 'array' },
+);
+assert.deepEqual(moreEditorRow.directivesJson, []);
+assert.deepEqual(
+  moreEditorRow.children.map((button) => button.code),
+  ['import', 'export'],
+);
 
 const frameworkRoot = new URL('../../packages/lowcode-framework/src/', import.meta.url);
 const consumerPaths = [

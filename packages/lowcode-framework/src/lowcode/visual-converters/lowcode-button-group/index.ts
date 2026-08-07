@@ -68,6 +68,7 @@ function normalizeButton(
   const status = normalizeStatus(row.status);
   const route = readString(row.route);
   const eventName = readString(row.eventName);
+  const script = typeof row.script === 'string' ? row.script : '';
   const icon = readString(row.icon);
   const prefixIcon = readString(row.prefixIcon);
   const suffixIcon = readString(row.suffixIcon);
@@ -81,6 +82,7 @@ function normalizeButton(
     ...(mode ? { mode } : {}),
     ...(route ? { route } : {}),
     ...(eventName ? { eventName } : {}),
+    ...(script.trim() ? { script } : {}),
     ...(icon ? { icon } : {}),
     ...(prefixIcon ? { prefixIcon } : {}),
     ...(suffixIcon ? { suffixIcon } : {}),

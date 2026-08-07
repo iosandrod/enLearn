@@ -322,7 +322,12 @@ function getVxeFieldKey(field: LowCodeField) {
 }
 
 function isWideField(field: LowCodeField) {
-  return ['lc-array-table', 'lc-sub-form', 'lc-json-editor'].includes(field.component);
+  return [
+    'lc-array-table',
+    'lc-sub-form',
+    'lc-json-editor',
+    'lc-monaco-editor',
+  ].includes(field.component);
 }
 
 function fieldGridCellClass(field: LowCodeField) {
@@ -721,7 +726,8 @@ defineExpose({
 .lc-field > .vxe-color-picker,
 .lc-field > .lc-array-table,
 .lc-field > .lc-sub-form,
-.lc-field > .lc-json-editor {
+.lc-field > .lc-json-editor,
+.lc-field > .lc-monaco-editor {
   width: 100%;
   max-width: 100%;
 }

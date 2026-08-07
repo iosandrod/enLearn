@@ -81,6 +81,7 @@
   import {VxeUI} from 'vxe-pc-ui';
   import MonacoEditor from '../common/monaco-editor/MonacoEditor';
   import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
+  import { useLowCodeHost } from '../../../core/host';
   import { useVisualData } from '../../hooks/useVisualData';
   import { useModal } from '../../hooks/useModal';
   import { generateNanoid } from '../../utils';
@@ -118,6 +119,7 @@
   );
 
   const { currentPage, setCurrentBlock } = useVisualData();
+  const host = useLowCodeHost();
 
   const { globalProperties } = useGlobalProperties();
 
@@ -531,8 +533,15 @@
 
   const openGridDesigner = async (block: VisualEditorBlockData) => {
     selectComp(block);
+    let serviceApi;
+    try {
+      serviceApi = host.getServiceApi();
+    } catch {
+      serviceApi = undefined;
+    }
     const result = await $$gridDesigner({
       title: `${block.label || '表格'}设计`,
+      serviceApi,
       business: {
         blockId: block.props?.blockId,
         title: block.props?.title,

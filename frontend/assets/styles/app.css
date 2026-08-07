@@ -1127,6 +1127,7 @@ a {
 
 .lc-node-container {
   display: grid;
+  width:100%;
   gap: var(--lc-container-gap, 8px);
   grid-template-columns: repeat(var(--lc-container-columns, 1), minmax(0, 1fr));
 }

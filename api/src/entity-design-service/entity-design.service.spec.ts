@@ -23,6 +23,10 @@ class EntityDesignServiceHarness extends EntityDesignService {
   protected override async assertAccess(_context: ServiceContext) {
     return { client: this.rpcClient };
   }
+
+  protected override async assertViewAccess(_context: ServiceContext) {
+    return { client: this.rpcClient };
+  }
 }
 
 function createHarness(result: RpcResult = { data: { ok: true }, error: null }) {
@@ -59,6 +63,130 @@ async function main() {
     'listPhysicalTables',
     {},
     'entity_design_list_physical_tables'
+  );
+  await assertRpc(
+    'listViews',
+    {},
+    'entity_design_list_views',
+    { status: null, search: null }
+  );
+  await assertRpc(
+    'listViews',
+    {
+      filters: { viewCode: 'sales_order_summary' },
+      status: 'published',
+      search: 'sales'
+    },
+    'entity_design_list_views',
+    {
+      code: 'sales_order_summary',
+      status: 'published',
+      search: 'sales'
+    }
+  );
+  await assertRpc(
+    'listViewColumns',
+    { schema_name: 'public', view_name: 'sales_order_summary' },
+    'entity_design_list_view_columns',
+    { schema_name: 'public', view_name: 'sales_order_summary' }
+  );
+  await assertRpc(
+    'validateView',
+    { definition_sql: 'select id from public.sales_orders' },
+    'entity_design_validate_view',
+    { definition_sql: 'select id from public.sales_orders' }
+  );
+  await assertRpc(
+    'saveView',
+    {
+      id: 'view-1',
+      code: 'sales_order_summary',
+      schemaName: 'public',
+      viewName: 'sales_order_summary',
+      title: 'Sales order summary',
+      description: 'Published sales orders',
+      definitionSql: 'select id from public.sales_orders',
+      metadata: { domain: 'sales' }
+    },
+    'entity_design_save_view',
+    {
+      id: 'view-1',
+      code: 'sales_order_summary',
+      schema_name: 'public',
+      view_name: 'sales_order_summary',
+      title: 'Sales order summary',
+      description: 'Published sales orders',
+      definition_sql: 'select id from public.sales_orders',
+      status: null,
+      security_invoker: true,
+      metadata: { domain: 'sales' }
+    }
+  );
+  await assertRpc(
+    'publishView',
+    { viewId: 'view-1' },
+    'entity_design_publish_view',
+    { id: 'view-1' }
+  );
+  await assertRpc(
+    'archiveView',
+    { viewCode: 'sales_order_summary' },
+    'entity_design_archive_view',
+    { code: 'sales_order_summary' }
+  );
+  await assertRpc(
+    'deleteView',
+    { schemaName: 'public', viewName: 'sales_order_summary' },
+    'entity_design_delete_view',
+    { schema_name: 'public', view_name: 'sales_order_summary' }
+  );
+
+  const emptyCreateRoute = createHarness();
+  assert.deepEqual(
+    await emptyCreateRoute.service.execute(
+      'listViews',
+      { filters: { id: '' } },
+      {}
+    ),
+    []
+  );
+  assert.deepEqual(emptyCreateRoute.calls, []);
+
+  const emptyColumnRoute = createHarness();
+  assert.deepEqual(
+    await emptyColumnRoute.service.execute(
+      'listViewColumns',
+      { filters: { id: '' } },
+      {}
+    ),
+    []
+  );
+  assert.deepEqual(emptyColumnRoute.calls, []);
+
+  const validationHarness = createHarness().service;
+  await assert.rejects(
+    () => validationHarness.execute(
+      'saveView',
+      { code: 'bad-name', viewName: 'valid_name', title: 'Invalid' },
+      {}
+    ),
+    BadRequestException
+  );
+  await assert.rejects(
+    () => validationHarness.execute(
+      'listViews',
+      { status: 'unknown' },
+      {}
+    ),
+    BadRequestException
+  );
+  await assert.rejects(
+    () => validationHarness.execute(
+      'deleteView',
+      { viewName: 'x'.repeat(64) },
+      {}
+    ),
+    BadRequestException
   );
   await assertRpc(
     'syncPhysicalColumns',

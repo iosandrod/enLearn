@@ -145,6 +145,7 @@ export default defineConfig({
       { find: '@enlearn/lowcode-framework/runtime/global-dialog', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'global-dialog.ts') },
       { find: '@enlearn/lowcode-framework/runtime/page-reference-dialog', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'page-reference-dialog.tsx') },
       { find: '@enlearn/lowcode-framework/runtime/directives', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'directives.ts') },
+      { find: '@enlearn/lowcode-framework/runtime/scripts', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'scripts.ts') },
       { find: '@enlearn/lowcode-framework/runtime', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'index.ts') },
       { find: '@enlearn/lowcode-framework/designer', replacement: resolve(lowcodeFrameworkRoot, 'designer', 'index.ts') },
       { find: '@enlearn/lowcode-framework/materials', replacement: resolve(lowcodeFrameworkRoot, 'materials', 'index.ts') },

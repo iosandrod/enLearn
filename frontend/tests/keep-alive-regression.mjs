@@ -94,6 +94,11 @@ assert.match(
 );
 assert.match(
   outletSource,
+  /if \(keepAlive\) cachedRouteComponent\.value = routeComponent/,
+  'The cached route vnode must be retained while an uncached route is active.'
+);
+assert.match(
+  outletSource,
   /name: `RouteCacheEntry\$\{\+\+cacheEntryId\}`/,
   'Each cached route must use a uniquely named wrapper so it can be evicted independently.'
 );

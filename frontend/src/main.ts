@@ -39,6 +39,7 @@ import {
   initializeSystemSettings,
   installSystemSettingsListeners,
 } from '../composables/useSystemSettings';
+import { installLowCodeScriptApis } from './lowcode-script-apis';
 import { router } from './router';
 import './mainStyle.ts'
 const DEV_SERVICE_WORKER_RELOAD_KEY = 'enlearn_dev_service_worker_reloaded';
@@ -115,6 +116,7 @@ app.config.globalProperties.$$refs = refs;
 window.$$refs = refs;
 
 installSystemSettingsListeners();
+installLowCodeScriptApis();
 await initializeSystemSettings().catch((error) => {
   console.warn('System settings initialization failed.', error);
 });

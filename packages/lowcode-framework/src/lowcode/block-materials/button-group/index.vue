@@ -274,6 +274,7 @@ function handleAction(action: LowCodeButtonGroupAction) {
     payload: {
       action,
       actionCode: action.code,
+      script: action.script ?? '',
       directives: action.directives ?? [],
     },
   });

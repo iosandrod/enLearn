@@ -224,6 +224,7 @@ export type VisualEditorTableColumnOption = {
     | 'vxe-password-input'
     | 'lc-number-input'
     | 'lc-json-editor'
+    | 'lc-monaco-editor'
     | 'lc-option-select'
     | 'lc-sub-form'
     | (string & {});

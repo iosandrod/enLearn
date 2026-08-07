@@ -20,6 +20,7 @@
 <script setup lang="ts">
 import { computed, inject, watch } from 'vue';
 import LowCodeGrid from '../../../components/LowCodeGrid.vue';
+import { useLowCodeHost } from '../../../core/host';
 import { resolveGridRows } from '../helpers';
 import type { LowCodeGridRowAction, LowCodePageGridBlock } from '../../../types/lowcode';
 import { lowCodeRuntimeBlockEditorKey } from '../../../runtime/block-editor';
@@ -31,6 +32,7 @@ import { openRuntimeGridDesigner } from './runtime-grid-designer';
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageGridBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
+const host = useLowCodeHost();
 const pageRuntime = useLowCodePageRuntime(false);
 const runtimeSources = computed(
   () => pageRuntime?.state.sources ?? props.resolvedData
@@ -147,6 +149,7 @@ function handleToolbar(code: string) {
   emitRuntimeEvent(action?.eventName ?? 'grid.toolbarClick', {
     action,
     actionCode: code,
+    script: action?.script ?? '',
     directives: action?.directives ?? [],
   });
 }
@@ -177,6 +180,7 @@ function handleRowAction(payload: {
     row: payload.row,
     action: payload.action,
     actionCode: payload.action.code,
+    script: payload.action.script ?? '',
     directives: payload.action.directives ?? [],
   });
 }
@@ -237,7 +241,13 @@ function handleGridEvent(payload: GridRuntimeEventPayload) {
     payload.actionCode === 'tableInfoDesign' &&
     runtimeBlockEditor
   ) {
-    void openRuntimeGridDesigner(props.block, runtimeBlockEditor);
+    let serviceApi;
+    try {
+      serviceApi = host.getServiceApi();
+    } catch {
+      serviceApi = undefined;
+    }
+    void openRuntimeGridDesigner(props.block, runtimeBlockEditor, serviceApi);
   }
 
   if (

@@ -140,6 +140,23 @@
           class="panel-section"
           :class="panel.className"
         >
+          <div class="panel-heading">
+            <div>
+              <span>{{ panel.kicker }}</span>
+              <h2>{{ panel.title }}</h2>
+            </div>
+            <button
+              v-if="panel.addAction"
+              type="button"
+              :title="panel.addAction.title"
+              :disabled="panel.addAction.disabled"
+              @click="panel.addAction.onClick"
+            >
+              <i :class="panel.addAction.icon || 'ri-add-line'" />
+            </button>
+            <strong v-else-if="typeof panel.badge !== 'undefined'">{{ panel.badge }}</strong>
+          </div>
+
           <p v-if="panel.hint" class="panel-hint">{{ panel.hint }}</p>
 
           <LowCodeForm

@@ -26,6 +26,7 @@ export type LowCodeBuiltInFieldComponent =
   | 'lc-array-table'
   | 'lc-color-picker'
   | 'lc-json-editor'
+  | 'lc-monaco-editor'
   | 'lc-number-input'
   | 'lc-option-select'
   | 'lc-sub-form';
@@ -202,6 +203,7 @@ export type LowCodeAction = {
   route?: string;
   disabled?: boolean;
   eventName?: string;
+  script?: string;
   directives?: LowCodeRuntimeDirective[];
 };
 
@@ -287,6 +289,7 @@ export type LowCodeGridAction = {
   icon?: string;
   disabled?: boolean;
   eventName?: string;
+  script?: string;
   directives?: LowCodeRuntimeDirective[];
 };
 
@@ -601,6 +604,10 @@ export type LowCodePageSchema = {
   };
   dataSources?: Record<string, LowCodePageDataSource>;
   eventHandlers?: LowCodeEventHandler[];
+  scriptPolicy?: {
+    apiNames?: string[];
+    capabilities?: import('../runtime/scripts').LowCodeScriptCapabilityName[];
+  };
   blocks: LowCodePageBlock[];
   overlays?: LowCodePageOverlayBlock[];
 };

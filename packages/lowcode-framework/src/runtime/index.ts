@@ -22,6 +22,7 @@ export * from './block-editor';
 export * from './page-runtime';
 export * from '../core';
 export * from './directives';
+export * from './scripts';
 export * from '../lowcode/builtin-pages';
 export * from '../lowcode/block-materials';
 export * from '../lowcode/form-materials';

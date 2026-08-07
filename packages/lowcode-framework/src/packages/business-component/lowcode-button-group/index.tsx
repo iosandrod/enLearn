@@ -14,6 +14,7 @@ type ButtonGroupItem = Omit<Partial<VxeButtonProps>, 'options'> & {
   label?: string;
   route?: string;
   eventName?: string;
+  script?: string;
   directivesJson?: string;
   children?: ButtonGroupItem[];
   text?: boolean;
@@ -242,6 +243,19 @@ export default {
           },
           { label: '路由', field: 'route' },
           { label: '事件名', field: 'eventName' },
+          {
+            label: '执行脚本',
+            field: 'script',
+            component: 'lc-monaco-editor',
+            minWidth: 240,
+            placeholder: 'JavaScript',
+            props: {
+              dialog: true,
+              language: 'javascript',
+              dialogTitle: '编辑按钮执行脚本',
+              scriptThisType: 'LowCodeButtonScriptThis',
+            },
+          },
           { label: '图标', field: 'icon' },
           { label: '前缀图标', field: 'prefixIcon' },
           { label: '后缀图标', field: 'suffixIcon' },

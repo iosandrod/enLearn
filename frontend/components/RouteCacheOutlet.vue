@@ -4,7 +4,7 @@
       :is="activeCachedRouteComponent"
       v-if="activeCachedRouteComponent"
       :key="cacheKey"
-      :route-component="routeComponent"
+      :route-component="cachedRouteComponent"
     />
   </KeepAlive>
   <component
@@ -22,6 +22,7 @@ import {
   markRaw,
   nextTick,
   reactive,
+  shallowRef,
   type Component,
   type PropType,
   type VNode,
@@ -40,11 +41,20 @@ const props = defineProps<{
 const cacheEntryComponents = new Map<string, Component>();
 const cacheEntryKeys = new Set<string>();
 const excludedCacheEntryNameSet = reactive(new Set<string>());
+const cachedRouteComponent = shallowRef<VNode>();
 let cacheEntryId = 0;
 
 const excludedCacheEntryNames = computed(() => [...excludedCacheEntryNameSet]);
 const activeCachedRouteComponent = computed(() =>
   props.keepAlive ? resolveCacheEntryComponent(props.cacheKey) : null
+);
+
+watch(
+  () => [props.keepAlive, props.routeComponent] as const,
+  ([keepAlive, routeComponent]) => {
+    if (keepAlive) cachedRouteComponent.value = routeComponent;
+  },
+  { immediate: true }
 );
 
 watch(

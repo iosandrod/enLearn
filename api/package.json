@@ -53,6 +53,7 @@
     "db:apply-account-sets": "tsx scripts/apply-account-set-migration.ts",
     "db:unify-account-id-columns": "tsx scripts/apply-account-id-unification.ts",
     "db:apply-entity-design-rpc": "tsx scripts/apply-entity-design-rpc.ts",
+    "db:apply-view-management": "tsx scripts/apply-view-management.ts",
     "db:apply-dynamic-crud-rpc": "tsx scripts/apply-dynamic-crud-rpc.ts",
     "db:apply-test-access-rpc": "tsx scripts/apply-test-access-rpc.ts",
     "workflow:db:apply-rpcs": "tsx scripts/apply-workflow-rpcs.ts",
@@ -78,6 +79,7 @@
     "workflow:smoke:approval-console-rpc": "tsx scripts/smoke-workflow-approval-console-rpc.ts",
     "workflow:smoke:notification-rpc": "tsx scripts/smoke-notification-worker-rpc.ts",
     "smoke:lowcode-table-metadata-rpc": "tsx scripts/smoke-lowcode-table-metadata-rpc.ts",
+    "smoke:view-management": "tsx scripts/smoke-view-management.ts",
     "workflow:smoke:definition-command-rpc": "tsx scripts/smoke-workflow-definition-command-rpc.ts",
     "workflow:smoke:notification-api-rpc": "tsx scripts/smoke-notification-api-rpc.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Button script runtime smoke</title>
+  </head>
+  <body>
+    <output id="result">pending</output>
+    <script type="module">
+      import {
+        createLowCodeWorkerScriptExecutor,
+      } from '../../packages/lowcode-framework/src/runtime/scripts.ts';
+
+      const output = document.querySelector('#result');
+      window.addEventListener('error', (event) => {
+        output.textContent = JSON.stringify({
+          ok: false,
+          workerError: event.message,
+        });
+      });
+      window.addEventListener('unhandledrejection', (event) => {
+        output.textContent = JSON.stringify({
+          ok: false,
+          rejection: String(event.reason?.message || event.reason),
+        });
+      });
+      const context = {
+        page: { code: 'runtime-smoke' },
+        route: {},
+        data: {},
+        forms: { edit: { count: 1 } },
+        searches: {},
+        grids: {},
+        event: { name: 'buttonGroup.click' },
+      };
+
+      try {
+        const executor = createLowCodeWorkerScriptExecutor();
+        const result = await executor(
+          {
+            script: `
+              await this.$message.info(this.page.code);
+              await this.$form.patch('edit', { count: 42 });
+              return this.forms.edit.count + 41;
+            `,
+            context,
+          },
+          async (request) => {
+            if (request.name === 'message.info') return `said:${request.args[0]}`;
+            if (request.name === 'form.patch') return request.args[1];
+            throw new Error(`Unexpected capability: ${request.name}`);
+          },
+        );
+        const isolated = await executor(
+          {
+            script: `
+              let mutationBlocked = false;
+              try {
+                this.forms.edit.count = 999;
+              } catch {
+                mutationBlocked = true;
+              }
+              return {
+                mutationBlocked,
+                guestValue: this.forms.edit.count,
+                hasWindow: typeof window !== 'undefined',
+                hasDocument: typeof document !== 'undefined',
+                hasHostBridge: typeof __lowCodeHostCall !== 'undefined',
+                hasWrapperCall: typeof call !== 'undefined',
+                hasWrapperSnapshot: typeof snapshot !== 'undefined',
+              };
+            `,
+            context,
+          },
+          () => {
+            throw new Error('Isolation smoke must not call host capabilities.');
+          },
+        );
+        let timeoutMessage = '';
+        try {
+          await executor(
+            {
+              script: 'while (true) {}',
+              context,
+              limits: { timeoutMs: 100 },
+            },
+            () => null,
+          );
+        } catch (error) {
+          timeoutMessage = error instanceof Error ? error.message : String(error);
+        }
+        let rejectedApiMessage = '';
+        try {
+          await executor(
+            {
+              script: `await this.$api.invoke('missing.api', {});`,
+              context,
+            },
+            () => {
+              throw new Error('API denied by host policy');
+            },
+          );
+        } catch (error) {
+          rejectedApiMessage = error instanceof Error ? error.message : String(error);
+        }
+        let apiLimitMessage = '';
+        try {
+          await executor(
+            {
+              script: `
+                await this.$message.info('one');
+                await this.$message.info('two');
+              `,
+              context,
+              limits: { maxApiCalls: 1 },
+            },
+            () => true,
+          );
+        } catch (error) {
+          apiLimitMessage = error instanceof Error ? error.message : String(error);
+        }
+        output.textContent = JSON.stringify({
+          ok:
+            result.value === 42 &&
+            isolated.value.mutationBlocked === true &&
+            isolated.value.guestValue === 1 &&
+            isolated.value.hasWindow === false &&
+            isolated.value.hasDocument === false &&
+            isolated.value.hasHostBridge === false &&
+            isolated.value.hasWrapperCall === false &&
+            isolated.value.hasWrapperSnapshot === false &&
+            context.forms.edit.count === 1 &&
+            /interrupted|timeout|超时/i.test(timeoutMessage) &&
+            rejectedApiMessage.includes('API denied by host policy') &&
+            apiLimitMessage.includes('调用次数超过限制'),
+          result,
+          isolated,
+          timeoutMessage,
+          rejectedApiMessage,
+          apiLimitMessage,
+        });
+      } catch (error) {
+        output.textContent = JSON.stringify({
+          ok: false,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    </script>
+  </body>
+</html>

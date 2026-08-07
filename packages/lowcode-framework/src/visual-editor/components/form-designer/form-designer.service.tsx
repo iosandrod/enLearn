@@ -77,6 +77,7 @@ const runtimeToEditorComponent: Record<string, string> = {
   'vxe-radio-group': 'radio',
   'vxe-checkbox-group': 'checkbox',
   'lc-json-editor': 'input',
+  'lc-monaco-editor': 'input',
   'lc-number-input': 'input',
   'lc-array-table': 'array-table',
   'lc-sub-form': 'sub-form',

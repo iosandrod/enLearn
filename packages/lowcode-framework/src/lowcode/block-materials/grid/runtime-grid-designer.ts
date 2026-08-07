@@ -6,6 +6,7 @@ import type {
   LowCodeRuntimeDirective,
 } from '../../../types/lowcode';
 import type { LowCodeRuntimeBlockEditor } from '../../../runtime/block-editor';
+import type { LowCodeHostServiceApi } from '../../../core/host';
 import type {
   GridDesignerEvent,
   GridDesignerResult,
@@ -50,17 +51,11 @@ function isActionColumn(column: LowCodeGridColumn) {
 
 function hasRuntimeRowActions(block: LowCodePageGridBlock) {
   const columns = block.schema.grid.columns ?? [];
-  const rowActions = block.schema.rowActions;
-
-  if (rowActions) {
-    return Boolean(
-      rowActions.edit !== false ||
-        rowActions.delete !== false ||
-        (Array.isArray(rowActions.actions) && rowActions.actions.length),
-    );
-  }
-
-  return columns.some(isActionColumn);
+  return columns.some(isActionColumn) || Boolean(
+    block.schema.rowActions?.edit === true ||
+      block.schema.rowActions?.delete === true ||
+      block.schema.rowActions?.actions?.length,
+  );
 }
 
 function createDesignerPostData(source?: LowCodePageDataSource) {
@@ -127,7 +122,20 @@ function createRuntimeGridSchema(
   const originalColumns = block.schema.grid.columns ?? [];
   const actionColumns = originalColumns.filter(isActionColumn);
   const designedColumns = cloneValue(result.columns) as LowCodeGridColumn[];
-  const columns = result.business.showRowActions
+  const existingRowActions = cloneValue(block.schema.rowActions);
+  const hasEnabledRowAction = Boolean(
+    existingRowActions?.edit === true ||
+      existingRowActions?.delete === true ||
+      existingRowActions?.actions?.length,
+  );
+  const hasExplicitRowActionConfig = Boolean(existingRowActions);
+  const shouldRenderActionColumn = result.business.showRowActions && (
+    actionColumns.length > 0 ||
+      hasEnabledRowAction ||
+      !hasExplicitRowActionConfig ||
+      Boolean(readString(result.business.deleteMethod))
+  );
+  const columns = shouldRenderActionColumn
     ? [
         ...designedColumns,
         ...(actionColumns.length
@@ -152,6 +160,21 @@ function createRuntimeGridSchema(
       columns,
     },
   };
+
+  if (shouldRenderActionColumn && !hasEnabledRowAction) {
+    schema.rowActions = {
+      ...existingRowActions,
+      edit: true,
+      delete: Boolean(readString(result.business.deleteMethod)),
+    };
+  } else if (!shouldRenderActionColumn) {
+    schema.rowActions = {
+      ...existingRowActions,
+      edit: false,
+      delete: false,
+      actions: [],
+    };
+  }
 
   if (Object.keys(events).length) schema.events = events;
   else delete schema.events;
@@ -202,18 +225,25 @@ function createRuntimeDataSource(
 export async function openRuntimeGridDesigner(
   block: LowCodePageGridBlock,
   runtimeBlockEditor: LowCodeRuntimeBlockEditor,
+  serviceApi?: LowCodeHostServiceApi,
 ) {
   const source = block.sourceKey
     ? runtimeBlockEditor.getDataSource?.(block.sourceKey)
     : undefined;
   const columns = (block.schema.grid.columns ?? []).filter((column) => !isActionColumn(column));
-  const { columns: _columns, data: _data, ...gridOptions } = block.schema.grid;
+  const {
+    columns: _columns,
+    data: _data,
+    menuConfig: _menuConfig,
+    ...gridOptions
+  } = block.schema.grid;
   const { $$gridDesigner } = await import(
     '../../../visual-editor/components/grid-designer/grid-designer.service'
   );
 
   void $$gridDesigner({
     title: `${block.title || block.schema.title || '表格'}设计`,
+    serviceApi,
     business: {
       blockId: block.id,
       title: block.title ?? block.schema.title ?? source?.label ?? '数据表格',

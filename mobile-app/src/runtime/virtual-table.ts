@@ -28,6 +28,9 @@ export type VirtualTableFormatter =
       emptyText?: string;
     };
 
+type VirtualDateFormatter = Extract<VirtualTableFormatter, { type: 'date' | 'datetime' }>;
+type VirtualNumberFormatter = Extract<VirtualTableFormatter, { type: 'currency' | 'number' }>;
+
 export type VirtualTableColumn = {
   key: string;
   sourceIndex: number;
@@ -61,11 +64,22 @@ export type ColumnWindow = VirtualRange & {
   width: number;
 };
 
+export type VirtualWindowRetention = {
+  leading?: number;
+  trailing?: number;
+};
+
 export type VirtualScrollbarMetrics = {
   maxScroll: number;
   thumbOffset: number;
   thumbSize: number;
   thumbTravel: number;
+};
+
+export type VirtualPanOptions = {
+  horizontal: boolean;
+  vertical: boolean;
+  startDistance?: number;
 };
 
 export type SortDirection = 'asc' | 'desc';
@@ -74,6 +88,15 @@ export type SortState = {
   key: string;
   field: string;
   direction: SortDirection;
+};
+
+export type VirtualCellValueReader = {
+  (
+    row: Record<string, unknown>,
+    column: VirtualTableColumn,
+    rowIndex: number,
+  ): string;
+  clear: () => void;
 };
 
 export type RawGridColumn = Record<string, unknown> & {
@@ -313,6 +336,10 @@ function resizePinnedColumns(columns: VirtualTableColumn[], targetWidth: number,
   });
 }
 
+function isPinnedUtilityColumn(column: VirtualTableColumn) {
+  return Boolean(column.selection) || column.type === 'seq';
+}
+
 function fitPinnedSide(
   columns: VirtualTableColumn[],
   budget: number,
@@ -321,15 +348,23 @@ function fitPinnedSide(
 ) {
   if (!columns.length || budget <= 0) return;
 
-  const maxPinnedCount = Math.max(1, Math.floor(budget / minWidth));
-  if (columns.length > maxPinnedCount) {
-    const unpinned = keepFrom === 'start'
-      ? columns.slice(maxPinnedCount)
-      : columns.slice(0, columns.length - maxPinnedCount);
-    unpinned.forEach((column) => {
-      column.fixed = '';
-    });
+  const sideOrdered = keepFrom === 'start' ? columns : [...columns].reverse();
+  const ordered = [
+    ...sideOrdered.filter(isPinnedUtilityColumn),
+    ...sideOrdered.filter((column) => !isPinnedUtilityColumn(column)),
+  ];
+  let pinnedWidth = 0;
+  let pinnedCount = 0;
+  for (const column of ordered) {
+    if (pinnedCount > 0 && pinnedWidth + column.width > budget) break;
+    pinnedWidth += column.width;
+    pinnedCount += 1;
   }
+
+  const pinnedKeys = new Set(ordered.slice(0, Math.max(1, pinnedCount)).map(({ key }) => key));
+  columns.forEach((column) => {
+    if (!pinnedKeys.has(column.key)) column.fixed = '';
+  });
 
   const pinned = columns.filter((column) => Boolean(column.fixed));
   resizePinnedColumns(pinned, budget, minWidth);
@@ -424,6 +459,46 @@ export function getColumnWindow(
   };
 }
 
+export function reuseColumnWindow(
+  previous: ColumnWindow | undefined,
+  next: ColumnWindow,
+): ColumnWindow {
+  return previous
+    && previous.start === next.start
+    && previous.end === next.end
+    && previous.offset === next.offset
+    && previous.width === next.width
+    ? previous
+    : next;
+}
+
+export function retainColumnWindow(
+  previous: ColumnWindow | undefined,
+  required: ColumnWindow,
+  offsets: number[],
+  retention: VirtualWindowRetention = {},
+): ColumnWindow {
+  const columnCount = Math.max(0, offsets.length - 1);
+  if (!columnCount) return required;
+
+  const leading = Math.max(0, Math.floor(retention.leading ?? 1));
+  const trailing = Math.max(0, Math.floor(retention.trailing ?? 1));
+  if (
+    previous
+    && required.start >= previous.start
+    && required.end <= previous.end
+  ) return previous;
+
+  const start = Math.max(0, required.start - leading);
+  const end = Math.min(columnCount, required.end + trailing);
+  return {
+    start,
+    end,
+    offset: offsets[start],
+    width: offsets[end] - offsets[start],
+  };
+}
+
 export function getRowWindow(
   rowCount: number,
   scrollTop: number,
@@ -441,6 +516,46 @@ export function getRowWindow(
     start: Math.max(0, firstVisible - safeOverscan),
     end: Math.min(rowCount, firstVisible + visibleCount + safeOverscan),
   };
+}
+
+export function reuseVirtualRange(
+  previous: VirtualRange | undefined,
+  next: VirtualRange,
+): VirtualRange {
+  return previous && previous.start === next.start && previous.end === next.end
+    ? previous
+    : next;
+}
+
+export function retainVirtualRange(
+  previous: VirtualRange | undefined,
+  required: VirtualRange,
+  rowCount: number,
+  retention: VirtualWindowRetention = {},
+): VirtualRange {
+  const leading = Math.max(0, Math.floor(retention.leading ?? 2));
+  const trailing = Math.max(0, Math.floor(retention.trailing ?? 2));
+  if (
+    previous
+    && required.start >= previous.start
+    && required.end <= previous.end
+  ) return previous;
+
+  return {
+    start: Math.max(0, required.start - leading),
+    end: Math.min(Math.max(0, rowCount), required.end + trailing),
+  };
+}
+
+export function shouldStartVirtualPan(
+  rawDeltaX: number,
+  rawDeltaY: number,
+  options: VirtualPanOptions,
+): boolean {
+  const deltaX = options.horizontal && Number.isFinite(rawDeltaX) ? rawDeltaX : 0;
+  const deltaY = options.vertical && Number.isFinite(rawDeltaY) ? rawDeltaY : 0;
+  const startDistance = Math.max(1, options.startDistance ?? 6);
+  return Math.hypot(deltaX, deltaY) >= startDistance;
 }
 
 export function getVirtualScrollbarMetrics(
@@ -511,6 +626,47 @@ function toDateValue(value: unknown) {
   return null;
 }
 
+const dateFormatterCache = new WeakMap<object, Intl.DateTimeFormat>();
+const numberFormatterCache = new WeakMap<object, Intl.NumberFormat>();
+
+function cachedDateFormatter(
+  formatter: VirtualDateFormatter,
+) {
+  const identity = formatter as object;
+  const cached = dateFormatterCache.get(identity);
+  if (cached) return cached;
+
+  const options = formatter.type === 'datetime'
+    ? {
+        dateStyle: 'medium' as const,
+        timeStyle: 'short' as const,
+        ...formatter.options,
+      }
+    : formatter.options;
+  const created = new Intl.DateTimeFormat(formatter.locale ?? 'zh-CN', options);
+  dateFormatterCache.set(identity, created);
+  return created;
+}
+
+function cachedNumberFormatter(
+  formatter: VirtualNumberFormatter,
+) {
+  const identity = formatter as object;
+  const cached = numberFormatterCache.get(identity);
+  if (cached) return cached;
+
+  const options = formatter.type === 'currency'
+    ? {
+        style: 'currency' as const,
+        currency: formatter.currency ?? 'CNY',
+        ...formatter.options,
+      }
+    : formatter.options;
+  const created = new Intl.NumberFormat(formatter.locale ?? 'zh-CN', options);
+  numberFormatterCache.set(identity, created);
+  return created;
+}
+
 export function formatVirtualCellValue(value: unknown, formatter?: VirtualTableColumn['formatter']) {
   if (!formatter || typeof formatter === 'string') return value ?? '';
   if (typeof formatter === 'function') return formatter({ cellValue: value });
@@ -526,33 +682,25 @@ export function formatVirtualCellValue(value: unknown, formatter?: VirtualTableC
       case 'date': {
         const date = toDateValue(value);
         return date && Number.isFinite(date.getTime())
-          ? new Intl.DateTimeFormat(formatter.locale ?? 'zh-CN', formatter.options).format(date)
+          ? cachedDateFormatter(formatter).format(date)
           : formatter.emptyText ?? String(value);
       }
       case 'datetime': {
         const date = toDateValue(value);
         return date && Number.isFinite(date.getTime())
-          ? new Intl.DateTimeFormat(formatter.locale ?? 'zh-CN', {
-              dateStyle: 'medium',
-              timeStyle: 'short',
-              ...formatter.options,
-            }).format(date)
+          ? cachedDateFormatter(formatter).format(date)
           : formatter.emptyText ?? String(value);
       }
       case 'currency': {
         const numericValue = Number(value);
         return Number.isFinite(numericValue)
-          ? new Intl.NumberFormat(formatter.locale ?? 'zh-CN', {
-              style: 'currency',
-              currency: formatter.currency ?? 'CNY',
-              ...formatter.options,
-            }).format(numericValue)
+          ? cachedNumberFormatter(formatter).format(numericValue)
           : formatter.emptyText ?? String(value);
       }
       case 'number': {
         const numericValue = Number(value);
         return Number.isFinite(numericValue)
-          ? new Intl.NumberFormat(formatter.locale ?? 'zh-CN', formatter.options).format(numericValue)
+          ? cachedNumberFormatter(formatter).format(numericValue)
           : formatter.emptyText ?? String(value);
       }
       case 'enum':
@@ -563,6 +711,55 @@ export function formatVirtualCellValue(value: unknown, formatter?: VirtualTableC
   } catch {
     return formatter.emptyText ?? String(value);
   }
+}
+
+export function createVirtualCellValueReader(): VirtualCellValueReader {
+  type CacheEntry = { value: unknown; text: string };
+
+  let rowCache = new WeakMap<Record<string, unknown>, Map<string, CacheEntry>>();
+  const formatterIds = new WeakMap<object, number>();
+  let nextFormatterId = 1;
+
+  function formatterCacheKey(formatter: VirtualTableColumn['formatter']) {
+    if (!formatter || typeof formatter === 'string') return String(formatter ?? '');
+    const identity = formatter as object;
+    let id = formatterIds.get(identity);
+    if (!id) {
+      id = nextFormatterId;
+      nextFormatterId += 1;
+      formatterIds.set(identity, id);
+    }
+    return String(id);
+  }
+
+  const read = ((row, column, rowIndex) => {
+    if (column.type === 'seq') return String(rowIndex + 1);
+
+    const cacheKey = `${column.key}:${formatterCacheKey(column.formatter)}`;
+    const value = column.field ? row[column.field] : undefined;
+    let values = rowCache.get(row);
+    const cached = values?.get(cacheKey);
+    if (cached && Object.is(cached.value, value) && typeof column.formatter !== 'function') {
+      return cached.text;
+    }
+
+    const formatted = formatVirtualCellValue(value, column.formatter);
+    const text = formatted === null || formatted === undefined || formatted === ''
+      ? '--'
+      : String(formatted);
+    if (!values) {
+      values = new Map<string, CacheEntry>();
+      rowCache.set(row, values);
+    }
+    if (typeof column.formatter !== 'function') values.set(cacheKey, { value, text });
+    return text;
+  }) as VirtualCellValueReader;
+
+  return Object.assign(read, {
+    clear() {
+      rowCache = new WeakMap<Record<string, unknown>, Map<string, CacheEntry>>();
+    },
+  }) as VirtualCellValueReader;
 }
 
 function compareValues(left: unknown, right: unknown) {

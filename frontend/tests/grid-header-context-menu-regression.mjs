@@ -19,6 +19,20 @@ const pageGridMenuSource = await readFile(
   ),
   'utf8'
 );
+const runtimeGridDesignerSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/lowcode/block-materials/grid/runtime-grid-designer.ts',
+    import.meta.url
+  ),
+  'utf8'
+);
+const gridDesignerServiceSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx',
+    import.meta.url
+  ),
+  'utf8'
+);
 const pageRendererSource = await readFile(
   new URL(
     '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue',
@@ -90,6 +104,46 @@ assert.match(
 );
 assert.match(
   pageGridSource,
+  /payload\.key === 'headerMenuClick'[\s\S]*payload\.actionCode === 'tableInfoDesign'[\s\S]*openRuntimeGridDesigner\(props\.block, runtimeBlockEditor, serviceApi\)/,
+  'Clicking table information design must open the existing grid designer with the host service API.'
+);
+assert.match(
+  runtimeGridDesignerSource,
+  /const \{ \$\$gridDesigner \} = await import\([\s\S]*grid-designer\.service'/,
+  'The runtime action must reuse the existing grid designer service.'
+);
+assert.match(
+  runtimeGridDesignerSource,
+  /columns: cloneValue\(columns\),[\s\S]*gridOptions: cloneValue\(gridOptions\),[\s\S]*gridEvents: createDesignerEvents\(block\)/,
+  'The designer must receive the current table columns, options, and events.'
+);
+assert.match(
+  runtimeGridDesignerSource,
+  /onConfirm: async \(result\) => \{[\s\S]*runtimeBlockEditor\.updateBlock\(\{[\s\S]*schema: createRuntimeGridSchema\(block, result\)[\s\S]*dataSources:/,
+  'Confirming table design must persist both the grid block and its data source.'
+);
+assert.match(
+  runtimeGridDesignerSource,
+  /menuConfig: _menuConfig,[\s\S]*\.\.\.gridOptions/,
+  'The built-in runtime context menu must not leak into editable VXE grid options.'
+);
+assert.match(
+  runtimeGridDesignerSource,
+  /rowActions\?\.edit === true[\s\S]*rowActions\?\.delete === true/,
+  'An explicitly disabled row-action configuration must remain disabled in the designer.'
+);
+assert.match(
+  gridDesignerServiceSource,
+  /onClick: async \(\) =>[\s\S]*await handler\.onConfirm\(\)/,
+  'The grid designer must wait for runtime persistence before closing.'
+);
+assert.match(
+  gridDesignerServiceSource,
+  /await state\.option\.onConfirm\?\.\(\{[\s\S]*gridOptions: buildGridOptions/,
+  'The grid designer confirmation callback must support asynchronous persistence.'
+);
+assert.match(
+  pageGridSource,
   /payload\.key === 'bodyMenuClick'[\s\S]*payload\.actionCode === 'editCurrentRow'[\s\S]*emit\('gridEdit', \{ block: props\.block, row: payload\.row \}\)/,
   'Editing the current row from the body context menu must enter the grid edit flow.'
 );
@@ -97,6 +151,11 @@ assert.match(
   pageRendererSource,
   /async function handleGridEdit\([\s\S]*resolveLinkedEditPageRoute\(block, row\)[\s\S]*host\.getRouter\(\)\.push\(linkedEditRoute\)/,
   'The grid edit flow must navigate to the linked edit page.'
+);
+assert.match(
+  pageRendererSource,
+  /if \(update\.dataSources\)[\s\S]*nextSchema\.dataSources = \{[\s\S]*cloneRuntimeValue\(update\.dataSources\)/,
+  'Runtime table design must save data-source changes into the page schema.'
 );
 
 console.log('LowCodeGrid header context menu regression test passed.');

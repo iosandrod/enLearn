@@ -10,7 +10,7 @@ export type LowCodeRule = {
     min?: number;
     message: string;
 };
-export type LowCodeBuiltInFieldComponent = 'vxe-input' | 'vxe-textarea' | 'vxe-select' | 'vxe-switch' | 'vxe-password-input' | 'vxe-checkbox-group' | 'vxe-radio-group' | 'vxe-tree-select' | 'lc-cascader' | 'lc-array-table' | 'lc-color-picker' | 'lc-json-editor' | 'lc-number-input' | 'lc-option-select' | 'lc-sub-form';
+export type LowCodeBuiltInFieldComponent = 'vxe-input' | 'vxe-textarea' | 'vxe-select' | 'vxe-switch' | 'vxe-password-input' | 'vxe-checkbox-group' | 'vxe-radio-group' | 'vxe-tree-select' | 'lc-cascader' | 'lc-array-table' | 'lc-color-picker' | 'lc-json-editor' | 'lc-monaco-editor' | 'lc-number-input' | 'lc-option-select' | 'lc-sub-form';
 export type LowCodeFieldComponent = LowCodeBuiltInFieldComponent | (string & {});
 export type LowCodeField = {
     field: string;
@@ -160,6 +160,7 @@ export type LowCodeAction = {
     route?: string;
     disabled?: boolean;
     eventName?: string;
+    script?: string;
     directives?: LowCodeRuntimeDirective[];
 };
 export type LowCodeButtonGroupAction = Omit<LowCodeAction, 'status' | 'type'> & Pick<Partial<VxeButtonProps>, 'size' | 'type' | 'mode' | 'className' | 'name' | 'routerLink' | 'permissionCode' | 'title' | 'content' | 'placement' | 'status' | 'icon' | 'prefixIcon' | 'suffixIcon' | 'round' | 'circle' | 'disabled' | 'loading' | 'trigger' | 'align' | 'showDropdownIcon' | 'destroyOnClose' | 'transfer' | 'popupConfig'> & {
@@ -213,6 +214,7 @@ export type LowCodeGridAction = {
     icon?: string;
     disabled?: boolean;
     eventName?: string;
+    script?: string;
     directives?: LowCodeRuntimeDirective[];
 };
 export type LowCodeGridRowAction = LowCodeGridAction & {
@@ -477,6 +479,10 @@ export type LowCodePageSchema = {
     };
     dataSources?: Record<string, LowCodePageDataSource>;
     eventHandlers?: LowCodeEventHandler[];
+    scriptPolicy?: {
+        apiNames?: string[];
+        capabilities?: import('../runtime/scripts').LowCodeScriptCapabilityName[];
+    };
     blocks: LowCodePageBlock[];
     overlays?: LowCodePageOverlayBlock[];
 };

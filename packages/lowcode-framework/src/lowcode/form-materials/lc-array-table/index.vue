@@ -112,6 +112,12 @@
             :model-value="scope.row[column.field]"
             @update:model-value="(value) => setCell(scope.row, column.field, value)"
           />
+          <LcMonacoEditor
+            v-else-if="column.component === 'lc-monaco-editor'"
+            :field="createCellField(column)"
+            :model-value="scope.row[column.field]"
+            @update:model-value="(value) => setCell(scope.row, column.field, value)"
+          />
           <vxe-input
             v-else
             :model-value="readString(scope.row[column.field])"
@@ -203,6 +209,7 @@ import type {
 } from '../../../types/lowcode';
 import { openGlobalDialog } from '../../../runtime/global-dialog';
 import LcJsonEditor from '../lc-json-editor/index.vue';
+import LcMonacoEditor from '../lc-monaco-editor/index.vue';
 import type { LowCodeFormMaterialProps } from '../types';
 
 type ArrayTableColumn = {
@@ -1237,7 +1244,8 @@ function cloneValue(value: unknown) {
 .lc-array-table__grid :deep(.vxe-textarea),
 .lc-array-table__grid :deep(.vxe-select),
 .lc-array-table__grid :deep(.lc-array-table__object-cell),
-.lc-array-table__grid :deep(.lc-json-editor) {
+.lc-array-table__grid :deep(.lc-json-editor),
+.lc-array-table__grid :deep(.lc-monaco-editor) {
   width: 100%;
   max-width: 100%;
   min-width: 0;

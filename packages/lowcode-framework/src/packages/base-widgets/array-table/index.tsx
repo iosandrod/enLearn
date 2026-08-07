@@ -53,6 +53,7 @@ const formComponentOptions = [
   { label: 'Password', value: 'vxe-password-input' },
   { label: 'Number', value: 'lc-number-input' },
   { label: 'JSON Editor', value: 'lc-json-editor' },
+  { label: 'Code Editor', value: 'lc-monaco-editor' },
 ];
 
 const gridOverflowOptions = [

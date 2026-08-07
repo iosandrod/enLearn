@@ -42,6 +42,10 @@ export type LowCodePageSchema = {
     disabled?: boolean;
     directives: Array<Record<string, unknown> & { type: string; disabled?: boolean }>;
   }>;
+  scriptPolicy?: {
+    apiNames?: string[];
+    capabilities?: string[];
+  };
   blocks: Array<Record<string, unknown>>;
   overlays?: Array<Record<string, unknown>>;
 };
@@ -87,6 +91,24 @@ const materialVersions: Record<string, string> = Object.fromEntries(
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function normalizeStringList(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.map((item) => readString(item)).filter(Boolean))];
+}
+
+function normalizeScriptPolicy(value: unknown): LowCodePageSchema['scriptPolicy'] | undefined {
+  if (!isRecord(value)) return undefined;
+
+  return {
+    ...(Array.isArray(value.apiNames)
+      ? { apiNames: normalizeStringList(value.apiNames) }
+      : {}),
+    ...(Array.isArray(value.capabilities)
+      ? { capabilities: normalizeStringList(value.capabilities) }
+      : {}),
+  };
 }
 
 function readString(value: unknown, fallback = '') {
@@ -311,6 +333,7 @@ export function normalizeLowCodePageSchema(value: unknown): LowCodePageSchema {
   const title = readString(value.title);
   const description = readString(value.description);
   const eventHandlers = normalizeEventHandlers(value.eventHandlers);
+  const scriptPolicy = normalizeScriptPolicy(value.scriptPolicy);
 
   return {
     schemaVersion: readSchemaVersion(value.schemaVersion),
@@ -339,6 +362,7 @@ export function normalizeLowCodePageSchema(value: unknown): LowCodePageSchema {
       : {}),
     dataSources: normalizeDataSources(value.dataSources),
     ...(eventHandlers.length ? { eventHandlers } : {}),
+    ...(scriptPolicy ? { scriptPolicy } : {}),
     blocks: normalizeBlocks(value.blocks),
     ...(Array.isArray(value.overlays) ? { overlays: normalizeOverlays(value.overlays) } : {}),
   };
@@ -416,6 +440,39 @@ function validateEventHandlers(schema: LowCodePageSchema, issues: LowCodeSchemaI
     }
 
     validateDirectives(handler.directives, issues, `${path}.directives`);
+  });
+}
+
+const knownScriptCapabilities = new Set([
+  'api.invoke',
+  'dialog.open',
+  'event.emit',
+  'form.patch',
+  'form.replace',
+  'grid.setRows',
+  'message.error',
+  'message.info',
+  'message.success',
+  'message.warning',
+  'page.refresh',
+  'router.push',
+  'search.patch',
+  'search.replace',
+  'source.refresh',
+  'source.refreshAll',
+  'source.set',
+]);
+
+function validateScriptPolicy(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
+  schema.scriptPolicy?.capabilities?.forEach((capability, index) => {
+    if (!knownScriptCapabilities.has(capability)) {
+      pushIssue(
+        issues,
+        'error',
+        `scriptPolicy.capabilities.${index}`,
+        `Unknown script capability "${capability}".`,
+      );
+    }
   });
 }
 
@@ -629,6 +686,7 @@ export function validateLowCodePageSchema(schema: LowCodePageSchema) {
 
   validateDataSources(schema, issues);
   validateEventHandlers(schema, issues);
+  validateScriptPolicy(schema, issues);
 
   const blockIds = new Set<string>();
   schema.blocks.forEach((block, index) =>

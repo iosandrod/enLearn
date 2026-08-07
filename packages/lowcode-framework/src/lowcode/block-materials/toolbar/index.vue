@@ -34,6 +34,7 @@ function handleAction(action: LowCodeAction) {
     payload: {
       action,
       actionCode: action.code,
+      script: action.script ?? '',
       directives: action.directives ?? [],
     },
   });
