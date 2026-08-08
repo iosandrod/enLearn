@@ -28,6 +28,7 @@
     "test:lowcode-context-drawer-browser": "node tests/lowcode-context-drawer-browser-launcher.mjs",
     "test:page-info-functions": "node --experimental-strip-types tests/page-info-functions-roundtrip-regression.mjs",
     "test:page-info-functions-browser": "node tests/page-info-functions-browser-launcher.mjs",
+    "test:database-form-definitions-browser": "node tests/database-form-definitions-browser-launcher.mjs",
     "test:page-functions-runtime-browser": "node tests/page-functions-runtime-browser-launcher.mjs",
     "test:approval-progress": "node tests/approval-progress-page-regression.mjs",
     "test:approval-console": "node tests/approval-console-regression.mjs",

@@ -77,12 +77,16 @@
         </p>
 
         <LowCodeForm
+          v-if="pageEditorSchema"
           v-model="pageForm"
           :schema="pageEditorSchema"
-          :loading="saving"
+          :loading="saving || pageEditorSchemaLoading"
           @submit="saveLowCodePage"
           @action="handleEditorAction"
         />
+        <p v-if="pageEditorSchemaError" class="lc-error">
+          {{ pageEditorSchemaError }}
+        </p>
       </div>
 
       <div class="content-panel">
@@ -101,13 +105,19 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import {
-  lowCodePageEditorSchema as pageEditorSchema,
-  lowCodePagesGridSchema as pagesGridSchema
-} from '~/schemas/lowcode';
+import { lowCodePagesGridSchema as pagesGridSchema } from '~/schemas/lowcode';
 import { prepareLowCodePageSchema } from '@enlearn/lowcode-framework/lowcode/schema';
-import type { LowCodePageRecord, LowCodePageSchema, LowCodePageType } from '@enlearn/lowcode-framework/types/lowcode';
+import type {
+  LowCodeFormSchema,
+  LowCodePageRecord,
+  LowCodePageSchema,
+  LowCodePageType,
+} from '@enlearn/lowcode-framework/types/lowcode';
 import { listLowCodePages } from '../../../utils/lowCodePages';
+import {
+  loadLowCodeFormDefinition,
+  LOW_CODE_FORM_CODES,
+} from '../../../utils/lowCodeFormDefinitions';
 
 type LowCodePageForm = {
   code: string;
@@ -156,6 +166,9 @@ const serviceApi = useServiceApi();
 const loadingPages = ref(false);
 const loadingGeneratorOptions = ref(false);
 const saving = ref(false);
+const pageEditorSchemaLoading = ref(true);
+const pageEditorSchemaError = ref('');
+const pageEditorSchema = shallowRef<LowCodeFormSchema | null>(null);
 const generatingPage = ref(false);
 const message = ref('');
 const messageClass = ref('lc-help');
@@ -169,6 +182,23 @@ const generatorForm = ref<GeneratorForm>({
   title: ''
 });
 const pageForm = ref<LowCodePageForm>(createEmptyPageForm());
+
+async function loadPageEditorSchema() {
+  pageEditorSchemaLoading.value = true;
+  pageEditorSchemaError.value = '';
+  try {
+    const definition = await loadLowCodeFormDefinition(
+      serviceApi,
+      LOW_CODE_FORM_CODES.lowCodePageEditor,
+    );
+    pageEditorSchema.value = definition.schema;
+  } catch (error) {
+    pageEditorSchemaError.value =
+      error instanceof Error ? error.message : 'Could not load the page editor definition.';
+  } finally {
+    pageEditorSchemaLoading.value = false;
+  }
+}
 
 const editingLabel = computed(() =>
   selectedCode.value ? `Editing ${selectedCode.value}` : 'Create New Page'
@@ -495,7 +525,7 @@ watch(
 );
 
 onMounted(async () => {
-  await Promise.all([loadPages(), loadGeneratorOptions()]);
+  await Promise.all([loadPageEditorSchema(), loadPages(), loadGeneratorOptions()]);
 });
 </script>
 

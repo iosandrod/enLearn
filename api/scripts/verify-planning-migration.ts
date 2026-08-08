@@ -81,8 +81,8 @@ async function main() {
         (select count(*)::text from public.lowcode_pages where code like 'planning\\_%\\-edit' escape '\\') as edit_page_count,
         (select count(*)::text from public.lowcode_pages where code like 'planning\\_%\\-list' escape '\\' and edit_page_id is not null) as linked_page_count,
         (select count(*)::text from public.admin_entities where code like 'planning\\_%' escape '\\') as entity_count,
-        (select count(*)::text from public.admin_routes where code like 'planning-%' and route_type = 'page') as leaf_route_count,
-        (select count(*)::text from public.admin_routes where code = 'planning-root' or (code ~ '^planning-[0-9]+$' and route_type = 'group')) as group_route_count,
+        (select count(*)::text from public.admin_routes where code like 'planning-%' and route_type = 'page' and status = 'active') as leaf_route_count,
+        (select count(*)::text from public.admin_routes where status = 'active' and (code = 'planning-root' or (code ~ '^planning-[0-9]+$' and route_type = 'group'))) as group_route_count,
         (select count(*)::text from public.admin_permissions where code in ('planning.models.view','planning.models.manage')) as permission_count,
         (select count(*)::text from public.admin_role_permissions rp join public.admin_roles r on r.id = rp.role_id join public.admin_permissions p on p.id = rp.permission_id where r.code in ('system_admin','operations_admin') and p.code in ('planning.models.view','planning.models.manage')) as role_permission_count,
         (select count(*)::text from pg_catalog.pg_constraint c join pg_catalog.pg_class t on t.oid = c.conrelid join pg_catalog.pg_namespace n on n.oid = t.relnamespace where n.nspname = 'public' and t.relname like 'planning_%' and c.contype = 'f' and c.conname like '%_account_fk') as same_account_fk_count,
@@ -93,14 +93,16 @@ async function main() {
 
     const installed = rows[0];
     const expectedModels = PLANNING_MODEL_DEFINITIONS.length;
-    const expectedRelations = PLANNING_MODEL_DEFINITIONS.reduce(
-      (count, model) => count + model.fields.filter((field) => field.kind === 'relation').length,
-      0
-    );
+    const readOnlyModels = PLANNING_MODEL_DEFINITIONS.filter((model) => model.access === 'view').length;
+    const expectedRelations = new Set(
+      PLANNING_MODEL_DEFINITIONS.flatMap((model) => model.fields
+        .filter((field) => field.kind === 'relation')
+        .map((field) => `${model.key}.${field.name}`))
+    ).size;
     const expected = {
       table_count: String(expectedModels),
       rls_count: String(expectedModels),
-      policy_count: String(expectedModels * 4),
+      policy_count: String(expectedModels * 4 - readOnlyModels * 3),
       list_page_count: String(expectedModels),
       edit_page_count: String(expectedModels),
       linked_page_count: String(expectedModels),

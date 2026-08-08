@@ -40,9 +40,10 @@ export type PlanningModelDefinition = {
     | '场景管理'
     | '时间维度'
     | '扩展属性'
-    | '历史归档';
+    | '历史归档'
+    | '集成管理';
   icon: string;
-  businessKey?: 'name' | 'reference';
+  businessKey?: 'name' | 'reference' | 'code';
   access?: 'manage' | 'view';
   fields: PlanningFieldDefinition[];
 };
@@ -311,7 +312,14 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
       relation('operation_id', '交付工序', 'planning_operation'), number('quantity', '数量', { required: true }), integer('priority', '优先级', { required: true, default: 10 }),
       number('minshipment', '最小发运量'), interval('maxlateness', '最大延期'), text('policy', '计划策略', { default: 'independent', options: choices('independent', 'alltogether', 'inratio') }),
       text('batch', '批次'), interval('delay', '延期', { readOnly: true }), number('plannedquantity', '已计划量', { readOnly: true }),
-      datetime('deliverydate', '计划交期', { readOnly: true }), json('plan', '计划明细', { readOnly: true, default: {} }), ...auditFields
+      datetime('deliverydate', '计划交期', { readOnly: true }), json('plan', '计划明细', { readOnly: true, default: {} }),
+      text('source_type', '来源类型', { readOnly: true, default: 'manual', options: choices('manual', 'sales_order_line', 'forecast', 'external') }),
+      text('source_system', '来源系统', { readOnly: true, default: 'enlearn' }), text('source_key', '来源唯一键', { readOnly: true }),
+      uuid('source_order_id', '来源订单编号', { readOnly: true }), uuid('source_line_id', '来源明细编号', { readOnly: true }),
+      text('source_doc_no', '来源单号', { readOnly: true }), text('source_line_no', '来源行号', { readOnly: true }),
+      datetime('source_updated_at', '来源更新时间', { readOnly: true }),
+      text('sync_status', '同步状态', { readOnly: true, default: 'manual', options: choices('manual', 'pending', 'synced', 'ignored', 'error') }),
+      text('sync_message', '同步消息', { readOnly: true }), ...auditFields
     ]
   },
   {
@@ -326,7 +334,7 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
       relation('owner_id', '上级计划单', 'planning_operationplan'), text('batch', '批次'), relation('item_id', '物料', 'planning_item'),
       relation('origin_id', '来源地点', 'planning_location'), relation('destination_id', '目的地点', 'planning_location'), relation('supplier_id', '供应商', 'planning_supplier'),
       relation('location_id', '地点', 'planning_location'), relation('demand_id', '需求', 'planning_demand'), datetime('due', '需求日期'), text('name', '名称'),
-      text('forecast', '预测编号'), ...auditFields
+      text('forecast', '预测编号'), relation('plan_version_id', '计划版本', 'planning_plan_version'), ...auditFields
     ]
   },
   {
@@ -334,6 +342,7 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
     icon: 'ri-speed-up-line', description: '计划订单的资源负荷明细。',
     fields: [
       relation('resource_id', '资源', 'planning_resource', { required: true }), relation('operationplan_id', '计划订单', 'planning_operationplan', { required: true }),
+      relation('plan_version_id', '计划版本', 'planning_plan_version', { readOnly: true }),
       number('quantity', '负荷数量', { default: 1 }), text('setup', '换型'), text('status', '状态', { options: choices('proposed', 'confirmed', 'closed') }), ...auditFields
     ]
   },
@@ -343,6 +352,7 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
     fields: [
       relation('item_id', '物料', 'planning_item', { required: true }), relation('location_id', '地点', 'planning_location', { required: true }),
       relation('operationplan_id', '计划订单', 'planning_operationplan', { required: true }), number('quantity', '数量', { required: true }),
+      relation('plan_version_id', '计划版本', 'planning_plan_version', { readOnly: true }),
       datetime('flowdate', '流动时间', { required: true }), number('onhand', '结余库存', { readOnly: true }), number('minimum', '最小库存', { readOnly: true }),
       number('periodofcover', '覆盖周期', { readOnly: true }), text('status', '状态', { options: choices('proposed', 'confirmed', 'closed') }), ...auditFields
     ]
@@ -399,7 +409,8 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
     key: 'planning_problem', sourceTable: 'out_problem', title: '计划问题', group: '诊断分析',
     icon: 'ri-error-warning-line', access: 'view', description: '求解器输出的缺料、延期、超载等计划问题。',
     fields: [
-      relation('run_id', '运行任务', 'planning_run'), text('entity', '实体', { required: true }), text('owner', '对象', { required: true }),
+      relation('run_id', '运行任务', 'planning_run'), relation('plan_version_id', '计划版本', 'planning_plan_version', { readOnly: true }),
+      text('entity', '实体', { required: true }), text('owner', '对象', { required: true }),
       text('name', '问题类型', { required: true }), text('description', '问题说明', { required: true }),
       datetime('startdate', '开始时间', { required: true }), datetime('enddate', '结束时间', { required: true })
     ]
@@ -408,7 +419,8 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
     key: 'planning_constraint', sourceTable: 'out_constraint', title: '需求约束', group: '诊断分析',
     icon: 'ri-git-close-pull-request-line', access: 'view', description: '求解器输出的需求、预测和物料约束冲突。',
     fields: [
-      relation('run_id', '运行任务', 'planning_run'), relation('demand_id', '需求', 'planning_demand'), relation('forecast_id', '预测对象', 'planning_forecast'),
+      relation('run_id', '运行任务', 'planning_run'), relation('plan_version_id', '计划版本', 'planning_plan_version', { readOnly: true }),
+      relation('demand_id', '需求', 'planning_demand'), relation('forecast_id', '预测对象', 'planning_forecast'),
       relation('item_id', '物料', 'planning_item'), text('entity', '实体', { required: true }), text('owner', '对象', { required: true }),
       text('name', '约束类型', { required: true }), text('description', '约束说明', { required: true }),
       datetime('startdate', '开始时间', { required: true }), datetime('enddate', '结束时间', { required: true })
@@ -418,7 +430,8 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
     key: 'planning_resourceplan', sourceTable: 'out_resourceplan', title: '资源负荷', group: '诊断分析',
     icon: 'ri-bar-chart-grouped-line', access: 'view', description: '按资源和时间桶汇总的可用、占用、换型及空闲能力。',
     fields: [
-      relation('run_id', '运行任务', 'planning_run'), relation('resource_id', '资源', 'planning_resource', { required: true }),
+      relation('run_id', '运行任务', 'planning_run'), relation('plan_version_id', '计划版本', 'planning_plan_version', { readOnly: true }),
+      relation('resource_id', '资源', 'planning_resource', { required: true }),
       datetime('startdate', '开始时间', { required: true }), number('available', '可用能力'), number('unavailable', '不可用能力'),
       number('setup', '换型负荷'), number('load', '总负荷'), number('free', '空闲能力'), number('load_confirmed', '确认负荷')
     ]
@@ -528,6 +541,49 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
       text('batch', '批次'), text('item', '物料', { required: true }), number('item_cost', '物料成本'), number('itemsupplier_cost', '采购成本'),
       text('origin', '来源地点'), text('destination', '目的地点'), text('supplier', '供应商'), text('location', '地点'),
       text('demand', '需求'), datetime('due', '需求日期'), text('name', '名称')
+    ]
+  },
+  {
+    key: 'planning_source_mapping', sourceTable: 'source_mapping', title: '主数据映射', group: '集成管理',
+    icon: 'ri-git-merge-line', description: '外部或业务系统编码到排产客户、物料、地点、供应商、资源和工序的账套内映射。',
+    fields: [
+      text('source_system', '来源系统', { required: true, default: 'enlearn' }),
+      text('entity_type', '实体类型', { required: true, options: choices('item', 'customer', 'location', 'supplier', 'resource', 'operation') }),
+      text('source_key', '来源编码', { required: true }), text('source_name', '来源名称'),
+      relation('item_id', '目标物料', 'planning_item'), relation('customer_id', '目标客户', 'planning_customer'),
+      relation('location_id', '目标地点', 'planning_location'), relation('supplier_id', '目标供应商', 'planning_supplier'),
+      relation('resource_id', '目标资源', 'planning_resource'), relation('operation_id', '目标工序', 'planning_operation'),
+      text('status', '状态', { required: true, default: 'active', options: choices('active', 'inactive') }),
+      json('metadata', '扩展信息', { default: {} }), datetime('last_synced_at', '最后同步', { readOnly: true }), ...auditFields
+    ]
+  },
+  {
+    key: 'planning_plan_version', sourceTable: 'plan_version', title: '计划版本', group: '计划结果',
+    icon: 'ri-git-commit-line', businessKey: 'code', description: '一次排产运行的可追溯结果版本，承载场景、输入快照、发布状态和结果汇总。',
+    fields: [
+      text('code', '版本编码', { required: true }), text('name', '版本名称', { required: true }),
+      relation('scenario_id', '计划场景', 'planning_scenario', { required: true }), relation('run_id', '运行任务', 'planning_run', { readOnly: true }),
+      relation('parent_version_id', '来源版本', 'planning_plan_version'), integer('version_no', '版本序号', { readOnly: true }),
+      text('status', '状态', { readOnly: true, default: 'draft', options: choices('draft', 'running', 'completed', 'published', 'superseded', 'failed', 'canceled') }),
+      bool('is_current', '当前发布版本', { readOnly: true, default: false }), datetime('input_cutoff', '输入截止时间'),
+      datetime('horizon_start', '计划开始'), datetime('horizon_end', '计划结束'), text('solver', '求解器'),
+      json('parameters', '参数快照', { default: {} }), json('input_snapshot', '输入快照', { default: {} }),
+      json('result_summary', '结果汇总', { readOnly: true, default: {} }), datetime('started_at', '开始时间', { readOnly: true }),
+      datetime('completed_at', '完成时间', { readOnly: true }), datetime('published_at', '发布时间', { readOnly: true }),
+      uuid('published_by', '发布人', { readOnly: true }), ...auditFields
+    ]
+  },
+  {
+    key: 'planning_demand_sync_state', sourceTable: 'demand_sync_state', title: '需求同步状态', group: '集成管理',
+    icon: 'ri-refresh-line', access: 'view', description: '销售订单明细到排产需求的幂等同步状态、映射缺口和错误信息。',
+    fields: [
+      text('source_type', '来源类型', { required: true, default: 'sales_order_line', options: choices('sales_order_line') }),
+      text('source_system', '来源系统', { required: true, default: 'enlearn' }), text('source_key', '来源唯一键', { required: true }),
+      uuid('source_order_id', '来源订单编号'), uuid('source_line_id', '来源明细编号'), text('source_doc_no', '来源单号'),
+      text('source_line_no', '来源行号'), relation('demand_id', '排产需求', 'planning_demand'),
+      text('status', '同步状态', { required: true, default: 'pending', options: choices('pending', 'synced', 'ignored', 'error') }),
+      text('message', '同步消息'), datetime('source_updated_at', '来源更新时间'), datetime('attempted_at', '尝试时间', { readOnly: true }),
+      json('payload', '同步快照', { readOnly: true, default: {} })
     ]
   }
 ];

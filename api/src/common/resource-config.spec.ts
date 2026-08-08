@@ -97,12 +97,12 @@ assert.equal(
 assert.deepEqual(
   lowcodeResources.lowcode_form_definitions.permissions,
   {
-    list: 'lowcode.pages.manage',
     create: 'lowcode.pages.manage',
     update: 'lowcode.pages.manage',
     delete: 'lowcode.pages.manage'
   }
 );
+assert.equal(lowcodeResources.lowcode_form_definitions.clientMode, 'user');
 assert.ok(
   lowcodeResources.lowcode_form_definitions.create?.allowedFields?.includes('schema')
 );

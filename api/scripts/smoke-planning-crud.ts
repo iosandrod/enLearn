@@ -36,9 +36,9 @@ function smokeValue(field: PlanningFieldDefinition, model: PlanningModelDefiniti
   if (field.options?.length) return field.options[0].value;
   switch (field.kind) {
     case 'number': return field.name === 'quantity' ? 2 : 1;
-    case 'integer': return field.name === 'priority' ? 1 : 1;
+    case 'integer': return field.name === 'priority' || field.name === 'version_no' ? 1 : 1;
     case 'boolean': return true;
-    case 'uuid': return null;
+    case 'uuid': return '33333333-3333-4333-8333-333333333333';
     case 'date': return '2026-08-08';
     case 'datetime': return field.name === 'due' || field.name === 'flowdate'
       ? '2026-08-08T08:00:00Z'
@@ -148,6 +148,26 @@ function rowInput(
     data.demand_records = 1;
     data.operationplan_records = 1;
   }
+  if (model.key === 'planning_source_mapping') {
+    data.source_system = 'smoke';
+    data.entity_type = 'item';
+    data.source_key = `item-${suffix}`;
+    data.item_id = saved.get('planning_item')?.id;
+  }
+  if (model.key === 'planning_plan_version') {
+    data.code = `PLAN-${suffix}`;
+    data.name = `Planning smoke ${suffix}`;
+    data.scenario_id = saved.get('planning_scenario')?.id;
+  }
+  if (model.key === 'planning_demand_sync_state') {
+    data.source_system = 'smoke';
+    data.source_key = `line-${suffix}`;
+    data.source_order_id = '11111111-1111-4111-8111-111111111111';
+    data.source_line_id = '22222222-2222-4222-8222-222222222222';
+    data.source_doc_no = `SO-${suffix}`;
+    data.source_line_no = '10';
+    data.demand_id = saved.get('planning_demand')?.id;
+  }
   return data;
 }
 
@@ -241,6 +261,9 @@ async function main() {
     let created = 0;
 
     for (const model of PLANNING_MODEL_DEFINITIONS) {
+      if (model.access === 'view') {
+        continue;
+      }
       if (model.key === 'planning_suboperation' || model.key === 'planning_operation_dependency') {
         const operation = PLANNING_MODEL_DEFINITIONS.find((candidate) => candidate.key === 'planning_operation');
         if (!operation) throw new Error('Planning operation definition is missing.');
@@ -267,6 +290,62 @@ async function main() {
       }
       const row = await createRow(client, model.key, firstAccount, rowInput(model, saved, suffix));
       saved.set(model.key, row);
+      created += 1;
+    }
+
+    const readOnlyFixtures: Record<string, Record<string, unknown>> = {
+      planning_problem: {
+        entity: 'demand', owner: `problem-${suffix}`, name: 'late', description: 'Smoke problem',
+        startdate: '2026-08-08T08:00:00Z', enddate: '2026-08-08T09:00:00Z'
+      },
+      planning_constraint: {
+        demand_id: saved.get('planning_demand')?.id,
+        item_id: saved.get('planning_item')?.id,
+        entity: 'demand', owner: `constraint-${suffix}`, name: 'material', description: 'Smoke constraint',
+        startdate: '2026-08-08T08:00:00Z', enddate: '2026-08-08T09:00:00Z'
+      },
+      planning_resourceplan: {
+        resource_id: saved.get('planning_resource')?.id,
+        startdate: '2026-08-08T08:00:00Z', available: 8, load: 4, free: 4
+      },
+      planning_run: {
+        name: `readonly-run-${suffix}`, submitted: '2026-08-08T08:00:00Z', arguments: {}, status: 'queued'
+      },
+      planning_archive_manager: {
+        snapshot_date: '2026-08-08T08:00:00Z', total_records: 0,
+        buffer_records: 0, demand_records: 0, operationplan_records: 0
+      },
+      planning_archived_buffer: {
+        snapshot_id: null, item: `item-${suffix}`, location: `location-${suffix}`
+      },
+      planning_archived_demand: {
+        snapshot_id: null, name: `demand-${suffix}`, item: `item-${suffix}`,
+        location: `location-${suffix}`, customer: `customer-${suffix}`,
+        due: '2026-08-08T08:00:00Z', priority: 10, quantity: 1
+      },
+      planning_archived_operationplan: {
+        snapshot_id: null, reference: `operationplan-${suffix}`, type: 'MO', quantity: 1, item: `item-${suffix}`
+      },
+      planning_demand_sync_state: {
+        source_type: 'sales_order_line', source_system: 'smoke', source_key: `line-${suffix}`,
+        source_order_id: '11111111-1111-4111-8111-111111111111',
+        source_line_id: '22222222-2222-4222-8222-222222222222',
+        source_doc_no: `SO-${suffix}`, source_line_no: '10',
+        demand_id: saved.get('planning_demand')?.id, status: 'pending'
+      }
+    };
+    for (const model of PLANNING_MODEL_DEFINITIONS.filter((candidate) => candidate.access === 'view')) {
+      const viewData = { ...readOnlyFixtures[model.key] };
+      if (model.key.startsWith('planning_archived_')) {
+        viewData.snapshot_id = saved.get('planning_archive_manager')?.id;
+      }
+      const insertFields = Object.keys(viewData).filter((field) => viewData[field] !== undefined);
+      const row = await client.query<SavedRow>(`
+        insert into public.${model.key} (account_id${insertFields.length ? `, ${insertFields.map((field) => `"${field}"`).join(', ')}` : ''})
+        values ($1${insertFields.length ? `, ${insertFields.map((_field, index) => `$${index + 2}`).join(', ')}` : ''})
+        returning *
+      `, [firstAccount, ...insertFields.map((field) => viewData[field])]);
+      saved.set(model.key, row.rows[0]);
       created += 1;
     }
 

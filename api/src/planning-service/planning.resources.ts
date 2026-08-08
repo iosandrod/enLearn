@@ -32,6 +32,9 @@ export function planningResources(): ResourceConfigMap {
         tableName: model.key,
         primaryKey: 'id',
         accountField: 'account_id',
+        ...(model.access === 'view'
+          ? { internalActions: ['create' as const, 'update' as const, 'delete' as const] }
+          : {}),
         permissions: {
           list: PLANNING_VIEW_PERMISSION,
           create: PLANNING_MANAGE_PERMISSION,

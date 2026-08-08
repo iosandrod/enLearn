@@ -43,6 +43,9 @@ const uniqueConstraints: Record<string, string[][]> = {
   ,planning_bucketdetail: [['bucket_id', 'startdate']]
   ,planning_attribute: [['model', 'name']]
   ,planning_archive_manager: [['snapshot_date']]
+  ,planning_source_mapping: [['source_system', 'entity_type', 'source_key']]
+  ,planning_plan_version: [['scenario_id', 'version_no']]
+  ,planning_demand_sync_state: [['source_system', 'source_type', 'source_key']]
 };
 
 const listFieldLimit = 9;
@@ -112,6 +115,74 @@ function tableSql(model: PlanningModelDefinition) {
   ];
 
   return `create table if not exists public.${model.key} (\n${columns.join(',\n')}\n);`;
+}
+
+function existingTableColumnsSql() {
+  const addedColumns: Record<string, PlanningFieldDefinition[]> = {
+    planning_demand: [
+      { name: 'source_type', label: '来源类型', kind: 'text', default: 'manual', options: [
+        { label: 'manual', value: 'manual' },
+        { label: 'sales_order_line', value: 'sales_order_line' },
+        { label: 'forecast', value: 'forecast' },
+        { label: 'external', value: 'external' }
+      ] },
+      { name: 'source_system', label: '来源系统', kind: 'text', default: 'enlearn' },
+      { name: 'source_key', label: '来源唯一键', kind: 'text' },
+      { name: 'source_order_id', label: '来源订单编号', kind: 'uuid' },
+      { name: 'source_line_id', label: '来源明细编号', kind: 'uuid' },
+      { name: 'source_doc_no', label: '来源单号', kind: 'text' },
+      { name: 'source_line_no', label: '来源行号', kind: 'text' },
+      { name: 'source_updated_at', label: '来源更新时间', kind: 'datetime' },
+      { name: 'sync_status', label: '同步状态', kind: 'text', default: 'manual', options: [
+        { label: 'manual', value: 'manual' },
+        { label: 'pending', value: 'pending' },
+        { label: 'synced', value: 'synced' },
+        { label: 'ignored', value: 'ignored' },
+        { label: 'error', value: 'error' }
+      ] },
+      { name: 'sync_message', label: '同步消息', kind: 'text' }
+    ],
+    planning_operationplan: [
+      { name: 'plan_version_id', label: '计划版本', kind: 'relation', relation: 'planning_plan_version' }
+    ],
+    planning_operationplanresource: [
+      { name: 'plan_version_id', label: '计划版本', kind: 'relation', relation: 'planning_plan_version', readOnly: true }
+    ],
+    planning_operationplanmaterial: [
+      { name: 'plan_version_id', label: '计划版本', kind: 'relation', relation: 'planning_plan_version', readOnly: true }
+    ],
+    planning_problem: [
+      { name: 'plan_version_id', label: '计划版本', kind: 'relation', relation: 'planning_plan_version', readOnly: true }
+    ],
+    planning_constraint: [
+      { name: 'plan_version_id', label: '计划版本', kind: 'relation', relation: 'planning_plan_version', readOnly: true }
+    ],
+    planning_resourceplan: [
+      { name: 'plan_version_id', label: '计划版本', kind: 'relation', relation: 'planning_plan_version', readOnly: true }
+    ]
+  };
+
+  return Object.entries(addedColumns).flatMap(([table, fields]) => fields.map((field) => {
+    const constraintName = `${table}_${field.name}_check`;
+    const column = `alter table public.${table} add column if not exists ${sqlIdentifier(field.name)} ${fieldSqlType(field)}${defaultSql(field)};`;
+    if (!field.options?.length) return column;
+    return `${column}\nalter table public.${table} drop constraint if exists ${constraintName};\nalter table public.${table} add constraint ${constraintName} check (${sqlIdentifier(field.name)} in (${field.options.map((option) => sqlString(option.value)).join(', ')}));`;
+  })).join('\n\n');
+}
+
+function existingTableForeignKeysSql() {
+  const relations: Array<[string, string, string, string]> = [
+    ['planning_operationplan', 'plan_version_id', 'planning_plan_version', 'set null'],
+    ['planning_operationplanresource', 'plan_version_id', 'planning_plan_version', 'set null'],
+    ['planning_operationplanmaterial', 'plan_version_id', 'planning_plan_version', 'set null'],
+    ['planning_problem', 'plan_version_id', 'planning_plan_version', 'set null'],
+    ['planning_constraint', 'plan_version_id', 'planning_plan_version', 'set null'],
+    ['planning_resourceplan', 'plan_version_id', 'planning_plan_version', 'set null']
+  ];
+  return relations.map(([table, field, target, onDelete]) => {
+    const constraint = `${table}_${field}_account_fk`;
+    return `alter table public.${table} drop constraint if exists ${constraint};\nalter table public.${table} add constraint ${constraint}\n  foreign key (account_id, ${sqlIdentifier(field)}) references public.${target}(account_id, id)\n  on delete ${onDelete} deferrable initially deferred;`;
+  }).join('\n\n');
 }
 
 function foreignKeySql(model: PlanningModelDefinition) {
@@ -312,6 +383,18 @@ export function buildPlanningListSchema(model: PlanningModelDefinition) {
         id: `${model.key}-actions`, kind: 'buttonGroup', align: 'left', gap: 8,
         actions: [
           ...(model.access === 'view' ? [] : [{ code: 'create', label: '新增', type: 'button', mode: 'button', status: 'primary', icon: 'ri-add-line', permissionCode: 'planning.models.manage', route: `${route}/edit` }]),
+          ...(model.key === 'planning_plan_version' ? [{
+            code: 'publish', label: '发布选中版本', type: 'button', mode: 'button', status: 'primary',
+            icon: 'ri-send-plane-line', permissionCode: 'planning.models.manage',
+            directives: [
+              {
+                type: 'invokeService', serviceName: 'planning', serviceMethod: 'publishPlanVersion',
+                postData: { id: `{{ grids.${model.key}-grid.currentRow.id }}` }, assignTo: 'planningPlanVersionPublished'
+              },
+              { type: 'refreshDataSource', sourceKeys: [sourceKey] },
+              { type: 'showMessage', status: 'success', message: '计划版本已发布。' }
+            ]
+          }] : []),
           { code: 'refresh', label: '刷新', type: 'button', mode: 'button', icon: 'ri-refresh-line', directives: [{ type: 'refreshDataSource', sourceKeys: [sourceKey] }] }
         ]
       },
@@ -542,6 +625,43 @@ begin
     trigger_run_id = excluded.trigger_run_id,
     progress = excluded.progress,
     updated_at = timezone('utc'::text, now());
+
+  if planning_status in ('queued', 'running') and planning_scenario_id is not null then
+    perform set_config('planning.system_version_write', 'on', true);
+    insert into public.planning_plan_version (
+      account_id, code, name, scenario_id, run_id, status, input_cutoff,
+      solver, parameters, input_snapshot, started_at
+    )
+    select new.account_id,
+           'RUN-' || upper(left(replace(new.id::text, '-', ''), 12)),
+           job.name || ' ' || to_char(new.created_at at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS'),
+           planning_scenario_id, new.id,
+           case planning_status when 'running' then 'running' else 'draft' end,
+           new.created_at,
+           coalesce(nullif(job.payload->>'solver', ''), 'external'),
+           coalesce(job.payload, '{}'::jsonb),
+           jsonb_build_object('workflowInput', coalesce(new.input, '{}'::jsonb)),
+           new.started_at
+    from public.wf_job job
+    where job.id = new.job_id
+    on conflict (account_id, run_id) where run_id is not null do update set
+      status = excluded.status,
+      started_at = coalesce(public.planning_plan_version.started_at, excluded.started_at),
+      updated_at = timezone('utc'::text, now());
+    perform set_config('planning.system_version_write', '', true);
+  elsif planning_status in ('succeeded', 'failed', 'canceled') then
+    select id into planning_schedule_id
+    from public.planning_plan_version
+    where account_id = new.account_id and run_id = new.id;
+    if planning_schedule_id is not null then
+      perform public.planning_finish_plan_version(
+        new.account_id,
+        planning_schedule_id,
+        case planning_status when 'succeeded' then 'completed' when 'failed' then 'failed' else 'canceled' end,
+        coalesce(new.output, '{}'::jsonb)
+      );
+    end if;
+  end if;
   return new;
 end;
 $function$;
@@ -574,9 +694,9 @@ function dynamicCrudConfig(model: PlanningModelDefinition) {
     account_field: 'account_id',
     client_mode: 'user',
     hooks: {},
-    create: actionConfig(writable, required, managedCreate),
-    update: actionConfig(writable, [], managedUpdate),
-    delete: {
+    create: model.access === 'view' ? null : actionConfig(writable, required, managedCreate),
+    update: model.access === 'view' ? null : actionConfig(writable, [], managedUpdate),
+    delete: model.access === 'view' ? null : {
       ...actionConfig([], [], [], false),
       soft_delete: false,
       deleted_at_field: 'deleted_at',
@@ -614,6 +734,9 @@ begin
   new.updated_at := timezone('utc'::text, now());
   if to_jsonb(new) ? 'lastmodified' then
     new := jsonb_populate_record(new, jsonb_build_object('lastmodified', timezone('utc'::text, now())));
+  end if;
+  if to_jsonb(new) ? 'attempted_at' and (to_jsonb(new)->>'attempted_at') is null then
+    new := jsonb_populate_record(new, jsonb_build_object('attempted_at', timezone('utc'::text, now())));
   end if;
   if tg_op = 'INSERT' then
     new.created_at := coalesce(new.created_at, new.updated_at);
@@ -693,12 +816,18 @@ function policiesAndTriggersSql() {
       `drop policy if exists "Planning viewers can read ${model.key}" on public.${model.key};`,
       `create policy "Planning viewers can read ${model.key}" on public.${model.key}\n  for select to authenticated\n  using (public.has_account_permission(account_id, 'planning.models.view') or public.has_account_permission(account_id, 'planning.models.manage'));`,
       `drop policy if exists "Planning managers can insert ${model.key}" on public.${model.key};`,
-      `create policy "Planning managers can insert ${model.key}" on public.${model.key}\n  for insert to authenticated\n  with check (public.has_account_permission(account_id, 'planning.models.manage'));`,
       `drop policy if exists "Planning managers can update ${model.key}" on public.${model.key};`,
-      `create policy "Planning managers can update ${model.key}" on public.${model.key}\n  for update to authenticated\n  using (public.has_account_permission(account_id, 'planning.models.manage'))\n  with check (public.has_account_permission(account_id, 'planning.models.manage'));`,
       `drop policy if exists "Planning managers can delete ${model.key}" on public.${model.key};`,
-      `create policy "Planning managers can delete ${model.key}" on public.${model.key}\n  for delete to authenticated\n  using (public.has_account_permission(account_id, 'planning.models.manage'));`,
-      `grant select, insert, update, delete on public.${model.key} to authenticated, service_role;`,
+      ...(model.access === 'view' ? [
+        `revoke insert, update, delete on public.${model.key} from authenticated;`,
+        `grant select on public.${model.key} to authenticated;`,
+        `grant select, insert, update, delete on public.${model.key} to service_role;`
+      ] : [
+        `create policy "Planning managers can insert ${model.key}" on public.${model.key}\n  for insert to authenticated\n  with check (public.has_account_permission(account_id, 'planning.models.manage'));`,
+        `create policy "Planning managers can update ${model.key}" on public.${model.key}\n  for update to authenticated\n  using (public.has_account_permission(account_id, 'planning.models.manage'))\n  with check (public.has_account_permission(account_id, 'planning.models.manage'));`,
+        `create policy "Planning managers can delete ${model.key}" on public.${model.key}\n  for delete to authenticated\n  using (public.has_account_permission(account_id, 'planning.models.manage'));`,
+        `grant select, insert, update, delete on public.${model.key} to authenticated, service_role;`
+      ]),
       `drop trigger if exists ${model.key}_audit on public.${model.key};`,
       `create trigger ${model.key}_audit before insert or update on public.${model.key}\n  for each row execute function public.planning_set_audit_fields();`
     ];
@@ -788,6 +917,754 @@ create index if not exists idx_planning_schedule_next_run on public.planning_sch
 create index if not exists idx_planning_archive_snapshot on public.planning_archive_manager(account_id, snapshot_date desc);`;
 }
 
+function coreCrudRegistryRefreshSql() {
+  const refreshedKeys = new Set([
+    'planning_demand',
+    'planning_operationplan',
+    'planning_operationplanresource',
+    'planning_operationplanmaterial',
+    'planning_problem',
+    'planning_constraint',
+    'planning_resourceplan'
+  ]);
+  return PLANNING_MODEL_DEFINITIONS
+    .filter((model) => refreshedKeys.has(model.key))
+    .map((model) => {
+      const config = dynamicCrudConfig(model);
+      return `select public.register_dynamic_crud_resource(
+  ${sqlString(model.key)},
+  ${sqlString(model.key)},
+  encode(digest(convert_to(${sqlString(JSON.stringify(config))}, 'UTF8'), 'sha256'), 'hex'),
+  ${jsonSql(config)}
+);`;
+    })
+    .join('\n\n');
+}
+
+function integrationAndVersionSql() {
+  return `alter table public.planning_demand
+  drop constraint if exists planning_demand_source_shape_check;
+alter table public.planning_demand
+  add constraint planning_demand_source_shape_check check (
+    (source_type = 'manual' and source_key is null and source_line_id is null)
+    or (source_type <> 'manual' and source_key is not null)
+  );
+
+create unique index if not exists planning_demand_source_key
+  on public.planning_demand(account_id, source_system, source_type, source_key)
+  where source_key is not null;
+create unique index if not exists planning_demand_sales_order_line_key
+  on public.planning_demand(account_id, source_line_id)
+  where source_type = 'sales_order_line' and source_line_id is not null;
+create index if not exists idx_planning_demand_sync_status
+  on public.planning_demand(account_id, sync_status, source_updated_at desc);
+
+alter table public.planning_source_mapping
+  drop constraint if exists planning_source_mapping_target_check;
+alter table public.planning_source_mapping
+  add constraint planning_source_mapping_target_check check (
+    num_nonnulls(item_id, customer_id, location_id, supplier_id, resource_id, operation_id) = 1
+    and case entity_type
+      when 'item' then item_id is not null
+      when 'customer' then customer_id is not null
+      when 'location' then location_id is not null
+      when 'supplier' then supplier_id is not null
+      when 'resource' then resource_id is not null
+      when 'operation' then operation_id is not null
+      else false
+    end
+  );
+create index if not exists idx_planning_source_mapping_lookup
+  on public.planning_source_mapping(account_id, source_system, entity_type, source_key)
+  where status = 'active';
+
+alter table public.planning_plan_version
+  drop constraint if exists planning_plan_version_horizon_check;
+alter table public.planning_plan_version
+  add constraint planning_plan_version_horizon_check check (
+    horizon_start is null or horizon_end is null or horizon_end > horizon_start
+  );
+alter table public.planning_plan_version
+  drop constraint if exists planning_plan_version_parent_check;
+alter table public.planning_plan_version
+  add constraint planning_plan_version_parent_check check (parent_version_id is null or parent_version_id <> id);
+create unique index if not exists planning_plan_version_run_key
+  on public.planning_plan_version(account_id, run_id)
+  where run_id is not null;
+create unique index if not exists planning_plan_version_current_key
+  on public.planning_plan_version(account_id, scenario_id)
+  where is_current;
+create index if not exists idx_planning_plan_version_status
+  on public.planning_plan_version(account_id, scenario_id, status, version_no desc);
+
+alter table public.planning_demand_sync_state
+  drop constraint if exists planning_demand_sync_state_source_check;
+alter table public.planning_demand_sync_state
+  add constraint planning_demand_sync_state_source_check check (
+    source_type <> 'sales_order_line' or source_line_id is not null
+  );
+create unique index if not exists planning_demand_sync_state_line_key
+  on public.planning_demand_sync_state(account_id, source_line_id)
+  where source_line_id is not null;
+create index if not exists idx_planning_demand_sync_state_status
+  on public.planning_demand_sync_state(account_id, status, attempted_at desc);
+
+create index if not exists idx_planning_operationplan_version
+  on public.planning_operationplan(account_id, plan_version_id, type, status);
+alter table public.planning_operationplan
+  drop constraint if exists planning_operationplan_account_id_reference_key;
+create unique index if not exists planning_operationplan_manual_reference_key
+  on public.planning_operationplan(account_id, reference)
+  where plan_version_id is null;
+create unique index if not exists planning_operationplan_version_reference_key
+  on public.planning_operationplan(account_id, plan_version_id, reference)
+  where plan_version_id is not null;
+create index if not exists idx_planning_operationplanresource_version
+  on public.planning_operationplanresource(account_id, plan_version_id);
+create index if not exists idx_planning_operationplanmaterial_version
+  on public.planning_operationplanmaterial(account_id, plan_version_id, flowdate);
+create index if not exists idx_planning_problem_version
+  on public.planning_problem(account_id, plan_version_id, startdate);
+create index if not exists idx_planning_constraint_version
+  on public.planning_constraint(account_id, plan_version_id, startdate);
+create index if not exists idx_planning_resourceplan_version
+  on public.planning_resourceplan(account_id, plan_version_id, startdate);
+alter table public.planning_resourceplan
+  drop constraint if exists planning_resourceplan_account_id_resource_id_startdate_key;
+create unique index if not exists planning_resourceplan_legacy_bucket_key
+  on public.planning_resourceplan(account_id, resource_id, startdate)
+  where plan_version_id is null;
+create unique index if not exists planning_resourceplan_version_bucket_key
+  on public.planning_resourceplan(account_id, plan_version_id, resource_id, startdate)
+  where plan_version_id is not null;
+
+create or replace function public.planning_assign_version_number()
+returns trigger
+language plpgsql
+as $function$
+begin
+  perform pg_advisory_xact_lock(hashtextextended(new.account_id::text || ':' || new.scenario_id::text, 0));
+  if new.version_no is null then
+    select coalesce(max(version_no), 0) + 1
+      into new.version_no
+    from public.planning_plan_version
+    where account_id = new.account_id and scenario_id = new.scenario_id;
+  elsif exists (
+    select 1 from public.planning_plan_version
+    where account_id = new.account_id and scenario_id = new.scenario_id and version_no = new.version_no
+  ) then
+    raise exception 'Plan version number already exists in this scenario.' using errcode = '23505';
+  end if;
+  return new;
+end;
+$function$;
+
+drop trigger if exists planning_plan_version_number on public.planning_plan_version;
+create trigger planning_plan_version_number
+before insert on public.planning_plan_version
+for each row execute function public.planning_assign_version_number();
+
+create or replace function public.planning_guard_plan_version()
+returns trigger
+language plpgsql
+as $function$
+declare
+  system_write boolean := coalesce(current_setting('planning.system_version_write', true), '') = 'on';
+begin
+  if tg_op = 'INSERT' and not system_write then
+    new.status := 'draft';
+    new.is_current := false;
+    new.started_at := null;
+    new.completed_at := null;
+    new.published_at := null;
+    new.published_by := null;
+  end if;
+
+  if tg_op = 'UPDATE' and new.status is distinct from old.status then
+    if not system_write
+       and current_setting('planning.publish_version_id', true) is distinct from new.id::text then
+      raise exception 'Plan version status is maintained by the planning execution lifecycle.' using errcode = '42501';
+    end if;
+    if not (
+      (old.status = 'draft' and new.status in ('running', 'completed', 'failed', 'canceled'))
+      or (old.status = 'running' and new.status in ('completed', 'failed', 'canceled'))
+      or (old.status = 'completed' and new.status in ('published', 'failed', 'canceled'))
+      or (old.status = 'published' and new.status = 'superseded')
+    ) then
+      raise exception 'Invalid plan version status transition: % -> %.', old.status, new.status using errcode = '23514';
+    end if;
+
+  end if;
+
+  if tg_op = 'UPDATE'
+     and new.status is not distinct from old.status
+     and old.status not in ('published', 'superseded') then
+    new.is_current := old.is_current;
+  end if;
+
+  if tg_op = 'UPDATE' and not system_write
+     and current_setting('planning.publish_version_id', true) is distinct from new.id::text
+     and (
+       new.is_current is distinct from old.is_current
+       or new.result_summary is distinct from old.result_summary
+       or new.started_at is distinct from old.started_at
+       or new.completed_at is distinct from old.completed_at
+       or new.published_at is distinct from old.published_at
+       or new.published_by is distinct from old.published_by
+     ) then
+    raise exception 'Plan version execution fields are system maintained.' using errcode = '42501';
+  end if;
+
+  if tg_op = 'UPDATE' and old.status in ('published', 'superseded') then
+    if new.code is distinct from old.code
+       or new.scenario_id is distinct from old.scenario_id
+       or new.run_id is distinct from old.run_id
+       or new.parent_version_id is distinct from old.parent_version_id
+       or new.version_no is distinct from old.version_no
+       or new.input_cutoff is distinct from old.input_cutoff
+       or new.horizon_start is distinct from old.horizon_start
+       or new.horizon_end is distinct from old.horizon_end
+       or new.solver is distinct from old.solver
+       or new.parameters is distinct from old.parameters
+       or new.input_snapshot is distinct from old.input_snapshot then
+      raise exception 'Published or superseded plan versions are immutable.' using errcode = '23514';
+    end if;
+  end if;
+
+  if new.status = 'published' then
+    if tg_op = 'INSERT' or new.status is distinct from old.status then
+      if current_setting('planning.publish_version_id', true) is distinct from new.id::text then
+        raise exception 'Use planning_publish_plan_version to publish a plan version.' using errcode = '42501';
+      end if;
+      if new.completed_at is null then
+        raise exception 'Only a completed plan version can be published.' using errcode = '23514';
+      end if;
+      perform pg_advisory_xact_lock(hashtextextended(new.account_id::text || ':' || new.scenario_id::text || ':publish', 0));
+      perform set_config('planning.system_version_write', 'on', true);
+      update public.planning_plan_version
+      set status = 'superseded', is_current = false, updated_at = timezone('utc'::text, now())
+      where account_id = new.account_id
+        and scenario_id = new.scenario_id
+        and id <> new.id
+        and is_current;
+      new.is_current := true;
+      new.published_at := coalesce(new.published_at, timezone('utc'::text, now()));
+      new.published_by := coalesce(new.published_by, auth.uid());
+    elsif new.is_current is distinct from old.is_current
+       or new.published_at is distinct from old.published_at
+       or new.published_by is distinct from old.published_by then
+      raise exception 'Published plan version metadata is immutable.' using errcode = '23514';
+    end if;
+  elsif tg_op = 'INSERT' or new.status is distinct from old.status then
+    new.is_current := false;
+  end if;
+
+  return new;
+end;
+$function$;
+
+drop trigger if exists planning_plan_version_guard on public.planning_plan_version;
+create trigger planning_plan_version_guard
+before insert or update on public.planning_plan_version
+for each row execute function public.planning_guard_plan_version();
+
+create or replace function public.planning_publish_plan_version(p_account_id uuid, p_version_id uuid)
+returns public.planning_plan_version
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $function$
+declare
+  version_row public.planning_plan_version;
+begin
+  if auth.uid() is not null and not public.has_account_permission(p_account_id, 'planning.models.manage') then
+    raise exception 'Planning manage permission required.' using errcode = '42501';
+  end if;
+  if auth.uid() is not null and not exists (
+    select 1 from basejump.account_user membership
+    where membership.account_id = p_account_id and membership.user_id = auth.uid()
+  ) then
+    raise exception 'Account membership required.' using errcode = '42501';
+  end if;
+
+  select * into version_row
+  from public.planning_plan_version
+  where account_id = p_account_id and id = p_version_id
+  for update;
+  if not found then
+    raise exception 'Plan version not found.' using errcode = 'P0002';
+  end if;
+  if version_row.status <> 'completed' then
+    raise exception 'Only a completed plan version can be published.' using errcode = '23514';
+  end if;
+
+  perform set_config('planning.publish_version_id', p_version_id::text, true);
+  perform set_config('planning.system_version_write', 'on', true);
+  update public.planning_plan_version
+  set status = 'published', published_by = coalesce(auth.uid(), published_by)
+  where account_id = p_account_id and id = p_version_id
+  returning * into version_row;
+  perform set_config('planning.publish_version_id', '', true);
+  perform set_config('planning.system_version_write', '', true);
+  return version_row;
+end;
+$function$;
+
+revoke all on function public.planning_publish_plan_version(uuid, uuid) from public, anon;
+grant execute on function public.planning_publish_plan_version(uuid, uuid) to authenticated, service_role;
+
+create or replace function public.planning_finish_plan_version(
+  p_account_id uuid,
+  p_version_id uuid,
+  p_status text,
+  p_result_summary jsonb default '{}'::jsonb
+)
+returns public.planning_plan_version
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $function$
+declare
+  version_row public.planning_plan_version;
+begin
+  if p_status not in ('completed', 'failed', 'canceled') then
+    raise exception 'Invalid terminal plan version status.' using errcode = '22023';
+  end if;
+  perform set_config('planning.system_version_write', 'on', true);
+  update public.planning_plan_version
+  set status = p_status,
+      completed_at = timezone('utc'::text, now()),
+      result_summary = coalesce(p_result_summary, '{}'::jsonb)
+  where account_id = p_account_id and id = p_version_id
+  returning * into version_row;
+  perform set_config('planning.system_version_write', '', true);
+  if version_row.id is null then
+    raise exception 'Plan version not found.' using errcode = 'P0002';
+  end if;
+  return version_row;
+end;
+$function$;
+
+revoke all on function public.planning_finish_plan_version(uuid, uuid, text, jsonb) from public, anon, authenticated;
+grant execute on function public.planning_finish_plan_version(uuid, uuid, text, jsonb) to service_role;
+
+create or replace function public.planning_sync_result_version()
+returns trigger
+language plpgsql
+as $function$
+declare
+  parent_version_id uuid;
+begin
+  select plan_version_id into parent_version_id
+  from public.planning_operationplan
+  where account_id = new.account_id and id = new.operationplan_id;
+  if new.plan_version_id is not null and new.plan_version_id is distinct from parent_version_id then
+    raise exception 'Plan result detail version must match its plan order.' using errcode = '23514';
+  end if;
+  new.plan_version_id := parent_version_id;
+  return new;
+end;
+$function$;
+
+drop trigger if exists planning_operationplanresource_version_sync on public.planning_operationplanresource;
+create trigger planning_operationplanresource_version_sync
+before insert or update of operationplan_id, plan_version_id on public.planning_operationplanresource
+for each row execute function public.planning_sync_result_version();
+
+drop trigger if exists planning_operationplanmaterial_version_sync on public.planning_operationplanmaterial;
+create trigger planning_operationplanmaterial_version_sync
+before insert or update of operationplan_id, plan_version_id on public.planning_operationplanmaterial
+for each row execute function public.planning_sync_result_version();
+
+create or replace function public.planning_protect_published_results()
+returns trigger
+language plpgsql
+as $function$
+declare
+  protected_version_id uuid;
+begin
+  protected_version_id := case
+    when tg_op = 'INSERT' then new.plan_version_id
+    when tg_op = 'DELETE' then old.plan_version_id
+    else old.plan_version_id
+  end;
+  if (protected_version_id is not null and exists (
+    select 1 from public.planning_plan_version version
+    where version.account_id = case when tg_op = 'INSERT' then new.account_id else coalesce(old.account_id, new.account_id) end
+      and version.id = protected_version_id
+      and version.status in ('published', 'superseded')
+  )) or (tg_op = 'UPDATE' and new.plan_version_id is not null and exists (
+    select 1 from public.planning_plan_version version
+    where version.account_id = new.account_id
+      and version.id = new.plan_version_id
+      and version.status in ('published', 'superseded')
+  )) then
+    raise exception 'Published plan results are immutable.' using errcode = '23514';
+  end if;
+  return case when tg_op = 'DELETE' then old else new end;
+end;
+$function$;
+
+drop trigger if exists planning_operationplan_published_guard on public.planning_operationplan;
+create trigger planning_operationplan_published_guard
+before insert or update or delete on public.planning_operationplan
+for each row execute function public.planning_protect_published_results();
+
+drop trigger if exists planning_problem_published_guard on public.planning_problem;
+create trigger planning_problem_published_guard
+before insert or update or delete on public.planning_problem
+for each row execute function public.planning_protect_published_results();
+
+drop trigger if exists planning_constraint_published_guard on public.planning_constraint;
+create trigger planning_constraint_published_guard
+before insert or update or delete on public.planning_constraint
+for each row execute function public.planning_protect_published_results();
+
+drop trigger if exists planning_resourceplan_published_guard on public.planning_resourceplan;
+create trigger planning_resourceplan_published_guard
+before insert or update or delete on public.planning_resourceplan
+for each row execute function public.planning_protect_published_results();
+
+drop trigger if exists planning_operationplanresource_published_guard on public.planning_operationplanresource;
+create trigger planning_operationplanresource_published_guard
+before insert or update or delete on public.planning_operationplanresource
+for each row execute function public.planning_protect_published_results();
+
+drop trigger if exists planning_operationplanmaterial_published_guard on public.planning_operationplanmaterial;
+create trigger planning_operationplanmaterial_published_guard
+before insert or update or delete on public.planning_operationplanmaterial
+for each row execute function public.planning_protect_published_results();
+
+create or replace function public.planning_sync_sales_order_line(p_line_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $function$
+declare
+  source_row record;
+  mapped_item uuid;
+  mapped_customer uuid;
+  mapped_location uuid;
+  missing_mappings text[] := array[]::text[];
+  target_status text;
+  target_due timestamptz;
+  target_quantity numeric;
+  target_demand_id uuid;
+  v_sync_status text;
+  v_sync_message text;
+  snapshot jsonb;
+begin
+  select orders.account_id, orders.id order_id, orders.doc_no, orders.status order_status,
+         orders.approval_status, orders.close_status order_close_status, orders.hold_status,
+         orders.customer_code, orders.customer_id, orders.customer_name,
+         lines.id line_id, lines.line_no, lines.status line_status, lines.close_status line_close_status,
+         lines.item_code, lines.item_id source_item_id, lines.item_name, lines.warehouse_code,
+         lines.ordered_qty, lines.open_qty, lines.need_date, lines.promise_date, lines.delivery_date,
+         lines.project_code, lines.updated_at line_updated_at
+  into source_row
+  from public.sales_order_lines lines
+  join public.sales_orders orders on orders.id = lines.order_id and orders.account_id = lines.account_id
+  where lines.id = p_line_id;
+  if not found then
+    return jsonb_build_object('status', 'missing', 'sourceLineId', p_line_id);
+  end if;
+
+  snapshot := to_jsonb(source_row);
+  target_due := coalesce(source_row.need_date, source_row.promise_date, source_row.delivery_date)::timestamptz;
+  target_quantity := greatest(coalesce(source_row.open_qty, source_row.ordered_qty, 0), 0);
+
+  select mapping.item_id into mapped_item
+  from public.planning_source_mapping mapping
+  where mapping.account_id = source_row.account_id and mapping.source_system = 'enlearn'
+    and mapping.entity_type = 'item' and mapping.status = 'active'
+    and mapping.source_key in (source_row.source_item_id, source_row.item_code)
+  order by case when mapping.source_key = source_row.source_item_id then 0 else 1 end limit 1;
+  if mapped_item is null then
+    select planning_item.id into mapped_item from public.planning_item planning_item
+    where planning_item.account_id = source_row.account_id and planning_item.name = source_row.item_code limit 1;
+  end if;
+
+  select mapping.customer_id into mapped_customer
+  from public.planning_source_mapping mapping
+  where mapping.account_id = source_row.account_id and mapping.source_system = 'enlearn'
+    and mapping.entity_type = 'customer' and mapping.status = 'active'
+    and mapping.source_key in (source_row.customer_id, source_row.customer_code)
+  order by case when mapping.source_key = source_row.customer_id then 0 else 1 end limit 1;
+  if mapped_customer is null then
+    select planning_customer.id into mapped_customer from public.planning_customer planning_customer
+    where planning_customer.account_id = source_row.account_id
+      and planning_customer.name in (source_row.customer_code, source_row.customer_name)
+    order by case when planning_customer.name = source_row.customer_code then 0 else 1 end limit 1;
+  end if;
+
+  select mapping.location_id into mapped_location
+  from public.planning_source_mapping mapping
+  where mapping.account_id = source_row.account_id and mapping.source_system = 'enlearn'
+    and mapping.entity_type = 'location' and mapping.status = 'active'
+    and mapping.source_key = source_row.warehouse_code limit 1;
+  if mapped_location is null then
+    select planning_location.id into mapped_location from public.planning_location planning_location
+    where planning_location.account_id = source_row.account_id and planning_location.name = source_row.warehouse_code limit 1;
+  end if;
+
+  if mapped_item is null then missing_mappings := array_append(missing_mappings, 'item:' || coalesce(source_row.item_code, '(empty)')); end if;
+  if mapped_customer is null then missing_mappings := array_append(missing_mappings, 'customer:' || coalesce(source_row.customer_code, source_row.customer_name, '(empty)')); end if;
+  if mapped_location is null then missing_mappings := array_append(missing_mappings, 'location:' || coalesce(source_row.warehouse_code, '(empty)')); end if;
+
+  target_status := case
+    when lower(coalesce(source_row.order_status, '')) in ('canceled', 'cancelled', 'void', 'rejected') then 'canceled'
+    when lower(coalesce(source_row.order_close_status, '')) in ('closed', 'close')
+      or lower(coalesce(source_row.line_close_status, '')) in ('closed', 'close')
+      or lower(coalesce(source_row.line_status, '')) in ('canceled', 'cancelled', 'closed')
+      or target_quantity <= 0 then 'closed'
+    else 'open'
+  end;
+
+  if target_status in ('closed', 'canceled') and target_demand_id is null then
+    select demand.id into target_demand_id
+    from public.planning_demand demand
+    where demand.account_id = source_row.account_id and demand.source_system = 'enlearn'
+      and demand.source_type = 'sales_order_line' and demand.source_key = source_row.line_id::text;
+  end if;
+
+  if target_status in ('closed', 'canceled') then
+    v_sync_status := 'ignored';
+    v_sync_message := case target_status
+      when 'canceled' then 'Sales order or line is canceled.'
+      else 'Sales order line is closed or has no open quantity.'
+    end;
+  elsif cardinality(missing_mappings) > 0 then
+    v_sync_status := 'error';
+    v_sync_message := 'Missing mappings: ' || array_to_string(missing_mappings, ', ');
+  elsif target_due is null then
+    v_sync_status := 'error';
+    v_sync_message := 'Missing demand date.';
+  elsif source_row.hold_status then
+    v_sync_status := 'ignored';
+    v_sync_message := 'Sales order is on hold.';
+  elsif lower(coalesce(source_row.approval_status, '')) not in ('approved', 'approve', 'passed') then
+    v_sync_status := 'pending';
+    v_sync_message := 'Sales order is not approved.';
+  else
+    v_sync_status := 'synced';
+    v_sync_message := null;
+  end if;
+
+  if v_sync_status = 'ignored' and target_status = 'open' then
+    target_status := 'closed';
+  end if;
+
+  if v_sync_status = 'synced' then
+    insert into public.planning_demand (
+      account_id, name, owner, customer_id, item_id, location_id, due, status, quantity, priority,
+      batch, source_type, source_system, source_key, source_order_id, source_line_id,
+      source_doc_no, source_line_no, source_updated_at, sync_status, sync_message, source
+    ) values (
+      source_row.account_id, source_row.doc_no || '-' || source_row.line_no::text, source_row.doc_no,
+      mapped_customer, mapped_item, mapped_location, target_due, target_status, target_quantity, 10,
+      nullif(source_row.project_code, ''), 'sales_order_line', 'enlearn', source_row.line_id::text,
+      source_row.order_id, source_row.line_id, source_row.doc_no, source_row.line_no::text,
+      source_row.line_updated_at, 'synced', null, 'sales_order_line:' || source_row.line_id::text
+    )
+    on conflict (account_id, source_system, source_type, source_key) where source_key is not null
+    do update set
+      name = excluded.name, owner = excluded.owner, customer_id = excluded.customer_id,
+      item_id = excluded.item_id, location_id = excluded.location_id, due = excluded.due,
+      status = excluded.status, quantity = excluded.quantity, batch = excluded.batch,
+      source_order_id = excluded.source_order_id, source_line_id = excluded.source_line_id,
+      source_doc_no = excluded.source_doc_no, source_line_no = excluded.source_line_no,
+      source_updated_at = excluded.source_updated_at, sync_status = 'synced', sync_message = null,
+      updated_at = timezone('utc'::text, now())
+    returning id into target_demand_id;
+  else
+    select demand.id into target_demand_id
+    from public.planning_demand demand
+    where demand.account_id = source_row.account_id and demand.source_system = 'enlearn'
+      and demand.source_type = 'sales_order_line' and demand.source_key = source_row.line_id::text;
+    if target_demand_id is not null then
+      update public.planning_demand
+      set sync_status = v_sync_status, sync_message = v_sync_message,
+          status = case
+            when target_status = 'canceled' then 'canceled'
+            when v_sync_status = 'ignored' then 'closed'
+            when v_sync_status = 'pending' then 'closed'
+            else status
+          end,
+          quantity = case when v_sync_status = 'ignored' then target_quantity else quantity end,
+          source_order_id = source_row.order_id, source_line_id = source_row.line_id,
+          source_doc_no = source_row.doc_no, source_line_no = source_row.line_no::text,
+          source_updated_at = source_row.line_updated_at, updated_at = timezone('utc'::text, now())
+      where account_id = source_row.account_id and id = target_demand_id;
+    end if;
+  end if;
+
+  insert into public.planning_demand_sync_state (
+    account_id, source_type, source_system, source_key, source_order_id, source_line_id,
+    source_doc_no, source_line_no, demand_id, status, message, source_updated_at, attempted_at, payload
+  ) values (
+    source_row.account_id, 'sales_order_line', 'enlearn', source_row.line_id::text,
+    source_row.order_id, source_row.line_id, source_row.doc_no, source_row.line_no::text,
+    target_demand_id, v_sync_status, v_sync_message, source_row.line_updated_at,
+    timezone('utc'::text, now()), snapshot
+  )
+  on conflict (account_id, source_system, source_type, source_key) do update set
+    source_order_id = excluded.source_order_id, source_line_id = excluded.source_line_id,
+    source_doc_no = excluded.source_doc_no, source_line_no = excluded.source_line_no,
+    demand_id = excluded.demand_id, status = excluded.status, message = excluded.message,
+    source_updated_at = excluded.source_updated_at, attempted_at = excluded.attempted_at,
+    payload = excluded.payload, updated_at = timezone('utc'::text, now());
+
+  return jsonb_build_object('status', v_sync_status, 'message', v_sync_message, 'demandId', target_demand_id, 'sourceLineId', p_line_id);
+end;
+$function$;
+
+create or replace function public.planning_sync_sales_order_trigger()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $function$
+declare
+  row_id uuid;
+  deleted_account_id uuid;
+  deleted_order_id uuid;
+  sync_result jsonb;
+begin
+  if tg_table_name = 'sales_order_lines' then
+    if tg_op = 'DELETE' then
+      update public.planning_demand
+      set status = 'canceled', quantity = 0, sync_status = 'ignored',
+          sync_message = 'Source sales order line was deleted.',
+          source_updated_at = timezone('utc'::text, now()), updated_at = timezone('utc'::text, now())
+      where account_id = old.account_id and source_system = 'enlearn'
+        and source_type = 'sales_order_line' and source_line_id = old.id;
+      update public.planning_demand_sync_state
+      set status = 'ignored', message = 'Source sales order line was deleted.',
+          source_updated_at = timezone('utc'::text, now()), attempted_at = timezone('utc'::text, now()),
+          payload = payload || jsonb_build_object('deletedAt', timezone('utc'::text, now())),
+          updated_at = timezone('utc'::text, now())
+      where account_id = old.account_id and source_system = 'enlearn'
+        and source_type = 'sales_order_line' and source_line_id = old.id;
+      return old;
+    end if;
+    begin
+      sync_result := public.planning_sync_sales_order_line(new.id);
+    exception when others then
+      insert into public.planning_demand_sync_state (
+        account_id, source_type, source_system, source_key, source_order_id, source_line_id,
+        source_doc_no, source_line_no, status, message, source_updated_at, attempted_at, payload
+      )
+      select new.account_id, 'sales_order_line', 'enlearn', new.id::text, new.order_id, new.id,
+             orders.doc_no, new.line_no::text, 'error', left(sqlerrm, 4000), new.updated_at,
+             timezone('utc'::text, now()), jsonb_build_object('triggerError', sqlerrm)
+      from public.sales_orders orders
+      where orders.account_id = new.account_id and orders.id = new.order_id
+      on conflict (account_id, source_system, source_type, source_key) do update set
+        status = 'error', message = excluded.message, attempted_at = excluded.attempted_at,
+        payload = excluded.payload, updated_at = timezone('utc'::text, now());
+    end;
+  else
+    deleted_account_id := case when tg_op = 'DELETE' then old.account_id else new.account_id end;
+    deleted_order_id := case when tg_op = 'DELETE' then old.id else new.id end;
+    if tg_op = 'DELETE' then
+      update public.planning_demand
+      set status = 'canceled', quantity = 0, sync_status = 'ignored',
+          sync_message = 'Source sales order was deleted.',
+          source_updated_at = timezone('utc'::text, now()), updated_at = timezone('utc'::text, now())
+      where account_id = deleted_account_id and source_system = 'enlearn'
+        and source_type = 'sales_order_line' and source_order_id = deleted_order_id;
+      update public.planning_demand_sync_state
+      set status = 'ignored', message = 'Source sales order was deleted.',
+          source_updated_at = timezone('utc'::text, now()), attempted_at = timezone('utc'::text, now()),
+          payload = payload || jsonb_build_object('deletedAt', timezone('utc'::text, now())),
+          updated_at = timezone('utc'::text, now())
+      where account_id = deleted_account_id and source_system = 'enlearn'
+        and source_type = 'sales_order_line' and source_order_id = deleted_order_id;
+      return old;
+    end if;
+    for row_id in select id from public.sales_order_lines where account_id = new.account_id and order_id = new.id loop
+      begin
+        sync_result := public.planning_sync_sales_order_line(row_id);
+      exception when others then
+        insert into public.planning_demand_sync_state (
+          account_id, source_type, source_system, source_key, source_order_id, source_line_id,
+          source_doc_no, source_line_no, status, message, source_updated_at, attempted_at, payload
+        )
+        select lines.account_id, 'sales_order_line', 'enlearn', lines.id::text, lines.order_id, lines.id,
+               new.doc_no, lines.line_no::text, 'error', left(sqlerrm, 4000), lines.updated_at,
+               timezone('utc'::text, now()), jsonb_build_object('triggerError', sqlerrm)
+        from public.sales_order_lines lines
+        where lines.account_id = new.account_id and lines.id = row_id
+        on conflict (account_id, source_system, source_type, source_key) do update set
+          status = 'error', message = excluded.message, attempted_at = excluded.attempted_at,
+          payload = excluded.payload, updated_at = timezone('utc'::text, now());
+      end;
+    end loop;
+  end if;
+  return case when tg_op = 'DELETE' then old else new end;
+end;
+$function$;
+
+drop trigger if exists planning_sales_order_line_sync on public.sales_order_lines;
+create trigger planning_sales_order_line_sync
+after insert or delete or update of status, close_status, item_id, item_code, item_name, ordered_qty, open_qty,
+  need_date, promise_date, delivery_date, warehouse_code, project_code
+on public.sales_order_lines
+for each row execute function public.planning_sync_sales_order_trigger();
+
+drop trigger if exists planning_sales_order_sync on public.sales_orders;
+create trigger planning_sales_order_sync
+after delete or update of status, approval_status, close_status, hold_status, customer_id, customer_code, customer_name
+on public.sales_orders
+for each row execute function public.planning_sync_sales_order_trigger();
+
+create or replace function public.planning_resync_sales_orders(p_account_id uuid, p_line_ids uuid[] default null)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $function$
+declare
+  row_id uuid;
+  result jsonb;
+  synced integer := 0;
+  pending integer := 0;
+  ignored integer := 0;
+  errors integer := 0;
+begin
+  if auth.uid() is not null and not public.has_account_permission(p_account_id, 'planning.models.manage') then
+    raise exception 'Planning manage permission required.' using errcode = '42501';
+  end if;
+  if auth.uid() is not null and not exists (
+    select 1 from basejump.account_user membership
+    where membership.account_id = p_account_id and membership.user_id = auth.uid()
+  ) then
+    raise exception 'Account membership required.' using errcode = '42501';
+  end if;
+  for row_id in
+    select lines.id from public.sales_order_lines lines
+    where lines.account_id = p_account_id and (p_line_ids is null or lines.id = any(p_line_ids))
+    order by lines.updated_at, lines.id
+  loop
+    result := public.planning_sync_sales_order_line(row_id);
+    case result->>'status'
+      when 'synced' then synced := synced + 1;
+      when 'pending' then pending := pending + 1;
+      when 'ignored' then ignored := ignored + 1;
+      else errors := errors + 1;
+    end case;
+  end loop;
+  return jsonb_build_object('synced', synced, 'pending', pending, 'ignored', ignored, 'errors', errors);
+end;
+$function$;
+
+revoke all on function public.planning_sync_sales_order_line(uuid) from public, anon, authenticated;
+grant execute on function public.planning_sync_sales_order_line(uuid) to service_role;
+revoke all on function public.planning_resync_sales_orders(uuid, uuid[]) from public, anon;
+grant execute on function public.planning_resync_sales_orders(uuid, uuid[]) to authenticated, service_role;`;
+}
+
 function seedExtendedPlanningDataSql() {
   const parameters = [
     ['currentdate', 'now', 'Current date of the plan. Use now or a date-time value.'],
@@ -859,7 +1736,19 @@ on conflict (account_id, name) do nothing;`;
 }
 
 function pagesSql() {
-  return EXTENDED_MODEL_DEFINITIONS.map((model, index) => {
+  const refreshedKeys = new Set([
+    'planning_demand',
+    'planning_operationplan',
+    'planning_operationplanresource',
+    'planning_operationplanmaterial',
+    'planning_problem',
+    'planning_constraint',
+    'planning_resourceplan'
+  ]);
+  const pageModels = PLANNING_MODEL_DEFINITIONS.filter(
+    (model) => !CORE_MODEL_KEYS.has(model.key) || refreshedKeys.has(model.key)
+  );
+  return pageModels.map((model, index) => {
     const list = buildPlanningListSchema(model);
     const edit = buildPlanningEditSchema(model);
     const route = list.route;
@@ -1047,6 +1936,22 @@ on conflict (code) do update set
   updated_at = timezone('utc'::text, now());`;
 }
 
+function reconcileObsoleteRoutesSql() {
+  const activeGroupCodes = new Set(
+    [...new Set(PLANNING_MODEL_DEFINITIONS.map((model) => model.group))]
+      .map((_group, index) => `planning-${index + 1}`)
+  );
+  const activeRouteCodes = new Set([
+    'planning-root',
+    ...activeGroupCodes,
+    ...PLANNING_MODEL_DEFINITIONS.map((model) => `planning-${model.sourceTable.replace(/_/g, '-')}`)
+  ]);
+  return `update public.admin_routes
+set status = 'inactive', visible = false, updated_at = timezone('utc'::text, now())
+where (code = 'planning-root' or code like 'planning-%')
+  and code not in (${[...activeRouteCodes].map(sqlString).join(', ')});`;
+}
+
 export function buildPlanningRoutesSql() {
   return routesSql();
 }
@@ -1054,24 +1959,33 @@ export function buildPlanningRoutesSql() {
 function migrationSql() {
   const header = `-- frePPLe-compatible planning data service for enLearn.
 -- Scope: extended configuration, forecast, diagnostic, execution, scenario,
--- time-bucket, attribute and archive models. The C++ solver remains external.
+-- time-bucket, attribute, archive, source-integration and plan-version models.
+-- The C++ solver remains external.
 
 begin;`;
-  const tables = EXTENDED_MODEL_DEFINITIONS.map(tableSql).join('\n\n');
-  const foreignKeys = EXTENDED_MODEL_DEFINITIONS.map(foreignKeySql).filter(Boolean).join('\n\n');
+  const newTableDefinitions = EXTENDED_MODEL_DEFINITIONS.filter((model) =>
+    !['planning_problem', 'planning_constraint', 'planning_resourceplan'].includes(model.key)
+  );
+  const tables = newTableDefinitions.map(tableSql).join('\n\n');
+  const foreignKeys = newTableDefinitions.map(foreignKeySql).filter(Boolean).join('\n\n');
   return [
     header,
     permissionsSql(),
     tables,
+    existingTableColumnsSql(),
     foreignKeys,
+    existingTableForeignKeysSql(),
     commonFunctionsSql(),
     policiesAndTriggersSql(),
     extendedConstraintsSql(),
+    integrationAndVersionSql(),
     workflowPlanningBridgeSql(),
     seedExtendedPlanningDataSql(),
     dynamicCrudRegistrySql(),
+    coreCrudRegistryRefreshSql(),
     pagesSql(),
     routesSql(),
+    reconcileObsoleteRoutesSql(),
     "select pg_notify('pgrst', 'reload schema');",
     'commit;',
     ''

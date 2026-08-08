@@ -6,6 +6,9 @@ const readWorkspaceFile = (path) => readFile(new URL(`../../${path}`, import.met
 const editorSource = await readWorkspaceFile(
   'packages/lowcode-framework/src/lowcode/form-materials/lc-json-editor/index.vue',
 );
+const formDefinitionMigration = await readWorkspaceFile(
+  'supabase/migrations/20260808200000_lowcode_form_definitions.sql',
+);
 
 assert.match(
   editorSource,
@@ -45,8 +48,9 @@ assert.match(
 
 const structuredJsonEntries = [
   {
-    path: 'frontend/schemas/lowcode.ts',
-    pattern: /field: 'schemaJson'[\s\S]*?component: 'lc-json-editor'/,
+    source: formDefinitionMigration,
+    path: 'supabase/migrations/20260808200000_lowcode_form_definitions.sql',
+    pattern: /"field": "schemaJson"[\s\S]*?"component": "lc-json-editor"/,
     label: 'low-code page schema',
   },
   {
@@ -102,7 +106,7 @@ const structuredJsonEntries = [
 ];
 
 for (const entry of structuredJsonEntries) {
-  const source = await readWorkspaceFile(entry.path);
+  const source = entry.source ?? await readWorkspaceFile(entry.path);
   assert.match(
     source,
     entry.pattern,
@@ -111,7 +115,10 @@ for (const entry of structuredJsonEntries) {
 }
 
 const retainedTextareaEntries = [
-  ['frontend/schemas/lowcode.ts', /field: 'description'[\s\S]*?component: 'vxe-textarea'/],
+  [
+    'supabase/migrations/20260808200000_lowcode_form_definitions.sql',
+    /"field": "description"[\s\S]*?"component": "vxe-textarea"/,
+  ],
   [
     'packages/trigger-workflow-editor/src/components/TriggerWorkflowEditor.vue',
     /<span>System prompt<\/span><textarea/,

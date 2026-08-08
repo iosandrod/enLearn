@@ -21,8 +21,8 @@ const service = new PlanningService() as unknown as {
   ): Promise<Record<string, unknown>>;
 };
 
-assert.equal(PLANNING_MODEL_DEFINITIONS.length, 41);
-assert.equal(Object.keys(resources).length, 41);
+assert.equal(PLANNING_MODEL_DEFINITIONS.length, 44);
+assert.equal(Object.keys(resources).length, 44);
 assert.deepEqual(Object.keys(resources), PLANNING_MODEL_KEYS);
 
 for (const model of PLANNING_MODEL_DEFINITIONS) {
@@ -35,6 +35,10 @@ for (const model of PLANNING_MODEL_DEFINITIONS) {
   assert.equal(resource.permissions?.create, PLANNING_MANAGE_PERMISSION);
   assert.equal(resource.permissions?.update, PLANNING_MANAGE_PERMISSION);
   assert.equal(resource.permissions?.delete, PLANNING_MANAGE_PERMISSION);
+  assert.deepEqual(
+    resource.internalActions ?? [],
+    model.access === 'view' ? ['create', 'update', 'delete'] : []
+  );
   assert.ok(resource.create?.allowedFields?.length);
   assert.ok(resource.update?.allowedFields?.length);
   assert.ok(!resource.create?.allowedFields?.includes('account_id'));
@@ -49,9 +53,12 @@ for (const model of PLANNING_MODEL_DEFINITIONS) {
   }
 }
 
-assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.access === 'view').length, 8);
+assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.access === 'view').length, 9);
 assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_parameter').length, 1);
 assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_forecastplan').length, 1);
+assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_source_mapping').length, 1);
+assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_plan_version').length, 1);
+assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_demand_sync_state').length, 1);
 
 assert.equal(typeof service.executeAction, 'function');
 

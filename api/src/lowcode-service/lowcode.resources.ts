@@ -79,8 +79,12 @@ export const lowCodeResources: ResourceConfigMap = {
   },
   lowcode_form_definitions: {
     tableName: 'lowcode_form_definitions',
-    clientMode: 'admin',
-    permissions: crudPermissions('lowcode.pages.manage'),
+    clientMode: 'user',
+    permissions: {
+      create: 'lowcode.pages.manage',
+      update: 'lowcode.pages.manage',
+      delete: 'lowcode.pages.manage'
+    },
     defaults: {
       enabled: true
     },

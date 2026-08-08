@@ -121,6 +121,40 @@ export class PlanningService extends BaseService {
       return data ?? null;
     }
 
+    if (method === 'syncSalesOrderDemands') {
+      const relation = this.resolveResource({ resource: 'planning_demand' });
+      const ctx = await this.createCrudContext('update', postData, context, relation);
+      await this.assertPermission(ctx);
+      const lineIds = Array.isArray(postData.lineIds ?? postData.line_ids)
+        ? (postData.lineIds ?? postData.line_ids) as unknown[]
+        : [];
+      const normalizedLineIds = lineIds
+        .map((value) => this.readOptionalString(value))
+        .filter(Boolean);
+      const { data, error } = await ctx.client.rpc('planning_resync_sales_orders', {
+        p_account_id: this.accountValue(context, 'account_id'),
+        p_line_ids: normalizedLineIds.length ? normalizedLineIds : null
+      });
+      if (error) throw new BadRequestException(error.message);
+      return data;
+    }
+
+    if (method === 'publishPlanVersion') {
+      const relation = this.resolveResource({ resource: 'planning_plan_version' });
+      const ctx = await this.createCrudContext('update', postData, context, relation);
+      await this.assertPermission(ctx);
+      const versionId = this.readOptionalString(
+        postData.id ?? postData.versionId ?? postData.version_id
+      );
+      if (!versionId) throw new BadRequestException('id is required.');
+      const { data, error } = await ctx.client.rpc('planning_publish_plan_version', {
+        p_account_id: this.accountValue(context, 'account_id'),
+        p_version_id: versionId
+      });
+      if (error) throw new BadRequestException(error.message);
+      return data;
+    }
+
     return super.executeAction(method, postData, context);
   }
 

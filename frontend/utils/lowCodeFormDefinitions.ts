@@ -6,6 +6,21 @@ import type { LowCodeContextSource } from '@enlearn/lowcode-framework/runtime';
 
 export const PAGE_INFO_DESIGN_FORM_CODE = 'page-info-design';
 
+export const LOW_CODE_FORM_CODES = {
+  accountProfile: 'account-profile',
+  accountEmail: 'account-email',
+  dashboardSettings: 'dashboard-settings',
+  postEditor: 'post-editor',
+  lowCodePageEditor: 'lowcode-page-editor',
+  entityDesignTable: 'entity-design-table',
+  entityDesignColumn: 'entity-design-column',
+  entityDesignColumns: 'entity-design-columns',
+  entityDesignRelation: 'entity-design-relation',
+  entityDesignLeftPanel: 'entity-design-left-panel',
+  entityDesignRightPanel: 'entity-design-right-panel',
+  pageInfoDesign: PAGE_INFO_DESIGN_FORM_CODE,
+} as const;
+
 export type LowCodeFormDefinitionRecord = {
   id: string;
   code: string;
@@ -92,6 +107,10 @@ export function assertLowCodeFormSchema(value: unknown): asserts value is LowCod
   }
 }
 
+export function createEmptyLowCodeFormSchema(): LowCodeFormSchema {
+  return { fields: [], actions: [] };
+}
+
 function hydratePageInfoRuntimeBindings(
   schema: LowCodeFormSchema,
   page: LowCodePageRecord,
@@ -129,21 +148,49 @@ export async function loadLowCodeFormDefinition(
   serviceApi: ServiceApi,
   code: string,
 ) {
+  const definitions = await loadLowCodeFormDefinitions(serviceApi, [code]);
+  return definitions[code];
+}
+
+export async function loadLowCodeFormDefinitions<TCode extends string>(
+  serviceApi: ServiceApi,
+  codes: readonly TCode[],
+) {
+  const requestedCodes = [...new Set(codes.map((code) => code.trim()).filter(Boolean))] as TCode[];
+  if (!requestedCodes.length) return {} as Record<TCode, LowCodeFormDefinitionRecord>;
+
   const rows = await serviceApi.invoke<LowCodeFormDefinitionRecord[]>(
     'lowcode',
     'listItems',
     {
       resource: 'lowcode_form_definitions',
-      filters: { code, enabled: true },
-      limit: 1,
+      filters: { code: requestedCodes, enabled: true },
+      limit: requestedCodes.length,
     },
   );
-  const definition = Array.isArray(rows) ? rows[0] : undefined;
+  const definitions = Object.fromEntries(
+    (Array.isArray(rows) ? rows : []).map((definition) => {
+      try {
+        assertLowCodeFormSchema(definition.schema);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'schema 格式不正确。';
+        throw new Error(`低代码表单定义“${definition.code}”无效：${message}`);
+      }
 
-  if (!definition) {
-    throw new Error(`低代码表单定义“${code}”不存在或已停用。`);
+      return [
+        definition.code,
+        {
+          ...definition,
+          schema: structuredClone(definition.schema),
+        },
+      ];
+    }),
+  ) as Record<string, LowCodeFormDefinitionRecord>;
+  const missingCodes = requestedCodes.filter((code) => !definitions[code]);
+
+  if (missingCodes.length) {
+    throw new Error(`低代码表单定义“${missingCodes.join('、')}”不存在或已停用。`);
   }
 
-  assertLowCodeFormSchema(definition.schema);
-  return definition;
+  return definitions as Record<TCode, LowCodeFormDefinitionRecord>;
 }

@@ -112,19 +112,44 @@ assert.doesNotMatch(
 );
 assert.match(
   formDefinitionMigration,
-  /field: 'functions'[\s\S]*?component: 'lc-array-table'[\s\S]*?label: '新增函数'[\s\S]*?component: 'lc-monaco-editor'/,
+  /"field": "functions"[\s\S]*?"component": "lc-array-table"[\s\S]*?"label": "新增函数"[\s\S]*?"component": "lc-monaco-editor"/,
   'Page functions must be editable as a structured array with a Monaco script editor.'
 );
 assert.match(
+  formDefinitionMigration,
+  /'page-info-design'[\s\S]*?"kind": "tabs"[\s\S]*?"key": "basic"[\s\S]*?"key": "functions"[\s\S]*?"key": "apis"/,
+  'The database seed must define the page-information form as one tabbed low-code form schema.'
+);
+assert.match(
   formDefinitionSource,
-  /resource: 'lowcode_form_definitions'[\s\S]*?filters: \{ code, enabled: true \}/,
-  'Only the enabled database form definition with the requested code may be loaded.'
+  /resource: 'lowcode_form_definitions'[\s\S]*?filters: \{ code: requestedCodes, enabled: true \}/,
+  'Only enabled database form definitions with the requested codes may be loaded.'
 );
 assert.match(
   formDefinitionSource,
   /contextSource: createPageFunctionContextSource\(page\)/,
   'The current page context must be injected after the database schema is loaded.'
 );
+for (const code of [
+  'account-profile',
+  'account-email',
+  'dashboard-settings',
+  'post-editor',
+  'lowcode-page-editor',
+  'entity-design-table',
+  'entity-design-column',
+  'entity-design-columns',
+  'entity-design-relation',
+  'entity-design-left-panel',
+  'entity-design-right-panel',
+  'page-info-design',
+]) {
+  assert.match(
+    formDefinitionMigration,
+    new RegExp(`'${code}'`),
+    `The database migration must seed the ${code} form definition.`,
+  );
+}
 assert.doesNotMatch(
   layoutSource,
   /const pageInfoBasicFields|function createPageInfoDesignSchema|const pageApiDesignField/,

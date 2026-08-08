@@ -1124,3 +1124,897 @@ Domain and workflow services are running in-process; Redis transport is disabled
 [Nest] 54828  - 2026/08/08 08:04:24    WARN [ServiceGatewayController] [service] lowcode.listItems failed 303ms: Could not find the table 'public.lowcode_form_definitions' in the schema cache Could not find the table 'public.lowcode_form_definitions' in the schema cache Bad Request
 [Nest] 54828  - 2026/08/08 08:05:17     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 5262ms
 [Nest] 54828  - 2026/08/08 08:06:13     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1268ms
+[Nest] 54828  - 2026/08/08 08:07:13     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 710ms
+[Nest] 54828  - 2026/08/08 08:08:15     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2551ms
+[Nest] 54828  - 2026/08/08 08:09:13     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1320ms
+[Nest] 54828  - 2026/08/08 08:10:13     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1131ms
+[Nest] 54828  - 2026/08/08 08:11:13     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 851ms
+[Nest] 54828  - 2026/08/08 08:11:40     LOG [ServiceGatewayController] [service] admin.listItems ok 288ms
+[Nest] 54828  - 2026/08/08 08:11:40     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 457ms
+[Nest] 54828  - 2026/08/08 08:11:41     LOG [ServiceGatewayController] [service] admin.listItems ok 974ms
+[Nest] 54828  - 2026/08/08 08:11:41     LOG [ServiceGatewayController] [service] lowcode.listItems ok 978ms
+[Nest] 54828  - 2026/08/08 08:11:41     LOG [ServiceGatewayController] [service] admin.listItems ok 645ms
+[Nest] 54828  - 2026/08/08 08:11:42     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1206ms
+[Nest] 54828  - 2026/08/08 08:11:42     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1341ms
+[Nest] 54828  - 2026/08/08 08:11:42     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1370ms
+[Nest] 54828  - 2026/08/08 08:11:42     LOG [ServiceGatewayController] [service] lowcode.listItems ok 317ms
+[Nest] 54828  - 2026/08/08 08:11:44     LOG [ServiceGatewayController] [service] lowcode.saveItem ok 529ms
+[Nest] 54828  - 2026/08/08 08:11:45     LOG [ServiceGatewayController] [service] lowcode.listItems ok 662ms
+[Nest] 54828  - 2026/08/08 08:11:45     LOG [ServiceGatewayController] [service] admin.listItems ok 361ms
+[Nest] 54828  - 2026/08/08 08:11:45     LOG [ServiceGatewayController] [service] lowcode.listItems ok 629ms
+[Nest] 54828  - 2026/08/08 08:11:45     LOG [ServiceGatewayController] [service] lowcode.listItems ok 641ms
+[Nest] 54828  - 2026/08/08 08:11:45     LOG [ServiceGatewayController] [service] lowcode.listItems ok 303ms
+[Nest] 54828  - 2026/08/08 08:12:13     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 662ms
+[Nest] 54828  - 2026/08/08 08:13:13     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1232ms
+[Nest] 54828  - 2026/08/08 08:13:34     LOG [ServiceGatewayController] [service] admin.listItems ok 281ms
+[Nest] 54828  - 2026/08/08 08:13:35     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 455ms
+[Nest] 54828  - 2026/08/08 08:13:35     LOG [ServiceGatewayController] [service] admin.listItems ok 463ms
+[Nest] 54828  - 2026/08/08 08:13:35     LOG [ServiceGatewayController] [service] lowcode.listItems ok 669ms
+[Nest] 54828  - 2026/08/08 08:13:35     LOG [ServiceGatewayController] [service] admin.listItems ok 141ms
+[Nest] 54828  - 2026/08/08 08:13:35     LOG [ServiceGatewayController] [service] admin.listItems ok 286ms
+[Nest] 54828  - 2026/08/08 08:13:36     LOG [ServiceGatewayController] [service] lowcode.listItems ok 624ms
+[Nest] 54828  - 2026/08/08 08:13:39     LOG [ServiceGatewayController] [service] lowcode.listItems ok 627ms
+[Nest] 54828  - 2026/08/08 08:13:40     LOG [ServiceGatewayController] [service] lowcode.listItems ok 302ms
+[Nest] 54828  - 2026/08/08 08:14:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1136ms
+[Nest] 54828  - 2026/08/08 08:15:35     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 935ms
+[Nest] 54828  - 2026/08/08 08:16:35     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 680ms
+[Nest] 54828  - 2026/08/08 08:17:37     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2614ms
+[Nest] 54828  - 2026/08/08 08:18:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1189ms
+[Nest] 54828  - 2026/08/08 08:19:35     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 670ms
+[Nest] 54828  - 2026/08/08 08:20:35     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 753ms
+[Nest] 54828  - 2026/08/08 08:21:37     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2571ms
+[Nest] 54828  - 2026/08/08 08:22:37     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2003ms
+[Nest] 54828  - 2026/08/08 08:23:37     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2459ms
+[Nest] 54828  - 2026/08/08 08:24:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1845ms
+[Nest] 54828  - 2026/08/08 08:25:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1548ms
+[Nest] 54828  - 2026/08/08 08:26:37     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2260ms
+[Nest] 54828  - 2026/08/08 08:27:37     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2115ms
+[Nest] 54828  - 2026/08/08 08:28:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1403ms
+[Nest] 54828  - 2026/08/08 08:29:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1936ms
+[Nest] 54828  - 2026/08/08 08:30:37     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2256ms
+[Nest] 54828  - 2026/08/08 08:31:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1651ms
+[Nest] 54828  - 2026/08/08 08:32:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1596ms
+[Nest] 54828  - 2026/08/08 08:33:37     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2034ms
+[Nest] 54828  - 2026/08/08 08:34:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1526ms
+[Nest] 54828  - 2026/08/08 08:35:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1062ms
+[Nest] 54828  - 2026/08/08 08:36:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1382ms
+[Nest] 54828  - 2026/08/08 08:37:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1369ms
+[Nest] 54828  - 2026/08/08 08:38:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1580ms
+[Nest] 54828  - 2026/08/08 08:39:37     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1753ms
+[Nest] 54828  - 2026/08/08 08:41:25     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1518ms
+08:41:37 [tsx] change in ./src\lowcode-service\lowcode.resources.ts Restarting...
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [NestFactory] Starting Nest application...
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] AccountModule dependencies initialized +16ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] FilesModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] JobModule dependencies initialized +1ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RoutesResolver] ServiceGatewayController {/api}: +273ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RouterExplorer] Mapped {/api/service, POST} route +2ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +1ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +1ms
+[Nest] 48344  - 2026/08/08 08:41:39     LOG [NestApplication] Nest application successfully started +1ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+[Nest] 48344  - 2026/08/08 08:41:41     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1515ms
+[Nest] 48344  - 2026/08/08 08:41:41     LOG [ServiceGatewayController] [service] admin.listItems ok 2115ms
+[Nest] 48344  - 2026/08/08 08:41:42     LOG [ServiceGatewayController] [service] lowcode.listItems ok 2307ms
+[Nest] 48344  - 2026/08/08 08:41:42     LOG [ServiceGatewayController] [service] admin.listItems ok 143ms
+[Nest] 48344  - 2026/08/08 08:41:42     LOG [ServiceGatewayController] [service] admin.listItems ok 302ms
+[Nest] 48344  - 2026/08/08 08:41:42     LOG [ServiceGatewayController] [service] lowcode.listItems ok 662ms
+[Nest] 48344  - 2026/08/08 08:42:39     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 686ms
+[Nest] 48344  - 2026/08/08 08:43:39     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 855ms
+[Nest] 48344  - 2026/08/08 08:43:57     LOG [ServiceGatewayController] [service] admin.listItems ok 294ms
+[Nest] 48344  - 2026/08/08 08:43:57     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 492ms
+[Nest] 48344  - 2026/08/08 08:43:58     LOG [ServiceGatewayController] [service] admin.listItems ok 627ms
+[Nest] 48344  - 2026/08/08 08:43:58     LOG [ServiceGatewayController] [service] lowcode.listItems ok 815ms
+[Nest] 48344  - 2026/08/08 08:43:58     LOG [ServiceGatewayController] [service] admin.listItems ok 153ms
+[Nest] 48344  - 2026/08/08 08:43:58     LOG [ServiceGatewayController] [service] admin.listItems ok 301ms
+[Nest] 48344  - 2026/08/08 08:43:58     LOG [ServiceGatewayController] [service] lowcode.listItems ok 654ms
+[Nest] 48344  - 2026/08/08 08:44:58     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 924ms
+[Nest] 48344  - 2026/08/08 08:45:59     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2208ms
+[Nest] 48344  - 2026/08/08 08:46:14     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1444ms
+[Nest] 48344  - 2026/08/08 08:46:15     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1841ms
+[Nest] 48344  - 2026/08/08 08:46:15     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 470ms
+[Nest] 48344  - 2026/08/08 08:46:15     LOG [ServiceGatewayController] [service] admin.listItems ok 487ms
+[Nest] 48344  - 2026/08/08 08:46:15     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 488ms
+[Nest] 48344  - 2026/08/08 08:46:15     LOG [ServiceGatewayController] [service] admin.listItems ok 139ms
+[Nest] 48344  - 2026/08/08 08:46:15     LOG [ServiceGatewayController] [service] admin.listItems ok 406ms
+[Nest] 48344  - 2026/08/08 08:46:16     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1499ms
+08:46:50 [tsx] change in ./src\planning-service\planning.models.ts Restarting...
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [NestFactory] Starting Nest application...
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] AccountModule dependencies initialized +48ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] FilesModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] JobModule dependencies initialized +1ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:00     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RoutesResolver] ServiceGatewayController {/api}: +2941ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RouterExplorer] Mapped {/api/service, POST} route +2ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +1ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +0ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +1ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +0ms
+[Nest] 29528  - 2026/08/08 08:47:03     LOG [NestApplication] Nest application successfully started +2ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+08:47:04 [tsx] change in ./src\planning-service\planning.models.ts Restarting...
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [NestFactory] Starting Nest application...
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] AccountModule dependencies initialized +20ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] NotificationModule dependencies initialized +1ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] FilesModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] JobModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RoutesResolver] ServiceGatewayController {/api}: +203ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RouterExplorer] Mapped {/api/service, POST} route +2ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +1ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +1ms
+[Nest] 42180  - 2026/08/08 08:47:06     LOG [NestApplication] Nest application successfully started +1ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+[Nest] 42180  - 2026/08/08 08:47:16     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2717ms
+08:47:28 [tsx] change in ./src\planning-service\planning.models.ts Restarting...
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [NestFactory] Starting Nest application...
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] AccountModule dependencies initialized +18ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] FilesModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] DatabaseModule dependencies initialized +1ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] JobModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RoutesResolver] ServiceGatewayController {/api}: +210ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RouterExplorer] Mapped {/api/service, POST} route +1ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +1ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +1ms
+[Nest] 40432  - 2026/08/08 08:47:30     LOG [NestApplication] Nest application successfully started +1ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+[Nest] 40432  - 2026/08/08 08:47:52     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1459ms
+[Nest] 40432  - 2026/08/08 08:47:55     LOG [ServiceGatewayController] [service] lowcode.listItems ok 3583ms
+[Nest] 40432  - 2026/08/08 08:47:55     LOG [ServiceGatewayController] [service] admin.listItems ok 154ms
+[Nest] 40432  - 2026/08/08 08:47:55     LOG [ServiceGatewayController] [service] admin.listItems ok 811ms
+[Nest] 40432  - 2026/08/08 08:47:55     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 890ms
+[Nest] 40432  - 2026/08/08 08:47:55     LOG [ServiceGatewayController] [service] admin.listItems ok 592ms
+[Nest] 40432  - 2026/08/08 08:47:55     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1140ms
+[Nest] 40432  - 2026/08/08 08:47:56     LOG [ServiceGatewayController] [service] lowcode.listItems ok 666ms
+[Nest] 40432  - 2026/08/08 08:48:53     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1623ms
+[Nest] 40432  - 2026/08/08 08:48:56     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1271ms
+[Nest] 40432  - 2026/08/08 08:48:57     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 437ms
+[Nest] 40432  - 2026/08/08 08:48:57     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 478ms
+[Nest] 40432  - 2026/08/08 08:48:57     LOG [ServiceGatewayController] [service] admin.listItems ok 528ms
+[Nest] 40432  - 2026/08/08 08:48:57     LOG [ServiceGatewayController] [service] lowcode.listItems ok 2371ms
+[Nest] 40432  - 2026/08/08 08:48:57     LOG [ServiceGatewayController] [service] admin.listItems ok 272ms
+[Nest] 40432  - 2026/08/08 08:48:57     LOG [ServiceGatewayController] [service] admin.listItems ok 325ms
+[Nest] 40432  - 2026/08/08 08:48:58     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1060ms
+[Nest] 40432  - 2026/08/08 08:50:01     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 5600ms
+[Nest] 40432  - 2026/08/08 08:50:57     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1833ms
+[Nest] 40432  - 2026/08/08 08:51:56     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1455ms
+08:51:57 [tsx] change in ./src\planning-service\planning.service.ts Restarting...
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [NestFactory] Starting Nest application...
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] AccountModule dependencies initialized +23ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] FilesModule dependencies initialized +1ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] JobModule dependencies initialized +1ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:51:59     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RoutesResolver] ServiceGatewayController {/api}: +256ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RouterExplorer] Mapped {/api/service, POST} route +2ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +0ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +1ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +0ms
+[Nest] 51348  - 2026/08/08 08:52:00     LOG [NestApplication] Nest application successfully started +2ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+08:52:08 [tsx] change in ./src\planning-service\planning.resources.ts Restarting...
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [NestFactory] Starting Nest application...
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] AccountModule dependencies initialized +29ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] FilesModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] DatabaseModule dependencies initialized +1ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] JobModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:10     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RoutesResolver] ServiceGatewayController {/api}: +328ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RouterExplorer] Mapped {/api/service, POST} route +3ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +1ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +0ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +1ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +0ms
+[Nest] 35336  - 2026/08/08 08:52:11     LOG [NestApplication] Nest application successfully started +3ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+08:52:17 [tsx] change in ./src\planning-service\planning.resources.ts Restarting...
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [NestFactory] Starting Nest application...
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] AccountModule dependencies initialized +18ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] FilesModule dependencies initialized +1ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] JobModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RoutesResolver] ServiceGatewayController {/api}: +242ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RouterExplorer] Mapped {/api/service, POST} route +1ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +1ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +1ms
+[Nest] 57708  - 2026/08/08 08:52:19     LOG [NestApplication] Nest application successfully started +1ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+08:52:33 [tsx] change in ./src\planning-service\planning.models.ts Restarting...
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [NestFactory] Starting Nest application...
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] AccountModule dependencies initialized +20ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] FilesModule dependencies initialized +1ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] JobModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RoutesResolver] ServiceGatewayController {/api}: +229ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RouterExplorer] Mapped {/api/service, POST} route +2ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +1ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +0ms
+[Nest] 53140  - 2026/08/08 08:52:35     LOG [NestApplication] Nest application successfully started +1ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+08:52:46 [tsx] change in ./src\planning-service\planning.service.ts Restarting...
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [NestFactory] Starting Nest application...
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] AccountModule dependencies initialized +21ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] FilesModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] JobModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] RuntimeModule dependencies initialized +1ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RoutesResolver] ServiceGatewayController {/api}: +246ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RouterExplorer] Mapped {/api/service, POST} route +1ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +1ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +0ms
+[Nest] 43720  - 2026/08/08 08:52:48     LOG [NestApplication] Nest application successfully started +2ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+[Nest] 43720  - 2026/08/08 08:52:56     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1491ms
+[Nest] 43720  - 2026/08/08 08:53:18     LOG [ServiceGatewayController] [service] admin.listItems ok 303ms
+[Nest] 43720  - 2026/08/08 08:53:18     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 510ms
+[Nest] 43720  - 2026/08/08 08:53:18     LOG [ServiceGatewayController] [service] admin.listItems ok 608ms
+[Nest] 43720  - 2026/08/08 08:53:19     LOG [ServiceGatewayController] [service] lowcode.listItems ok 976ms
+[Nest] 43720  - 2026/08/08 08:53:19     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1162ms
+[Nest] 43720  - 2026/08/08 08:53:19     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1180ms
+[Nest] 43720  - 2026/08/08 08:53:20     LOG [ServiceGatewayController] [service] admin.listItems ok 1129ms
+[Nest] 43720  - 2026/08/08 08:53:20     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1218ms
+[Nest] 43720  - 2026/08/08 08:53:20     LOG [ServiceGatewayController] [service] lowcode.listItems ok 467ms
+[Nest] 43720  - 2026/08/08 08:53:22     LOG [ServiceGatewayController] [service] lowcode.saveItem ok 575ms
+[Nest] 43720  - 2026/08/08 08:53:22     LOG [ServiceGatewayController] [service] lowcode.listItems ok 650ms
+[Nest] 43720  - 2026/08/08 08:53:23     LOG [ServiceGatewayController] [service] admin.listItems ok 384ms
+[Nest] 43720  - 2026/08/08 08:53:23     LOG [ServiceGatewayController] [service] lowcode.listItems ok 638ms
+[Nest] 43720  - 2026/08/08 08:53:23     LOG [ServiceGatewayController] [service] lowcode.listItems ok 684ms
+[Nest] 43720  - 2026/08/08 08:53:23     LOG [ServiceGatewayController] [service] lowcode.listItems ok 277ms
+[Nest] 43720  - 2026/08/08 08:53:56     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 761ms
+[Nest] 43720  - 2026/08/08 08:55:07     LOG [ServiceGatewayController] [service] lowcode.listItems ok 439ms
+[Nest] 43720  - 2026/08/08 08:55:47     LOG [ServiceGatewayController] [service] admin.listItems ok 789ms
+[Nest] 43720  - 2026/08/08 08:55:48     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 526ms
+[Nest] 43720  - 2026/08/08 08:55:48     LOG [ServiceGatewayController] [service] admin.listItems ok 559ms
+[Nest] 43720  - 2026/08/08 08:55:48    WARN [ServiceGatewayController] [service] lowcode.listItems failed 887ms: Low-code page "/dashboard/account" was not found. Low-code page "/dashboard/account" was not found. Not Found
+[Nest] 43720  - 2026/08/08 08:55:48    WARN [ServiceGatewayController] [service] lowcode.listItems failed 801ms: Low-code page "/dashboard/account" was not found. Low-code page "/dashboard/account" was not found. Not Found
+[Nest] 43720  - 2026/08/08 08:56:56     LOG [ServiceGatewayController] [service] admin.listItems ok 283ms
+[Nest] 43720  - 2026/08/08 08:56:56     LOG [ServiceGatewayController] [service] lowcode.listItems ok 287ms
+[Nest] 43720  - 2026/08/08 08:56:56     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 539ms
+[Nest] 43720  - 2026/08/08 08:56:57     LOG [ServiceGatewayController] [service] user.listItems ok 308ms
+[Nest] 43720  - 2026/08/08 08:56:57     LOG [ServiceGatewayController] [service] admin.listItems ok 504ms
+[Nest] 43720  - 2026/08/08 08:56:57     LOG [ServiceGatewayController] [service] payment.listItems ok 297ms
+[Nest] 43720  - 2026/08/08 08:56:59     LOG [ServiceGatewayController] [service] admin.listItems ok 291ms
+[Nest] 43720  - 2026/08/08 08:56:59     LOG [ServiceGatewayController] [service] lowcode.listItems ok 287ms
+[Nest] 43720  - 2026/08/08 08:56:59     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 447ms
+[Nest] 43720  - 2026/08/08 08:57:00     LOG [ServiceGatewayController] [service] admin.listItems ok 476ms
+[Nest] 43720  - 2026/08/08 08:57:02     LOG [ServiceGatewayController] [service] admin.listItems ok 280ms
+[Nest] 43720  - 2026/08/08 08:57:02     LOG [ServiceGatewayController] [service] lowcode.listItems ok 286ms
+[Nest] 43720  - 2026/08/08 08:57:02     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 458ms
+[Nest] 43720  - 2026/08/08 08:57:02     LOG [ServiceGatewayController] [service] lowcode.listItems ok 656ms
+[Nest] 43720  - 2026/08/08 08:57:02     LOG [ServiceGatewayController] [service] lowcode.listTablePageOptions ok 845ms
+[Nest] 43720  - 2026/08/08 08:57:02     LOG [ServiceGatewayController] [service] admin.listItems ok 835ms
+[Nest] 43720  - 2026/08/08 08:57:24     LOG [ServiceGatewayController] [service] admin.listItems ok 274ms
+[Nest] 43720  - 2026/08/08 08:57:24     LOG [ServiceGatewayController] [service] lowcode.listItems ok 287ms
+[Nest] 43720  - 2026/08/08 08:57:25     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 539ms
+[Nest] 43720  - 2026/08/08 08:57:25     LOG [ServiceGatewayController] [service] user.listItems ok 378ms
+[Nest] 43720  - 2026/08/08 08:57:25     LOG [ServiceGatewayController] [service] admin.listItems ok 559ms
+[Nest] 43720  - 2026/08/08 08:57:25     LOG [ServiceGatewayController] [service] payment.listItems ok 287ms
+[Nest] 43720  - 2026/08/08 08:57:27     LOG [ServiceGatewayController] [service] admin.listItems ok 272ms
+[Nest] 43720  - 2026/08/08 08:57:28     LOG [ServiceGatewayController] [service] lowcode.listItems ok 273ms
+[Nest] 43720  - 2026/08/08 08:57:28     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 463ms
+[Nest] 43720  - 2026/08/08 08:57:28     LOG [ServiceGatewayController] [service] admin.listItems ok 444ms
+[Nest] 43720  - 2026/08/08 08:57:30     LOG [ServiceGatewayController] [service] admin.listItems ok 277ms
+[Nest] 43720  - 2026/08/08 08:57:30     LOG [ServiceGatewayController] [service] lowcode.listItems ok 282ms
+[Nest] 43720  - 2026/08/08 08:57:30     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 458ms
+[Nest] 43720  - 2026/08/08 08:57:31     LOG [ServiceGatewayController] [service] lowcode.listItems ok 635ms
+[Nest] 43720  - 2026/08/08 08:57:31     LOG [ServiceGatewayController] [service] lowcode.listTablePageOptions ok 755ms
+[Nest] 43720  - 2026/08/08 08:57:31     LOG [ServiceGatewayController] [service] admin.listItems ok 752ms
+[Nest] 43720  - 2026/08/08 08:58:32     LOG [ServiceGatewayController] [service] admin.listItems ok 296ms
+[Nest] 43720  - 2026/08/08 08:58:33     LOG [ServiceGatewayController] [service] lowcode.listItems ok 285ms
+[Nest] 43720  - 2026/08/08 08:58:33     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 976ms
+[Nest] 43720  - 2026/08/08 08:58:34     LOG [ServiceGatewayController] [service] user.listItems ok 295ms
+[Nest] 43720  - 2026/08/08 08:58:34     LOG [ServiceGatewayController] [service] admin.listItems ok 472ms
+[Nest] 43720  - 2026/08/08 08:58:34     LOG [ServiceGatewayController] [service] payment.listItems ok 297ms
+[Nest] 43720  - 2026/08/08 08:58:36     LOG [ServiceGatewayController] [service] admin.listItems ok 290ms
+[Nest] 43720  - 2026/08/08 08:58:36     LOG [ServiceGatewayController] [service] lowcode.listItems ok 298ms
+[Nest] 43720  - 2026/08/08 08:58:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 468ms
+[Nest] 43720  - 2026/08/08 08:58:37     LOG [ServiceGatewayController] [service] admin.listItems ok 485ms
+[Nest] 43720  - 2026/08/08 08:58:39     LOG [ServiceGatewayController] [service] admin.listItems ok 296ms
+[Nest] 43720  - 2026/08/08 08:58:39     LOG [ServiceGatewayController] [service] lowcode.listItems ok 290ms
+[Nest] 43720  - 2026/08/08 08:58:39     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 486ms
+[Nest] 43720  - 2026/08/08 08:58:39     LOG [ServiceGatewayController] [service] lowcode.listItems ok 678ms
+[Nest] 43720  - 2026/08/08 08:58:39     LOG [ServiceGatewayController] [service] lowcode.listTablePageOptions ok 783ms
+[Nest] 43720  - 2026/08/08 08:58:39     LOG [ServiceGatewayController] [service] admin.listItems ok 780ms
+[Nest] 43720  - 2026/08/08 08:58:41     LOG [ServiceGatewayController] [service] admin.listItems ok 292ms
+[Nest] 43720  - 2026/08/08 08:58:42     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 505ms
+[Nest] 43720  - 2026/08/08 08:59:30     LOG [ServiceGatewayController] [service] admin.listItems ok 279ms
+[Nest] 43720  - 2026/08/08 08:59:31     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 436ms
+[Nest] 43720  - 2026/08/08 09:00:19     LOG [ServiceGatewayController] [service] admin.listItems ok 305ms
+[Nest] 43720  - 2026/08/08 09:00:20     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1168ms
+[Nest] 43720  - 2026/08/08 09:03:56     LOG [ServiceGatewayController] [service] admin.listItems ok 631ms
+[Nest] 43720  - 2026/08/08 09:03:57     LOG [ServiceGatewayController] [service] lowcode.listItems ok 818ms
+[Nest] 43720  - 2026/08/08 09:03:57     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1343ms
+[Nest] 43720  - 2026/08/08 09:03:58     LOG [ServiceGatewayController] [service] user.listItems ok 693ms
+[Nest] 43720  - 2026/08/08 09:03:58     LOG [ServiceGatewayController] [service] admin.listItems ok 1021ms
+[Nest] 43720  - 2026/08/08 09:03:59     LOG [ServiceGatewayController] [service] payment.listItems ok 1060ms
+[Nest] 43720  - 2026/08/08 09:04:03     LOG [ServiceGatewayController] [service] admin.listItems ok 626ms
+[Nest] 43720  - 2026/08/08 09:04:03     LOG [ServiceGatewayController] [service] lowcode.listItems ok 859ms
+[Nest] 43720  - 2026/08/08 09:04:04     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 978ms
+[Nest] 43720  - 2026/08/08 09:04:05     LOG [ServiceGatewayController] [service] admin.listItems ok 986ms
+[Nest] 43720  - 2026/08/08 09:04:08     LOG [ServiceGatewayController] [service] admin.listItems ok 651ms
+[Nest] 43720  - 2026/08/08 09:04:09     LOG [ServiceGatewayController] [service] lowcode.listItems ok 659ms
+[Nest] 43720  - 2026/08/08 09:04:09     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1370ms
+[Nest] 43720  - 2026/08/08 09:04:09     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1492ms
+[Nest] 43720  - 2026/08/08 09:04:10     LOG [ServiceGatewayController] [service] lowcode.listTablePageOptions ok 2102ms
+[Nest] 43720  - 2026/08/08 09:04:10     LOG [ServiceGatewayController] [service] admin.listItems ok 2098ms
+[Nest] 43720  - 2026/08/08 09:04:13     LOG [ServiceGatewayController] [service] admin.listItems ok 625ms
+[Nest] 43720  - 2026/08/08 09:04:14     LOG [ServiceGatewayController] [service] lowcode.listItems ok 651ms
+[Nest] 43720  - 2026/08/08 09:04:14     LOG [ServiceGatewayController] [service] admin.listItems ok 961ms
+[Nest] 43720  - 2026/08/08 09:04:14     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 976ms
+[Nest] 43720  - 2026/08/08 09:04:16     LOG [ServiceGatewayController] [service] entityDesign.listDesign ok 2324ms
+[Nest] 43720  - 2026/08/08 09:05:41     LOG [ServiceGatewayController] [service] admin.listItems ok 621ms
+[Nest] 43720  - 2026/08/08 09:05:42     LOG [ServiceGatewayController] [service] admin.listItems ok 1079ms
+[Nest] 43720  - 2026/08/08 09:05:42     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1267ms
+[Nest] 43720  - 2026/08/08 09:05:42     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1822ms
+[Nest] 43720  - 2026/08/08 09:05:43     LOG [ServiceGatewayController] [service] admin.listItems ok 743ms
+[Nest] 43720  - 2026/08/08 09:05:43     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1488ms
+[Nest] 43720  - 2026/08/08 09:05:44     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1874ms
+[Nest] 43720  - 2026/08/08 09:05:44     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1379ms
+[Nest] 43720  - 2026/08/08 09:05:45     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1371ms
+[Nest] 43720  - 2026/08/08 09:05:47     LOG [ServiceGatewayController] [service] lowcode.saveItem ok 1034ms
+[Nest] 43720  - 2026/08/08 09:05:48     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1300ms
+09:05:48 [tsx] change in ./src\planning-service\planning.resources.ts Restarting...
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [NestFactory] Starting Nest application...
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] AccountModule dependencies initialized +17ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] FilesModule dependencies initialized +1ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] JobModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RoutesResolver] ServiceGatewayController {/api}: +199ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RouterExplorer] Mapped {/api/service, POST} route +1ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +1ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +0ms
+[Nest] 57488  - 2026/08/08 09:05:50     LOG [NestApplication] Nest application successfully started +1ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+[Nest] 57488  - 2026/08/08 09:05:54     LOG [ServiceGatewayController] [service] admin.listItems ok 3336ms
+[Nest] 57488  - 2026/08/08 09:05:54     LOG [ServiceGatewayController] [service] lowcode.listItems ok 3545ms
+[Nest] 57488  - 2026/08/08 09:05:54     LOG [ServiceGatewayController] [service] lowcode.listItems ok 642ms
+[Nest] 57488  - 2026/08/08 09:05:55     LOG [ServiceGatewayController] [service] lowcode.listItems ok 4295ms
+09:05:58 [tsx] change in ./src\planning-service\planning.models.ts Restarting...
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [NestFactory] Starting Nest application...
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] AccountModule dependencies initialized +17ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] FilesModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] DatabaseModule dependencies initialized +1ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] JobModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RoutesResolver] ServiceGatewayController {/api}: +195ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RouterExplorer] Mapped {/api/service, POST} route +2ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +1ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +0ms
+[Nest] 55392  - 2026/08/08 09:05:59     LOG [NestApplication] Nest application successfully started +1ms
+[Nest] 55392  - 2026/08/08 09:05:59   ERROR [NestApplication] Error: listen EADDRINUSE: address already in use :::3002 +1ms
+node:net:1940
+    const ex = new UVExceptionWithHostPort(err, 'listen', address, port);
+               ^
+
+Error: listen EADDRINUSE: address already in use :::3002
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at ExpressAdapter.listen (E:\enLearn\node_modules\.pnpm\@nestjs+platform-express@10_795a7c87fa3e5cd6ba081ef20e3755d8\node_modules\@nestjs\platform-express\adapters\express-adapter.js:95:32)
+    at E:\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestj_20db045583bc571f8afad53a02391131\node_modules\@nestjs\core\nest-application.js:183:30
+    at new Promise (<anonymous>)
+    at NestApplication.listen (E:\enLearn\node_modules\.pnpm\@nestjs+core@10.4.22_@nestj_20db045583bc571f8afad53a02391131\node_modules\@nestjs\core\nest-application.js:173:16)
+    at async bootstrap (E:\enLearn\api\src\standalone.ts:31:3) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3002
+}
+
+Node.js v22.17.0
+09:06:16 [tsx] change in ./src\planning-service\planning.service.ts Rerunning...
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [NestFactory] Starting Nest application...
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] AccountModule dependencies initialized +18ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] EntityDesignModule dependencies initialized +1ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] FilesModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] JobModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RoutesResolver] ServiceGatewayController {/api}: +252ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RouterExplorer] Mapped {/api/service, POST} route +1ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +1ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 53676  - 2026/08/08 09:06:17     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +1ms
+[Nest] 53676  - 2026/08/08 09:06:18     LOG [NestApplication] Nest application successfully started +1ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+09:10:54 [tsx] change in ./src\planning-service\planning.models.ts Restarting...
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [NestFactory] Starting Nest application...
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] AccountModule dependencies initialized +21ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] PaymentModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] FilesModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] JobModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] RuntimeModule dependencies initialized +1ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RoutesResolver] ServiceGatewayController {/api}: +207ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RouterExplorer] Mapped {/api/service, POST} route +1ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +1ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +0ms
+[Nest] 52776  - 2026/08/08 09:10:55     LOG [NestApplication] Nest application successfully started +1ms
+Standalone API listening on http://localhost:3002/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+[Nest] 52776  - 2026/08/08 09:24:22     LOG [ServiceGatewayController] [service] admin.listNavigationRoutes ok 1526ms
+[Nest] 52776  - 2026/08/08 09:24:23     LOG [ServiceGatewayController] [service] lowcode.getRuntimePage ok 802ms
+[Nest] 52776  - 2026/08/08 09:24:24     LOG [ServiceGatewayController] [service] planning.createItem ok 757ms
+[Nest] 52776  - 2026/08/08 09:24:24     LOG [ServiceGatewayController] [service] planning.deleteItem ok 450ms
+[Nest] 52776  - 2026/08/08 09:24:25     LOG [ServiceGatewayController] [service] admin.listNavigationRoutes ok 832ms
+[Nest] 52776  - 2026/08/08 09:24:26     LOG [ServiceGatewayController] [service] lowcode.getRuntimePage ok 634ms
+[Nest] 52776  - 2026/08/08 09:24:26     LOG [ServiceGatewayController] [service] planning.listItems ok 279ms
+[Nest] 52776  - 2026/08/08 09:24:26    WARN [ServiceGatewayController] [service] planning.createItem failed 137ms: Permission required: planning.models.manage Permission required: planning.models.manage Forbidden
+[Nest] 52776  - 2026/08/08 09:24:27     LOG [ServiceGatewayController] [service] admin.listNavigationRoutes ok 927ms
+[Nest] 52776  - 2026/08/08 09:24:28    WARN [ServiceGatewayController] [service] lowcode.getRuntimePage failed 626ms: The requested page is not available in your navigation. The requested page is not available in your navigation. Forbidden
+[Nest] 52776  - 2026/08/08 09:24:28    WARN [ServiceGatewayController] [service] planning.listItems failed 135ms: Permission required: planning.models.view Permission required: planning.models.view Forbidden
+[Nest] 52776  - 2026/08/08 09:24:50     LOG [ServiceGatewayController] [service] admin.listItems ok 327ms
+[Nest] 52776  - 2026/08/08 09:24:51     LOG [ServiceGatewayController] [service] admin.listItems ok 515ms
+[Nest] 52776  - 2026/08/08 09:24:51     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1104ms
+[Nest] 52776  - 2026/08/08 09:24:51     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1107ms
+[Nest] 52776  - 2026/08/08 09:24:52     LOG [ServiceGatewayController] [service] planning.listItems ok 321ms
+[Nest] 52776  - 2026/08/08 09:24:52     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1122ms
+[Nest] 52776  - 2026/08/08 09:24:53     LOG [ServiceGatewayController] [service] admin.listItems ok 286ms
+[Nest] 52776  - 2026/08/08 09:24:54     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 506ms
+[Nest] 52776  - 2026/08/08 09:24:54     LOG [ServiceGatewayController] [service] admin.listItems ok 511ms
+[Nest] 52776  - 2026/08/08 09:24:54     LOG [ServiceGatewayController] [service] admin.listItems ok 297ms
+[Nest] 52776  - 2026/08/08 09:24:55     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 495ms
+[Nest] 52776  - 2026/08/08 09:24:55     LOG [ServiceGatewayController] [service] admin.listItems ok 518ms
+[Nest] 52776  - 2026/08/08 09:24:55    WARN [ServiceGatewayController] [service] lowcode.listItems failed 706ms: The requested page is not available in your navigation. The requested page is not available in your navigation. Forbidden
+[Nest] 52776  - 2026/08/08 09:24:56    WARN [ServiceGatewayController] [service] lowcode.listItems failed 1558ms: The requested page is not available in your navigation. The requested page is not available in your navigation. Forbidden
+[Nest] 52776  - 2026/08/08 09:25:16     LOG [ServiceGatewayController] [service] admin.listItems ok 279ms
+[Nest] 52776  - 2026/08/08 09:25:16     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 508ms
+[Nest] 52776  - 2026/08/08 09:25:17     LOG [ServiceGatewayController] [service] admin.listItems ok 1009ms
+[Nest] 52776  - 2026/08/08 09:25:17     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1173ms
+[Nest] 52776  - 2026/08/08 09:25:17     LOG [ServiceGatewayController] [service] planning.listItems ok 285ms
+[Nest] 52776  - 2026/08/08 09:25:17     LOG [ServiceGatewayController] [service] lowcode.listItems ok 650ms
+[Nest] 52776  - 2026/08/08 09:25:18     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 470ms
+[Nest] 52776  - 2026/08/08 09:25:18     LOG [ServiceGatewayController] [service] lowcode.listItems ok 657ms
+[Nest] 52776  - 2026/08/08 09:25:18     LOG [ServiceGatewayController] [service] lowcode.listItems ok 832ms
+[Nest] 52776  - 2026/08/08 09:25:18     LOG [ServiceGatewayController] [service] planning.listItems ok 142ms
+[Nest] 52776  - 2026/08/08 09:25:19     LOG [ServiceGatewayController] [service] planning.saveItem ok 526ms
+[Nest] 52776  - 2026/08/08 09:25:20     LOG [ServiceGatewayController] [service] planning.listItems ok 304ms
+[Nest] 52776  - 2026/08/08 09:25:20     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 450ms
+[Nest] 52776  - 2026/08/08 09:25:20     LOG [ServiceGatewayController] [service] planning.listItems ok 302ms
+[Nest] 52776  - 2026/08/08 09:25:20     LOG [ServiceGatewayController] [service] planning.saveItem ok 508ms
+[Nest] 52776  - 2026/08/08 09:25:21     LOG [ServiceGatewayController] [service] planning.listItems ok 279ms
+[Nest] 52776  - 2026/08/08 09:25:21     LOG [ServiceGatewayController] [service] planning.listItems ok 289ms
+[Nest] 52776  - 2026/08/08 09:25:21     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 461ms
+[Nest] 52776  - 2026/08/08 09:25:21     LOG [ServiceGatewayController] [service] lowcode.listItems ok 625ms
+[Nest] 52776  - 2026/08/08 09:25:22     LOG [ServiceGatewayController] [service] lowcode.listItems ok 629ms
+[Nest] 52776  - 2026/08/08 09:25:22     LOG [ServiceGatewayController] [service] planning.listItems ok 331ms
+[Nest] 52776  - 2026/08/08 09:25:22     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 517ms
+[Nest] 52776  - 2026/08/08 09:25:22     LOG [ServiceGatewayController] [service] lowcode.listItems ok 706ms
+[Nest] 52776  - 2026/08/08 09:25:24     LOG [ServiceGatewayController] [service] admin.listItems ok 279ms
+[Nest] 52776  - 2026/08/08 09:25:24     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 453ms
+[Nest] 52776  - 2026/08/08 09:25:24     LOG [ServiceGatewayController] [service] admin.listItems ok 508ms
+[Nest] 52776  - 2026/08/08 09:25:24     LOG [ServiceGatewayController] [service] lowcode.listItems ok 675ms
+[Nest] 52776  - 2026/08/08 09:25:24     LOG [ServiceGatewayController] [service] planning.listItems ok 137ms
+[Nest] 52776  - 2026/08/08 09:25:25     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 292ms
+[Nest] 52776  - 2026/08/08 09:25:25     LOG [ServiceGatewayController] [service] lowcode.listItems ok 642ms
+[Nest] 52776  - 2026/08/08 09:25:25     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 581ms
+[Nest] 52776  - 2026/08/08 09:25:26     LOG [ServiceGatewayController] [service] planning.saveItem ok 648ms
+[Nest] 52776  - 2026/08/08 09:25:26     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 286ms
+[Nest] 52776  - 2026/08/08 09:25:26     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 301ms
+[Nest] 52776  - 2026/08/08 09:25:26     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 441ms
+[Nest] 52776  - 2026/08/08 09:25:26     LOG [ServiceGatewayController] [service] planning.listItems ok 457ms
+[Nest] 52776  - 2026/08/08 09:25:26     LOG [ServiceGatewayController] [service] planning.listItems ok 683ms
+[Nest] 52776  - 2026/08/08 09:25:27     LOG [ServiceGatewayController] [service] planning.saveItem ok 547ms
+[Nest] 52776  - 2026/08/08 09:25:27     LOG [ServiceGatewayController] [service] planning.listItems ok 301ms
+[Nest] 52776  - 2026/08/08 09:25:28     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 477ms
+[Nest] 52776  - 2026/08/08 09:25:28     LOG [ServiceGatewayController] [service] lowcode.listItems ok 638ms
+[Nest] 52776  - 2026/08/08 09:25:28     LOG [ServiceGatewayController] [service] lowcode.listItems ok 653ms
+[Nest] 52776  - 2026/08/08 09:25:28     LOG [ServiceGatewayController] [service] planning.listItems ok 277ms
+[Nest] 52776  - 2026/08/08 09:25:28     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 285ms
+[Nest] 52776  - 2026/08/08 09:25:28     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 300ms
+[Nest] 52776  - 2026/08/08 09:25:29     LOG [ServiceGatewayController] [service] planning.deleteItem ok 565ms
+[Nest] 52776  - 2026/08/08 09:25:30     LOG [ServiceGatewayController] [service] planning.listItems ok 273ms
+[Nest] 52776  - 2026/08/08 09:25:30     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 284ms
+[Nest] 52776  - 2026/08/08 09:25:30     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 296ms
+[Nest] 52776  - 2026/08/08 09:25:30     LOG [ServiceGatewayController] [service] planning.listItems ok 296ms
+[Nest] 52776  - 2026/08/08 09:25:31     LOG [ServiceGatewayController] [service] admin.listItems ok 279ms
+[Nest] 52776  - 2026/08/08 09:25:31     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 454ms
+[Nest] 52776  - 2026/08/08 09:25:31     LOG [ServiceGatewayController] [service] admin.listItems ok 493ms
+[Nest] 52776  - 2026/08/08 09:25:31     LOG [ServiceGatewayController] [service] lowcode.listItems ok 678ms
+[Nest] 52776  - 2026/08/08 09:25:32     LOG [ServiceGatewayController] [service] planning.listItems ok 298ms
+[Nest] 52776  - 2026/08/08 09:25:32     LOG [ServiceGatewayController] [service] lowcode.listItems ok 618ms
+[Nest] 52776  - 2026/08/08 09:25:33     LOG [ServiceGatewayController] [service] planning.deleteItem ok 460ms
+[Nest] 52776  - 2026/08/08 09:25:33     LOG [ServiceGatewayController] [service] planning.listItems ok 270ms
+[Nest] 52776  - 2026/08/08 09:25:33     LOG [ServiceGatewayController] [service] planning.listItems ok 273ms
+[Nest] 52776  - 2026/08/08 09:25:34     LOG [ServiceGatewayController] [service] planning.listItems ok 273ms
+[Nest] 52776  - 2026/08/08 09:25:34     LOG [ServiceGatewayController] [service] planning.listItems ok 274ms
+[Nest] 52776  - 2026/08/08 09:25:34     LOG [ServiceGatewayController] [service] planning.listItems ok 272ms
+[Nest] 52776  - 2026/08/08 09:28:19     LOG [ServiceGatewayController] [service] admin.listNavigationRoutes ok 1197ms
+[Nest] 52776  - 2026/08/08 09:28:20     LOG [ServiceGatewayController] [service] lowcode.getRuntimePage ok 796ms
+[Nest] 52776  - 2026/08/08 09:28:21     LOG [ServiceGatewayController] [service] planning.createItem ok 640ms
+[Nest] 52776  - 2026/08/08 09:28:21     LOG [ServiceGatewayController] [service] planning.deleteItem ok 456ms
+[Nest] 52776  - 2026/08/08 09:28:22     LOG [ServiceGatewayController] [service] admin.listNavigationRoutes ok 872ms
+[Nest] 52776  - 2026/08/08 09:28:23     LOG [ServiceGatewayController] [service] lowcode.getRuntimePage ok 640ms
+[Nest] 52776  - 2026/08/08 09:28:23     LOG [ServiceGatewayController] [service] planning.listItems ok 280ms
+[Nest] 52776  - 2026/08/08 09:28:23    WARN [ServiceGatewayController] [service] planning.createItem failed 136ms: Permission required: planning.models.manage Permission required: planning.models.manage Forbidden
+[Nest] 52776  - 2026/08/08 09:28:24     LOG [ServiceGatewayController] [service] admin.listNavigationRoutes ok 935ms
+[Nest] 52776  - 2026/08/08 09:28:25    WARN [ServiceGatewayController] [service] lowcode.getRuntimePage failed 637ms: The requested page is not available in your navigation. The requested page is not available in your navigation. Forbidden
+[Nest] 52776  - 2026/08/08 09:28:25    WARN [ServiceGatewayController] [service] planning.listItems failed 138ms: Permission required: planning.models.view Permission required: planning.models.view Forbidden
+[Nest] 52776  - 2026/08/08 09:34:02     LOG [ServiceGatewayController] [service] admin.listNavigationRoutes ok 1198ms
+[Nest] 52776  - 2026/08/08 09:34:03     LOG [ServiceGatewayController] [service] lowcode.getRuntimePage ok 822ms
+[Nest] 52776  - 2026/08/08 09:34:04     LOG [ServiceGatewayController] [service] planning.createItem ok 668ms
+[Nest] 52776  - 2026/08/08 09:34:04     LOG [ServiceGatewayController] [service] planning.deleteItem ok 469ms
+[Nest] 52776  - 2026/08/08 09:34:05     LOG [ServiceGatewayController] [service] admin.listNavigationRoutes ok 966ms
+[Nest] 52776  - 2026/08/08 09:34:06     LOG [ServiceGatewayController] [service] lowcode.getRuntimePage ok 638ms
+[Nest] 52776  - 2026/08/08 09:34:06     LOG [ServiceGatewayController] [service] planning.listItems ok 281ms
+[Nest] 52776  - 2026/08/08 09:34:06    WARN [ServiceGatewayController] [service] planning.createItem failed 150ms: Permission required: planning.models.manage Permission required: planning.models.manage Forbidden
+[Nest] 52776  - 2026/08/08 09:34:07     LOG [ServiceGatewayController] [service] admin.listNavigationRoutes ok 950ms
+[Nest] 52776  - 2026/08/08 09:34:08    WARN [ServiceGatewayController] [service] lowcode.getRuntimePage failed 641ms: The requested page is not available in your navigation. The requested page is not available in your navigation. Forbidden
+[Nest] 52776  - 2026/08/08 09:34:08    WARN [ServiceGatewayController] [service] planning.listItems failed 142ms: Permission required: planning.models.view Permission required: planning.models.view Forbidden
+[Nest] 52776  - 2026/08/08 09:34:34     LOG [ServiceGatewayController] [service] admin.listItems ok 591ms
+[Nest] 52776  - 2026/08/08 09:34:35     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1373ms
+[Nest] 52776  - 2026/08/08 09:34:36     LOG [ServiceGatewayController] [service] admin.listItems ok 1587ms
+[Nest] 52776  - 2026/08/08 09:34:36     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1744ms
+[Nest] 52776  - 2026/08/08 09:34:37     LOG [ServiceGatewayController] [service] planning.listItems ok 840ms
+[Nest] 52776  - 2026/08/08 09:34:37     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1507ms
+[Nest] 52776  - 2026/08/08 09:34:39     LOG [ServiceGatewayController] [service] admin.listItems ok 604ms
+[Nest] 52776  - 2026/08/08 09:34:40     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 953ms
+[Nest] 52776  - 2026/08/08 09:34:40     LOG [ServiceGatewayController] [service] admin.listItems ok 1014ms
+[Nest] 52776  - 2026/08/08 09:34:41     LOG [ServiceGatewayController] [service] admin.listItems ok 593ms
+[Nest] 52776  - 2026/08/08 09:34:42     LOG [ServiceGatewayController] [service] admin.listItems ok 1013ms
+[Nest] 52776  - 2026/08/08 09:34:43     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1394ms
+[Nest] 52776  - 2026/08/08 09:34:44    WARN [ServiceGatewayController] [service] lowcode.listItems failed 2545ms: The requested page is not available in your navigation. The requested page is not available in your navigation. Forbidden
+[Nest] 52776  - 2026/08/08 09:34:45    WARN [ServiceGatewayController] [service] lowcode.listItems failed 2499ms: The requested page is not available in your navigation. The requested page is not available in your navigation. Forbidden
+[Nest] 52776  - 2026/08/08 09:35:31     LOG [ServiceGatewayController] [service] admin.listItems ok 315ms
+[Nest] 52776  - 2026/08/08 09:35:31     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 906ms
+[Nest] 52776  - 2026/08/08 09:35:32     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1039ms
+[Nest] 52776  - 2026/08/08 09:35:32     LOG [ServiceGatewayController] [service] admin.listItems ok 1224ms
+[Nest] 52776  - 2026/08/08 09:35:32     LOG [ServiceGatewayController] [service] planning.listItems ok 288ms
+[Nest] 52776  - 2026/08/08 09:35:32     LOG [ServiceGatewayController] [service] lowcode.listItems ok 669ms
+[Nest] 52776  - 2026/08/08 09:35:33     LOG [ServiceGatewayController] [service] lowcode.listItems ok 640ms
+[Nest] 52776  - 2026/08/08 09:35:33     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 834ms
+[Nest] 52776  - 2026/08/08 09:35:33     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1200ms
+[Nest] 52776  - 2026/08/08 09:35:33     LOG [ServiceGatewayController] [service] planning.listItems ok 148ms
+[Nest] 52776  - 2026/08/08 09:35:34     LOG [ServiceGatewayController] [service] planning.saveItem ok 532ms
+[Nest] 52776  - 2026/08/08 09:35:34     LOG [ServiceGatewayController] [service] planning.listItems ok 279ms
+[Nest] 52776  - 2026/08/08 09:35:34     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 467ms
+[Nest] 52776  - 2026/08/08 09:35:35     LOG [ServiceGatewayController] [service] planning.listItems ok 456ms
+[Nest] 52776  - 2026/08/08 09:35:35     LOG [ServiceGatewayController] [service] planning.saveItem ok 466ms
+[Nest] 52776  - 2026/08/08 09:35:35     LOG [ServiceGatewayController] [service] planning.listItems ok 305ms
+[Nest] 52776  - 2026/08/08 09:35:36     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 446ms
+[Nest] 52776  - 2026/08/08 09:35:36     LOG [ServiceGatewayController] [service] lowcode.listItems ok 664ms
+[Nest] 52776  - 2026/08/08 09:35:36     LOG [ServiceGatewayController] [service] planning.listItems ok 834ms
+[Nest] 52776  - 2026/08/08 09:35:37     LOG [ServiceGatewayController] [service] lowcode.listItems ok 664ms
+[Nest] 52776  - 2026/08/08 09:35:38     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 461ms
+[Nest] 52776  - 2026/08/08 09:35:38     LOG [ServiceGatewayController] [service] planning.listItems ok 610ms
+[Nest] 52776  - 2026/08/08 09:35:38     LOG [ServiceGatewayController] [service] lowcode.listItems ok 664ms
+[Nest] 52776  - 2026/08/08 09:35:40     LOG [ServiceGatewayController] [service] admin.listItems ok 293ms
+[Nest] 52776  - 2026/08/08 09:35:40     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 459ms
+[Nest] 52776  - 2026/08/08 09:35:40     LOG [ServiceGatewayController] [service] lowcode.listItems ok 627ms
+[Nest] 52776  - 2026/08/08 09:35:40     LOG [ServiceGatewayController] [service] planning.listItems ok 136ms
+[Nest] 52776  - 2026/08/08 09:35:40     LOG [ServiceGatewayController] [service] admin.listItems ok 883ms
+[Nest] 52776  - 2026/08/08 09:35:41     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 459ms
+[Nest] 52776  - 2026/08/08 09:35:41     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 871ms
+[Nest] 52776  - 2026/08/08 09:35:41     LOG [ServiceGatewayController] [service] lowcode.listItems ok 722ms
+[Nest] 52776  - 2026/08/08 09:35:42     LOG [ServiceGatewayController] [service] planning.saveItem ok 651ms
+[Nest] 52776  - 2026/08/08 09:35:42     LOG [ServiceGatewayController] [service] planning.listItems ok 415ms
+[Nest] 52776  - 2026/08/08 09:35:42     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 479ms
+[Nest] 52776  - 2026/08/08 09:35:43     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 623ms
+[Nest] 52776  - 2026/08/08 09:35:43     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 662ms
+[Nest] 52776  - 2026/08/08 09:35:43     LOG [ServiceGatewayController] [service] planning.listItems ok 985ms
+[Nest] 52776  - 2026/08/08 09:35:44     LOG [ServiceGatewayController] [service] planning.saveItem ok 489ms
+[Nest] 52776  - 2026/08/08 09:35:44     LOG [ServiceGatewayController] [service] planning.listItems ok 296ms
+[Nest] 52776  - 2026/08/08 09:35:44     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 457ms
+[Nest] 52776  - 2026/08/08 09:35:45     LOG [ServiceGatewayController] [service] lowcode.listItems ok 669ms
+[Nest] 52776  - 2026/08/08 09:35:45     LOG [ServiceGatewayController] [service] lowcode.listItems ok 976ms
+[Nest] 52776  - 2026/08/08 09:35:45     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 269ms
+[Nest] 52776  - 2026/08/08 09:35:45     LOG [ServiceGatewayController] [service] planning.listItems ok 286ms
+[Nest] 52776  - 2026/08/08 09:35:45     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 479ms
+[Nest] 52776  - 2026/08/08 09:35:46     LOG [ServiceGatewayController] [service] planning.deleteItem ok 657ms
+[Nest] 52776  - 2026/08/08 09:35:47     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 278ms
+[Nest] 52776  - 2026/08/08 09:35:47     LOG [ServiceGatewayController] [service] planning.listItems ok 292ms
+[Nest] 52776  - 2026/08/08 09:35:47     LOG [ServiceGatewayController] [service] planning.listRelationOptions ok 436ms
+[Nest] 52776  - 2026/08/08 09:35:47     LOG [ServiceGatewayController] [service] planning.listItems ok 877ms
+[Nest] 52776  - 2026/08/08 09:35:49     LOG [ServiceGatewayController] [service] admin.listItems ok 298ms
+[Nest] 52776  - 2026/08/08 09:35:49     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 474ms
+[Nest] 52776  - 2026/08/08 09:35:49     LOG [ServiceGatewayController] [service] lowcode.listItems ok 621ms
+[Nest] 52776  - 2026/08/08 09:35:49     LOG [ServiceGatewayController] [service] admin.listItems ok 864ms
+[Nest] 52776  - 2026/08/08 09:35:49     LOG [ServiceGatewayController] [service] planning.listItems ok 284ms
+[Nest] 52776  - 2026/08/08 09:35:50     LOG [ServiceGatewayController] [service] lowcode.listItems ok 644ms
+[Nest] 52776  - 2026/08/08 09:35:50     LOG [ServiceGatewayController] [service] planning.deleteItem ok 461ms
+[Nest] 52776  - 2026/08/08 09:35:51     LOG [ServiceGatewayController] [service] planning.listItems ok 294ms
+[Nest] 52776  - 2026/08/08 09:35:51     LOG [ServiceGatewayController] [service] planning.listItems ok 293ms
+[Nest] 52776  - 2026/08/08 09:35:51     LOG [ServiceGatewayController] [service] planning.listItems ok 296ms
+[Nest] 52776  - 2026/08/08 09:35:52     LOG [ServiceGatewayController] [service] planning.listItems ok 291ms
+[Nest] 52776  - 2026/08/08 09:35:52     LOG [ServiceGatewayController] [service] planning.listItems ok 291ms
+[Nest] 52776  - 2026/08/08 09:38:45    WARN [ServiceGatewayController] [service] notification.getUnreadCount failed 898ms: Authentication required. Authentication required. Unauthorized
+[Nest] 52776  - 2026/08/08 09:38:54     LOG [ServiceGatewayController] [service] admin.listItems ok 1441ms
+[Nest] 52776  - 2026/08/08 09:38:55     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 942ms
+[Nest] 52776  - 2026/08/08 09:38:55     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1296ms
+[Nest] 52776  - 2026/08/08 09:38:55     LOG [ServiceGatewayController] [service] admin.listItems ok 306ms
+[Nest] 52776  - 2026/08/08 09:38:56     LOG [ServiceGatewayController] [service] admin.listItems ok 1715ms
+[Nest] 52776  - 2026/08/08 09:38:56     LOG [ServiceGatewayController] [service] admin.listItems ok 608ms
+[Nest] 52776  - 2026/08/08 09:38:57     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1876ms
+[Nest] 52776  - 2026/08/08 09:39:55     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1343ms
+[Nest] 52776  - 2026/08/08 09:40:55     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1696ms
+[Nest] 52776  - 2026/08/08 09:41:23     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1537ms
+[Nest] 52776  - 2026/08/08 09:41:23     LOG [ServiceGatewayController] [service] lowcode.listItems ok 1754ms
+[Nest] 52776  - 2026/08/08 09:41:25     LOG [ServiceGatewayController] [service] entityDesign.listDesign ok 1716ms
+[Nest] 52776  - 2026/08/08 09:41:28     LOG [ServiceGatewayController] [service] entityDesign.listPhysicalTables ok 1751ms
+[Nest] 52776  - 2026/08/08 09:41:55     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1384ms
+[Nest] 52776  - 2026/08/08 09:42:56     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 2663ms
+[Nest] 52776  - 2026/08/08 09:43:56     LOG [ServiceGatewayController] [service] notification.getUnreadCount ok 1784ms

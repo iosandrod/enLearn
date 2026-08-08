@@ -55,7 +55,7 @@ async function main() {
         (select count(*)::text from pg_catalog.pg_tables where schemaname = 'public' and tablename like 'planning_%') as tables,
         (select count(*)::text from public.lowcode_pages where code like 'planning\\_%\\-%' escape '\\') as pages,
         (select count(*)::text from public.admin_entities where code like 'planning\\_%' escape '\\') as entities,
-        (select count(*)::text from public.admin_routes where code = 'planning-root' or code like 'planning-%') as routes,
+        (select count(*)::text from public.admin_routes where (code = 'planning-root' or code like 'planning-%') and status = 'active') as routes,
         (select count(*)::text from public.dynamic_crud_resource_registry where resource_name like 'planning\\_%' escape '\\') as registry,
         (select count(*)::text from public.admin_routes where code = 'planning-root' and metadata->>'navigation' = 'sidebar') as root_sidebar,
         (select count(*)::text from public.admin_routes where code like 'planning-%' and code <> 'planning-root' and metadata ? 'navigation') as descendant_navigation_overrides

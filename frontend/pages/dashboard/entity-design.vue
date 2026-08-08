@@ -44,7 +44,7 @@
             :class="panel.form.className"
             :schema="panel.form.schema"
             :option-sources="panel.form.optionSources"
-            :loading="panel.form.loading"
+            :loading="formDefinitionsLoading || panel.form.loading"
             @update:model-value="(value) => updatePanelModel(panel, value)"
             @submit="panel.form.onSubmit"
             @action="panel.form.onAction"
@@ -165,7 +165,7 @@
             :class="panel.form.className"
             :schema="panel.form.schema"
             :option-sources="panel.form.optionSources"
-            :loading="panel.form.loading"
+            :loading="formDefinitionsLoading || panel.form.loading"
             @update:model-value="(value) => updatePanelModel(panel, value)"
             @submit="panel.form.onSubmit"
             @action="panel.form.onAction"
@@ -196,11 +196,10 @@ import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import { LowCodeForm, LcVxeModalRenderer, type LcVxeModalConfig } from '@enlearn/lowcode-framework';
 import {
-  entityColumnsTableFormSchema,
-  entityColumnFormSchema,
-  entityRelationFormSchema,
-  entityTableFormSchema
-} from '~/schemas/entity-design';
+  createEmptyLowCodeFormSchema,
+  loadLowCodeFormDefinitions,
+  LOW_CODE_FORM_CODES,
+} from '../../utils/lowCodeFormDefinitions';
 import type { LowCodeAction, LowCodeField, LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode';
 
 type EntityColumn = {
@@ -327,6 +326,24 @@ const flowId = 'entity-design-flow';
 const { fitView } = useVueFlow(flowId);
 
 const loading = ref(false);
+const formDefinitionsLoading = ref(true);
+const formDefinitionError = ref('');
+const entityTableFormSchema = shallowRef<LowCodeFormSchema | null>(null);
+const entityColumnFormSchema = shallowRef<LowCodeFormSchema | null>(null);
+const entityColumnsTableFormSchema = shallowRef<LowCodeFormSchema | null>(null);
+const entityRelationFormSchema = shallowRef<LowCodeFormSchema | null>(null);
+const entityLeftPanelFormSchema = shallowRef<LowCodeFormSchema | null>(null);
+const entityRightPanelFormSchema = shallowRef<LowCodeFormSchema | null>(null);
+const entityFormDefinitionsReady = computed(() =>
+  Boolean(
+    entityTableFormSchema.value &&
+      entityColumnFormSchema.value &&
+      entityColumnsTableFormSchema.value &&
+      entityRelationFormSchema.value &&
+      entityLeftPanelFormSchema.value &&
+      entityRightPanelFormSchema.value,
+  ),
+);
 const savingTable = ref(false);
 const savingColumn = ref(false);
 const savingRelation = ref(false);
@@ -499,14 +516,14 @@ const modalConfigs = computed<LcVxeModalConfig[]>(() => [
 ]);
 
 const tableDesignerSchema = computed<LowCodeFormSchema>(() =>
-  prepareSchema(entityTableFormSchema, {
+  prepareSchema(requireEntitySchema(entityTableFormSchema.value), {
     disableAction: (action) => action.code === 'delete' && !selectedTable.value,
     disableField: (field) => field.field === 'createPhysical' && Boolean(tableForm.value.id)
   })
 );
 const columnDesignerSchema = computed<LowCodeFormSchema>(() => {
   const isVirtual = columnForm.value.storageKind === 'virtual';
-  return prepareSchema(entityColumnFormSchema, {
+  return prepareSchema(requireEntitySchema(entityColumnFormSchema.value), {
     keepField: (field) =>
       isVirtual ? field.field !== 'defaultValue' : field.field !== 'expression',
     disableField: (field) =>
@@ -517,13 +534,13 @@ const columnDesignerSchema = computed<LowCodeFormSchema>(() => {
   });
 });
 const columnsTableDesignerSchema = computed<LowCodeFormSchema>(() =>
-  prepareSchema(entityColumnsTableFormSchema, {
+  prepareSchema(requireEntitySchema(entityColumnsTableFormSchema.value), {
     disableField: () => !selectedTable.value,
     disableAction: () => !selectedTable.value
   })
 );
 const relationDesignerSchema = computed<LowCodeFormSchema>(() =>
-  prepareSchema(entityRelationFormSchema, {
+  prepareSchema(requireEntitySchema(entityRelationFormSchema.value), {
     disableAction: (action) => action.code === 'save' && tables.value.length < 2
   })
 );
@@ -547,209 +564,121 @@ const tableRowActions = computed<LowCodeArrayTableRowAction[]>(() => [
 const relationRowActions: LowCodeArrayTableRowAction[] = [
   { code: 'delete', label: '删', title: '删除关系', status: 'danger' },
 ];
-const leftPanelSchema = computed<LowCodeFormSchema>(() => ({
-  fields: [
+const leftPanelSchema = computed<LowCodeFormSchema>(() => {
+  const schema = structuredClone(requireEntitySchema(entityLeftPanelFormSchema.value));
+  const tableField = findSchemaField(schema, 'table');
+  const tablesField = findSchemaField(schema, 'tables');
+  tableField.props = {
+    ...tableField.props,
+    schema: tablePanelFormSchema.value,
+    onSubmit: saveTable,
+    onAction: handleTableAction,
+  };
+  tablesField.props = {
+    ...tablesField.props,
+    rowActions: tableRowActions.value,
+    onRowClick: handleTableListRowClick,
+    onRowAction: handleTableListRowAction,
+  };
+  setSchemaTabLabel(schema, 'table-list', `实体列表 (${tables.value.length})`);
+  setSchemaTabLabel(schema, 'table-detail', tableForm.value.id ? '实体信息' : '新建实体');
+  return schema;
+});
+const rightPanelSchema = computed<LowCodeFormSchema>(() => {
+  const schema = structuredClone(requireEntitySchema(entityRightPanelFormSchema.value));
+  const columnsField = findSchemaField(schema, 'columns');
+  const columnDetailField = findSchemaField(schema, 'columnDetail');
+  const relationField = findSchemaField(schema, 'relation');
+  const relationsField = findSchemaField(schema, 'relations');
+  const columnsSource = columnsTableDesignerSchema.value.fields.find(
+    (field) => field.field === 'columns',
+  );
+
+  columnsField.label = selectedTable.value
+    ? `字段集合：${selectedTable.value.full_name}`
+    : '字段集合';
+  columnsField.props = {
+    ...columnsSource?.props,
+    ...columnsField.props,
+    disabled: !selectedTable.value,
+    onRowClick: handleColumnArrayRowClick,
+  };
+  columnDetailField.label = columnForm.value.columnName
+    ? `单列绑定：${columnForm.value.columnName}`
+    : '单列绑定';
+  columnDetailField.help = columnForm.value.columnName ? '' : '从字段集合或画布字段选择一列。';
+  columnDetailField.props = {
+    ...columnDetailField.props,
+    schema: columnPanelFormSchema.value,
+    onSubmit: saveColumn,
+    onAction: handleColumnAction,
+  };
+  relationField.props = {
+    ...relationField.props,
+    schema: relationPanelFormSchema.value,
+    optionSources: relationOptionSources.value,
+    onSubmit: saveRelation,
+    onAction: handleRelationAction,
+    onFieldChange: handleRelationFieldChange,
+  };
+  relationsField.props = {
+    ...relationsField.props,
+    rowActions: relationRowActions,
+    onRowClick: handleRelationListRowClick,
+    onRowAction: handleRelationListRowAction,
+  };
+  setSchemaTabLabel(
+    schema,
+    'column-list',
+    `字段列表 (${selectedTable.value?.columns.length ?? 0})`,
+  );
+  setSchemaTabLabel(schema, 'relation-list', `关系列表 (${relations.value.length})`);
+  schema.actions = schema.actions.map((action) => ({
+    ...action,
+    disabled: Boolean(action.disabled) || !selectedTable.value,
+  }));
+  return schema;
+});
+const leftPanelSchemas = computed<EntityDesignerFormPanel[]>(() => {
+  if (!entityFormDefinitionsReady.value) return [];
+
+  return [
     {
-      field: 'table',
-      label: '表单',
-      component: 'lc-sub-form',
-      showTitle: false,
-      props: {
-        schema: tablePanelFormSchema.value,
-        vertical: true,
-        onSubmit: saveTable,
-        onAction: handleTableAction,
+      id: 'entity-left-schema',
+      className: 'entity-left-panel-section',
+      kicker: 'Table',
+      title: tableForm.value.id ? '编辑表' : '新建表',
+      form: {
+        model: leftPanelModel,
+        schema: leftPanelSchema.value,
+        loading: savingTable.value,
+        className: 'entity-left-tabs-form',
       },
     },
+  ];
+});
+const rightPanelSchemas = computed<EntityDesignerFormPanel[]>(() => {
+  if (!entityFormDefinitionsReady.value) return [];
+
+  return [
     {
-      field: 'tables',
-      label: '实体列表',
-      component: 'lc-array-table',
-      showTitle: false,
-      props: {
-        showToolbar: false,
-        movable: false,
-        removable: false,
-        rowKey: 'id',
-        height: '100%',
-        minHeight: 0,
-        maxHeight: '100%',
-        actionWidth: 76,
-        columns: [
-          { field: 'title', title: '表名称', component: 'lc-text', minWidth: 150 },
-          { field: 'fullName', title: '真实表', component: 'lc-text', minWidth: 150 },
-          { field: 'columnCount', title: '字段', component: 'lc-text', width: 58 },
-          { field: 'canvasStatus', title: '画布', component: 'lc-text', width: 70 },
-        ],
-        rowActions: tableRowActions.value,
-        onRowClick: handleTableListRowClick,
-        onRowAction: handleTableListRowAction,
-      },
-    },
-  ],
-  layout: [
-    {
-      kind: 'tabs',
-      fillRemaining: true,
-      defaultKey: 'table-list',
-      tabs: [
-        {
-          key: 'table-list',
-          label: `实体列表 (${tables.value.length})`,
-          blocks: [{ kind: 'field', field: 'tables' }],
-        },
-        {
-          key: 'table-detail',
-          label: tableForm.value.id ? '实体信息' : '新建实体',
-          blocks: [{ kind: 'field', field: 'table' }],
-        },
-      ],
-    },
-  ],
-  actions: [],
-}));
-const rightPanelSchema = computed<LowCodeFormSchema>(() => ({
-  fields: [
-    {
-      field: 'columns',
-      label: selectedTable.value ? `字段集合：${selectedTable.value.full_name}` : '字段集合',
-      component: 'lc-array-table',
-      showTitle: false,
-      help: '在表格中维护字段集合；点击画布字段或编辑表格行时，下方单列绑定会同步当前字段。',
-      props: {
-        ...(columnsTableDesignerSchema.value.fields.find((field) => field.field === 'columns')?.props ?? {}),
-        height: '100%',
-        minHeight: 0,
-        maxHeight: '100%',
-        disabled: !selectedTable.value,
-        onRowClick: handleColumnArrayRowClick,
-      },
-    },
-    {
-      field: 'columnDetail',
-      label: columnForm.value.columnName
-        ? `单列绑定：${columnForm.value.columnName}`
-        : '单列绑定',
-      component: 'lc-sub-form',
-      showTitle: false,
-      help: columnForm.value.columnName ? '' : '从字段集合或画布字段选择一列。',
-      props: {
-        schema: columnPanelFormSchema.value,
-        vertical: true,
-        onSubmit: saveColumn,
-        onAction: handleColumnAction,
-      },
-    },
-    {
-      field: 'relation',
-      label: '外键关系',
-      component: 'lc-sub-form',
-      showTitle: false,
-      props: {
-        schema: relationPanelFormSchema.value,
+      id: 'entity-right-schema',
+      className: 'entity-right-panel-section',
+      kicker: 'Column / Relation',
+      title: '字段与关系',
+      hint: selectedTable.value ? `当前表：${selectedTable.value.full_name}` : '选择一张表后维护字段集合。',
+      form: {
+        model: rightPanelModel,
+        schema: rightPanelSchema.value,
         optionSources: relationOptionSources.value,
-        vertical: true,
-        onSubmit: saveRelation,
-        onAction: handleRelationAction,
-        onFieldChange: handleRelationFieldChange,
+        loading: savingColumn.value || savingRelation.value,
+        className: 'entity-right-tabs-form',
+        onAction: handleRightPanelAction,
+        onFieldChange: handleRightPanelFieldChange,
       },
     },
-    {
-      field: 'relations',
-      label: '关系列表',
-      component: 'lc-array-table',
-      showTitle: false,
-      props: {
-        showToolbar: false,
-        movable: false,
-        removable: false,
-        rowKey: 'id',
-        height: '100%',
-        minHeight: 0,
-        maxHeight: '100%',
-        actionWidth: 48,
-        columns: [
-          { field: 'source', title: '来源', component: 'lc-text', minWidth: 150 },
-          { field: 'target', title: '目标', component: 'lc-text', minWidth: 150 },
-          { field: 'relationType', title: '类型', component: 'lc-text', width: 92 },
-        ],
-        rowActions: relationRowActions,
-        onRowClick: handleRelationListRowClick,
-        onRowAction: handleRelationListRowAction,
-      },
-    },
-  ],
-  layout: [
-    {
-      kind: 'tabs',
-      fillRemaining: true,
-      defaultKey: 'column-list',
-      tabs: [
-        {
-          key: 'column-list',
-          label: `字段列表 (${selectedTable.value?.columns.length ?? 0})`,
-          blocks: [{ kind: 'field', field: 'columns' }],
-        },
-        {
-          key: 'column-detail',
-          label: '字段编辑',
-          blocks: [{ kind: 'field', field: 'columnDetail' }],
-        },
-        {
-          key: 'relation-list',
-          label: `关系列表 (${relations.value.length})`,
-          blocks: [{ kind: 'field', field: 'relations' }],
-        },
-        {
-          key: 'relation-detail',
-          label: '关系编辑',
-          blocks: [{ kind: 'field', field: 'relation' }],
-        },
-      ],
-    },
-  ],
-  actions: [
-    {
-      code: 'saveRows',
-      label: '保存字段集合',
-      type: 'button',
-      status: 'primary',
-      disabled: !selectedTable.value,
-    },
-  ],
-}));
-const leftPanelSchemas = computed<EntityDesignerFormPanel[]>(() => [
-  {
-    id: 'entity-left-schema',
-    className: 'entity-left-panel-section',
-    kicker: 'Table',
-    title: tableForm.value.id ? '编辑表' : '新建表',
-    form: {
-      model: leftPanelModel,
-      schema: leftPanelSchema.value,
-      loading: savingTable.value,
-      className: 'entity-left-tabs-form',
-    },
-  },
-]);
-const rightPanelSchemas = computed<EntityDesignerFormPanel[]>(() => [
-  {
-    id: 'entity-right-schema',
-    className: 'entity-right-panel-section',
-    kicker: 'Column / Relation',
-    title: '字段与关系',
-    hint: selectedTable.value ? `当前表：${selectedTable.value.full_name}` : '选择一张表后维护字段集合。',
-    form: {
-      model: rightPanelModel,
-      schema: rightPanelSchema.value,
-      optionSources: relationOptionSources.value,
-      loading: savingColumn.value || savingRelation.value,
-      className: 'entity-right-tabs-form',
-      onAction: handleRightPanelAction,
-      onFieldChange: handleRightPanelFieldChange,
-    },
-  },
-]);
+  ];
+});
 
 function newTableForm(): FormValues {
   return {
@@ -787,6 +716,54 @@ function newRelationForm(): FormValues {
     relationType: 'many_to_one',
     isEnforced: false
   };
+}
+
+function requireEntitySchema(schema: LowCodeFormSchema | null) {
+  return schema ?? createEmptyLowCodeFormSchema();
+}
+
+function findSchemaField(schema: LowCodeFormSchema, fieldName: string) {
+  const field = schema.fields.find((candidate) => candidate.field === fieldName);
+  if (!field) throw new Error(`实体设计表单缺少字段：${fieldName}。`);
+  return field;
+}
+
+function setSchemaTabLabel(schema: LowCodeFormSchema, tabKey: string, label: string) {
+  const tabsNode = schema.layout?.find((node) => node.kind === 'tabs');
+  if (!tabsNode || tabsNode.kind !== 'tabs') {
+    throw new Error('实体设计组合表单缺少页签布局。');
+  }
+  const tab = tabsNode.tabs.find((candidate) => candidate.key === tabKey);
+  if (!tab) throw new Error(`实体设计组合表单缺少页签：${tabKey}。`);
+  tab.label = label;
+}
+
+async function loadEntityFormDefinitions() {
+  formDefinitionsLoading.value = true;
+  formDefinitionError.value = '';
+  try {
+    const definitions = await loadLowCodeFormDefinitions(serviceApi, [
+      LOW_CODE_FORM_CODES.entityDesignTable,
+      LOW_CODE_FORM_CODES.entityDesignColumn,
+      LOW_CODE_FORM_CODES.entityDesignColumns,
+      LOW_CODE_FORM_CODES.entityDesignRelation,
+      LOW_CODE_FORM_CODES.entityDesignLeftPanel,
+      LOW_CODE_FORM_CODES.entityDesignRightPanel,
+    ]);
+    entityTableFormSchema.value = definitions[LOW_CODE_FORM_CODES.entityDesignTable].schema;
+    entityColumnFormSchema.value = definitions[LOW_CODE_FORM_CODES.entityDesignColumn].schema;
+    entityColumnsTableFormSchema.value = definitions[LOW_CODE_FORM_CODES.entityDesignColumns].schema;
+    entityRelationFormSchema.value = definitions[LOW_CODE_FORM_CODES.entityDesignRelation].schema;
+    entityLeftPanelFormSchema.value = definitions[LOW_CODE_FORM_CODES.entityDesignLeftPanel].schema;
+    entityRightPanelFormSchema.value = definitions[LOW_CODE_FORM_CODES.entityDesignRightPanel].schema;
+  } catch (error) {
+    formDefinitionError.value =
+      error instanceof Error ? error.message : '加载实体设计表单定义失败。';
+    message.value = formDefinitionError.value;
+    messageClass.value = 'lc-error';
+  } finally {
+    formDefinitionsLoading.value = false;
+  }
 }
 
 function prepareSchema(
@@ -1627,7 +1604,10 @@ async function saveLayout() {
   }
 }
 
-onMounted(loadDesign);
+onMounted(async () => {
+  await loadEntityFormDefinitions();
+  await loadDesign();
+});
 </script>
 
 <style scoped>

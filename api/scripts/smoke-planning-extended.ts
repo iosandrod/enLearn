@@ -1,7 +1,18 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { Client } from 'pg';
 
 import { getEnv, normalizePostgresConnectionString } from '../src/common/utils/env';
+import {
+  assertTransactionActive,
+  unwrapMigrationTransaction
+} from './planning-migration-transaction';
+
+const MIGRATION_FILES = [
+  'supabase/migrations/20260807140000_planning_service.sql',
+  'supabase/migrations/20260808160000_planning_extended_models.sql'
+];
 
 function directProjectConnectionString(value: string) {
   const url = new URL(normalizePostgresConnectionString(value));
@@ -20,6 +31,14 @@ async function main() {
   const env = getEnv();
   const rawConnectionString = process.env.DIRECT_URL ?? env.DIRECT_URL ?? env.DATABASE_URL;
   if (!rawConnectionString) throw new Error('DIRECT_URL or DATABASE_URL is required.');
+  const repoRoot = process.cwd().toLowerCase().endsWith('api')
+    ? resolve(process.cwd(), '..')
+    : process.cwd();
+  const migration = (await Promise.all(
+    MIGRATION_FILES.map(async (file) => unwrapMigrationTransaction(
+      await readFile(resolve(repoRoot, file), 'utf8')
+    ))
+  )).join('\n\n');
   const client = new Client({
     connectionString: directProjectConnectionString(rawConnectionString),
     connectionTimeoutMillis: 30_000,
@@ -29,6 +48,8 @@ async function main() {
   await client.connect();
   try {
     await client.query('begin');
+    if (process.env.PLANNING_SMOKE_SKIP_MIGRATION !== '1') await client.query(migration);
+    await assertTransactionActive(client);
     const account = await client.query<{ id: string }>(`
       select id from basejump.accounts where status = 'active' order by created_at, id limit 1
     `);
@@ -46,12 +67,219 @@ async function main() {
     assert.ok(Number(defaults.rows[0]?.measures) >= 10);
     assert.equal(defaults.rows[0]?.baseline, '1');
 
+    const item = await client.query<{ id: string }>(`
+      insert into public.planning_item (account_id, name)
+      values ($1, $2) returning id
+    `, [accountId, `sync-item-${suffix}`]);
+    const customer = await client.query<{ id: string }>(`
+      insert into public.planning_customer (account_id, name)
+      values ($1, $2) returning id
+    `, [accountId, `sync-customer-${suffix}`]);
+    const location = await client.query<{ id: string }>(`
+      insert into public.planning_location (account_id, name)
+      values ($1, $2) returning id
+    `, [accountId, `sync-location-${suffix}`]);
+    const resource = await client.query<{ id: string }>(`
+      insert into public.planning_resource (account_id, name, location_id)
+      values ($1, $2, $3) returning id
+    `, [accountId, `sync-resource-${suffix}`, location.rows[0].id]);
+
+    const order = await client.query<{ id: string }>(`
+      insert into public.sales_orders (
+        account_id, doc_no, status, approval_status, close_status, customer_code, customer_name
+      ) values ($1, $2, 'open', 'approved', 'open', $3, $4)
+      returning id
+    `, [accountId, `SO-${suffix}`, `CUS-${suffix}`, `Sync customer ${suffix}`]);
+    const line = await client.query<{ id: string }>(`
+      insert into public.sales_order_lines (
+        account_id, order_id, line_no, status, close_status, item_code, item_name,
+        ordered_qty, open_qty, need_date, warehouse_code
+      ) values ($1, $2, 10, 'open', 'open', $3, $4, 5, 5, '2026-09-01', $5)
+      returning id
+    `, [accountId, order.rows[0].id, `ITEM-${suffix}`, `Sync item ${suffix}`, `WH-${suffix}`]);
+
+    const pendingSync = await client.query<{ status: string }>(`
+      select status from public.planning_demand_sync_state
+      where account_id = $1 and source_line_id = $2
+    `, [accountId, line.rows[0].id]);
+    assert.equal(pendingSync.rows[0]?.status, 'error');
+
+    await client.query(`
+      insert into public.planning_source_mapping (
+        account_id, source_system, entity_type, source_key, item_id, status
+      ) values ($1, 'enlearn', 'item', $2, $3, 'active')
+    `, [accountId, `ITEM-${suffix}`, item.rows[0].id]);
+    await client.query(`
+      insert into public.planning_source_mapping (
+        account_id, source_system, entity_type, source_key, customer_id, status
+      ) values ($1, 'enlearn', 'customer', $2, $3, 'active')
+    `, [accountId, `CUS-${suffix}`, customer.rows[0].id]);
+    await client.query(`
+      insert into public.planning_source_mapping (
+        account_id, source_system, entity_type, source_key, location_id, status
+      ) values ($1, 'enlearn', 'location', $2, $3, 'active')
+    `, [accountId, `WH-${suffix}`, location.rows[0].id]);
+
+    const resync = await client.query<{ result: { synced: number; errors: number } }>(`
+      select public.planning_resync_sales_orders($1, array[$2]::uuid[]) as result
+    `, [accountId, line.rows[0].id]);
+    assert.equal(resync.rows[0].result.synced, 1);
+    assert.equal(resync.rows[0].result.errors, 0);
+
+    const demand = await client.query<{ source_line_id: string; quantity: string; status: string }>(`
+      select source_line_id, quantity::text, status from public.planning_demand
+      where account_id = $1 and source_line_id = $2
+    `, [accountId, line.rows[0].id]);
+    assert.equal(demand.rows[0]?.source_line_id, line.rows[0].id);
+    assert.equal(demand.rows[0]?.quantity, '5.00000000');
+    assert.equal(demand.rows[0]?.status, 'open');
+
+    await client.query(`
+      update public.sales_order_lines
+      set open_qty = 3, need_date = '2026-09-05'
+      where id = $1 and account_id = $2
+    `, [line.rows[0].id, accountId]);
+    const updatedDemand = await client.query<{ quantity: string; due: string }>(`
+      select quantity::text, due::date::text from public.planning_demand
+      where account_id = $1 and source_line_id = $2
+    `, [accountId, line.rows[0].id]);
+    assert.equal(updatedDemand.rows[0]?.quantity, '3.00000000');
+    assert.equal(updatedDemand.rows[0]?.due, '2026-09-05');
+
+    await client.query(`update public.sales_order_lines set open_qty = 0 where id = $1`, [line.rows[0].id]);
+    const zeroDemand = await client.query<{ quantity: string; status: string; sync_status: string }>(`
+      select quantity::text, status, sync_status from public.planning_demand
+      where account_id = $1 and source_line_id = $2
+    `, [accountId, line.rows[0].id]);
+    assert.equal(zeroDemand.rows[0]?.quantity, '0.00000000');
+    assert.equal(zeroDemand.rows[0]?.status, 'closed');
+    assert.equal(zeroDemand.rows[0]?.sync_status, 'ignored');
+
+    await client.query(`update public.sales_order_lines set open_qty = 2 where id = $1`, [line.rows[0].id]);
+    const reopenedDemand = await client.query<{ quantity: string; status: string; sync_status: string }>(`
+      select quantity::text, status, sync_status from public.planning_demand
+      where account_id = $1 and source_line_id = $2
+    `, [accountId, line.rows[0].id]);
+    assert.equal(reopenedDemand.rows[0]?.quantity, '2.00000000');
+    assert.equal(reopenedDemand.rows[0]?.status, 'open');
+    assert.equal(reopenedDemand.rows[0]?.sync_status, 'synced');
+
+    await client.query(`update public.sales_orders set close_status = 'closed' where id = $1`, [order.rows[0].id]);
+    const closedByHeader = await client.query<{ status: string; sync_status: string }>(`
+      select status, sync_status from public.planning_demand
+      where account_id = $1 and source_line_id = $2
+    `, [accountId, line.rows[0].id]);
+    assert.equal(closedByHeader.rows[0]?.status, 'closed');
+    assert.equal(closedByHeader.rows[0]?.sync_status, 'ignored');
+    await client.query(`update public.sales_orders set close_status = 'open' where id = $1`, [order.rows[0].id]);
+
+    await client.query(`update public.sales_orders set hold_status = true where id = $1`, [order.rows[0].id]);
+    const heldDemand = await client.query<{ status: string; sync_status: string }>(`
+      select status, sync_status from public.planning_demand
+      where account_id = $1 and source_line_id = $2
+    `, [accountId, line.rows[0].id]);
+    assert.equal(heldDemand.rows[0]?.status, 'closed');
+    assert.equal(heldDemand.rows[0]?.sync_status, 'ignored');
+    await client.query(`update public.sales_orders set hold_status = false where id = $1`, [order.rows[0].id]);
+
+    await client.query(`update public.sales_orders set approval_status = 'draft' where id = $1`, [order.rows[0].id]);
+    const unapprovedDemand = await client.query<{ status: string; sync_status: string }>(`
+      select status, sync_status from public.planning_demand
+      where account_id = $1 and source_line_id = $2
+    `, [accountId, line.rows[0].id]);
+    assert.equal(unapprovedDemand.rows[0]?.status, 'closed');
+    assert.equal(unapprovedDemand.rows[0]?.sync_status, 'pending');
+    await client.query(`update public.sales_orders set approval_status = 'approved' where id = $1`, [order.rows[0].id]);
+
+    await client.query('delete from public.sales_order_lines where id = $1', [line.rows[0].id]);
+    const deletedLineDemand = await client.query<{ quantity: string; status: string; sync_status: string }>(`
+      select quantity::text, status, sync_status from public.planning_demand
+      where account_id = $1 and source_line_id = $2
+    `, [accountId, line.rows[0].id]);
+    assert.equal(deletedLineDemand.rows[0]?.quantity, '0.00000000');
+    assert.equal(deletedLineDemand.rows[0]?.status, 'canceled');
+    assert.equal(deletedLineDemand.rows[0]?.sync_status, 'ignored');
+
     const scenario = await client.query<{ id: string }>(`
       insert into public.planning_scenario (account_id, name, description, status)
       values ($1, $2, 'extended smoke scenario', 'free')
       returning id
     `, [accountId, `smoke-scenario-${suffix}`]);
     const scenarioId = scenario.rows[0].id;
+
+    const version = await client.query<{ id: string; version_no: number; status: string }>(`
+      insert into public.planning_plan_version (
+        account_id, code, name, scenario_id, parameters, input_snapshot
+      ) values ($1, $2, 'extended smoke version', $3, '{}', '{}')
+      returning id, version_no, status
+    `, [accountId, `smoke-plan-${suffix}`, scenarioId]);
+    assert.ok(version.rows[0].version_no >= 1);
+    assert.equal(version.rows[0].status, 'draft');
+
+    await client.query(`
+      select public.planning_finish_plan_version($1, $2, 'completed', '{"ok":true}'::jsonb)
+    `, [accountId, version.rows[0].id]);
+
+    const published = await client.query<{ status: string; is_current: boolean; published_at: string | null }>(`
+      select (published).status, (published).is_current, (published).published_at::text
+      from (select public.planning_publish_plan_version($1, $2) published) result
+    `, [accountId, version.rows[0].id]);
+    assert.equal(published.rows[0].status, 'published');
+    assert.equal(published.rows[0].is_current, true);
+    assert.ok(published.rows[0].published_at);
+
+    const secondVersion = await client.query<{ id: string; version_no: number }>(`
+      insert into public.planning_plan_version (account_id, code, name, scenario_id)
+      values ($1, $2, 'extended smoke version 2', $3)
+      returning id, version_no
+    `, [accountId, `smoke-plan-2-${suffix}`, scenarioId]);
+    assert.equal(secondVersion.rows[0].version_no, version.rows[0].version_no + 1);
+    await client.query(`
+      select public.planning_finish_plan_version($1, $2, 'completed', '{}'::jsonb)
+    `, [accountId, secondVersion.rows[0].id]);
+    await client.query(`select public.planning_publish_plan_version($1, $2)`, [accountId, secondVersion.rows[0].id]);
+    const versionStates = await client.query<{ id: string; status: string; is_current: boolean }>(`
+      select id, status, is_current from public.planning_plan_version
+      where account_id = $1 and id = any($2::uuid[])
+      order by version_no
+    `, [accountId, [version.rows[0].id, secondVersion.rows[0].id]]);
+    assert.deepEqual(versionStates.rows.map((row) => [row.status, row.is_current]), [
+      ['superseded', false],
+      ['published', true]
+    ]);
+
+    await client.query('savepoint planning_published_result_guard');
+    await assert.rejects(client.query(`
+      insert into public.planning_operationplan (
+        account_id, reference, type, quantity, plan_version_id
+      ) values ($1, $2, 'MO', 1, $3)
+    `, [accountId, `published-result-${suffix}`, secondVersion.rows[0].id]));
+    await client.query('rollback to savepoint planning_published_result_guard');
+    await client.query('release savepoint planning_published_result_guard');
+
+    const thirdVersion = await client.query<{ id: string }>(`
+      insert into public.planning_plan_version (account_id, code, name, scenario_id)
+      values ($1, $2, 'extended smoke version 3', $3) returning id
+    `, [accountId, `smoke-plan-3-${suffix}`, scenarioId]);
+    const fourthVersion = await client.query<{ id: string }>(`
+      insert into public.planning_plan_version (account_id, code, name, scenario_id)
+      values ($1, $2, 'extended smoke version 4', $3) returning id
+    `, [accountId, `smoke-plan-4-${suffix}`, scenarioId]);
+    await client.query(`
+      insert into public.planning_operationplan (account_id, reference, type, quantity, plan_version_id)
+      values ($1, $2, 'MO', 1, $3), ($1, $2, 'MO', 1, $4)
+    `, [accountId, `version-ref-${suffix}`, thirdVersion.rows[0].id, fourthVersion.rows[0].id]);
+    await client.query(`
+      insert into public.planning_resourceplan (account_id, plan_version_id, resource_id, startdate, available)
+      values ($1, $2, $3, '2026-10-01T00:00:00Z', 8), ($1, $4, $3, '2026-10-01T00:00:00Z', 8)
+    `, [accountId, thirdVersion.rows[0].id, resource.rows[0].id, fourthVersion.rows[0].id]);
+    await client.query(`select public.planning_finish_plan_version($1, $2, 'completed', '{}'::jsonb)`, [accountId, thirdVersion.rows[0].id]);
+    await client.query('savepoint planning_publish_guard');
+    await assert.rejects(
+      client.query(`update public.planning_plan_version set status = 'published' where id = $1`, [thirdVersion.rows[0].id])
+    );
+    await client.query('rollback to savepoint planning_publish_guard');
+    await client.query('release savepoint planning_publish_guard');
 
     const schedule = await client.query<{ id: string }>(`
       insert into public.planning_schedule (
@@ -103,17 +331,20 @@ async function main() {
       where code in (
         'planning_problem-list', 'planning_constraint-list', 'planning_resourceplan-list',
         'planning_run-list', 'planning_archive_manager-list', 'planning_archived_buffer-list',
-        'planning_archived_demand-list', 'planning_archived_operationplan-list'
+        'planning_archived_demand-list', 'planning_archived_operationplan-list',
+        'planning_demand_sync_state-list'
       )
         and not (schema::text like '%"code":"create"%')
     `);
-    assert.equal(readOnlyPages.rows[0].count, '8');
+    assert.equal(readOnlyPages.rows[0].count, '9');
 
     await client.query('rollback');
     console.log(JSON.stringify({
       seeded_parameters: Number(defaults.rows[0].parameters),
       seeded_measures: Number(defaults.rows[0].measures),
       baseline_scenario: 'verified',
+      plan_version_publish: 'verified',
+      sales_order_demand_sync: 'verified',
       workflow_schedule_bridge: 'verified',
       workflow_run_bridge: 'verified',
       generated_output_pages: 'read-only',

@@ -1,43 +1,4 @@
-import type { LowCodeFormSchema, LowCodeGridSchema } from '@enlearn/lowcode-framework/types/lowcode';
-
-export const postFormSchema: LowCodeFormSchema = {
-  columns: 1,
-  fields: [
-    {
-      field: 'title',
-      label: 'Post Title',
-      component: 'vxe-input',
-      props: {
-        placeholder: 'Enter a post title',
-        clearable: true
-      },
-      rules: [{ required: true, message: 'Post title is required' }]
-    },
-    {
-      field: 'content',
-      label: 'Post Content',
-      component: 'vxe-textarea',
-      props: {
-        placeholder: 'Write something',
-        rows: 4,
-        resize: 'vertical'
-      }
-    }
-  ],
-  actions: [
-    {
-      code: 'submit',
-      label: 'Save Post',
-      type: 'submit',
-      status: 'primary'
-    },
-    {
-      code: 'reset',
-      label: 'Reset',
-      type: 'reset'
-    }
-  ]
-};
+import type { LowCodeGridSchema } from '@enlearn/lowcode-framework/types/lowcode';
 
 export const postsGridSchema: LowCodeGridSchema = {
   title: 'Posts',
