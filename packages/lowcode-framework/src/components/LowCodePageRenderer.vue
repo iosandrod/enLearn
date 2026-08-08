@@ -106,6 +106,9 @@ import {
   createLowCodePageRuntime,
   lowCodePageRuntimeKey,
 } from '../runtime/page-runtime';
+import { lowCodeScriptContextProviderKey } from '../runtime/script-context-provider';
+import type { LowCodeContextSource } from '../runtime/lowcode-context';
+import { resolveLowCodeNodeAction } from '../runtime/node-action-registry';
 
 const props = withDefaults(defineProps<{
   page: LowCodePageRecord & {
@@ -171,6 +174,7 @@ const dataLoading = computed({
 const runtimeEventBus = createLowCodeEventBus();
 const pendingActionEvents = new WeakMap<object, Promise<void>>();
 const formBaselines: Record<string, Record<string, unknown>> = {};
+const MAX_PAGE_FUNCTION_CALL_DEPTH = 16;
 let loadSequence = 0;
 let runtimePageId = '';
 
@@ -181,6 +185,13 @@ onMounted(() => {
 provide(lowCodeRuntimeBlockEditorKey, {
   updateBlock: persistRuntimeBlockUpdate,
   getDataSource,
+  getPageSchema: () => props.page.schema,
+  getPageRecord: () => props.page,
+  getServiceApi: () => host.getServiceApi(),
+  getScriptContextSource: createScriptContextSource,
+});
+provide(lowCodeScriptContextProviderKey, {
+  getSource: createScriptContextSource,
 });
 
 defineExpose({
@@ -699,6 +710,51 @@ function cloneScriptValue<T>(value: T, fallback: T): T {
   } catch {
     return fallback;
   }
+}
+
+function createScriptContextSource(): LowCodeContextSource {
+  return cloneScriptValue({
+    page: {
+      id: props.page.id,
+      code: props.page.code,
+      route: props.page.route,
+      title: props.page.title,
+      schema: props.page.schema,
+    },
+    data: resolvedData.value,
+    forms: formModels.value,
+    searches: searchFilters.value,
+    grids: gridStates.value,
+    apiNames: Array.isArray(props.page.schema.scriptPolicy?.apiNames)
+      ? props.page.schema.scriptPolicy.apiNames
+      : [],
+    capabilities: Array.isArray(props.page.schema.scriptPolicy?.capabilities)
+      ? [
+          ...props.page.schema.scriptPolicy.capabilities,
+          ...((props.page.schema.functions?.length ?? 0) > 0
+            ? ['action.execute' as const]
+            : []),
+          ...(Object.keys(props.page.schema.apis ?? {}).length > 0
+            ? ['http.execute' as const]
+            : []),
+          ...((props.page.schema.functions?.length ?? 0) > 0
+            ? ['pageFunction.execute' as const]
+            : []),
+        ].filter((capability, index, capabilities) =>
+          capabilities.indexOf(capability) === index,
+        )
+      : [
+          ...((props.page.schema.functions?.length ?? 0) > 0
+            ? ['action.execute' as const]
+            : []),
+          ...(Object.keys(props.page.schema.apis ?? {}).length > 0
+            ? ['http.execute' as const]
+            : []),
+          ...((props.page.schema.functions?.length ?? 0) > 0
+            ? ['pageFunction.execute' as const]
+            : []),
+        ],
+  }, {});
 }
 
 function getChildBlocks(block: LowCodePageBlock): LowCodePageBlock[] {
@@ -1474,6 +1530,140 @@ function readScriptRowsArg(args: unknown[], index: number) {
     : [];
 }
 
+function readScriptOptionsArg(args: unknown[], label: string) {
+  if (!isRecord(args[0])) throw new Error(`${label} 参数必须是对象。`);
+  return cloneRuntimeValue(args[0]);
+}
+
+function readRowsValue(value: unknown) {
+  if (Array.isArray(value)) return value.filter(isRecord).map((row) => cloneRuntimeValue(row));
+  if (isRecord(value) && Array.isArray(value.rows)) {
+    return value.rows.filter(isRecord).map((row) => cloneRuntimeValue(row));
+  }
+  return [];
+}
+
+function findNestedRuntimeBlock(block: LowCodePageBlock, blockId: string) {
+  return flattenBlocks(getChildBlocks(block)).find((child) => child.id === blockId);
+}
+
+function createNodeDialogConfig(
+  block: LowCodePageOverlayBlock,
+  options: Record<string, unknown>,
+): GlobalDialogConfig {
+  const resultNodeId = readString(options.resultNode ?? block.resultNode);
+  const resultNode = resultNodeId
+    ? findNestedRuntimeBlock(block, resultNodeId)
+    : flattenBlocks(getChildBlocks(block)).find(
+        (child): child is LowCodePageFormBlock => child.kind === 'form',
+      );
+  if (!resultNode || resultNode.kind !== 'form') {
+    throw new Error(`弹框 "${block.id}" 未配置结果表单。`);
+  }
+
+  const suppliedData = isRecord(options.data) ? options.data : {};
+  const model = mergeFormModelValues(
+    resultNode.initialValues ?? {},
+    mergeFormModelValues(
+      isRecord(runtime.state.forms[resultNode.id])
+        ? runtime.state.forms[resultNode.id]
+        : {},
+      suppliedData,
+    ),
+  );
+  return {
+    id: block.id,
+    title: readString(block.title, block.id),
+    width: block.width,
+    showFooter: true,
+    model,
+    form: { schema: cloneRuntimeValue(resultNode.schema) },
+    actions: [
+      {
+        code: 'cancel',
+        label: readString(block.cancelLabel, '取消'),
+        role: 'cancel',
+      },
+      {
+        code: 'confirm',
+        label: readString(block.confirmLabel, '确定'),
+        role: 'confirm',
+        status: 'primary',
+      },
+    ],
+  };
+}
+
+async function executeScriptNodeAction(options: Record<string, unknown>) {
+  const node = readString(options.node);
+  const method = readString(options.method);
+  if (!node) throw new Error('executeAction 参数 node 不能为空。');
+  if (!method) throw new Error('executeAction 参数 method 不能为空。');
+
+  const block = findRuntimeBlock(node);
+  if (!block) throw new Error(`页面节点 "${node}" 不存在。`);
+
+  const action = resolveLowCodeNodeAction(block.kind, method);
+  if (!action) throw new Error(`节点 "${node}" 不支持动作 "${method}"。`);
+
+  switch (action.executor) {
+    case 'overlay.open': {
+      if (!isOverlayBlock(block)) break;
+      const result = await openLowCodeGlobalDialog(createNodeDialogConfig(block, options));
+      if (result.action !== 'confirm') return null;
+      return cloneScriptValue(result.values, {});
+    }
+    case 'grid.reloadData': {
+      if (block.kind !== 'grid') break;
+      const rows = readRowsValue(options.data);
+      if (block.sourceKey) runtime.setSource(block.sourceKey, rows);
+      else runtime.setGridRows(block.id, rows, { rowKey: getGridRowKey(block) });
+      syncPageGridStates();
+      return rows;
+    }
+    case 'form.setData': {
+      if (block.kind !== 'form' && block.kind !== 'searchForm') break;
+      if (!isRecord(options.data)) throw new Error('表单 setData 的 data 必须是对象。');
+      const data = cloneRuntimeValue(options.data);
+      if (options.mode === 'replace') runtime.replaceForm(block.id, data);
+      else runtime.patchForm(block.id, data);
+      return cloneScriptValue(runtime.state.forms[block.id], {});
+    }
+  }
+
+  throw new Error(`节点动作执行器 "${action.executor}" 与节点 "${node}" 不匹配。`);
+}
+
+function resolveScriptPageApi(options: Record<string, unknown>) {
+  const apiName = readString(options.api);
+  if (!apiName) throw new Error('executeHttp 参数 api 不能为空。');
+  const api = props.page.schema.apis?.[apiName];
+  if (!api) throw new Error(`页面 API "${apiName}" 未声明。`);
+  return { apiName, api };
+}
+
+async function executeScriptHttp(options: Record<string, unknown>) {
+  const { apiName, api } = resolveScriptPageApi(options);
+  const configuredMethod = readString(api.method, 'POST').toUpperCase();
+  const method = readString(options.method, configuredMethod).toUpperCase();
+  if (method !== configuredMethod) {
+    throw new Error(`页面 API "${apiName}" 只允许使用 ${configuredMethod}。`);
+  }
+  if (!isRecord(options.body) && typeof options.body !== 'undefined') {
+    throw new Error('executeHttp 参数 body 必须是对象。');
+  }
+
+  const result = await host.getServiceApi().invoke(
+    api.serviceName,
+    api.serviceMethod,
+    {
+      ...(api.postData ?? {}),
+      ...(isRecord(options.body) ? cloneRuntimeValue(options.body) : {}),
+    },
+  );
+  return api.resultPath ? cloneScriptValue(readPath(result, api.resultPath), null) : result;
+}
+
 function sanitizeScriptDialogConfig(value: Record<string, unknown>): GlobalDialogConfig {
   const allowedKeys = new Set([
     'id',
@@ -1566,8 +1756,31 @@ function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSn
           )
         : [],
       capabilities: Array.isArray(props.page.schema.scriptPolicy?.capabilities)
-        ? props.page.schema.scriptPolicy.capabilities
-        : undefined,
+        ? [
+            ...props.page.schema.scriptPolicy.capabilities,
+            ...((props.page.schema.functions?.length ?? 0) > 0
+              ? ['action.execute' as const]
+              : []),
+            ...(Object.keys(props.page.schema.apis ?? {}).length > 0
+              ? ['http.execute' as const]
+              : []),
+            ...((props.page.schema.functions?.length ?? 0) > 0
+              ? ['pageFunction.execute' as const]
+              : []),
+          ].filter((capability, index, capabilities) =>
+            capabilities.indexOf(capability) === index,
+          )
+        : [
+            ...((props.page.schema.functions?.length ?? 0) > 0
+              ? ['action.execute' as const]
+              : []),
+            ...(Object.keys(props.page.schema.apis ?? {}).length > 0
+              ? ['http.execute' as const]
+              : []),
+            ...((props.page.schema.functions?.length ?? 0) > 0
+              ? ['pageFunction.execute' as const]
+              : []),
+          ],
     },
   }, {
     page: {},
@@ -1581,6 +1794,51 @@ function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSn
   });
 }
 
+function resolvePageFunction(options: Record<string, unknown>) {
+  const name = readString(options.name);
+  if (!name) throw new Error('executeFunction 参数 name 不能为空。');
+  const pageFunction = props.page.schema.functions?.find(
+    (item) => item.name === name && item.enabled !== false,
+  );
+  if (!pageFunction) throw new Error(`页面函数 "${name}" 不存在或未启用。`);
+  return pageFunction;
+}
+
+async function executePageFunction(
+  options: Record<string, unknown>,
+  event: LowCodeRuntimeEvent,
+) {
+  const pageFunction = resolvePageFunction(options);
+  if (typeof options.args !== 'undefined' && !isRecord(options.args)) {
+    throw new Error('executeFunction 参数 args 必须是对象。');
+  }
+  const args = isRecord(options.args) ? cloneRuntimeValue(options.args) : {};
+  const callStack = Array.isArray(event.payload?.pageFunctionStack)
+    ? event.payload.pageFunctionStack.filter(
+        (item): item is string => typeof item === 'string' && Boolean(item),
+      )
+    : [];
+  if (callStack.length >= MAX_PAGE_FUNCTION_CALL_DEPTH) {
+    throw new Error(`页面函数调用深度不能超过 ${MAX_PAGE_FUNCTION_CALL_DEPTH} 层。`);
+  }
+  if (callStack.includes(pageFunction.name)) {
+    throw new Error(`页面函数 "${pageFunction.name}" 不允许递归调用。`);
+  }
+  const functionEvent: LowCodeRuntimeEvent = {
+    name: `pageFunction.${pageFunction.name}`,
+    blockId: event.blockId,
+    blockKind: event.blockKind,
+    timestamp: Date.now(),
+    payload: {
+      args,
+      callerEvent: sanitizeScriptEventPayload(event.payload),
+      pageFunctionStack: [...callStack, pageFunction.name],
+    },
+  };
+  const result = await executeIsolatedScript(pageFunction.script, functionEvent);
+  return result.value;
+}
+
 async function handleScriptCapability(
   request: LowCodeScriptCapabilityRequest,
   context: LowCodeScriptContextSnapshot,
@@ -1588,11 +1846,20 @@ async function handleScriptCapability(
 ) {
   const args = request.args;
   const allowedCapabilities = context.policy?.capabilities;
-  if (allowedCapabilities && !allowedCapabilities.includes(request.name)) {
+  if (!Array.isArray(allowedCapabilities) || !allowedCapabilities.includes(request.name)) {
     throw new Error(`脚本能力 "${request.name}" 未经当前页面授权。`);
   }
 
   switch (request.name) {
+    case 'action.execute':
+      return executeScriptNodeAction(readScriptOptionsArg(args, 'executeAction'));
+    case 'http.execute':
+      return executeScriptHttp(readScriptOptionsArg(args, 'executeHttp'));
+    case 'pageFunction.execute':
+      return executePageFunction(
+        readScriptOptionsArg(args, 'executeFunction'),
+        event,
+      );
     case 'api.invoke': {
       const apiName = readScriptStringArg(args, 0, 'name');
       return invokeRegisteredLowCodeScriptApi(
@@ -1708,12 +1975,16 @@ async function handleScriptCapability(
   }
 }
 
-async function executeButtonScript(script: string, event: LowCodeRuntimeEvent) {
+async function executeIsolatedScript(script: string, event: LowCodeRuntimeEvent) {
   const context = createScriptContext(event);
-  await executeLowCodeScript(
+  return executeLowCodeScript(
     { script, context },
     (request) => handleScriptCapability(request, context, event),
   );
+}
+
+async function executeButtonScript(script: string, event: LowCodeRuntimeEvent) {
+  await executeIsolatedScript(script, event);
 }
 
 function reportRuntimeDirectiveError(error: unknown) {

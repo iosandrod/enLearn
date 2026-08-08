@@ -129,6 +129,9 @@ export async function openRuntimeFormDesigner(
     layout: block.schema.layout,
     columns: block.schema.columns,
     designerModel: (block.formDesignerModel as VisualEditorModelValue | undefined) ?? null,
+    pageData: runtimeBlockEditor.getPageSchema?.(),
+    pageRecord: runtimeBlockEditor.getPageRecord?.(),
+    serviceApi: runtimeBlockEditor.getServiceApi?.(),
     onConfirm: async (result: FormDesignerResult) => {
       const designedSchema = formDesigner.createLowCodeFormSchemaFromDesignerResult(result);
 

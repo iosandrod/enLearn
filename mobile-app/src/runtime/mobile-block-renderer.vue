@@ -6,6 +6,8 @@
     :resolved-data="resolvedData"
     :form-models="formModels"
     :active-action-codes="activeActionCodes"
+    :grid-states="gridStates"
+    :service-api="serviceApi"
     @runtime-event="forwardRuntimeEvent"
   />
 
@@ -19,9 +21,9 @@
 import { computed } from '@vue/runtime-core';
 
 import { getMobileMaterial } from './material-registry';
-import type { MobileMaterialEmits, MobileMaterialProps, MobileRuntimeEvent } from './types';
+import type { MobileMaterialEmits, MobileRuntimeEvent, MobileRuntimeRendererProps } from './types';
 
-const props = defineProps<MobileMaterialProps>();
+const props = defineProps<MobileRuntimeRendererProps>();
 const emit = defineEmits<MobileMaterialEmits>();
 
 const materialComponent = computed(() => getMobileMaterial(props.block.kind)?.component);

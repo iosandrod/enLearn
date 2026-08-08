@@ -1,5 +1,11 @@
 import type { InjectionKey } from 'vue';
-import type { LowCodePageBlock, LowCodePageDataSource } from '../types/lowcode';
+import type {
+  LowCodePageBlock,
+  LowCodePageDataSource,
+  LowCodePageRecord,
+  LowCodePageSchema,
+} from '../types/lowcode';
+import type { LowCodeHostServiceApi } from '../core/host';
 
 export type LowCodeRuntimeBlockUpdate = {
   blockId: string;
@@ -10,6 +16,10 @@ export type LowCodeRuntimeBlockUpdate = {
 export type LowCodeRuntimeBlockEditor = {
   updateBlock(update: LowCodeRuntimeBlockUpdate): Promise<LowCodePageBlock>;
   getDataSource?(sourceKey: string): LowCodePageDataSource | undefined;
+  getPageSchema?(): LowCodePageSchema;
+  getPageRecord?(): LowCodePageRecord;
+  getServiceApi?(): LowCodeHostServiceApi;
+  getScriptContextSource?(): import('./lowcode-context').LowCodeContextSource;
 };
 
 export const lowCodeRuntimeBlockEditorKey: InjectionKey<LowCodeRuntimeBlockEditor> =

@@ -101,6 +101,15 @@ function readJsonObject(value: unknown, fallback: JsonRecord = {}) {
   return fallback;
 }
 
+function readViewMetadata(postData: JsonRecord) {
+  const metadata = readJsonObject(postData.metadata ?? postData.metadata_json);
+  const columns = postData.columns;
+
+  return Array.isArray(columns)
+    ? { ...metadata, columns }
+    : metadata;
+}
+
 function assertIdentifier(value: string, name: string) {
   if (!IDENTIFIER_PATTERN.test(value) || value.length > 63) {
     throw new BadRequestException(`${name} must be a valid identifier.`);
@@ -439,7 +448,7 @@ export class EntityDesignService extends BaseService {
 
   private async validateView(postData: JsonRecord, client: SupabaseClient) {
     const definitionSql = readString(
-      postData.definitionSql ?? postData.definition_sql,
+      postData.sql ?? postData.definitionSql ?? postData.definition_sql,
       'definitionSql'
     );
     return this.callRpc(client, RPC_NAMES.validateView, {
@@ -472,7 +481,7 @@ export class EntityDesignService extends BaseService {
       ),
       status: normalizeViewStatus(postData.status) || null,
       security_invoker: true,
-      metadata: readJsonObject(postData.metadata ?? postData.metadata_json)
+      metadata: readViewMetadata(postData)
     });
   }
 

@@ -75,6 +75,7 @@ export type LowCodeFormLayoutNode =
     }
   | {
       kind: 'tabs';
+      fillRemaining?: boolean;
       defaultKey?: string;
       tabs: LowCodeFormLayoutTab[];
     };
@@ -389,6 +390,25 @@ export type LowCodePageDataSource = {
    * 设为 `false` 时跳过首次加载，但仍可由刷新动作或运行时指令主动加载。
    */
   autoLoad?: boolean;
+
+};
+
+/** A page-owned, named service endpoint callable from an isolated page script. */
+export type LowCodePageApi = {
+  serviceName: string;
+  serviceMethod: string;
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  postData?: Record<string, unknown>;
+  resultPath?: string;
+};
+
+/** A reusable page-owned script callable through `this.executeFunction`. */
+export type LowCodePageFunction = {
+  name: string;
+  label?: string;
+  description?: string;
+  enabled?: boolean;
+  script: string;
 };
 
 export type LowCodePageType = 'list' | 'edit' | 'detail' | 'custom';
@@ -524,6 +544,9 @@ export type LowCodePageModalBlock = LowCodeMaterialVersionedBlock & {
   description?: string;
   open?: boolean;
   width?: number | string;
+  resultNode?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
   blocks: LowCodePageBlock[];
   overlays?: LowCodePageOverlayBlock[];
 };
@@ -536,6 +559,9 @@ export type LowCodePageDrawerBlock = LowCodeMaterialVersionedBlock & {
   open?: boolean;
   width?: number | string;
   placement?: 'left' | 'right';
+  resultNode?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
   blocks: LowCodePageBlock[];
   overlays?: LowCodePageOverlayBlock[];
 };
@@ -603,6 +629,8 @@ export type LowCodePageSchema = {
     bgImage?: string;
   };
   dataSources?: Record<string, LowCodePageDataSource>;
+  apis?: Record<string, LowCodePageApi>;
+  functions?: LowCodePageFunction[];
   eventHandlers?: LowCodeEventHandler[];
   scriptPolicy?: {
     apiNames?: string[];

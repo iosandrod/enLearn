@@ -13,6 +13,10 @@ import { ServiceInvokeDto } from '../common/dto/service-invoke.dto';
 import { isPublicServiceName, type PublicServiceName } from '../common/service-bus';
 import { ServiceRouterService } from './service-router.service';
 import { requireActiveAccount } from '../common/utils/account-context';
+import {
+  executeDurableIdempotentServiceWrite,
+  isIdempotentServiceWrite
+} from '../common/request-idempotency';
 
 type NormalizedServiceInvoke = {
   serviceName: PublicServiceName;
@@ -33,7 +37,7 @@ function normalizeBody(body: ServiceInvokeDto): NormalizedServiceInvoke {
     typeof body.serviceName === 'string' ? body.serviceName.trim() : '';
   if (!isPublicServiceName(serviceName)) {
     throw new BadRequestException(
-      'serviceName must be either "account", "payment", "user", "lowcode", "admin", "posts", "notification", "workflow", "entityDesign", "files", or "chat".'
+      'serviceName must be either "account", "payment", "user", "lowcode", "admin", "posts", "notification", "workflow", "entityDesign", "files", "chat", or "planning".'
     );
   }
 
@@ -123,12 +127,23 @@ export class ServiceGatewayController {
         { authorization: contextAuthorization, requestId },
         accountId
       );
-      data = await this.router.invoke(
-        serviceName,
-        serviceMethod,
-        postData,
-        resolvedAccount.context
-      );
+      const invoke = () => this.router.invoke(
+          serviceName,
+          serviceMethod,
+          postData,
+          resolvedAccount.context
+        );
+      data = requestId && isIdempotentServiceWrite(serviceMethod, postData)
+        ? await executeDurableIdempotentServiceWrite(
+            {
+              userId: resolvedAccount.context.userId,
+              accountId: resolvedAccount.context.accountId,
+              requestId
+            },
+            { serviceName, serviceMethod, postData },
+            invoke
+          )
+        : await invoke();
     } catch (error) {
       const elapsedMs = Date.now() - startedAt;
       const requestIdSuffix = requestId

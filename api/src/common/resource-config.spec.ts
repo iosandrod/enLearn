@@ -9,6 +9,7 @@ import { FilesService } from '../files-service/files.service';
 import { LowCodeService } from '../lowcode-service/lowcode.service';
 import { NotificationService } from '../notification-service/notification.service';
 import { PostsService } from '../posts-service/posts.service';
+import { PlanningService } from '../planning-service/planning.service';
 import { workflowResources } from '../workflow/workflow.resources';
 
 type ServiceWithResources = {
@@ -26,7 +27,8 @@ const services = [
   new FilesService(),
   new LowCodeService(),
   new NotificationService(),
-  new PostsService()
+  new PostsService(),
+  new PlanningService()
 ] as unknown as ServiceWithResources[];
 
 const lowcodeService = services[4];
@@ -91,6 +93,18 @@ assert.equal(lowcodeResources.lowcode_pages.transactionalHooks, true);
 assert.equal(
   (lowcodeResources.lowcode_pages.databaseHooks?.beforeCreate as string),
   'public.dynamic_crud_normalize_lowcode_page'
+);
+assert.deepEqual(
+  lowcodeResources.lowcode_form_definitions.permissions,
+  {
+    list: 'lowcode.pages.manage',
+    create: 'lowcode.pages.manage',
+    update: 'lowcode.pages.manage',
+    delete: 'lowcode.pages.manage'
+  }
+);
+assert.ok(
+  lowcodeResources.lowcode_form_definitions.create?.allowedFields?.includes('schema')
 );
 assert.equal(workflowResources.wf_model.transactionalHooks, true);
 assert.equal(

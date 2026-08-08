@@ -6,6 +6,7 @@
         'is-plain': block.appearance === 'plain',
       },
     ]"
+    :style="blockStyle"
     @layout="handleLayout"
   >
     <div v-if="block.title || block.description || schema.title" class="form-header">
@@ -81,6 +82,7 @@ import type { HippyLayoutEvent } from '@hippy/vue-next';
 
 import MobileFormField from './mobile-form-field.vue';
 import MobileFormLayout from './mobile-form-layout.vue';
+import { resolveMobileBlockStyle } from '../block-style';
 import {
   createLayoutWidthScheduler,
   getWebLayoutFrameDriver,
@@ -153,6 +155,7 @@ const formReadonly = computed(() => readFormBoolean(
   props.block.readonly ?? props.block.schema?.readonly,
 ));
 const eventPrefix = computed(() => props.block.kind === 'searchForm' ? 'searchForm' : 'form');
+const blockStyle = computed(() => resolveMobileBlockStyle(props.block.style));
 
 function cellStyle(span: number): CSSProperties {
   const width = `${span / effectiveColumns.value * 100}%`;

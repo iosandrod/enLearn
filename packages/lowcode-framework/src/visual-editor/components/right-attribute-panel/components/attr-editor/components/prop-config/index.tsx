@@ -7,20 +7,18 @@
  * @FilePath: /vite-vue3-lowcode/src/visual-editor/components/right-attribute-panel/components/attr-editor/components/prop-config/index.tsx
  */
 
-import { computed, defineComponent, PropType } from 'vue';
+import { computed, defineComponent, inject, PropType } from 'vue';
 import {
   ElColorPicker,
   ElInput,
   ElOption,
   ElSelect,
   ElSwitch,
-  ElCascader,
   ElInputNumber,
   ElFormItem,
   ElTooltip,
   ElIcon,
 } from '../../../../../common/designer-ui';
-import { cloneDeep } from 'lodash-es';
 import { Warning } from '../../../../../common/remix-icons';
 import { TablePropEditor, CrossSortableOptionsEditor } from '../../components';
 import { useDotProp } from '../../../../../../hooks/useDotProp';
@@ -28,6 +26,11 @@ import { VisualEditorProps, VisualEditorPropsType } from '../../../../../../visu
 import { useVisualData } from '../../../../../../hooks/useVisualData';
 import { VisualEditorBlockData, VisualEditorComponent } from '../../../../../../visual-editor.utils';
 import JsonDialogInput from '../../../../../../../components/JsonDialogInput.vue';
+import {
+  formDesignerPageDataKey,
+  formDesignerTableFieldOptionsKey,
+} from '../../../../../../form-designer-context';
+import { collectPageTableFieldOptions } from '../../../../../../material-prop-forms';
 
 export const PropConfig = defineComponent({
   props: {
@@ -42,10 +45,13 @@ export const PropConfig = defineComponent({
   },
   setup(props) {
     const { jsonData } = useVisualData();
-    /**
-     * @description 模型集合
-     */
-    const models = computed(() => cloneDeep(jsonData.models));
+    const designerPageData = inject(formDesignerPageDataKey, null);
+    const injectedTableFieldOptions = inject(formDesignerTableFieldOptionsKey, null);
+    /** @description 当前页面所有表格列的字段集合 */
+    const tableFields = computed(() =>
+      injectedTableFieldOptions?.value ??
+      collectPageTableFieldOptions(designerPageData?.value ?? jsonData),
+    );
 
     const renderPropItem = (propName: string, propConfig: VisualEditorProps) => {
       const { propObj, prop } = useDotProp(props.block.props, propName);
@@ -103,25 +109,21 @@ export const PropConfig = defineComponent({
         [VisualEditorPropsType.table]: () => (
           <TablePropEditor v-model={propObj[prop]} propConfig={propConfig} />
         ),
-        [VisualEditorPropsType.modelBind]: () => (
-          models.value.length ? (
-            <ElCascader
-              clearable={true}
-              props={{
-                checkStrictly: true,
-                children: 'entitys',
-                label: 'name',
-                value: 'key',
-                expandTrigger: 'hover',
-              }}
-              placeholder="请选择绑定的请求数据"
+        [VisualEditorPropsType.modelBind]: () => {
+          if (Array.isArray(propObj[prop])) {
+            propObj[prop] = propObj[prop][propObj[prop].length - 1] ?? '';
+          }
+          return (
+            <ElSelect
               v-model={propObj[prop]}
-              options={[...models.value]}
-            ></ElCascader>
-          ) : (
-            <ElInput v-model={propObj[prop]} placeholder={propConfig.tips || propConfig.label} />
-          )
-        ),
+              options={tableFields.value}
+              clearable={true}
+              filterable={true}
+              allowCreate={true}
+              placeholder="请选择或输入字段"
+            />
+          );
+        },
         [VisualEditorPropsType.json]: renderJsonInput,
       }[propConfig.type]();
     };

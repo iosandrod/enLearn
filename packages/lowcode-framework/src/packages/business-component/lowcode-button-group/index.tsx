@@ -235,15 +235,6 @@ export default {
             options: buttonTypeOptions,
           },
           {
-            label: '模式',
-            field: 'mode',
-            component: 'vxe-select',
-            width: 96,
-            options: buttonModeOptions,
-          },
-          { label: '路由', field: 'route' },
-          { label: '事件名', field: 'eventName' },
-          {
             label: '执行脚本',
             field: 'script',
             component: 'lc-monaco-editor',
@@ -256,6 +247,16 @@ export default {
               scriptThisType: 'LowCodeButtonScriptThis',
             },
           },
+          {
+            label: '模式',
+            field: 'mode',
+            component: 'vxe-select',
+            width: 96,
+            options: buttonModeOptions,
+          },
+          { label: '路由', field: 'route' },
+          { label: '事件名', field: 'eventName' },
+
           { label: '图标', field: 'icon' },
           { label: '前缀图标', field: 'prefixIcon' },
           { label: '后缀图标', field: 'suffixIcon' },

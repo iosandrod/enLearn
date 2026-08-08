@@ -1,5 +1,5 @@
 <template>
-  <div class="mobile-section">
+  <div class="mobile-section" :style="blockStyle">
     <div v-if="block.title || block.description" class="section-header">
       <span v-if="block.title" class="section-title">{{ block.title }}</span>
       <span v-if="block.description" class="section-description">{{ block.description }}</span>
@@ -9,17 +9,22 @@
       :resolved-data="resolvedData"
       :form-models="formModels"
       :active-action-codes="activeActionCodes"
+      :grid-states="gridStates"
+      :service-api="serviceApi!"
       @runtime-event="(event) => emit('runtimeEvent', event)"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from '@vue/runtime-core';
 import MobileBlockChildren from '../mobile-block-children.vue';
+import { resolveMobileBlockStyle } from '../block-style';
 import type { MobileMaterialEmits, MobileMaterialProps } from '../types';
 
-defineProps<MobileMaterialProps>();
+const props = defineProps<MobileMaterialProps>();
 const emit = defineEmits<MobileMaterialEmits>();
+const blockStyle = computed(() => resolveMobileBlockStyle(props.block.style));
 </script>
 
 <style scoped>

@@ -6,12 +6,15 @@ export const DEFAULT_LOW_CODE_SCRIPT_MAX_API_CALLS = 50;
 export const DEFAULT_LOW_CODE_SCRIPT_MAX_PAYLOAD_BYTES = 256 * 1024;
 
 export type LowCodeScriptCapabilityName =
+  | 'action.execute'
   | 'api.invoke'
   | 'dialog.open'
   | 'event.emit'
   | 'form.patch'
   | 'form.replace'
   | 'grid.setRows'
+  | 'http.execute'
+  | 'pageFunction.execute'
   | 'message.error'
   | 'message.info'
   | 'message.success'
@@ -86,6 +89,9 @@ export type LowCodeScriptExecutor = (
 
 export type RegisteredLowCodeScriptApi = {
   name: string;
+  description?: string;
+  signature?: string;
+  insertText?: string;
   authorize?: (
     payload: Record<string, unknown>,
     context: LowCodeScriptContextSnapshot,
@@ -149,6 +155,17 @@ export function getLowCodeScriptApiNames() {
   return [...scriptApiRegistry.keys()].sort();
 }
 
+export function getLowCodeScriptApiDefinitions() {
+  return [...scriptApiRegistry.values()]
+    .map(({ name, description, signature, insertText }) => ({
+      name,
+      description,
+      signature,
+      insertText,
+    }))
+    .sort((previous, next) => previous.name.localeCompare(next.name));
+}
+
 export function clearLowCodeScriptApis() {
   scriptApiRegistry.clear();
 }
@@ -164,7 +181,7 @@ export async function invokeRegisteredLowCodeScriptApi(
   }
 
   const allowedApiNames = context.policy?.apiNames;
-  if (allowedApiNames && !allowedApiNames.includes(name)) {
+  if (!Array.isArray(allowedApiNames) || !allowedApiNames.includes(name)) {
     throw new Error(`脚本 API "${name}" 未注册或当前用户无权调用。`);
   }
   if (api.authorize && !await api.authorize(payload, context)) {
@@ -252,8 +269,16 @@ export function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor {
     return new Promise<LowCodeScriptExecutionResult>((resolve, reject) => {
       let settled = false;
       let executionStarted = false;
+      let pendingCapabilities = 0;
       let executionTimeoutId: ReturnType<typeof globalThis.setTimeout> | undefined;
-      const settle = (
+      let settle: (callback: () => void) => void;
+      const scheduleExecutionTimeout = () => {
+        if (executionTimeoutId) clearTimeout(executionTimeoutId);
+        executionTimeoutId = globalThis.setTimeout(() => {
+          settle(() => reject(new Error(`脚本执行超时（${timeoutMs}ms）。`)));
+        }, timeoutMs + 250);
+      };
+      settle = (
         callback: () => void,
       ) => {
         if (settled) return;
@@ -277,9 +302,7 @@ export function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor {
         if (data.type === 'module-ready' && !executionStarted) {
           executionStarted = true;
           clearTimeout(startupTimeoutId);
-          executionTimeoutId = globalThis.setTimeout(() => {
-            settle(() => reject(new Error(`脚本执行超时（${timeoutMs}ms）。`)));
-          }, timeoutMs + 250);
+          scheduleExecutionTimeout();
           return;
         }
 
@@ -287,8 +310,11 @@ export function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor {
 
         if (data.type === 'capability') {
           const capabilityRequest = data.request as LowCodeScriptCapabilityRequest;
-          Promise.resolve().then(() => handleCapability(capabilityRequest)).then(
-            (value) => {
+          pendingCapabilities += 1;
+          if (executionTimeoutId) clearTimeout(executionTimeoutId);
+          Promise.resolve()
+            .then(() => handleCapability(capabilityRequest))
+            .then((value) => {
               if (settled) return;
               const serializedValue = toLowCodeScriptSerializable(value);
               const maxPayloadBytes = readPositiveLimit(
@@ -312,8 +338,8 @@ export function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor {
                 ok: true,
                 value: serializedValue,
               });
-            },
-            (error) => {
+            })
+            .catch((error) => {
               if (settled) return;
               worker.postMessage({
                 type: 'capability-result',
@@ -322,8 +348,11 @@ export function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor {
                 ok: false,
                 error: error instanceof Error ? error.message : String(error),
               });
-            },
-          );
+            })
+            .finally(() => {
+              pendingCapabilities = Math.max(0, pendingCapabilities - 1);
+              if (!settled && pendingCapabilities === 0) scheduleExecutionTimeout();
+            });
           return;
         }
 

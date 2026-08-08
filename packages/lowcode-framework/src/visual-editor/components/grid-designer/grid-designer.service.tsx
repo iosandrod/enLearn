@@ -22,7 +22,6 @@ import type {
   LowCodeField,
   LowCodeFormSchema,
   LowCodePageBlock,
-  LowCodePageRecord,
   LowCodeRuntimeDirective,
   LowCodeRuntimeEvent,
 } from '../../../types/lowcode';
@@ -34,6 +33,7 @@ export type GridDesignerColumn = {
   __id?: string;
   field?: string;
   title?: string;
+  editType?: string;
   type?: string;
   width?: string | number;
   minWidth?: string | number;
@@ -115,6 +115,11 @@ type GridDesignerSourceColumn = {
   primaryKey?: boolean;
 };
 
+const gridDesignerSourcePageCodes: Record<GridDesignerSourceKind, string> = {
+  entity: 'admin-system-entities',
+  view: 'entity-views',
+};
+
 declare const useServiceApi: undefined | (() => LowCodeHostServiceApi);
 
 type JsonParseResult =
@@ -142,6 +147,16 @@ const columnTypeOptions = [
   { label: '复选 checkbox', value: 'checkbox' },
   { label: '展开 expand', value: 'expand' },
   { label: 'HTML', value: 'html' },
+];
+
+const columnEditTypeOptions = [
+  { label: '不启用', value: '' },
+  { label: '文本输入 VxeInput', value: 'VxeInput' },
+  { label: '数字输入 VxeNumberInput', value: 'VxeNumberInput' },
+  { label: '日期选择 VxeDatePicker', value: 'VxeDatePicker' },
+  { label: '下拉选择 VxeSelect', value: 'VxeSelect' },
+  { label: '开关 VxeSwitch', value: 'VxeSwitch' },
+  { label: '多行文本 VxeTextarea', value: 'VxeTextarea' },
 ];
 
 const alignOptions = [
@@ -801,6 +816,7 @@ function createDefaultColumn(index = 0): GridDesignerColumn {
     __id: `column_${generateNanoid()}`,
     field: `field_${index + 1}`,
     title: `列${index + 1}`,
+    editType: '',
     type: '',
     width: '',
     minWidth: 120,
@@ -826,12 +842,23 @@ function createDefaultColumn(index = 0): GridDesignerColumn {
 function normalizeColumn(column: unknown, index: number): GridDesignerColumn {
   const row = isPlainRecord(column) ? column : {};
   const fallback = createDefaultColumn(index);
+  const sourceEditRender = isPlainRecord(row.editRender) ? cloneDeep(row.editRender) : {};
+  const currentEditType = readString(sourceEditRender.name);
+  const editType = Object.prototype.hasOwnProperty.call(row, 'editType')
+    ? readString(row.editType)
+    : currentEditType;
+  const editRender = editType === currentEditType
+    ? sourceEditRender
+    : editType
+      ? { ...sourceEditRender, name: editType }
+      : {};
 
   return {
     ...fallback,
     __id: readString(row.__id, fallback.__id),
     field: readString(row.field, fallback.field),
     title: readString(row.title, readString(row.field, fallback.title)),
+    editType,
     type: readString(row.type),
     width: readDimension(row.width),
     minWidth: readDimension(row.minWidth),
@@ -851,7 +878,7 @@ function normalizeColumn(column: unknown, index: number): GridDesignerColumn {
     formatter: isPlainRecord(row.formatter) ? cloneDeep(row.formatter) : readString(row.formatter),
     filters: Array.isArray(row.filters) ? cloneDeep(row.filters) : [],
     cellRender: isPlainRecord(row.cellRender) ? cloneDeep(row.cellRender) : {},
-    editRender: isPlainRecord(row.editRender) ? cloneDeep(row.editRender) : {},
+    editRender,
     params: isPlainRecord(row.params) ? cloneDeep(row.params) : {},
   };
 }
@@ -946,91 +973,16 @@ function createSourceKey(source: GridDesignerSourceOption) {
   return `${normalized || 'records'}Records`;
 }
 
-function createSourcePickerPage(
-  kind: GridDesignerSourceKind,
-  sourceOptions: GridDesignerSourceOption[],
-): LowCodePageRecord {
-  const kindLabel = kind === 'entity' ? '实体' : '视图';
-  const sourceKey = `${kind}Sources`;
-  const pageCode = `grid-designer-${kind}-picker`;
-  const rows = sourceOptions.map((source) => ({
-    id: source.id,
-    code: source.code,
-    title: source.title,
-    fullName: source.fullName,
-    status: source.status,
-    columnCount: source.columns.length,
-  }));
+function readSourceRowFromConfirmPayload(payload: unknown) {
+  if (!isPlainRecord(payload)) return null;
 
-  return {
-    id: pageCode,
-    code: pageCode,
-    route: `/${pageCode}`,
-    title: `关联${kindLabel}`,
-    description: null,
-    layout: 'blank',
-    status: 'published',
-    keep_alive: false,
-    page_type: 'list',
-    edit_page_id: null,
-    schema: {
-      schemaVersion: 1,
-      code: pageCode,
-      route: `/${pageCode}`,
-      title: `关联${kindLabel}`,
-      pageType: 'list',
-      layout: 'blank',
-      status: 'published',
-      keepAlive: false,
-      blocks: [
-        {
-          id: `${pageCode}-grid`,
-          kind: 'grid',
-          sourceKey,
-          rows,
-          layout: { fillRemaining: true },
-          schema: {
-            grid: {
-              border: true,
-              stripe: true,
-              showOverflow: 'tooltip',
-              height: '100%',
-              rowConfig: { keyField: 'id', isCurrent: true },
-              columns: [
-                { type: 'radio', title: '', width: 48, align: 'center' },
-                { field: 'title', title: `${kindLabel}名称`, minWidth: 180, fixed: 'left' },
-                { field: 'code', title: '编码', minWidth: 160 },
-                { field: 'fullName', title: '数据库对象', minWidth: 210 },
-                { field: 'columnCount', title: '字段数', width: 88, align: 'right' },
-                ...(kind === 'view'
-                  ? [{ field: 'status', title: '状态', width: 96, align: 'center' as const }]
-                  : []),
-              ],
-            },
-            rowActions: { edit: false, delete: false },
-          },
-        },
-      ],
-    },
-    version: 1,
-    published_at: null,
-    created_at: '',
-    updated_at: '',
-  };
-}
-
-function readSourceIdFromConfirmPayload(payload: unknown) {
-  if (!isPlainRecord(payload)) return '';
-
-  const row = [
+  return [
     payload.row,
     payload.selectedRow,
     payload.currentRow,
     Array.isArray(payload.selectedRows) ? payload.selectedRows[0] : undefined,
     Array.isArray(payload.rows) ? payload.rows[0] : undefined,
-  ].find(isPlainRecord);
-
-  return readString(row?.id);
+  ].find(isPlainRecord) ?? null;
 }
 
 function createDefaultBusiness(): GridDesignerBusinessInfo {
@@ -1628,12 +1580,13 @@ const ServiceComponent = defineComponent({
       return true;
     };
 
-    const loadSourceOptions = async (
+    const loadSelectedSource = async (
       kind: GridDesignerSourceKind,
-    ): Promise<GridDesignerSourceOption[]> => {
+      row: Record<string, unknown>,
+    ): Promise<GridDesignerSourceOption> => {
       const serviceApi = getServiceApi();
       if (!serviceApi) {
-        throw new Error('当前页面未提供数据服务，无法加载关联数据源');
+        throw new Error('当前页面未提供数据服务，无法读取关联字段');
       }
 
       if (kind === 'entity') {
@@ -1643,10 +1596,26 @@ const ServiceComponent = defineComponent({
           {},
         );
         const tables = Array.isArray(graph?.tables) ? graph.tables.filter(isPlainRecord) : [];
-        return tables.map((table) => ({
-          id: readString(table.id),
-          code: readString(table.code, readString(table.table_name)),
-          title: readString(table.title, readString(table.code, readString(table.table_name))),
+        const rowId = readString(row.id);
+        const rowCode = readString(row.code);
+        const rowTableName = readString(row.table_name, readString(row.tableName));
+        const table = tables.find(
+          (item) =>
+            (rowId && readString(item.id) === rowId) ||
+            (rowCode && readString(item.code) === rowCode) ||
+            (rowTableName && readString(item.table_name) === rowTableName),
+        );
+        if (!table) {
+          throw new Error('未找到所选实体的字段定义');
+        }
+
+        return {
+          id: readString(table.id, rowId),
+          code: readString(table.code, readString(table.table_name, rowCode)),
+          title: readString(
+            table.title,
+            readString(row.title, readString(table.code, readString(table.table_name))),
+          ),
           fullName: readString(
             table.full_name,
             [readString(table.schema_name), readString(table.table_name)].filter(Boolean).join('.'),
@@ -1662,23 +1631,25 @@ const ServiceComponent = defineComponent({
                 readBoolean(column.is_primary_key) ||
                 readString(column.column_name) === readString(table.primary_key),
             })),
-        }));
+        };
       }
 
-      const views = await serviceApi.invoke<unknown[]>('entityDesign', 'listViews', {
-        status: 'published',
+      const viewRows = await serviceApi.invoke<unknown[]>('entityDesign', 'listViews', {
+        id: readString(row.id),
       });
-      const viewRows = Array.isArray(views) ? views.filter(isPlainRecord) : [];
-      const columnGroups = await Promise.all(
-        viewRows.map(async (view) => {
-          const columns = await serviceApi.invoke<unknown[]>('entityDesign', 'listViewColumns', {
-            id: readString(view.id),
-          });
-          return Array.isArray(columns) ? columns.filter(isPlainRecord) : [];
-        }),
-      );
+      const view = Array.isArray(viewRows) ? viewRows.find(isPlainRecord) : undefined;
+      if (!view) {
+        throw new Error('未找到所选视图');
+      }
+      if (readString(view.status) !== 'published') {
+        throw new Error('只能关联已发布的视图');
+      }
+      const columnRows = await serviceApi.invoke<unknown[]>('entityDesign', 'listViewColumns', {
+        id: readString(view.id),
+      });
+      const columns = Array.isArray(columnRows) ? columnRows.filter(isPlainRecord) : [];
 
-      return viewRows.map((view, index) => ({
+      return {
         id: readString(view.id),
         code: readString(view.code, readString(view.view_name)),
         title: readString(view.title, readString(view.code, readString(view.view_name))),
@@ -1687,7 +1658,7 @@ const ServiceComponent = defineComponent({
           [readString(view.schema_name), readString(view.view_name)].filter(Boolean).join('.'),
         ),
         status: readString(view.status),
-        columns: columnGroups[index].map((column) => ({
+        columns: columns.map((column) => ({
           field: readString(column.column_name),
           title: readString(
             column.label,
@@ -1696,7 +1667,7 @@ const ServiceComponent = defineComponent({
           dataType: readString(column.data_type),
           primaryKey: readString(column.column_name) === 'id',
         })),
-      }));
+      };
     };
 
     const openSourcePicker = async (kind: GridDesignerSourceKind) => {
@@ -1706,15 +1677,9 @@ const ServiceComponent = defineComponent({
       const kindLabel = kind === 'entity' ? '实体' : '视图';
 
       try {
-        const sourceOptions = await loadSourceOptions(kind);
-        if (!sourceOptions.length) {
-          ElMessage.warning(`暂无可关联${kindLabel}`);
-          return;
-        }
-
         const result = await confirmLowCodePage({
-          page: createSourcePickerPage(kind, sourceOptions),
-          includeData: false,
+          pageCode: gridDesignerSourcePageCodes[kind],
+          includeData: true,
           serviceApi: getServiceApi(),
           locale: 'zh-CN',
           title: `关联${kindLabel}`,
@@ -1727,12 +1692,12 @@ const ServiceComponent = defineComponent({
         });
         if (result.action === 'cancel' || result.action === 'close') return;
 
-        const sourceId = readSourceIdFromConfirmPayload(result.payload);
-        const source = sourceOptions.find((item) => item.id === sourceId);
-        if (!source) {
+        const row = readSourceRowFromConfirmPayload(result.payload);
+        if (!row) {
           ElMessage.warning(`请选择要关联的${kindLabel}`);
           return;
         }
+        const source = await loadSelectedSource(kind, row);
         if (!applySource(source)) return;
         ElMessage.success(`已关联${kindLabel}，新增或覆盖 ${source.columns.length} 个字段`);
       } catch (error) {
@@ -1872,6 +1837,9 @@ const ServiceComponent = defineComponent({
         content: createColumnAdvancedDialogContent(column),
         onConfirm: (nextValue) => {
           Object.assign(column, nextValue);
+          column.editType = readString(
+            isPlainRecord(column.editRender) ? column.editRender.name : '',
+          );
           onApply?.(column);
           selectColumn(column);
         },
@@ -2011,6 +1979,13 @@ const ServiceComponent = defineComponent({
     const createColumnDesignerArrayColumns = (): ArrayEditorColumn[] => [
       { field: 'field', title: 'field', minWidth: 150 },
       { field: 'title', title: 'title', minWidth: 150 },
+      {
+        field: 'editType',
+        title: '编辑类型',
+        component: 'vxe-select',
+        width: 180,
+        options: toArrayTableOptions(columnEditTypeOptions),
+      },
       {
         field: 'type',
         title: 'type',
@@ -2157,6 +2132,8 @@ const ServiceComponent = defineComponent({
                 row: GridDesignerColumn;
                 rows: GridDesignerColumn[];
               }) => {
+                const rowIndex = rows.indexOf(row);
+                Object.assign(row, normalizeColumn(row, rowIndex >= 0 ? rowIndex : 0));
                 selectColumn(row);
                 openColumnAdvancedDialog(row, () => syncColumnsFromRows(rows));
               },

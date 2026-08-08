@@ -93,7 +93,16 @@ try {
     const rendererSource = await fetch(
       new URL(rendererMatch[0], rendererUrl),
     ).then((response) => response.text());
-    const workerMatch = rendererSource.match(/\/assets\/script-runtime\.worker-[^"'`]+\.js/);
+    const rendererImports = [
+      ...rendererSource.matchAll(/(?:from|import)\s*["'](\.\/[^"']+\.js)["']/g),
+    ].map((match) => new URL(match[1], rendererUrl));
+    const candidateSources = [rendererSource];
+    for (const candidateUrl of rendererImports) {
+      candidateSources.push(await fetch(candidateUrl).then((response) => response.text()));
+    }
+    const workerMatch = candidateSources
+      .map((source) => source.match(/\/assets\/script-runtime\.worker-[^"'`]+\.js/))
+      .find(Boolean);
     if (!workerMatch) throw new Error('Script worker asset was not found.');
 
     const worker = new Worker(workerMatch[0], { type: 'module' });

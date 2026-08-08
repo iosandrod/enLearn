@@ -49,6 +49,14 @@ type PostData = Record<string, unknown>;
 
 const WORKFLOW_JOB_TYPES = new Set(['once', 'cron', 'interval', 'manual', 'service_task']);
 
+const WORKFLOW_JOB_RUN_STATUS_LABELS: Record<string, string> = {
+  queued: '排队中',
+  running: '运行中',
+  succeeded: '成功',
+  failed: '失败',
+  canceled: '已取消'
+};
+
 const RESOURCE_LIST_FIELDS: Record<string, string[]> = {
   wf_model: ['id', 'code', 'name', 'documentType', 'status'],
   wf_model_version: ['id', 'modelId', 'version'],
@@ -140,6 +148,15 @@ function mapWorkflowResult(resourceName: string, value: unknown) {
   return Array.isArray(value)
     ? value.map((item) => mapWorkflowRow(resourceName, item))
     : mapWorkflowRow(resourceName, value);
+}
+
+function timestampDurationMs(startedAt: unknown, finishedAt: unknown) {
+  if (typeof startedAt !== 'string' || typeof finishedAt !== 'string') return null;
+  const started = Date.parse(startedAt);
+  const finished = Date.parse(finishedAt);
+  return Number.isFinite(started) && Number.isFinite(finished)
+    ? Math.max(0, finished - started)
+    : null;
 }
 
 function resolveListQuery(postData: PostData) {
@@ -259,7 +276,7 @@ export class WorkflowService extends BaseService {
           context
         ),
       jobs: (postData, context) => this.listResource('wf_job', postData, context),
-      jobRuns: (postData, context) => this.listResource('wf_job_run', postData, context),
+      jobRuns: (postData, context) => this.listJobRuns(postData, context),
       todoTasks: (postData, context) =>
         this.runtimeService.listTodoTasks(
           this.resolveActor(context),
@@ -624,6 +641,50 @@ export class WorkflowService extends BaseService {
     context: ServiceContext
   ) {
     return this.listItems(normalizeResourceListInput(resourceName, postData), context);
+  }
+
+  private async listJobRuns(postData: PostData, context: ServiceContext) {
+    const rows = (await this.listResource(
+      'wf_job_run',
+      postData,
+      context
+    )) as Array<Record<string, unknown>>;
+    const jobIds = [...new Set(
+      rows
+        .map((row) => readOptionalString(row.jobId ?? row.job_id))
+        .filter(Boolean)
+    )];
+    const jobs = jobIds.length
+      ? (await this.listResource(
+          'wf_job',
+          {
+            filters: { id: { op: 'in', value: jobIds } },
+            limit: Math.min(jobIds.length, 200)
+          },
+          context
+        )) as Array<Record<string, unknown>>
+      : [];
+    const jobsById = new Map(jobs.map((job) => [String(job.id ?? ''), job]));
+
+    return rows.map((row) => {
+      const jobId = readOptionalString(row.jobId ?? row.job_id);
+      const job = jobsById.get(jobId);
+      const status = readOptionalString(row.status);
+      const startedAt = row.startedAt ?? row.started_at;
+      const finishedAt = row.finishedAt ?? row.finished_at;
+      return {
+        ...row,
+        job_name: job?.name ?? '',
+        job_code: job?.code ?? '',
+        status_label: WORKFLOW_JOB_RUN_STATUS_LABELS[status] ?? status,
+        duration_ms: timestampDurationMs(startedAt, finishedAt),
+        trigger_run_id: row.triggerRunId ?? row.trigger_run_id ?? null,
+        error_message: row.errorMessage ?? row.error_message ?? null,
+        started_at: startedAt ?? null,
+        finished_at: finishedAt ?? null,
+        created_at: row.createdAt ?? row.created_at ?? null
+      };
+    });
   }
 
   private async assertTargetAccountUser(

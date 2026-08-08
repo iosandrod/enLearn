@@ -92,7 +92,7 @@ async function main() {
   );
   await assertRpc(
     'validateView',
-    { definition_sql: 'select id from public.sales_orders' },
+    { sql: 'select id from public.sales_orders' },
     'entity_design_validate_view',
     { definition_sql: 'select id from public.sales_orders' }
   );
@@ -106,7 +106,8 @@ async function main() {
       title: 'Sales order summary',
       description: 'Published sales orders',
       definitionSql: 'select id from public.sales_orders',
-      metadata: { domain: 'sales' }
+      metadata: { domain: 'sales' },
+      columns: [{ column_name: 'id', ordinal_position: 1 }]
     },
     'entity_design_save_view',
     {
@@ -119,7 +120,10 @@ async function main() {
       definition_sql: 'select id from public.sales_orders',
       status: null,
       security_invoker: true,
-      metadata: { domain: 'sales' }
+      metadata: {
+        domain: 'sales',
+        columns: [{ column_name: 'id', ordinal_position: 1 }]
+      }
     }
   );
   await assertRpc(

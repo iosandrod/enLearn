@@ -21,7 +21,7 @@ export function createRouter(): Router {
         path: '/',
         component: RuntimePage,
         meta: {
-          title: '低代码运行时',
+          title: 'MES 工作台',
         },
       },
       {
@@ -29,10 +29,19 @@ export function createRouter(): Router {
         component: TableDemoPage,
         meta: {
           title: '虚拟表格演示',
+          public: true,
+          standalone: true,
         },
       },
       {
         path: '/page/:code',
+        component: RuntimePage,
+        meta: {
+          title: '业务页面',
+        },
+      },
+      {
+        path: '/runtime',
         component: RuntimePage,
         meta: {
           title: '业务页面',

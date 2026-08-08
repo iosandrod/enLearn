@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Low-code context drawer smoke</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      #app {
+        padding: 24px;
+        box-sizing: border-box;
+      }
+
+      #result {
+        position: fixed;
+        z-index: -1;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick, ref } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'remixicon/fonts/remixicon.css';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import GlobalDialogHost from '../../packages/lowcode-framework/src/components/GlobalDialogHost.tsx';
+      import LcMonacoEditor from '../../packages/lowcode-framework/src/lowcode/form-materials/lc-monaco-editor/index.vue';
+      import { openGlobalDialog } from '../../packages/lowcode-framework/src/runtime/global-dialog-core.ts';
+      import { registerLowCodeScriptApi } from '../../packages/lowcode-framework/src/runtime/scripts.ts';
+
+      registerLowCodeScriptApi('records.allowed', {
+        description: '允许调用的记录 API',
+        signature: 'this.$api.invoke("records.allowed")',
+        insertText: 'await this.$api.invoke("records.allowed", {});',
+        handler: () => true,
+      });
+
+      const source = {
+        page: {
+          id: 'page-browser',
+          code: 'records',
+          route: '/records',
+          title: '记录页面',
+          schema: {
+            code: 'records',
+            route: '/records',
+            title: '记录页面',
+            dataSources: { records: { key: 'records' } },
+            blocks: [
+              {
+                id: 'records-form',
+                kind: 'form',
+                title: '记录表单',
+                schema: {
+                  fields: [
+                    { field: 'name', label: '名称', component: 'vxe-input' },
+                  ],
+                  actions: [],
+                },
+              },
+              {
+                id: 'records-grid',
+                kind: 'grid',
+                title: '记录表格',
+                schema: {
+                  grid: { columns: [{ field: 'id', title: '编号' }] },
+                },
+              },
+            ],
+            overlays: [
+              {
+                id: 'record-dialog',
+                kind: 'modal',
+                title: '记录弹框',
+                resultNode: 'record-dialog-form',
+                blocks: [
+                  {
+                    id: 'record-dialog-form',
+                    kind: 'form',
+                    schema: { fields: [], actions: [] },
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        data: { records: [{ id: 1, name: 'Ada' }] },
+        forms: { 'records-form': { name: 'Ada' } },
+        grids: { 'records-grid': { currentRow: { id: 1, name: 'Ada' } } },
+        apiNames: ['records.allowed'],
+        capabilities: ['api.invoke', 'action.execute', 'form.patch', 'message.info'],
+      };
+
+      const field = {
+        field: 'code',
+        label: '执行脚本',
+        component: 'lc-monaco-editor',
+        props: {
+          dialog: false,
+          height: '360px',
+          language: 'javascript',
+          scriptThisType: 'LowCodeButtonScriptThis',
+          contextDrawer: true,
+          contextDrawerTitle: '当前页面上下文',
+          contextSource: source,
+          editorOptions: { automaticLayout: false },
+        },
+      };
+
+      const state = {
+        code: ref('const selected = "replace-me";'),
+        readonlyCode: ref('readonly-value'),
+      };
+
+      const Body = defineComponent({
+        setup() {
+          return () => h('div', { class: 'browser-context-smoke-body' }, [
+            h(LcMonacoEditor, {
+              field,
+              modelValue: state.code.value,
+              'onUpdate:modelValue': (value) => { state.code.value = value; },
+            }),
+          ]);
+        },
+      });
+
+      const App = defineComponent({
+        setup() {
+          return () => h(GlobalDialogHost);
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+
+      window.__contextDrawerSmoke = {
+        source,
+        field,
+        state,
+        openEditableDialog() {
+          void openGlobalDialog({
+            id: 'browser-context-dialog',
+            title: '编辑按钮执行脚本',
+            width: 'min(900px, calc(100vw - 32px))',
+            height: 'min(600px, calc(100vh - 32px))',
+            body: () => h(Body),
+            actions: [
+              { code: 'cancel', label: '取消', role: 'cancel' },
+              { code: 'confirm', label: '确定', role: 'confirm', status: 'primary' },
+            ],
+          });
+        },
+        openReadonlyDialog() {
+          const readonlyField = {
+            ...field,
+            props: { ...field.props, readonly: true },
+          };
+          void openGlobalDialog({
+            id: 'browser-readonly-context-dialog',
+            title: '查看按钮执行脚本',
+            width: 'min(900px, calc(100vw - 32px))',
+            height: 'min(600px, calc(100vh - 32px))',
+            body: () => h(LcMonacoEditor, {
+              field: readonlyField,
+              modelValue: state.readonlyCode.value,
+              'onUpdate:modelValue': (value) => { state.readonlyCode.value = value; },
+            }),
+            actions: [{ code: 'cancel', label: '关闭', role: 'cancel' }],
+          });
+        },
+        selectText(text) {
+          const editor = window.__lcMonacoEditors?.[0];
+          const model = editor?.getModel();
+          if (!editor || !model) return false;
+          const start = model.getValue().indexOf(text);
+          if (start < 0) return false;
+          const startPosition = model.getPositionAt(start);
+          const endPosition = model.getPositionAt(start + text.length);
+          editor.setSelection({
+            startLineNumber: startPosition.lineNumber,
+            startColumn: startPosition.column,
+            endLineNumber: endPosition.lineNumber,
+            endColumn: endPosition.column,
+          });
+          editor.focus();
+          return true;
+        },
+      };
+
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

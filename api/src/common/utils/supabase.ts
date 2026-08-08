@@ -23,7 +23,8 @@ type CacheEntry<T> = {
   value: Promise<T>;
 };
 
-const AUTH_CACHE_TTL_MS = 10 * 60_000;
+const CURRENT_USER_CACHE_TTL_MS = 10 * 60_000;
+const USER_AUTHORIZATION_CACHE_TTL_MS = 60_000;
 const AUTH_CACHE_MAX_ENTRIES = 200;
 const currentUserCache = new Map<string, CacheEntry<CurrentUserResult>>();
 const userAuthorizationCache = new Map<string, CacheEntry<UserAuthorization>>();
@@ -244,7 +245,8 @@ function trimCache<T>(cache: Map<string, CacheEntry<T>>) {
 function readCachedPromise<T>(
   cache: Map<string, CacheEntry<T>>,
   key: string,
-  factory: () => Promise<T>
+  factory: () => Promise<T>,
+  ttlMs: number,
 ) {
   trimCache(cache);
 
@@ -259,7 +261,7 @@ function readCachedPromise<T>(
     throw error;
   });
   cache.set(key, {
-    expiresAt: now + AUTH_CACHE_TTL_MS,
+    expiresAt: now + ttlMs,
     value
   });
 
@@ -351,7 +353,12 @@ export async function getCurrentUser(context: ServiceContext): Promise<CurrentUs
   };
 
   return cacheKey
-    ? readCachedPromise(currentUserCache, cacheKey, loadCurrentUser)
+    ? readCachedPromise(
+        currentUserCache,
+        cacheKey,
+        loadCurrentUser,
+        CURRENT_USER_CACHE_TTL_MS,
+      )
     : loadCurrentUser();
 }
 
@@ -366,8 +373,11 @@ export async function getUserAuthorization(
   }
 
   if (cacheKey) {
-    return readCachedPromise(userAuthorizationCache, cacheKey, () =>
-      loadUserAuthorization(client, userId, options.accountId)
+    return readCachedPromise(
+      userAuthorizationCache,
+      cacheKey,
+      () => loadUserAuthorization(client, userId, options.accountId),
+      USER_AUTHORIZATION_CACHE_TTL_MS,
     );
   }
 
@@ -387,6 +397,10 @@ export function clearUserAuthorizationCache(userId: string) {
   for (const key of userAuthorizationCache.keys()) {
     if (key.startsWith(prefix)) userAuthorizationCache.delete(key);
   }
+}
+
+export function clearAllUserAuthorizationCaches() {
+  userAuthorizationCache.clear();
 }
 
 async function loadUserAuthorization(

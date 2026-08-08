@@ -7,6 +7,9 @@ import MobileSection from './mobile-section.vue';
 import MobileStatCard from './mobile-stat-card.vue';
 import MobileTabs from './mobile-tabs.vue';
 import MobileText from './mobile-text.vue';
+import MobileModal from './mobile-modal.vue';
+import MobileDrawer from './mobile-drawer.vue';
+import MobileTree from './mobile-tree.vue';
 import { registerMobileMaterial } from '../material-registry';
 
 let registered = false;
@@ -27,6 +30,9 @@ export function registerDefaultMobileMaterials() {
     { type: 'tabs', component: MobileTabs },
     { type: 'toolbar', component: MobileActionGroup },
     { type: 'buttonGroup', component: MobileActionGroup },
+    { type: 'modal', component: MobileModal },
+    { type: 'drawer', component: MobileDrawer },
+    { type: 'tree', component: MobileTree },
   ].forEach((material) => {
     registerMobileMaterial({
       ...material,

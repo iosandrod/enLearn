@@ -5,6 +5,7 @@
     :resolved-data="resolvedData"
     :form-models="formModels"
     :active-action-codes="activeActionCodes"
+    :grid-states="gridStates"
     @runtime-event="forwardRuntimeEvent"
   />
   <MobileVirtualTable
@@ -13,6 +14,7 @@
     :resolved-data="resolvedData"
     :form-models="formModels"
     :active-action-codes="activeActionCodes"
+    :grid-states="gridStates"
     @runtime-event="forwardRuntimeEvent"
   />
 </template>

@@ -251,15 +251,56 @@ as $function$
 declare
   v_sql text;
   v_plan jsonb;
+  v_columns jsonb;
+  v_temp_view_name text := pg_catalog.format(
+    'entity_view_analysis_%s_%s',
+    pg_catalog.pg_backend_pid(),
+    pg_catalog.txid_current()
+  );
 begin
   perform entity_view_private.assert_manage_permission();
   v_sql := entity_view_private.normalize_definition(p_sql);
 
   execute 'explain (format json, costs false) ' || v_sql into v_plan;
+  begin
+    execute pg_catalog.format('create temporary view %I as %s', v_temp_view_name, v_sql);
+
+    select coalesce(
+      pg_catalog.jsonb_agg(
+        pg_catalog.jsonb_build_object(
+          'column_name', attribute.attname,
+          'ordinal_position', attribute.attnum,
+          'data_type', pg_catalog.format_type(attribute.atttypid, attribute.atttypmod),
+          'udt_name', data_type.typname,
+          'is_nullable', case when attribute.attnotnull then 'NO' else 'YES' end
+        ) order by attribute.attnum
+      ),
+      '[]'::jsonb
+    )
+    into v_columns
+    from pg_catalog.pg_attribute attribute
+    join pg_catalog.pg_class relation on relation.oid = attribute.attrelid
+    join pg_catalog.pg_type data_type on data_type.oid = attribute.atttypid
+    where relation.relnamespace = pg_catalog.pg_my_temp_schema()
+      and relation.relname = v_temp_view_name
+      and attribute.attnum > 0
+      and not attribute.attisdropped;
+
+    execute pg_catalog.format('drop view pg_temp.%I', v_temp_view_name);
+  exception when others then
+    begin
+      execute pg_catalog.format('drop view if exists pg_temp.%I', v_temp_view_name);
+    exception when others then
+      null;
+    end;
+    raise;
+  end;
+
   return pg_catalog.jsonb_build_object(
     'valid', true,
     'definitionSql', v_sql,
-    'plan', v_plan
+    'plan', v_plan,
+    'columns', v_columns
   );
 end;
 $function$;
@@ -351,15 +392,21 @@ begin
   select coalesce(pg_catalog.jsonb_agg(row_data order by row_data->>'updated_at' desc), '[]'::jsonb)
   into v_result
   from (
-    select pg_catalog.to_jsonb(managed_view)
+      select pg_catalog.to_jsonb(managed_view)
       || pg_catalog.jsonb_build_object(
         'full_name', managed_view.schema_name || '.' || managed_view.view_name,
+        'columns', case
+          when pg_catalog.jsonb_typeof(managed_view.metadata->'columns') = 'array'
+            and pg_catalog.jsonb_array_length(managed_view.metadata->'columns') > 0
+            then managed_view.metadata->'columns'
+          else coalesce(column_metadata.columns, '[]'::jsonb)
+        end,
         'exists_in_database', physical_view.oid is not null,
         'database_definition', case
           when physical_view.oid is not null then pg_catalog.pg_get_viewdef(physical_view.oid, true)
           else null
         end,
-        'column_count', coalesce(column_count.column_count, 0),
+        'column_count', coalesce(column_metadata.column_count, 0),
         'definition_sql_preview', case
           when pg_catalog.length(managed_view.definition_sql) > 180
             then pg_catalog.left(managed_view.definition_sql, 177) || '...'
@@ -374,12 +421,26 @@ begin
      and physical_view.relname = managed_view.view_name
      and physical_view.relkind = 'v'
     left join (
-      select columns.table_schema, columns.table_name, pg_catalog.count(*)::integer as column_count
+      select
+        columns.table_schema,
+        columns.table_name,
+        pg_catalog.count(*)::integer as column_count,
+        pg_catalog.jsonb_agg(
+          pg_catalog.jsonb_build_object(
+            'schema_name', columns.table_schema,
+            'view_name', columns.table_name,
+            'column_name', columns.column_name,
+            'ordinal_position', columns.ordinal_position,
+            'data_type', columns.data_type,
+            'udt_name', columns.udt_name,
+            'is_nullable', columns.is_nullable
+          ) order by columns.ordinal_position
+        ) as columns
       from information_schema.columns columns
       group by columns.table_schema, columns.table_name
-    ) column_count
-      on column_count.table_schema = managed_view.schema_name
-     and column_count.table_name = managed_view.view_name
+    ) column_metadata
+      on column_metadata.table_schema = managed_view.schema_name
+     and column_metadata.table_name = managed_view.view_name
     where (v_id is null or managed_view.id = v_id)
       and (v_code is null or managed_view.code = v_code)
       and (v_schema_name is null or managed_view.schema_name = v_schema_name)
@@ -428,6 +489,24 @@ begin
   from information_schema.columns columns
   where columns.table_schema = v_view.schema_name
     and columns.table_name = v_view.view_name;
+
+  if pg_catalog.jsonb_array_length(v_result) = 0
+    and pg_catalog.jsonb_typeof(v_view.metadata->'columns') = 'array' then
+    select coalesce(
+      pg_catalog.jsonb_agg(
+        saved_column.column_data
+        || pg_catalog.jsonb_build_object(
+          'view_id', v_view.id,
+          'schema_name', v_view.schema_name,
+          'view_name', v_view.view_name
+        ) order by saved_column.ordinality
+      ),
+      '[]'::jsonb
+    )
+    into v_result
+    from pg_catalog.jsonb_array_elements(v_view.metadata->'columns')
+      with ordinality as saved_column(column_data, ordinality);
+  end if;
 
   return v_result;
 end;
@@ -940,6 +1019,18 @@ insert into public.lowcode_pages (
     "layout": "dashboard",
     "status": "published",
     "keepAlive": false,
+    "apis": {
+      "analyzeViewSql": {
+        "serviceName": "entityDesign",
+        "serviceMethod": "validateView",
+        "method": "POST",
+        "resultPath": "columns"
+      }
+    },
+    "scriptPolicy": {
+      "apiNames": [],
+      "capabilities": ["action.execute", "http.execute"]
+    },
     "dataSources": {
       "managedView": {
         "key": "managedView",
@@ -968,61 +1059,87 @@ insert into public.lowcode_pages (
         "actions": [
           { "code": "back", "label": "返回列表", "icon": "ri-arrow-left-line", "route": "/dashboard/data/views" },
           {
-            "code": "validate",
-            "label": "验证 SQL",
-            "status": "info",
-            "icon": "ri-check-double-line",
-            "directives": [
-              { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "validateView", "postData": { "definitionSql": "{{ forms.entity-view-edit-form.definition_sql }}" }, "assignTo": "viewValidation" },
-              { "type": "showMessage", "status": "success", "message": "SQL 验证通过。" }
-            ]
+            "code": "refresh",
+            "label": "重新载入",
+            "icon": "ri-refresh-line"
           },
           {
-            "code": "publish",
-            "label": "发布视图",
-            "status": "primary",
-            "icon": "ri-rocket-line",
+            "code": "save-view",
+            "label": "保存",
+            "icon": "ri-save-3-line",
             "directives": [
-              { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "saveView", "postData": { "id": "{{ forms.entity-view-edit-form.id }}", "code": "{{ forms.entity-view-edit-form.code }}", "schemaName": "{{ forms.entity-view-edit-form.schema_name }}", "viewName": "{{ forms.entity-view-edit-form.view_name }}", "title": "{{ forms.entity-view-edit-form.title }}", "description": "{{ forms.entity-view-edit-form.description }}", "definitionSql": "{{ forms.entity-view-edit-form.definition_sql }}" }, "assignTo": "managedView" },
+              { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "saveView", "postData": { "id": "{{ forms.entity-view-edit-form.id }}", "code": "{{ forms.entity-view-edit-form.code }}", "schemaName": "{{ forms.entity-view-edit-form.schema_name }}", "viewName": "{{ forms.entity-view-edit-form.view_name }}", "title": "{{ forms.entity-view-edit-form.title }}", "description": "{{ forms.entity-view-edit-form.description }}", "definitionSql": "{{ forms.entity-view-edit-form.definition_sql }}", "metadata": { "columns": "{{ data.editViewColumns }}" } }, "assignTo": "managedView" },
               { "type": "setFormValues", "blockId": "entity-view-edit-form", "mode": "merge", "values": { "id": "{{ data.managedView.id }}", "status": "{{ data.managedView.status }}" } },
-              { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "publishView", "postData": { "id": "{{ forms.entity-view-edit-form.id }}" }, "assignTo": "managedView" },
-              { "type": "setFormField", "blockId": "entity-view-edit-form", "field": "status", "value": "published" },
               { "type": "navigate", "route": "/dashboard/data/views/edit?id={{ forms.entity-view-edit-form.id }}" },
-              { "type": "showMessage", "status": "success", "message": "视图已发布。" }
+              { "type": "showMessage", "status": "success", "message": "视图已保存。" }
             ]
           },
           {
-            "code": "archive",
-            "label": "归档",
-            "status": "warning",
-            "icon": "ri-archive-line",
-            "directives": [
-              { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "archiveView", "postData": { "id": "{{ forms.entity-view-edit-form.id }}" }, "assignTo": "managedView" },
-              { "type": "setFormField", "blockId": "entity-view-edit-form", "field": "status", "value": "archived" },
-              { "type": "showMessage", "status": "success", "message": "视图已归档，数据库对象已移除。" }
-            ]
+            "code": "create-view-from-sql",
+            "label": "新增",
+            "status": "primary",
+            "icon": "ri-add-line",
+            "script": "async function main() {\n  const formData = await this.executeAction({\n    node: 'sql-dialog',\n    method: 'open'\n  });\n  if (!formData) return;\n\n  const columns = await this.executeHttp({\n    api: 'analyzeViewSql',\n    method: 'POST',\n    body: { sql: formData.sql }\n  });\n\n  await this.executeAction({\n    node: 'entity-view-edit-form',\n    method: 'setData',\n    data: { definition_sql: formData.sql }\n  });\n\n  await this.executeAction({\n    node: 'entity-view-edit-columns-grid',\n    method: 'reloadData',\n    data: columns\n  });\n}"
           },
           {
-            "code": "delete",
-            "label": "删除",
-            "status": "danger",
-            "icon": "ri-delete-bin-line",
-            "directives": [
+            "code": "more",
+            "label": "更多",
+            "showDropdownIcon": true,
+            "children": [
               {
-                "type": "openGlobalDialog",
-                "config": {
-                  "title": "删除视图",
-                  "width": 460,
-                  "showFooter": true,
-                  "content": { "type": "container", "tag": "p", "props": { "textContent": "删除后会同时移除数据库视图和元数据，且不能恢复。" } },
-                  "actions": [
-                    { "code": "cancel", "label": "取消", "role": "cancel" },
-                    { "code": "confirm", "label": "确认删除", "role": "confirm", "status": "danger" }
-                  ]
-                },
-                "confirmDirectives": [
-                  { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "deleteView", "postData": { "id": "{{ forms.entity-view-edit-form.id }}" } },
-                  { "type": "navigate", "route": "/dashboard/data/views" }
+                "code": "validate",
+                "label": "验证 SQL",
+                "icon": "ri-check-double-line",
+                "directives": [
+                  { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "validateView", "postData": { "definitionSql": "{{ forms.entity-view-edit-form.definition_sql }}" }, "assignTo": "viewValidation" },
+                  { "type": "showMessage", "status": "success", "message": "SQL 验证通过。" }
+                ]
+              },
+              {
+                "code": "publish",
+                "label": "发布视图",
+                "icon": "ri-rocket-line",
+                "directives": [
+                  { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "saveView", "postData": { "id": "{{ forms.entity-view-edit-form.id }}", "code": "{{ forms.entity-view-edit-form.code }}", "schemaName": "{{ forms.entity-view-edit-form.schema_name }}", "viewName": "{{ forms.entity-view-edit-form.view_name }}", "title": "{{ forms.entity-view-edit-form.title }}", "description": "{{ forms.entity-view-edit-form.description }}", "definitionSql": "{{ forms.entity-view-edit-form.definition_sql }}", "metadata": { "columns": "{{ data.editViewColumns }}" } }, "assignTo": "managedView" },
+                  { "type": "setFormValues", "blockId": "entity-view-edit-form", "mode": "merge", "values": { "id": "{{ data.managedView.id }}", "status": "{{ data.managedView.status }}" } },
+                  { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "publishView", "postData": { "id": "{{ forms.entity-view-edit-form.id }}" }, "assignTo": "managedView" },
+                  { "type": "setFormField", "blockId": "entity-view-edit-form", "field": "status", "value": "published" },
+                  { "type": "navigate", "route": "/dashboard/data/views/edit?id={{ forms.entity-view-edit-form.id }}" },
+                  { "type": "showMessage", "status": "success", "message": "视图已发布。" }
+                ]
+              },
+              {
+                "code": "archive",
+                "label": "归档",
+                "icon": "ri-archive-line",
+                "directives": [
+                  { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "archiveView", "postData": { "id": "{{ forms.entity-view-edit-form.id }}" }, "assignTo": "managedView" },
+                  { "type": "setFormField", "blockId": "entity-view-edit-form", "field": "status", "value": "archived" },
+                  { "type": "showMessage", "status": "success", "message": "视图已归档，数据库对象已移除。" }
+                ]
+              },
+              {
+                "code": "delete",
+                "label": "删除",
+                "icon": "ri-delete-bin-line",
+                "directives": [
+                  {
+                    "type": "openGlobalDialog",
+                    "config": {
+                      "title": "删除视图",
+                      "width": 460,
+                      "showFooter": true,
+                      "content": { "type": "container", "tag": "p", "props": { "textContent": "删除后会同时移除数据库视图和元数据，且不能恢复。" } },
+                      "actions": [
+                        { "code": "cancel", "label": "取消", "role": "cancel" },
+                        { "code": "confirm", "label": "确认删除", "role": "confirm", "status": "danger" }
+                      ]
+                    },
+                    "confirmDirectives": [
+                      { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "deleteView", "postData": { "id": "{{ forms.entity-view-edit-form.id }}" } },
+                      { "type": "navigate", "route": "/dashboard/data/views" }
+                    ]
+                  }
                 ]
               }
             ]
@@ -1032,16 +1149,16 @@ insert into public.lowcode_pages (
       {
         "id": "entity-view-edit-tabs",
         "kind": "tabs",
-        "defaultKey": "definition",
+        "defaultKey": "basic",
         "tabs": [
           {
-            "key": "definition",
-            "label": "视图定义",
+            "key": "basic",
+            "label": "基础信息",
             "blocks": [
               {
                 "id": "entity-view-edit-form",
                 "kind": "form",
-                "title": "基本信息与 SQL",
+                "title": "视图信息",
                 "sourceKey": "managedView",
                 "submitSourceKey": "managedView",
                 "initialValues": {
@@ -1057,19 +1174,45 @@ insert into public.lowcode_pages (
                 "schema": {
                   "columns": 4,
                   "fields": [
-                    { "field": "code", "label": "视图编码", "component": "vxe-input", "span": 2, "props": { "maxlength": 63, "clearable": true, "placeholder": "例如 sales_order_summary" }, "rules": [{ "required": true, "message": "请输入视图编码" }] },
-                    { "field": "title", "label": "视图名称", "component": "vxe-input", "span": 2, "props": { "maxlength": 120, "clearable": true, "placeholder": "请输入显示名称" }, "rules": [{ "required": true, "message": "请输入视图名称" }] },
+                    { "field": "title", "label": "视图名称", "component": "vxe-input", "span": 1, "props": { "maxlength": 120, "clearable": true, "placeholder": "请输入视图名称" }, "rules": [{ "required": true, "message": "请输入视图名称" }] },
+                    { "field": "code", "label": "视图编码", "component": "vxe-input", "span": 1, "props": { "maxlength": 63, "clearable": true, "placeholder": "例如 sales_order_summary" }, "rules": [{ "required": true, "message": "请输入视图编码" }] },
+                    { "field": "status", "label": "状态", "component": "vxe-select", "span": 1, "props": { "disabled": true }, "options": [{ "label": "草稿", "value": "draft" }, { "label": "已发布", "value": "published" }, { "label": "已归档", "value": "archived" }] },
                     { "field": "schema_name", "label": "Schema", "component": "vxe-input", "props": { "disabled": true } },
                     { "field": "view_name", "label": "数据库视图名", "component": "vxe-input", "span": 2, "props": { "maxlength": 63, "clearable": true, "placeholder": "仅允许字母、数字和下划线" }, "rules": [{ "required": true, "message": "请输入数据库视图名" }] },
-                    { "field": "status", "label": "状态", "component": "vxe-select", "props": { "disabled": true }, "options": [{ "label": "草稿", "value": "draft" }, { "label": "已发布", "value": "published" }, { "label": "已归档", "value": "archived" }] },
-                    { "field": "description", "label": "说明", "component": "vxe-textarea", "span": 4, "props": { "rows": 3, "maxlength": 500, "showWordCount": true, "resize": "vertical", "placeholder": "说明该视图的用途" } },
-                    { "field": "definition_sql", "label": "SELECT 定义", "component": "vxe-textarea", "span": 4, "help": "只允许单条 SELECT 或 WITH 查询；发布时使用 security_invoker=true 创建视图。", "props": { "rows": 18, "resize": "vertical", "placeholder": "select ..." }, "rules": [{ "required": true, "message": "请输入 SELECT 定义" }] }
+                    { "field": "definition_sql", "label": "SELECT 定义", "component": "lc-monaco-editor", "span": 2, "help": "只允许单条 SELECT 或 WITH 查询；发布时使用 security_invoker=true 创建视图。", "props": { "dialog": true, "language": "sql", "dialogTitle": "编辑 SELECT 定义", "editorHeight": "min(480px, calc(100vh - 250px))", "placeholder": "select ..." }, "rules": [{ "required": true, "message": "请输入 SELECT 定义" }] },
+                    { "field": "description", "label": "说明", "component": "vxe-input", "span": 4, "props": { "maxlength": 500, "clearable": true, "placeholder": "说明该视图的业务用途" } }
+                  ],
+                  "layout": [
+                    {
+                      "kind": "row",
+                      "columns": [
+                        { "span": 6, "blocks": [{ "kind": "field", "field": "title" }] },
+                        { "span": 6, "blocks": [{ "kind": "field", "field": "code" }] },
+                        { "span": 6, "blocks": [{ "kind": "field", "field": "status" }] },
+                        { "span": 6, "blocks": [{ "kind": "field", "field": "schema_name" }] }
+                      ]
+                    },
+                    {
+                      "kind": "row",
+                      "columns": [
+                        { "span": 12, "blocks": [{ "kind": "field", "field": "view_name" }] },
+                        { "span": 12, "blocks": [{ "kind": "field", "field": "definition_sql" }] }
+                      ]
+                    },
+                    { "kind": "field", "field": "description" }
                   ],
                   "actions": []
                 }
               }
             ]
-          },
+          }
+        ]
+      },
+      {
+        "id": "entity-view-columns-tabs",
+        "kind": "tabs",
+        "defaultKey": "columns",
+        "tabs": [
           {
             "key": "columns",
             "label": "视图字段",
@@ -1077,13 +1220,14 @@ insert into public.lowcode_pages (
               {
                 "id": "entity-view-edit-columns-grid",
                 "kind": "grid",
+                "title": "视图字段",
                 "sourceKey": "editViewColumns",
                 "schema": {
                   "grid": {
                     "border": true,
                     "stripe": true,
-                    "showOverflow": true,
-                    "height": 360,
+                    "showOverflow": "tooltip",
+                    "height": "360px",
                     "rowConfig": { "keyField": "column_name", "isCurrent": true },
                     "columns": [
                       { "field": "ordinal_position", "title": "序号", "width": 72, "align": "right" },
@@ -1099,26 +1243,47 @@ insert into public.lowcode_pages (
             ]
           }
         ]
-      },
+      }
+    ],
+    "overlays": [
       {
-        "id": "entity-view-save-actions",
-        "kind": "buttonGroup",
-        "align": "left",
-        "gap": 8,
-        "actions": [
+        "id": "sql-dialog",
+        "kind": "modal",
+        "title": "新增视图",
+        "width": 860,
+        "open": false,
+        "resultNode": "sql-dialog-form",
+        "confirmLabel": "分析 SQL",
+        "cancelLabel": "取消",
+        "blocks": [
           {
-            "code": "save-view",
-            "label": "保存",
-            "status": "primary",
-            "icon": "ri-save-3-line",
-            "directives": [
-              { "type": "invokeService", "serviceName": "entityDesign", "serviceMethod": "saveView", "postData": { "id": "{{ forms.entity-view-edit-form.id }}", "code": "{{ forms.entity-view-edit-form.code }}", "schemaName": "{{ forms.entity-view-edit-form.schema_name }}", "viewName": "{{ forms.entity-view-edit-form.view_name }}", "title": "{{ forms.entity-view-edit-form.title }}", "description": "{{ forms.entity-view-edit-form.description }}", "definitionSql": "{{ forms.entity-view-edit-form.definition_sql }}" }, "assignTo": "managedView" },
-              { "type": "setFormValues", "blockId": "entity-view-edit-form", "mode": "merge", "values": { "id": "{{ data.managedView.id }}", "status": "{{ data.managedView.status }}" } },
-              { "type": "navigate", "route": "/dashboard/data/views/edit?id={{ forms.entity-view-edit-form.id }}" },
-              { "type": "showMessage", "status": "success", "message": "视图已保存。" }
-            ]
+            "id": "sql-dialog-form",
+            "kind": "form",
+            "initialValues": { "sql": "select 1::integer as id" },
+            "schema": {
+              "columns": 1,
+              "fields": [
+                {
+                  "field": "sql",
+                  "label": "SELECT SQL",
+                  "component": "lc-monaco-editor",
+                  "span": 1,
+                  "props": {
+                    "language": "sql",
+                    "height": "360px",
+                    "minHeight": "260px",
+                    "placeholder": "select ..."
+                  },
+                  "rules": [
+                    { "required": true, "message": "请输入 SELECT SQL" }
+                  ]
+                }
+              ],
+              "actions": []
+            }
           }
-        ]
+        ],
+        "overlays": []
       }
     ]
   }

@@ -13,6 +13,7 @@ import { LowCodeModule } from '../lowcode-service/lowcode.module';
 import { NotificationModule } from '../notification-service/notification.module';
 import { PaymentModule } from '../payment-service/payment.module';
 import { PostsModule } from '../posts-service/posts.module';
+import { PlanningModule } from '../planning-service/planning.module';
 import { UserModule } from '../user-service/user.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { StandaloneServiceRouter } from './standalone-service-router.service';
@@ -30,6 +31,7 @@ import { StandaloneServiceRouter } from './standalone-service-router.service';
     EntityDesignModule,
     FilesModule,
     ChatModule,
+    PlanningModule,
     WorkflowModule
   ],
   controllers: [ServiceGatewayController],

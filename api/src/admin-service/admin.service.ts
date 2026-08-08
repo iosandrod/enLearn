@@ -6,8 +6,18 @@ import {
   type ServiceHooks
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
-import { createSupabaseClient, requireAdmin } from '../common/utils/supabase';
-import { listActiveAccountUserIds } from '../common/utils/account-context';
+import {
+  clearAllUserAuthorizationCaches,
+  createSupabaseClient,
+  getCurrentUser,
+  getUserAuthorization,
+  requireAdmin
+} from '../common/utils/supabase';
+import { listActiveAccountUserIds, requireActiveAccount } from '../common/utils/account-context';
+import {
+  ADMIN_NAVIGATION_SELECT,
+  selectAuthorizedNavigationRoutes
+} from './admin-navigation';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -65,6 +75,17 @@ function asRows(value: unknown): Record<string, unknown>[] {
 
 @Injectable()
 export class AdminService extends BaseService {
+  protected override async listItems(
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    if (this.isNavigationCompatibilityRequest(postData)) {
+      return this.listNavigationRoutes(context);
+    }
+
+    return super.listItems(postData, context);
+  }
+
   protected override async executeAction(
     method: string,
     postData: Record<string, unknown>,
@@ -72,6 +93,10 @@ export class AdminService extends BaseService {
   ) {
     if (method === 'listAccountLoginUsers') {
       return this.listAccountLoginUsers(context);
+    }
+
+    if (method === 'listNavigationRoutes') {
+      return this.listNavigationRoutes(context);
     }
 
     return super.executeAction(method, postData, context);
@@ -477,11 +502,22 @@ export class AdminService extends BaseService {
   }
 
   protected override hooks(): ServiceHooks {
+    const clearAuthorizationCaches = () => {
+      clearAllUserAuthorizationCaches();
+    };
     return {
       admin_roles: {
-        beforeDelete: [this.resolveCodeDeleteId]
+        beforeDelete: [this.resolveCodeDeleteId],
+        afterCreate: [clearAuthorizationCaches],
+        afterUpdate: [clearAuthorizationCaches],
+        afterDelete: [clearAuthorizationCaches]
       },
-      admin_permissions: { beforeDelete: [this.resolveCodeDeleteId] },
+      admin_permissions: {
+        beforeDelete: [this.resolveCodeDeleteId],
+        afterCreate: [clearAuthorizationCaches],
+        afterUpdate: [clearAuthorizationCaches],
+        afterDelete: [clearAuthorizationCaches]
+      },
       admin_routes: {
         beforeDelete: [this.resolveCodeDeleteId]
       },
@@ -498,12 +534,30 @@ export class AdminService extends BaseService {
         beforeDelete: [this.resolveOptionItemDeleteId, this.preventDeleteSystemOptionItem],
         afterCreate: [this.attachOptionItemMetadataJson],
         afterUpdate: [this.attachOptionItemMetadataJson]
+      },
+      admin_user_roles: {
+        afterCreate: [clearAuthorizationCaches],
+        afterDelete: [clearAuthorizationCaches]
+      },
+      admin_role_permissions: {
+        afterCreate: [clearAuthorizationCaches],
+        afterDelete: [clearAuthorizationCaches]
       }
     };
   }
 
   private adminCrudPermissions(permission: string) {
     return { list: permission, create: permission, update: permission, delete: permission };
+  }
+
+  private isNavigationCompatibilityRequest(postData: Record<string, unknown>) {
+    const tableName = readOptionalString(postData.tableName ?? postData.table_name);
+    const resource = readOptionalString(postData.resource);
+    if (tableName !== 'admin_routes' || resource) return false;
+
+    const filters = isRecord(postData.filters) ? postData.filters : {};
+    const hasSearch = readOptionalString(postData.search) !== '';
+    return !hasSearch && Object.keys(filters).length === 0;
   }
 
   private async listAccountLoginUsers(context: ServiceContext) {
@@ -555,6 +609,32 @@ export class AdminService extends BaseService {
       nickname: profile.nickname,
       role: profile.role
     }));
+  }
+
+  private async listNavigationRoutes(context: ServiceContext) {
+    const activeAccount = await requireActiveAccount(context);
+    const { client, user } = await getCurrentUser(activeAccount.context);
+    const authorization = await getUserAuthorization(client, user.id, {
+      accountId: activeAccount.context.accountId
+    });
+    const adminClient = createSupabaseClient('admin', activeAccount.context);
+    const { data, error } = await adminClient
+      .from('admin_routes')
+      .select(ADMIN_NAVIGATION_SELECT)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true })
+      .limit(2000);
+
+    if (error) {
+      metadataTablesRequired(error);
+      throw new BadRequestException(error.message);
+    }
+
+    return selectAuthorizedNavigationRoutes(
+      data ?? [],
+      authorization.permissionCodes,
+      authorization.isLegacyAdmin
+    );
   }
 
   private resolveCodeDeleteId = async (ctx: HookContext) => {

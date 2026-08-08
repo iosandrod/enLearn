@@ -571,7 +571,9 @@ const leftPanelSchema = computed<LowCodeFormSchema>(() => ({
         movable: false,
         removable: false,
         rowKey: 'id',
-        height: 360,
+        height: '100%',
+        minHeight: 0,
+        maxHeight: '100%',
         actionWidth: 76,
         columns: [
           { field: 'title', title: '表名称', component: 'lc-text', minWidth: 150 },
@@ -588,17 +590,18 @@ const leftPanelSchema = computed<LowCodeFormSchema>(() => ({
   layout: [
     {
       kind: 'tabs',
-      defaultKey: 'table-detail',
+      fillRemaining: true,
+      defaultKey: 'table-list',
       tabs: [
-        {
-          key: 'table-detail',
-          label: tableForm.value.id ? '实体信息' : '新建实体',
-          blocks: [{ kind: 'field', field: 'table' }],
-        },
         {
           key: 'table-list',
           label: `实体列表 (${tables.value.length})`,
           blocks: [{ kind: 'field', field: 'tables' }],
+        },
+        {
+          key: 'table-detail',
+          label: tableForm.value.id ? '实体信息' : '新建实体',
+          blocks: [{ kind: 'field', field: 'table' }],
         },
       ],
     },
@@ -615,7 +618,9 @@ const rightPanelSchema = computed<LowCodeFormSchema>(() => ({
       help: '在表格中维护字段集合；点击画布字段或编辑表格行时，下方单列绑定会同步当前字段。',
       props: {
         ...(columnsTableDesignerSchema.value.fields.find((field) => field.field === 'columns')?.props ?? {}),
-        height: 320,
+        height: '100%',
+        minHeight: 0,
+        maxHeight: '100%',
         disabled: !selectedTable.value,
         onRowClick: handleColumnArrayRowClick,
       },
@@ -659,7 +664,9 @@ const rightPanelSchema = computed<LowCodeFormSchema>(() => ({
         movable: false,
         removable: false,
         rowKey: 'id',
-        height: 180,
+        height: '100%',
+        minHeight: 0,
+        maxHeight: '100%',
         actionWidth: 48,
         columns: [
           { field: 'source', title: '来源', component: 'lc-text', minWidth: 150 },
@@ -670,6 +677,35 @@ const rightPanelSchema = computed<LowCodeFormSchema>(() => ({
         onRowClick: handleRelationListRowClick,
         onRowAction: handleRelationListRowAction,
       },
+    },
+  ],
+  layout: [
+    {
+      kind: 'tabs',
+      fillRemaining: true,
+      defaultKey: 'column-list',
+      tabs: [
+        {
+          key: 'column-list',
+          label: `字段列表 (${selectedTable.value?.columns.length ?? 0})`,
+          blocks: [{ kind: 'field', field: 'columns' }],
+        },
+        {
+          key: 'column-detail',
+          label: '字段编辑',
+          blocks: [{ kind: 'field', field: 'columnDetail' }],
+        },
+        {
+          key: 'relation-list',
+          label: `关系列表 (${relations.value.length})`,
+          blocks: [{ kind: 'field', field: 'relations' }],
+        },
+        {
+          key: 'relation-detail',
+          label: '关系编辑',
+          blocks: [{ kind: 'field', field: 'relation' }],
+        },
+      ],
     },
   ],
   actions: [
@@ -685,6 +721,7 @@ const rightPanelSchema = computed<LowCodeFormSchema>(() => ({
 const leftPanelSchemas = computed<EntityDesignerFormPanel[]>(() => [
   {
     id: 'entity-left-schema',
+    className: 'entity-left-panel-section',
     kicker: 'Table',
     title: tableForm.value.id ? '编辑表' : '新建表',
     form: {
@@ -698,21 +735,16 @@ const leftPanelSchemas = computed<EntityDesignerFormPanel[]>(() => [
 const rightPanelSchemas = computed<EntityDesignerFormPanel[]>(() => [
   {
     id: 'entity-right-schema',
+    className: 'entity-right-panel-section',
     kicker: 'Column / Relation',
     title: '字段与关系',
     hint: selectedTable.value ? `当前表：${selectedTable.value.full_name}` : '选择一张表后维护字段集合。',
-    addAction: {
-      title: '新建列',
-      icon: 'ri-add-line',
-      disabled: !selectedTable.value,
-      onClick: startNewColumn,
-    },
     form: {
       model: rightPanelModel,
       schema: rightPanelSchema.value,
       optionSources: relationOptionSources.value,
       loading: savingColumn.value || savingRelation.value,
-      className: 'columns-table-form',
+      className: 'entity-right-tabs-form',
       onAction: handleRightPanelAction,
       onFieldChange: handleRightPanelFieldChange,
     },
@@ -1730,10 +1762,12 @@ onMounted(loadDesign);
 
 .entity-panel-left {
   border-right: 1px solid #d6dce5;
+  overflow: hidden;
 }
 
 .entity-panel-right {
   border-left: 1px solid #d6dce5;
+  overflow: hidden;
 }
 
 .panel-section {
@@ -1745,6 +1779,26 @@ onMounted(loadDesign);
   background: #ffffff;
   padding: 14px;
   box-shadow: 0 6px 18px rgb(15 23 42 / 4%);
+}
+
+.entity-left-panel-section,
+.entity-right-panel-section {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.entity-left-panel-section {
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.entity-right-panel-section {
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.entity-left-tabs-form,
+.entity-right-tabs-form {
+  height: 100%;
+  min-height: 0;
 }
 
 .panel-heading {
@@ -2223,6 +2277,13 @@ onMounted(loadDesign);
   .entity-panel-right {
     border: 0;
     border-bottom: 1px solid #d6dce5;
+  }
+
+  .entity-panel-left,
+  .entity-panel-right {
+    flex: none;
+    min-height: 65vh;
+    overflow: hidden;
   }
 
   .entity-flow-shell {

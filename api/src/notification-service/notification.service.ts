@@ -240,6 +240,25 @@ export class NotificationService extends BaseService {
           allowedFields: ['code', 'name', 'event_type', 'channel', 'title_template', 'content_template', 'status', 'metadata'],
           requiredFields: ['code', 'name', 'event_type', 'channel', 'title_template']
         }
+      },
+      notification_push_devices: {
+        tableName: 'notification_push_devices',
+        accountField: 'account_id',
+        ownerField: 'user_id',
+        list: {
+          defaultSorts: [{ field: 'updated_at', direction: 'desc' }],
+          defaultPageSize: 20,
+          maxPageSize: 100
+        },
+        create: {
+          allowedFields: ['account_id', 'user_id', 'token', 'platform', 'provider', 'device_id', 'app_version', 'status', 'last_seen_at'],
+          requiredFields: ['account_id', 'user_id', 'token', 'platform'],
+          userFields: { owner: 'user_id' }
+        },
+        update: {
+          allowedFields: ['provider', 'device_id', 'app_version', 'status', 'last_seen_at']
+        },
+        delete: {}
       }
     };
   }
@@ -271,6 +290,10 @@ export class NotificationService extends BaseService {
         return this.markAllRead(postData, context);
       case 'createSystemNotice':
         return this.createSystemNotice(postData, context);
+      case 'registerPushDevice':
+        return this.registerPushDevice(postData, context);
+      case 'unregisterPushDevice':
+        return this.unregisterPushDevice(postData, context);
       default:
         throw new BadRequestException(`Unsupported notification method: ${method}`);
     }
@@ -428,6 +451,59 @@ export class NotificationService extends BaseService {
       messages,
       count: messages.length
     };
+  }
+
+  private async registerPushDevice(postData: PostData, context: ServiceContext) {
+    const { user } = await getCurrentUser(context);
+    const accountId = getActiveAccountId(context);
+    await this.assertNotificationAccountUsers(context, [user.id]);
+    const token = readString(postData.token, 'token');
+    const platform = readString(postData.platform, 'platform');
+    if (!['android', 'ios'].includes(platform)) {
+      throw new BadRequestException('platform must be "android" or "ios".');
+    }
+    const rows = await this.safeListItems<Record<string, unknown>>({
+      resource: 'notification_push_devices',
+      filters: { account_id: accountId, user_id: user.id, token },
+      limit: 1
+    }, context);
+    const data = {
+      account_id: accountId,
+      user_id: user.id,
+      token,
+      platform,
+      provider: readOptionalString(postData.provider) || null,
+      device_id: readOptionalString(postData.deviceId ?? postData.device_id) || null,
+      app_version: readOptionalString(postData.appVersion ?? postData.app_version) || null,
+      status: 'active',
+      last_seen_at: new Date().toISOString()
+    };
+    const device = rows[0]?.id
+      ? await this.updateItem({
+          resource: 'notification_push_devices',
+          id: rows[0].id,
+          data
+        }, context)
+      : await this.createItem({ resource: 'notification_push_devices', data }, context);
+    return { success: true, device };
+  }
+
+  private async unregisterPushDevice(postData: PostData, context: ServiceContext) {
+    const { user } = await getCurrentUser(context);
+    const accountId = getActiveAccountId(context);
+    const token = readString(postData.token, 'token');
+    const rows = await this.safeListItems<Record<string, unknown>>({
+      resource: 'notification_push_devices',
+      filters: { account_id: accountId, user_id: user.id, token },
+      limit: 1
+    }, context);
+    if (!rows[0]?.id) return { success: true };
+    const device = await this.updateItem({
+      resource: 'notification_push_devices',
+      id: rows[0].id,
+      data: { status: 'inactive', last_seen_at: new Date().toISOString() }
+    }, context);
+    return { success: true, device };
   }
 
   private async resolveRecipients(postData: PostData, context: ServiceContext) {

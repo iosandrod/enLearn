@@ -1,14 +1,17 @@
 <template>
-  <div :class="['mobile-text-block', `is-${block.tone ?? 'default'}`]">
+  <div :class="['mobile-text-block', `is-${block.tone ?? 'default'}`]" :style="blockStyle">
     <span v-if="block.title" class="block-title">{{ block.title }}</span>
     <span class="block-copy">{{ block.content }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from '@vue/runtime-core';
+import { resolveMobileBlockStyle } from '../block-style';
 import type { MobileMaterialProps } from '../types';
 
-defineProps<MobileMaterialProps>();
+const props = defineProps<MobileMaterialProps>();
+const blockStyle = computed(() => resolveMobileBlockStyle(props.block.style));
 </script>
 
 <style scoped>

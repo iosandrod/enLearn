@@ -2148,3 +2148,31 @@ a {
     max-height: none;
   }
 }
+.flex-last-fill {
+  display: flex;
+}
+
+.flex-last-fill > :last-child {
+  flex: 1;
+}
+
+/* .vxe-tabs-pane--item{
+  display: flex;
+  flex-direction: column;
+}
+.vxe-tabs-pane--item > :last-child {
+  flex: 1;
+} */
+
+.vxe-tabs-pane--item.is--visible{
+  display: flex;
+  flex-direction: column;
+}
+
+/* .vxe-tabs-pane--item.is--visible > :last-child {
+  flex: 1;
+} */
+
+.vxe-tabs-pane--item.is--visible > :last-child{
+  flex:1 !important;
+}

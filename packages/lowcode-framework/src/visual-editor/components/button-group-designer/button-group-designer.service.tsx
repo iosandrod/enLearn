@@ -15,6 +15,7 @@ import {
 } from '../../../lowcode/actions/builtins';
 import { generateNanoid } from '../../utils';
 import { openGlobalDialog } from '../../../runtime/global-dialog';
+import type { LowCodeContextSource } from '../../../runtime/lowcode-context';
 import { registerButtonScriptMonacoTypes } from './button-script-monaco';
 
 export type ButtonGroupDesignerButton = {
@@ -49,6 +50,7 @@ type ButtonGroupDesignerServiceOption = {
   title?: string;
   business?: Partial<ButtonGroupDesignerBusinessInfo> | null;
   buttons?: ButtonGroupDesignerButton[] | null;
+  scriptContext?: LowCodeContextSource;
   onConfirm?: (result: ButtonGroupDesignerResult) => Promise<void> | void;
 };
 
@@ -497,7 +499,7 @@ function createButtonRow(label = '按钮'): ButtonGroupDesignerButton {
   };
 }
 
-function createButtonArrayColumns() {
+function createButtonArrayColumns(scriptContext?: LowCodeContextSource) {
   return [
     {
       field: 'label',
@@ -512,6 +514,30 @@ function createButtonArrayColumns() {
       component: 'vxe-input',
       minWidth: 150,
       placeholder: 'create',
+    },
+    {
+      field: 'script',
+      title: '执行脚本',
+      component: 'lc-monaco-editor',
+      minWidth: 260,
+      placeholder: '例如：await this.$source.refresh("records")',
+      defaultValue: '',
+      props: {
+        dialog: true,
+        dialogTitle: '编辑按钮执行脚本',
+        language: 'javascript',
+        theme: 'vs',
+        scriptThisType: 'LowCodeButtonScriptThis',
+        contextDrawer: true,
+        contextDrawerTitle: '当前页面上下文',
+        contextSource: scriptContext,
+        editorHeight: 'min(500px, calc(100vh - 250px))',
+        editorOptions: {
+          wordWrap: 'on',
+          formatOnPaste: true,
+          formatOnType: true,
+        },
+      },
     },
     {
       field: 'status',
@@ -542,27 +568,6 @@ function createButtonArrayColumns() {
       placeholder: 'buttonGroup.click',
     },
     {
-      field: 'script',
-      title: '执行脚本',
-      component: 'lc-monaco-editor',
-      minWidth: 260,
-      placeholder: '例如：await this.$source.refresh("records")',
-      defaultValue: '',
-      props: {
-        dialog: true,
-        dialogTitle: '编辑按钮执行脚本',
-        language: 'javascript',
-        theme: 'vs',
-        scriptThisType: 'LowCodeButtonScriptThis',
-        editorHeight: 'min(500px, calc(100vh - 250px))',
-        editorOptions: {
-          wordWrap: 'on',
-          formatOnPaste: true,
-          formatOnType: true,
-        },
-      },
-    },
-    {
       field: 'disabled',
       title: '禁用',
       component: 'vxe-switch',
@@ -584,7 +589,7 @@ function createButtonArrayColumns() {
   ];
 }
 
-function createDesignerBlocks(): LowCodePageBlock[] {
+function createDesignerBlocks(scriptContext?: LowCodeContextSource): LowCodePageBlock[] {
   return [
     {
       id: 'button-group-designer-tabs',
@@ -652,7 +657,7 @@ function createDesignerBlocks(): LowCodePageBlock[] {
                       removable: true,
                       actionWidth: 156,
                       defaultRow: createButtonRow(),
-                      columns: createButtonArrayColumns(),
+                      columns: createButtonArrayColumns(scriptContext),
                     },
                   },
                 ],
@@ -733,7 +738,7 @@ export function $$buttonGroupDesigner(option: ButtonGroupDesignerServiceOption) 
     content: {
       type: 'lowcodeBlocks',
       lowcode: {
-        blocks: createDesignerBlocks(),
+        blocks: createDesignerBlocks(option.scriptContext),
         formModels,
       },
     },

@@ -16,8 +16,16 @@
     "test:virtual-table": "node ./tests/virtual-table-regression.mjs",
     "test:virtual-table-scrollbar": "node ./tests/virtual-table-scrollbar-interaction.mjs",
     "test:mobile-form": "node ./tests/mobile-form-regression.mjs",
+    "test:page-structure": "node ./tests/page-structure-regression.mjs",
+    "test:service-request": "node ./tests/service-request-regression.mjs",
+    "test:runtime-cache": "node ./tests/runtime-cache-regression.mjs",
+    "test:offline-queue": "node ./tests/offline-queue-regression.mjs",
+    "test:network": "node ./tests/network-status-regression.mjs",
     "test:login-web": "node ./tests/login-web-interaction.mjs",
-    "test:layout-width": "node ./tests/layout-width-regression.mjs"
+    "test:mes-web": "node ./tests/mes-web-e2e.mjs",
+    "test:authorized-pages": "node ./tests/authorized-pages-audit.mjs",
+    "test:layout-width": "node ./tests/layout-width-regression.mjs",
+    "test:navigation": "node ./tests/navigation-regression.mjs"
   },
   "dependencies": {
     "@hippy/vue-next": "3.3.2",

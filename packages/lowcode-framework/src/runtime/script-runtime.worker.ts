@@ -2,7 +2,6 @@
 
 import {
   newQuickJSWASMModuleFromVariant,
-  shouldInterruptAfterDeadline,
   type QuickJSContext,
   type QuickJSDeferredPromise,
   type QuickJSHandle,
@@ -36,9 +35,11 @@ type CapabilityResultMessage = {
 };
 
 type ActiveExecution = {
+  deadline: { value: number };
   requestId: string;
   deferred: Map<number, QuickJSDeferredPromise>;
   maxPayloadBytes: number;
+  timeoutMs: number;
   vm: QuickJSContext;
 };
 
@@ -53,12 +54,15 @@ quickJsModulePromise.then(
   }),
 );
 const allowedCapabilityNames = new Set<LowCodeScriptCapabilityName>([
+  'action.execute',
   'api.invoke',
   'dialog.open',
   'event.emit',
   'form.patch',
   'form.replace',
   'grid.setRows',
+  'http.execute',
+  'pageFunction.execute',
   'message.error',
   'message.info',
   'message.success',
@@ -112,7 +116,7 @@ function errorMessage(vm: QuickJSContext, handle: QuickJSHandle) {
 }
 
 function createScriptSource(script: string, contextJson: string) {
-  const userScriptSource = `"use strict";\n${script}\n`;
+  const userScriptSource = `"use strict";\n${script}\n\nif (typeof main === "function") {\n  return await main.call(this, this.event);\n}\n`;
   return `
 (async function executeLowCodeButtonScript() {
   "use strict";
@@ -181,6 +185,9 @@ function createScriptSource(script: string, contextJson: string) {
     $message: message,
     $dialog: dialog,
     $events: events,
+    executeAction: (options) => call("action.execute", options),
+    executeHttp: (options) => call("http.execute", options),
+    executeFunction: (options) => call("pageFunction.execute", options),
   });
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
   const userScript = new AsyncFunction(${JSON.stringify(userScriptSource)});
@@ -225,15 +232,16 @@ async function execute(message: ExecuteMessage) {
     limits.maxStackSizeBytes,
     DEFAULT_LOW_CODE_SCRIPT_STACK_LIMIT_BYTES,
   ));
-  runtime.setInterruptHandler(
-    shouldInterruptAfterDeadline(executionStartedAt + timeoutMs),
-  );
+  const deadline = { value: executionStartedAt + timeoutMs };
+  runtime.setInterruptHandler(() => Date.now() >= deadline.value);
   const vm = runtime.newContext();
   const deferred = new Map<number, QuickJSDeferredPromise>();
   activeExecutions.set(message.requestId, {
+    deadline,
     requestId: message.requestId,
     deferred,
     maxPayloadBytes,
+    timeoutMs,
     vm,
   });
   let apiCalls = 0;
@@ -266,6 +274,7 @@ async function execute(message: ExecuteMessage) {
       const id = ++capabilityId;
       const promise = vm.newPromise();
       deferred.set(id, promise);
+      deadline.value = Number.POSITIVE_INFINITY;
       const request: LowCodeScriptCapabilityRequest = { id, name, args };
       workerScope.postMessage({
         type: 'capability',
@@ -321,6 +330,9 @@ function handleCapabilityResult(message: CapabilityResultMessage) {
   const promise = active?.deferred.get(message.capabilityId);
   if (!active || !promise) return;
   active.deferred.delete(message.capabilityId);
+  if (active.deferred.size === 0) {
+    active.deadline.value = Date.now() + active.timeoutMs;
+  }
   try {
     if (message.ok) {
       const resultJson = serializeWithLimit(

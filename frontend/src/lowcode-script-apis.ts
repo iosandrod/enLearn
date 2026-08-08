@@ -8,6 +8,9 @@ export function installLowCodeScriptApis() {
   installed = true;
 
   registerLowCodeScriptApi('page.reload', {
+    description: '读取当前低代码页面的最新保存版本',
+    signature: 'this.$api.invoke("page.reload")',
+    insertText: 'const latestPage = await this.$api.invoke("page.reload");',
     authorize: (_payload, context) =>
       context.policy?.apiNames?.includes('page.reload') === true,
     handler: async (_payload, context) => {

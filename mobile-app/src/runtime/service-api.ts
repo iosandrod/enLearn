@@ -1,11 +1,28 @@
 import { getRuntimeConfig } from '../config';
 import type { MobilePageRecord, SharedLowCodePageDataSource } from './types';
+import type { MobileNavigationRow } from './navigation-model';
+import { refreshMobileSession } from './session';
+import {
+  normalizeMobileServiceRequest,
+  shouldReturnEmptyMobileList,
+} from './service-request';
 
 type ServiceEnvelope<T> = {
   success: boolean;
   serviceName: string;
   serviceMethod: string;
   data: T;
+};
+
+export type MobileServiceInvokeOptions = {
+  requestId?: string;
+};
+
+export type MobileServiceRequest = {
+  serviceName: string;
+  serviceMethod: string;
+  postData: Record<string, unknown>;
+  requestId: string;
 };
 
 function isServiceEnvelope<T>(value: unknown): value is ServiceEnvelope<T> {
@@ -42,6 +59,13 @@ function readErrorMessage(value: unknown, fallback: string) {
   return String(record.message ?? record.statusMessage ?? record.error ?? fallback);
 }
 
+function randomRequestId() {
+  const cryptoValue = typeof globalThis.crypto?.randomUUID === 'function'
+    ? globalThis.crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `mobile-${cryptoValue}`;
+}
+
 export class MobileServiceError extends Error {
   status: number;
 
@@ -72,22 +96,41 @@ export function createMobileServiceApi() {
   async function invoke<T = unknown>(
     serviceName: string,
     serviceMethod: string,
-    postData: Record<string, unknown> = {}
+    postData: Record<string, unknown> = {},
+    options: MobileServiceInvokeOptions = {},
   ): Promise<T> {
-    const config = getRuntimeConfig();
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const request = normalizeMobileServiceRequest(serviceName, serviceMethod, postData);
+    const requestId = options.requestId?.trim() || randomRequestId();
 
-    if (config.accessToken) headers.Authorization = `Bearer ${config.accessToken}`;
-    if (config.accountId) headers['X-Account-Id'] = config.accountId;
+    async function send() {
+      const config = getRuntimeConfig();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'X-Request-Id': requestId,
+      };
 
-    const response = await fetch(joinUrl(config.apiBaseUrl, 'service'), {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ serviceName, serviceMethod, postData }),
-    });
-    const payload = await parseResponse(response);
+      if (config.accessToken) headers.Authorization = `Bearer ${config.accessToken}`;
+      if (config.accountId) headers['X-Account-Id'] = config.accountId;
+
+      const response = await fetch(joinUrl(config.apiBaseUrl, 'service'), {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(request),
+      });
+      return { response, payload: await parseResponse(response) };
+    }
+
+    let result = await send();
+    if (result.response.status === 401) {
+      try {
+        await refreshMobileSession();
+        result = await send();
+      } catch {
+        // Keep the original service response as the authentication failure.
+      }
+    }
+
+    const { response, payload } = result;
 
     if (!response.ok) {
       throw new MobileServiceError(
@@ -99,17 +142,39 @@ export function createMobileServiceApi() {
     return (isServiceEnvelope<T>(payload) ? payload.data : payload) as T;
   }
 
-  async function getPage(code: string) {
-    const rows = await invoke<MobilePageRecord[]>('lowcode', 'listItems', {
-      tableName: 'lowcode_pages',
-      filters: { code },
-      includeData: true,
-      limit: 1,
-    });
+  async function replay(request: MobileServiceRequest) {
+    return invoke(
+      request.serviceName,
+      request.serviceMethod,
+      request.postData,
+      { requestId: request.requestId },
+    );
+  }
 
-    const page = Array.isArray(rows) ? rows[0] : undefined;
-    if (!page) throw new Error(`Low-code page "${code}" was not found.`);
-    return page;
+  async function getPage(code: string, fromPage = '') {
+    return invoke<MobilePageRecord>('lowcode', 'getRuntimePage', {
+      code,
+      ...(fromPage ? { fromPage } : {}),
+    });
+  }
+
+  async function getPageByRoute(route: string, fromPage = '') {
+    return invoke<MobilePageRecord>('lowcode', 'getRuntimePage', {
+      route,
+      ...(fromPage ? { fromPage } : {}),
+    });
+  }
+
+  async function getPageById(id: string, fromPage = '') {
+    return invoke<MobilePageRecord>('lowcode', 'getRuntimePage', {
+      id,
+      ...(fromPage ? { fromPage } : {}),
+    });
+  }
+
+  async function listNavigationRoutes() {
+    const rows = await invoke<MobileNavigationRow[]>('admin', 'listNavigationRoutes');
+    return Array.isArray(rows) ? rows : [];
   }
 
   async function loadDataSource(
@@ -126,17 +191,108 @@ export function createMobileServiceApi() {
       throw new Error(`Data source "${source.key}" has no service target.`);
     }
 
-    return invoke(serviceName, serviceMethod, {
-      ...(source.postData ?? {}),
-      ...postDataOverride,
-      ...(tableName ? { tableName } : {}),
-      ...(entityCode ? { entityCode } : {}),
+    try {
+      return await invoke(serviceName, serviceMethod, {
+        ...(source.postData ?? {}),
+        ...postDataOverride,
+        ...(tableName ? { tableName } : {}),
+        ...(entityCode ? { entityCode } : {}),
+      });
+    } catch (error) {
+      if (shouldReturnEmptyMobileList(error, serviceMethod)) return [];
+      throw error;
+    }
+  }
+
+  function dataSourceTarget(source: SharedLowCodePageDataSource) {
+    const tableName = source.tableName ?? source.table_name;
+    const entityCode = source.entityCode ?? source.entity_code;
+    return {
+      tableName,
+      entityCode,
+      serviceName: source.serviceName || (tableName || entityCode ? 'admin' : ''),
+    };
+  }
+
+  async function saveDataSource(
+    source: SharedLowCodePageDataSource,
+    values: Record<string, unknown>,
+  ) {
+    return replay(prepareSaveDataSource(source, values));
+  }
+
+  function prepareSaveDataSource(
+    source: SharedLowCodePageDataSource,
+    values: Record<string, unknown>,
+  ): MobileServiceRequest {
+    const target = dataSourceTarget(source);
+    const serviceMethod = source.saveMethod
+      || (source.serviceMethod && source.serviceMethod !== 'listItems' ? source.serviceMethod : '');
+    if (!target.serviceName || !serviceMethod) {
+      throw new Error(`Data source "${source.key}" has no save service.`);
+    }
+    const targetFields = {
+      ...(target.tableName ? { tableName: target.tableName } : {}),
+      ...(target.entityCode ? { entityCode: target.entityCode } : {}),
+      ...(target.entityCode ? { resource: target.entityCode } : target.tableName
+        ? { resource: target.tableName }
+        : {}),
+    };
+    const request = serviceMethod === 'saveItem' || serviceMethod === 'createItem' || serviceMethod === 'updateItem'
+      ? {
+          ...targetFields,
+          ...(values.id ? { id: values.id } : {}),
+          data: values,
+        }
+      : { ...values, ...targetFields };
+    return {
+      serviceName: target.serviceName,
+      serviceMethod,
+      postData: request,
+      requestId: randomRequestId(),
+    };
+  }
+
+  async function deleteDataSource(
+    source: SharedLowCodePageDataSource,
+    row: Record<string, unknown>,
+  ) {
+    const target = dataSourceTarget(source);
+    const serviceMethod = source.deleteMethod
+      || (source.serviceMethod && source.serviceMethod !== 'listItems' ? source.serviceMethod : '');
+    if (!target.serviceName || !serviceMethod) {
+      throw new Error(`Data source "${source.key}" has no delete service.`);
+    }
+    const targetFields = {
+      ...(target.tableName ? { tableName: target.tableName } : {}),
+      ...(target.entityCode ? { entityCode: target.entityCode } : {}),
+      ...(target.entityCode ? { resource: target.entityCode } : target.tableName
+        ? { resource: target.tableName }
+        : {}),
+    };
+    if (serviceMethod === 'deleteItem') {
+      return invoke(target.serviceName, serviceMethod, {
+        ...targetFields,
+        ...(row.id ? { id: row.id } : {}),
+        data: row,
+      });
+    }
+    return invoke(target.serviceName, serviceMethod, {
+      ...row,
+      ...targetFields,
     });
   }
 
   return {
     invoke,
+    replay,
     getPage,
+    getPageByRoute,
+    getPageById,
+    listNavigationRoutes,
     loadDataSource,
+    saveDataSource,
+    prepareSaveDataSource,
+    deleteDataSource,
   };
 }

@@ -32,7 +32,11 @@
         </template>
       </LowCodeFormLayout>
 
-      <div v-else-if="node.kind === 'tabs'" class="lc-form-tabs">
+      <div
+        v-else-if="node.kind === 'tabs'"
+        class="lc-form-tabs"
+        :class="{ 'lc-form-tabs--fill': node.fillRemaining }"
+      >
         <vxe-tabs
           :model-value="activeTabKey(node, index)"
           size="small"
@@ -45,7 +49,10 @@
             :name="tab.key"
             :title="tab.label"
           >
-            <div class="lc-form-tab-pane">
+            <div
+              class="lc-form-tab-pane"
+              :class="{ 'lc-form-tab-pane--single': tab.blocks.length === 1 }"
+            >
               <LowCodeFormLayout
                 :nodes="tab.blocks"
                 :fields-by-key="fieldsByKey"
@@ -155,6 +162,64 @@ function rowStyle(node: Extract<LowCodeFormLayoutNode, { kind: 'row' }>) {
 .lc-form-tab-pane {
   width: 100%;
   min-width: 0;
+}
+
+.lc-form-tabs--fill {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.lc-form-tabs--fill > .vxe-tabs {
+  flex: 1 1 0;
+  height: 100%;
+  min-height: 0;
+}
+
+.lc-form-tabs--fill > .vxe-tabs > .vxe-tabs-pane--wrapper,
+.lc-form-tabs--fill > .vxe-tabs > .vxe-tabs-pane--wrapper > .vxe-tabs-pane--body,
+.lc-form-tabs--fill .lc-form-tab-pane,
+.lc-form-tabs--fill .lc-form-tab-pane > .lc-form-layout {
+  min-height: 0;
+}
+
+.lc-form-tabs--fill > .vxe-tabs > .vxe-tabs-pane--wrapper > .vxe-tabs-pane--body {
+  height: 100%;
+}
+
+.lc-form-tabs--fill .lc-form-tab-pane {
+  box-sizing: border-box;
+  height: 100%;
+  overflow: auto;
+}
+
+.lc-form-tabs--fill .lc-form-tab-pane > .lc-form-layout {
+  align-content: start;
+  grid-auto-rows: max-content;
+  height: 100%;
+  overflow: auto;
+}
+
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout {
+  align-content: stretch;
+  grid-auto-rows: auto;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout > .vxe-form--item,
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout > .vxe-form--item > .vxe-form--item-content,
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout > .vxe-form--item > .vxe-form--item-content > .vxe-form--item-inner,
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout .lc-field,
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout .lc-field > .lc-array-table,
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout .lc-array-table__viewport {
+  height: 100%;
+  min-height: 0;
+}
+
+.lc-form-tabs--fill .lc-form-tab-pane--single > .lc-form-layout > .vxe-form--item > .vxe-form--item-content {
+  align-items: stretch;
 }
 
 .lc-form-tab-pane {

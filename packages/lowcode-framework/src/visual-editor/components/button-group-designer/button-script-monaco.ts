@@ -47,8 +47,29 @@ interface LowCodeButtonScriptContextSnapshot {
   readonly event: LowCodeRecord;
 }
 
+interface LowCodeActionOptions extends LowCodeRecord {
+  node: string;
+  method: string;
+  data?: unknown;
+  mode?: "merge" | "replace";
+}
+
+interface LowCodeHttpOptions extends LowCodeRecord {
+  api: string;
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+  body?: LowCodeRecord;
+}
+
+interface LowCodePageFunctionOptions extends LowCodeRecord {
+  name: string;
+  args?: LowCodeRecord;
+}
+
 interface LowCodeButtonScriptThis extends LowCodeButtonScriptContextSnapshot {
   readonly context: LowCodeButtonScriptContextSnapshot;
+  executeAction<T = unknown>(options: LowCodeActionOptions): Promise<T>;
+  executeHttp<T = unknown>(options: LowCodeHttpOptions): Promise<T>;
+  executeFunction<T = unknown>(options: LowCodePageFunctionOptions): Promise<T>;
   readonly $api: {
     invoke<T = unknown>(name: string, payload?: LowCodeRecord): Promise<T>;
   };

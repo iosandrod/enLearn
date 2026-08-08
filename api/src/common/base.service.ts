@@ -294,6 +294,10 @@ export abstract class BaseService implements ServiceExecutor {
   }
 
   protected async listItems(postData: ServicePostData, context: ServiceContext) {
+    if (!this.hasRequiredListFilters(postData)) {
+      return this.emptyListItemsResult(postData);
+    }
+
     const itemType = this.readListItemsType(postData);
     const listHandler = this.listItemHandlers()[itemType];
     if (listHandler) {
@@ -729,6 +733,10 @@ export abstract class BaseService implements ServiceExecutor {
   }
 
   protected async performList(ctx: CrudContext) {
+    if (!this.hasRequiredListFilters(ctx.input)) {
+      return [];
+    }
+
     let query = ctx.client
       .from(ctx.resource.tableName)
       .select(ctx.resource.select ?? '*');
@@ -1506,9 +1514,11 @@ export abstract class BaseService implements ServiceExecutor {
     const required = ctx.resource.permissions?.[ctx.action];
     if (!required) return;
     if (!ctx.user) throw new ForbiddenException('Permission required.');
-    const authorization = await getUserAuthorization(ctx.client, ctx.user.id, {
+    const authorizationClient = ctx.resource.clientMode === 'admin'
+      ? (await getCurrentUser(ctx.context)).client
+      : ctx.client;
+    const authorization = await getUserAuthorization(authorizationClient, ctx.user.id, {
       accountId: ctx.context.accountId,
-      refresh: true
     });
     if (!hasRequiredPermission(authorization, required)) {
       throw new ForbiddenException('Permission required: ' + ([] as string[]).concat(required).join(', '));
@@ -1775,6 +1785,38 @@ export abstract class BaseService implements ServiceExecutor {
 
   protected withResourceCode(name: string, resource: ResourceConfig): ResourceConfig {
     return { ...resource, code: resource.code ?? name };
+  }
+
+  protected hasRequiredListFilters(postData: ServicePostData) {
+    const required = this.readStringArray(
+      postData.requiredFilters ?? postData.required_filters
+    );
+    if (!required.length) return true;
+
+    const filters = this.readRecord(postData.filters);
+    return required.every((field) => {
+      this.assertIdentifierPath(field, 'required filter field');
+      const value = filters[field];
+      if (value === undefined || value === null || value === '') return false;
+      if (Array.isArray(value)) return value.length > 0;
+      if (this.isRecord(value)) {
+        const operand = value.value;
+        return operand !== undefined && operand !== null && operand !== '' &&
+          (!Array.isArray(operand) || operand.length > 0);
+      }
+      return true;
+    });
+  }
+
+  protected emptyListItemsResult(postData: ServicePostData) {
+    const withCount = this.readBoolean(postData.withCount ?? postData.with_count, false);
+    const responseMode = this.readOptionalString(postData.responseMode ?? postData.response_mode);
+    if (withCount || responseMode === 'page') {
+      const pageSize = this.readListItemsLimit(postData);
+      const page = Math.min(Math.max(Math.trunc(this.readNumber(postData.page, 1)), 1), 100000);
+      return { rows: [], total: 0, page, pageSize };
+    }
+    return [];
   }
 
   protected assertResourceMatchesTable(name: string, resource: ResourceConfig) {

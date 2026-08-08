@@ -11,7 +11,10 @@ type TestWorkflowService = {
   resources(): ResourceConfigMap;
   normalizeCrudPostData(postData: Record<string, unknown>): Record<string, unknown>;
   hooks(): Record<string, Record<string, unknown>>;
-  listItemHandlers(): Record<string, unknown>;
+  listItemHandlers(): Record<string, (
+    postData: Record<string, unknown>,
+    context: { accountId: string; userId: string }
+  ) => Promise<unknown>>;
 };
 
 const delegatedCalls: Array<{ service: string; method: string; args: unknown[] }> = [];
@@ -88,6 +91,54 @@ assert.equal(typeof service.hooks().wf_node_instance.afterAction, 'function');
 assert.equal(typeof service.hooks().wf_task.afterAction, 'function');
 assert.equal(typeof service.listItemHandlers().nodeInstances, 'function');
 assert.equal(typeof service.listItemHandlers().tasks, 'function');
+
+class WorkflowJobRunProbe extends WorkflowService {
+  protected override async listItems(postData: Record<string, unknown>) {
+    if (postData.resource === 'wf_job_run') {
+      return [{
+        id: 'run-1',
+        job_id: 'job-1',
+        trigger_run_id: 'trigger-1',
+        status: 'succeeded',
+        attempt: 1,
+        error_message: null,
+        started_at: '2026-08-08T00:00:00.000Z',
+        finished_at: '2026-08-08T00:00:01.250Z',
+        created_at: '2026-08-08T00:00:00.000Z'
+      }];
+    }
+    if (postData.resource === 'wf_job') {
+      return [{ id: 'job-1', code: 'daily-plan', name: '每日计划同步' }];
+    }
+    return [];
+  }
+}
+
+async function testJobRunReadModel() {
+  const probe = new WorkflowJobRunProbe(
+    delegate('definitionJobRunProbe', []) as never,
+    delegate('runtimeJobRunProbe', []) as never,
+    delegate('approvalJobRunProbe', []) as never,
+    delegate('jobJobRunProbe', []) as never,
+    delegate('runtimeStatusJobRunProbe', []) as never
+  ) as unknown as TestWorkflowService;
+  const rows = await probe.listItemHandlers().jobRuns({}, serviceContext) as Array<Record<string, unknown>>;
+  assert.deepEqual(rows[0], {
+    id: 'run-1',
+    job_id: 'job-1',
+    trigger_run_id: 'trigger-1',
+    status: 'succeeded',
+    attempt: 1,
+    error_message: null,
+    started_at: '2026-08-08T00:00:00.000Z',
+    finished_at: '2026-08-08T00:00:01.250Z',
+    created_at: '2026-08-08T00:00:00.000Z',
+    job_name: '每日计划同步',
+    job_code: 'daily-plan',
+    status_label: '成功',
+    duration_ms: 1250
+  });
+}
 
 assert.deepEqual(
   service.normalizeCrudPostData({
@@ -230,6 +281,6 @@ async function testDirectDelegation() {
   ]);
 }
 
-void testDirectDelegation().then(() => {
+void Promise.all([testDirectDelegation(), testJobRunReadModel()]).then(() => {
   console.log('workflow service tests passed');
 });

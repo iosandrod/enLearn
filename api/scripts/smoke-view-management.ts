@@ -90,11 +90,18 @@ async function main() {
     await client.query('set local role authenticated');
 
     const definitionSql = 'select 1::integer as id, current_date as business_date';
-    const validation = await client.query<{ result: { valid?: boolean } }>(
+    const validation = await client.query<{
+      result: { valid?: boolean; columns?: Array<{ column_name?: string }> };
+    }>(
       `select public.entity_design_validate_view($1::jsonb) as result`,
       [JSON.stringify({ definition_sql: definitionSql })]
     );
     assert(validation.rows[0]?.result.valid === true, 'Valid SELECT was not accepted.');
+    assert(
+      validation.rows[0]?.result.columns?.map((column) => column.column_name).join(',') ===
+        'id,business_date',
+      'SQL analysis did not return columns in ordinal order.'
+    );
 
     await expectDatabaseError(
       client,

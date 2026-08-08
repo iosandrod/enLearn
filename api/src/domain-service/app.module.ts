@@ -9,6 +9,7 @@ import { LowCodeModule } from '../lowcode-service/lowcode.module';
 import { NotificationModule } from '../notification-service/notification.module';
 import { PaymentModule } from '../payment-service/payment.module';
 import { PostsModule } from '../posts-service/posts.module';
+import { PlanningModule } from '../planning-service/planning.module';
 import { UserModule } from '../user-service/user.module';
 import { ServiceRpcController } from './service.rpc.controller';
 import { DomainServiceRouter } from './service-router.service';
@@ -24,7 +25,8 @@ import { DomainServiceRouter } from './service-router.service';
     NotificationModule,
     EntityDesignModule,
     FilesModule,
-    ChatModule
+    ChatModule,
+    PlanningModule
   ],
   controllers: [ServiceRpcController],
   providers: [DomainServiceRouter]

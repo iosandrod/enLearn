@@ -25,18 +25,34 @@ export type MobileRuntimeBlock = Record<string, any> & {
   title?: string;
   description?: string;
   blocks?: MobileRuntimeBlock[];
+  overlays?: MobileRuntimeBlock[];
+  tabs?: Array<{
+    key: string;
+    label: string;
+    blocks?: MobileRuntimeBlock[];
+  }>;
 };
 
 export type MobilePageSchema = Omit<SharedLowCodePageSchema, 'blocks'> & {
   blocks: MobileRuntimeBlock[];
+  overlays?: MobileRuntimeBlock[];
 };
 
 export type MobilePageRecord = Omit<LowCodePageRecord, 'schema'> & {
   schema: MobilePageSchema;
+  overlays?: MobileRuntimeBlock[];
   resolvedData?: Record<string, unknown>;
 };
 
 export type MobileFormModels = Record<string, Record<string, unknown>>;
+
+export type MobileGridRuntimeState = {
+  rows: Record<string, unknown>[];
+  currentRow: Record<string, unknown> | null;
+  selectedRows: Record<string, unknown>[];
+};
+
+export type MobileGridRuntimeStates = Record<string, MobileGridRuntimeState>;
 
 export type MobileRuntimeEvent = SharedLowCodeEvent & {
   payload?: Record<string, unknown> & {
@@ -53,6 +69,12 @@ export type MobileMaterialProps = {
   resolvedData: Record<string, unknown>;
   formModels: MobileFormModels;
   activeActionCodes: Record<string, string>;
+  gridStates: MobileGridRuntimeStates;
+  serviceApi?: import('./service-api').MobileServiceApi;
+};
+
+export type MobileRuntimeRendererProps = Omit<MobileMaterialProps, 'serviceApi'> & {
+  serviceApi: import('./service-api').MobileServiceApi;
 };
 
 export type MobileMaterialEmits = {

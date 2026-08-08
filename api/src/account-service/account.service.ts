@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { BaseService, type ListItemsHandler } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
-import { getCurrentUser } from '../common/utils/supabase';
+import { clearUserAuthorizationCache, getCurrentUser } from '../common/utils/supabase';
 
 type PostData = Record<string, unknown>;
 type AccountRole = 'owner' | 'member';
@@ -139,15 +139,17 @@ export class AccountService extends BaseService {
   }
 
   private async createAccount(postData: PostData, context: ServiceContext) {
-    const { client } = await getCurrentUser(context);
+    const { client, user } = await getCurrentUser(context);
     const slug = readString(postData.slug, 'slug');
     const name = readOptionalString(postData.name) || slug;
     const result = await client.rpc('create_account', { slug, name });
-    return assertRpcSucceeded(result, null);
+    const account = assertRpcSucceeded(result, null);
+    clearUserAuthorizationCache(user.id);
+    return account;
   }
 
   private async updateAccount(postData: PostData, context: ServiceContext) {
-    const { client } = await getCurrentUser(context);
+    const { client, user } = await getCurrentUser(context);
     const accountId = readString(postData.account_id ?? postData.accountId, 'account_id');
     this.assertSelectedAccount(accountId, context);
     const slug = readOptionalString(postData.slug) || null;
@@ -162,7 +164,9 @@ export class AccountService extends BaseService {
       public_metadata: metadata,
       replace_metadata: replaceMetadata
     });
-    return assertRpcSucceeded(result, null);
+    const account = assertRpcSucceeded(result, null);
+    clearUserAuthorizationCache(user.id);
+    return account;
   }
 
   private async listMembers(postData: PostData, context: ServiceContext) {
@@ -186,6 +190,7 @@ export class AccountService extends BaseService {
       account_role: accountRole
     });
     assertRpcSucceeded(result, null);
+    clearUserAuthorizationCache(userId);
 
     return { success: true };
   }
@@ -205,6 +210,7 @@ export class AccountService extends BaseService {
       make_primary_owner: makePrimaryOwner
     });
     assertRpcSucceeded(result, null);
+    clearUserAuthorizationCache(userId);
 
     return { success: true };
   }
@@ -219,6 +225,7 @@ export class AccountService extends BaseService {
       user_id: userId
     });
     assertRpcSucceeded(result, null);
+    clearUserAuthorizationCache(userId);
 
     return { success: true };
   }

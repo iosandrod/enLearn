@@ -2,6 +2,21 @@ export type NotificationCategory = 'system' | 'approval' | 'mention' | 'security
 export type NotificationPriority = 'low' | 'normal' | 'high' | 'urgent';
 export type NotificationDeliveryChannel = 'email' | 'sms';
 
+export type NotificationPushDeviceRow = {
+  id: string;
+  account_id: string;
+  user_id: string;
+  token: string;
+  platform: 'android' | 'ios';
+  provider: string | null;
+  device_id: string | null;
+  app_version: string | null;
+  status: 'active' | 'inactive';
+  last_seen_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type NotificationMessageRow = {
   id: string;
   account_id: string;

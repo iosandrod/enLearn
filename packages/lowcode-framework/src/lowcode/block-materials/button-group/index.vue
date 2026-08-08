@@ -228,6 +228,7 @@ async function openButtonDesigner() {
       gap: props.block.gap ?? 8,
     },
     buttons: props.block.actions.map((action) => toDesignerButton(action)),
+    scriptContext: runtimeBlockEditor?.getScriptContextSource?.(),
     onConfirm: async (result) => {
       if (!runtimeBlockEditor) {
         throw new Error('当前页面不支持保存按钮配置');

@@ -47,6 +47,7 @@ export type LowCodeFormLayoutNode = {
     blocks: LowCodeFormLayoutNode[];
 } | {
     kind: 'tabs';
+    fillRemaining?: boolean;
     defaultKey?: string;
     tabs: LowCodeFormLayoutTab[];
 };
@@ -301,6 +302,21 @@ export type LowCodePageDataSource = {
      */
     autoLoad?: boolean;
 };
+export type LowCodePageApi = {
+    serviceName: string;
+    serviceMethod: string;
+    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+    postData?: Record<string, unknown>;
+    resultPath?: string;
+};
+/** A reusable page-owned script callable through `this.executeFunction`. */
+export type LowCodePageFunction = {
+    name: string;
+    label?: string;
+    description?: string;
+    enabled?: boolean;
+    script: string;
+};
 export type LowCodePageType = 'list' | 'edit' | 'detail' | 'custom';
 export type LowCodeMaterialVersionedBlock = {
     materialVersion?: string;
@@ -420,6 +436,9 @@ export type LowCodePageModalBlock = LowCodeMaterialVersionedBlock & {
     description?: string;
     open?: boolean;
     width?: number | string;
+    resultNode?: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
     blocks: LowCodePageBlock[];
     overlays?: LowCodePageOverlayBlock[];
 };
@@ -431,6 +450,9 @@ export type LowCodePageDrawerBlock = LowCodeMaterialVersionedBlock & {
     open?: boolean;
     width?: number | string;
     placement?: 'left' | 'right';
+    resultNode?: string;
+    confirmLabel?: string;
+    cancelLabel?: string;
     blocks: LowCodePageBlock[];
     overlays?: LowCodePageOverlayBlock[];
 };
@@ -478,6 +500,8 @@ export type LowCodePageSchema = {
         bgImage?: string;
     };
     dataSources?: Record<string, LowCodePageDataSource>;
+    apis?: Record<string, LowCodePageApi>;
+    functions?: LowCodePageFunction[];
     eventHandlers?: LowCodeEventHandler[];
     scriptPolicy?: {
         apiNames?: string[];

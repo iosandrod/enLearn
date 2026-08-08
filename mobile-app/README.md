@@ -1,4 +1,4 @@
-# EnLearn Mobile
+# EnLearn Manufacturing MES Mobile
 
 Hippy + Vue 3 mobile runtime for EnLearn low-code pages.
 
@@ -21,6 +21,14 @@ registry. It intentionally does not import VXE, Monaco, or the desktop runtime.
 - Sales order page as the default authenticated entry
 - Mobile sign-in and account-set selection before protected pages load
 - Automatic return to sign-in when the token or active account becomes invalid
+- Dynamic permission-aware navigation loaded from `admin.listNavigationRoutes`
+- Container, section, tabs, form, virtual grid, detail, stat, tree, modal,
+  drawer, and nested overlay rendering
+- User-and-account-scoped page/data cache with TTL and bounded eviction
+- Opt-in offline form write queue with stable request ids, retry backoff, and
+  automatic replay after reconnect
+- Native capability bridge contracts for barcode/QR scan, camera, gallery,
+  file selection, signed upload, and push-token registration
 
 ## Environment
 
@@ -55,9 +63,8 @@ The built-in 1,000-row virtual-table demo is available at
 `http://localhost:3100/?path=/demo/table` and does not require authentication.
 
 `hippy:build` creates vendor and application bundles in `dist/android` and
-`dist/ios`. A native Hippy host still needs to embed those bundles. Keep native
-shell code outside the Schema runtime so app-store releases control native
-capabilities.
+`dist/ios`. A native Hippy host still needs to embed those bundles. The host
+must expose the `EnLearnMES` bridge methods documented below.
 
 ## Runtime boundary
 
@@ -82,3 +89,44 @@ schema: {
   },
 }
 ```
+
+## Offline writes
+
+Read caching is automatic after a successful online load. Form writes remain
+online-only unless their data source explicitly opts in:
+
+```json
+{
+  "key": "workOrders",
+  "serviceName": "admin",
+  "serviceMethod": "listItems",
+  "saveMethod": "saveItem",
+  "tableName": "work_orders",
+  "offlineWrite": true
+}
+```
+
+Queued writes are scoped by both authenticated user and account set. They are
+cleared on sign-out, expire after seven days, and replay with a stable
+`X-Request-Id`. The API gateway deduplicates CRUD writes for ten minutes. Do
+not enable offline writes for operations that cannot tolerate delayed replay or
+whose conflict policy has not been defined.
+
+## Native host contract
+
+The Hippy host module name is `EnLearnMES`. It should implement promise-based
+methods with JSON-serializable inputs and outputs:
+
+| Method | Result |
+| --- | --- |
+| `scanCode(options)` | `{ value, format?, metadata? }` |
+| `capturePhoto(options)` | `{ uri, name?, mimeType?, size?, width?, height? }` |
+| `pickImage(options)` | Same asset shape as `capturePhoto` |
+| `pickFile(options)` | Same asset shape as `capturePhoto` |
+| `uploadFile(options)` | `{ status, message? }`; upload the local URI to the signed URL |
+| `getPushToken(options)` | `{ token, provider?, appVersion?, deviceId? }` |
+
+Camera, gallery, file access, barcode scanning, notifications, and network
+state require the corresponding Android/iOS permissions. Keep secrets and
+storage credentials out of the bundle; uploads use short-lived URLs returned by
+the existing `files` service.

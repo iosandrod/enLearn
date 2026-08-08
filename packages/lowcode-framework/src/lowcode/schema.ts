@@ -2,7 +2,9 @@ import { getLowCodeBlockMaterial } from './block-materials';
 import type {
   LowCodeEventHandler,
   LowCodePageBlock,
+  LowCodePageApi,
   LowCodePageDataSource,
+  LowCodePageFunction,
   LowCodePageOverlayBlock,
   LowCodePageSchema,
   LowCodeRuntimeDirective,
@@ -190,6 +192,50 @@ function normalizeDataSources(value: unknown) {
   );
 }
 
+function normalizePageApis(value: unknown): Record<string, LowCodePageApi> {
+  if (!isRecord(value)) return {};
+
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([name, rawApi]) => {
+      if (!isRecord(rawApi)) return [];
+      const apiName = readString(name);
+      if (!apiName) return [];
+      const serviceName = readString(rawApi.serviceName);
+      const serviceMethod = readString(rawApi.serviceMethod);
+      const method = readString(rawApi.method, 'POST').toUpperCase();
+      const postData = readPostDataObject(rawApi.postData);
+      const resultPath = readString(rawApi.resultPath);
+      return [[apiName, {
+        serviceName,
+        serviceMethod,
+        method: method as LowCodePageApi['method'],
+        ...(Object.keys(postData).length ? { postData } : {}),
+        ...(resultPath ? { resultPath } : {}),
+      }]];
+    }),
+  );
+}
+
+function normalizePageFunctions(value: unknown): LowCodePageFunction[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(isRecord)
+    .map((rawFunction) => {
+      const name = readString(rawFunction.name);
+      const script = typeof rawFunction.script === 'string' ? rawFunction.script : '';
+      const label = readString(rawFunction.label);
+      const description = readString(rawFunction.description);
+      return {
+        name,
+        ...(label ? { label } : {}),
+        ...(description ? { description } : {}),
+        enabled: rawFunction.enabled !== false,
+        script,
+      };
+    });
+}
+
 function normalizeDirectives(value: unknown): LowCodeRuntimeDirective[] {
   return Array.isArray(value)
     ? (value
@@ -342,6 +388,10 @@ export function normalizeLowCodePageSchema(
         }
       : {}),
     dataSources: normalizeDataSources(value.dataSources),
+    ...(isRecord(value.apis) ? { apis: normalizePageApis(value.apis) } : {}),
+    ...(Array.isArray(value.functions)
+      ? { functions: normalizePageFunctions(value.functions) }
+      : {}),
     ...(eventHandlers.length ? { eventHandlers } : {}),
     ...(scriptPolicy ? { scriptPolicy } : {}),
     blocks: normalizeBlocks(value.blocks),
@@ -440,13 +490,63 @@ function validateEventHandlers(schema: LowCodePageSchema, issues: LowCodeSchemaI
   });
 }
 
+function validatePageApis(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
+  const allowedMethods = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']);
+  Object.entries(schema.apis ?? {}).forEach(([name, api]) => {
+    const path = `apis.${name}`;
+    if (!name.trim()) pushIssue(issues, 'error', path, 'API alias is required.');
+    if (!api.serviceName) {
+      pushIssue(issues, 'error', `${path}.serviceName`, 'Service name is required.');
+    }
+    if (!api.serviceMethod) {
+      pushIssue(issues, 'error', `${path}.serviceMethod`, 'Service method is required.');
+    }
+    if (api.method && !allowedMethods.has(api.method)) {
+      pushIssue(issues, 'error', `${path}.method`, `Unsupported HTTP method "${api.method}".`);
+    }
+  });
+}
+
+function validatePageFunctions(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
+  const names = new Set<string>();
+  (schema.functions ?? []).forEach((pageFunction, index) => {
+    const path = `functions.${index}`;
+    if (!pageFunction.name) {
+      pushIssue(issues, 'error', `${path}.name`, 'Function name is required.');
+    } else if (!/^[A-Za-z_$][\w$]*$/.test(pageFunction.name)) {
+      pushIssue(
+        issues,
+        'error',
+        `${path}.name`,
+        `Invalid function name "${pageFunction.name}".`,
+      );
+    } else if (names.has(pageFunction.name)) {
+      pushIssue(
+        issues,
+        'error',
+        `${path}.name`,
+        `Duplicate function name "${pageFunction.name}".`,
+      );
+    } else {
+      names.add(pageFunction.name);
+    }
+
+    if (!pageFunction.script.trim()) {
+      pushIssue(issues, 'error', `${path}.script`, 'Function script is required.');
+    }
+  });
+}
+
 const knownScriptCapabilities = new Set([
+  'action.execute',
   'api.invoke',
   'dialog.open',
   'event.emit',
   'form.patch',
   'form.replace',
   'grid.setRows',
+  'http.execute',
+  'pageFunction.execute',
   'message.error',
   'message.info',
   'message.success',
@@ -691,6 +791,8 @@ export function validateLowCodePageSchema(schema: LowCodePageSchema) {
   }
 
   validateDataSources(schema, issues);
+  validatePageApis(schema, issues);
+  validatePageFunctions(schema, issues);
   validateEventHandlers(schema, issues);
   validateScriptPolicy(schema, issues);
 

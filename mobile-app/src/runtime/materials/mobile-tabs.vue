@@ -1,5 +1,5 @@
 <template>
-  <div class="mobile-tabs">
+  <div class="mobile-tabs" :style="blockStyle">
     <div class="tab-bar">
       <button
         v-for="tab in block.tabs ?? []"
@@ -17,6 +17,8 @@
       :resolved-data="resolvedData"
       :form-models="formModels"
       :active-action-codes="activeActionCodes"
+      :grid-states="gridStates"
+      :service-api="serviceApi!"
       @runtime-event="(event) => emit('runtimeEvent', event)"
     />
   </div>
@@ -26,11 +28,13 @@
 import { computed, ref, watch } from '@vue/runtime-core';
 
 import MobileBlockChildren from '../mobile-block-children.vue';
+import { resolveMobileBlockStyle } from '../block-style';
 import type { MobileMaterialEmits, MobileMaterialProps } from '../types';
 
 const props = defineProps<MobileMaterialProps>();
 const emit = defineEmits<MobileMaterialEmits>();
 const activeKey = ref('');
+const blockStyle = computed(() => resolveMobileBlockStyle(props.block.style));
 
 const activeTab = computed(() => {
   const tabs = props.block.tabs ?? [];

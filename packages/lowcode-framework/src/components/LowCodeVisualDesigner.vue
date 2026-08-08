@@ -16,6 +16,7 @@
           ref="providerRef"
           :key="providerKey"
           :initial-data="visualModel"
+          :page-record="designerPageRecord"
           @save="saveVisualProject"
         >
           <template #meta>
@@ -166,6 +167,41 @@ const form = ref<DesignerPageForm>({
   title: '可视化低代码页面',
   description: '',
   status: 'draft'
+});
+const designerPageRecord = computed<LowCodePageRecord>(() => {
+  const current = page.value;
+  const currentSchema = current?.schema;
+  const keepAlive = currentSchema?.keepAlive ?? current?.keep_alive ?? true;
+
+  return {
+    id: current?.id ?? '',
+    code: form.value.code,
+    route: form.value.route,
+    title: form.value.title,
+    description: form.value.description || null,
+    layout: current?.layout ?? currentSchema?.layout ?? 'dashboard',
+    status: form.value.status,
+    keep_alive: keepAlive,
+    page_type: current?.page_type ?? currentSchema?.pageType ?? 'custom',
+    edit_page_id: current?.edit_page_id ?? null,
+    schema: {
+      ...(currentSchema ?? {}),
+      code: form.value.code,
+      route: form.value.route,
+      title: form.value.title,
+      description: form.value.description,
+      layout: current?.layout ?? currentSchema?.layout ?? 'dashboard',
+      status: form.value.status,
+      keepAlive,
+      dataSources: currentSchema?.dataSources ?? {},
+      blocks: currentSchema?.blocks ?? [],
+      overlays: currentSchema?.overlays ?? [],
+    },
+    version: current?.version ?? 0,
+    published_at: current?.published_at ?? null,
+    created_at: current?.created_at ?? '',
+    updated_at: current?.updated_at ?? '',
+  };
 });
 const statusOptions = [
   { label: '草稿', value: 'draft' },

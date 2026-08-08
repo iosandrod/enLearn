@@ -1,6 +1,15 @@
 type ExpressionScope = {
   data: Record<string, unknown>;
   forms: Record<string, Record<string, unknown>>;
+  searches?: Record<string, Record<string, unknown>>;
+  grids?: Record<string, unknown>;
+  form?: Record<string, unknown>;
+  route?: {
+    query?: Record<string, unknown>;
+    params?: Record<string, unknown>;
+    path?: string;
+    fullPath?: string;
+  };
   event?: Record<string, unknown>;
   row?: Record<string, unknown>;
   values?: Record<string, unknown>;
@@ -22,6 +31,10 @@ export function resolveExpression(expression: string, scope: ExpressionScope) {
     {
       data: scope.data,
       forms: scope.forms,
+      form: scope.form ?? {},
+      search: scope.searches ?? {},
+      grids: scope.grids ?? {},
+      route: scope.route ?? { query: {}, params: {}, path: '', fullPath: '' },
       event: scope.event ?? {},
       row: scope.row ?? {},
       values: scope.values ?? {},

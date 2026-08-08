@@ -10,6 +10,14 @@ const layoutSource = await readFile(
   new URL('../layouts/dashboard.vue', import.meta.url),
   'utf8'
 );
+const formDefinitionSource = await readFile(
+  new URL('../utils/lowCodeFormDefinitions.ts', import.meta.url),
+  'utf8'
+);
+const formDefinitionMigration = await readFile(
+  new URL('../../supabase/migrations/20260808200000_lowcode_form_definitions.sql', import.meta.url),
+  'utf8'
+);
 
 const compiledUtility = ts.transpileModule(utilitySource, {
   compilerOptions: {
@@ -71,10 +79,66 @@ assert.match(layoutSource, /name: '关闭左侧'/);
 assert.match(layoutSource, /name: '关闭右侧'/);
 assert.match(layoutSource, /name: '关闭其他'/);
 assert.match(layoutSource, /name: '可视化设计'/);
+assert.match(layoutSource, /name: '页面信息设计'/);
 assert.match(
   layoutSource,
   /disabled: !pageCode/,
   'Visual design must be disabled when a tab is not backed by a low-code page.'
+);
+assert.match(
+  layoutSource,
+  /if \(option\.code === 'open-page-info-designer'\) \{\s*void openLowCodePageInfoDesignerByCode\(pageCode, tab\);\s*\}/,
+  'The page information action must edit the low-code page behind the selected tab.'
+);
+assert.match(
+  layoutSource,
+  /title: '页面信息设计'[\s\S]*?resource: 'lowcode_pages'[\s\S]*?data: buildPageInfoSaveData\(currentPage, value\)/,
+  'Page information design must open an editor and persist the updated page metadata.'
+);
+assert.match(
+  layoutSource,
+  /loadLowCodeFormDefinition\(\s*serviceApi,\s*PAGE_INFO_DESIGN_FORM_CODE,\s*\)[\s\S]*?hydratePageInfoDesignSchema\(\s*formDefinition\.schema,\s*currentPage,\s*\)/,
+  'Page information design must load and hydrate its form schema from the form-definition resource.'
+);
+assert.match(
+  layoutSource,
+  /form: \{\s*schema: formSchema,[\s\S]*?className: 'dashboard-page-info-design-form'/,
+  'The dialog must render one low-code form backed by the combined page information schema.'
+);
+assert.doesNotMatch(
+  layoutSource,
+  /content: \{\s*type: 'tabs'[\s\S]*?key: 'page-info-tabs'/,
+  'Page information tabs must not be modeled with the dialog content protocol.'
+);
+assert.match(
+  formDefinitionMigration,
+  /field: 'functions'[\s\S]*?component: 'lc-array-table'[\s\S]*?label: '新增函数'[\s\S]*?component: 'lc-monaco-editor'/,
+  'Page functions must be editable as a structured array with a Monaco script editor.'
+);
+assert.match(
+  formDefinitionSource,
+  /resource: 'lowcode_form_definitions'[\s\S]*?filters: \{ code, enabled: true \}/,
+  'Only the enabled database form definition with the requested code may be loaded.'
+);
+assert.match(
+  formDefinitionSource,
+  /contextSource: createPageFunctionContextSource\(page\)/,
+  'The current page context must be injected after the database schema is loaded.'
+);
+assert.doesNotMatch(
+  layoutSource,
+  /const pageInfoBasicFields|function createPageInfoDesignSchema|const pageApiDesignField/,
+  'The page-information form schema must not remain hard-coded in the dashboard layout.'
+);
+assert.match(
+  layoutSource,
+  /buildPageInfoSaveData,[\s\S]*?createPageInfoDesignForm,[\s\S]*?normalizePageInfoDesignForm/,
+  'Page information design must use the tested functions/API round-trip serializer.'
+);
+assert.match(
+  layoutSource,
+  /replaceVisitedTabPageInfo\(tab, page\);\s*showPageInfoDesignMessage\('页面信息已保存。', 'success'\);\s*await reloadVisitedTab\(tab\);\s*replaceVisitedTabPageInfo\(tab, page\);/,
+  'Saving page information must keep the selected tab metadata after its runtime page reloads.'
 );
 assert.match(
   layoutSource,

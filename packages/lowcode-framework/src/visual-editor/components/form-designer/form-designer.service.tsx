@@ -1,4 +1,15 @@
-import { createApp, defineComponent, getCurrentInstance, nextTick, onMounted, PropType, reactive, ref } from 'vue';
+import {
+  computed,
+  createApp,
+  defineComponent,
+  getCurrentInstance,
+  nextTick,
+  onMounted,
+  PropType,
+  provide,
+  reactive,
+  ref,
+} from 'vue';
 import DesignerUI, { ElButton, ElDialog, ElMessage } from '../common/designer-ui';
 import { cloneDeep } from 'lodash-es';
 import VisualEditorProvider from '../../../components/VisualEditorProvider.vue';
@@ -6,8 +17,11 @@ import { visualConfig } from '../../../visual.config';
 import type {
   LowCodeField,
   LowCodeFormLayoutNode,
+  LowCodeOption,
+  LowCodePageRecord,
   LowCodeFormSchema,
 } from '../../../types/lowcode';
+import type { LowCodeHostServiceApi } from '../../../core/host';
 import { readFormDesignerLayout } from '../../../lowcode/visual-converters/helpers';
 import {
   createNewBlock,
@@ -16,6 +30,15 @@ import {
   type VisualEditorPage,
 } from '../../visual-editor.utils';
 import { defer } from '../../utils/defer';
+import {
+  formDesignerPageDataKey,
+  formDesignerTableFieldOptionsKey,
+} from '../../form-designer-context';
+import {
+  collectPageTableFieldOptions,
+  loadFormDesignerTableFieldOptions,
+  mergeTableFieldOptions,
+} from '../../material-prop-forms/table-field-options';
 
 export type FormDesignerField = {
   field: string;
@@ -44,6 +67,9 @@ interface FormDesignerServiceOption {
   layout?: LowCodeFormLayoutNode[];
   columns?: number;
   designerModel?: VisualEditorModelValue | null;
+  pageData?: unknown;
+  pageRecord?: LowCodePageRecord | null;
+  serviceApi?: LowCodeHostServiceApi;
   onConfirm: (value: FormDesignerResult) => Promise<void> | void;
   onCancel?: () => void;
 }
@@ -779,6 +805,10 @@ const ServiceComponent = defineComponent({
   setup(props) {
     const ctx = getCurrentInstance()!;
     const providerRef = ref<FormProviderInstance | null>(null);
+    const tableFieldOptions = ref<LowCodeOption[]>(
+      collectPageTableFieldOptions(props.option.pageData),
+    );
+    let tableFieldLoadSequence = 0;
 
     const state = reactive({
       option: props.option,
@@ -791,10 +821,33 @@ const ServiceComponent = defineComponent({
         return dfd.promise;
       })(),
     });
+    provide(formDesignerPageDataKey, computed(() => state.option.pageData));
+    provide(formDesignerTableFieldOptionsKey, tableFieldOptions);
+
+    const loadTableFieldOptions = async () => {
+      const sequence = ++tableFieldLoadSequence;
+      const localOptions = collectPageTableFieldOptions(state.option.pageData);
+      tableFieldOptions.value = localOptions;
+
+      if (!state.option.serviceApi || !state.option.pageRecord?.id) return;
+
+      try {
+        const loaded = await loadFormDesignerTableFieldOptions(
+          state.option.serviceApi,
+          state.option.pageRecord,
+        );
+        if (sequence === tableFieldLoadSequence) {
+          tableFieldOptions.value = mergeTableFieldOptions(localOptions, loaded);
+        }
+      } catch {
+        // Local choices and custom field creation remain available if metadata fails.
+      }
+    };
 
     const methods = {
       service: async (option: FormDesignerServiceOption) => {
         state.option = option;
+        void loadTableFieldOptions();
         state.initialData = resolveInitialModel(option);
         state.providerKey += 1;
         providerRef.value = null;

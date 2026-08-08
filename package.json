@@ -50,6 +50,8 @@
     "files-service:start": "pnpm --dir api files:start",
     "chat-service:dev": "pnpm --dir api chat:dev",
     "chat-service:start": "pnpm --dir api chat:start",
+    "planning-service:dev": "pnpm --dir api planning:dev",
+    "planning-service:start": "pnpm --dir api planning:start",
     "workflow-api:build": "pnpm --dir api workflow:build",
     "workflow-api:typecheck": "pnpm --dir api workflow:typecheck",
     "workflow-api:test": "pnpm --dir api workflow:test",

@@ -6,6 +6,7 @@
     :allow-form-design="allowFormDesign"
     :show-page-setting="showPageSetting"
     :workbench-mode="workbenchMode"
+    :page-record="pageRecord"
   >
     <template v-if="hasMetaSlot" #meta>
       <slot name="meta" />
@@ -32,6 +33,7 @@ import {
   localKey
 } from '../visual-editor/hooks/useVisualData';
 import { provideVisualEditorPersistence } from '../visual-editor/hooks/useVisualPersistence';
+import type { LowCodePageRecord } from '../types/lowcode';
 
 const props = withDefaults(
   defineProps<{
@@ -44,6 +46,7 @@ const props = withDefaults(
     allowFormDesign?: boolean;
     showPageSetting?: boolean;
     workbenchMode?: 'page' | 'form';
+    pageRecord?: LowCodePageRecord | null;
     persistToSession?: boolean;
   }>(),
   {
@@ -56,6 +59,7 @@ const props = withDefaults(
     allowFormDesign: true,
     showPageSetting: true,
     workbenchMode: 'page',
+    pageRecord: null,
     persistToSession: true
   }
 );

@@ -209,6 +209,17 @@ const buttonColumns = [
     component: 'vxe-select' as const,
     width: 96,
     options: buttonStatusOptions,
+  },{
+    field: 'script',
+    title: '执行脚本',
+    component: 'lc-monaco-editor' as const,
+    minWidth: 240,
+    placeholder: 'JavaScript',
+    props: {
+      dialog: true,
+      language: 'javascript',
+      dialogTitle: '编辑按钮执行脚本',
+    },
   },
   {
     field: 'type',
@@ -226,18 +237,7 @@ const buttonColumns = [
   },
   { field: 'route', title: '路由', minWidth: 140, placeholder: '/dashboard/users' },
   { field: 'eventName', title: '事件名', minWidth: 160, placeholder: 'buttonGroup.click' },
-  {
-    field: 'script',
-    title: '执行脚本',
-    component: 'lc-monaco-editor' as const,
-    minWidth: 240,
-    placeholder: 'JavaScript',
-    props: {
-      dialog: true,
-      language: 'javascript',
-      dialogTitle: '编辑按钮执行脚本',
-    },
-  },
+
   { field: 'icon', title: '图标', minWidth: 110, placeholder: 'ri-add-line' },
   { field: 'prefixIcon', title: '前缀图标', minWidth: 120, placeholder: 'ri-add-line' },
   { field: 'suffixIcon', title: '后缀图标', minWidth: 120, placeholder: 'ri-arrow-down-s-line' },

@@ -50,13 +50,18 @@ assert.match(
   'Button scripts must use an isolated typed model and dispose it with the editor.',
 );
 assert.match(
+  materialSource,
+  /resolveEditorDialogLayout\(\)[\s\S]*?availableRight = viewportWidth - drawerWidth - SCRIPT_DIALOG_DRAWER_GAP[\s\S]*?position: \{[\s\S]*?left: Math\.round\(left\)/,
+  'Script dialogs must reserve room for the context drawer and open in the remaining left-side area.',
+);
+assert.match(
   arrayTableSource,
   /<LcMonacoEditor[\s\S]*?column\.component === 'lc-monaco-editor'[\s\S]*?setCell/,
   'Array-table columns must support the Monaco form material.',
 );
 assert.match(
   designerSource,
-  /field: 'script'[\s\S]*?title: '执行脚本'[\s\S]*?component: 'lc-monaco-editor'[\s\S]*?dialog: true[\s\S]*?language: 'javascript'[\s\S]*?scriptThisType: 'LowCodeButtonScriptThis'/,
+  /field: 'script'[\s\S]*?title: '(?:执行脚本|鎵ц鑴氭湰)'[\s\S]*?component: 'lc-monaco-editor'[\s\S]*?dialog: true[\s\S]*?language: 'javascript'[\s\S]*?scriptThisType: 'LowCodeButtonScriptThis'/,
   'The button designer must expose a JavaScript execution-script column in dialog mode.',
 );
 

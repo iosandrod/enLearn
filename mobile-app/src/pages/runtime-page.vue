@@ -36,9 +36,16 @@ import {
 } from '../runtime/service-api';
 import {
   getRuntimeConfig,
-  removeMobileStorage,
-  updateRuntimeAuth,
 } from '../config';
+import { mobileNetwork } from '../runtime/network-status';
+import { readPageCache, writePageCache } from '../runtime/runtime-cache';
+import {
+  firstMobilePageCode,
+  loadMobileNavigation,
+  mobileNavigation,
+  navigationRuntimePath,
+} from '../runtime/navigation';
+import { clearMobileSession } from '../runtime/session';
 import type { MobilePageRecord } from '../runtime/types';
 
 const route = useRoute();
@@ -54,7 +61,22 @@ const page = ref<MobilePageRecord | null>(null);
 function readRouteCode() {
   const value = route.params.code;
   const routeCode = typeof value === 'string' ? value.trim() : '';
-  return routeCode || getRuntimeConfig().pageCode;
+  return routeCode;
+}
+
+function readRouteTarget() {
+  const value = route.query.target;
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function readRoutePageId() {
+  const value = route.query.pageId ?? route.query.page_id;
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function readSourcePageCode() {
+  const value = route.query.fromPage ?? route.query.from_page;
+  return typeof value === 'string' ? value.trim() : '';
 }
 
 function runtimePath(code: string) {
@@ -63,46 +85,72 @@ function runtimePath(code: string) {
 
 async function openLogin(code: string, clearSession = false) {
   if (clearSession) {
-    updateRuntimeAuth('', '');
-    await Promise.all([
-      removeMobileStorage('accessToken'),
-      removeMobileStorage('refreshToken'),
-      removeMobileStorage('accountId'),
-    ]);
+    await clearMobileSession();
   }
 
   await router.replace({
     path: '/login',
-    query: { redirect: runtimePath(code) },
+    query: {
+      redirect: readRouteTarget()
+        ? `/runtime?target=${encodeURIComponent(readRouteTarget())}`
+        : runtimePath(code),
+    },
   });
 }
 
 async function loadPage() {
-  const code = readRouteCode();
+  let code = readRouteCode();
+  const routeTarget = readRouteTarget();
+  const pageId = readRoutePageId();
   errorMessage.value = '';
-
-  if (!code) {
-    page.value = createDemoPage();
-    return;
-  }
 
   const config = getRuntimeConfig();
   if (!config.accessToken || !config.accountId) {
-    await openLogin(code);
+    await openLogin(code || config.pageCode);
     return;
   }
 
   loading.value = true;
   try {
-    page.value = await serviceApi.getPage(code);
+    await loadMobileNavigation(serviceApi);
+    if (!code) {
+      const configuredCode = mobileNavigation.routes.some((item) => item.page_code === config.pageCode)
+        ? config.pageCode
+        : '';
+      code = configuredCode || firstMobilePageCode();
+      if (code) {
+        await router.replace(runtimePath(code));
+        return;
+      }
+      throw new Error('当前账号没有可用的移动端业务菜单。');
+    }
+    const loadedPage = pageId
+      ? await serviceApi.getPageById(pageId, readSourcePageCode())
+      : routeTarget
+        ? await serviceApi.getPageByRoute(routeTarget, readSourcePageCode())
+        : await serviceApi.getPage(code);
+    page.value = loadedPage;
+    await writePageCache(config.accountId, config.userId, loadedPage);
   } catch (error) {
     if (isMobileAuthenticationError(error)) {
       page.value = null;
       await openLogin(code, true);
       return;
     }
+    const cached = await readPageCache(config.accountId, config.userId, {
+      id: pageId || undefined,
+      code: code || undefined,
+    });
+    if (cached?.data) {
+      page.value = cached.data;
+      errorMessage.value = '';
+      return;
+    }
     page.value = null;
-    errorMessage.value = error instanceof Error ? error.message : '未知错误';
+    const reason = error instanceof Error ? error.message : '未知错误';
+    errorMessage.value = mobileNetwork.status === 'offline'
+      ? `当前网络不可用，且该页面尚无离线缓存。${reason}`
+      : reason;
   } finally {
     loading.value = false;
   }
@@ -110,13 +158,13 @@ async function loadPage() {
 
 function handleNavigate(path: string) {
   if (!path) return;
-
-  if (path.startsWith('/page/')) {
-    router.push(path);
-    return;
+  const target = navigationRuntimePath(path);
+  if (target) router.push(target);
+  else if (path.startsWith('/')) {
+    router.push(`/runtime?target=${encodeURIComponent(path)}`);
+  } else {
+    errorMessage.value = `该页面尚未配置移动端路由：${path}`;
   }
-
-  router.push(`/page/${encodeURIComponent(path.replace(/^\/+/, ''))}`);
 }
 
 async function handleAuthenticationRequired() {
@@ -130,7 +178,10 @@ function handlePageTitleChange(title: string) {
 }
 
 onMounted(loadPage);
-watch(() => route.params.code, loadPage);
+watch(
+  () => `${String(route.params.code ?? '')}:${route.fullPath}`,
+  loadPage,
+);
 </script>
 
 <style scoped>

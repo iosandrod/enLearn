@@ -143,6 +143,8 @@ export default defineConfig({
       { find: /^~\/types\/lowcode$/, replacement: `${toVitePath(lowcodeFrameworkRoot)}/types/lowcode.ts` },
       { find: /^@\/types\/lowcode$/, replacement: `${toVitePath(lowcodeFrameworkRoot)}/types/lowcode.ts` },
       { find: '@enlearn/lowcode-framework/runtime/global-dialog', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'global-dialog.ts') },
+      { find: '@enlearn/lowcode-framework/runtime/global-drawer', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'global-drawer.ts') },
+      { find: '@enlearn/lowcode-framework/runtime/lowcode-context-drawer', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'lowcode-context-drawer.tsx') },
       { find: '@enlearn/lowcode-framework/runtime/page-reference-dialog', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'page-reference-dialog.tsx') },
       { find: '@enlearn/lowcode-framework/runtime/directives', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'directives.ts') },
       { find: '@enlearn/lowcode-framework/runtime/scripts', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'scripts.ts') },

@@ -37,8 +37,18 @@ for (const [code, label, kind] of [
 
 assert.match(
   designerSource,
-  /confirmLowCodePage\(\{[\s\S]*page: createSourcePickerPage\(kind, sourceOptions\)[\s\S]*requireSelection: true/,
-  'Entity and view association must use the system low-code confirmation dialog.',
+  /confirmLowCodePage\(\{[\s\S]*pageCode: gridDesignerSourcePageCodes\[kind\][\s\S]*includeData: true[\s\S]*requireSelection: true/,
+  'Entity and view association must render the stored low-code page without rebuilding it.',
+);
+assert.doesNotMatch(
+  designerSource,
+  /function createSourcePickerPage|page: createSourcePickerPage/,
+  'Association must not transform source data into a temporary low-code page.',
+);
+assert.match(
+  designerSource,
+  /entity: 'admin-system-entities'[\s\S]*view: 'entity-views'/,
+  'Entity and view association must open their original stored low-code pages.',
 );
 
 assert.match(
@@ -48,8 +58,8 @@ assert.match(
 );
 assert.match(
   designerSource,
-  /'entityDesign', 'listViews'[\s\S]*status: 'published'/,
-  'View association must only offer published managed views.',
+  /'entityDesign', 'listViews'[\s\S]*id: readString\(row\.id\)[\s\S]*readString\(view\.status\) !== 'published'/,
+  'The selected view must be loaded from its original row and must be published before import.',
 );
 assert.match(
   designerSource,

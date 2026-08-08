@@ -1,12 +1,12 @@
 <template>
-  <div class="mobile-action-group">
+  <div class="mobile-action-group" :style="blockStyle">
     <div v-if="block.title || block.description" class="action-header">
       <span v-if="block.title" class="action-title">{{ block.title }}</span>
       <span v-if="block.description" class="action-description">{{ block.description }}</span>
     </div>
     <div class="action-list">
       <button
-        v-for="action in block.actions ?? []"
+        v-for="action in actions"
         :key="action.code"
         :class="[
           'action-button',
@@ -24,6 +24,8 @@
 
 <script setup lang="ts">
 import { computed } from '@vue/runtime-core';
+import { resolveMobileBlockStyle } from '../block-style';
+import { hasMobilePermission } from '../session';
 import type { MobileMaterialEmits, MobileMaterialProps, SharedLowCodeAction } from '../types';
 
 const props = defineProps<MobileMaterialProps>();
@@ -31,10 +33,17 @@ const emit = defineEmits<MobileMaterialEmits>();
 const activeCode = computed(() => props.activeActionCodes[props.block.id]
   || props.block.actions?.find((action: SharedLowCodeAction) => action.status === 'primary')?.code
   || '');
+const blockStyle = computed(() => resolveMobileBlockStyle(props.block.style));
+const actions = computed(() => (props.block.actions ?? []).filter(
+  (action: SharedLowCodeAction & { permissionCode?: string }) => hasMobilePermission(action.permissionCode),
+));
 
 function publishAction(action: SharedLowCodeAction) {
+  const defaultEvent = props.block.kind === 'buttonGroup'
+    ? 'buttonGroup.click'
+    : 'toolbar.click';
   emit('runtimeEvent', {
-    name: action.eventName ?? 'toolbar.action',
+    name: action.eventName ?? defaultEvent,
     blockId: props.block.id,
     blockKind: props.block.kind,
     timestamp: Date.now(),

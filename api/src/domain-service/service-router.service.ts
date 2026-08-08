@@ -10,17 +10,9 @@ import { LowCodeService } from '../lowcode-service/lowcode.service';
 import { NotificationService } from '../notification-service/notification.service';
 import { PaymentService } from '../payment-service/payment.service';
 import { PostsService } from '../posts-service/posts.service';
+import { PlanningService } from '../planning-service/planning.service';
 import { UserService } from '../user-service/user.service';
 import { isDomainServiceName, type DomainServiceName } from '../common/service-bus';
-
-function hasListItemsEntityTarget(postData: Record<string, unknown>) {
-  return Boolean(
-    typeof postData.entityCode === 'string' ||
-      typeof postData.entity_code === 'string' ||
-      typeof postData.tableName === 'string' ||
-      typeof postData.table_name === 'string'
-  );
-}
 
 @Injectable()
 export class DomainServiceRouter {
@@ -46,7 +38,9 @@ export class DomainServiceRouter {
     @Inject(FilesService)
     private readonly filesService: FilesService,
     @Inject(ChatService)
-    private readonly chatService: ChatService
+    private readonly chatService: ChatService,
+    @Inject(PlanningService)
+    private readonly planningService: PlanningService
   ) {
     this.executors = {
       account: accountService,
@@ -58,7 +52,8 @@ export class DomainServiceRouter {
       notification: notificationService,
       entityDesign: entityDesignService,
       files: filesService,
-      chat: chatService
+      chat: chatService,
+      planning: planningService
     };
   }
 
@@ -68,7 +63,7 @@ export class DomainServiceRouter {
     postData: Record<string, unknown>,
     context: ServiceContext
   ) {
-    if (serviceMethod === 'listItems' && (serviceName === 'admin' || hasListItemsEntityTarget(postData))) {
+    if (serviceMethod === 'listItems' && serviceName === 'admin') {
       return this.adminService.execute('listItems', postData, context);
     }
 

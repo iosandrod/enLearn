@@ -3,6 +3,7 @@ import {
   defineComponent,
   isRef,
   onBeforeUnmount,
+  onMounted,
   resolveDynamicComponent,
   unref,
   type VNodeChild,
@@ -12,6 +13,7 @@ import { VxeGrid } from 'vxe-table';
 import LowCodeForm from './LowCodeForm.vue';
 import LowCodeGrid from './LowCodeGrid.vue';
 import LowCodeBlockRenderer from './LowCodeBlockRenderer.vue';
+import GlobalDrawerHost from './GlobalDrawerHost';
 import {
   closeGlobalDialog,
   createGlobalDialogContext,
@@ -29,6 +31,7 @@ import {
   type GlobalDialogMaybeRef,
   type GlobalDialogResult,
 } from '../runtime/global-dialog-core';
+import { globalDrawerInstances } from '../runtime/global-drawer-core';
 import type { LowCodePageBlock, LowCodeRuntimeEvent } from '../types/lowcode';
 import '../styles/global-dialog.scss';
 
@@ -557,7 +560,30 @@ export default defineComponent({
     const VxeModalComponent = VxeModal as any;
     const host = registerGlobalDialogHost();
 
-    onBeforeUnmount(host.unregister);
+    const handleEscape = (event: KeyboardEvent) => {
+      if (
+        event.key !== 'Escape' ||
+        !isActiveGlobalDialogHost(host.hostId) ||
+        globalDrawerInstances.length ||
+        !globalDialogInstances.length
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const instance = globalDialogInstances[globalDialogInstances.length - 1];
+      void closeGlobalDialog(instance.id, {
+        action: 'close',
+        values: instance.model,
+      });
+    };
+
+    onMounted(() => window.addEventListener('keydown', handleEscape, true));
+    onBeforeUnmount(() => {
+      window.removeEventListener('keydown', handleEscape, true);
+      host.unregister();
+    });
 
     return () => {
       if (!isActiveGlobalDialogHost(host.hostId)) return null;
@@ -576,6 +602,7 @@ export default defineComponent({
               showZoom: true,
               transfer: true,
               resize: true,
+              escClosable: false,
               ...(config.props ?? {}),
               'onUpdate:modelValue': (visible: boolean) => {
                 if (!visible) {
@@ -588,6 +615,7 @@ export default defineComponent({
                 }
               },
               onClose: () => {
+                if (globalDrawerInstances.length) return;
                 void closeGlobalDialog(instance.id, {
                   action: 'close',
                   values: instance.model,
@@ -608,6 +636,7 @@ export default defineComponent({
               />
             );
           })}
+          <GlobalDrawerHost />
         </Fragment>
       );
     };

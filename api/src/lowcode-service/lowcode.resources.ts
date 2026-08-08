@@ -76,5 +76,23 @@ export const lowCodeResources: ResourceConfigMap = {
       allowedFields: ['schema', 'published_at'],
       timestamp: false
     }
+  },
+  lowcode_form_definitions: {
+    tableName: 'lowcode_form_definitions',
+    clientMode: 'admin',
+    permissions: crudPermissions('lowcode.pages.manage'),
+    defaults: {
+      enabled: true
+    },
+    list: { defaultSorts: [{ field: 'updated_at', direction: 'desc' }] },
+    create: {
+      allowedFields: ['code', 'name', 'description', 'schema', 'enabled'],
+      requiredFields: ['code', 'name', 'schema'],
+      userFields: { createdBy: 'created_by', updatedBy: 'updated_by' }
+    },
+    update: {
+      allowedFields: ['name', 'description', 'schema', 'enabled'],
+      userFields: { updatedBy: 'updated_by' }
+    }
   }
 };

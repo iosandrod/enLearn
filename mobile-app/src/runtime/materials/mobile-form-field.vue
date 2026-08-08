@@ -85,8 +85,8 @@
         v-if="jsonEditorOpen"
         class="json-dialog"
         transparent
-        :animated="true"
-        animation-type="fade"
+        :animated="false"
+        animation-type="none"
         @request-close="closeJsonEditor"
       >
         <div class="json-dialog-mask" @click="closeJsonEditor">

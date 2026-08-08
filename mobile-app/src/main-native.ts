@@ -14,6 +14,7 @@ import {
   updateRuntimeAuth,
 } from './config';
 import { createRouter } from './routes';
+import { consumeMobileBackRequest } from './runtime/mobile-back';
 
 globalThis.Hippy?.on('uncaughtException', (error: Error) => {
   console.error('Uncaught Hippy exception', error);
@@ -46,20 +47,22 @@ app.$start().then(async ({ superProps }) => {
   configureRuntime({ superProps });
   const runtimeConfig = getRuntimeConfig();
   if (!runtimeConfig.accessToken || !runtimeConfig.accountId) {
-    const [accessToken, accountId] = await Promise.all([
+    const [accessToken, accountId, userId] = await Promise.all([
       readMobileStorage('accessToken'),
       readMobileStorage('accountId'),
+      readMobileStorage('userId'),
     ]);
     updateRuntimeAuth(
       runtimeConfig.accessToken || accessToken,
-      runtimeConfig.accountId || accountId
+      runtimeConfig.accountId || accountId,
+      runtimeConfig.userId || userId,
     );
   }
-  const pageCode = getRuntimeConfig().pageCode;
   const initialPath = typeof superProps?.path === 'string' ? superProps.path.trim() : '';
-  router.push(initialPath || (pageCode ? `/page/${encodeURIComponent(pageCode)}` : '/'));
+  await router.push(initialPath || '/');
 
   BackAndroid.addListener(() => {
+    if (consumeMobileBackRequest()) return true;
     if (router.currentRoute.value.path !== '/') {
       router.back();
       return true;

@@ -29,19 +29,42 @@
       </template>
     </vxe-input>
 
-    <div
-      v-else
-      ref="editorContainerRef"
-      class="lc-monaco-editor__surface"
-      :style="editorStyle"
-      :aria-label="field.label || field.field"
-    />
+    <div v-else class="lc-monaco-editor__editor-shell">
+      <div
+        v-if="contextDrawerAvailable"
+        class="lc-monaco-editor__toolbar"
+      >
+        <button
+          type="button"
+          class="lc-monaco-editor__context-trigger"
+          :class="{ 'is-active': contextDrawerOpen }"
+          :title="contextDrawerActionLabel"
+          :aria-label="contextDrawerActionLabel"
+          :aria-pressed="contextDrawerOpen"
+          @click="toggleContextDrawer"
+        >
+          <i
+            :class="contextDrawerOpen
+              ? 'ri-layout-right-fill'
+              : 'ri-layout-right-line'"
+            aria-hidden="true"
+          />
+        </button>
+      </div>
+      <div
+        ref="editorContainerRef"
+        class="lc-monaco-editor__surface"
+        :style="editorStyle"
+        :aria-label="field.label || field.field"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import {
   computed,
+  inject,
   nextTick,
   onBeforeUnmount,
   onMounted,
@@ -49,6 +72,10 @@ import {
   watch,
 } from 'vue';
 import { openGlobalDialog } from '../../../runtime/global-dialog-core';
+import type { GlobalDrawerHandle } from '../../../runtime/global-drawer-core';
+import { openLowCodeContextDrawer } from '../../../runtime/lowcode-context-drawer';
+import type { LowCodeContextSource } from '../../../runtime/lowcode-context';
+import { lowCodeScriptContextProviderKey } from '../../../runtime/script-context-provider';
 import {
   BUTTON_SCRIPT_LANGUAGE_ID,
   createButtonScriptMonacoModel,
@@ -61,16 +88,24 @@ import type { LowCodeField, LowCodeFormSchema } from '../../../types/lowcode';
 import type { LowCodeFormMaterialProps } from '../types';
 
 const props = defineProps<LowCodeFormMaterialProps>();
+const scriptContextProvider = inject(lowCodeScriptContextProviderKey, null);
 const emit = defineEmits<{
   'update:modelValue': [value: string];
 }>();
 
 const editorContainerRef = ref<HTMLElement>();
 const editorOpen = ref(false);
+const contextDrawerOpen = ref(false);
 let editorInstance: Monaco.editor.IStandaloneCodeEditor | null = null;
 let changeSubscription: Monaco.IDisposable | null = null;
 let editorModel: Monaco.editor.ITextModel | null = null;
 let syncingExternalValue = false;
+let contextDrawerHandle: GlobalDrawerHandle | null = null;
+
+const SCRIPT_DIALOG_VIEWPORT_MARGIN = 16;
+const SCRIPT_DIALOG_DRAWER_GAP = 12;
+const DEFAULT_SCRIPT_DIALOG_WIDTH = 980;
+const DEFAULT_CONTEXT_DRAWER_WIDTH = 460;
 
 const fieldProps = computed(() => props.field.props ?? {});
 const dialogMode = computed(() => fieldProps.value.dialog === true);
@@ -81,8 +116,14 @@ const language = computed(() => readString(fieldProps.value.language, 'javascrip
 const buttonScriptMode = computed(
   () => fieldProps.value.scriptThisType === 'LowCodeButtonScriptThis',
 );
+const contextDrawerAvailable = computed(
+  () => buttonScriptMode.value && fieldProps.value.contextDrawer === true,
+);
 const editorActionLabel = computed(() =>
   isReadonly.value ? '查看代码' : '编辑代码',
+);
+const contextDrawerActionLabel = computed(() =>
+  contextDrawerOpen.value ? '关闭页面上下文' : '打开页面上下文',
 );
 const editorStyle = computed(() => ({
   height: readDimension(fieldProps.value.height, '320px'),
@@ -102,6 +143,10 @@ const inputProps = computed(() => {
     'maxHeight',
     'language',
     'scriptThisType',
+    'contextDrawer',
+    'contextDrawerTitle',
+    'contextDrawerWidth',
+    'contextSource',
     'theme',
     'editorOptions',
     'disabled',
@@ -122,6 +167,99 @@ function readDimension(value: unknown, fallback?: string) {
   if (typeof value === 'number' && Number.isFinite(value)) return `${value}px`;
   if (typeof value === 'string' && value.trim()) return value.trim();
   return fallback;
+}
+
+function readViewportDimension(
+  value: unknown,
+  viewportWidth: number,
+  fallback: number,
+) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value !== 'string') return fallback;
+
+  const source = value.trim();
+  const pixelMatch = source.match(/(?:^|\()\s*(\d+(?:\.\d+)?)px/);
+  if (pixelMatch) return Number(pixelMatch[1]);
+
+  const viewportMatch = source.match(/^(\d+(?:\.\d+)?)vw$/);
+  if (viewportMatch) return viewportWidth * Number(viewportMatch[1]) / 100;
+
+  const viewportOffsetMatch = source.match(
+    /calc\(\s*100vw\s*-\s*(\d+(?:\.\d+)?)px\s*\)/,
+  );
+  if (viewportOffsetMatch) {
+    return viewportWidth - Number(viewportOffsetMatch[1]);
+  }
+
+  return fallback;
+}
+
+function resolveEditorDialogLayout() {
+  const fallbackWidth =
+    readDimension(fieldProps.value.dialogWidth) ||
+    'min(980px, calc(100vw - 32px))';
+  const baseProps: Record<string, unknown> = {
+    top: '4vh',
+    destroyOnClose: true,
+  };
+
+  if (!contextDrawerAvailable.value || typeof window === 'undefined') {
+    return { width: fallbackWidth, props: baseProps };
+  }
+
+  const viewportWidth =
+    document.documentElement.clientWidth || window.innerWidth;
+  const requestedDialogWidth = Math.min(
+    readViewportDimension(
+      fieldProps.value.dialogWidth,
+      viewportWidth,
+      DEFAULT_SCRIPT_DIALOG_WIDTH,
+    ),
+    viewportWidth - SCRIPT_DIALOG_VIEWPORT_MARGIN * 2,
+  );
+  const drawerWidth = Math.min(
+    readViewportDimension(
+      fieldProps.value.contextDrawerWidth,
+      viewportWidth,
+      DEFAULT_CONTEXT_DRAWER_WIDTH,
+    ),
+    viewportWidth - 24,
+  );
+  const availableRight = viewportWidth - drawerWidth - SCRIPT_DIALOG_DRAWER_GAP;
+  const availableWidth = Math.max(
+    0,
+    availableRight - SCRIPT_DIALOG_VIEWPORT_MARGIN,
+  );
+
+  // On narrow screens the drawer necessarily overlays the dialog. Keep the
+  // dialog usable there; desktop layouts reserve the drawer's full width.
+  if (availableWidth < 420) {
+    return {
+      width: fallbackWidth,
+      props: {
+        ...baseProps,
+        position: {
+          top: '4vh',
+          left: SCRIPT_DIALOG_VIEWPORT_MARGIN,
+        },
+      },
+    };
+  }
+
+  const dialogWidth = Math.min(requestedDialogWidth, availableWidth);
+  const left = SCRIPT_DIALOG_VIEWPORT_MARGIN +
+    Math.max(0, (availableWidth - dialogWidth) / 2);
+
+  return {
+    width: dialogWidth,
+    props: {
+      ...baseProps,
+      position: {
+        top: '4vh',
+        left: Math.round(left),
+      },
+    },
+  };
 }
 
 function toCodeString(value: unknown) {
@@ -187,6 +325,14 @@ function createEditor() {
       model: editorModel,
     },
   );
+  if (import.meta.env.DEV && typeof window !== 'undefined') {
+    const scope = window as typeof window & {
+      __lcMonacoEditors?: Monaco.editor.IStandaloneCodeEditor[];
+    };
+    scope.__lcMonacoEditors ??= [];
+    scope.__lcMonacoEditors.push(editorInstance);
+  }
+  openContextDrawer();
   changeSubscription = editorInstance.onDidChangeModelContent(() => {
     if (!editorInstance || syncingExternalValue) return;
     const model = editorInstance.getModel();
@@ -200,8 +346,16 @@ function createEditor() {
 }
 
 function disposeEditor() {
+  void closeContextDrawer('editor-dispose');
   changeSubscription?.dispose();
   changeSubscription = null;
+  if (editorInstance && import.meta.env.DEV && typeof window !== 'undefined') {
+    const scope = window as typeof window & {
+      __lcMonacoEditors?: Monaco.editor.IStandaloneCodeEditor[];
+    };
+    const index = scope.__lcMonacoEditors?.indexOf(editorInstance) ?? -1;
+    if (index >= 0) scope.__lcMonacoEditors?.splice(index, 1);
+  }
   editorInstance?.dispose();
   editorInstance = null;
   editorModel?.dispose();
@@ -235,9 +389,77 @@ function createDialogEditorField(): LowCodeField {
   };
 }
 
+function readContextSource() {
+  if (isRecord(fieldProps.value.contextSource)) {
+    return fieldProps.value.contextSource as LowCodeContextSource;
+  }
+  return scriptContextProvider?.getSource();
+}
+
+function insertTextAtCursor(text: string) {
+  if (!editorInstance || isReadonly.value || isDisabled.value) return;
+  const selection = editorInstance.getSelection();
+  const model = editorInstance.getModel();
+  if (!selection || !model) return;
+  const startOffset = model.getOffsetAt(selection.getStartPosition());
+  editorInstance.pushUndoStop();
+  editorInstance.executeEdits('lowcode-context-drawer', [
+    {
+      range: selection,
+      text,
+      forceMoveMarkers: true,
+    },
+  ]);
+  const endPosition = model.getPositionAt(startOffset + text.length);
+  editorInstance.setSelection(new Monaco.Selection(
+    endPosition.lineNumber,
+    endPosition.column,
+    endPosition.lineNumber,
+    endPosition.column,
+  ));
+  editorInstance.pushUndoStop();
+  editorInstance.focus();
+}
+
+function closeContextDrawer(action = 'close') {
+  const handle = contextDrawerHandle;
+  if (!handle) return Promise.resolve();
+  contextDrawerHandle = null;
+  contextDrawerOpen.value = false;
+  return handle.close(action);
+}
+
+function openContextDrawer() {
+  if (!contextDrawerAvailable.value || contextDrawerHandle) return;
+  const handle = openLowCodeContextDrawer({
+    title: readString(fieldProps.value.contextDrawerTitle, '当前页面上下文'),
+    width: fieldProps.value.contextDrawerWidth as string | number | undefined,
+    source: readContextSource(),
+    onInsert: isReadonly.value || isDisabled.value
+      ? undefined
+      : (insertText) => insertTextAtCursor(insertText),
+  });
+  contextDrawerHandle = handle;
+  contextDrawerOpen.value = true;
+  void handle.closed.finally(() => {
+    if (contextDrawerHandle?.id !== handle.id) return;
+    contextDrawerHandle = null;
+    contextDrawerOpen.value = false;
+  });
+}
+
+function toggleContextDrawer() {
+  if (contextDrawerHandle) {
+    void closeContextDrawer('toggle');
+    return;
+  }
+  openContextDrawer();
+}
+
 async function openEditorDialog() {
   if (isDisabled.value || editorOpen.value) return;
   editorOpen.value = true;
+  const dialogLayout = resolveEditorDialogLayout();
 
   const schema: LowCodeFormSchema = {
     columns: 1,
@@ -250,17 +472,12 @@ async function openEditorDialog() {
       title:
         readString(fieldProps.value.dialogTitle) ||
         `${editorActionLabel.value} - ${props.field.label || props.field.field}`,
-      width:
-        readDimension(fieldProps.value.dialogWidth) ||
-        'min(980px, calc(100vw - 32px))',
+      width: dialogLayout.width,
       height:
         readDimension(fieldProps.value.dialogHeight) ||
         'min(680px, calc(100vh - 64px))',
       className: 'lc-monaco-editor-dialog',
-      props: {
-        top: '4vh',
-        destroyOnClose: true,
-      },
+      props: dialogLayout.props,
       model: { code: stringValue.value },
       form: {
         schema,
@@ -297,6 +514,7 @@ async function openEditorDialog() {
       emit('update:modelValue', toCodeString(result.values.code));
     }
   } finally {
+    void closeContextDrawer('editor-dialog-close');
     editorOpen.value = false;
   }
 }
@@ -372,6 +590,51 @@ onBeforeUnmount(disposeEditor);
   border: 1px solid #d8dee8;
   border-radius: 4px;
   background: #fff;
+}
+
+.lc-monaco-editor__editor-shell {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.lc-monaco-editor__toolbar {
+  position: absolute;
+  z-index: 4;
+  top: 7px;
+  right: 20px;
+  display: flex;
+  pointer-events: none;
+}
+
+.lc-monaco-editor__context-trigger {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid #d7dee8;
+  border-radius: 4px;
+  color: #536579;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 10%);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  pointer-events: auto;
+}
+
+.lc-monaco-editor__context-trigger:hover,
+.lc-monaco-editor__context-trigger:focus-visible,
+.lc-monaco-editor__context-trigger.is-active {
+  border-color: #0f9d71;
+  color: #087f5b;
+  background: #eefaf5;
+  outline: none;
+}
+
+.lc-monaco-editor__context-trigger:focus-visible {
+  box-shadow: 0 0 0 2px rgb(15 157 113 / 18%);
 }
 
 .lc-monaco-editor__surface:focus-within {

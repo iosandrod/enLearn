@@ -7,6 +7,7 @@ import type {
 } from '../visual-editor.utils';
 import { useDotProp } from '../hooks/useDotProp';
 import { getMaterialPropFormDefinition } from './registry';
+import { collectPageTableFieldOptions } from './table-field-options';
 import type {
   MaterialPropFieldTarget,
   MaterialPropFormDefinition,
@@ -15,6 +16,7 @@ import type {
 } from './types';
 
 const visualModelsSourceKey = '__visualModels';
+const visualTableFieldsSourceKey = '__visualTableFields';
 const layoutGridSpan = 24;
 const minLayoutSpan = 1;
 
@@ -100,6 +102,10 @@ export function getVisualModelsSourceKey() {
   return visualModelsSourceKey;
 }
 
+export function getVisualTableFieldsSourceKey() {
+  return visualTableFieldsSourceKey;
+}
+
 export function createMaterialPropForm(
   component: VisualEditorComponent | undefined,
   block: VisualEditorBlockData,
@@ -131,14 +137,23 @@ export function createMaterialPropModel(
   ensureDefaultValues(block, fields);
 
   return fields.reduce<Record<string, unknown>>((model, field) => {
-    model[field.field] = cloneDeep(readFieldValue(block, field));
+    const value = readFieldValue(block, field);
+    model[field.field] = cloneDeep(
+      field.optionsSourceKey === visualTableFieldsSourceKey && Array.isArray(value)
+        ? value[value.length - 1] ?? ''
+        : value,
+    );
     return model;
   }, {});
 }
 
-export function createMaterialPropOptionSources(models: readonly unknown[]) {
+export function createMaterialPropOptionSources(
+  models: readonly unknown[],
+  pageData?: unknown,
+) {
   return {
     [visualModelsSourceKey]: cloneDeep(models),
+    [visualTableFieldsSourceKey]: collectPageTableFieldOptions(pageData),
   };
 }
 
@@ -251,22 +266,15 @@ function createFieldFromVisualProp(
   if (propConfig.type === VisualEditorPropsType.modelBind) {
     return {
       ...baseField,
-      component: 'lc-cascader',
-      optionsSourceKey: visualModelsSourceKey,
-      optionProps: {
-        label: 'name',
-        value: 'key',
-        children: 'entitys',
-      },
+      component: 'vxe-select',
+      optionsSourceKey: visualTableFieldsSourceKey,
       props: {
         clearable: true,
-        cascaderProps: {
-          checkStrictly: true,
-          children: 'children',
-          expandTrigger: 'hover',
-        },
+        filterable: true,
+        allowCreate: true,
+        placeholder: '请选择或输入字段',
       },
-      valueKind: 'raw',
+      valueKind: 'string',
     };
   }
 

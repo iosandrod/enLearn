@@ -27,9 +27,12 @@
       "default": "./src/components/JsonDialogInput.vue"
     },
     "./runtime/global-dialog": "./src/runtime/global-dialog.ts",
+    "./runtime/global-drawer": "./src/runtime/global-drawer.ts",
     "./runtime/page-reference-dialog": "./src/runtime/page-reference-dialog.tsx",
     "./runtime/directives": "./src/runtime/directives.ts",
     "./runtime/scripts": "./src/runtime/scripts.ts",
+    "./runtime/lowcode-context-drawer": "./src/runtime/lowcode-context-drawer.tsx",
+    "./runtime/node-action-registry": "./src/runtime/node-action-registry.ts",
     "./actions": "./src/lowcode/actions/index.ts",
     "./core/host": "./src/core/host.ts",
     "./types/lowcode": "./src/types/lowcode.ts",

@@ -1,4 +1,5 @@
 <template>
+  <GlobalDrawerHost />
   <component :is="layoutComponent" v-if="layoutComponent" :key="layoutKey">
     <RouterView v-slot="{ Component, route: viewRoute }">
       <Suspense>
@@ -27,6 +28,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router';
+import { GlobalDrawerHost } from '../packages/lowcode-framework/src/runtime/index.ts';
 import RouteCacheOutlet from './components/RouteCacheOutlet.vue';
 import DashboardLayout from './layouts/dashboard.vue';
 import DefaultLayout from './layouts/default.vue';

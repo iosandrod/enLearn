@@ -20,9 +20,15 @@
     "test:button-script-runtime": "node --experimental-strip-types tests/button-script-runtime-regression.mjs",
     "test:button-script-roundtrip": "node --experimental-strip-types tests/button-script-roundtrip-regression.mjs",
     "test:button-script-runtime-browser": "node tests/button-script-runtime-browser-launcher.mjs",
+    "test:button-script-designer-browser": "node tests/button-script-designer-browser-launcher.mjs",
     "test:button-script-runtime-preview": "node tests/button-script-runtime-preview-launcher.mjs",
     "test:button-script-api": "node tests/lowcode-script-api-registration-regression.mjs",
     "test:button-script-monaco-browser": "node tests/button-script-runtime-browser-launcher.mjs button-script-monaco-browser.html",
+    "test:lowcode-context-drawer": "node --experimental-strip-types tests/lowcode-context-drawer-regression.mjs",
+    "test:lowcode-context-drawer-browser": "node tests/lowcode-context-drawer-browser-launcher.mjs",
+    "test:page-info-functions": "node --experimental-strip-types tests/page-info-functions-roundtrip-regression.mjs",
+    "test:page-info-functions-browser": "node tests/page-info-functions-browser-launcher.mjs",
+    "test:page-functions-runtime-browser": "node tests/page-functions-runtime-browser-launcher.mjs",
     "test:approval-progress": "node tests/approval-progress-page-regression.mjs",
     "test:approval-console": "node tests/approval-console-regression.mjs",
     "test:lowcode-form-layout": "node tests/lowcode-form-layout-span-regression.mjs",
@@ -32,6 +38,7 @@
     "test:form-label-menu": "node tests/form-label-runtime-context-menu-regression.mjs",
     "test:entity-design-tabs": "node tests/entity-design-left-tabs-regression.mjs",
     "test:view-management": "node tests/view-management-regression.mjs",
+    "test:view-management-browser": "node tests/view-management-create-browser-launcher.mjs",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

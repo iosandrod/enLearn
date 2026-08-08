@@ -11,7 +11,10 @@ declare global {
   const __PLATFORM__: 'android' | 'ios' | 'web' | null;
 
   interface Window {
-    __localStorage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
+    __localStorage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> & {
+      length?: number;
+      key?: (index: number) => string | null;
+    };
   }
 
   interface HippyGlobal {

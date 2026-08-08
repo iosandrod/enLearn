@@ -214,8 +214,9 @@ export const workflowResources: ResourceConfigMap = {
   },
   wf_job_run: {
     tableName: 'wf_job_run',
-    clientMode: 'user',
+    clientMode: 'admin',
     accountField: 'account_id',
+    select: 'id, account_id, job_id, trigger_run_id, status, attempt, error_message, started_at, finished_at, created_at',
     permissions: runtimePermissions,
     list: {
       defaultSorts: [{ field: 'created_at', direction: 'desc' }],

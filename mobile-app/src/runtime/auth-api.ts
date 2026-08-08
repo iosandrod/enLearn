@@ -6,6 +6,8 @@ export type MobileAccountOption = {
   name?: string | null;
   base_currency?: string | null;
   status?: string | null;
+  is_default?: boolean;
+  is_last_used?: boolean;
 };
 
 export type MobileAuthPayload = {
@@ -14,11 +16,15 @@ export type MobileAuthPayload = {
     email?: string;
   } | null;
   accounts: MobileAccountOption[];
+  permissions?: string[];
+  profile?: Record<string, unknown> | null;
   activeAccount?: MobileAccountOption | null;
   accountRequired?: boolean;
   session: {
     access_token?: string;
     refresh_token?: string;
+    expires_at?: number;
+    expires_in?: number;
   } | null;
 };
 
@@ -81,8 +87,52 @@ export function createMobileAuthApi() {
     });
   }
 
+  async function signOut() {
+    const config = getRuntimeConfig();
+    return request<{ success?: boolean }>('auth/signout', {
+      method: 'POST',
+      headers: config.accessToken
+        ? { Authorization: `Bearer ${config.accessToken}` }
+        : undefined,
+    });
+  }
+
+  async function getCurrentSession() {
+    const config = getRuntimeConfig();
+    return request<MobileAuthPayload>('auth/me', {
+      headers: {
+        ...(config.accessToken ? { Authorization: `Bearer ${config.accessToken}` } : {}),
+        ...(config.accountId ? { 'X-Account-Id': config.accountId } : {}),
+      },
+    });
+  }
+
+  async function refreshSession(refreshToken: string) {
+    return request<MobileAuthPayload>('auth/refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    });
+  }
+
+  async function selectAccount(accountId: string, setDefault = false) {
+    const config = getRuntimeConfig();
+    return request<MobileAuthPayload>('auth/select-account', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(config.accessToken ? { Authorization: `Bearer ${config.accessToken}` } : {}),
+      },
+      body: JSON.stringify({ accountId, setDefault }),
+    });
+  }
+
   return {
     listAccountOptions,
     signIn,
+    signOut,
+    getCurrentSession,
+    refreshSession,
+    selectAccount,
   };
 }

@@ -13,7 +13,8 @@ export const DOMAIN_SERVICE_NAMES = [
   'notification',
   'entityDesign',
   'files',
-  'chat'
+  'chat',
+  'planning'
 ] as const;
 
 export const PUBLIC_SERVICE_NAMES = [

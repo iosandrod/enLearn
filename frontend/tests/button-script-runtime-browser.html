@@ -52,6 +52,39 @@
             throw new Error(`Unexpected capability: ${request.name}`);
           },
         );
+        const mainCalls = [];
+        const mainResult = await executor(
+          {
+            script: `
+              async function main() {
+                const dialogValues = await this.executeAction({
+                  node: 'sql-dialog',
+                  method: 'open',
+                });
+                const response = await this.executeHttp({
+                  api: 'analyzeViewSql',
+                  method: 'POST',
+                  body: { sql: dialogValues.sql },
+                });
+                return this.executeFunction({
+                  name: 'countColumns',
+                  args: { columns: response.columns },
+                });
+              }
+            `,
+            context,
+          },
+          async (request) => {
+            mainCalls.push(request);
+            if (request.name === 'action.execute') {
+              await new Promise((resolve) => setTimeout(resolve, 2_500));
+              return { sql: 'select 1 as id' };
+            }
+            if (request.name === 'http.execute') return { columns: [{ column_name: 'id' }] };
+            if (request.name === 'pageFunction.execute') return request.args[0].args.columns.length;
+            throw new Error(`Unexpected main capability: ${request.name}`);
+          },
+        );
         const isolated = await executor(
           {
             script: `
@@ -123,6 +156,8 @@
         output.textContent = JSON.stringify({
           ok:
             result.value === 42 &&
+            mainResult.value === 1 &&
+            mainCalls.map((call) => call.name).join(',') === 'action.execute,http.execute,pageFunction.execute' &&
             isolated.value.mutationBlocked === true &&
             isolated.value.guestValue === 1 &&
             isolated.value.hasWindow === false &&
@@ -135,6 +170,7 @@
             rejectedApiMessage.includes('API denied by host policy') &&
             apiLimitMessage.includes('调用次数超过限制'),
           result,
+          mainResult,
           isolated,
           timeoutMessage,
           rejectedApiMessage,

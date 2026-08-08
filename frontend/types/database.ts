@@ -487,6 +487,19 @@ export type LowCodePageVersionRow = {
   created_at: string;
 };
 
+export type LowCodeFormDefinitionRow = {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  schema: Json;
+  enabled: boolean;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type TableDefinition<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
   Row: Row;
   Insert: Insert;
@@ -584,6 +597,7 @@ export interface Database {
       system_config: TableDefinition<SystemConfigRow>;
       lowcode_pages: TableDefinition<LowCodePageRow>;
       lowcode_page_versions: TableDefinition<LowCodePageVersionRow>;
+      lowcode_form_definitions: TableDefinition<LowCodeFormDefinitionRow>;
     };
     Views: Record<string, never>;
     Functions: {

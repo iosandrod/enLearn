@@ -324,11 +324,23 @@ import {
   confirmLowCodePage,
   findGlobalDialog,
   GlobalDialogHost,
+  openGlobalDialog,
 } from '@enlearn/lowcode-framework/runtime';
 import {
   closeDashboardTabs,
   formatDashboardTabTitle,
 } from '../utils/dashboardTabs';
+import {
+  buildPageInfoSaveData,
+  createPageInfoDesignForm,
+  normalizePageInfoDesignForm,
+  type PageInfoDesignForm,
+} from '../utils/lowCodePageInfoDesign';
+import {
+  hydratePageInfoDesignSchema,
+  loadLowCodeFormDefinition,
+  PAGE_INFO_DESIGN_FORM_CODE,
+} from '../utils/lowCodeFormDefinitions';
 import type { DashboardTabCloseScope } from '../utils/dashboardTabs';
 import { getLowCodePage } from '../utils/lowCodePages';
 import type { AppAccountSummary } from '../composables/useAuthState';
@@ -372,6 +384,7 @@ type VisitedTab = {
 };
 
 const SYSTEM_SETTINGS_DIALOG_ID = 'system-settings-editor-dialog';
+const PAGE_INFO_DESIGN_DIALOG_ID = 'dashboard-page-info-design-dialog';
 const APPROVAL_CONSOLE_PATH = '/dashboard/approval/console';
 
 const auth = useAuth();
@@ -425,6 +438,7 @@ const accountSearch = ref('');
 const accountSearchInput = ref<HTMLInputElement | null>(null);
 const accountSwitching = ref(false);
 const accountSwitchError = ref('');
+let pageInfoDesignOpening = false;
 const filteredAccounts = computed(() => {
   const keyword = accountSearch.value.trim().toLowerCase();
   if (!keyword) return auth.accounts.value;
@@ -934,6 +948,12 @@ function openTabContextMenuAt(x: number, y: number, tab: VisitedTab) {
           prefixIcon: 'ri-layout-grid-line',
           disabled: !pageCode,
         },
+        {
+          code: 'open-page-info-designer',
+          name: '页面信息设计',
+          prefixIcon: 'ri-file-settings-line',
+          disabled: !pageCode,
+        },
       ],
     ],
     events: {
@@ -946,9 +966,155 @@ function openTabContextMenuAt(x: number, y: number, tab: VisitedTab) {
         if (option.code === 'open-visual-designer') {
           void openLowCodeDesignerByCode(pageCode);
         }
+        if (option.code === 'open-page-info-designer') {
+          void openLowCodePageInfoDesignerByCode(pageCode, tab);
+        }
       },
     },
   });
+}
+
+function showPageInfoDesignMessage(content: string, status: 'success' | 'error') {
+  const modal = (VxeUI as any).modal;
+  if (modal?.message) void modal.message({ content, status });
+}
+
+function replaceVisitedTabPageInfo(tab: VisitedTab, page: LowCodePageRecord) {
+  visitedTabs.value = visitedTabs.value.map((item) =>
+    item.path === tab.path
+      ? {
+          ...item,
+          title: formatDashboardTabTitle(page.title, page.page_type),
+          pageType: page.page_type,
+          pageCode: page.code,
+        }
+      : item
+  );
+}
+
+async function openLowCodePageInfoDesignerByCode(pageCode: string, tab: VisitedTab) {
+  if (
+    !pageCode ||
+    pageInfoDesignOpening ||
+    findGlobalDialog(PAGE_INFO_DESIGN_DIALOG_ID)
+  ) {
+    return;
+  }
+
+  pageInfoDesignOpening = true;
+  routeError.value = '';
+  let savedPage: LowCodePageRecord | null = null;
+
+  try {
+    let currentPage = await getLowCodePage(serviceApi, {
+      code: pageCode,
+      includeData: true,
+    });
+    const formDefinition = await loadLowCodeFormDefinition(
+      serviceApi,
+      PAGE_INFO_DESIGN_FORM_CODE,
+    );
+    const formSchema = hydratePageInfoDesignSchema(
+      formDefinition.schema,
+      currentPage,
+    );
+
+    const result = await openGlobalDialog<PageInfoDesignForm>({
+      id: PAGE_INFO_DESIGN_DIALOG_ID,
+      title: '页面信息设计',
+      width: 'min(1100px, calc(100vw - 32px))',
+      height: 'min(680px, calc(100vh - 48px))',
+      className: 'dashboard-page-info-design-dialog',
+      props: {
+        top: '3vh',
+        destroyOnClose: true,
+      },
+      showFooter: true,
+      model: createPageInfoDesignForm(currentPage),
+      form: {
+        schema: formSchema,
+        props: {
+          className: 'dashboard-page-info-design-form',
+          vertical: true,
+        },
+      },
+      actions: [
+        {
+          code: 'cancel',
+          label: '取消',
+          role: 'cancel',
+        },
+        {
+          code: 'confirm',
+          label: '保存',
+          role: 'confirm',
+          status: 'primary',
+        },
+      ],
+      onConfirm: async ({ model }) => {
+        const value = normalizePageInfoDesignForm(model, currentPage);
+        if (!value.title) {
+          showPageInfoDesignMessage('页面标题不能为空。', 'error');
+          return false;
+        }
+        const functionNames = value.functions.map((item) => item.name);
+        if (functionNames.some((name) => !/^[A-Za-z_$][\w$]*$/.test(name))) {
+          showPageInfoDesignMessage('页面函数名必须是合法的 JavaScript 标识符。', 'error');
+          return false;
+        }
+        if (new Set(functionNames).size !== functionNames.length) {
+          showPageInfoDesignMessage('页面函数名不能重复。', 'error');
+          return false;
+        }
+        if (value.functions.some((item) => !item.script.trim())) {
+          showPageInfoDesignMessage('页面函数脚本不能为空。', 'error');
+          return false;
+        }
+        const apiNames = value.apis.map((item) => item.name);
+        if (apiNames.some((name) => !name)) {
+          showPageInfoDesignMessage('页面 API 别名不能为空。', 'error');
+          return false;
+        }
+        if (new Set(apiNames).size !== apiNames.length) {
+          showPageInfoDesignMessage('页面 API 别名不能重复。', 'error');
+          return false;
+        }
+        if (value.apis.some((item) => !item.serviceName || !item.serviceMethod)) {
+          showPageInfoDesignMessage('页面 API 的服务名和服务方法不能为空。', 'error');
+          return false;
+        }
+
+        try {
+          currentPage = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+            resource: 'lowcode_pages',
+            id: currentPage.id,
+            data: buildPageInfoSaveData(currentPage, value),
+          });
+          savedPage = currentPage;
+          return { values: createPageInfoDesignForm(currentPage) };
+        } catch (error) {
+          const message = error instanceof Error ? error.message : '页面信息保存失败。';
+          routeError.value = message;
+          showPageInfoDesignMessage(message, 'error');
+          return false;
+        }
+      },
+    });
+
+    if (result.action !== 'confirm' || !savedPage) return;
+
+    const page = savedPage as LowCodePageRecord;
+    replaceVisitedTabPageInfo(tab, page);
+    showPageInfoDesignMessage('页面信息已保存。', 'success');
+    await reloadVisitedTab(tab);
+    replaceVisitedTabPageInfo(tab, page);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '页面信息设计打开失败。';
+    routeError.value = message;
+    showPageInfoDesignMessage(message, 'error');
+  } finally {
+    pageInfoDesignOpening = false;
+  }
 }
 
 async function reloadVisitedTab(tab: VisitedTab) {
@@ -1345,3 +1511,26 @@ watch(
   }
 );
 </script>
+
+<style>
+.dashboard-page-info-design-dialog .vxe-modal--body {
+  min-height: 0;
+  padding: 10px 16px 14px;
+}
+
+.dashboard-page-info-design-dialog .lc-global-dialog__body,
+.dashboard-page-info-design-form {
+  height: 100%;
+  min-height: 0;
+}
+
+.dashboard-page-info-design-form .lc-form-tab-pane {
+  padding-top: 14px;
+}
+
+@media (max-width: 720px) {
+  .dashboard-page-info-design-dialog .vxe-modal--body {
+    padding-inline: 10px;
+  }
+}
+</style>

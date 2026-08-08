@@ -72,7 +72,7 @@
 </template>
 
 <script lang="tsx" setup>
-  import { computed, ref, watch } from 'vue';
+  import { computed, provide, ref, watch } from 'vue';
   import { cloneDeep } from 'lodash-es';
   import DraggableTransitionGroup from './draggable-transition-group.vue';
   import CompRender from './comp-render';
@@ -82,6 +82,7 @@
   import MonacoEditor from '../common/monaco-editor/MonacoEditor';
   import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
   import { useLowCodeHost } from '../../../core/host';
+  import type { LowCodePageRecord } from '../../../types/lowcode';
   import { useVisualData } from '../../hooks/useVisualData';
   import { useModal } from '../../hooks/useModal';
   import { generateNanoid } from '../../utils';
@@ -98,6 +99,10 @@
     $$buttonGroupDesigner,
     type ButtonGroupDesignerResult,
   } from '../button-group-designer/button-group-designer.service';
+  import { convertVisualEditorToLowCode } from '../../../lowcode/visual-converters';
+  import type { LowCodeContextSource } from '../../../runtime/lowcode-context';
+  import { lowCodeScriptContextProviderKey } from '../../../runtime/script-context-provider';
+  import { createDesignerScriptContextSource } from '../../designer-script-context';
   import {
     $$modalDesigner,
     type ModalDesignerResult,
@@ -111,6 +116,7 @@
     defineProps<{
       allowFormDesign?: boolean;
       workbenchMode?: 'page' | 'form';
+      pageRecord?: LowCodePageRecord | null;
     }>(),
     {
       allowFormDesign: true,
@@ -118,13 +124,41 @@
     },
   );
 
-  const { currentPage, setCurrentBlock } = useVisualData();
+  const visualData = useVisualData();
+  const { currentPage, setCurrentBlock } = visualData;
   const host = useLowCodeHost();
 
   const { globalProperties } = useGlobalProperties();
 
   const drag = ref(false);
   let normalizingOverlayPlacement = false;
+
+  const getOptionalServiceApi = () => {
+    try {
+      return host.getServiceApi();
+    } catch {
+      return undefined;
+    }
+  };
+
+  const createDesignerScriptContext = (): LowCodeContextSource => {
+    const model = cloneDeep(visualData.jsonData);
+    const page = cloneDeep(currentPage.value);
+    const converted = convertVisualEditorToLowCode({
+      model,
+      currentPage: page,
+    });
+    return createDesignerScriptContextSource({
+      pageRecord: props.pageRecord,
+      model,
+      currentPage: page,
+      converted,
+    });
+  };
+
+  provide(lowCodeScriptContextProviderKey, {
+    getSource: createDesignerScriptContext,
+  });
 
   type OverlayEntry = {
     block: VisualEditorBlockData;
@@ -526,6 +560,9 @@
       mode: isSearchForm ? 'search' : 'edit',
       fields: Array.isArray(block.props?.fields) ? block.props.fields : [],
       designerModel: block.props?.formDesignerModel || null,
+      pageData: currentPage.value,
+      pageRecord: props.pageRecord,
+      serviceApi: getOptionalServiceApi(),
     });
 
     syncFormDesignToPageBlock(block, result);
@@ -573,6 +610,7 @@
         gap: block.props?.gap,
       },
       buttons: Array.isArray(block.props?.buttons) ? block.props.buttons : [],
+      scriptContext: createDesignerScriptContext(),
     });
 
     syncButtonGroupDesignToPageBlock(block, result);
@@ -587,6 +625,9 @@
       mode: 'edit',
       fields: Array.isArray(schemaFields) ? schemaFields : [],
       designerModel: block.props?.subFormDesignerModel || null,
+      pageData: currentPage.value,
+      pageRecord: props.pageRecord,
+      serviceApi: getOptionalServiceApi(),
     });
 
     syncSubFormDesignToFieldBlock(block, result);

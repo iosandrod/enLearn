@@ -7,6 +7,8 @@
       :resolved-data="resolvedData"
       :form-models="formModels"
       :active-action-codes="activeActionCodes"
+      :grid-states="gridStates"
+      :service-api="serviceApi"
       @runtime-event="forwardRuntimeEvent"
     />
   </div>
@@ -19,13 +21,17 @@ import type {
   MobileMaterialEmits,
   MobileRuntimeBlock,
   MobileRuntimeEvent,
+  MobileGridRuntimeStates,
 } from './types';
+import type { MobileServiceApi } from './service-api';
 
 defineProps<{
   blocks: MobileRuntimeBlock[];
   resolvedData: Record<string, unknown>;
   formModels: MobileFormModels;
   activeActionCodes: Record<string, string>;
+  gridStates: MobileGridRuntimeStates;
+  serviceApi: MobileServiceApi;
 }>();
 
 const emit = defineEmits<MobileMaterialEmits>();

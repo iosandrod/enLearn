@@ -21,6 +21,9 @@ function createDefinePlugin(platform, mode) {
     'process.env.ENLEARN_MOBILE_ACCOUNT_ID': JSON.stringify(
       env.ENLEARN_MOBILE_ACCOUNT_ID || ''
     ),
+    'process.env.ENLEARN_MOBILE_USER_ID': JSON.stringify(
+      env.ENLEARN_MOBILE_USER_ID || ''
+    ),
     __PLATFORM__: JSON.stringify(platform),
     __VUE_OPTIONS_API__: false,
     __VUE_PROD_DEVTOOLS__: false,

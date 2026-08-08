@@ -44,6 +44,16 @@ assert.match(
 );
 assert.match(
   workerSource,
+  /executeAction: \(options\) => call\("action\.execute", options\)[\s\S]*?executeHttp: \(options\) => call\("http\.execute", options\)[\s\S]*?executeFunction: \(options\) => call\("pageFunction\.execute", options\)/,
+  'Scripts must receive the unified object-parameter entry points.',
+);
+assert.match(
+  workerSource,
+  /typeof main === "function"[\s\S]*?main\.call\(this, this\.event\)/,
+  'A declared async main function must be invoked automatically with the script this object.',
+);
+assert.match(
+  workerSource,
   /const hostCall = globalThis\.__lowCodeHostCall;[\s\S]*?delete globalThis\.__lowCodeHostCall;[\s\S]*?new AsyncFunction\([\s\S]*?userScript\.call\(scriptThis\)/,
   'User code must run in a separate function scope after the raw host bridge is removed.',
 );
@@ -54,12 +64,17 @@ assert.match(
 );
 assert.match(
   scriptsSource,
+  /pendingCapabilities \+= 1;[\s\S]*?clearTimeout\(executionTimeoutId\)[\s\S]*?pendingCapabilities === 0[\s\S]*?scheduleExecutionTimeout\(\)/,
+  'Waiting for an approved host capability must pause the script execution timeout.',
+);
+assert.match(
+  scriptsSource,
   /preloadLowCodeScriptRuntime[\s\S]*?module-ready/,
   'The QuickJS worker module should preload before the first button click.',
 );
 assert.match(
   monacoTypesSource,
-  /interface LowCodeButtonScriptThis[\s\S]*?\$api:[\s\S]*?\$form:[\s\S]*?\$source:[\s\S]*?createButtonScriptWorker[\s\S]*?createButtonScriptMonacoModel/,
+  /interface LowCodeButtonScriptThis[\s\S]*?executeAction[\s\S]*?executeHttp[\s\S]*?\$api:[\s\S]*?\$form:[\s\S]*?\$source:[\s\S]*?createButtonScriptWorker[\s\S]*?createButtonScriptMonacoModel/,
   'Monaco must know the capability-limited button script this API.',
 );
 assert.doesNotMatch(
@@ -84,7 +99,7 @@ assert.match(
 );
 assert.match(
   rendererSource,
-  /scriptPolicy\?\.apiNames[\s\S]*?scriptPolicy\?\.capabilities[\s\S]*?allowedCapabilities\.includes\(request\.name\)/,
+  /scriptPolicy\?\.apiNames[\s\S]*?scriptPolicy\?\.capabilities[\s\S]*?!Array\.isArray\(allowedCapabilities\)[\s\S]*?allowedCapabilities\.includes\(request\.name\)/,
   'Page script policies must constrain registered APIs and host capabilities.',
 );
 for (const source of [schemaSource, apiSchemaSource]) {
@@ -98,7 +113,47 @@ for (const source of [schemaSource, apiSchemaSource]) {
     /knownScriptCapabilities[\s\S]*?validateScriptPolicy\(schema, issues\)/,
     'Frontend and backend schema validation must reject unknown script capabilities.',
   );
+  assert.match(
+    source,
+    /normalizePageApis\(value\.apis\)[\s\S]*?validatePageApis\(schema, issues\)/,
+    'Frontend and backend schema handling must persist and validate page API aliases.',
+  );
+  assert.match(
+    source,
+    /normalizePageFunctions\(value\.functions\)[\s\S]*?validatePageFunctions\(schema, issues\)/,
+    'Frontend and backend schema handling must persist and validate page functions.',
+  );
 }
+assert.match(
+  rendererSource,
+  /resolveLowCodeNodeAction\(block\.kind, method\)[\s\S]*?switch \(action\.executor\)[\s\S]*?case 'overlay\.open'[\s\S]*?case 'grid\.reloadData'[\s\S]*?case 'form\.setData'/,
+  'executeAction must dispatch only actions declared by the node registry.',
+);
+assert.match(
+  rendererSource,
+  /resolveScriptPageApi[\s\S]*?schema\.apis\?\.[\s\S]*?executeScriptHttp[\s\S]*?getServiceApi\(\)\.invoke/,
+  'executeHttp must resolve a page API alias before invoking the host service API.',
+);
+assert.match(
+  rendererSource,
+  /resolvePageFunction[\s\S]*?schema\.functions\?\.find[\s\S]*?case 'pageFunction\.execute'[\s\S]*?executePageFunction/,
+  'executeFunction must resolve and run only an enabled function declared by the page schema.',
+);
+assert.match(
+  rendererSource,
+  /MAX_PAGE_FUNCTION_CALL_DEPTH = 16[\s\S]*?callStack\.length >= MAX_PAGE_FUNCTION_CALL_DEPTH[\s\S]*?callStack\.includes\(pageFunction\.name\)/,
+  'Page functions must reject excessive call chains and direct or indirect recursion.',
+);
+assert.match(
+  rendererSource,
+  /schema\.functions\?\.length[\s\S]*?'action\.execute'[\s\S]*?Object\.keys\(props\.page\.schema\.apis \?\? \{\}\)\.length > 0[\s\S]*?'http\.execute'/,
+  'Page functions and declared API aliases must automatically expose their controlled capabilities.',
+);
+assert.match(
+  rendererSource,
+  /typeof options\.args !== 'undefined' && !isRecord\(options\.args\)[\s\S]*?executeFunction 参数 args 必须是对象/,
+  'executeFunction must reject non-object args instead of silently discarding them.',
+);
 assert.match(
   rendererSource,
   /function sanitizeScriptEventPayload[\s\S]*?delete payload\.script;[\s\S]*?delete payload\.directives;[\s\S]*?payload: sanitizeScriptEventPayload\(args\[1\]\)/,
@@ -128,6 +183,7 @@ assert.deepEqual(
       searches: {},
       grids: {},
       event: {},
+      policy: { apiNames: ['record.approve'] },
     },
   ),
   { id: 'r1', pageCode: 'records' },
@@ -148,6 +204,23 @@ await assert.rejects(
     },
   ),
   /未注册或当前用户无权调用/,
+);
+await assert.rejects(
+  invokeRegisteredLowCodeScriptApi(
+    'record.approve',
+    { id: 'r1' },
+    {
+      page: { code: 'records' },
+      route: {},
+      data: {},
+      forms: {},
+      searches: {},
+      grids: {},
+      event: {},
+    },
+  ),
+  /未注册或当前用户无权调用/,
+  'Missing page policy must deny registered APIs by default.',
 );
 const unregisterAuthorized = registerLowCodeScriptApi('record.restricted', {
   authorize: (_payload, context) => context.page.role === 'admin',

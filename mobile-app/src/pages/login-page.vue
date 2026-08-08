@@ -1,27 +1,31 @@
 <template>
-  <div class="login-screen">
+  <div
+    :class="['login-screen', { 'is-compact': screenHeight > 0 && screenHeight < 720 }]"
+    @layout="handleScreenLayout"
+  >
     <div class="login-brand">
       <div class="brand-mark">
         <span class="brand-mark-text">M</span>
       </div>
       <div class="brand-copy">
-        <span class="brand-product">MANUFACTURING ERP</span>
+        <span class="brand-product">MANUFACTURING MES</span>
         <span class="brand-title">工厂制造管理平台</span>
-        <span class="brand-description">连接计划、采购、生产与交付</span>
+        <span class="brand-description">连接计划、生产、质量与仓储现场</span>
       </div>
     </div>
 
     <div class="login-workspace">
       <div class="login-panel">
         <span class="login-eyebrow">欢迎回来</span>
-        <span class="login-title">登录管理平台</span>
-        <span class="login-description">请输入登录信息并选择业务账套。</span>
+        <span class="login-title">登录 MES 工作台</span>
+        <span class="login-description">请输入登录信息并选择生产账套。</span>
 
         <MobileForm
           :block="loginFormBlock"
           :resolved-data="loginFormData"
           :form-models="formModels"
           :active-action-codes="activeActionCodes"
+          :grid-states="gridStates"
           @runtime-event="handleFormEvent"
         />
 
@@ -30,7 +34,7 @@
         </div>
       </div>
 
-      <span class="login-footer">EnLearn Manufacturing · 企业管理系统</span>
+      <span class="login-footer">EnLearn Manufacturing · 移动制造执行系统</span>
     </div>
   </div>
 </template>
@@ -38,10 +42,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from '@vue/runtime-core';
 import { useRoute, useRouter } from '@hippy/vue-router-next-history';
+import type { HippyLayoutEvent } from '@hippy/vue-next';
 
 import {
   readMobileStorage,
-  updateRuntimeAuth,
   writeMobileStorage,
 } from '../config';
 import {
@@ -51,9 +55,12 @@ import {
 import MobileForm from '../runtime/materials/mobile-form.vue';
 import type {
   MobileFormModels,
+  MobileGridRuntimeStates,
   MobileRuntimeBlock,
   MobileRuntimeEvent,
 } from '../runtime/types';
+import { clearMobileNavigation } from '../runtime/navigation';
+import { saveMobileAuthSession } from '../runtime/session';
 
 const LOGIN_FORM_ID = 'mobile-login-form';
 
@@ -68,6 +75,7 @@ const accounts = ref<MobileAccountOption[]>([]);
 const accountLoading = ref(false);
 const submitting = ref(false);
 const message = ref('');
+const screenHeight = ref(0);
 const formModels = reactive<MobileFormModels>({
   [LOGIN_FORM_ID]: {
     email: '',
@@ -77,6 +85,7 @@ const formModels = reactive<MobileFormModels>({
   },
 });
 const activeActionCodes = reactive<Record<string, string>>({});
+const gridStates = reactive<MobileGridRuntimeStates>({});
 const loginModel = computed(() => formModels[LOGIN_FORM_ID]);
 const loginAccount = computed(() => String(loginModel.value.email ?? '').trim());
 const loginFormData = computed<Record<string, unknown>>(() => ({
@@ -153,6 +162,12 @@ const accountPlaceholder = computed(() => {
 });
 let accountRequestId = 0;
 let accountTimer: ReturnType<typeof setTimeout> | undefined;
+
+function handleScreenLayout(event: HippyLayoutEvent) {
+  if (typeof event.height === 'number' && Number.isFinite(event.height)) {
+    screenHeight.value = event.height;
+  }
+}
 
 function accountLabel(account: MobileAccountOption) {
   return [account.name || '未命名账套', account.code, account.base_currency]
@@ -258,16 +273,12 @@ async function submitLogin(values: Record<string, unknown>) {
       throw new Error('登录成功，但没有返回可用会话或账套。');
     }
 
+    await saveMobileAuthSession(payload, selectedAccountId);
     await Promise.all([
-      writeMobileStorage('accessToken', accessToken),
-      writeMobileStorage('accountId', selectedAccountId),
       writeMobileStorage('loginAccount', email),
       writeMobileStorage('loginAccountId', selectedAccountId),
-      payload.session?.refresh_token
-        ? writeMobileStorage('refreshToken', payload.session.refresh_token)
-        : Promise.resolve(),
     ]);
-    updateRuntimeAuth(accessToken, selectedAccountId);
+    clearMobileNavigation();
     loginModel.value.password = '';
     await router.replace(returnPath());
   } catch (error) {
@@ -432,5 +443,33 @@ onBeforeUnmount(() => {
   color: #788997;
   font-size: 10px;
   line-height: 15px;
+}
+
+.login-screen.is-compact .login-brand {
+  min-height: 104px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.login-screen.is-compact .brand-description,
+.login-screen.is-compact .login-footer {
+  display: none;
+}
+
+.login-screen.is-compact .brand-title {
+  margin-top: 2px;
+  font-size: 20px;
+  line-height: 27px;
+}
+
+.login-screen.is-compact .login-workspace {
+  min-height: 0;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.login-screen.is-compact .login-panel {
+  padding-top: 18px;
+  padding-bottom: 18px;
 }
 </style>

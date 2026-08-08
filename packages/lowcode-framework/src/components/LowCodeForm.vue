@@ -3,6 +3,7 @@
     ref="vxeFormRef"
     v-bind="mergedFormProps"
     class="lc-form"
+    :class="{ 'lc-form--fill': fillRemainingLayout }"
     :data="vxeFormData"
     :loading="loading"
     :rules="formRules"
@@ -170,6 +171,9 @@ const fields = computed(() =>
 );
 const layoutNodes = computed<LowCodeFormLayoutNode[]>(() =>
   Array.isArray(props.schema.layout) ? props.schema.layout : []
+);
+const fillRemainingLayout = computed(() =>
+  layoutNodes.value.some((node) => node.kind === 'tabs' && node.fillRemaining === true)
 );
 const formActions = computed(() =>
   Array.isArray(props.schema.actions) ? props.schema.actions : []
@@ -592,6 +596,18 @@ defineExpose({
 
 .lc-form {
   background: transparent;
+}
+
+.lc-form--fill {
+  height: 100%;
+  min-height: 0;
+}
+
+.lc-form.vxe-form.lc-form--fill > .vxe-form--wrapper,
+.lc-form.vxe-form.lc-form--fill > .vxe-form--wrapper > .lc-form-layout {
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
 }
 
 .lc-form.vxe-form > .vxe-form--wrapper {
