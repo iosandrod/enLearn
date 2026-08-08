@@ -1,5 +1,8 @@
 <template>
-  <div class="lc-array-table">
+  <div
+    class="lc-array-table"
+    :class="{ 'lc-array-table--fill': fillAvailableHeight }"
+  >
     <div
       v-if="showToolbar && toolbarButtonOptions.length"
       :class="['lc-array-table__toolbar', `is-${toolbarAlign}`]"
@@ -388,13 +391,28 @@ const rowConfig = computed(() => {
     isCurrent: config.isCurrent !== false && gridRowConfig.isCurrent !== false,
   };
 });
-const tableConfig = computed(() => mergeSystemTableOptions(
-  {
-    ...explicitTableConfig.value,
-    rowConfig: rowConfig.value,
-  },
-  resolveSystemTableConfig(systemSettings),
-));
+const tableConfig = computed(() => {
+  const explicitConfig = explicitTableConfig.value;
+  const config = mergeSystemTableOptions(
+    {
+      ...explicitConfig,
+      rowConfig: rowConfig.value,
+    },
+    resolveSystemTableConfig(systemSettings),
+  );
+
+  if (isFillHeight(config.height)) {
+    if (typeof explicitConfig.minHeight === 'undefined') {
+      config.minHeight = 0;
+    }
+    if (typeof explicitConfig.maxHeight === 'undefined') {
+      delete config.maxHeight;
+    }
+  }
+
+  return config;
+});
+const fillAvailableHeight = computed(() => isFillHeight(tableConfig.value.height));
 const rowKey = computed(() => readString(rowConfig.value.keyField, '__rowKey'));
 const treeConfig = computed(() => {
   const source = fieldProps.value.treeConfig;
@@ -1091,6 +1109,10 @@ function readSize(value: unknown) {
   return typeof value === 'number' || typeof value === 'string' ? value : undefined;
 }
 
+function isFillHeight(value: unknown) {
+  return typeof value === 'string' && ['100%', 'auto'].includes(value.trim());
+}
+
 function readToolbarAlign(value: unknown) {
   const align = readString(value, 'left');
   return ['left', 'center', 'right', 'space-between'].includes(align) ? align : 'left';
@@ -1221,6 +1243,18 @@ function cloneValue(value: unknown) {
   min-width: 0;
   gap: 8px;
   overflow: hidden;
+}
+
+.lc-array-table--fill {
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.lc-array-table--fill .lc-array-table__viewport,
+.lc-array-table--fill .lc-array-table__grid {
+  height: 100%;
+  min-height: 0;
 }
 
 .lc-array-table__toolbar {

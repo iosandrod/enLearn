@@ -31,23 +31,30 @@ const props = defineProps<LowCodeBlockMaterialProps<LowCodePageSearchFormBlock>>
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
 const pageRuntime = useLowCodePageRuntime(false);
+const hasOwnedFormModel = computed(() =>
+  Object.prototype.hasOwnProperty.call(props.formModels, props.block.id)
+);
 const resolvedData = computed(
   () => pageRuntime?.state.sources ?? props.resolvedData
 );
 const formModel = computed(
-  () => pageRuntime?.state.forms[props.block.id] ?? props.formModels[props.block.id] ?? {}
+  () => hasOwnedFormModel.value
+    ? props.formModels[props.block.id]
+    : pageRuntime?.state.forms[props.block.id] ?? {}
 );
 const isLoading = computed(
   () => (pageRuntime?.state.status.loadingBlockId ?? props.loadingBlockId) === props.block.id
 );
 
 function updateFormModel(values: Record<string, unknown>) {
-  if (pageRuntime) {
-    pageRuntime.replaceForm(props.block.id, values);
+  if (hasOwnedFormModel.value || !pageRuntime) {
+    props.formModels[props.block.id] = values;
     return;
   }
 
-  props.formModels[props.block.id] = values;
+  if (pageRuntime) {
+    pageRuntime.replaceForm(props.block.id, values);
+  }
 }
 
 function openFormContextMenu(event: MouseEvent) {

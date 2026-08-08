@@ -614,7 +614,7 @@ function createDesignerBlocks(scriptContext?: LowCodeContextSource): LowCodePage
                     component: 'lc-array-table',
                     span: 24,
                     props: {
-                      height: 560,
+                      height: '100%',
                       toolbarButtons: [
                         {
                           code: 'add',

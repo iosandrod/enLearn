@@ -70,7 +70,7 @@ a {
 }
 
 .content-panel {
-  padding: 24px;
+  padding: 4px;
 }
 
 .page-title {
@@ -1070,7 +1070,10 @@ a {
   min-height: 0;
   overflow: hidden;
 }
-
+.lc-runtime-block--fill >:last-child{
+  /* flex: 1; */
+  overflow: hidden;
+}
 .lc-runtime-block--fill.content-panel,
 .lc-runtime-block--fill .content-panel,
 .lc-runtime-block--fill .lc-grid,
@@ -2173,6 +2176,19 @@ a {
   flex: 1;
 } */
 
-.vxe-tabs-pane--item.is--visible > :last-child{
+.vxe-tabs-pane--item .is--visible > :last-child{
   flex:1 !important;
+}
+
+
+.lc-node-stack.lc-tab-pane-stack>:last-child{
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.content-panel.lc-runtime-block.lc-runtime-block--fill.lc-runtime-block--fill>:last-child{
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }

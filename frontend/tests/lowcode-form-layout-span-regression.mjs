@@ -9,6 +9,13 @@ const formSource = await readFile(
   new URL('../../packages/lowcode-framework/src/components/LowCodeForm.vue', import.meta.url),
   'utf8'
 );
+const arrayTableSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue',
+    import.meta.url
+  ),
+  'utf8'
+);
 
 assert.match(
   layoutSource,
@@ -34,6 +41,36 @@ assert.match(
   formSource,
   /\.lc-form-layout > \.lc-form-row\.lc-form-row--span-grid \{[\s\S]*?display: grid;[\s\S]*?grid-template-columns: var\(--lc-form-row-template, minmax\(0, 1fr\)\);/,
   'Form rows must use weighted grid tracks so gaps are deducted from available width.'
+);
+assert.match(
+  formSource,
+  /function createLastRowFillTemplate\([\s\S]*?`repeat\(\$\{rowCount - 1\}, max-content\) \$\{lastRow\}`/,
+  'All form layouts must keep leading rows content-sized and reserve flexible height for the final row.'
+);
+assert.match(
+  formSource,
+  /ref="formGridRef"[\s\S]*?gridTemplateRows: createLastRowFillTemplate\(formGridRowCount\.value\)/,
+  'Automatic form grids must derive their final-row fill template from the rows rendered by the browser.'
+);
+assert.match(
+  formSource,
+  /gridTemplateRows: createLastRowFillTemplate\([\s\S]*?renderedLayoutRowCount\.value,[\s\S]*?fillRemainingLayout\.value/,
+  'Schema layouts must use the same final-row fill policy while preserving fill-enabled tabs.'
+);
+assert.match(
+  formSource,
+  /\.lc-form-grid-cell--array \{[\s\S]*?align-self: stretch;/,
+  'Array-table fields must stretch into a flexible form row without a fixed height.'
+);
+assert.match(
+  arrayTableSource,
+  /if \(isFillHeight\(config\.height\)\)[\s\S]*?config\.minHeight = 0;[\s\S]*?delete config\.maxHeight;/,
+  'Fill-height array tables must not inherit system size constraints that can overflow their parent.'
+);
+assert.match(
+  arrayTableSource,
+  /\.lc-array-table--fill \{[\s\S]*?grid-template-rows: auto minmax\(0, 1fr\);/,
+  'Fill-height array tables must reserve only the remaining row for the VXE viewport.'
 );
 
 console.log('Low-code form layout span regression test passed.');

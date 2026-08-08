@@ -18,12 +18,32 @@ const compiledUtility = ts.transpileModule(utilitySource, {
   },
 }).outputText;
 const utilityUrl = `data:text/javascript;base64,${Buffer.from(compiledUtility).toString('base64')}`;
-const { formatDashboardTabTitle } = await import(utilityUrl);
+const { formatDashboardTabTitle, resolveDashboardNavigationTitle } = await import(utilityUrl);
 
 assert.equal(formatDashboardTabTitle('下拉数据', 'edit'), '下拉数据编辑');
 assert.equal(formatDashboardTabTitle('下拉数据编辑', 'edit'), '下拉数据编辑');
 assert.equal(formatDashboardTabTitle('下拉数据', 'list'), '下拉数据');
 assert.equal(formatDashboardTabTitle('下拉数据', 'custom'), '下拉数据');
+
+const planningNavigation = [
+  { path: '/dashboard/planning', title: '排产管理' },
+  { path: '/dashboard/planning/setupmatrix', title: '换型矩阵' },
+  { path: '/dashboard/planning/resourceskill', title: '资源技能' },
+];
+assert.equal(
+  resolveDashboardNavigationTitle(planningNavigation, '/dashboard/planning/setupmatrix'),
+  '换型矩阵',
+  'An exact planning page must take precedence over its parent menu group.'
+);
+assert.equal(
+  resolveDashboardNavigationTitle(planningNavigation, '/dashboard/planning/resourceskill/edit'),
+  '资源技能',
+  'A nested route must use its most specific menu ancestor.'
+);
+assert.equal(
+  resolveDashboardNavigationTitle(planningNavigation, '/dashboard/unknown'),
+  '工作台'
+);
 
 assert.match(
   layoutSource,
@@ -44,6 +64,11 @@ assert.match(
   layoutSource,
   /refreshLowCodeTabTitle\(current\.path, activeTitle\.value\)/,
   'Page-type refreshes must recalculate the suffix from the original menu title.'
+);
+assert.match(
+  layoutSource,
+  /resolveDashboardNavigationTitle\([\s\S]*?flatMenu\.value[\s\S]*?route\.path/,
+  'Dashboard tabs must resolve the most specific navigation item for the active route.'
 );
 
 console.log('Edit-page dashboard tab title regression test passed.');

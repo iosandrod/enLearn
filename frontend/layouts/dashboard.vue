@@ -329,6 +329,7 @@ import {
 import {
   closeDashboardTabs,
   formatDashboardTabTitle,
+  resolveDashboardNavigationTitle,
 } from '../utils/dashboardTabs';
 import {
   buildPageInfoSaveData,
@@ -779,13 +780,11 @@ const menuTree = computed<AdminRouteNode[]>(() => buildSidebarMenu(normalizedRou
 const normalizedMenuFilter = computed(() => menuFilter.value.trim().toLowerCase());
 const filteredMenuTree = computed(() => filterMenuNodes(menuTree.value, normalizedMenuFilter.value));
 const flatMenu = computed<AdminRouteNode[]>(() => flattenNodes(menuTree.value));
-const activeTitle = computed<string>(
-  () =>
-    [...flatMenu.value, ...topToolGroups.value.flatMap((group) => group.tools)].find(
-      (item: AdminRouteNode) =>
-        item.path === route.path || route.path.startsWith(`${item.path}/`)
-    )?.title ??
-    '工作台'
+const activeTitle = computed<string>(() =>
+  resolveDashboardNavigationTitle(
+    [...flatMenu.value, ...topToolGroups.value.flatMap((group) => group.tools)],
+    route.path,
+  )
 );
 function reloadRoutes() {
   if (routesReloadPromise) return routesReloadPromise;

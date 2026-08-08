@@ -2,6 +2,25 @@ import type { LowCodePageType } from '@enlearn/lowcode-framework/types/lowcode';
 
 export type DashboardTabCloseScope = 'current' | 'left' | 'right' | 'others';
 
+type DashboardNavigationItem = {
+  path: string;
+  title: string;
+};
+
+export function resolveDashboardNavigationTitle(
+  items: readonly DashboardNavigationItem[],
+  currentPath: string,
+  fallback = '工作台',
+) {
+  const matchedItem = items.reduce<DashboardNavigationItem | undefined>((bestMatch, item) => {
+    const matches = item.path === currentPath || currentPath.startsWith(`${item.path}/`);
+    if (!matches) return bestMatch;
+    return !bestMatch || item.path.length > bestMatch.path.length ? item : bestMatch;
+  }, undefined);
+
+  return matchedItem?.title ?? fallback;
+}
+
 export function formatDashboardTabTitle(title: string, pageType?: LowCodePageType) {
   return pageType === 'edit' && !title.endsWith('编辑') ? `${title}编辑` : title;
 }

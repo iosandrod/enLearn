@@ -94,6 +94,108 @@ try {
   assert.ok((await designer.textContent()).includes('执行脚本'));
   assert.ok((await designer.textContent()).includes('选择默认按钮'));
 
+  const buttonTableFill = await designer.evaluate((dialog) => {
+    const pane = dialog.querySelector('.vxe-tabs-pane--item.is--visible');
+    const grid = pane?.querySelector('.lc-form-grid');
+    const table = pane?.querySelector('.lc-array-table');
+    if (!grid || !table) return null;
+    const gridRect = grid.getBoundingClientRect();
+    const tableRect = table.getBoundingClientRect();
+    return {
+      gridHeight: gridRect.height,
+      tableHeight: tableRect.height,
+      bottomDelta: Math.abs(gridRect.bottom - tableRect.bottom),
+    };
+  });
+  assert.ok(buttonTableFill, 'The button table must render inside the form grid.');
+  assert.ok(
+    buttonTableFill.tableHeight > buttonTableFill.gridHeight * 0.95 &&
+      buttonTableFill.bottomDelta < 2,
+    `The button table must fill its flexible form row: ${JSON.stringify(buttonTableFill)}`,
+  );
+
+  await page.setViewportSize({ width: 900, height: 520 });
+  await page.waitForFunction(() => {
+    const dialog = document.querySelector('.button-group-designer-dialog');
+    const formGrid = dialog?.querySelector('.vxe-tabs-pane--item.is--visible .lc-form-grid');
+    const table = dialog?.querySelector('.lc-array-table');
+    if (!formGrid || !table) return false;
+    const formGridRect = formGrid.getBoundingClientRect();
+    const tableRect = table.getBoundingClientRect();
+    return (
+      Math.abs(formGridRect.height - tableRect.height) < 2 &&
+      Math.abs(formGridRect.bottom - tableRect.bottom) < 2
+    );
+  });
+  const compactTableFill = await designer.evaluate((dialog) => {
+    const pane = dialog.querySelector('.vxe-tabs-pane--item.is--visible');
+    const formGrid = pane?.querySelector('.lc-form-grid');
+    const table = pane?.querySelector('.lc-array-table');
+    const viewport = pane?.querySelector('.lc-array-table__viewport');
+    const vxeTable = pane?.querySelector('.lc-array-table__grid');
+    if (!formGrid || !table || !viewport || !vxeTable) return null;
+    const formGridRect = formGrid.getBoundingClientRect();
+    const tableRect = table.getBoundingClientRect();
+    const viewportRect = viewport.getBoundingClientRect();
+    const vxeTableRect = vxeTable.getBoundingClientRect();
+    return {
+      formGridHeight: formGridRect.height,
+      tableHeight: tableRect.height,
+      viewportHeight: viewportRect.height,
+      vxeTableHeight: vxeTableRect.height,
+      tableBottomDelta: Math.abs(formGridRect.bottom - tableRect.bottom),
+      gridBottomDelta: Math.abs(viewportRect.bottom - vxeTableRect.bottom),
+    };
+  });
+  assert.ok(compactTableFill, 'The compact button table must remain measurable.');
+  assert.ok(
+    Math.abs(compactTableFill.formGridHeight - compactTableFill.tableHeight) < 2 &&
+      compactTableFill.tableBottomDelta < 2 &&
+      Math.abs(compactTableFill.viewportHeight - compactTableFill.vxeTableHeight) < 2 &&
+      compactTableFill.gridBottomDelta < 2,
+    `System table minimums must not overflow a fill-height table: ${JSON.stringify(compactTableFill)}`,
+  );
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  await designer.locator('.vxe-tabs-header--item', { hasText: '组件信息' }).click();
+  const infoGrid = designer.locator('.vxe-tabs-pane--item.is--visible .lc-form-grid');
+  await page.waitForFunction(() => {
+    const grid = document.querySelector(
+      '.button-group-designer-dialog .vxe-tabs-pane--item.is--visible .lc-form-grid',
+    );
+    if (!grid) return false;
+    const rows = getComputedStyle(grid).gridTemplateRows
+      .split(' ')
+      .map((value) => Number.parseFloat(value));
+    return rows.length === 3 && rows[2] > rows[0] * 2;
+  });
+  const infoRows = await infoGrid.evaluate((grid) =>
+    getComputedStyle(grid).gridTemplateRows
+      .split(' ')
+      .map((value) => Number.parseFloat(value)),
+  );
+  assert.equal(infoRows.length, 3, JSON.stringify(infoRows));
+  assert.ok(
+    Math.max(infoRows[0], infoRows[1]) < 140,
+    `Leading form rows must stay content-sized: ${JSON.stringify(infoRows)}`,
+  );
+  assert.ok(
+    infoRows[2] > Math.max(infoRows[0], infoRows[1]) * 2,
+    `Only the final form row should absorb remaining height: ${JSON.stringify(infoRows)}`,
+  );
+  await designer.locator('.vxe-tabs-header--item', { hasText: '按钮设计' }).click();
+
+  await designer.locator('.lc-array-table__toolbar .vxe-button', {
+    hasText: '新增按钮',
+  }).click();
+  const mainRows = designer.locator(
+    '.lc-array-table__grid .vxe-table--main-wrapper .vxe-body--row',
+  );
+  await assert.doesNotReject(() => mainRows.nth(1).waitFor({ state: 'visible' }));
+  const addedRowInputs = mainRows.nth(1).locator('.vxe-input input');
+  await addedRowInputs.nth(0).fill('新增');
+  await addedRowInputs.nth(1).fill('create');
+
   const scriptTrigger = designer.locator('.lc-monaco-editor__trigger').first();
   await scriptTrigger.scrollIntoViewIfNeeded();
   await scriptTrigger.click();
@@ -183,16 +285,27 @@ try {
   await designer.locator('.lc-global-dialog__footer .vxe-button', { hasText: '确定' }).click();
   await designer.waitFor({ state: 'hidden' });
   await page.waitForFunction(
-    () => window.__buttonScriptDesignerSmoke.state.confirmed?.buttons?.[0]?.script ===
-      window.__buttonScriptDesignerSmoke.insertedScript,
+    () => window.__buttonScriptDesignerSmoke.state.confirmed &&
+      window.__buttonScriptDesignerSmoke.state.resolved,
   );
   const persisted = await page.evaluate(() => ({
     confirmed: window.__buttonScriptDesignerSmoke.state.confirmed,
     resolved: window.__buttonScriptDesignerSmoke.state.resolved,
     error: window.__buttonScriptDesignerSmoke.state.error,
+    insertedScript: window.__buttonScriptDesignerSmoke.insertedScript,
+    ambientForms: window.__buttonScriptDesignerSmoke.ambientRuntime.state.forms,
   }));
   assert.equal(persisted.error, '');
+  assert.equal(persisted.confirmed.buttons.length, 2);
+  assert.equal(persisted.confirmed.buttons[1].label, '新增');
+  assert.equal(persisted.confirmed.buttons[1].code, 'create');
+  assert.equal(persisted.confirmed.buttons[0].script, persisted.insertedScript);
   assert.equal(persisted.confirmed.buttons[0].script, persisted.resolved.buttons[0].script);
+  assert.equal(
+    Object.hasOwn(persisted.ambientForms, 'button-group-designer-buttons-form'),
+    false,
+    'An ambient page runtime must not take ownership of the designer form model.',
+  );
 
   console.log('Button script designer browser integration passed.');
 } catch (error) {

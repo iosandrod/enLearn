@@ -15,6 +15,7 @@
       v-if="layoutNodes.length"
       :nodes="layoutNodes"
       :fields-by-key="fieldsByKey"
+      :style="formLayoutStyle"
     >
       <template #field="{ field }">
         <vxe-form-item v-bind="resolveFormItemProps(field)">
@@ -32,7 +33,7 @@
       </template>
     </LowCodeFormLayout>
 
-    <div v-else class="lc-form-grid" :style="formGridStyle">
+    <div v-else ref="formGridRef" class="lc-form-grid" :style="formGridStyle">
       <div
         v-for="field in fields"
         :key="field.field"
@@ -59,7 +60,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, useAttrs, watch, type PropType } from 'vue';
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  reactive,
+  ref,
+  useAttrs,
+  watch,
+  type PropType,
+} from 'vue';
 import type {
   VxeFormDefines,
   VxeFormInstance,
@@ -152,6 +162,8 @@ const emit = defineEmits<{
 
 const attrs = useAttrs();
 const vxeFormRef = ref<VxeFormInstance<LowCodeFormModel>>();
+const formGridRef = ref<HTMLElement>();
+const formGridRowCount = ref(0);
 const formData = reactive<Record<string, unknown>>({ ...props.modelValue });
 const vxeFormData = reactive<Record<string, unknown>>({});
 const initialModel = ref<Record<string, unknown>>({ ...props.modelValue });
@@ -215,8 +227,20 @@ const formItemPropsByField = computed(() =>
     return prev;
   }, {})
 );
+const renderedLayoutRowCount = computed(() =>
+  layoutNodes.value.filter(
+    (node) => node.kind !== 'field' || Boolean(fieldsByKey.value[node.field])
+  ).length
+);
+const formLayoutStyle = computed(() => ({
+  gridTemplateRows: createLastRowFillTemplate(
+    renderedLayoutRowCount.value,
+    fillRemainingLayout.value
+  ),
+}));
 const formGridStyle = computed(() => ({
   '--lc-form-columns': String(formColumnCount.value),
+  gridTemplateRows: createLastRowFillTemplate(formGridRowCount.value),
 }));
 const vxeFormProps = computed(() => ({
   size: props.size,
@@ -280,12 +304,85 @@ watch(
 
 watch(
   () => props.schema.fields,
-  () => syncVxeFormData(),
+  () => {
+    syncVxeFormData();
+    scheduleFormGridMeasurement();
+  },
   { deep: true, immediate: true }
 );
 
+let formGridResizeObserver: ResizeObserver | undefined;
+let formGridMeasureFrame: number | undefined;
+
+watch(
+  formGridRef,
+  (grid, previousGrid) => {
+    if (previousGrid) {
+      formGridResizeObserver?.unobserve(previousGrid);
+    }
+
+    if (!grid) {
+      formGridRowCount.value = 0;
+      return;
+    }
+
+    if (typeof ResizeObserver !== 'undefined') {
+      formGridResizeObserver ??= new ResizeObserver(() => scheduleFormGridMeasurement());
+      formGridResizeObserver.observe(grid);
+    }
+    scheduleFormGridMeasurement();
+  },
+  { flush: 'post' }
+);
+
+watch(formColumnCount, () => scheduleFormGridMeasurement(), { flush: 'post' });
+
+onMounted(() => window.addEventListener('resize', scheduleFormGridMeasurement));
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', scheduleFormGridMeasurement);
+  formGridResizeObserver?.disconnect();
+  if (typeof formGridMeasureFrame === 'number') {
+    cancelAnimationFrame(formGridMeasureFrame);
+  }
+});
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function createLastRowFillTemplate(rowCount: number, allowLastRowToShrink = false) {
+  if (rowCount <= 0) return undefined;
+
+  const lastRow = allowLastRowToShrink
+    ? 'minmax(0, 1fr)'
+    : 'minmax(max-content, 1fr)';
+  return rowCount === 1
+    ? lastRow
+    : `repeat(${rowCount - 1}, max-content) ${lastRow}`;
+}
+
+function measureFormGridRows() {
+  formGridMeasureFrame = undefined;
+  const grid = formGridRef.value;
+  if (!grid) return;
+
+  const rowTops: number[] = [];
+  Array.from(grid.children).forEach((child) => {
+    const top = child.getBoundingClientRect().top;
+    if (!rowTops.some((rowTop) => Math.abs(rowTop - top) < 1)) {
+      rowTops.push(top);
+    }
+  });
+  formGridRowCount.value = rowTops.length;
+}
+
+function scheduleFormGridMeasurement() {
+  if (!formGridRef.value || typeof requestAnimationFrame === 'undefined') return;
+  if (typeof formGridMeasureFrame === 'number') {
+    cancelAnimationFrame(formGridMeasureFrame);
+  }
+  formGridMeasureFrame = requestAnimationFrame(measureFormGridRows);
 }
 
 function readFormColumnCount() {
@@ -615,7 +712,9 @@ defineExpose({
 .lc-form-grid,
 .lc-form-layout {
   display: grid;
+  min-height: 0;
   gap: 6px 8px;
+  grid-auto-rows: max-content;
 }
 
 .lc-form-grid {
@@ -635,6 +734,7 @@ defineExpose({
 .lc-form-grid-cell--array {
   display: grid;
   min-height: 0;
+  align-self: stretch;
 }
 
 .lc-form-grid-cell--array .vxe-form--item,

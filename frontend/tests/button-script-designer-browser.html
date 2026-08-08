@@ -33,7 +33,13 @@
       import 'remixicon/fonts/remixicon.css';
       import 'vxe-pc-ui/lib/style.css';
       import 'vxe-table/lib/style.css';
+      import '../assets/styles/app.css';
+      import '../assets/styles/visual-editor-utilities.scss';
       import GlobalDialogHost from '../../packages/lowcode-framework/src/components/GlobalDialogHost.tsx';
+      import {
+        createLowCodePageRuntime,
+        provideLowCodePageRuntime,
+      } from '../../packages/lowcode-framework/src/runtime/page-runtime.ts';
       import { registerLowCodeScriptApi } from '../../packages/lowcode-framework/src/runtime/scripts.ts';
       import { $$buttonGroupDesigner } from '../../packages/lowcode-framework/src/visual-editor/components/button-group-designer/button-group-designer.service.tsx';
 
@@ -93,9 +99,11 @@
         resolved: null,
         error: '',
       });
+      const ambientRuntime = createLowCodePageRuntime();
 
       const App = defineComponent({
         setup() {
+          provideLowCodePageRuntime(ambientRuntime);
           return () => h(GlobalDialogHost);
         },
       });
@@ -110,6 +118,7 @@
         insertedScript,
         source,
         state,
+        ambientRuntime,
         open() {
           const result = $$buttonGroupDesigner({
             title: '设计按钮',
