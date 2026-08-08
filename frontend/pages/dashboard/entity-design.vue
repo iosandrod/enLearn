@@ -3,7 +3,11 @@
     <header class="entity-toolbar">
 
       <div class="toolbar-actions">
-        <vxe-button :loading="loadingPhysicalTables" @click="openLoadTablesModal">
+        <vxe-button
+          :disabled="!loadPhysicalTablesFormSchema"
+          :loading="loadingPhysicalTables"
+          @click="openLoadTablesModal"
+        >
           <i class="ri-database-2-line" />
           加载表
         </vxe-button>
@@ -25,8 +29,6 @@
         </vxe-button>
       </div>
     </header>
-
-    <LcVxeModalRenderer :modals="modalConfigs" />
 
     <div class="entity-workspace">
       <aside class="entity-panel entity-panel-left">
@@ -190,11 +192,15 @@ import {
   type Node,
   type NodeMouseEvent
 } from '@vue-flow/core';
-import { h, type Ref } from 'vue';
+import { type Ref } from 'vue';
 import { VxeUI } from 'vxe-pc-ui';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
-import { LowCodeForm, LcVxeModalRenderer, type LcVxeModalConfig } from '@enlearn/lowcode-framework';
+import { LowCodeForm } from '@enlearn/lowcode-framework';
+import {
+  findGlobalDialog,
+  openGlobalDialog,
+} from '@enlearn/lowcode-framework/runtime';
 import {
   createEmptyLowCodeFormSchema,
   loadLowCodeFormDefinitions,
@@ -256,7 +262,15 @@ type PhysicalTableOption = {
   existsInMetadata: boolean;
   tableId: string | null;
   columnCount: number;
-  checked?: boolean;
+};
+
+type PhysicalTableLoaderRow = PhysicalTableOption & {
+  checked: boolean;
+  metadataStatus: string;
+};
+
+type PhysicalTableLoaderForm = Record<string, unknown> & {
+  tables: PhysicalTableLoaderRow[];
 };
 
 type SyncColumnsResult = {
@@ -321,6 +335,9 @@ type LowCodeArrayTableRowAction = {
   visible?: boolean | ((payload: FormValues) => boolean);
 };
 
+const LOAD_PHYSICAL_TABLES_DIALOG_ID =
+  LOW_CODE_FORM_CODES.entityDesignLoadPhysicalTables;
+
 const serviceApi = useServiceApi();
 const flowId = 'entity-design-flow';
 const { fitView } = useVueFlow(flowId);
@@ -334,6 +351,7 @@ const entityColumnsTableFormSchema = shallowRef<LowCodeFormSchema | null>(null);
 const entityRelationFormSchema = shallowRef<LowCodeFormSchema | null>(null);
 const entityLeftPanelFormSchema = shallowRef<LowCodeFormSchema | null>(null);
 const entityRightPanelFormSchema = shallowRef<LowCodeFormSchema | null>(null);
+const loadPhysicalTablesFormSchema = shallowRef<LowCodeFormSchema | null>(null);
 const entityFormDefinitionsReady = computed(() =>
   Boolean(
     entityTableFormSchema.value &&
@@ -341,7 +359,8 @@ const entityFormDefinitionsReady = computed(() =>
       entityColumnsTableFormSchema.value &&
       entityRelationFormSchema.value &&
       entityLeftPanelFormSchema.value &&
-      entityRightPanelFormSchema.value,
+      entityRightPanelFormSchema.value &&
+      loadPhysicalTablesFormSchema.value,
   ),
 );
 const savingTable = ref(false);
@@ -350,8 +369,6 @@ const savingRelation = ref(false);
 const savingLayout = ref(false);
 const syncingColumns = ref(false);
 const loadingPhysicalTables = ref(false);
-const importingPhysicalTables = ref(false);
-const loadTablesModalOpen = ref(false);
 const message = ref('');
 const messageClass = ref('lc-help');
 const tables = ref<EntityTable[]>([]);
@@ -359,7 +376,6 @@ const relations = ref<EntityRelation[]>([]);
 const flowNodes = shallowRef<EntityNode[]>([]);
 const flowEdges = shallowRef<EntityEdge[]>([]);
 const selectedTableId = ref('');
-const physicalTables = ref<PhysicalTableOption[]>([]);
 const hiddenCanvasTableIds = ref<Set<string>>(new Set());
 const canvasVisibilityInitialized = ref(false);
 
@@ -371,7 +387,6 @@ const relationForm = ref<FormValues>(newRelationForm());
 const selectedTable = computed(
   () => tables.value.find((table) => table.id === selectedTableId.value) ?? null
 );
-const selectedPhysicalTables = computed(() => physicalTables.value.filter((table) => table.checked));
 const totalColumnCount = computed(() =>
   tables.value.reduce((total, table) => total + table.columns.length, 0)
 );
@@ -441,80 +456,6 @@ const rightPanelModel = computed<FormValues>({
     if (isRecord(value.relation)) relationForm.value = value.relation;
   },
 });
-const modalConfigs = computed<LcVxeModalConfig[]>(() => [
-  {
-    id: 'load-physical-tables',
-    visible: loadTablesModalOpen.value,
-    title: '加载真实表',
-    width: 'min(860px, calc(100vw - 48px))',
-    height: 'min(640px, calc(100vh - 80px))',
-    props: {
-      showFooter: true,
-      transfer: true,
-    },
-    onVisibleChange: (visible) => {
-      loadTablesModalOpen.value = visible;
-    },
-    body: () =>
-      h('div', { class: 'physical-table-loader' }, [
-        h('div', { class: 'physical-table-loader__summary' }, [
-          h('strong', String(selectedPhysicalTables.value.length)),
-          h('span', `已选择 / ${physicalTables.value.length} 张真实表`),
-        ]),
-        h(
-          'vxe-table',
-          {
-            border: true,
-            showOverflow: true,
-            size: 'small',
-            data: physicalTables.value,
-            rowConfig: { keyField: 'fullName' },
-            checkboxConfig: { checkField: 'checked' },
-          },
-          {
-            default: () => [
-              h('vxe-column', { type: 'checkbox', width: 52 }),
-              h('vxe-column', { field: 'fullName', title: '真实表', minWidth: 220 }),
-              h('vxe-column', { field: 'title', title: '显示名称', minWidth: 180 }),
-              h('vxe-column', { field: 'columnCount', title: '字段数', width: 96, align: 'right' }),
-              h(
-                'vxe-column',
-                { field: 'existsInMetadata', title: 'Metadata', width: 120, align: 'center' },
-                {
-                  default: (slotParams?: { row?: PhysicalTableOption }) => {
-                    const row = slotParams?.row;
-
-                    if (!row) return null;
-
-                    return h(
-                      'span',
-                      { class: ['metadata-pill', row.existsInMetadata ? 'is-linked' : 'is-new'] },
-                      row.existsInMetadata ? '已存在' : '待同步',
-                    );
-                  },
-                },
-              ),
-            ],
-          },
-        ),
-      ]),
-    footer: () =>
-      h('div', { class: 'load-table-footer' }, [
-        h('vxe-button', { onClick: () => (loadTablesModalOpen.value = false) }, { default: () => '取消' }),
-        h(
-          'vxe-button',
-          {
-            status: 'primary',
-            loading: importingPhysicalTables.value,
-            disabled: !selectedPhysicalTables.value.length,
-            onClick: confirmLoadTables,
-          },
-          { default: () => '加载选中表' },
-        ),
-      ]),
-  },
-]);
-
 const tableDesignerSchema = computed<LowCodeFormSchema>(() =>
   prepareSchema(requireEntitySchema(entityTableFormSchema.value), {
     disableAction: (action) => action.code === 'delete' && !selectedTable.value,
@@ -749,6 +690,7 @@ async function loadEntityFormDefinitions() {
       LOW_CODE_FORM_CODES.entityDesignRelation,
       LOW_CODE_FORM_CODES.entityDesignLeftPanel,
       LOW_CODE_FORM_CODES.entityDesignRightPanel,
+      LOW_CODE_FORM_CODES.entityDesignLoadPhysicalTables,
     ]);
     entityTableFormSchema.value = definitions[LOW_CODE_FORM_CODES.entityDesignTable].schema;
     entityColumnFormSchema.value = definitions[LOW_CODE_FORM_CODES.entityDesignColumn].schema;
@@ -756,6 +698,8 @@ async function loadEntityFormDefinitions() {
     entityRelationFormSchema.value = definitions[LOW_CODE_FORM_CODES.entityDesignRelation].schema;
     entityLeftPanelFormSchema.value = definitions[LOW_CODE_FORM_CODES.entityDesignLeftPanel].schema;
     entityRightPanelFormSchema.value = definitions[LOW_CODE_FORM_CODES.entityDesignRightPanel].schema;
+    loadPhysicalTablesFormSchema.value =
+      definitions[LOW_CODE_FORM_CODES.entityDesignLoadPhysicalTables].schema;
   } catch (error) {
     formDefinitionError.value =
       error instanceof Error ? error.message : '加载实体设计表单定义失败。';
@@ -1266,15 +1210,85 @@ function onConnect(connection: Connection) {
 }
 
 async function openLoadTablesModal() {
+  if (findGlobalDialog(LOAD_PHYSICAL_TABLES_DIALOG_ID)) return;
+
+  const loadTablesSchema = loadPhysicalTablesFormSchema.value;
+  if (!loadTablesSchema) {
+    message.value = '加载真实表的表单定义尚未就绪。';
+    messageClass.value = 'lc-error';
+    return;
+  }
+
   loadingPhysicalTables.value = true;
   message.value = '';
   try {
     const rows = await serviceApi.invoke<PhysicalTableOption[]>('entityDesign', 'listPhysicalTables', {});
-    physicalTables.value = (rows ?? []).map((row) => ({
+    const tableRows: PhysicalTableLoaderRow[] = (rows ?? []).map((row) => ({
       ...row,
-      checked: false
+      checked: false,
+      metadataStatus: row.existsInMetadata ? '已存在' : '待同步',
     }));
-    loadTablesModalOpen.value = true;
+    const selectedTableCount = ref(0);
+    const confirmLabel = computed(() =>
+      selectedTableCount.value
+        ? `加载选中表 (${selectedTableCount.value})`
+        : '加载选中表'
+    );
+    const confirmDisabled = computed(() => selectedTableCount.value === 0);
+
+    void openGlobalDialog<PhysicalTableLoaderForm>({
+      id: LOAD_PHYSICAL_TABLES_DIALOG_ID,
+      title: '加载真实表',
+      width: 'min(860px, calc(100vw - 48px))',
+      height: 'min(640px, calc(100vh - 80px))',
+      className: 'entity-load-tables-dialog',
+      props: {
+        top: '5vh',
+        destroyOnClose: true,
+      },
+      showFooter: true,
+      model: { tables: tableRows },
+      form: {
+        schema: loadTablesSchema,
+        props: {
+          className: 'entity-load-tables-form',
+          vertical: true,
+          padding: false,
+        },
+        onUpdateModel: (values) => {
+          const updatedRows = Array.isArray(values.tables) ? values.tables : [];
+          selectedTableCount.value = updatedRows.filter(
+            (table) => isRecord(table) && table.checked === true
+          ).length;
+        },
+      },
+      actions: [
+        {
+          code: 'cancel',
+          label: '取消',
+          role: 'cancel',
+        },
+        {
+          code: 'confirm',
+          label: confirmLabel,
+          role: 'confirm',
+          status: 'primary',
+          disabled: confirmDisabled,
+        },
+      ],
+      onConfirm: async ({ model }) => {
+        const selectedRows = model.tables.filter((table) => table.checked);
+        if (!selectedRows.length) {
+          void VxeUI.modal.message({
+            content: '请至少选择一张真实表。',
+            status: 'warning',
+          });
+          return false;
+        }
+
+        return confirmLoadTables(selectedRows);
+      },
+    });
   } catch (error) {
     message.value = error instanceof Error ? error.message : '加载真实表失败。';
     messageClass.value = 'lc-error';
@@ -1283,10 +1297,7 @@ async function openLoadTablesModal() {
   }
 }
 
-async function confirmLoadTables() {
-  const selectedRows = selectedPhysicalTables.value;
-  if (!selectedRows.length) return;
-  importingPhysicalTables.value = true;
+async function confirmLoadTables(selectedRows: PhysicalTableLoaderRow[]) {
   message.value = '';
   try {
     const result = await serviceApi.invoke<SyncPhysicalTablesResult>('entityDesign', 'syncPhysicalTables', {
@@ -1297,15 +1308,16 @@ async function confirmLoadTables() {
     });
     const firstLoadedTableId = stringValue(result.tables?.[0]?.tableId);
     if (firstLoadedTableId) selectedTableId.value = firstLoadedTableId;
-    loadTablesModalOpen.value = false;
+    await loadDesign();
     message.value = `已加载 ${result.tables.length} 张真实表，新增 metadata ${result.imported} 张。`;
     messageClass.value = 'lc-help';
-    await loadDesign();
+    return { payload: result };
   } catch (error) {
-    message.value = error instanceof Error ? error.message : '加载选中表失败。';
+    const errorMessage = error instanceof Error ? error.message : '加载选中表失败。';
+    message.value = errorMessage;
     messageClass.value = 'lc-error';
-  } finally {
-    importingPhysicalTables.value = false;
+    void VxeUI.modal.message({ content: errorMessage, status: 'error' });
+    return false;
   }
 }
 
@@ -1673,53 +1685,6 @@ onMounted(async () => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-}
-
-.physical-table-loader {
-  display: grid;
-  gap: 12px;
-  min-height: 360px;
-}
-
-.physical-table-loader__summary {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  color: #475467;
-  font-size: 13px;
-}
-
-.physical-table-loader__summary strong {
-  color: #0f766e;
-  font-size: 24px;
-  line-height: 1;
-}
-
-.metadata-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 58px;
-  border-radius: 999px;
-  padding: 3px 8px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.metadata-pill.is-linked {
-  background: #e0f2fe;
-  color: #0369a1;
-}
-
-.metadata-pill.is-new {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.load-table-footer {
-  display: flex;
-  justify-content: flex-end;
   gap: 8px;
 }
 

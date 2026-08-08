@@ -18,6 +18,7 @@ export const LOW_CODE_FORM_CODES = {
   entityDesignRelation: 'entity-design-relation',
   entityDesignLeftPanel: 'entity-design-left-panel',
   entityDesignRightPanel: 'entity-design-right-panel',
+  entityDesignLoadPhysicalTables: 'entity-design-load-physical-tables',
   pageInfoDesign: PAGE_INFO_DESIGN_FORM_CODE,
 } as const;
 

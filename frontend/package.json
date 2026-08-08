@@ -38,6 +38,7 @@
     "test:button-default-picker": "node tests/button-group-default-picker-regression.mjs",
     "test:form-label-menu": "node tests/form-label-runtime-context-menu-regression.mjs",
     "test:entity-design-tabs": "node tests/entity-design-left-tabs-regression.mjs",
+    "test:entity-design-load-tables": "node tests/entity-design-load-tables-dialog-regression.mjs",
     "test:view-management": "node tests/view-management-regression.mjs",
     "test:view-management-browser": "node tests/view-management-create-browser-launcher.mjs",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"

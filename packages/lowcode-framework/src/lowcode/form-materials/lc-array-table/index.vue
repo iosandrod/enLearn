@@ -21,115 +21,130 @@
       :tree-config="treeConfig"
       @cell-click="handleCellClick"
       @row-dblclick="handleRowDblclick"
+      @checkbox-change="commitRows"
+      @checkbox-all="commitRows"
     >
-      <vxe-column type="seq" width="42" />
-      <vxe-column
-        v-for="column in columns"
-        :key="column.field"
-        :field="column.field"
-        :title="column.title"
-        :width="column.width"
-        :min-width="column.minWidth || 100"
-        :tree-node="isTreeNodeColumn(column)"
-      >
-        <template #default="scope">
-          <template v-if="isRecord(scope?.row)">
-          <vxe-switch
-            v-if="column.component === 'vxe-switch'"
-            :model-value="Boolean(scope.row[column.field])"
-            :disabled="column.readonly || Boolean(column.props?.disabled)"
-            @update:model-value="(value) => setCell(scope.row, column.field, value)"
-          />
-          <vxe-select
-            v-else-if="column.component === 'vxe-select'"
-            :model-value="getSelectModelValue(column, scope.row[column.field])"
-            v-bind="column.props"
-            transfer
-            clearable
-            :disabled="column.readonly || Boolean(column.props?.disabled)"
-            @update:model-value="(value) => setCell(scope.row, column.field, readSelectValue(column, value))"
-          >
-            <vxe-option
-              v-for="option in column.options"
-              :key="String(option.value)"
-              :label="option.label"
-              :value="option.value"
-              :disabled="option.disabled"
-            />
-          </vxe-select>
-          <div
-            v-else-if="shouldUseObjectEditor(column, scope.row)"
-            class="lc-array-table__object-cell"
-          >
-            <vxe-input
-              :model-value="formatObjectPreview(scope.row[column.field])"
-              :placeholder="column.placeholder"
-              readonly
-            />
-            <button
-              type="button"
-              :disabled="column.readonly"
-              @click="openObjectEditor(scope.row, column)"
-            >
-              编辑
-            </button>
-          </div>
-          <span
-            v-else-if="column.component === 'lc-text'"
-            class="lc-array-table__text-cell"
-            :title="formatCellText(scope.row[column.field])"
-          >
-            {{ formatCellText(scope.row[column.field]) }}
-          </span>
-          <vxe-textarea
-            v-else-if="column.component === 'vxe-textarea'"
-            :model-value="readString(scope.row[column.field])"
-            :placeholder="column.placeholder"
-            v-bind="column.props"
-            :readonly="column.readonly || Boolean(column.props?.readonly)"
-            @update:model-value="(value) => setCell(scope.row, column.field, value)"
-          />
-          <vxe-password-input
-            v-else-if="column.component === 'vxe-password-input'"
-            :model-value="readString(scope.row[column.field])"
-            :placeholder="column.placeholder"
-            v-bind="column.props"
-            clearable
-            :readonly="column.readonly || Boolean(column.props?.readonly)"
-            @update:model-value="(value) => setCell(scope.row, column.field, value)"
-          />
-          <vxe-number-input
-            v-else-if="column.component === 'lc-number-input'"
-            :model-value="toNumber(scope.row[column.field])"
-            :placeholder="column.placeholder"
-            v-bind="column.props"
-            :readonly="column.readonly || Boolean(column.props?.readonly)"
-            @update:model-value="(value) => setCell(scope.row, column.field, value)"
-          />
-          <LcJsonEditor
-            v-else-if="column.component === 'lc-json-editor'"
-            :field="createCellField(column)"
-            :model-value="scope.row[column.field]"
-            @update:model-value="(value) => setCell(scope.row, column.field, value)"
-          />
-          <LcMonacoEditor
-            v-else-if="column.component === 'lc-monaco-editor'"
-            :field="createCellField(column)"
-            :model-value="scope.row[column.field]"
-            @update:model-value="(value) => setCell(scope.row, column.field, value)"
-          />
-          <vxe-input
-            v-else
-            :model-value="readString(scope.row[column.field])"
-            :placeholder="column.placeholder"
-            v-bind="column.props"
-            clearable
-            :readonly="column.readonly || Boolean(column.props?.readonly)"
-            @update:model-value="(value) => setCell(scope.row, column.field, value)"
-          />
+      <vxe-column v-if="showSeq" type="seq" width="42" />
+      <template v-for="column in columns" :key="column.field">
+        <vxe-column
+          v-if="column.type"
+          :type="column.type"
+          :field="column.field"
+          :title="column.title"
+          :width="column.width"
+          :min-width="column.minWidth"
+          :align="column.align"
+          :header-align="column.headerAlign"
+        />
+        <vxe-column
+          v-else
+          :field="column.field"
+          :title="column.title"
+          :width="column.width"
+          :min-width="column.minWidth || 100"
+          :align="column.align"
+          :header-align="column.headerAlign"
+          :tree-node="isTreeNodeColumn(column)"
+        >
+          <template #default="scope">
+            <template v-if="isRecord(scope?.row)">
+              <vxe-switch
+                v-if="column.component === 'vxe-switch'"
+                :model-value="Boolean(scope.row[column.field])"
+                :disabled="column.readonly || Boolean(column.props?.disabled)"
+                @update:model-value="(value) => setCell(scope.row, column.field, value)"
+              />
+              <vxe-select
+                v-else-if="column.component === 'vxe-select'"
+                :model-value="getSelectModelValue(column, scope.row[column.field])"
+                v-bind="column.props"
+                transfer
+                clearable
+                :disabled="column.readonly || Boolean(column.props?.disabled)"
+                @update:model-value="(value) => setCell(scope.row, column.field, readSelectValue(column, value))"
+              >
+                <vxe-option
+                  v-for="option in column.options"
+                  :key="String(option.value)"
+                  :label="option.label"
+                  :value="option.value"
+                  :disabled="option.disabled"
+                />
+              </vxe-select>
+              <div
+                v-else-if="shouldUseObjectEditor(column, scope.row)"
+                class="lc-array-table__object-cell"
+              >
+                <vxe-input
+                  :model-value="formatObjectPreview(scope.row[column.field])"
+                  :placeholder="column.placeholder"
+                  readonly
+                />
+                <button
+                  type="button"
+                  :disabled="column.readonly"
+                  @click="openObjectEditor(scope.row, column)"
+                >
+                  编辑
+                </button>
+              </div>
+              <span
+                v-else-if="column.component === 'lc-text'"
+                class="lc-array-table__text-cell"
+                :title="formatCellText(scope.row[column.field])"
+              >
+                {{ formatCellText(scope.row[column.field]) }}
+              </span>
+              <vxe-textarea
+                v-else-if="column.component === 'vxe-textarea'"
+                :model-value="readString(scope.row[column.field])"
+                :placeholder="column.placeholder"
+                v-bind="column.props"
+                :readonly="column.readonly || Boolean(column.props?.readonly)"
+                @update:model-value="(value) => setCell(scope.row, column.field, value)"
+              />
+              <vxe-password-input
+                v-else-if="column.component === 'vxe-password-input'"
+                :model-value="readString(scope.row[column.field])"
+                :placeholder="column.placeholder"
+                v-bind="column.props"
+                clearable
+                :readonly="column.readonly || Boolean(column.props?.readonly)"
+                @update:model-value="(value) => setCell(scope.row, column.field, value)"
+              />
+              <vxe-number-input
+                v-else-if="column.component === 'lc-number-input'"
+                :model-value="toNumber(scope.row[column.field])"
+                :placeholder="column.placeholder"
+                v-bind="column.props"
+                :readonly="column.readonly || Boolean(column.props?.readonly)"
+                @update:model-value="(value) => setCell(scope.row, column.field, value)"
+              />
+              <LcJsonEditor
+                v-else-if="column.component === 'lc-json-editor'"
+                :field="createCellField(column)"
+                :model-value="scope.row[column.field]"
+                @update:model-value="(value) => setCell(scope.row, column.field, value)"
+              />
+              <LcMonacoEditor
+                v-else-if="column.component === 'lc-monaco-editor'"
+                :field="createCellField(column)"
+                :model-value="scope.row[column.field]"
+                @update:model-value="(value) => setCell(scope.row, column.field, value)"
+              />
+              <vxe-input
+                v-else
+                :model-value="readString(scope.row[column.field])"
+                :placeholder="column.placeholder"
+                v-bind="column.props"
+                clearable
+                :readonly="column.readonly || Boolean(column.props?.readonly)"
+                @update:model-value="(value) => setCell(scope.row, column.field, value)"
+              />
+            </template>
           </template>
-        </template>
-      </vxe-column>
+        </vxe-column>
+      </template>
       <vxe-column v-if="showActions" title="操作" :width="actionWidth" fixed="right">
         <template #default="scope">
           <div v-if="isRecord(scope?.row)" class="lc-array-table__actions">
@@ -215,9 +230,12 @@ import type { LowCodeFormMaterialProps } from '../types';
 type ArrayTableColumn = {
   field: string;
   title: string;
+  type?: string;
   component?: LowCodeFieldComponent;
   width?: number | string;
   minWidth?: number | string;
+  align?: 'left' | 'center' | 'right';
+  headerAlign?: 'left' | 'center' | 'right';
   placeholder?: string;
   defaultValue?: unknown;
   props?: Record<string, unknown>;
@@ -367,7 +385,7 @@ const rowConfig = computed(() => {
     ...gridRowConfig,
     ...config,
     keyField,
-    isCurrent: config.isCurrent ?? gridRowConfig.isCurrent,
+    isCurrent: config.isCurrent !== false && gridRowConfig.isCurrent !== false,
   };
 });
 const tableConfig = computed(() => mergeSystemTableOptions(
@@ -414,6 +432,7 @@ const toolbarButtonOptions = computed<VxeButtonProps[]>(() =>
 );
 const addChildText = computed(() => readString(fieldProps.value.addChildText, '新增子项'));
 const tableHeight = computed(() => readSize(tableConfig.value.height));
+const showSeq = computed(() => fieldProps.value.showSeq !== false);
 const showToolbar = computed(() => fieldProps.value.showToolbar !== false);
 const showActions = computed(() => fieldProps.value.showActions !== false);
 const toolbarAlign = computed(() => readToolbarAlign(fieldProps.value.toolbarAlign));
@@ -449,6 +468,7 @@ watch(
   () => [
     columns.value,
     tableHeight.value,
+    showSeq.value,
     showActions.value,
     actionWidth.value,
     rowActions.value,
@@ -477,9 +497,12 @@ function normalizeColumns(value: unknown): ArrayTableColumn[] {
       return {
         field,
         title: readString(column.title ?? column.label, field),
+        type: readString(column.type) || undefined,
         component: readComponent(column.component),
         width: readSize(column.width),
         minWidth: readSize(column.minWidth),
+        align: readAlign(column.align),
+        headerAlign: readAlign(column.headerAlign),
         placeholder: readString(column.placeholder),
         defaultValue: column.defaultValue,
         readonly: readBoolean(column.readonly),
@@ -1147,13 +1170,17 @@ function emitConfiguredEvent(name: string, payload: Record<string, unknown>) {
 
 function handleCellClick(payload: unknown) {
   if (!isRecord(payload) || !isRecord(payload.row)) return;
-  const effectiveRowConfig = isRecord(tableConfig.value.rowConfig)
-    ? tableConfig.value.rowConfig
-    : {};
-  if (effectiveRowConfig.isCurrent !== false) {
+  if (rowConfig.value.isCurrent !== false) {
     tableRef.value?.setCurrentRow?.(payload.row);
   }
   emitConfiguredEvent('onRowClick', rowEventPayload(payload.row, payload));
+}
+
+function readAlign(value: unknown): ArrayTableColumn['align'] {
+  const align = readString(value);
+  return align === 'left' || align === 'center' || align === 'right'
+    ? align
+    : undefined;
 }
 
 function handleRowDblclick(payload: unknown) {

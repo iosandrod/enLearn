@@ -18,6 +18,15 @@ const formDefinitionMigration = await readFile(
   new URL('../../supabase/migrations/20260808200000_lowcode_form_definitions.sql', import.meta.url),
   'utf8'
 );
+const entityLoadTablesFormMigration = await readFile(
+  new URL(
+    '../../supabase/migrations/20260808210000_entity_design_load_physical_tables_form.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
+const allFormDefinitionMigrations =
+  `${formDefinitionMigration}\n${entityLoadTablesFormMigration}`;
 
 const compiledUtility = ts.transpileModule(utilitySource, {
   compilerOptions: {
@@ -142,10 +151,11 @@ for (const code of [
   'entity-design-relation',
   'entity-design-left-panel',
   'entity-design-right-panel',
+  'entity-design-load-physical-tables',
   'page-info-design',
 ]) {
   assert.match(
-    formDefinitionMigration,
+    allFormDefinitionMigrations,
     new RegExp(`'${code}'`),
     `The database migration must seed the ${code} form definition.`,
   );

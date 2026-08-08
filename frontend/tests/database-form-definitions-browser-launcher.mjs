@@ -68,6 +68,13 @@ try {
 
   assert.ok(formDefinitionResponses.length >= 4, 'Expected database form-definition requests.');
   assert.ok(formDefinitionResponses.every((entry) => entry.status === 200));
+  assert.ok(
+    formDefinitionResponses.some(
+      (entry) => Array.isArray(entry.codes) &&
+        entry.codes.includes('entity-design-load-physical-tables')
+    ),
+    'The entity designer must request the load-physical-tables form definition.'
+  );
   assert.deepEqual(pageErrors, []);
   assert.deepEqual(failedRequests, []);
   assert.deepEqual(consoleErrors, []);
