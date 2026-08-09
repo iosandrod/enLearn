@@ -331,20 +331,18 @@ export function createLowCodeFormSchemaFromDesignerResult(
 }
 
 function normalizeSubFormProps(props: Record<string, unknown>) {
-  const schema =
-    readLowCodeFormSchema(props.schema) ??
-    createLowCodeFormSchema(props.fields, props.formDesignerModel);
-  const {
-    fields: _legacyFields,
-    layout: _legacyLayout,
-    formDesignerModel: _legacyDesignerModel,
-    schema: _legacySchema,
-    ...restProps
-  } = props;
+  const schema = readLowCodeFormSchema(props.schema);
+  const restProps = cloneDeep(props);
+  delete restProps.fields;
+  delete restProps.columns;
+  delete restProps.layout;
+  delete restProps.actions;
+  delete restProps.formDesignerModel;
+  delete restProps.subFormDesignerModel;
 
   return {
     ...restProps,
-    schema: schema.fields.length ? schema : cloneDeep(defaultSubFormSchema()),
+    ...(schema ? { schema } : {}),
   };
 }
 
@@ -382,10 +380,6 @@ function designerFieldToLowCodeField(field: FormDesignerField, index: number): L
       ? { rules: [{ required: true, message: `${label}不能为空` }] }
       : {}),
   };
-}
-
-function defaultSubFormSchema(): LowCodeFormSchema {
-  return createLowCodeFormSchema(createDefaultSubFormFields(), undefined);
 }
 
 function applyCommonFieldProps(block: VisualEditorBlockData, field: FormDesignerField, index: number) {
@@ -429,14 +423,13 @@ function createFieldBlock(field: FormDesignerField, index: number) {
 
   if (runtimeComponent === 'lc-sub-form') {
     const fieldProps = isRecord(field.props) ? field.props : {};
-    const schema =
-      readLowCodeFormSchema(fieldProps.schema) ??
-      createLowCodeFormSchema(fieldProps.fields, fieldProps.formDesignerModel);
-    const subFields = normalizeFields(schema.fields);
+    const schema = readLowCodeFormSchema(fieldProps.schema);
+    const subFields = normalizeFields(schema?.fields);
     const subFormDesignerModel = fieldProps.formDesignerModel;
 
     block.props.__lowcodeComponent = 'lc-sub-form';
-    block.props.schema = schema.fields.length ? schema : defaultSubFormSchema();
+    if (schema) block.props.schema = schema;
+    else delete block.props.schema;
     block.props.subFormDesignerModel = isVisualEditorModel(subFormDesignerModel)
       ? cloneDeep(subFormDesignerModel)
       : createFormModel(
@@ -743,14 +736,10 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
   };
 
   if (runtimeComponent === 'lc-sub-form') {
-    const schema =
-      readLowCodeFormSchema(block.props?.schema) ??
-      createLowCodeFormSchema(block.props?.fields, block.props?.subFormDesignerModel);
+    const schema = readLowCodeFormSchema(block.props?.schema);
     const subFormDesignerModel = block.props?.subFormDesignerModel;
 
-    result.props = {
-      schema: schema.fields.length ? schema : defaultSubFormSchema(),
-    };
+    result.props = schema ? { schema } : {};
     if (isVisualEditorModel(subFormDesignerModel)) {
       result.props.formDesignerModel = cloneDeep(subFormDesignerModel);
     }

@@ -62,6 +62,7 @@
     "db:apply-system-settings": "tsx scripts/apply-system-settings-page.ts",
     "db:apply-system-option-source-edit-page": "tsx scripts/apply-system-option-source-edit-page.ts",
     "db:apply-dynamic-grid-association-options": "tsx scripts/apply-dynamic-grid-association-options.ts",
+    "db:apply-canonical-sub-form-schema": "tsx scripts/apply-canonical-sub-form-schema.ts",
     "db:apply-approval-progress": "tsx scripts/apply-approval-progress-page.ts",
     "db:apply-approval-console": "tsx scripts/apply-approval-console-route.ts",
     "auth:set-all-passwords": "tsx scripts/set-all-user-passwords.ts",

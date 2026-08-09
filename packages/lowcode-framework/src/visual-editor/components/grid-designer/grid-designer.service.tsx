@@ -25,6 +25,7 @@ import type {
   LowCodeRuntimeDirective,
   LowCodeRuntimeEvent,
 } from '../../../types/lowcode';
+import { createSubFormField, createSubFormSchema } from '../../../lowcode/form-schema';
 import { defer } from '../../utils/defer';
 import { generateNanoid } from '../../utils';
 import type { LowCodeHostServiceApi } from '../../../core/host';
@@ -56,12 +57,14 @@ export type GridDesignerColumn = {
   [key: string]: unknown;
 };
 
-export type GridDesignerTableType = 'custom' | 'table' | 'view';
+export type GridDesignerTableType = 'normal' | 'main' | 'detail';
+export type GridDesignerSourceType = 'custom' | 'table' | 'view';
 
 export type GridDesignerBusinessInfo = {
   blockId: string;
   title: string;
   tableType: GridDesignerTableType;
+  sourceType: GridDesignerSourceType;
   tableName: string;
   viewName: string;
   sourceKey: string;
@@ -168,9 +171,9 @@ const columnEditTypeOptions = [
 ];
 
 const gridTableTypeOptions = [
-  { label: '自定义数据源', value: 'custom' },
-  { label: '真实表', value: 'table' },
-  { label: '视图', value: 'view' },
+  { label: '普通表格', value: 'normal' },
+  { label: '主表', value: 'main' },
+  { label: '明细表', value: 'detail' },
 ];
 
 const alignOptions = [
@@ -221,18 +224,16 @@ const rendererPropFields: LowCodeField[] = [
 
 const rendererObjectFields: LowCodeField[] = [
   { field: 'name', label: 'name', component: 'vxe-input', props: { placeholder: 'VxeInput' } },
-  {
+  createSubFormField({
     field: 'props',
     label: 'props',
-    component: 'lc-sub-form',
-    props: { fields: rendererPropFields },
-  },
-  {
+    fields: rendererPropFields,
+  }),
+  createSubFormField({
     field: 'attrs',
     label: 'attrs',
-    component: 'lc-sub-form',
-    props: { fields: rendererPropFields },
-  },
+    fields: rendererPropFields,
+  }),
 ];
 
 const formatterObjectFields: LowCodeField[] = [
@@ -251,27 +252,23 @@ const formatterObjectFields: LowCodeField[] = [
   },
   { field: 'emptyText', label: 'emptyText', component: 'vxe-input' },
   { field: 'locale', label: 'locale', component: 'vxe-input' },
-  {
+  createSubFormField({
     field: 'options',
     label: 'options',
-    component: 'lc-sub-form',
-    props: {
-      fields: [
-        { field: 'dateStyle', label: 'dateStyle', component: 'vxe-input' },
-        { field: 'timeStyle', label: 'timeStyle', component: 'vxe-input' },
-        { field: 'style', label: 'style', component: 'vxe-input' },
-        { field: 'currency', label: 'currency', component: 'vxe-input' },
-        { field: 'minimumFractionDigits', label: 'minimumFractionDigits', component: 'lc-number-input' },
-        { field: 'maximumFractionDigits', label: 'maximumFractionDigits', component: 'lc-number-input' },
-      ],
-    },
-  },
-  {
+    fields: [
+      { field: 'dateStyle', label: 'dateStyle', component: 'vxe-input' },
+      { field: 'timeStyle', label: 'timeStyle', component: 'vxe-input' },
+      { field: 'style', label: 'style', component: 'vxe-input' },
+      { field: 'currency', label: 'currency', component: 'vxe-input' },
+      { field: 'minimumFractionDigits', label: 'minimumFractionDigits', component: 'lc-number-input' },
+      { field: 'maximumFractionDigits', label: 'maximumFractionDigits', component: 'lc-number-input' },
+    ],
+  }),
+  createSubFormField({
     field: 'map',
     label: 'map',
-    component: 'lc-sub-form',
-    props: { fields: [] },
-  },
+    fields: [],
+  }),
 ];
 
 type AdvancedGridConfigDefinition = {
@@ -321,17 +318,14 @@ const toolbarConfigFields: LowCodeField[] = [
   { field: 'print', label: 'print', component: 'vxe-switch' },
   { field: 'zoom', label: 'zoom', component: 'vxe-switch' },
   { field: 'custom', label: 'custom', component: 'vxe-switch' },
-  {
+  createSubFormField({
     field: 'slots',
     label: 'slots',
-    component: 'lc-sub-form',
-    props: {
-      fields: [
-        { field: 'buttons', label: 'buttons', component: 'vxe-input' },
-        { field: 'tools', label: 'tools', component: 'vxe-input' },
-      ],
-    },
-  },
+    fields: [
+      { field: 'buttons', label: 'buttons', component: 'vxe-input' },
+      { field: 'tools', label: 'tools', component: 'vxe-input' },
+    ],
+  }),
 ];
 
 const proxyConfigFields: LowCodeField[] = [
@@ -341,31 +335,25 @@ const proxyConfigFields: LowCodeField[] = [
   { field: 'sort', label: 'sort', component: 'vxe-switch' },
   { field: 'filter', label: 'filter', component: 'vxe-switch' },
   { field: 'form', label: 'form', component: 'vxe-switch' },
-  {
+  createSubFormField({
     field: 'props',
     label: 'props',
-    component: 'lc-sub-form',
-    props: {
-      fields: [
-        { field: 'result', label: 'result', component: 'vxe-input', props: { placeholder: 'result' } },
-        { field: 'total', label: 'total', component: 'vxe-input', props: { placeholder: 'total' } },
-        { field: 'message', label: 'message', component: 'vxe-input', props: { placeholder: 'message' } },
-      ],
-    },
-  },
-  {
+    fields: [
+      { field: 'result', label: 'result', component: 'vxe-input', props: { placeholder: 'result' } },
+      { field: 'total', label: 'total', component: 'vxe-input', props: { placeholder: 'total' } },
+      { field: 'message', label: 'message', component: 'vxe-input', props: { placeholder: 'message' } },
+    ],
+  }),
+  createSubFormField({
     field: 'ajax',
     label: 'ajax',
-    component: 'lc-sub-form',
-    props: {
-      fields: [
-        { field: 'query', label: 'query', component: 'vxe-input' },
-        { field: 'queryAll', label: 'queryAll', component: 'vxe-input' },
-        { field: 'save', label: 'save', component: 'vxe-input' },
-        { field: 'delete', label: 'delete', component: 'vxe-input' },
-      ],
-    },
-  },
+    fields: [
+      { field: 'query', label: 'query', component: 'vxe-input' },
+      { field: 'queryAll', label: 'queryAll', component: 'vxe-input' },
+      { field: 'save', label: 'save', component: 'vxe-input' },
+      { field: 'delete', label: 'delete', component: 'vxe-input' },
+    ],
+  }),
 ];
 
 const editConfigFields: LowCodeField[] = [
@@ -413,25 +401,22 @@ const sortConfigFields: LowCodeField[] = [
     component: 'lc-array-table',
     props: { valueMode: 'primitive', valueField: 'value', valueTitle: 'order', toolbarButtons: [{ code: 'add', label: '新增', command: 'add', status: 'primary' }] },
   },
-  {
+  createSubFormField({
     field: 'defaultSort',
     label: 'defaultSort',
-    component: 'lc-sub-form',
-    props: {
-      fields: [
-        { field: 'field', label: 'field', component: 'vxe-input' },
-        {
-          field: 'order',
-          label: 'order',
-          component: 'vxe-select',
-          options: [
-            { label: 'asc', value: 'asc' },
-            { label: 'desc', value: 'desc' },
-          ],
-        },
-      ],
-    },
-  },
+    fields: [
+      { field: 'field', label: 'field', component: 'vxe-input' },
+      {
+        field: 'order',
+        label: 'order',
+        component: 'vxe-select',
+        options: [
+          { label: 'asc', value: 'asc' },
+          { label: 'desc', value: 'desc' },
+        ],
+      },
+    ],
+  }),
 ];
 
 const filterConfigFields: LowCodeField[] = [
@@ -552,24 +537,21 @@ const columnAdvancedFormSections: Array<{ title: string; fields: LowCodeField[] 
   {
     title: '渲染配置',
     fields: [
-      {
+      createSubFormField({
         field: 'cellRender',
         label: 'cellRender',
-        component: 'lc-sub-form',
-        props: { fields: rendererObjectFields },
-      },
-      {
+        fields: rendererObjectFields,
+      }),
+      createSubFormField({
         field: 'editRender',
         label: 'editRender',
-        component: 'lc-sub-form',
-        props: { fields: rendererObjectFields },
-      },
-      {
+        fields: rendererObjectFields,
+      }),
+      createSubFormField({
         field: 'params',
         label: 'params',
-        component: 'lc-sub-form',
-        props: { fields: formatterObjectFields },
-      },
+        fields: formatterObjectFields,
+      }),
     ],
   },
 ];
@@ -1036,7 +1018,8 @@ function createDefaultBusiness(): GridDesignerBusinessInfo {
   return {
     blockId: 'records-grid',
     title: '数据列表',
-    tableType: 'table',
+    tableType: 'normal',
+    sourceType: 'table',
     tableName: 'profiles',
     viewName: '',
     sourceKey: 'records',
@@ -1061,24 +1044,33 @@ function normalizeBusiness(value: unknown): GridDesignerBusinessInfo {
   const explicitTableName = readString(row.tableName);
   const explicitViewName = readString(row.viewName);
   const requestedTableType = readString(row.tableType);
-  const tableType: GridDesignerTableType = requestedTableType === 'view'
-    ? 'view'
-    : requestedTableType === 'custom'
-      ? 'custom'
-      : requestedTableType === 'table'
+  const tableType: GridDesignerTableType = requestedTableType === 'main'
+    ? 'main'
+    : requestedTableType === 'detail'
+      ? 'detail'
+      : 'normal';
+  const requestedSourceType = readString(row.sourceType);
+  const legacySourceType = requestedTableType === 'custom' ||
+    requestedTableType === 'table' ||
+    requestedTableType === 'view'
+    ? requestedTableType
+    : '';
+  const sourceType: GridDesignerSourceType = requestedSourceType === 'custom' ||
+    requestedSourceType === 'table' ||
+    requestedSourceType === 'view'
+    ? requestedSourceType
+    : legacySourceType || (explicitViewName
+      ? 'view'
+      : explicitTableName || postDataTarget
         ? 'table'
-        : explicitViewName
-          ? 'view'
-          : explicitTableName || postDataTarget
-            ? 'table'
-            : 'custom';
-  const tableName = tableType === 'table' ? explicitTableName || postDataTarget : '';
-  const viewName = tableType === 'view' ? explicitViewName || postDataTarget : '';
+        : 'custom');
+  const tableName = sourceType === 'table' ? explicitTableName || postDataTarget : '';
+  const viewName = sourceType === 'view' ? explicitViewName || postDataTarget : '';
   const normalizedPostDataJson = parsedPostData.ok && (
     typeof parsedPostData.value === 'undefined' || isPlainRecord(parsedPostData.value)
   )
-    ? JSON.stringify(
-        createSourcePostData(postData, tableName || viewName, tableType !== 'custom'),
+      ? JSON.stringify(
+        createSourcePostData(postData, tableName || viewName, sourceType !== 'custom'),
         null,
         2,
       )
@@ -1088,6 +1080,7 @@ function normalizeBusiness(value: unknown): GridDesignerBusinessInfo {
     blockId: readString(row.blockId, fallback.blockId),
     title: readString(row.title, fallback.title),
     tableType,
+    sourceType,
     tableName,
     viewName,
     sourceKey: readString(row.sourceKey, fallback.sourceKey),
@@ -1258,12 +1251,11 @@ function inferObjectFields(value: Record<string, unknown>): LowCodeField[] {
     }
 
     if (isPlainRecord(currentValue)) {
-      return {
+      return createSubFormField({
         field,
         label: field,
-        component: 'lc-sub-form',
-        props: { fields: inferObjectFields(currentValue) },
-      };
+        fields: inferObjectFields(currentValue),
+      });
     }
 
     if (Array.isArray(currentValue)) {
@@ -1646,7 +1638,7 @@ const ServiceComponent = defineComponent({
       selectColumn(columns[0]);
       state.business.title = `${source.title}列表`;
       const sourceTarget = readString(source.fullName, source.code);
-      state.business.tableType = kind === 'view' ? 'view' : 'table';
+      state.business.sourceType = kind === 'view' ? 'view' : 'table';
       state.business.tableName = kind === 'entity' ? sourceTarget : '';
       state.business.viewName = kind === 'view' ? sourceTarget : '';
       if (!readString(state.business.sourceKey)) {
@@ -1733,7 +1725,7 @@ const ServiceComponent = defineComponent({
         value: target,
       };
 
-      state.business.tableType = kind;
+      state.business.sourceType = kind;
       state.business.tableName = kind === 'table' ? target : '';
       state.business.viewName = kind === 'view' ? target : '';
       syncBusinessSourceTarget();
@@ -1881,11 +1873,11 @@ const ServiceComponent = defineComponent({
           const postData = parseJsonObject(state.business.postDataJson, 'postDataJson');
           assertJsonParsed(postData);
 
-          if (state.business.tableType === 'table' && !readString(state.business.tableName)) {
+          if (state.business.sourceType === 'table' && !readString(state.business.tableName)) {
             ElMessage.error('请选择关联真实表');
             return false;
           }
-          if (state.business.tableType === 'view' && !readString(state.business.viewName)) {
+          if (state.business.sourceType === 'view' && !readString(state.business.viewName)) {
             ElMessage.error('请选择关联视图');
             return false;
           }
@@ -2025,11 +2017,8 @@ const ServiceComponent = defineComponent({
       });
     };
 
-    const createSchema = (fields: LowCodeField[], columns = 4): LowCodeFormSchema => ({
-      columns,
-      fields,
-      actions: [],
-    });
+    const createSchema = (fields: LowCodeField[], columns = 4): LowCodeFormSchema =>
+      createSubFormSchema({ columns, fields });
 
     const businessInfoSchema = createSchema([
       { field: 'blockId', label: 'blockId', component: 'vxe-input' },
@@ -2132,24 +2121,24 @@ const ServiceComponent = defineComponent({
 
     const rowConfigSchema = createSchema(
       [
-        {
+        createSubFormField({
           field: 'rowConfig',
           label: 'rowConfig',
-          component: 'lc-sub-form',
-          props: { fields: rowConfigSubFields },
-        },
+          fields: rowConfigSubFields,
+          columns: 3,
+        }),
       ],
       1,
     );
 
     const columnConfigSchema = createSchema(
       [
-        {
+        createSubFormField({
           field: 'columnConfig',
           label: 'columnConfig',
-          component: 'lc-sub-form',
-          props: { fields: columnConfigSubFields },
-        },
+          fields: columnConfigSubFields,
+          columns: 3,
+        }),
       ],
       1,
     );
@@ -2417,10 +2406,10 @@ const ServiceComponent = defineComponent({
     };
 
     const syncBusinessSourceTarget = (clearCustomTargetAliases = false) => {
-      const tableType = state.business.tableType;
-      const sourceTarget = tableType === 'table'
+      const sourceType = state.business.sourceType;
+      const sourceTarget = sourceType === 'table'
         ? readString(state.business.tableName)
-        : tableType === 'view'
+        : sourceType === 'view'
           ? readString(state.business.viewName)
           : '';
 
@@ -2428,8 +2417,8 @@ const ServiceComponent = defineComponent({
         createSourcePostData(
           state.business.postDataJson,
           sourceTarget,
-          tableType !== 'custom',
-          tableType !== 'custom' || clearCustomTargetAliases,
+          sourceType !== 'custom',
+          sourceType !== 'custom' || clearCustomTargetAliases,
         ),
         null,
         2,
@@ -2698,33 +2687,42 @@ const ServiceComponent = defineComponent({
       }
 
       if (event.blockId === businessInfoBlockId) {
-        const previousTableType = state.business.tableType;
+        const previousSourceType = state.business.sourceType;
         const changedField = readString(event.payload?.field);
         const changedValue = event.payload?.value;
         Object.assign(state.business, values);
         if (changedField === 'tableType') {
           const tableType = readString(changedValue);
-          state.business.tableType = tableType === 'view'
+          state.business.tableType = tableType === 'main'
+            ? 'main'
+            : tableType === 'detail'
+              ? 'detail'
+              : 'normal';
+          syncActiveDesignerDialogModel();
+        }
+        if (changedField === 'sourceType') {
+          const sourceType = readString(changedValue);
+          state.business.sourceType = sourceType === 'view'
             ? 'view'
-            : tableType === 'table'
+            : sourceType === 'table'
               ? 'table'
               : 'custom';
-          if (state.business.tableType === 'table') state.business.viewName = '';
-          if (state.business.tableType === 'view') state.business.tableName = '';
-          if (state.business.tableType === 'custom') {
+          if (state.business.sourceType === 'table') state.business.viewName = '';
+          if (state.business.sourceType === 'view') state.business.tableName = '';
+          if (state.business.sourceType === 'custom') {
             state.business.tableName = '';
             state.business.viewName = '';
           }
           syncBusinessSourceTarget(
-            state.business.tableType === 'custom' && previousTableType !== 'custom',
+            state.business.sourceType === 'custom' && previousSourceType !== 'custom',
           );
           syncActiveDesignerDialogModel();
         }
         if (changedField === 'tableName') {
           if (!readString(changedValue)) {
             state.business.tableName = '';
-            if (state.business.tableType === 'table') state.business.tableType = 'custom';
-            syncBusinessSourceTarget(previousTableType === 'table');
+            if (state.business.sourceType === 'table') state.business.sourceType = 'custom';
+            syncBusinessSourceTarget(previousSourceType === 'table');
             syncActiveDesignerDialogModel();
           } else {
             await applyAssociationOption('table', changedValue);
@@ -2733,8 +2731,8 @@ const ServiceComponent = defineComponent({
         if (changedField === 'viewName') {
           if (!readString(changedValue)) {
             state.business.viewName = '';
-            if (state.business.tableType === 'view') state.business.tableType = 'custom';
-            syncBusinessSourceTarget(previousTableType === 'view');
+            if (state.business.sourceType === 'view') state.business.sourceType = 'custom';
+            syncBusinessSourceTarget(previousSourceType === 'view');
             syncActiveDesignerDialogModel();
           } else {
             await applyAssociationOption('view', changedValue);

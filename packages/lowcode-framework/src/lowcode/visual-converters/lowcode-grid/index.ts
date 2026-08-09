@@ -76,12 +76,20 @@ function toRuntimeGridOptions(gridProps: Record<string, unknown>) {
   return options;
 }
 
-type GridTableType = 'custom' | 'table' | 'view';
+type GridTableType = 'normal' | 'main' | 'detail';
+type GridSourceType = 'custom' | 'table' | 'view';
 
 function normalizeGridTableType(value: unknown): GridTableType | '' {
   const tableType = readString(value);
-  return tableType === 'table' || tableType === 'view' || tableType === 'custom'
+  return tableType === 'normal' || tableType === 'main' || tableType === 'detail'
     ? tableType
+    : '';
+}
+
+function normalizeGridSourceType(value: unknown): GridSourceType | '' {
+  const sourceType = readString(value);
+  return sourceType === 'table' || sourceType === 'view' || sourceType === 'custom'
+    ? sourceType
     : '';
 }
 
@@ -96,24 +104,25 @@ function resolveGridSourceAssociation(
     props.entityCode,
     readString(postData.entityCode ?? postData.entity_code),
   );
-  const requestedType = normalizeGridTableType(props.tableType);
-  const tableType: GridTableType = requestedType || (
+  const legacySourceType = normalizeGridSourceType(props.tableType);
+  const requestedType = normalizeGridSourceType(props.sourceType) || legacySourceType;
+  const sourceType: GridSourceType = requestedType || (
     explicitViewName
       ? 'view'
       : explicitTableName || postDataTableName || entityCode
         ? 'table'
         : 'custom'
   );
-  const tableName = tableType === 'table'
+  const tableName = sourceType === 'table'
     ? explicitTableName || postDataTableName || (entityCode === 'users' ? 'profiles' : entityCode)
     : '';
-  const viewName = tableType === 'view'
+  const viewName = sourceType === 'view'
     ? explicitViewName || postDataTableName
     : '';
   const targetName = tableName || viewName;
   const normalizedPostData = { ...postData };
 
-  if (tableType !== 'custom') {
+  if (sourceType !== 'custom') {
     delete normalizedPostData.tableName;
     delete normalizedPostData.table_name;
     delete normalizedPostData.entityCode;
@@ -124,7 +133,7 @@ function resolveGridSourceAssociation(
     if (targetName) normalizedPostData.tableName = targetName;
   }
 
-  return { tableType, tableName, viewName, targetName, postData: normalizedPostData };
+  return { sourceType, tableName, viewName, targetName, postData: normalizedPostData };
 }
 
 function normalizeRuntimeDirectives(value: unknown): LowCodeRuntimeDirective[] {
@@ -201,7 +210,8 @@ const converter: VisualToLowCodeConverter = {
   defaultProps: {
     blockId: 'records-grid',
     title: '数据列表',
-    tableType: 'table',
+    tableType: 'normal',
+    sourceType: 'table',
     tableName: 'profiles',
     viewName: '',
     sourceKey: 'records',
@@ -226,6 +236,7 @@ const converter: VisualToLowCodeConverter = {
     const props = readVisualBlockProps(block);
     const gridProps = normalizeVisualGridProps(props);
     const sourceKey = readString(props.sourceKey, 'records');
+    const tableType = normalizeGridTableType(props.tableType) || 'normal';
     const serviceName = readString(props.serviceName, 'admin');
     const serviceMethod = readString(props.serviceMethod, 'listItems');
     const saveMethod = readString(props.saveMethod);
@@ -249,7 +260,7 @@ const converter: VisualToLowCodeConverter = {
     const dataSource: LowCodePageDataSource = {
       key: sourceKey,
       label: readString(props.title, sourceKey),
-      sourceType: association.tableType,
+      sourceType: association.sourceType,
       serviceName,
       serviceMethod,
       ...(saveMethod ? { saveMethod } : {}),
@@ -266,7 +277,8 @@ const converter: VisualToLowCodeConverter = {
       kind: 'grid',
       title: readString(props.title, 'Records'),
       sourceKey,
-      tableType: association.tableType,
+      tableType,
+      sourceType: association.sourceType,
       tableName: association.tableName,
       viewName: association.viewName,
       schema: {

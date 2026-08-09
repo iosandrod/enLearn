@@ -12,7 +12,12 @@
         <span><i class="is-delayed" />延期</span>
       </div>
     </header>
-    <div v-show="validRows.length" ref="chartElement" class="lc-planning-gantt__chart" />
+    <div
+      v-show="validRows.length"
+      ref="chartElement"
+      class="lc-planning-gantt__chart"
+      :class="{ 'has-selection': selectedTaskId }"
+    />
     <div v-if="!validRows.length" class="lc-planning-gantt__empty">
       <i class="ri-calendar-schedule-line" aria-hidden="true" />
       <span>当前筛选条件下没有可绘制的计划单</span>
@@ -48,6 +53,7 @@ const props = defineProps<LowCodeBlockMaterialProps<LowCodePagePlanningGanttBloc
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtime = useLowCodePageRuntime(false);
 const chartElement = ref<HTMLDivElement>();
+const selectedTaskId = ref('');
 let chart: echarts.ECharts | null = null;
 let resizeObserver: ResizeObserver | null = null;
 let observedChartElement: HTMLDivElement | undefined;
@@ -174,6 +180,15 @@ function buildOption(): EChartsOption {
       renderItem,
       encode: { x: [1, 2], y: 0 },
       data: values,
+      selectedMode: 'single',
+      select: {
+        itemStyle: {
+          borderColor: '#111827',
+          borderWidth: 2,
+          shadowBlur: 7,
+          shadowColor: 'rgba(17,24,39,.28)',
+        },
+      },
     }],
   };
 }
@@ -198,10 +213,18 @@ async function renderChart() {
     chart = echarts.init(element);
   }
   chart.setOption(buildOption(), true);
+  if (selectedTaskId.value) {
+    const selectedIndex = validRows.value.findIndex((row) => readString(row.id) === selectedTaskId.value);
+    if (selectedIndex >= 0) chart.dispatchAction({ type: 'select', seriesIndex: 0, dataIndex: selectedIndex });
+    else selectedTaskId.value = '';
+  }
   chart.off('click');
   chart.on('click', (params) => {
     const row = validRows.value[params.dataIndex ?? -1];
     if (!row) return;
+    selectedTaskId.value = readString(row.id);
+    chart?.dispatchAction({ type: 'unselect', seriesIndex: 0 });
+    chart?.dispatchAction({ type: 'select', seriesIndex: 0, dataIndex: params.dataIndex });
     emit('runtimeEvent', {
       name: 'planningGantt.taskSelect',
       blockId: props.block.id,

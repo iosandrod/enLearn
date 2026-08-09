@@ -28,6 +28,11 @@ type Fixture = {
   versionId: string;
 };
 
+type DatasetTiming = {
+  durationMs: number;
+  status: number;
+};
+
 const FRONTEND_URL = (process.env.FRONTEND_URL ?? 'http://127.0.0.1:3000').replace(/\/$/, '');
 const API_URL = (process.env.API_URL ?? 'http://127.0.0.1:3002').replace(/\/$/, '');
 const BROWSER_EXECUTABLE = process.env.PLANNING_UI_BROWSER ??
@@ -335,6 +340,89 @@ async function chartPixelStats(page: any) {
     }
     return { colored, height: element.height, red, sampled, width: element.width };
   });
+}
+
+async function clickFirstGanttTask(page: any) {
+  const canvas = page.locator('.lc-planning-gantt__chart canvas').first();
+  const point = await canvas.evaluate((element: HTMLCanvasElement) => {
+    const context = element.getContext('2d');
+    const bounds = element.getBoundingClientRect();
+    if (!context || !element.width || !element.height || !bounds.width || !bounds.height) return null;
+
+    const pixels = context.getImageData(0, 0, element.width, element.height).data;
+    const scaleX = element.width / bounds.width;
+    const scaleY = element.height / bounds.height;
+    const taskColors = [
+      [183, 121, 31],
+      [37, 99, 166],
+      [15, 118, 110],
+      [194, 65, 59]
+    ];
+    const minX = Math.max(0, Math.floor(154 * scaleX));
+    const maxX = Math.min(element.width, Math.ceil((bounds.width - 24) * scaleX));
+    const minY = Math.max(0, Math.floor(26 * scaleY));
+    const maxY = Math.min(element.height, Math.ceil((bounds.height - 74) * scaleY));
+    const minimumRun = Math.max(4, Math.ceil(5 * scaleX));
+
+    for (let y = minY; y < maxY; y += 1) {
+      let runStart = -1;
+      for (let x = minX; x <= maxX; x += 1) {
+        let taskPixel = false;
+        if (x < maxX) {
+          const offset = (y * element.width + x) * 4;
+          if (pixels[offset + 3] >= 180) {
+            for (let colorIndex = 0; colorIndex < taskColors.length; colorIndex += 1) {
+              const color = taskColors[colorIndex];
+              if (
+                Math.abs(pixels[offset] - color[0]) <= 12 &&
+                Math.abs(pixels[offset + 1] - color[1]) <= 12 &&
+                Math.abs(pixels[offset + 2] - color[2]) <= 12
+              ) {
+                taskPixel = true;
+                break;
+              }
+            }
+          }
+        }
+        if (taskPixel) {
+          if (runStart < 0) runStart = x;
+          continue;
+        }
+        if (runStart >= 0 && x - runStart >= minimumRun) {
+          const centerX = Math.floor((runStart + x - 1) / 2);
+          let bottom = y;
+          for (let nextY = y + 1; nextY < maxY; nextY += 1) {
+            const offset = (nextY * element.width + centerX) * 4;
+            let nextTaskPixel = false;
+            if (pixels[offset + 3] >= 180) {
+              for (let colorIndex = 0; colorIndex < taskColors.length; colorIndex += 1) {
+                const color = taskColors[colorIndex];
+                if (
+                  Math.abs(pixels[offset] - color[0]) <= 12 &&
+                  Math.abs(pixels[offset + 1] - color[1]) <= 12 &&
+                  Math.abs(pixels[offset + 2] - color[2]) <= 12
+                ) {
+                  nextTaskPixel = true;
+                  break;
+                }
+              }
+            }
+            if (!nextTaskPixel) break;
+            bottom = nextY;
+          }
+          return {
+            x: centerX / scaleX,
+            y: Math.floor((y + bottom) / 2) / scaleY
+          };
+        }
+        runStart = -1;
+      }
+    }
+    return null;
+  });
+
+  assert.ok(point, 'Unable to locate a rendered Gantt task on the canvas.');
+  await canvas.click({ position: point });
 }
 
 async function seedFixture(client: Client, accountId: string, suffix: string): Promise<Fixture> {
@@ -667,6 +755,9 @@ async function main() {
     connectionTimeoutMillis: 30_000,
     ssl: { rejectUnauthorized: false }
   });
+  postgres.on('error', (error) => {
+    console.warn(`[planning-console-ui] PostgreSQL client error: ${error.message}`);
+  });
   const supabaseAdmin = createSupabaseClient('admin');
   const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const accountId = randomUUID();
@@ -815,6 +906,8 @@ async function main() {
       const failedApiResponses: string[] = [];
       const requestedDatasets = new Set<string>();
       const planningConsoleRequests: Array<{ dataset: string; filters: JsonRecord }> = [];
+      const planningConsoleRequestStart = new WeakMap<object, number>();
+      const datasetTimings = new Map<string, DatasetTiming[]>();
       page.on('pageerror', (error: Error) => pageErrors.push(error.message));
       page.on('request', (request: any) => {
         if (!request.url().endsWith('/api/service') || request.method() !== 'POST') return;
@@ -823,6 +916,7 @@ async function main() {
           if (body?.serviceName === 'planning' && body?.serviceMethod === 'getPlanningConsoleData') {
             const dataset = String(body?.postData?.dataset ?? '');
             requestedDatasets.add(dataset);
+            planningConsoleRequestStart.set(request, performance.now());
             planningConsoleRequests.push({
               dataset,
               filters: isRecord(body?.postData?.filters) ? body.postData.filters : {}
@@ -833,6 +927,23 @@ async function main() {
         }
       });
       page.on('response', (response: any) => {
+        const request = response.request();
+        const startedAt = planningConsoleRequestStart.get(request);
+        if (typeof startedAt === 'number') {
+          try {
+            const body = request.postDataJSON();
+            const dataset = String(body?.postData?.dataset ?? '');
+            datasetTimings.set(dataset, [
+              ...(datasetTimings.get(dataset) ?? []),
+              {
+                durationMs: Math.round((performance.now() - startedAt) * 100) / 100,
+                status: response.status()
+              }
+            ]);
+          } catch {
+            // The request audit above already verifies dataset coverage.
+          }
+        }
         if (response.status() >= 400 && response.url().includes('/api/')) {
           failedApiResponses.push(`${response.status()} ${response.url()}`);
         }
@@ -878,6 +989,8 @@ async function main() {
       assert.ok(ganttPixels.width > 400 && ganttPixels.height > 200, `Gantt canvas is too small: ${JSON.stringify(ganttPixels)}`);
       assert.ok(ganttPixels.colored > 300, `Gantt canvas appears blank: ${JSON.stringify(ganttPixels)}`);
       assert.ok(ganttPixels.red > 10, `Delayed Gantt task is not rendered in red: ${JSON.stringify(ganttPixels)}`);
+      await clickFirstGanttTask(page);
+      await page.locator('.lc-planning-gantt__chart.has-selection').waitFor({ state: 'visible', timeout: 10_000 });
       await page.screenshot({ path: resolve(artifactsDir, 'planning-console-gantt-desktop.png'), fullPage: true });
       await clickTab(page, '排产总览');
       await clickTab(page, '排产甘特');
@@ -895,6 +1008,10 @@ async function main() {
       await page.waitForTimeout(220);
       const flowTransformAfter = await flow.locator('.vue-flow__transformationpane').getAttribute('style');
       assert.notEqual(flowTransformAfter, flowTransformBefore, 'Flow zoom did not update the viewport transform.');
+      await flow.getByRole('button', { name: '适应视图' }).click();
+      await page.waitForTimeout(260);
+      const flowTransformFitted = await flow.locator('.vue-flow__transformationpane').getAttribute('style');
+      assert.notEqual(flowTransformFitted, flowTransformAfter, 'Flow fit-view did not restore the viewport transform.');
       await page.screenshot({ path: resolve(artifactsDir, 'planning-console-flow-desktop.png'), fullPage: true });
       await clickTab(page, '排产总览');
       await clickTab(page, '工艺路线');
@@ -1106,6 +1223,27 @@ async function main() {
         Object.keys(datasetExpectations).sort(),
         'The console did not request every core planning dataset.'
       );
+      for (const dataset of Object.keys(datasetExpectations)) {
+        const timings = datasetTimings.get(dataset) ?? [];
+        assert.ok(timings.length, `No response timing was captured for ${dataset}.`);
+        assert.ok(timings.every((timing) => timing.status === 200), `${dataset} returned a failed response.`);
+        assert.ok(
+          Math.max(...timings.map((timing) => timing.durationMs)) < 10_000,
+          `${dataset} exceeded the 10-second smoke threshold: ${JSON.stringify(timings)}`
+        );
+      }
+
+      const timingReport = Object.fromEntries(
+        Object.keys(datasetExpectations).sort().map((dataset) => {
+          const durations = (datasetTimings.get(dataset) ?? []).map((timing) => timing.durationMs);
+          return [dataset, {
+            requests: durations.length,
+            maxMs: Math.max(...durations),
+            averageMs: Math.round((durations.reduce((sum, value) => sum + value, 0) / durations.length) * 100) / 100
+          }];
+        })
+      );
+      console.log(`[planning-console-ui] dataset timings ${JSON.stringify(timingReport)}`);
     } finally {
       await managerContext.close();
     }
@@ -1147,9 +1285,9 @@ async function main() {
       deterministic_fixture: 'verified',
       preflight: 'passed without errors',
       server_side_filters: 'verified',
-      flow: '3 nodes / 2 edges / zoom / select / tab restore',
-      gantt: 'desktop and mobile pixels / delayed color / tab restore',
-      bom: '8 nodes / select / collapse / mobile local scroll',
+      flow: '3 nodes / 2 edges / zoom / fit view / select / tab restore',
+      gantt: 'desktop and mobile pixels / delayed color / task select / tab restore',
+      bom: '8 nodes / select / collapse / mobile local scroll; 40 roots / 7 levels / cycle in unit coverage',
       designer_materials: 'flow / gantt / BOM visible and inserted',
       cancel_action: 'verified queued -> canceled',
       viewer_actions: 'refresh only',
@@ -1161,8 +1299,18 @@ async function main() {
   } finally {
     await browser?.close().catch(() => undefined);
     if (accountCreated) {
-      await postgres.query('delete from basejump.accounts where id = $1', [accountId])
-        .catch(() => undefined);
+      let accountDeleteError: unknown;
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        try {
+          await postgres.query('delete from basejump.accounts where id = $1', [accountId]);
+          accountDeleteError = undefined;
+          break;
+        } catch (error) {
+          accountDeleteError = error;
+          await new Promise((done) => setTimeout(done, 250 * (attempt + 1)));
+        }
+      }
+      if (accountDeleteError) throw accountDeleteError;
     }
     if (createdRoleIds.length) {
       await postgres.query('delete from public.admin_roles where id = any($1::uuid[])', [createdRoleIds])
@@ -1171,10 +1319,22 @@ async function main() {
     for (const userId of createdUserIds) {
       await supabaseAdmin.auth.admin.deleteUser(userId).catch(() => undefined);
     }
-    const residue = await postgres.query<{ count: string }>(`
-      select count(*)::text as count from basejump.accounts where id = $1
-    `, [accountId]).catch(() => ({ rows: [{ count: 'cleanup-query-failed' }] }));
-    assert.equal(residue.rows[0]?.count, '0', 'The isolated planning console account was not removed.');
+    let residue: { rows: Array<{ count: string }> } | undefined;
+    let residueError: unknown;
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      try {
+        residue = await postgres.query<{ count: string }>(`
+          select count(*)::text as count from basejump.accounts where id = $1
+        `, [accountId]);
+        residueError = undefined;
+        break;
+      } catch (error) {
+        residueError = error;
+        await new Promise((done) => setTimeout(done, 250 * (attempt + 1)));
+      }
+    }
+    if (residueError) throw residueError;
+    assert.equal(residue?.rows[0]?.count, '0', 'The isolated planning console account was not removed.');
     await postgres.end();
   }
 }

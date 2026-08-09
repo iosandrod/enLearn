@@ -1,4 +1,10 @@
-import type { LowCodeField, LowCodeFormLayoutNode, LowCodeOption } from '../../types/lowcode';
+import { createSubFormField } from '../../lowcode/form-schema';
+import type {
+  LowCodeAction,
+  LowCodeField,
+  LowCodeFormLayoutNode,
+  LowCodeOption,
+} from '../../types/lowcode';
 import type {
   MaterialPropFieldTarget,
   MaterialPropFormDefinition,
@@ -45,7 +51,9 @@ type ArrayTableFieldInput = FieldInput & {
 
 type SubFormFieldInput = FieldInput & {
   fields: MaterialPropFormField[];
+  columns?: number;
   layout?: LowCodeFormLayoutNode[];
+  actions?: LowCodeAction[];
 };
 
 export function defineMaterialPropForm(definition: MaterialPropFormDefinition) {
@@ -116,24 +124,23 @@ export function arrayTablePropField({
 
 export function subFormPropField({
   fields,
+  columns,
   layout,
+  actions,
   props,
   ...field
 }: SubFormFieldInput): MaterialPropFormField {
-  return propField({
-    component: 'lc-sub-form',
+  return createSubFormField({
+    target: 'props',
     valueKind: 'raw',
     defaultValue: {},
-    props: {
-      schema: {
-        fields,
-        ...(layout?.length ? { layout } : {}),
-        actions: [],
-      },
-      ...(props ?? {}),
-    },
+    fields,
+    columns,
+    layout,
+    actions,
+    props,
     ...field,
-  });
+  }) as MaterialPropFormField;
 }
 
 export function switchPropField(field: FieldInput): MaterialPropFormField {

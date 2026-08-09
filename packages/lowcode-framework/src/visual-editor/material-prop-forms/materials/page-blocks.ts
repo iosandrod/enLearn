@@ -7,6 +7,7 @@ import {
   switchPropField,
 } from '../helpers';
 import { createDefaultButtonGroupEditorRows } from '../../../lowcode/actions/builtins';
+import { createSubFormField } from '../../../lowcode/form-schema';
 
 const formComponentOptions = [
   option('输入框', 'vxe-input'),
@@ -47,37 +48,32 @@ const gridRendererPropFields = [
 
 const gridRendererObjectFields = [
   { field: 'name', label: 'name', component: 'vxe-input' as const, props: { placeholder: 'VxeInput' } },
-  {
+  createSubFormField({
     field: 'props',
     label: 'props',
-    component: 'lc-sub-form' as const,
-    props: { fields: gridRendererPropFields },
-  },
-  {
+    fields: gridRendererPropFields,
+  }),
+  createSubFormField({
     field: 'attrs',
     label: 'attrs',
-    component: 'lc-sub-form' as const,
-    props: { fields: gridRendererPropFields },
-  },
+    fields: gridRendererPropFields,
+  }),
 ];
 
 const gridColumnParamsFields = [
   { field: 'type', label: 'type', component: 'vxe-input' as const },
   { field: 'emptyText', label: 'emptyText', component: 'vxe-input' as const },
   { field: 'locale', label: 'locale', component: 'vxe-input' as const },
-  {
+  createSubFormField({
     field: 'options',
     label: 'options',
-    component: 'lc-sub-form' as const,
-    props: {
-      fields: [
-        { field: 'dateStyle', label: 'dateStyle', component: 'vxe-input' as const },
-        { field: 'timeStyle', label: 'timeStyle', component: 'vxe-input' as const },
-        { field: 'minimumFractionDigits', label: 'minimumFractionDigits', component: 'lc-number-input' as const },
-        { field: 'maximumFractionDigits', label: 'maximumFractionDigits', component: 'lc-number-input' as const },
-      ],
-    },
-  },
+    fields: [
+      { field: 'dateStyle', label: 'dateStyle', component: 'vxe-input' as const },
+      { field: 'timeStyle', label: 'timeStyle', component: 'vxe-input' as const },
+      { field: 'minimumFractionDigits', label: 'minimumFractionDigits', component: 'lc-number-input' as const },
+      { field: 'maximumFractionDigits', label: 'maximumFractionDigits', component: 'lc-number-input' as const },
+    ],
+  }),
 ];
 
 const buttonStatusOptions = [
@@ -330,30 +326,30 @@ export default defineMaterialPropForms([
             minWidth: 220,
             placeholder: '[]',
           },
-          {
+          createSubFormField({
             field: 'cellRender',
+            label: '渲染对象',
             title: '渲染对象',
-            component: 'lc-sub-form',
             minWidth: 220,
             defaultValue: {},
-            props: { fields: gridRendererObjectFields },
-          },
-          {
+            fields: gridRendererObjectFields,
+          }),
+          createSubFormField({
             field: 'editRender',
+            label: '编辑对象',
             title: '编辑对象',
-            component: 'lc-sub-form',
             minWidth: 220,
             defaultValue: {},
-            props: { fields: gridRendererObjectFields },
-          },
-          {
+            fields: gridRendererObjectFields,
+          }),
+          createSubFormField({
             field: 'params',
+            label: '参数对象',
             title: '参数对象',
-            component: 'lc-sub-form',
             minWidth: 220,
             defaultValue: {},
-            props: { fields: gridColumnParamsFields },
-          },
+            fields: gridColumnParamsFields,
+          }),
         ],
         help: '维护表格列配置。复杂 formatter 仍可填 JSON 字符串。',
       }),

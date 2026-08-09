@@ -134,6 +134,38 @@ async function testPlanningPayloadNormalization() {
   assert.equal(capturedPayload?.available_id, null);
 }
 
-void testPlanningPayloadNormalization().then(() => {
+async function testConsoleOptionBoundary() {
+  let capturedLimit = 0;
+  const rows = Array.from({ length: 1005 }, (_, index) => ({
+    id: `item-${index}`,
+    name: `Item ${String(index).padStart(4, '0')}`
+  }));
+  const query = {
+    select() { return query; },
+    eq() { return query; },
+    order() { return query; },
+    limit(value: number) {
+      capturedLimit = value;
+      return Promise.resolve({ data: rows.slice(0, value), error: null });
+    }
+  };
+  const optionService = new PlanningService() as unknown as {
+    executeAction(method: string, postData: Record<string, unknown>, context: unknown): Promise<unknown>;
+    authorizeConsoleRead(context: unknown): Promise<{ client: { from(table: string): typeof query } }>;
+    accountValue(context: unknown, field: string): string;
+  };
+  optionService.authorizeConsoleRead = async () => ({ client: { from: () => query } });
+  optionService.accountValue = () => 'account-1';
+  const options = await optionService.executeAction(
+    'getPlanningConsoleOptions',
+    { optionType: 'item' },
+    { accountId: 'account-1' }
+  );
+  assert.equal(capturedLimit, 1000);
+  assert.ok(Array.isArray(options));
+  assert.equal(options.length, 1000, 'Planning console options must cap results at 1000 rows.');
+}
+
+void Promise.all([testPlanningPayloadNormalization(), testConsoleOptionBoundary()]).then(() => {
   console.log('planning service configuration tests passed');
 });

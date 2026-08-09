@@ -219,9 +219,24 @@ function readGridTableType(
   block: Extract<LowCodePageBlock, { kind: 'grid' }>,
   source?: LowCodePageDataSource,
 ) {
-  const tableType = readString(block.tableType, readString(source?.sourceType));
-  if (tableType === 'custom' || tableType === 'table' || tableType === 'view') {
+  const tableType = readString(block.tableType);
+  if (tableType === 'normal' || tableType === 'main' || tableType === 'detail') {
     return tableType;
+  }
+  return 'normal';
+}
+
+function readGridSourceType(
+  block: Extract<LowCodePageBlock, { kind: 'grid' }>,
+  source?: LowCodePageDataSource,
+) {
+  const sourceType = readString(block.sourceType, readString(source?.sourceType));
+  if (sourceType === 'custom' || sourceType === 'table' || sourceType === 'view') {
+    return sourceType;
+  }
+  const legacyTableType = readString(block.tableType);
+  if (legacyTableType === 'custom' || legacyTableType === 'table' || legacyTableType === 'view') {
+    return legacyTableType;
   }
   if (readString(block.viewName, readString(source?.viewName))) return 'view';
   if (readString(block.tableName, readDataSourceTableName(source))) return 'table';
@@ -603,6 +618,7 @@ function convertRuntimeBlockToVisual(
       : [];
     const source = getDataSource(context.dataSources, block.sourceKey);
     const tableType = readGridTableType(block, source);
+    const sourceType = readGridSourceType(block, source);
     const sourceTarget = readDataSourceTableName(source);
 
     return createVisualBlock({
@@ -615,10 +631,11 @@ function convertRuntimeBlockToVisual(
         blockId: block.id,
         title: readString(block.title, readString(schema.title, source?.label ?? '数据表格')),
         tableType,
-        tableName: tableType === 'table'
+        sourceType,
+        tableName: sourceType === 'table'
           ? readString(block.tableName, sourceTarget)
           : '',
-        viewName: tableType === 'view'
+        viewName: sourceType === 'view'
           ? readString(block.viewName, readString(source?.viewName, sourceTarget))
           : '',
         sourceKey: readString(block.sourceKey, source?.key ?? 'records'),

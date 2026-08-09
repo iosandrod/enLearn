@@ -4,6 +4,7 @@ import {
   buildPlanningBomTree,
   buildPlanningFlowData,
   intervalHours,
+  loadPlanningConsoleDataset,
   loadPlanningConsoleSummary,
   parsePlanningConsoleRequest
 } from './planning-console';
@@ -92,6 +93,62 @@ const rawItem = (semiOperation.children as Record<string, unknown>[])[0];
 assert.equal(rawItem.title, '原料 C');
 assert.equal(rawItem.quantity, 3);
 
+function flattenBomNodes(nodes: Record<string, unknown>[]): Record<string, unknown>[] {
+  return nodes.flatMap((node) => [
+    node,
+    ...(Array.isArray(node.children)
+      ? flattenBomNodes(node.children as Record<string, unknown>[])
+      : [])
+  ]);
+}
+
+const rootBoundaryItems = Array.from({ length: 45 }, (_, index) => ({
+  id: `root-${index}`,
+  name: `Root ${index}`
+}));
+const rootBoundaryBom = buildPlanningBomTree(
+  rootBoundaryItems,
+  rootBoundaryItems.map((item, index) => ({
+    id: `root-operation-${index}`,
+    name: `Root operation ${index}`,
+    item_id: item.id
+  })),
+  []
+);
+assert.equal(rootBoundaryBom.length, 40, 'The BOM console must cap unfiltered roots at 40.');
+
+const deepItems = Array.from({ length: 9 }, (_, index) => ({ id: `deep-${index}`, name: `Deep ${index}` }));
+const deepBom = buildPlanningBomTree(
+  deepItems,
+  deepItems.map((item, index) => ({ id: `deep-operation-${index}`, name: `Deep operation ${index}`, item_id: item.id })),
+  deepItems.slice(0, -1).map((item, index) => ({
+    id: `deep-material-${index}`,
+    operation_id: `deep-operation-${index}`,
+    item_id: `deep-${index + 1}`,
+    quantity: -1
+  })),
+  'deep-0'
+);
+const deepNodes = flattenBomNodes(deepBom);
+assert.ok(deepNodes.some((node) => node.entityId === 'deep-7'));
+assert.ok(!deepNodes.some((node) => node.entityId === 'deep-8'), 'The BOM must stop recursion after seven component levels.');
+
+const cyclicBom = buildPlanningBomTree(
+  [{ id: 'cycle-a', name: 'Cycle A' }, { id: 'cycle-b', name: 'Cycle B' }],
+  [
+    { id: 'cycle-operation-a', name: 'Cycle operation A', item_id: 'cycle-a' },
+    { id: 'cycle-operation-b', name: 'Cycle operation B', item_id: 'cycle-b' }
+  ],
+  [
+    { id: 'cycle-material-a', operation_id: 'cycle-operation-a', item_id: 'cycle-b', quantity: -1 },
+    { id: 'cycle-material-b', operation_id: 'cycle-operation-b', item_id: 'cycle-a', quantity: -1 }
+  ],
+  'cycle-a'
+);
+const cycleNodes = flattenBomNodes(cyclicBom);
+assert.equal(cycleNodes.filter((node) => node.cycle === true).length, 1);
+assert.equal(cycleNodes.find((node) => node.cycle === true)?.subtitle, '循环引用');
+
 type FakeRow = Record<string, unknown>;
 type FakeQueryOperation =
   | { type: 'eq' | 'lt' | 'gte' | 'lte'; field: string; value: unknown }
@@ -174,6 +231,66 @@ function createSummaryClient(tables: Record<string, FakeRow[]>) {
   };
 }
 
+function createRunsClient(tables: Record<string, FakeRow[]>) {
+  return {
+    from(table: string) {
+      return {
+        select() {
+          const operations: FakeQueryOperation[] = [];
+          let limit: number | undefined;
+          let descendingField = '';
+          const query = {
+            eq(field: string, value: unknown) {
+              operations.push({ type: 'eq', field, value });
+              return query;
+            },
+            gte(field: string, value: unknown) {
+              operations.push({ type: 'gte', field, value });
+              return query;
+            },
+            lte(field: string, value: unknown) {
+              operations.push({ type: 'lte', field, value });
+              return query;
+            },
+            in(field: string, value: unknown[]) {
+              operations.push({ type: 'in', field, value });
+              return query;
+            },
+            order(field: string, options?: { ascending?: boolean }) {
+              if (options?.ascending === false) descendingField = field;
+              return query;
+            },
+            limit(value: number) {
+              limit = value;
+              return query;
+            },
+            then(resolve: (value: unknown) => unknown) {
+              let matches = (tables[table] ?? []).filter((row) => operations.every((operation) => {
+                const cell = row[operation.field];
+                if (operation.type === 'eq') return cell === operation.value;
+                if (operation.type === 'in') return operation.value.includes(cell);
+                const cellTime = new Date(String(cell)).getTime();
+                const valueTime = new Date(String(operation.value)).getTime();
+                return operation.type === 'gte' ? cellTime >= valueTime : cellTime <= valueTime;
+              }));
+              if (descendingField) {
+                matches = [...matches].sort((left, right) =>
+                  String(right[descendingField] ?? '').localeCompare(String(left[descendingField] ?? ''))
+                );
+              }
+              return resolve({
+                data: typeof limit === 'number' ? matches.slice(0, limit) : matches,
+                error: null
+              });
+            }
+          };
+          return query;
+        }
+      };
+    }
+  };
+}
+
 const largeDemandRows = Array.from({ length: 1205 }, (_, index) => ({
   id: `demand-${index}`,
   account_id: 'account-1',
@@ -220,6 +337,37 @@ async function testLargeSummary() {
   assert.equal(largeSummary.overloadedResourceCount, 1011);
   assert.equal(largeSummary.activeRunCount, 2);
   assert.equal(largeSummary.latestRunId, 'run-new');
+}
+
+async function testRunBoundary() {
+  const runRows = Array.from({ length: 305 }, (_, index) => ({
+    id: `run-${String(index).padStart(3, '0')}`,
+    account_id: 'account-1',
+    scenario_id: 'scenario-1',
+    submitted: new Date(Date.UTC(2026, 7, 1, 0, index)).toISOString(),
+    status: 'succeeded'
+  }));
+  const result = await loadPlanningConsoleDataset(
+    createRunsClient({
+      planning_plan_version: runRows.map((row, index) => ({
+        id: `version-${index}`,
+        account_id: 'account-1',
+        run_id: row.id,
+        code: `V${index}`,
+        status: 'completed'
+      })),
+      planning_run: runRows,
+      planning_scenario: [{ id: 'scenario-1', account_id: 'account-1', name: 'Scenario 1' }]
+    }) as never,
+    'account-1',
+    'runs',
+    {}
+  );
+  assert.ok(Array.isArray(result));
+  assert.equal(result.length, 300, 'The runs dataset must cap results at 300 rows.');
+  const resultRows = result as Record<string, unknown>[];
+  assert.equal(resultRows[0]?.id, 'run-304');
+  assert.equal(resultRows.at(-1)?.id, 'run-005');
 }
 
 const normalizedSchema = normalizeLowCodePageSchema(PLANNING_CONSOLE_PAGE_SCHEMA);
@@ -306,6 +454,6 @@ for (const block of visitBlocks(blocks).filter((candidate) => candidate.kind ===
   assert.equal(block.clientFilter, false);
 }
 
-void testLargeSummary().then(() => {
+void Promise.all([testLargeSummary(), testRunBoundary()]).then(() => {
   console.log('planning console helpers tests passed');
 });

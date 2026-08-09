@@ -1164,14 +1164,19 @@ function syncRuntimeGridToVisualProps(
   visualProps.title = update.changes.title ?? schema.title ?? '';
   const tableType = readString(
     update.changes.tableType,
-    readString(targetBlock.tableType, readString(source?.sourceType, 'custom')),
+    readString(targetBlock.tableType, 'normal'),
+  );
+  const sourceType = readString(
+    update.changes.sourceType,
+    readString(targetBlock.sourceType, readString(source?.sourceType, 'custom')),
   );
   const sourceTarget = readString(source?.tableName ?? source?.table_name);
   visualProps.tableType = tableType;
-  visualProps.tableName = tableType === 'table'
+  visualProps.sourceType = sourceType;
+  visualProps.tableName = sourceType === 'table'
     ? readString(update.changes.tableName, readString(targetBlock.tableName, sourceTarget))
     : '';
-  visualProps.viewName = tableType === 'view'
+  visualProps.viewName = sourceType === 'view'
     ? readString(
         update.changes.viewName,
         readString(targetBlock.viewName, readString(source?.viewName, sourceTarget)),

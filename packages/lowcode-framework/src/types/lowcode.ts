@@ -251,6 +251,19 @@ export type LowCodeFormSchema = {
   actions: LowCodeAction[];
 };
 
+export type LowCodeSubFormProps = Record<string, unknown> & {
+  schema: LowCodeFormSchema;
+  fields?: never;
+  columns?: never;
+  layout?: never;
+  actions?: never;
+};
+
+export type LowCodeSubFormField = Omit<LowCodeField, 'component' | 'props'> & {
+  component: 'lc-sub-form';
+  props: LowCodeSubFormProps;
+};
+
 export type LowCodeFormModel = Record<string, unknown>;
 
 export type LowCodeFormProps = {
@@ -525,7 +538,10 @@ export type LowCodePageGridBlock = LowCodeMaterialVersionedBlock & {
   sourceKey?: string;
   /** Apply the runtime search values to the returned rows in the browser. */
   clientFilter?: boolean;
-  tableType?: 'custom' | 'table' | 'view';
+  /** Grid role in a normal or master-detail layout. */
+  tableType?: 'normal' | 'main' | 'detail';
+  /** Data-source association used by the grid designer. */
+  sourceType?: 'custom' | 'table' | 'view';
   tableName?: string;
   viewName?: string;
   editorBlockId?: string;

@@ -233,11 +233,16 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
   };
 
   if (component === 'lc-sub-form') {
-    props.schema =
-      readLowCodeFormSchema(rawProps.schema) ??
-      createLowCodeFormSchema(rawProps.fields, rawProps.formDesignerModel);
+    const subFormSchema = readLowCodeFormSchema(rawProps.schema);
+    props.schema = subFormSchema &&
+      isPlainRecord(rawProps.schema) &&
+      Array.isArray(rawProps.schema.actions)
+      ? subFormSchema
+      : undefined;
     delete props.fields;
+    delete props.columns;
     delete props.layout;
+    delete props.actions;
     delete props.formDesignerModel;
     delete props.subFormDesignerModel;
   }

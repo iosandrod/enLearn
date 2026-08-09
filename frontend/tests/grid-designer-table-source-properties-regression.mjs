@@ -38,9 +38,9 @@ for (const [field, label] of [
 }
 
 for (const [label, value] of [
-  ['自定义数据源', 'custom'],
-  ['真实表', 'table'],
-  ['视图', 'view'],
+  ['普通表格', 'normal'],
+  ['主表', 'main'],
+  ['明细表', 'detail'],
 ]) {
   assert.ok(
     designerSource.includes(`{ label: '${label}', value: '${value}' }`),
@@ -70,7 +70,7 @@ assert.match(
 );
 assert.match(
   designerSource,
-  /state\.business\.tableType = kind[/\s\S]*syncBusinessSourceTarget\(\)[/\s\S]*syncActiveDesignerDialogModel\(\)[/\s\S]*loadPhysicalTableSource/,
+  /state\.business\.sourceType = kind[/\s\S]*syncBusinessSourceTarget\(\)[/\s\S]*syncActiveDesignerDialogModel\(\)[/\s\S]*loadPhysicalTableSource/,
   'Selecting an association must update the visible source metadata before column metadata finishes loading.',
 );
 assert.match(
@@ -95,33 +95,33 @@ assert.doesNotMatch(
 );
 assert.match(
   designerSource,
-  /state\.business\.tableType === 'table' && !readString\(state\.business\.tableName\)[/\s\S]*请选择关联真实表[/\s\S]*state\.business\.tableType === 'view' && !readString\(state\.business\.viewName\)[/\s\S]*请选择关联视图/,
+  /state\.business\.sourceType === 'table' && !readString\(state\.business\.tableName\)[/\s\S]*请选择关联真实表[/\s\S]*state\.business\.sourceType === 'view' && !readString\(state\.business\.viewName\)[/\s\S]*请选择关联视图/,
   'Concrete table types must not save without their required association.',
 );
 
 assert.match(
   simulatorSource,
-  /business: \{[/\s\S]*tableType: block\.props\?\.tableType[/\s\S]*tableName: block\.props\?\.tableName[/\s\S]*viewName: block\.props\?\.viewName/,
+  /business: \{[/\s\S]*tableType: block\.props\?\.tableType[/\s\S]*sourceType: block\.props\?\.sourceType[/\s\S]*tableName: block\.props\?\.tableName[/\s\S]*viewName: block\.props\?\.viewName/,
   'The visual designer must pass all association fields back into the shared grid designer.',
 );
 assert.match(
   gridConverterSource,
-  /sourceType: association\.tableType[/\s\S]*viewName: association\.viewName[/\s\S]*tableType: association\.tableType[/\s\S]*tableName: association\.tableName[/\s\S]*viewName: association\.viewName/,
+  /sourceType: association\.sourceType[/\s\S]*viewName: association\.viewName[/\s\S]*tableType[/\s\S]*sourceType: association\.sourceType[/\s\S]*tableName: association\.tableName[/\s\S]*viewName: association\.viewName/,
   'Visual-to-runtime conversion must persist source and block association metadata.',
 );
 assert.match(
   visualConverterSource,
-  /const tableType = readGridTableType\(block, source\)[/\s\S]*tableName: tableType === 'table'[/\s\S]*viewName: tableType === 'view'/,
+  /const tableType = readGridTableType\(block, source\)[/\s\S]*const sourceType = readGridSourceType\(block, source\)[/\s\S]*tableName: sourceType === 'table'[/\s\S]*viewName: sourceType === 'view'/,
   'Runtime-to-visual conversion must restore the association metadata.',
 );
 assert.match(
   runtimeDesignerSource,
-  /sourceType: tableType[/\s\S]*if \(tableName\) source\.tableName = tableName[/\s\S]*if \(linkedViewName\) source\.viewName = linkedViewName/,
+  /sourceType,[/\s\S]*if \(tableName\) source\.tableName = tableName[/\s\S]*if \(linkedViewName\) source\.viewName = linkedViewName/,
   'Runtime grid edits must persist the association on the data source.',
 );
 assert.match(
   rendererSource,
-  /visualProps\.tableType = tableType[/\s\S]*visualProps\.tableName = tableType === 'table'[/\s\S]*visualProps\.viewName = tableType === 'view'/,
+  /visualProps\.tableType = tableType[/\s\S]*visualProps\.sourceType = sourceType[/\s\S]*visualProps\.tableName = sourceType === 'table'[/\s\S]*visualProps\.viewName = sourceType === 'view'/,
   'Runtime edits must synchronize association fields into the embedded visual model.',
 );
 assert.match(
@@ -195,7 +195,8 @@ function convertGrid(props) {
 }
 
 const viewConversion = convertGrid({
-  tableType: 'view',
+  tableType: 'detail',
+  sourceType: 'view',
   tableName: 'public.stale_table',
   viewName: 'public.sales_summary',
   serviceName: 'admin',
@@ -209,7 +210,8 @@ const viewConversion = convertGrid({
     limit: 25,
   }),
 });
-assert.equal(viewConversion.block.tableType, 'view');
+assert.equal(viewConversion.block.tableType, 'detail');
+assert.equal(viewConversion.block.sourceType, 'view');
 assert.equal(viewConversion.block.tableName, '');
 assert.equal(viewConversion.block.viewName, 'public.sales_summary');
 assert.equal(viewConversion.source.sourceType, 'view');
@@ -223,7 +225,8 @@ assert.deepEqual(viewConversion.source.postData, {
 });
 
 const customConversion = convertGrid({
-  tableType: 'custom',
+  tableType: 'main',
+  sourceType: 'custom',
   tableName: '',
   viewName: '',
   serviceName: 'reporting',
@@ -235,6 +238,8 @@ const customConversion = convertGrid({
   }),
 });
 assert.equal(customConversion.source.sourceType, 'custom');
+assert.equal(customConversion.block.tableType, 'main');
+assert.equal(customConversion.block.sourceType, 'custom');
 assert.equal(customConversion.source.tableName, undefined);
 assert.equal(customConversion.source.viewName, undefined);
 assert.deepEqual(customConversion.source.postData, {

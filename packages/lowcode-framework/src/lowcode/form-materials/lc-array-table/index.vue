@@ -78,18 +78,27 @@
                 v-else-if="shouldUseObjectEditor(column, scope.row)"
                 class="lc-array-table__object-cell"
               >
-                <vxe-input
-                  :model-value="formatObjectPreview(scope.row[column.field])"
-                  :placeholder="column.placeholder"
-                  readonly
-                />
-                <button
-                  type="button"
-                  :disabled="column.readonly"
-                  @click="openObjectEditor(scope.row, column)"
+                <span
+                  v-if="isUnconfiguredSubFormColumn(column)"
+                  class="lc-array-table__unconfigured-sub-form"
+                  role="alert"
                 >
-                  编辑
-                </button>
+                  子表单 Schema 未配置
+                </span>
+                <template v-else>
+                  <vxe-input
+                    :model-value="formatObjectPreview(scope.row[column.field])"
+                    :placeholder="column.placeholder"
+                    readonly
+                  />
+                  <button
+                    type="button"
+                    :disabled="column.readonly"
+                    @click="openObjectEditor(scope.row, column)"
+                  >
+                    编辑
+                  </button>
+                </template>
               </div>
               <span
                 v-else-if="column.component === 'lc-text'"
@@ -219,6 +228,7 @@ import {
   resolveSystemTableConfig,
   useSystemSettings,
 } from '../../../core/system-settings';
+import { createSubFormField, isLowCodeFormSchema } from '../../form-schema';
 import type {
   LowCodeField,
   LowCodeFieldComponent,
@@ -648,13 +658,15 @@ async function openObjectEditor(row: Record<string, unknown>, column: ArrayTable
   if (column.readonly) return;
 
   const value = createObjectEditorValue(row[column.field], column);
+  const schema = resolveObjectEditorSchema(column, value);
+  if (!schema) return;
   const result = await openGlobalDialog({
     title: `编辑 ${column.title || column.field}`,
     width: 'min(720px, calc(100vw - 48px))',
     showFooter: true,
     model: value,
     form: {
-      schema: resolveObjectEditorSchema(column, value),
+      schema,
     },
     actions: [
       {
@@ -983,6 +995,10 @@ function shouldUseObjectEditor(column: ArrayTableColumn, row: Record<string, unk
   return column.component === 'lc-sub-form' || isRecord(row[column.field]);
 }
 
+function isUnconfiguredSubFormColumn(column: ArrayTableColumn) {
+  return column.component === 'lc-sub-form' && !isLowCodeFormSchema(column.props?.schema);
+}
+
 function formatObjectPreview(value: unknown) {
   if (!isRecord(value)) return '{}';
   if (!Object.keys(value).length) return '{}';
@@ -1013,51 +1029,35 @@ function createObjectEditorValue(value: unknown, column: ArrayTableColumn) {
   };
 }
 
-function resolveObjectEditorFields(
-  column: ArrayTableColumn | null,
-  value: Record<string, unknown>,
-): LowCodeField[] {
-  const schema = isRecord(column?.props?.schema)
-    ? (column.props.schema as Record<string, unknown>)
-    : undefined;
-  const configuredFields = Array.isArray(schema?.fields)
-    ? (schema.fields as unknown[]).filter(isRecord).map((field) => cloneRecord(field) as LowCodeField)
-    : Array.isArray(column?.props?.fields)
-      ? (column.props.fields as unknown[]).filter(isRecord).map((field) => cloneRecord(field) as LowCodeField)
-      : [];
-
-  return configuredFields.length ? configuredFields : inferObjectEditorFields(value);
-}
-
 function resolveObjectEditorSchema(
   column: ArrayTableColumn | null,
   value: Record<string, unknown>,
-): LowCodeFormSchema {
+): LowCodeFormSchema | null {
   const schema = readLowCodeFormSchema(column?.props?.schema);
 
   if (schema) {
     return {
       ...schema,
-      fields: schema.fields.length ? schema.fields : resolveObjectEditorFields(column, value),
+      fields: schema.fields.length ? schema.fields : inferObjectEditorFields(value),
       actions: Array.isArray(schema.actions) ? schema.actions : [],
     };
   }
 
+  if (column?.component === 'lc-sub-form') return null;
+
   return {
-    fields: resolveObjectEditorFields(column, value),
+    fields: inferObjectEditorFields(value),
     actions: [],
   };
 }
 
 function readLowCodeFormSchema(value: unknown): LowCodeFormSchema | undefined {
-  if (!isRecord(value) || !Array.isArray(value.fields)) return undefined;
+  if (!isLowCodeFormSchema(value)) return undefined;
 
   return {
     ...(cloneRecord(value) as LowCodeFormSchema),
     fields: (value.fields as unknown[]).filter(isRecord).map((field) => cloneRecord(field) as LowCodeField),
-    actions: Array.isArray(value.actions)
-      ? (cloneValue(value.actions) as LowCodeFormSchema['actions'])
-      : [],
+    actions: cloneValue(value.actions) as LowCodeFormSchema['actions'],
   };
 }
 
@@ -1074,17 +1074,11 @@ function inferObjectEditorFields(value: Record<string, unknown>): LowCodeField[]
     }
 
     if (isRecord(currentValue)) {
-      return {
+      return createSubFormField({
         field,
         label: field,
-        component: 'lc-sub-form',
-        props: {
-          schema: {
-            fields: inferObjectEditorFields(currentValue),
-            actions: [],
-          },
-        },
-      };
+        fields: inferObjectEditorFields(currentValue),
+      });
     }
 
     if (Array.isArray(currentValue)) {
@@ -1331,6 +1325,13 @@ function cloneValue(value: unknown) {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 6px;
+}
+
+.lc-array-table__unconfigured-sub-form {
+  grid-column: 1 / -1;
+  color: #b42318;
+  font-size: 12px;
+  text-align: center;
 }
 
 .lc-array-table__text-cell {

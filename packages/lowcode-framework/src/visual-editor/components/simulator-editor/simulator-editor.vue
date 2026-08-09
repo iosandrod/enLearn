@@ -544,8 +544,6 @@
   ) => {
     block.props.__lowcodeComponent = 'lc-sub-form';
     block.props.schema = createLowCodeFormSchemaFromDesignerResult(result);
-    delete block.props.fields;
-    delete block.props.layout;
     block.props.subFormDesignerModel = cloneDeep(result.designerModel);
     block.props.subFormDesignerUpdatedAt = Date.now();
     selectComp(block);
@@ -602,6 +600,7 @@
         blockId: block.props?.blockId,
         title: block.props?.title,
         tableType: block.props?.tableType,
+        sourceType: block.props?.sourceType,
         tableName: block.props?.tableName,
         viewName: block.props?.viewName,
         sourceKey: block.props?.sourceKey,
@@ -641,11 +640,16 @@
   const openSubFormDesigner = async (block: VisualEditorBlockData) => {
     selectComp(block);
     const schema = isRecord(block.props?.schema) ? block.props.schema : null;
-    const schemaFields = Array.isArray(schema?.fields) ? schema.fields : block.props?.fields;
+    const schemaFields = Array.isArray(schema?.fields) ? schema.fields : [];
+    const schemaColumns = Number(schema?.columns);
     const result = await $$formDesigner({
       title: `${block.props?.label || block.label || '子表单'}设计`,
       mode: 'edit',
       fields: Array.isArray(schemaFields) ? schemaFields : [],
+      layout: Array.isArray(schema?.layout) ? cloneDeep(schema.layout) : undefined,
+      columns: Number.isFinite(schemaColumns) && schemaColumns > 0
+        ? schemaColumns
+        : undefined,
       designerModel: block.props?.subFormDesignerModel || null,
       pageData: currentPage.value,
       pageRecord: props.pageRecord,
