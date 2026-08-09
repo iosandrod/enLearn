@@ -52,6 +52,7 @@ function createPageFunctionContextSource(page: LowCodePageRecord): LowCodeContex
       code: page.code,
       route: page.route,
       title: page.title,
+      page_type: page.page_type,
       schema: page.schema,
     },
     data: Object.fromEntries(
@@ -65,7 +66,10 @@ function createPageFunctionContextSource(page: LowCodePageRecord): LowCodeContex
         ? page.schema.scriptPolicy.capabilities
         : []),
       ...((page.schema.functions?.length ?? 0) > 0
-        ? ['action.execute' as const, 'pageFunction.execute' as const]
+        ? ['action.execute' as const]
+        : []),
+      ...(['list', 'edit'].includes(page.page_type) || (page.schema.functions?.length ?? 0) > 0
+        ? ['pageFunction.execute' as const]
         : []),
       ...(Object.keys(page.schema.apis ?? {}).length > 0
         ? ['http.execute' as const]

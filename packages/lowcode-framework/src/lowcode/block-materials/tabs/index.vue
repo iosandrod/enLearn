@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import LowCodeBlockChildren from '../../../components/LowCodeBlockChildren.vue';
 import type { LowCodePageTabsBlock } from '../../../types/lowcode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
@@ -51,7 +51,19 @@ const activeTabKey = computed(() => {
   return localActiveKey.value || props.block.defaultKey || firstKey;
 });
 
-function setActiveTab(key: string) {
+async function setActiveTab(key: string) {
   localActiveKey.value = key;
+  await nextTick();
+  window.dispatchEvent(new CustomEvent('lowcode:tab-activated', {
+    detail: { blockId: props.block.id, tabKey: key },
+  }));
 }
+
+onMounted(() => {
+  void nextTick(() => {
+    window.dispatchEvent(new CustomEvent('lowcode:tab-activated', {
+      detail: { blockId: props.block.id, tabKey: activeTabKey.value },
+    }));
+  });
+});
 </script>

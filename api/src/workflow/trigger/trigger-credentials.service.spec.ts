@@ -8,6 +8,7 @@ async function main() {
   await testCacheHitAndForcedRefresh();
   await testConcurrentRefreshCoalescing();
   await testStaleCacheFallback();
+  await testDevPresenceStatus();
   console.log('workflow-api Trigger.dev credential cache tests passed');
 }
 
@@ -78,6 +79,34 @@ async function testStaleCacheFallback() {
   service.invalidate();
   await assert.rejects(() => service.getCredentials(true), /database unavailable/);
   await service.onModuleDestroy();
+}
+
+async function testDevPresenceStatus() {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async (input, init) => {
+      assert.match(String(input), /\/api\/v1\/projects\/proj_test_1\/dev-status$/);
+      assert.equal(
+        (init?.headers as Record<string, string>).authorization,
+        'Bearer tr_pat_test_1'
+      );
+      return new Response(JSON.stringify({ isConnected: true }), { status: 200 });
+    };
+    const connected = new TriggerCredentialsService({
+      loadCredentials: async () => credential(1)
+    });
+    assert.deepEqual(await connected.getDevPresenceStatus(), { connected: true });
+
+    const missingToken = new TriggerCredentialsService({
+      loadCredentials: async () => ({ ...credential(2), accessToken: undefined })
+    });
+    assert.deepEqual(await missingToken.getDevPresenceStatus(), {
+      connected: null,
+      error: 'TRIGGER_ACCESS_TOKEN is not configured.'
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 }
 
 function credential(sequence: number): TriggerCredentials {

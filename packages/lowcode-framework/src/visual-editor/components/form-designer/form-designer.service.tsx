@@ -48,6 +48,7 @@ export type FormDesignerField = {
   required?: boolean | string;
   span?: number | string;
   help?: string;
+  optionsCode?: string;
   optionsJson?: string;
   propsJson?: string;
   props?: Record<string, unknown>;
@@ -364,6 +365,7 @@ function designerFieldToLowCodeField(field: FormDesignerField, index: number): L
       ? normalizeSubFormProps(fieldProps)
       : fieldProps;
   const options = parseJsonArray(field.optionsJson);
+  const optionsCode = readString(field.optionsCode);
   const required = normalizeRequired(field.required);
   const span = normalizeSpan(field.span);
 
@@ -373,6 +375,7 @@ function designerFieldToLowCodeField(field: FormDesignerField, index: number): L
     component,
     ...(Object.keys(normalizedProps).length ? { props: normalizedProps } : {}),
     ...(options?.length ? { options: cloneDeep(options) as LowCodeField['options'] } : {}),
+    ...(optionsCode ? { optionsCode } : {}),
     ...(readString(field.help) ? { help: readString(field.help) } : {}),
     ...(span ? { span } : {}),
     ...(required
@@ -395,6 +398,7 @@ function applyCommonFieldProps(block: VisualEditorBlockData, field: FormDesigner
   block.props.required = normalizeRequired(field.required);
   block.props.__formSpan = normalizeSpan(field.span) || 1;
   block.props.__formHelp = readString(field.help);
+  block.props.__lowcodeOptionsCode = readString(field.optionsCode);
 }
 
 function createFieldBlock(field: FormDesignerField, index: number) {
@@ -490,6 +494,7 @@ function normalizeFields(fields: unknown): FormDesignerField[] {
       required: normalizeRequired(row.required),
       span: normalizeSpan(row.span) || 1,
       help: readString(row.help, readString(props?.help)),
+      optionsCode: readString(row.optionsCode),
       optionsJson:
         stringifyOptions(row.optionsJson) ||
         stringifyOptions(row.options) ||
@@ -733,6 +738,7 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
     required: normalizeRequired(block.props?.required),
     span: normalizeSpan(block.props?.__formSpan) || normalizeSpan(block.props?.span),
     help: readString(block.props?.__formHelp || block.props?.help),
+    optionsCode: readString(block.props?.__lowcodeOptionsCode),
     optionsJson: getOptionsJson(block, runtimeComponent),
   };
 

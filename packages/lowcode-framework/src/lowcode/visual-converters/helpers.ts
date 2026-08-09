@@ -114,14 +114,17 @@ export function readLowCodeFormSchema(value: unknown): LowCodeFormSchema | undef
 export function createLowCodeFormSchema(
   fields: unknown,
   designerModel?: unknown,
+  fallbackSchema?: unknown,
 ): LowCodeFormSchema {
   const normalizedFields = normalizeRows(fields).map(normalizeField).filter(isDefined);
   const layout = readFormDesignerLayout(designerModel);
+  const preservedSchema = readLowCodeFormSchema(fallbackSchema);
 
   return {
+    ...(preservedSchema ?? {}),
     fields: normalizedFields,
     ...(layout ? { layout } : {}),
-    actions: [],
+    actions: preservedSchema?.actions ?? [],
   };
 }
 
@@ -205,6 +208,7 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
   const componentName = readString(row.component, 'vxe-input');
   const component = componentMap[componentName] ?? 'vxe-input';
   const options = readJsonArray<LowCodeOption>(row.optionsJson);
+  const optionsCode = readString(row.optionsCode);
   const optionsSourceKey = readString(row.optionsSourceKey);
   const optionLabel = readString(row.optionLabel);
   const optionValue = readString(row.optionValue);
@@ -248,6 +252,7 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
     component,
     ...(Object.keys(props).length ? { props } : {}),
     ...(options ? { options } : {}),
+    ...(optionsCode ? { optionsCode } : {}),
     ...(optionsSourceKey ? { optionsSourceKey } : {}),
     ...(Object.keys(optionProps).length ? { optionProps } : {}),
     ...(help ? { help } : {}),

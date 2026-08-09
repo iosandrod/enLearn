@@ -287,9 +287,42 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 
 function normalizeSchema(schema: LowCodePageSchema | null | undefined) {
   if (!schema) return fallbackVisualModel.value;
-  return isVisualEditorModel(schema.visualEditor)
-    ? schema.visualEditor
-    : convertLowCodePageSchemaToVisualEditor(schema);
+  const converted = convertLowCodePageSchemaToVisualEditor(schema);
+  if (!isVisualEditorModel(schema.visualEditor)) return converted;
+
+  const storedPage = schema.visualEditor.pages?.['/'];
+  const convertedPage = converted.pages?.['/'];
+  if (!storedPage || !convertedPage) return schema.visualEditor;
+
+  const runtimeFormModels = new Map(
+    convertedPage.blocks
+      .filter((block) => typeof block.props?.blockId === 'string')
+      .map((block) => [block.props.blockId, block.props?.formDesignerModel]),
+  );
+  const patchedBlocks = storedPage.blocks.map((block) => {
+    if (isVisualEditorModel(block.props?.formDesignerModel)) return block;
+    const fallbackModel = runtimeFormModels.get(block.props?.blockId);
+    if (!isVisualEditorModel(fallbackModel)) return block;
+
+    return {
+      ...block,
+      props: {
+        ...block.props,
+        formDesignerModel: fallbackModel,
+      },
+    };
+  });
+
+  return {
+    ...schema.visualEditor,
+    pages: {
+      ...schema.visualEditor.pages,
+      '/': {
+        ...storedPage,
+        blocks: patchedBlocks,
+      },
+    },
+  };
 }
 
 function fillForm(nextPage: LowCodePageRecord | null) {

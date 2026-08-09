@@ -25,8 +25,8 @@ assert.match(
 );
 assert.match(
   rendererSource,
-  /if \(action\.code === 'refresh'\) \{\s*if \(hasEnabledRefreshDirective\(action\)\) return;\s*await loadPageData\(props\.page\);/,
-  'An explicit refresh directive must suppress the legacy full-page refresh.',
+  /if \(action\.code === 'refresh'\) \{\s*if \(readString\(action\.script\) \|\| hasEnabledRefreshDirective\(action\)\) return;\s*await loadPageData\(props\.page\);/,
+  'A refresh script or explicit refresh directive must suppress the legacy full-page refresh.',
 );
 
 console.log('Low-code single-request refresh regression test passed.');

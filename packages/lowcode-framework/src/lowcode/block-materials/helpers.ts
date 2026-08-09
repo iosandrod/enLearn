@@ -62,6 +62,7 @@ export function resolveGridRows(
     : Array.isArray(sourceValue)
       ? (sourceValue as Record<string, unknown>[])
       : [];
+  if (block.clientFilter === false) return rows;
   const filters = block.sourceKey ? searchFilters[block.sourceKey] : undefined;
 
   return filters ? rows.filter((row) => matchesFilter(row, filters)) : rows;

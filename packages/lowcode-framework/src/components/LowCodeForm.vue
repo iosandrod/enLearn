@@ -55,7 +55,18 @@
       </div>
     </div>
 
-   
+    <div v-if="formActions.length" class="lc-actions">
+      <vxe-button
+        v-for="action in formActions"
+        :key="action.code"
+        :status="action.status"
+        :loading="loading && action.type === 'submit'"
+        :disabled="action.disabled || (loading && action.type !== 'submit')"
+        @click="handleAction(action)"
+      >
+        {{ action.label }}
+      </vxe-button>
+    </div>
   </vxe-form>
 </template>
 
@@ -86,6 +97,8 @@ import type {
 } from '../types/lowcode';
 import LowCodeFormField from './LowCodeFormField.vue';
 import LowCodeFormLayout from './LowCodeFormLayout.vue';
+import { useLowCodeHost } from '../core/host';
+import { lowCodeOptionSourceRegistry } from '../runtime/option-source-registry';
 
 defineOptions({
   inheritAttrs: false,
@@ -161,15 +174,21 @@ const emit = defineEmits<{
 }>();
 
 const attrs = useAttrs();
+const host = useLowCodeHost();
 const vxeFormRef = ref<VxeFormInstance<LowCodeFormModel>>();
 const formGridRef = ref<HTMLElement>();
 const formGridRowCount = ref(0);
 const formData = reactive<Record<string, unknown>>({ ...props.modelValue });
 const vxeFormData = reactive<Record<string, unknown>>({});
 const initialModel = ref<Record<string, unknown>>({ ...props.modelValue });
+const codeOptionSources = reactive<Record<string, unknown[]>>({});
 const fields = computed(() =>
   Array.isArray(props.schema.fields) ? props.schema.fields : []
 );
+const optionsCodes = computed(() =>
+  [...new Set(fields.value.map((field) => field.optionsCode?.trim()).filter(Boolean))] as string[]
+);
+const optionsCodeKey = computed(() => optionsCodes.value.join('\u0000'));
 const layoutNodes = computed<LowCodeFormLayoutNode[]>(() =>
   Array.isArray(props.schema.layout) ? props.schema.layout : []
 );
@@ -294,9 +313,10 @@ const isFormReadonly = computed(() => props.readonly === true);
 watch(
   () => props.modelValue,
   (nextValue: Record<string, unknown>) => {
+    const isLocalUpdate = formValuesEqual(nextValue, formData);
     Object.keys(formData).forEach((key) => delete formData[key]);
     Object.assign(formData, nextValue);
-    initialModel.value = { ...nextValue };
+    if (!isLocalUpdate) initialModel.value = { ...nextValue };
     syncVxeFormData();
   },
   { deep: true }
@@ -337,9 +357,40 @@ watch(
 
 watch(formColumnCount, () => scheduleFormGridMeasurement(), { flush: 'post' });
 
+let unsubscribeOptionSources: (() => void) | undefined;
+
+watch(
+  optionsCodeKey,
+  () => {
+    unsubscribeOptionSources?.();
+    const codes = optionsCodes.value;
+    const activeCodes = new Set(codes);
+    Object.keys(codeOptionSources).forEach((code) => {
+      if (!activeCodes.has(code)) delete codeOptionSources[code];
+    });
+    if (!codes.length) return;
+
+    unsubscribeOptionSources = lowCodeOptionSourceRegistry.subscribe(
+      codes,
+      (code, options) => {
+        codeOptionSources[code] = options;
+      },
+      () => {
+        try {
+          return host.getServiceApi();
+        } catch {
+          return undefined;
+        }
+      },
+    );
+  },
+  { immediate: true },
+);
+
 onMounted(() => window.addEventListener('resize', scheduleFormGridMeasurement));
 
 onBeforeUnmount(() => {
+  unsubscribeOptionSources?.();
   window.removeEventListener('resize', scheduleFormGridMeasurement);
   formGridResizeObserver?.disconnect();
   if (typeof formGridMeasureFrame === 'number') {
@@ -496,6 +547,16 @@ function normalizeOption(
 }
 
 function resolveOptions(field: LowCodeField) {
+  if (field.optionsCode) {
+    const source =
+      codeOptionSources[field.optionsCode] ??
+      lowCodeOptionSourceRegistry.peek(field.optionsCode);
+
+    if (Array.isArray(source)) {
+      return source.map((option) => normalizeOption(option, field));
+    }
+  }
+
   if (field.optionsSourceKey) {
     const source = props.optionSources?.[field.optionsSourceKey];
 
@@ -509,6 +570,24 @@ function resolveOptions(field: LowCodeField) {
 
 function readFieldValue(field: LowCodeField) {
   return formData[field.field];
+}
+
+function formValuesEqual(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) return true;
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return left.length === right.length && left.every(
+      (value, index) => formValuesEqual(value, right[index])
+    );
+  }
+  if (typeof left === 'object' && left !== null && typeof right === 'object' && right !== null) {
+    const leftValues = left as Record<string, unknown>;
+    const rightValues = right as Record<string, unknown>;
+    const keys = Object.keys(leftValues);
+    return keys.length === Object.keys(rightValues).length && keys.every(
+      (key) => key in rightValues && formValuesEqual(leftValues[key], rightValues[key])
+    );
+  }
+  return false;
 }
 
 function syncVxeFieldValue(field: LowCodeField, value: unknown) {

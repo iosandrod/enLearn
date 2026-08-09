@@ -6,6 +6,9 @@ import type {
   LowCodePageFormBlock,
   LowCodePageGridBlock,
   LowCodePageModalBlock,
+  LowCodePagePlanningBomBlock,
+  LowCodePagePlanningFlowBlock,
+  LowCodePagePlanningGanttBlock,
   LowCodePageSearchFormBlock,
   LowCodePageSectionBlock,
   LowCodePageStatCardBlock,
@@ -257,6 +260,61 @@ export function createDefaultTreeBlock(overrides?: Partial<LowCodePageTreeBlock>
       id: 'tree-block',
       kind: 'tree',
       title: 'Tree',
+      keyField: 'id',
+      titleField: 'title',
+      childrenField: 'children',
+      rows: [],
+    },
+    overrides
+  );
+}
+
+export function createDefaultPlanningFlowBlock(
+  overrides?: Partial<LowCodePagePlanningFlowBlock>
+) {
+  return withOverrides<LowCodePagePlanningFlowBlock>(
+    {
+      id: 'planning-flow-block',
+      kind: 'planningFlow',
+      title: '工艺路线',
+      sourceKey: 'planningFlow',
+      height: 520,
+      fitViewOnInit: true,
+    },
+    overrides
+  );
+}
+
+export function createDefaultPlanningGanttBlock(
+  overrides?: Partial<LowCodePagePlanningGanttBlock>
+) {
+  return withOverrides<LowCodePagePlanningGanttBlock>(
+    {
+      id: 'planning-gantt-block',
+      kind: 'planningGantt',
+      title: '排产甘特图',
+      sourceKey: 'operationPlans',
+      height: 520,
+      rowLabelField: 'resource_name',
+      startField: 'startdate',
+      endField: 'enddate',
+      labelField: 'reference',
+      statusField: 'status',
+    },
+    overrides
+  );
+}
+
+export function createDefaultPlanningBomBlock(
+  overrides?: Partial<LowCodePagePlanningBomBlock>
+) {
+  return withOverrides<LowCodePagePlanningBomBlock>(
+    {
+      id: 'planning-bom-block',
+      kind: 'planningBom',
+      title: '工艺 BOM',
+      sourceKey: 'planningBom',
+      height: 520,
       keyField: 'id',
       titleField: 'title',
       childrenField: 'children',

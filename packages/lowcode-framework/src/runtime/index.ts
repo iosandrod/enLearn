@@ -5,6 +5,7 @@ export { default as LowCodeFormField } from '../components/LowCodeFormField.vue'
 export { default as LowCodeFormLayout } from '../components/LowCodeFormLayout.vue';
 export { default as LowCodeGrid } from '../components/LowCodeGrid.vue';
 export { default as GlobalDialogHost } from '../components/GlobalDialogHost';
+export * from './option-source-registry';
 export { default as GlobalDrawerHost } from '../components/GlobalDrawerHost';
 export { default as JsonDialogInput } from '../components/JsonDialogInput.vue';
 export { default as LcVxeModalRenderer } from '../components/LcVxeModalRenderer';
@@ -28,6 +29,7 @@ export * from './scripts';
 export * from './script-context-provider';
 export * from './lowcode-context-drawer';
 export * from './node-action-registry';
+export * from './builtin-page-functions';
 export * from '../lowcode/builtin-pages';
 export * from '../lowcode/block-materials';
 export * from '../lowcode/form-materials';

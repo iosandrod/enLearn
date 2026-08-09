@@ -6,7 +6,10 @@ import { PLANNING_MODEL_DEFINITIONS } from '../src/planning-service/planning.mod
 
 const MIGRATION_FILES = [
   'supabase/migrations/20260807140000_planning_service.sql',
-  'supabase/migrations/20260808160000_planning_extended_models.sql'
+  'supabase/migrations/20260808150000_planning_diagnostic_tables.sql',
+  'supabase/migrations/20260808160000_planning_extended_models.sql',
+  'supabase/migrations/20260808170000_planning_execution_runtime.sql',
+  'supabase/migrations/20260809120000_planning_console.sql'
 ];
 
 function directProjectConnectionString(value: string) {
@@ -50,6 +53,9 @@ async function main() {
       registry: string;
       root_sidebar: string;
       descendant_navigation_overrides: string;
+      console_page: string;
+      console_version: string;
+      console_route: string;
     }>(`
       select
         (select count(*)::text from pg_catalog.pg_tables where schemaname = 'public' and tablename like 'planning_%') as tables,
@@ -58,7 +64,10 @@ async function main() {
         (select count(*)::text from public.admin_routes where (code = 'planning-root' or code like 'planning-%') and status = 'active') as routes,
         (select count(*)::text from public.dynamic_crud_resource_registry where resource_name like 'planning\\_%' escape '\\') as registry,
         (select count(*)::text from public.admin_routes where code = 'planning-root' and metadata->>'navigation' = 'sidebar') as root_sidebar,
-        (select count(*)::text from public.admin_routes where code like 'planning-%' and code <> 'planning-root' and metadata ? 'navigation') as descendant_navigation_overrides
+        (select count(*)::text from public.admin_routes where code like 'planning-%' and code not in ('planning-root', 'planning-console') and metadata ? 'navigation') as descendant_navigation_overrides,
+        (select count(*)::text from public.lowcode_pages where code = 'planning_console' and page_type = 'custom' and status = 'published') as console_page,
+        (select count(*)::text from public.lowcode_page_versions version join public.lowcode_pages page on page.id = version.page_id where page.code = 'planning_console' and version.version = page.version) as console_version,
+        (select count(*)::text from public.admin_routes route join public.admin_routes parent on parent.id = route.parent_id where route.code = 'planning-console' and route.page_code = 'planning_console' and route.permission_code = 'planning.models.view' and route.status = 'active' and parent.code = 'advanced-root') as console_route
     `);
     const installed = rows[0];
     const expectedModels = PLANNING_MODEL_DEFINITIONS.length;
@@ -67,11 +76,14 @@ async function main() {
       installed.pages !== String(expectedModels * 2) ||
       installed.entities !== String(expectedModels) ||
       installed.routes !== String(
-        expectedModels + new Set(PLANNING_MODEL_DEFINITIONS.map((model) => model.group)).size + 1
+        expectedModels + new Set(PLANNING_MODEL_DEFINITIONS.map((model) => model.group)).size + 2
       ) ||
       installed.registry !== String(expectedModels) ||
       installed.root_sidebar !== '1' ||
-      installed.descendant_navigation_overrides !== '0'
+      installed.descendant_navigation_overrides !== '0' ||
+      installed.console_page !== '1' ||
+      installed.console_version !== '1' ||
+      installed.console_route !== '1'
     ) {
       throw new Error(`Planning service verification failed after commit: ${JSON.stringify(installed)}`);
     }

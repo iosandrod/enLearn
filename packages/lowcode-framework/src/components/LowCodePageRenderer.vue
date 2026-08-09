@@ -99,6 +99,12 @@ import {
   type LowCodeScriptContextSnapshot,
 } from '../runtime/scripts';
 import {
+  hasBuiltinLowCodePageFunctions,
+  resolveBuiltinLowCodePageFunction,
+  type BuiltinLowCodePageFunctionContext,
+  type BuiltinLowCodePageFunctionMode,
+} from '../runtime/builtin-page-functions';
+import {
   lowCodeRuntimeBlockEditorKey,
   type LowCodeRuntimeBlockUpdate,
 } from '../runtime/block-editor';
@@ -125,6 +131,14 @@ const props = withDefaults(defineProps<{
 }>(), {
   showGlobalDialogHost: true,
 });
+
+function hasSchemaPageFunctions() {
+  return (props.page.schema.functions?.length ?? 0) > 0;
+}
+
+function hasRuntimePageFunctions() {
+  return hasSchemaPageFunctions() || hasBuiltinLowCodePageFunctions(props.page.page_type);
+}
 
 const host = useLowCodeHost(() => ({
   serviceApi: props.serviceApi,
@@ -176,7 +190,11 @@ const pendingActionEvents = new WeakMap<object, Promise<void>>();
 const formBaselines: Record<string, Record<string, unknown>> = {};
 const MAX_PAGE_FUNCTION_CALL_DEPTH = 16;
 let loadSequence = 0;
+let sourceRequestSequence = 0;
+const sourceRequestVersions = new Map<string, number>();
 let runtimePageId = '';
+let builtinPageFunctionMode: BuiltinLowCodePageFunctionMode = 'edit';
+let lastSavedFormRecord: Record<string, unknown> | undefined;
 
 onMounted(() => {
   void preloadLowCodeScriptRuntime().catch(() => undefined);
@@ -418,12 +436,16 @@ const legacyAdminListMethodTables: Record<string, string> = {
   listEntities: 'admin_entities',
   listPages: 'lowcode_pages',
   listOptionSources: 'system_option_sources',
-  listOptionItems: 'system_option_items',
   listSystemExecutionTasks: 'system_execution_tasks',
   listWorkflowJobs: 'workflow_jobs',
   listWorkflowJobRuns: 'workflow_job_runs',
   listWorkflowTimerJobs: 'workflow_timer_jobs',
 };
+
+const legacyDynamicOptionListMethods = new Set([
+  'listOptionItems',
+  'listDropdownOptions',
+]);
 
 const legacyWorkflowListItemTypes: Record<string, string> = {
   listWorkflowJobs: 'jobs',
@@ -456,6 +478,14 @@ function normalizeLegacyAdminListRequest(
   serviceMethod: string,
   postData: Record<string, unknown>
 ) {
+  if (serviceName === 'admin' && legacyDynamicOptionListMethods.has(serviceMethod)) {
+    return {
+      serviceName,
+      serviceMethod: 'resolveOptionItems',
+      postData,
+    };
+  }
+
   if (serviceName === 'notification' && legacyNotificationListResources[serviceMethod]) {
     return {
       serviceName,
@@ -597,29 +627,58 @@ function appendRouteQuery(route: string, query: Record<string, unknown>) {
   return `${withoutHash}${separator}${queryString}${hash ? `#${hash}` : ''}`;
 }
 
+async function findLowCodePage(filters: Record<string, unknown>) {
+  const pages = await host.getServiceApi().invoke<LowCodePageRecord[]>('lowcode', 'listItems', {
+    tableName: 'lowcode_pages',
+    filters,
+    includeData: false,
+    limit: 1,
+  });
+  return Array.isArray(pages) ? pages[0] : undefined;
+}
+
+function cloneRuntimeValueWithFunctions<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => cloneRuntimeValueWithFunctions(item)) as T;
+  }
+  if (isRecord(value)) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, cloneRuntimeValueWithFunctions(item)]),
+    ) as T;
+  }
+  return value;
+}
+
+async function resolveAssociatedEditPage() {
+  const editPageId = readString(props.page.edit_page_id);
+  if (editPageId) return findLowCodePage({ id: editPageId });
+  return findLowCodePage({ code: `${props.page.code}-edit` });
+}
+
+async function resolveEditPageRoute(
+  row: Record<string, unknown> = {},
+  rowKey = 'id',
+) {
+  const editPage = await resolveAssociatedEditPage();
+  const route = readString(editPage?.route);
+  if (!route) return '';
+
+  const resolvedRoute = resolveRuntimeRoute(route, row);
+  const rowValue = row[rowKey];
+
+  return appendRouteQuery(resolvedRoute, {
+    fromPage: props.page.code,
+    ...(typeof rowValue !== 'undefined' && rowValue !== null && rowValue !== ''
+      ? { [rowKey]: rowValue }
+      : {}),
+  });
+}
+
 async function resolveLinkedEditPageRoute(
   block: LowCodePageGridBlock,
   row: Record<string, unknown>
 ) {
-  const editPageId = readString(props.page.edit_page_id);
-  if (!editPageId) return '';
-
-  const pages = await host.getServiceApi().invoke<LowCodePageRecord[]>('lowcode', 'listItems', {
-    tableName: 'lowcode_pages',
-    filters: { id: editPageId },
-    limit: 1
-  });
-  const editPage = Array.isArray(pages) ? pages[0] : undefined;
-  const route = readString(editPage?.route);
-  if (!route) return '';
-
-  const rowKey = getGridRowKey(block);
-  const resolvedRoute = resolveRuntimeRoute(route, row);
-
-  return appendRouteQuery(resolvedRoute, {
-    fromPage: props.page.code,
-    [rowKey]: row[rowKey],
-  });
+  return resolveEditPageRoute(row, getGridRowKey(block));
 }
 
 function getDataSource(key?: string) {
@@ -661,37 +720,54 @@ async function invokeDataSource(
   return [key, data] as const;
 }
 
+function beginSourceRequest(key: string) {
+  const version = ++sourceRequestSequence;
+  sourceRequestVersions.set(key, version);
+  runtime.setSourceLoading(key, true);
+  return version;
+}
+
+function isCurrentSourceRequest(key: string, version: number) {
+  return sourceRequestVersions.get(key) === version;
+}
+
+function finishSourceRequest(key: string, version: number) {
+  if (!isCurrentSourceRequest(key, version)) return;
+  runtime.setSourceLoading(key, false);
+}
+
+function invalidateSourceRequests() {
+  sourceRequestVersions.clear();
+}
+
 async function refreshDataSources(sourceKeys: string[] = []) {
   const allEntries = Object.entries(props.page.schema.dataSources ?? {});
-  const entries = sourceKeys.length
-    ? sourceKeys
+  const uniqueSourceKeys = [...new Set(sourceKeys)];
+  const entries = uniqueSourceKeys.length
+    ? uniqueSourceKeys
         .map((key) => {
           const source = getDataSource(key);
           return source ? ([key, source] as const) : undefined;
         })
         .filter((entry): entry is readonly [string, LowCodePageDataSource] => Boolean(entry))
     : allEntries;
+  const requests = entries.map(([key, source]) => {
+    const version = beginSourceRequest(key);
+    runtime.setSource(key, undefined);
 
-  const results = await Promise.allSettled(
-    entries.map(([key, source]) => invokeDataSource(key, source, true))
-  );
-  const errors: string[] = [];
-
-  results.forEach((result, index) => {
-    const [key] = entries[index];
-
-    if (result.status === 'fulfilled') {
-      const [resolvedKey, value] = result.value;
-      if (typeof value !== 'undefined') {
-        runtime.setSource(resolvedKey, value);
-      }
-      return;
-    }
-
-    errors.push(
-      `${key}: ${result.reason instanceof Error ? result.reason.message : host.t('runtime.errors.refreshDataSource')}`
-    );
+    return invokeDataSource(key, source, true)
+      .then(([resolvedKey, value]) => {
+        if (!isCurrentSourceRequest(key, version)) return '';
+        if (typeof value !== 'undefined') runtime.setSource(resolvedKey, value);
+        return '';
+      })
+      .catch((error: unknown) => {
+        if (!isCurrentSourceRequest(key, version)) return '';
+        return `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.refreshDataSource')}`;
+      })
+      .finally(() => finishSourceRequest(key, version));
   });
+  const errors = (await Promise.all(requests)).filter(Boolean);
 
   if (errors.length) {
     message.value = errors[0];
@@ -719,6 +795,7 @@ function createScriptContextSource(): LowCodeContextSource {
       code: props.page.code,
       route: props.page.route,
       title: props.page.title,
+      page_type: props.page.page_type,
       schema: props.page.schema,
     },
     data: resolvedData.value,
@@ -731,26 +808,26 @@ function createScriptContextSource(): LowCodeContextSource {
     capabilities: Array.isArray(props.page.schema.scriptPolicy?.capabilities)
       ? [
           ...props.page.schema.scriptPolicy.capabilities,
-          ...((props.page.schema.functions?.length ?? 0) > 0
+          ...(hasSchemaPageFunctions()
             ? ['action.execute' as const]
             : []),
           ...(Object.keys(props.page.schema.apis ?? {}).length > 0
             ? ['http.execute' as const]
             : []),
-          ...((props.page.schema.functions?.length ?? 0) > 0
+          ...(hasRuntimePageFunctions()
             ? ['pageFunction.execute' as const]
             : []),
         ].filter((capability, index, capabilities) =>
           capabilities.indexOf(capability) === index,
         )
       : [
-          ...((props.page.schema.functions?.length ?? 0) > 0
+          ...(hasSchemaPageFunctions()
             ? ['action.execute' as const]
             : []),
           ...(Object.keys(props.page.schema.apis ?? {}).length > 0
             ? ['http.execute' as const]
             : []),
-          ...((props.page.schema.functions?.length ?? 0) > 0
+          ...(hasRuntimePageFunctions()
             ? ['pageFunction.execute' as const]
             : []),
         ],
@@ -871,8 +948,18 @@ function findRuntimeBlock(blockId: string) {
   return flattenPageBlocks(props.page.schema).find((block) => block.id === blockId);
 }
 
+function searchTargetSourceKeys(block: LowCodePageSearchFormBlock) {
+  return [...new Set([
+    block.targetSourceKey,
+    ...(Array.isArray(block.targetSourceKeys) ? block.targetSourceKeys : []),
+  ].map((key) => readString(key)).filter(Boolean))];
+}
+
 async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
   const nextSchema = cloneRuntimeValue(props.page.schema);
+  if (isRecord(props.page.schema.visualEditor)) {
+    nextSchema.visualEditor = cloneRuntimeValueWithFunctions(props.page.schema.visualEditor);
+  }
   const targetBlock = flattenPageBlocks(nextSchema).find(
     (block) => block.id === update.blockId
   );
@@ -1075,6 +1162,21 @@ function syncRuntimeGridToVisualProps(
 
   visualProps.blockId = update.changes.id ?? visualProps.blockId;
   visualProps.title = update.changes.title ?? schema.title ?? '';
+  const tableType = readString(
+    update.changes.tableType,
+    readString(targetBlock.tableType, readString(source?.sourceType, 'custom')),
+  );
+  const sourceTarget = readString(source?.tableName ?? source?.table_name);
+  visualProps.tableType = tableType;
+  visualProps.tableName = tableType === 'table'
+    ? readString(update.changes.tableName, readString(targetBlock.tableName, sourceTarget))
+    : '';
+  visualProps.viewName = tableType === 'view'
+    ? readString(
+        update.changes.viewName,
+        readString(targetBlock.viewName, readString(source?.viewName, sourceTarget)),
+      )
+    : '';
   visualProps.sourceKey = sourceKey;
   visualProps.serviceName = source?.serviceName ?? '';
   visualProps.serviceMethod = source?.serviceMethod ?? '';
@@ -1111,6 +1213,7 @@ function runtimeFormFieldToVisualField(value: unknown): Record<string, unknown> 
     required: rules.some((rule) => rule.required === true),
     span: field.span ?? '',
     help: readString(field.help),
+    optionsCode: readString(field.optionsCode),
     optionsSourceKey: readString(field.optionsSourceKey),
     optionLabel: readString(optionProps.label),
     optionValue: readString(optionProps.value),
@@ -1242,6 +1345,15 @@ function buildFormSubmissionValues(
   sourceKey: string,
   blocks: LowCodePageFormBlock[]
 ) {
+  const isCreating =
+    props.page.page_type === 'edit' && builtinPageFunctionMode !== 'edit';
+  if (isCreating) {
+    return blocks.reduce<Record<string, unknown>>((values, block) => ({
+      ...values,
+      ...cloneRuntimeValue(formModels.value[block.id] ?? block.initialValues ?? {}),
+    }), {});
+  }
+
   const sourceRecord = readDataSourceRecord(sourceKey);
   const values = sourceRecord ? cloneRuntimeValue(sourceRecord) : {};
 
@@ -1297,19 +1409,60 @@ async function saveFormSource(
   });
 }
 
-async function submitForms() {
+function readSavedRecord(value: unknown): Record<string, unknown> | undefined {
+  if (isRecord(value)) {
+    if (isRecord(value.data)) return value.data;
+    if (Array.isArray(value.rows) && isRecord(value.rows[0])) return value.rows[0];
+    if (Array.isArray(value.items) && isRecord(value.items[0])) return value.items[0];
+    if (isRecord(value.saved)) return value.saved;
+    return value;
+  }
+  if (Array.isArray(value) && isRecord(value[0])) return value[0];
+  return undefined;
+}
+
+function readRouteQueryWithoutRecordId() {
+  const query = host.getRoute().query ?? {};
+  return Object.fromEntries(
+    Object.entries(query).filter(([key]) => key !== 'id'),
+  );
+}
+
+function readSavedRecordId(
+  saved: Record<string, unknown> | undefined,
+  groups: Map<string, LowCodePageFormBlock[]>,
+) {
+  const savedId = readString(saved?.id);
+  if (savedId) return savedId;
+
+  for (const [sourceKey, blocks] of groups) {
+    const values = buildFormSubmissionValues(sourceKey, blocks);
+    const id = readString(values.id);
+    if (id) return id;
+  }
+  return '';
+}
+
+async function submitForms(options: { reload?: boolean } = {}) {
   const groups = collectFormSubmissionGroups();
   if (!groups.size) return true;
 
   message.value = '';
+  lastSavedFormRecord = undefined;
 
   try {
     for (const [sourceKey, blocks] of groups) {
       loadingBlockId.value = blocks[0]?.id ?? '';
-      await saveFormSource(sourceKey, buildFormSubmissionValues(sourceKey, blocks));
+      const saved = await saveFormSource(
+        sourceKey,
+        buildFormSubmissionValues(sourceKey, blocks),
+      );
+      if (!lastSavedFormRecord) lastSavedFormRecord = readSavedRecord(saved);
     }
 
-    await loadPageData(props.page);
+    if (options.reload !== false) {
+      await loadPageData(props.page);
+    }
     await publishRuntimeEvent({
       name: 'form.saved',
       blockKind: 'form',
@@ -1355,6 +1508,13 @@ async function loadPageData(nextPage: LowCodePageRecord) {
   const preserveGrids = runtimePageId === nextPage.id;
   const gridInteractionState = preserveGrids ? captureGridInteractionState() : {};
 
+  if (!preserveGrids || props.page.page_type === 'edit') {
+    builtinPageFunctionMode = readString(host.getRoute().query?.id)
+      ? 'edit'
+      : 'create';
+  }
+
+  invalidateSourceRequests();
   runtime.resetData({ preserveGrids });
   runtimePageId = nextPage.id;
   initializePageGridStates(pageBlocks);
@@ -1378,27 +1538,21 @@ async function loadPageData(nextPage: LowCodePageRecord) {
     return [];
   }
 
-  const results = await Promise.allSettled(
-    entries.map(([key, source]) => invokeDataSource(key, source))
-  );
-
-  const errors: string[] = [];
-
-  results.forEach((result, index) => {
-    const [key] = entries[index];
-
-    if (result.status === 'fulfilled') {
-      const [resolvedKey, value] = result.value;
-      if (typeof value !== 'undefined') {
-        runtime.setSource(resolvedKey, value);
-      }
-      return;
-    }
-
-    errors.push(
-      `${key}: ${result.reason instanceof Error ? result.reason.message : host.t('runtime.errors.loadDataSource')}`
-    );
+  const requests = entries.map(([key, source]) => {
+    const version = beginSourceRequest(key);
+    return invokeDataSource(key, source)
+      .then(([resolvedKey, value]) => {
+        if (!isCurrentSourceRequest(key, version)) return '';
+        if (typeof value !== 'undefined') runtime.setSource(resolvedKey, value);
+        return '';
+      })
+      .catch((error: unknown) => {
+        if (!isCurrentSourceRequest(key, version)) return '';
+        return `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.loadDataSource')}`;
+      })
+      .finally(() => finishSourceRequest(key, version));
   });
+  const errors = (await Promise.all(requests)).filter(Boolean);
 
   for (const block of pageBlocks) {
     if (block.kind !== 'form') continue;
@@ -1427,14 +1581,14 @@ const loadingText = computed(() =>
 );
 
 watch(
-  [() => props.page, () => props.route?.fullPath ?? host.getRoute().fullPath],
+  [() => props.page.id, () => props.page.version, () => props.route?.fullPath ?? host.getRoute().fullPath],
   async ([nextPage]) => {
     const currentLoad = ++loadSequence;
     message.value = '';
     dataLoading.value = true;
 
     try {
-      const errors = await loadPageData(nextPage);
+      const errors = await loadPageData(props.page);
 
       if (currentLoad !== loadSequence) {
         return;
@@ -1758,26 +1912,26 @@ function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSn
       capabilities: Array.isArray(props.page.schema.scriptPolicy?.capabilities)
         ? [
             ...props.page.schema.scriptPolicy.capabilities,
-            ...((props.page.schema.functions?.length ?? 0) > 0
+            ...(hasSchemaPageFunctions()
               ? ['action.execute' as const]
               : []),
             ...(Object.keys(props.page.schema.apis ?? {}).length > 0
               ? ['http.execute' as const]
               : []),
-            ...((props.page.schema.functions?.length ?? 0) > 0
+            ...(hasRuntimePageFunctions()
               ? ['pageFunction.execute' as const]
               : []),
           ].filter((capability, index, capabilities) =>
             capabilities.indexOf(capability) === index,
           )
         : [
-            ...((props.page.schema.functions?.length ?? 0) > 0
+            ...(hasSchemaPageFunctions()
               ? ['action.execute' as const]
               : []),
             ...(Object.keys(props.page.schema.apis ?? {}).length > 0
               ? ['http.execute' as const]
               : []),
-            ...((props.page.schema.functions?.length ?? 0) > 0
+            ...(hasRuntimePageFunctions()
               ? ['pageFunction.execute' as const]
               : []),
           ],
@@ -1800,19 +1954,255 @@ function resolvePageFunction(options: Record<string, unknown>) {
   const pageFunction = props.page.schema.functions?.find(
     (item) => item.name === name && item.enabled !== false,
   );
-  if (!pageFunction) throw new Error(`页面函数 "${name}" 不存在或未启用。`);
-  return pageFunction;
+  if (pageFunction) return { kind: 'schema' as const, pageFunction };
+
+  const builtinFunction = resolveBuiltinLowCodePageFunction(
+    props.page.page_type,
+    name,
+  );
+  if (builtinFunction) return { kind: 'builtin' as const, pageFunction: builtinFunction };
+
+  throw new Error(`页面函数 "${name}" 不存在、未启用或不适用于当前页面类型。`);
+}
+
+function getBuiltinSelectedRows() {
+  const grids = Object.values(runtime.state.grids);
+  for (const grid of grids) {
+    if (!grid) continue;
+    if (grid.selectedRows.length) return cloneRuntimeValue(grid.selectedRows);
+    if (grid.currentRow) return [cloneRuntimeValue(grid.currentRow)];
+    if (grid.contextRow) return [cloneRuntimeValue(grid.contextRow)];
+  }
+  return [];
+}
+
+function getBuiltinFormRecords() {
+  return Object.values(formModels.value).filter(isRecord).map((values) =>
+    cloneRuntimeValue(values),
+  );
+}
+
+function resolveBuiltinSourceForRows(rows: Record<string, unknown>[]) {
+  const matchingGrid = Object.values(runtime.state.grids).find((grid) => {
+    if (!grid.sourceKey) return false;
+    return rows.some((row) =>
+      grid.rows.some((candidate) => Object.is(candidate[grid.rowKey], row[grid.rowKey])),
+    );
+  });
+  if (matchingGrid?.sourceKey) return getDataSource(matchingGrid.sourceKey);
+
+  const sourceKey = readString(
+    isRecord(rows[0]) ? rows[0].sourceKey : undefined,
+  );
+  if (sourceKey) return getDataSource(sourceKey);
+
+  return Object.values(props.page.schema.dataSources ?? {}).find(
+    (source) => Boolean(source.saveMethod),
+  );
+}
+
+async function updateBuiltinRecords(
+  rows: Record<string, unknown>[],
+  values: Record<string, unknown>,
+) {
+  const source = resolveBuiltinSourceForRows(rows);
+  if (!source) throw new Error('当前页面没有可保存的数据源。');
+  const request = resolveDataSourceRequest(source.key, source);
+  const serviceName = request.serviceName;
+  const serviceMethod = source.saveMethod ?? (
+    request.serviceMethod === 'listItems' && (
+      readString(request.postData.resource) || readString(request.postData.tableName)
+    )
+      ? 'saveItem'
+      : request.serviceMethod
+  );
+  if (!serviceName || !serviceMethod) {
+    throw new Error(`数据源 ${source.key} 未配置保存方法。`);
+  }
+
+  const rowKey = Object.values(runtime.state.grids).find(
+    (grid) => grid.sourceKey === source.key,
+  )?.rowKey ?? 'id';
+  return Promise.all(rows.map((row) => {
+    const id = row[rowKey];
+    if (typeof id === 'undefined' || id === null || id === '') {
+      throw new Error('选中数据缺少主键，无法保存。');
+    }
+    return host.getServiceApi().invoke(serviceName, serviceMethod, {
+      ...resolveRuntimePostData(source.postData),
+      resource: readString(
+        source.postData?.resource,
+        readString(source.tableName ?? source.table_name),
+      ),
+      [rowKey]: id,
+      data: values,
+    });
+  }));
+}
+
+function resetBuiltinForms(mode: 'create' | 'copy') {
+  const primaryKeys = new Set(['id', 'created_at', 'created_by', 'updated_at', 'updated_by']);
+  const stateFields: Record<string, unknown> = {
+    approval_status: 'draft',
+    approve_status: 'draft',
+    audit_status: 'draft',
+    close_status: 'open',
+  };
+
+  for (const block of flattenPageBlocks(props.page.schema)) {
+    if (block.kind !== 'form') continue;
+    const current = formModels.value[block.id] ?? {};
+    const values = mode === 'copy'
+      ? cloneRuntimeValue(current)
+      : cloneRuntimeValue(block.initialValues ?? {});
+    primaryKeys.forEach((field) => {
+      if (field === 'id') {
+        values[field] = '';
+      } else {
+        delete values[field];
+      }
+    });
+    Object.entries(stateFields).forEach(([field, value]) => {
+      if (field in values || field in current) values[field] = value;
+    });
+    runtime.replaceForm(block.id, values);
+  }
+
+  return cloneRuntimeValue(formModels.value);
+}
+
+function patchBuiltinForms(values: Record<string, unknown>) {
+  let patched = false;
+  for (const block of flattenPageBlocks(props.page.schema)) {
+    if (block.kind !== 'form') continue;
+    const model = formModels.value[block.id] ?? {};
+    const applicableValues = Object.fromEntries(
+      Object.entries(values).filter(([field]) =>
+        field in model || block.schema.fields.some((item) => item.field === field),
+      ),
+    );
+    if (!Object.keys(applicableValues).length) continue;
+    runtime.patchForm(block.id, applicableValues);
+    patched = true;
+  }
+  if (!patched) throw new Error('当前页面没有与操作状态匹配的表单字段。');
+  return cloneRuntimeValue(formModels.value);
+}
+
+async function resolveBuiltinExitRoute(args: Record<string, unknown>) {
+  const explicitRoute = readString(args.route);
+  if (explicitRoute) return explicitRoute;
+
+  const fromPage = readString(host.getRoute().query?.fromPage);
+  if (fromPage) {
+    const page = await findLowCodePage({ code: fromPage });
+    if (readString(page?.route)) return page!.route;
+  }
+
+  if (props.page.page_type === 'edit') {
+    const parent = await findLowCodePage({ edit_page_id: props.page.id });
+    if (readString(parent?.route)) return parent!.route;
+    if (props.page.route.endsWith('/edit')) return props.page.route.slice(0, -5);
+  }
+
+  return '/dashboard';
+}
+
+function createBuiltinPageFunctionContext(
+  args: Record<string, unknown>,
+  event: LowCodeRuntimeEvent,
+): BuiltinLowCodePageFunctionContext {
+  const pageType = props.page.page_type;
+  if (pageType !== 'list' && pageType !== 'edit') {
+    throw new Error(`页面类型 "${pageType}" 不支持内置页面函数。`);
+  }
+
+  return {
+    pageType,
+    args,
+    getSelectedRows: () => {
+      const payloadRows = Array.isArray(event.payload?.rows)
+        ? event.payload.rows.filter(isRecord)
+        : [];
+      const payloadRow = isRecord(event.payload?.row) ? [event.payload.row] : [];
+      return cloneRuntimeValue(payloadRows.length ? payloadRows : payloadRow.length ? payloadRow : getBuiltinSelectedRows());
+    },
+    getFormRecords: getBuiltinFormRecords,
+    navigateToEdit: async (row = {}) => {
+      const route = readString(args.route) || await resolveEditPageRoute(
+        row,
+        readString(args.rowKey, 'id'),
+      );
+      if (!route) throw new Error('当前列表页没有关联编辑页。');
+      return host.getRouter().push(route);
+    },
+    updateRecords: updateBuiltinRecords,
+    invokeService: (serviceName, serviceMethod, postData) =>
+      host.getServiceApi().invoke(serviceName, serviceMethod, postData),
+    prepareForms: async (mode) => {
+      builtinPageFunctionMode = mode;
+      return resetBuiltinForms(mode);
+    },
+    patchForms: async (values) => patchBuiltinForms(values),
+    submitForms: async () => {
+      const navigateAfterCreate = builtinPageFunctionMode !== 'edit';
+      const groups = collectFormSubmissionGroups();
+      if (!groups.size) throw new Error('当前编辑页没有配置可保存的表单数据源。');
+      const saved = await submitForms({ reload: !navigateAfterCreate });
+      if (!saved || !navigateAfterCreate) return saved;
+
+      const savedId = readSavedRecordId(lastSavedFormRecord, groups);
+      if (!savedId) return saved;
+      builtinPageFunctionMode = 'edit';
+      await host.getRouter().push(appendRouteQuery(props.page.route, {
+        ...readRouteQueryWithoutRecordId(),
+        id: savedId,
+      }));
+      return saved;
+    },
+    setMode: async (mode) => {
+      builtinPageFunctionMode = mode;
+      await publishRuntimeEvent({
+        name: 'page.modeChange',
+        blockId: event.blockId,
+        blockKind: event.blockKind,
+        timestamp: Date.now(),
+        payload: { mode },
+      });
+    },
+    refresh: async () => {
+      const errors = await loadPageData(props.page);
+      if (errors.length) throw new Error(errors[0]);
+      return cloneRuntimeValue(resolvedData.value);
+    },
+    print: async () => {
+      if (typeof globalThis.print !== 'function') throw new Error('当前环境不支持打印。');
+      globalThis.print();
+      return true;
+    },
+    exit: async () => host.getRouter().push(await resolveBuiltinExitRoute(args)),
+    notify: (nextMessage, status = 'info') => {
+      message.value = nextMessage;
+      messageClass.value = status === 'error' ? 'lc-error' : 'lc-help';
+    },
+  };
 }
 
 async function executePageFunction(
   options: Record<string, unknown>,
   event: LowCodeRuntimeEvent,
 ) {
-  const pageFunction = resolvePageFunction(options);
+  const resolvedFunction = resolvePageFunction(options);
   if (typeof options.args !== 'undefined' && !isRecord(options.args)) {
     throw new Error('executeFunction 参数 args 必须是对象。');
   }
   const args = isRecord(options.args) ? cloneRuntimeValue(options.args) : {};
+  if (resolvedFunction.kind === 'builtin') {
+    return resolvedFunction.pageFunction.execute(
+      createBuiltinPageFunctionContext(args, event),
+    );
+  }
+  const pageFunction = resolvedFunction.pageFunction;
   const callStack = Array.isArray(event.payload?.pageFunctionStack)
     ? event.payload.pageFunctionStack.filter(
         (item): item is string => typeof item === 'string' && Boolean(item),
@@ -2573,7 +2963,7 @@ async function handleToolbarAction(action: LowCodeAction | LowCodeButtonGroupAct
   }
 
   if (action.code === 'refresh') {
-    if (hasEnabledRefreshDirective(action)) return;
+    if (readString(action.script) || hasEnabledRefreshDirective(action)) return;
     await loadPageData(props.page);
   }
 }
@@ -2584,9 +2974,10 @@ async function handleSearchSubmit(
   action?: LowCodeAction,
 ) {
   await waitForActionEvent(action);
-  if (!block.targetSourceKey) return;
-  runtime.replaceSearch(block.targetSourceKey, values);
-  await refreshDataSources([block.targetSourceKey]);
+  const sourceKeys = searchTargetSourceKeys(block);
+  if (!sourceKeys.length) return;
+  sourceKeys.forEach((sourceKey) => runtime.replaceSearch(sourceKey, values));
+  await refreshDataSources(sourceKeys);
 }
 
 async function handleSearchAction(
@@ -2595,9 +2986,10 @@ async function handleSearchAction(
   values: Record<string, unknown>
 ) {
   await waitForActionEvent(action);
-  if (action.type === 'reset' && block.targetSourceKey) {
-    runtime.replaceSearch(block.targetSourceKey, {});
-    await refreshDataSources([block.targetSourceKey]);
+  const sourceKeys = searchTargetSourceKeys(block);
+  if (action.type === 'reset' && sourceKeys.length) {
+    sourceKeys.forEach((sourceKey) => runtime.replaceSearch(sourceKey, {}));
+    await refreshDataSources(sourceKeys);
     return;
   }
 
@@ -2698,5 +3090,18 @@ async function handleGridDelete(
   font-size: 12px;
   line-height: 18px;
   padding: 4px 10px;
+}
+
+@media (max-width: 820px) {
+  .lowcode-runtime-page {
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .lowcode-runtime-page > .lc-runtime-block--fill.lc-node-tabs {
+    flex: 0 0 min(560px, calc(100dvh - 16px));
+    min-height: min(560px, calc(100dvh - 16px));
+  }
 }
 </style>

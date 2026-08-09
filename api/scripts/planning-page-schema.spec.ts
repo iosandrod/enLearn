@@ -74,4 +74,18 @@ for (const model of PLANNING_MODEL_DEFINITIONS) {
   }
 }
 
+const planningRun = PLANNING_MODEL_BY_KEY.get('planning_run');
+assert.ok(planningRun?.fields.some((field) => field.name === 'attempt' && field.readOnly));
+assert.ok(planningRun?.fields.some((field) => field.name === 'output' && field.readOnly));
+const planningRunList = buildPlanningListSchema(planningRun!) as any;
+const planningRunEdit = buildPlanningEditSchema(planningRun!) as any;
+const planningRunEditFields = planningRunEdit.blocks[1]?.tabs?.[0]?.blocks?.[0]?.schema?.fields ?? [];
+assert.ok(planningRunEditFields.some(
+  (field: any) => field.field === 'attempt' && field.props?.disabled === true
+));
+assert.ok(planningRunEditFields.some(
+  (field: any) => field.field === 'output' && field.props?.disabled === true
+));
+assert.ok(planningRunList.blocks.some((block: any) => block.kind === 'grid'));
+
 console.log('planning low-code page schema tests passed');

@@ -21,6 +21,7 @@ const pageErrors = [];
 const consoleErrors = [];
 const failedRequests = [];
 const formDefinitionResponses = [];
+const lowCodePageRequests = [];
 
 page.on('pageerror', (error) => pageErrors.push(error.message));
 page.on('console', (message) => {
@@ -32,6 +33,17 @@ page.on('requestfailed', (request) => {
 page.on('response', async (response) => {
   if (response.request().method() !== 'POST' || !response.url().includes('/api/service')) return;
   const postData = response.request().postDataJSON();
+  if (
+    postData?.serviceName === 'lowcode' &&
+    postData?.serviceMethod === 'listItems' &&
+    postData?.postData?.tableName === 'lowcode_pages' &&
+    postData?.postData?.filters?.route === '/dashboard/low-code'
+  ) {
+    lowCodePageRequests.push({
+      status: response.status(),
+      includeData: postData.postData.includeData,
+    });
+  }
   if (postData?.postData?.resource !== 'lowcode_form_definitions') return;
   formDefinitionResponses.push({
     status: response.status(),
@@ -59,14 +71,18 @@ try {
   await page.getByText('Theme', { exact: true }).waitFor({ state: 'visible' });
 
   await open('/dashboard/low-code');
-  await page.locator('.vxe-form--item-title-label').filter({ hasText: /^Page Code$/ }).waitFor({ state: 'visible' });
-  await page.locator('.vxe-form--item-title-label').filter({ hasText: /^Schema JSON$/ }).waitFor({ state: 'visible' });
+  await page.getByText('全部页面', { exact: true }).waitFor({ state: 'visible' });
+  await page.locator('.vxe-header--column').filter({ hasText: '路由' }).first().waitFor({ state: 'visible' });
+  assert.ok(
+    lowCodePageRequests.some((entry) => entry.status === 200 && entry.includeData === true),
+    'Low-code page management must load its page definition and data from lowcode_pages.'
+  );
 
   await open('/dashboard/entity-design');
   await page.getByText(/实体列表 \(\d+\)/).first().waitFor({ state: 'visible' });
   await page.getByText(/字段列表 \(\d+\)/).first().waitFor({ state: 'visible' });
 
-  assert.ok(formDefinitionResponses.length >= 4, 'Expected database form-definition requests.');
+  assert.ok(formDefinitionResponses.length >= 3, 'Expected database form-definition requests.');
   assert.ok(formDefinitionResponses.every((entry) => entry.status === 200));
   assert.ok(
     formDefinitionResponses.some(

@@ -293,5 +293,55 @@ $primary: #1d73d8;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
+    .material-prop-form .lc-form-tabs {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      border: 1px solid #dfe7f0;
+      border-radius: 6px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .material-prop-form .lc-form-tabs > .vxe-tabs > .vxe-tabs-header {
+      min-height: 36px;
+      border-bottom: 1px solid #dfe7f0;
+      background: #f8fafc;
+      box-shadow: none;
+    }
+
+    .material-prop-form .lc-form-tabs > .vxe-tabs > .vxe-tabs-header .vxe-tabs-header--item {
+      min-width: 48px;
+      height: 36px;
+      padding: 0 9px;
+      background: transparent;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 500;
+      box-shadow: none;
+    }
+
+    .material-prop-form .lc-form-tabs > .vxe-tabs > .vxe-tabs-header .vxe-tabs-header--item.is--active {
+      background: #fff;
+      color: $primary;
+      font-weight: 600;
+      box-shadow: inset 0 -2px 0 $primary;
+    }
+
+    .material-prop-form .lc-form-tabs > .vxe-tabs > .vxe-tabs-pane--wrapper {
+      height: auto;
+      padding: 0 12px 12px;
+      background: #fff;
+      overflow: visible;
+    }
+
+    .material-prop-form .lc-form-tab-pane {
+      padding-top: 12px;
+    }
+
+    .material-prop-form .lc-form-tab-pane > .lc-form-layout {
+      gap: 14px;
+    }
   }
 }

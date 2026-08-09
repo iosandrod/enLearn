@@ -56,9 +56,14 @@ export type GridDesignerColumn = {
   [key: string]: unknown;
 };
 
+export type GridDesignerTableType = 'custom' | 'table' | 'view';
+
 export type GridDesignerBusinessInfo = {
   blockId: string;
   title: string;
+  tableType: GridDesignerTableType;
+  tableName: string;
+  viewName: string;
   sourceKey: string;
   serviceName: string;
   serviceMethod: string;
@@ -115,6 +120,9 @@ type GridDesignerSourceColumn = {
   primaryKey?: boolean;
 };
 
+const physicalTableOptionSourceCode = 'physical_table_name';
+const databaseViewOptionSourceCode = 'database_view_name';
+
 const gridDesignerSourcePageCodes: Record<GridDesignerSourceKind, string> = {
   entity: 'admin-system-entities',
   view: 'entity-views',
@@ -157,6 +165,12 @@ const columnEditTypeOptions = [
   { label: '下拉选择 VxeSelect', value: 'VxeSelect' },
   { label: '开关 VxeSwitch', value: 'VxeSwitch' },
   { label: '多行文本 VxeTextarea', value: 'VxeTextarea' },
+];
+
+const gridTableTypeOptions = [
+  { label: '自定义数据源', value: 'custom' },
+  { label: '真实表', value: 'table' },
+  { label: '视图', value: 'view' },
 ];
 
 const alignOptions = [
@@ -951,8 +965,41 @@ function mergeColumnsFromSource(
   ];
 }
 
-function createSourcePostData(source: GridDesignerSourceOption) {
-  return source.fullName ? { tableName: source.fullName } : { entityCode: source.code };
+function clearSourceTargetAliases(
+  value: Record<string, unknown>,
+  clearResource = false,
+) {
+  const nextValue = cloneDeep(value);
+  delete nextValue.tableName;
+  delete nextValue.table_name;
+  delete nextValue.entityCode;
+  delete nextValue.entity_code;
+  delete nextValue.viewName;
+  delete nextValue.view_name;
+  if (clearResource) delete nextValue.resource;
+  return nextValue;
+}
+
+function readPostDataObject(value: unknown) {
+  if (isPlainRecord(value)) return cloneDeep(value);
+  if (typeof value !== 'string') return {};
+
+  const parsed = parseJsonObject(value, 'postDataJson');
+  return parsed.ok && isPlainRecord(parsed.value) ? cloneDeep(parsed.value) : {};
+}
+
+function createSourcePostData(
+  currentValue: unknown,
+  sourceTarget = '',
+  clearResource = Boolean(sourceTarget),
+  clearTargetAliases = Boolean(sourceTarget),
+) {
+  const currentPostData = readPostDataObject(currentValue);
+  const postData = clearTargetAliases
+    ? clearSourceTargetAliases(currentPostData, clearResource)
+    : currentPostData;
+  if (sourceTarget) postData.tableName = sourceTarget;
+  return postData;
 }
 
 function createSourceKey(source: GridDesignerSourceOption) {
@@ -989,6 +1036,9 @@ function createDefaultBusiness(): GridDesignerBusinessInfo {
   return {
     blockId: 'records-grid',
     title: '数据列表',
+    tableType: 'table',
+    tableName: 'profiles',
+    viewName: '',
     sourceKey: 'records',
     serviceName: 'admin',
     serviceMethod: 'listItems',
@@ -1002,16 +1052,50 @@ function createDefaultBusiness(): GridDesignerBusinessInfo {
 function normalizeBusiness(value: unknown): GridDesignerBusinessInfo {
   const row = isPlainRecord(value) ? value : {};
   const fallback = createDefaultBusiness();
+  const postDataJson = readString(row.postDataJson, fallback.postDataJson);
+  const parsedPostData = parseJsonObject(postDataJson, 'postDataJson');
+  const postData = parsedPostData.ok && isPlainRecord(parsedPostData.value)
+    ? parsedPostData.value
+    : {};
+  const postDataTarget = readString(postData.tableName, readString(postData.table_name));
+  const explicitTableName = readString(row.tableName);
+  const explicitViewName = readString(row.viewName);
+  const requestedTableType = readString(row.tableType);
+  const tableType: GridDesignerTableType = requestedTableType === 'view'
+    ? 'view'
+    : requestedTableType === 'custom'
+      ? 'custom'
+      : requestedTableType === 'table'
+        ? 'table'
+        : explicitViewName
+          ? 'view'
+          : explicitTableName || postDataTarget
+            ? 'table'
+            : 'custom';
+  const tableName = tableType === 'table' ? explicitTableName || postDataTarget : '';
+  const viewName = tableType === 'view' ? explicitViewName || postDataTarget : '';
+  const normalizedPostDataJson = parsedPostData.ok && (
+    typeof parsedPostData.value === 'undefined' || isPlainRecord(parsedPostData.value)
+  )
+    ? JSON.stringify(
+        createSourcePostData(postData, tableName || viewName, tableType !== 'custom'),
+        null,
+        2,
+      )
+    : postDataJson;
 
   return {
     blockId: readString(row.blockId, fallback.blockId),
     title: readString(row.title, fallback.title),
+    tableType,
+    tableName,
+    viewName,
     sourceKey: readString(row.sourceKey, fallback.sourceKey),
     serviceName: readString(row.serviceName, fallback.serviceName),
     serviceMethod: readString(row.serviceMethod, fallback.serviceMethod),
     saveMethod: readString(row.saveMethod),
     deleteMethod: readString(row.deleteMethod),
-    postDataJson: readString(row.postDataJson, fallback.postDataJson),
+    postDataJson: normalizedPostDataJson,
     showRowActions: readBoolean(row.showRowActions, fallback.showRowActions),
   };
 }
@@ -1450,6 +1534,7 @@ const ServiceComponent = defineComponent({
         return dfd.promise;
       })(),
     });
+    const designerFormModels = reactive<Record<string, Record<string, unknown>>>({});
     const getServiceApi = () => {
       if (state.option.serviceApi) return state.option.serviceApi;
       try {
@@ -1474,6 +1559,7 @@ const ServiceComponent = defineComponent({
       },
       show: async () => {
         await state.mounted;
+        syncActiveDesignerDialogModel();
         await nextTick();
         const dialogId = `grid-designer-${generateNanoid()}`;
         state.activeDialogId = dialogId;
@@ -1525,32 +1611,31 @@ const ServiceComponent = defineComponent({
         }
       },
     };
-
     const selectColumn = (column: GridDesignerColumn) => {
       state.selectedColumnId = readString(column.__id);
     };
 
     const syncActiveDesignerDialogModel = () => {
-      const dialog = findGlobalDialog(state.activeDialogId);
-      if (!dialog) return;
-
       const formModels = createGridDesignerFormModels();
-      const contentNode = Array.isArray(dialog.config.content)
-        ? dialog.config.content[0]
-        : dialog.config.content;
-      const currentFormModels = contentNode?.type === 'lowcodeBlocks'
-        ? contentNode.lowcode.formModels
-        : undefined;
-
-      if (isPlainRecord(currentFormModels)) {
-        resetReactiveObject(
-          currentFormModels as Record<string, unknown>,
-          formModels as Record<string, unknown>,
-        );
-      }
+      Object.entries(formModels).forEach(([blockId, model]) => {
+        const currentModel = designerFormModels[blockId];
+        if (isPlainRecord(currentModel)) {
+          resetReactiveObject(currentModel, model);
+        } else {
+          designerFormModels[blockId] = model;
+        }
+      });
+      Object.keys(designerFormModels).forEach((blockId) => {
+        if (!Object.prototype.hasOwnProperty.call(formModels, blockId)) {
+          delete designerFormModels[blockId];
+        }
+      });
     };
 
-    const applySource = (source: GridDesignerSourceOption) => {
+    const applySource = (
+      source: GridDesignerSourceOption,
+      kind: GridDesignerSourceKind,
+    ) => {
       const columns = mergeColumnsFromSource(state.columns, source.columns);
       if (!columns.length) {
         ElMessage.warning('该数据源暂无可用字段');
@@ -1560,6 +1645,10 @@ const ServiceComponent = defineComponent({
       state.columns = columns;
       selectColumn(columns[0]);
       state.business.title = `${source.title}列表`;
+      const sourceTarget = readString(source.fullName, source.code);
+      state.business.tableType = kind === 'view' ? 'view' : 'table';
+      state.business.tableName = kind === 'entity' ? sourceTarget : '';
+      state.business.viewName = kind === 'view' ? sourceTarget : '';
       if (!readString(state.business.sourceKey)) {
         state.business.sourceKey = createSourceKey(source);
       }
@@ -1567,7 +1656,11 @@ const ServiceComponent = defineComponent({
       state.business.serviceMethod = 'listItems';
       state.business.saveMethod = '';
       state.business.deleteMethod = '';
-      state.business.postDataJson = JSON.stringify(createSourcePostData(source), null, 2);
+      state.business.postDataJson = JSON.stringify(
+        createSourcePostData(state.business.postDataJson, sourceTarget, true),
+        null,
+        2,
+      );
       state.business.showRowActions = false;
       state.gridOptions.rowConfig = {
         ...(isPlainRecord(state.gridOptions.rowConfig) ? state.gridOptions.rowConfig : {}),
@@ -1576,8 +1669,84 @@ const ServiceComponent = defineComponent({
           readString(source.primaryKey, readString(source.columns[0]?.field, 'id')),
         ),
       };
-      syncActiveDesignerDialogModel();
       return true;
+    };
+
+    const loadPhysicalTableSource = async (
+      row: Record<string, unknown>,
+    ): Promise<GridDesignerSourceOption> => {
+      const serviceApi = getServiceApi();
+      if (!serviceApi) {
+        throw new Error('当前页面未提供数据服务，无法读取真实表字段');
+      }
+
+      const fullName = readString(
+        row.fullName ?? row.full_name ?? row.value,
+        [
+          readString(row.schemaName ?? row.schema_name, 'public'),
+          readString(row.tableName ?? row.table_name),
+        ]
+          .filter(Boolean)
+          .join('.'),
+      );
+      if (!fullName) {
+        throw new Error('未找到所选真实表');
+      }
+
+      const columnRows = await serviceApi.invoke<unknown[]>('lowcode', 'listTableColumns', {
+        tableName: fullName,
+      });
+      const columns = Array.isArray(columnRows) ? columnRows.filter(isPlainRecord) : [];
+
+      return {
+        id: fullName,
+        code: readString(
+          row.tableName ?? row.table_name,
+          fullName.split('.').pop() ?? fullName,
+        ),
+        title: readString(row.title, readString(row.label, fullName)),
+        fullName,
+        primaryKey: readString(row.primaryKey),
+        columns: columns.map((column) => ({
+          field: readString(column.name, readString(column.column_name)),
+          title: readString(
+            column.title,
+            readString(
+              column.comment,
+              humanizeIdentifier(column.name ?? column.column_name),
+            ),
+          ),
+          dataType: readString(column.dataType, readString(column.data_type)),
+          primaryKey: readBoolean(column.isPrimaryKey, readBoolean(column.is_primary_key)),
+        })),
+      };
+    };
+
+    const applyAssociationOption = async (
+      kind: 'table' | 'view',
+      value: unknown,
+    ) => {
+      const target = readString(value);
+      if (!target) return;
+      const row = {
+        label: target,
+        value: target,
+      };
+
+      state.business.tableType = kind;
+      state.business.tableName = kind === 'table' ? target : '';
+      state.business.viewName = kind === 'view' ? target : '';
+      syncBusinessSourceTarget();
+      syncActiveDesignerDialogModel();
+
+      try {
+        const source = await loadPhysicalTableSource(row);
+        if (applySource(source, kind === 'table' ? 'entity' : 'view')) {
+          syncActiveDesignerDialogModel();
+        }
+      } catch (error) {
+        ElMessage.error(error instanceof Error ? error.message : '关联数据源加载失败');
+      }
     };
 
     const loadSelectedSource = async (
@@ -1698,7 +1867,8 @@ const ServiceComponent = defineComponent({
           return;
         }
         const source = await loadSelectedSource(kind, row);
-        if (!applySource(source)) return;
+        if (!applySource(source, kind)) return;
+        syncActiveDesignerDialogModel();
         ElMessage.success(`已关联${kindLabel}，新增或覆盖 ${source.columns.length} 个字段`);
       } catch (error) {
         ElMessage.error(error instanceof Error ? error.message : `${kindLabel}加载失败`);
@@ -1710,6 +1880,15 @@ const ServiceComponent = defineComponent({
         try {
           const postData = parseJsonObject(state.business.postDataJson, 'postDataJson');
           assertJsonParsed(postData);
+
+          if (state.business.tableType === 'table' && !readString(state.business.tableName)) {
+            ElMessage.error('请选择关联真实表');
+            return false;
+          }
+          if (state.business.tableType === 'view' && !readString(state.business.viewName)) {
+            ElMessage.error('请选择关联视图');
+            return false;
+          }
 
           const invalidColumn = state.columns.find(
             (column) => !readString(column.field) && !readString(column.title) && !readString(column.type),
@@ -1855,6 +2034,34 @@ const ServiceComponent = defineComponent({
     const businessInfoSchema = createSchema([
       { field: 'blockId', label: 'blockId', component: 'vxe-input' },
       { field: 'title', label: 'title', component: 'vxe-input' },
+      {
+        field: 'tableType',
+        label: '表格类型',
+        component: 'vxe-select',
+        options: gridTableTypeOptions,
+      },
+      {
+        field: 'tableName',
+        label: '关联真实表',
+        component: 'vxe-select',
+        optionsCode: physicalTableOptionSourceCode,
+        props: {
+          filterable: true,
+          clearable: true,
+          placeholder: '请选择真实表',
+        },
+      },
+      {
+        field: 'viewName',
+        label: '关联视图',
+        component: 'vxe-select',
+        optionsCode: databaseViewOptionSourceCode,
+        props: {
+          filterable: true,
+          clearable: true,
+          placeholder: '请选择视图',
+        },
+      },
       { field: 'sourceKey', label: 'sourceKey', component: 'vxe-input' },
       { field: 'serviceName', label: 'serviceName', component: 'vxe-input' },
       { field: 'serviceMethod', label: 'serviceMethod', component: 'vxe-input' },
@@ -2209,6 +2416,26 @@ const ServiceComponent = defineComponent({
       state.business.postDataJson = JSON.stringify(nextValue, null, 2);
     };
 
+    const syncBusinessSourceTarget = (clearCustomTargetAliases = false) => {
+      const tableType = state.business.tableType;
+      const sourceTarget = tableType === 'table'
+        ? readString(state.business.tableName)
+        : tableType === 'view'
+          ? readString(state.business.viewName)
+          : '';
+
+      state.business.postDataJson = JSON.stringify(
+        createSourcePostData(
+          state.business.postDataJson,
+          sourceTarget,
+          tableType !== 'custom',
+          tableType !== 'custom' || clearCustomTargetAliases,
+        ),
+        null,
+        2,
+      );
+    };
+
     const createInfoTabPanelBlock = (
       id: string,
       blocks: LowCodePageBlock[],
@@ -2454,7 +2681,7 @@ const ServiceComponent = defineComponent({
         ? event.payload.values
         : null;
 
-    const syncGridDesignerRuntimeEvent = (event: LowCodeRuntimeEvent) => {
+    const syncGridDesignerRuntimeEvent = async (event: LowCodeRuntimeEvent) => {
       if (event.name !== 'form.fieldChange') return;
 
       const values = readRuntimeFormValues(event);
@@ -2471,9 +2698,50 @@ const ServiceComponent = defineComponent({
       }
 
       if (event.blockId === businessInfoBlockId) {
+        const previousTableType = state.business.tableType;
+        const changedField = readString(event.payload?.field);
+        const changedValue = event.payload?.value;
         Object.assign(state.business, values);
-        if (event.payload?.field === 'postDataJson') {
-          normalizePostDataJsonField(event.payload.value);
+        if (changedField === 'tableType') {
+          const tableType = readString(changedValue);
+          state.business.tableType = tableType === 'view'
+            ? 'view'
+            : tableType === 'table'
+              ? 'table'
+              : 'custom';
+          if (state.business.tableType === 'table') state.business.viewName = '';
+          if (state.business.tableType === 'view') state.business.tableName = '';
+          if (state.business.tableType === 'custom') {
+            state.business.tableName = '';
+            state.business.viewName = '';
+          }
+          syncBusinessSourceTarget(
+            state.business.tableType === 'custom' && previousTableType !== 'custom',
+          );
+          syncActiveDesignerDialogModel();
+        }
+        if (changedField === 'tableName') {
+          if (!readString(changedValue)) {
+            state.business.tableName = '';
+            if (state.business.tableType === 'table') state.business.tableType = 'custom';
+            syncBusinessSourceTarget(previousTableType === 'table');
+            syncActiveDesignerDialogModel();
+          } else {
+            await applyAssociationOption('table', changedValue);
+          }
+        }
+        if (changedField === 'viewName') {
+          if (!readString(changedValue)) {
+            state.business.viewName = '';
+            if (state.business.tableType === 'view') state.business.tableType = 'custom';
+            syncBusinessSourceTarget(previousTableType === 'view');
+            syncActiveDesignerDialogModel();
+          } else {
+            await applyAssociationOption('view', changedValue);
+          }
+        }
+        if (changedField === 'postDataJson') {
+          normalizePostDataJsonField(changedValue);
         }
         return;
       }
@@ -2543,7 +2811,7 @@ const ServiceComponent = defineComponent({
         },
         lowcode: {
           blocks: createGridDesignerDialogBlocks(),
-          formModels: createGridDesignerFormModels(),
+          formModels: designerFormModels,
           onRuntimeEvent: syncGridDesignerRuntimeEvent,
         },
       },

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Runtime button designer persistence smoke</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      #result {
+        position: fixed;
+        z-index: -1;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick, reactive } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'remixicon/fonts/remixicon.css';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import '../assets/styles/app.css';
+      import '../assets/styles/visual-editor-utilities.scss';
+      import LowCodePageRenderer from '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue';
+
+      const pageType = new URLSearchParams(location.search).get('pageType') === 'edit'
+        ? 'edit'
+        : 'list';
+      const saveCalls = [];
+      const routerPushes = [];
+      const pageRecord = reactive({
+        id: 'runtime-button-save-page',
+        code: 'runtime-button-save',
+        route: '/runtime-button-save',
+        title: '运行时按钮保存',
+        description: null,
+        layout: 'dashboard',
+        status: 'published',
+        keep_alive: false,
+        page_type: pageType,
+        edit_page_id: null,
+        schema: {
+          schemaVersion: 3,
+          code: 'runtime-button-save',
+          route: '/runtime-button-save',
+          title: '运行时按钮保存',
+          pageType,
+          layout: 'dashboard',
+          status: 'published',
+          keepAlive: false,
+          dataSources: {},
+          blocks: [
+            {
+              id: 'records-actions',
+              kind: 'buttonGroup',
+              title: '记录操作',
+              align: 'left',
+              gap: 8,
+              actions: [
+                {
+                  code: 'create',
+                  label: '新增',
+                  status: 'primary',
+                  type: 'button',
+                  eventName: 'buttonGroup.create',
+                  script: '',
+                },
+              ],
+            },
+          ],
+          overlays: [],
+        },
+        version: 1,
+        published_at: null,
+        created_at: '',
+        updated_at: '',
+      });
+      const serviceApi = {
+        async invoke(serviceName, serviceMethod, payload = {}) {
+          if (serviceName === 'lowcode' && serviceMethod === 'listItems') {
+            return [{
+              id: 'runtime-button-save-edit-page',
+              code: 'runtime-button-save-edit',
+              route: '/runtime-button-save/edit',
+            }];
+          }
+          if (serviceName !== 'lowcode' || serviceMethod !== 'saveItem') {
+            throw new Error(`Unexpected service call: ${serviceName}.${serviceMethod}`);
+          }
+
+          saveCalls.push(structuredClone(payload));
+          return {
+            ...pageRecord,
+            ...payload.data,
+            schema: structuredClone(payload.data.schema),
+          };
+        },
+      };
+      const router = {
+        async push(target) {
+          routerPushes.push(target);
+          return target;
+        },
+      };
+
+      const App = defineComponent({
+        setup() {
+          return () => h(LowCodePageRenderer, {
+            page: pageRecord,
+            serviceApi,
+            router,
+            locale: 'zh-CN',
+            route: {
+              query: {},
+              params: {},
+              path: pageRecord.route,
+              fullPath: pageRecord.route,
+            },
+          });
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+
+      window.__buttonGroupRuntimeSaveSmoke = {
+        pageRecord,
+        saveCalls,
+        routerPushes,
+      };
+
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

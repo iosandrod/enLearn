@@ -192,6 +192,16 @@ assert.deepEqual(
   ['读取数据源', '读取查询条件', '读取表单', '读取表格状态'].sort(),
   'Missing capability policy must not advertise mutating functions.',
 );
+const listBuiltinFunctionCatalog = createLowCodeContextCatalog({
+  page: { ...page, page_type: 'list' },
+  capabilities: ['pageFunction.execute'],
+});
+assert.deepEqual(
+  listBuiltinFunctionCatalog.functions
+    .filter((item) => item.group === '内置页面函数')
+    .map((item) => item.label),
+  ['新增跳转到编辑页', '编辑跳转到编辑页', '审核', '反审', '关闭', '打开', '刷新', '打印', '退出'],
+);
 assert.equal(catalog.nodes[1].children[0].blockId, 'edit');
 assert.equal(catalog.nodes[2].children[0].blockId, 'details');
 assert.deepEqual(

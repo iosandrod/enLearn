@@ -8,9 +8,14 @@ import type {
 import type { ArrayTableToolbarExecutionContext } from '../../../lowcode/form-materials/lc-array-table/index.vue';
 import {
   createBuiltinLowCodeActionEditorRow,
+  createBuiltinLowCodePageFunctionScript,
   createDefaultButtonGroupEditorRows,
   getBuiltinLowCodeActionPresets,
+  getBuiltinLowCodeActionPresetsForPage,
+  resolveBuiltinLowCodeActionSelection,
+  resolveBuiltinLowCodeActionPresetForButton,
   type BuiltinLowCodeActionKey,
+  type LowCodeBuiltinActionPageType,
   type LowCodeBuiltinActionSelection,
 } from '../../../lowcode/actions/builtins';
 import { generateNanoid } from '../../utils';
@@ -85,6 +90,19 @@ function describeSelection(selection: LowCodeBuiltinActionSelection) {
   return '无需选中记录';
 }
 
+function resolveDesignerPageType(
+  scriptContext?: LowCodeContextSource,
+): LowCodeBuiltinActionPageType | undefined {
+  const pageType = scriptContext?.page?.page_type ?? scriptContext?.page?.schema.pageType;
+  return pageType === 'list' || pageType === 'edit' ? pageType : undefined;
+}
+
+function getPickerPresets(pageType?: LowCodeBuiltinActionPageType) {
+  return pageType
+    ? getBuiltinLowCodeActionPresetsForPage(pageType)
+    : getBuiltinLowCodeActionPresets();
+}
+
 function collectButtonCodes(
   button: unknown,
   result: Set<string> = new Set<string>(),
@@ -107,10 +125,11 @@ function collectConfiguredButtonCodes(buttons: Record<string, unknown>[]) {
 
 function createDefaultButtonPickerRows(
   buttons: Record<string, unknown>[],
+  pageType?: LowCodeBuiltinActionPageType,
 ): DefaultButtonPickerRow[] {
   const configuredCodes = collectConfiguredButtonCodes(buttons);
 
-  return getBuiltinLowCodeActionPresets().map((preset) => {
+  return getPickerPresets(pageType).map((preset) => {
     const actionCodes = [...collectButtonCodes(preset.action)];
     const code = readString(preset.action.code);
     const rootExists = configuredCodes.has(code);
@@ -120,7 +139,9 @@ function createDefaultButtonPickerRows(
       key: preset.key,
       label: readString(preset.action.label, code),
       code,
-      selectionLabel: describeSelection(preset.selection),
+      selectionLabel: describeSelection(
+        resolveBuiltinLowCodeActionSelection(preset, pageType),
+      ),
       typeLabel: Array.isArray(preset.action.children) && preset.action.children.length
         ? '下拉按钮'
         : '普通按钮',
@@ -135,9 +156,10 @@ function appendBuiltinButtons(
   keys: BuiltinLowCodeActionKey[],
   rows: Record<string, unknown>[],
   addRow: ArrayTableToolbarExecutionContext['addRow'],
+  pageType?: LowCodeBuiltinActionPageType,
 ) {
   const selectedKeys = new Set(keys);
-  const presets = getBuiltinLowCodeActionPresets()
+  const presets = getPickerPresets(pageType)
     .filter((preset) => selectedKeys.has(preset.key))
     .sort(
       (previous, next) =>
@@ -157,7 +179,9 @@ function appendBuiltinButtons(
     }
 
     addRow(
-      createBuiltinLowCodeActionEditorRow(preset.key) as unknown as Record<string, unknown>,
+      createBuiltinLowCodeActionEditorRow(preset.key, {
+        pageType,
+      }) as unknown as Record<string, unknown>,
     );
     actionCodes.forEach((code) => configuredCodes.add(code));
     added.push(label);
@@ -175,8 +199,8 @@ function appendBuiltinButtons(
 async function executeSelectDefaultButtons({
   rows,
   addRow,
-}: ArrayTableToolbarExecutionContext) {
-  const pickerRows = reactive(createDefaultButtonPickerRows(rows));
+}: ArrayTableToolbarExecutionContext, pageType?: LowCodeBuiltinActionPageType) {
+  const pickerRows = reactive(createDefaultButtonPickerRows(rows, pageType));
   const confirmDisabled = computed(
     () => !pickerRows.some((row) => row.checked && !row.disabled),
   );
@@ -243,10 +267,11 @@ async function executeSelectDefaultButtons({
 
   appendBuiltinButtons(
     result.payload.filter((key): key is BuiltinLowCodeActionKey =>
-      getBuiltinLowCodeActionPresets().some((preset) => preset.key === key),
+      getPickerPresets(pageType).some((preset) => preset.key === key),
     ),
     rows,
     addRow,
+    pageType,
   );
 }
 
@@ -303,9 +328,40 @@ function ensureButtonIds(button: ButtonGroupDesignerButton): ButtonGroupDesigner
   return next;
 }
 
-function createInitialButtons(buttons?: ButtonGroupDesignerButton[] | null) {
-  const source = Array.isArray(buttons) && buttons.length ? buttons : defaultButtons;
-  return cloneDeep(source).map(ensureButtonIds);
+function attachMissingBuiltinFunctionScripts(
+  button: ButtonGroupDesignerButton,
+  pageType?: LowCodeBuiltinActionPageType,
+): ButtonGroupDesignerButton {
+  const next = cloneDeep(button);
+  const preset = pageType
+    ? resolveBuiltinLowCodeActionPresetForButton(pageType, {
+        code: readString(button.code),
+        eventName: readString(button.eventName),
+      })
+    : undefined;
+
+  if (!readString(button.script) && preset?.functionName) {
+    next.script = createBuiltinLowCodePageFunctionScript(preset.functionName);
+  }
+
+  const children = normalizeChildrenSource(button.children);
+  if (children.length) {
+    next.children = children.map((child) =>
+      attachMissingBuiltinFunctionScripts(child, pageType),
+    );
+  }
+
+  return next;
+}
+
+function createInitialButtons(option: ButtonGroupDesignerServiceOption) {
+  const source = Array.isArray(option.buttons) && option.buttons.length
+    ? option.buttons
+    : defaultButtons;
+  const pageType = resolveDesignerPageType(option.scriptContext);
+  return source
+    .map((button) => attachMissingBuiltinFunctionScripts(button, pageType))
+    .map(ensureButtonIds);
 }
 
 function readString(value: unknown, fallback = '') {
@@ -419,7 +475,7 @@ function createDesignerState(option: ButtonGroupDesignerServiceOption) {
   return reactive<ButtonGroupDesignerState>({
     business: createInitialBusiness(option),
     buttonsForm: {
-      buttons: createInitialButtons(option.buttons),
+      buttons: createInitialButtons(option),
     },
   });
 }
@@ -590,6 +646,8 @@ function createButtonArrayColumns(scriptContext?: LowCodeContextSource) {
 }
 
 function createDesignerBlocks(scriptContext?: LowCodeContextSource): LowCodePageBlock[] {
+  const pageType = resolveDesignerPageType(scriptContext);
+
   return [
     {
       id: 'button-group-designer-tabs',
@@ -637,7 +695,8 @@ function createDesignerBlocks(scriptContext?: LowCodeContextSource): LowCodePage
                           label: '选择默认按钮',
                           status: 'primary',
                           prefixIcon: 'ri-list-check-3',
-                          execute: executeSelectDefaultButtons,
+                          execute: (context: ArrayTableToolbarExecutionContext) =>
+                            executeSelectDefaultButtons(context, pageType),
                         },
                       ],
                       toolbarAlign: 'left',

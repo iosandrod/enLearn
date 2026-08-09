@@ -26,6 +26,7 @@ insert into public.lowcode_pages (
     "route": "/dashboard/sales/orders",
     "title": "销售订单",
     "description": "销售订单与销售订单明细列表。",
+    "pageType": "list",
     "layout": "dashboard",
     "status": "published",
     "keepAlive": true,

@@ -143,6 +143,9 @@ export const lowCodeNodeActionRegistry: Record<
   drawer: nodeType('drawer', '抽屉', 'ri-layout-right-line', [openMethod]),
   statCard: nodeType('statCard', '指标卡', 'ri-dashboard-3-line'),
   tree: nodeType('tree', '树', 'ri-node-tree'),
+  planningFlow: nodeType('planningFlow', '工艺路线', 'ri-route-line'),
+  planningGantt: nodeType('planningGantt', '排产甘特图', 'ri-calendar-schedule-line'),
+  planningBom: nodeType('planningBom', '工艺 BOM', 'ri-node-tree'),
 };
 
 export function getLowCodeNodeTypeDefinition(kind: string) {

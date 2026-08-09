@@ -11,7 +11,9 @@ import {
 
 const MIGRATION_FILES = [
   'supabase/migrations/20260807140000_planning_service.sql',
-  'supabase/migrations/20260808160000_planning_extended_models.sql'
+  'supabase/migrations/20260808150000_planning_diagnostic_tables.sql',
+  'supabase/migrations/20260808160000_planning_extended_models.sql',
+  'supabase/migrations/20260808170000_planning_execution_runtime.sql'
 ];
 
 function directProjectConnectionString(value: string) {
@@ -25,6 +27,21 @@ function directProjectConnectionString(value: string) {
   url.searchParams.delete('sslmode');
   url.searchParams.delete('uselibpqcompat');
   return url.toString();
+}
+
+let expectedFailureCounter = 0;
+
+async function assertTerminalResultMutationRejected(
+  client: Client,
+  label: string,
+  mutation: () => Promise<unknown>
+) {
+  expectedFailureCounter += 1;
+  const savepoint = `planning_terminal_result_guard_${expectedFailureCounter}`;
+  await client.query(`savepoint ${savepoint}`);
+  await assert.rejects(mutation, /Terminal plan results are immutable/, label);
+  await client.query(`rollback to savepoint ${savepoint}`);
+  await client.query(`release savepoint ${savepoint}`);
 }
 
 async function main() {
@@ -83,6 +100,10 @@ async function main() {
       insert into public.planning_resource (account_id, name, location_id)
       values ($1, $2, $3) returning id
     `, [accountId, `sync-resource-${suffix}`, location.rows[0].id]);
+    const guardResource = await client.query<{ id: string }>(`
+      insert into public.planning_resource (account_id, name, location_id)
+      values ($1, $2, $3) returning id
+    `, [accountId, `guard-resource-${suffix}`, location.rows[0].id]);
 
     const order = await client.query<{ id: string }>(`
       insert into public.sales_orders (
@@ -311,7 +332,7 @@ async function main() {
     assert.equal(planningRun.rows[0].scenario_id, scenarioId);
     assert.equal(planningRun.rows[0].workflow_job_id, scheduleId);
     assert.equal(planningRun.rows[0].status, 'running');
-    assert.equal(planningRun.rows[0].progress, 50);
+    assert.equal(planningRun.rows[0].progress, 5);
 
     await client.query(`
       update public.wf_job_run
@@ -324,6 +345,231 @@ async function main() {
     assert.equal(completed.rows[0].status, 'succeeded');
     assert.equal(completed.rows[0].progress, 100);
     assert.ok(completed.rows[0].finished);
+
+    const manualScenario = await client.query<{ id: string }>(`
+      insert into public.planning_scenario (account_id, name, description, status)
+      values ($1, $2, 'runtime contract smoke scenario', 'free')
+      returning id
+    `, [accountId, `runtime-scenario-${suffix}`]);
+    const createdRun = await client.query<{
+      result: { run: { id: string; status: string }; version: { id: string; status: string } };
+    }>(`
+      select public.planning_create_supply_run(
+        $1, $2, $3, '{"jobType":"supply_plan","overrides":{}}'::jsonb, null, 'supply_plan'
+      ) as result
+    `, [accountId, manualScenario.rows[0].id, `Runtime smoke ${suffix}`]);
+    const manualRunId = createdRun.rows[0].result.run.id;
+    const manualVersionId = createdRun.rows[0].result.version.id;
+    assert.equal(createdRun.rows[0].result.run.status, 'queued');
+    assert.equal(createdRun.rows[0].result.version.status, 'draft');
+
+    const projected = await client.query<{ trigger_run_id: string }>(`
+      select (public.planning_project_trigger_run($1, $2, $3)).trigger_run_id
+    `, [accountId, manualRunId, `manual-trigger-${suffix}`]);
+    assert.equal(projected.rows[0].trigger_run_id, `manual-trigger-${suffix}`);
+
+    const guardedOperationPlan = await client.query<{ id: string }>(`
+      insert into public.planning_operationplan (
+        account_id, reference, type, status, quantity, plan_version_id
+      ) values ($1, $2, 'MO', 'proposed', 1, $3)
+      returning id
+    `, [accountId, `guard-operationplan-${suffix}`, manualVersionId]);
+    const guardedMaterial = await client.query<{ id: string }>(`
+      insert into public.planning_operationplanmaterial (
+        account_id, item_id, location_id, operationplan_id, quantity, flowdate,
+        status, plan_version_id
+      ) values ($1, $2, $3, $4, 1, '2026-10-01T00:00:00Z', 'proposed', $5)
+      returning id
+    `, [
+      accountId,
+      item.rows[0].id,
+      location.rows[0].id,
+      guardedOperationPlan.rows[0].id,
+      manualVersionId
+    ]);
+    const guardedLoad = await client.query<{ id: string }>(`
+      insert into public.planning_operationplanresource (
+        account_id, resource_id, operationplan_id, quantity, status, plan_version_id
+      ) values ($1, $2, $3, 1, 'proposed', $4)
+      returning id
+    `, [accountId, resource.rows[0].id, guardedOperationPlan.rows[0].id, manualVersionId]);
+    const guardedProblem = await client.query<{ id: string }>(`
+      insert into public.planning_problem (
+        account_id, run_id, plan_version_id, entity, owner, name, description,
+        startdate, enddate
+      ) values (
+        $1, $2, $3, 'material', $4, 'shortage', 'guard seed',
+        '2026-10-01T00:00:00Z', '2026-10-02T00:00:00Z'
+      ) returning id
+    `, [accountId, manualRunId, manualVersionId, `sync-item-${suffix} @ sync-location-${suffix}`]);
+    const guardedConstraint = await client.query<{ id: string }>(`
+      insert into public.planning_constraint (
+        account_id, run_id, plan_version_id, item_id, entity, owner, name,
+        description, startdate, enddate
+      ) values (
+        $1, $2, $3, $4, 'material', $5, 'shortage', 'guard seed',
+        '2026-10-01T00:00:00Z', '2026-10-02T00:00:00Z'
+      ) returning id
+    `, [
+      accountId,
+      manualRunId,
+      manualVersionId,
+      item.rows[0].id,
+      `sync-item-${suffix} @ sync-location-${suffix}`
+    ]);
+    const guardedResourcePlan = await client.query<{ id: string }>(`
+      insert into public.planning_resourceplan (
+        account_id, run_id, plan_version_id, resource_id, startdate, available
+      ) values ($1, $2, $3, $4, '2026-10-01T00:00:00Z', 8)
+      returning id
+    `, [accountId, manualRunId, manualVersionId, resource.rows[0].id]);
+
+    const canceled = await client.query<{
+      result: { run: { status: string }; version: { status: string } };
+    }>(`
+      select public.planning_cancel_supply_run($1, $2) as result
+    `, [accountId, manualRunId]);
+    assert.equal(canceled.rows[0].result.run.status, 'canceled');
+    assert.equal(canceled.rows[0].result.version.status, 'canceled');
+
+    const canceledInsertMutations: Array<[string, () => Promise<unknown>]> = [
+      ['operation plan insert', () => client.query(`
+        insert into public.planning_operationplan (
+          account_id, reference, type, quantity, plan_version_id
+        ) values ($1, $2, 'MO', 1, $3)
+      `, [accountId, `guard-insert-${suffix}`, manualVersionId])],
+      ['operation plan material insert through protected parent', () => client.query(`
+        insert into public.planning_operationplanmaterial (
+          account_id, item_id, location_id, operationplan_id, quantity, flowdate
+        ) values ($1, $2, $3, $4, 2, '2026-10-03T00:00:00Z')
+      `, [accountId, item.rows[0].id, location.rows[0].id, guardedOperationPlan.rows[0].id])],
+      ['operation plan resource insert through protected parent', () => client.query(`
+        insert into public.planning_operationplanresource (
+          account_id, resource_id, operationplan_id, quantity
+        ) values ($1, $2, $3, 2)
+      `, [accountId, guardResource.rows[0].id, guardedOperationPlan.rows[0].id])],
+      ['problem insert', () => client.query(`
+        insert into public.planning_problem (
+          account_id, run_id, plan_version_id, entity, owner, name, description,
+          startdate, enddate
+        ) values (
+          $1, $2, $3, 'material', 'guard owner', 'shortage', 'guard insert',
+          '2026-10-03T00:00:00Z', '2026-10-04T00:00:00Z'
+        )
+      `, [accountId, manualRunId, manualVersionId])],
+      ['constraint insert', () => client.query(`
+        insert into public.planning_constraint (
+          account_id, run_id, plan_version_id, entity, owner, name, description,
+          startdate, enddate
+        ) values (
+          $1, $2, $3, 'material', 'guard owner', 'shortage', 'guard insert',
+          '2026-10-03T00:00:00Z', '2026-10-04T00:00:00Z'
+        )
+      `, [accountId, manualRunId, manualVersionId])],
+      ['resource plan insert', () => client.query(`
+        insert into public.planning_resourceplan (
+          account_id, run_id, plan_version_id, resource_id, startdate, available
+        ) values ($1, $2, $3, $4, '2026-10-03T00:00:00Z', 8)
+      `, [accountId, manualRunId, manualVersionId, resource.rows[0].id])]
+    ];
+    for (const [label, mutation] of canceledInsertMutations) {
+      await assertTerminalResultMutationRejected(client, label, mutation);
+    }
+
+    const canceledUpdateMutations: Array<[string, () => Promise<unknown>]> = [
+      ['operation plan update', () => client.query(
+        `update public.planning_operationplan set quantity = 2 where id = $1`,
+        [guardedOperationPlan.rows[0].id]
+      )],
+      ['operation plan material update', () => client.query(
+        `update public.planning_operationplanmaterial set quantity = 2 where id = $1`,
+        [guardedMaterial.rows[0].id]
+      )],
+      ['operation plan resource update', () => client.query(
+        `update public.planning_operationplanresource set quantity = 2 where id = $1`,
+        [guardedLoad.rows[0].id]
+      )],
+      ['problem update', () => client.query(
+        `update public.planning_problem set description = 'guard update' where id = $1`,
+        [guardedProblem.rows[0].id]
+      )],
+      ['constraint update', () => client.query(
+        `update public.planning_constraint set description = 'guard update' where id = $1`,
+        [guardedConstraint.rows[0].id]
+      )],
+      ['resource plan update', () => client.query(
+        `update public.planning_resourceplan set available = 7 where id = $1`,
+        [guardedResourcePlan.rows[0].id]
+      )]
+    ];
+    for (const [label, mutation] of canceledUpdateMutations) {
+      await assertTerminalResultMutationRejected(client, label, mutation);
+    }
+
+    const canceledDeleteMutations: Array<[string, () => Promise<unknown>]> = [
+      ['operation plan material delete', () => client.query(
+        `delete from public.planning_operationplanmaterial where id = $1`,
+        [guardedMaterial.rows[0].id]
+      )],
+      ['operation plan resource delete', () => client.query(
+        `delete from public.planning_operationplanresource where id = $1`,
+        [guardedLoad.rows[0].id]
+      )],
+      ['problem delete', () => client.query(
+        `delete from public.planning_problem where id = $1`,
+        [guardedProblem.rows[0].id]
+      )],
+      ['constraint delete', () => client.query(
+        `delete from public.planning_constraint where id = $1`,
+        [guardedConstraint.rows[0].id]
+      )],
+      ['resource plan delete', () => client.query(
+        `delete from public.planning_resourceplan where id = $1`,
+        [guardedResourcePlan.rows[0].id]
+      )],
+      ['operation plan delete', () => client.query(
+        `delete from public.planning_operationplan where id = $1`,
+        [guardedOperationPlan.rows[0].id]
+      )]
+    ];
+    for (const [label, mutation] of canceledDeleteMutations) {
+      await assertTerminalResultMutationRejected(client, label, mutation);
+    }
+
+    await client.query('savepoint planning_canceled_version_guard');
+    await assert.rejects(
+      client.query(`update public.planning_plan_version set name = 'revived' where id = $1`, [manualVersionId]),
+      /Canceled plan versions are immutable/
+    );
+    await client.query('rollback to savepoint planning_canceled_version_guard');
+    await client.query('release savepoint planning_canceled_version_guard');
+
+    const failedAfterCancel = await client.query<{
+      result: { run: { status: string }; version: { status: string } };
+    }>(`
+      select public.planning_fail_supply_run($1, $2, 'late worker failure') as result
+    `, [accountId, manualRunId]);
+    assert.equal(failedAfterCancel.rows[0].result.run.status, 'canceled');
+    assert.equal(failedAfterCancel.rows[0].result.version.status, 'canceled');
+
+    const ignoredRevival = await client.query<{ status: string }>(`
+      update public.planning_run set status = 'running'
+      where account_id = $1 and id = $2 returning status
+    `, [accountId, manualRunId]);
+    assert.equal(ignoredRevival.rows[0]?.status, 'canceled');
+
+    const detail = await client.query<{
+      result: {
+        counts: Record<string, number>;
+        run: { id: string; status: string };
+        version: { id: string; status: string };
+      };
+    }>(`
+      select public.planning_get_run_detail($1, $2) as result
+    `, [accountId, manualRunId]);
+    assert.equal(detail.rows[0].result.run.status, 'canceled');
+    assert.equal(detail.rows[0].result.version.id, manualVersionId);
+    assert.deepEqual(Object.values(detail.rows[0].result.counts), [1, 1, 1, 1, 1, 1]);
 
     const readOnlyPages = await client.query<{ count: string }>(`
       select count(*)::text
@@ -347,6 +593,8 @@ async function main() {
       sales_order_demand_sync: 'verified',
       workflow_schedule_bridge: 'verified',
       workflow_run_bridge: 'verified',
+      runtime_cancel_guard: 'verified',
+      canceled_result_guards: '18 mutations rejected',
       generated_output_pages: 'read-only',
       transaction: 'verified rollback'
     }));

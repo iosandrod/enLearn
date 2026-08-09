@@ -67,12 +67,12 @@ $apiDir = Resolve-Path (Join-Path $PSScriptRoot "..")
 $repoRoot = Resolve-Path (Join-Path $apiDir "..")
 
 if ([string]::IsNullOrWhiteSpace($EnvFile)) {
-  if (![string]::IsNullOrWhiteSpace($env:INIT_CWD)) {
-    $EnvFile = Join-Path $env:INIT_CWD ".env"
-  } else {
-    $EnvFile = Join-Path $repoRoot ".env"
-  }
+  $EnvFile = Join-Path $repoRoot ".env"
+} elseif (![System.IO.Path]::IsPathRooted($EnvFile)) {
+  $EnvFile = Join-Path $repoRoot $EnvFile
 }
+
+$EnvFile = [System.IO.Path]::GetFullPath($EnvFile)
 
 if (!(Test-Path -LiteralPath $EnvFile)) {
   throw "Missing env file: $EnvFile"

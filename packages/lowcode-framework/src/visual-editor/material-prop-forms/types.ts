@@ -27,6 +27,8 @@ export type MaterialPropFormDefinition = {
   componentKey: string;
   title?: string;
   extendsVisualProps?: boolean;
+  mergeBuiltinFields?: boolean;
+  separateArrayTableTabs?: boolean;
   fields: MaterialPropFormField[];
   layout?: LowCodeFormLayoutNode[];
   actions?: LowCodeAction[];

@@ -7,6 +7,7 @@ import {
   getLowCodeScriptApiDefinitions,
   type LowCodeScriptCapabilityName,
 } from './scripts';
+import { getBuiltinLowCodePageFunctions } from './builtin-page-functions';
 import {
   getLowCodeNodeActionMethods,
   getLowCodeNodeTypeDefinition,
@@ -55,7 +56,9 @@ export type LowCodeContextNodeMethod = {
 };
 
 export type LowCodeContextSource = {
-  page?: Pick<LowCodePageRecord, 'id' | 'code' | 'route' | 'title' | 'schema'>;
+  page?: Pick<LowCodePageRecord, 'id' | 'code' | 'route' | 'title' | 'schema'> & {
+    page_type?: LowCodePageRecord['page_type'];
+  };
   data?: Record<string, unknown>;
   forms?: Record<string, Record<string, unknown>>;
   searches?: Record<string, Record<string, unknown>>;
@@ -551,7 +554,7 @@ function createFunctionEntries(source: LowCodeContextSource) {
       icon: 'ri-function-line',
       keywords: [definition.signature],
     }));
-  const pageFunctionEntries = capabilities.includes('pageFunction.execute')
+  const customPageFunctionEntries = capabilities.includes('pageFunction.execute')
     ? (source.page?.schema.functions ?? [])
         .filter((pageFunction) => pageFunction.enabled !== false)
         .map<LowCodeContextEntry>((pageFunction) => ({
@@ -566,7 +569,31 @@ function createFunctionEntries(source: LowCodeContextSource) {
           keywords: [pageFunction.name],
         }))
     : [];
-  return [...pageFunctionEntries, ...builtInEntries];
+  const customNames = new Set(customPageFunctionEntries.map((entry) =>
+    entry.id.replace('function:page:', ''),
+  ));
+  const builtinPageFunctionEntries = capabilities.includes('pageFunction.execute')
+    ? getBuiltinLowCodePageFunctions(
+        source.page?.page_type ?? source.page?.schema.pageType,
+      )
+        .filter((pageFunction) => !customNames.has(pageFunction.name))
+        .map<LowCodeContextEntry>((pageFunction) => ({
+          id: `function:builtin:${pageFunction.id}`,
+          category: 'functions',
+          group: '内置页面函数',
+          label: pageFunction.label,
+          description: pageFunction.description,
+          insertText: pageFunction.insertText,
+          badge: source.page?.page_type === 'edit' ? 'EDIT' : 'LIST',
+          icon: 'ri-function-line',
+          keywords: [pageFunction.name, pageFunction.id],
+        }))
+    : [];
+  return [
+    ...customPageFunctionEntries,
+    ...builtinPageFunctionEntries,
+    ...builtInEntries,
+  ];
 }
 
 function blockNode(block: LowCodePageBlock, path: string): LowCodeContextNode {

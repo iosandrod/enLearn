@@ -22,7 +22,7 @@ type TriggerCredentialsConfig = {
 };
 
 export type TriggerCredentials = {
-  accessToken: string;
+  accessToken?: string;
   adminEmail: string;
   apiUrl: string;
   environment: 'dev' | 'prod';
@@ -86,6 +86,11 @@ export type TriggerCredentialsServiceOptions = {
   cacheTtlMs?: number;
   loadCredentials?: () => Promise<TriggerCredentials>;
   now?: () => number;
+};
+
+export type TriggerDevPresenceStatus = {
+  connected: boolean | null;
+  error?: string;
 };
 
 @Injectable()
@@ -230,6 +235,41 @@ export class TriggerCredentialsService implements OnModuleDestroy {
     };
   }
 
+  async getDevPresenceStatus(): Promise<TriggerDevPresenceStatus> {
+    let credentials: TriggerCredentials;
+    try {
+      credentials = await this.getCredentials();
+    } catch (error) {
+      return {
+        connected: null,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
+    if (credentials.environment !== 'dev') {
+      return { connected: null, error: 'Worker presence is only exposed for development environments.' };
+    }
+    if (!credentials.accessToken) {
+      return { connected: null, error: 'TRIGGER_ACCESS_TOKEN is not configured.' };
+    }
+
+    try {
+      const response = await fetch(
+        `${credentials.apiUrl.replace(/\/+$/, '')}/api/v1/projects/${encodeURIComponent(credentials.projectRef)}/dev-status`,
+        { headers: { authorization: `Bearer ${credentials.accessToken}` } }
+      );
+      if (!response.ok) {
+        throw new Error(`Trigger.dev dev status returned HTTP ${response.status}.`);
+      }
+      const payload = await response.json() as { isConnected?: unknown };
+      return { connected: payload.isConnected === true };
+    } catch (error) {
+      return {
+        connected: null,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
+  }
+
   async listRecentRuns(
     _environmentId: string,
     taskIdentifiers: string[],
@@ -265,7 +305,7 @@ export class TriggerCredentialsService implements OnModuleDestroy {
     }
 
     return {
-      accessToken: this.config.accessToken ?? '',
+      accessToken: this.config.accessToken,
       adminEmail: this.config.adminEmail,
       apiUrl: this.config.apiUrl,
       environment: this.config.environment,

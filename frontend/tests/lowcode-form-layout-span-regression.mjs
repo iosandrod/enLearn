@@ -16,6 +16,10 @@ const arrayTableSource = await readFile(
   ),
   'utf8'
 );
+const legacyWidgetsSource = await readFile(
+  new URL('../../packages/lowcode-framework/src/components/LegacyWidgets.tsx', import.meta.url),
+  'utf8'
+);
 
 assert.match(
   layoutSource,
@@ -71,6 +75,21 @@ assert.match(
   arrayTableSource,
   /\.lc-array-table--fill \{[\s\S]*?grid-template-rows: auto minmax\(0, 1fr\);/,
   'Fill-height array tables must reserve only the remaining row for the VXE viewport.'
+);
+assert.match(
+  legacyWidgetsSource,
+  /name: 'LcRow'[\s\S]*?display: 'grid'[\s\S]*?gridTemplateColumns: 'repeat\(24, minmax\(0, 1fr\)\)'/,
+  'Designer layout rows must use a 24-track grid so column gaps cannot wrap the final column.'
+);
+assert.match(
+  legacyWidgetsSource,
+  /name: 'LcCol'[\s\S]*?gridColumn: `span \$\{span\} \/ span \$\{span\}`[\s\S]*?maxWidth: '100%'/,
+  'Designer layout columns must occupy grid tracks instead of percentage widths plus gaps.'
+);
+assert.doesNotMatch(
+  legacyWidgetsSource,
+  /flex: `0 0 \$\{\(span \/ 24\) \* 100\}%`/,
+  'Designer columns must not use percentage flex bases that overflow when the row has a gutter.'
 );
 
 console.log('Low-code form layout span regression test passed.');

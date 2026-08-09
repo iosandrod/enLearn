@@ -11,6 +11,7 @@ import {
   createSupabaseClient,
   getCurrentUser,
   getUserAuthorization,
+  hasRequiredPermission,
   requireAdmin
 } from '../common/utils/supabase';
 import { listActiveAccountUserIds, requireActiveAccount } from '../common/utils/account-context';
@@ -31,6 +32,177 @@ function readString(value: unknown, name: string, fallback = '') {
 
 function readOptionalString(value: unknown) {
   return typeof value === 'string' && value.trim() ? value.trim() : '';
+}
+
+type OptionSourceType = 'dict' | 'table' | 'view' | 'rpc' | 'sql';
+
+function readNumber(value: unknown, fallback = 0) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
+function readJsonObject(value: unknown, fallback: Record<string, unknown> = {}) {
+  if (isRecord(value)) return value;
+  if (typeof value === 'string' && value.trim()) {
+    try {
+      const parsed = JSON.parse(value);
+      if (isRecord(parsed)) return parsed;
+    } catch {
+      throw new BadRequestException('Invalid JSON payload.');
+    }
+  }
+  return fallback;
+}
+
+function normalizeOptionSourceType(value: unknown): OptionSourceType {
+  return ['dict', 'table', 'view', 'rpc', 'sql'].includes(readOptionalString(value))
+    ? readOptionalString(value) as OptionSourceType
+    : 'dict';
+}
+
+function readBooleanLike(value: unknown, fallback = false) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'off'].includes(normalized)) return false;
+  }
+  return fallback;
+}
+
+function readPositiveLimit(value: unknown, fallback = 200, max = 1000) {
+  return Math.min(Math.max(Math.trunc(readNumber(value, fallback)), 1), max);
+}
+
+function readConfigString(
+  config: Record<string, unknown>,
+  keys: string[],
+  fallback = ''
+) {
+  for (const key of keys) {
+    const value = readOptionalString(config[key]);
+    if (value) return value;
+  }
+  return fallback;
+}
+
+function readPathValue(source: unknown, path: string) {
+  return path.split('.').reduce<unknown>((current, segment) => {
+    return isRecord(current) ? current[segment] : undefined;
+  }, source);
+}
+
+function assertIdentifier(value: string, fieldName: string) {
+  if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(value)) {
+    throw new BadRequestException(`${fieldName} must be a valid identifier.`);
+  }
+}
+
+function assertIdentifierPath(value: string, fieldName: string) {
+  value.split('.').forEach((segment) => assertIdentifier(segment, fieldName));
+}
+
+function readRelationIdentifier(value: unknown, fieldName: string) {
+  const relation = readString(value, fieldName);
+  const parts = relation.split('.');
+  if (parts.length > 2) {
+    throw new BadRequestException(`${fieldName} must be table or schema.table.`);
+  }
+  parts.forEach((part) => assertIdentifier(part, fieldName));
+  return parts.length === 2
+    ? { schema: parts[0], name: parts[1] }
+    : { schema: 'public', name: relation };
+}
+
+function formatOptionStatus(status: string) {
+  if (status === 'active') return '启用';
+  if (status === 'inactive') return '停用';
+  return status || '-';
+}
+
+function normalizeOptionValue(value: unknown) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  return String(value ?? '');
+}
+
+function normalizeOptionRows(
+  rows: unknown[],
+  sourceCode: string,
+  config: Record<string, unknown>
+) {
+  const labelField = readConfigString(config, ['labelField', 'label_field'], 'label');
+  const valueField = readConfigString(config, ['valueField', 'value_field'], 'value');
+  const disabledField = readConfigString(config, ['disabledField', 'disabled_field'], 'disabled');
+  const parentField = readConfigString(config, ['parentField', 'parent_field'], 'parent_value');
+  const colorField = readConfigString(config, ['colorField', 'color_field'], 'color');
+
+  return rows.filter(isRecord).map((row) => {
+    const label = readPathValue(row, labelField) ?? row.name ?? row.title ?? row.code ?? row.id ?? '';
+    const value = readPathValue(row, valueField) ?? row.code ?? row.id ?? label;
+    const parentValue = readPathValue(row, parentField);
+    const color = readPathValue(row, colorField);
+
+    return {
+      ...row,
+      source_code: sourceCode,
+      label: String(label),
+      value: normalizeOptionValue(value),
+      rawValue: value,
+      disabled: readBooleanLike(readPathValue(row, disabledField), false),
+      status_label: formatOptionStatus(readOptionalString(row.status)),
+      parent_value:
+        parentValue === undefined || parentValue === null || parentValue === ''
+          ? null
+          : normalizeOptionValue(parentValue),
+      color: typeof color === 'string' && color.trim() ? color.trim() : null
+    };
+  });
+}
+
+function applyOptionFilters<Query extends { eq: Function; in: Function; is: Function }>(
+  query: Query,
+  filters: Record<string, unknown>
+) {
+  let nextQuery = query;
+  for (const [field, value] of Object.entries(filters)) {
+    assertIdentifierPath(field, 'filter field');
+    if (Array.isArray(value)) nextQuery = nextQuery.in(field, value) as Query;
+    else if (value === null) nextQuery = nextQuery.is(field, null) as Query;
+    else if (value !== undefined && value !== '') nextQuery = nextQuery.eq(field, value) as Query;
+  }
+  return nextQuery;
+}
+
+function buildOptionTree(rows: Record<string, unknown>[]) {
+  type TreeNode = Record<string, unknown> & { children: TreeNode[] };
+  const byValue = new Map<string, TreeNode>();
+  const roots: TreeNode[] = [];
+
+  rows.forEach((row) => byValue.set(String(row.value), { ...row, children: [] }));
+  byValue.forEach((row) => {
+    const parentValue = row.parent_value;
+    const parent = parentValue ? byValue.get(String(parentValue)) : undefined;
+    if (parent) parent.children.push(row);
+    else roots.push(row);
+  });
+  return roots;
+}
+
+function readOptionSourceTarget(row: Record<string, unknown>) {
+  const config = readJsonObject(row.source_config);
+  const sourceType = normalizeOptionSourceType(row.source_type);
+  if (sourceType === 'view') {
+    return readConfigString(config, ['view', 'table', 'relation', 'from']);
+  }
+  if (sourceType === 'rpc') {
+    return readConfigString(config, ['functionName', 'function_name', 'rpc']);
+  }
+  return '';
 }
 
 function readStringArray(value: unknown) {
@@ -97,6 +269,22 @@ export class AdminService extends BaseService {
 
     if (method === 'listNavigationRoutes') {
       return this.listNavigationRoutes(context);
+    }
+
+    if (
+      method === 'resolveOptionItems' ||
+      method === 'listOptionItems' ||
+      method === 'listDropdownOptions'
+    ) {
+      return this.resolveOptionItems(postData, context);
+    }
+
+    if (
+      method === 'resolveOptionItemsBatch' ||
+      method === 'listOptionItemsBatch' ||
+      method === 'listDropdownOptionsBatch'
+    ) {
+      return this.resolveOptionItemsBatch(postData, context);
     }
 
     return super.executeAction(method, postData, context);
@@ -697,6 +885,224 @@ export class AdminService extends BaseService {
     ctx.id = readOptionalString(rows[0]?.id);
   };
 
+  private async resolveOptionItems(
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    const { client, user } = await getCurrentUser(context);
+    const authorization = await getUserAuthorization(client, user.id, {
+      accountId: context.accountId
+    });
+    const canManage = hasRequiredPermission(authorization, 'admin.options.manage');
+    const sourceCode = readOptionalString(
+      postData.source_code ?? postData.sourceCode ?? postData.code
+    );
+    if (!sourceCode) return [];
+
+    let sourceQuery = client
+      .from('system_option_sources')
+      .select('*')
+      .eq('code', sourceCode);
+    if (!canManage) sourceQuery = sourceQuery.eq('status', 'active');
+
+    const { data: source, error } = await sourceQuery.maybeSingle();
+    if (error) {
+      optionTablesRequired(error);
+      throw new BadRequestException(error.message);
+    }
+    if (!source) return [];
+
+    return this.resolveOptionItemsFromSource(
+      client,
+      source as Record<string, unknown>,
+      sourceCode,
+      canManage,
+      postData
+    );
+  }
+
+  private async resolveOptionItemsBatch(
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    const sourceCodes = [...new Set(readStringArray(
+      postData.sourceCodes ?? postData.source_codes ?? postData.codes
+    ))];
+    if (!sourceCodes.length) return {};
+    if (sourceCodes.length > 100) {
+      throw new BadRequestException('A maximum of 100 option source codes can be resolved at once.');
+    }
+
+    const { client, user } = await getCurrentUser(context);
+    const authorization = await getUserAuthorization(client, user.id, {
+      accountId: context.accountId
+    });
+    const canManage = hasRequiredPermission(authorization, 'admin.options.manage');
+    let sourceQuery = client
+      .from('system_option_sources')
+      .select('*')
+      .in('code', sourceCodes);
+    if (!canManage) sourceQuery = sourceQuery.eq('status', 'active');
+
+    const { data: sources, error } = await sourceQuery;
+    if (error) {
+      optionTablesRequired(error);
+      throw new BadRequestException(error.message);
+    }
+
+    const sourceByCode = new Map(
+      (sources ?? [])
+        .filter(isRecord)
+        .map((source) => [readOptionalString(source.code), source] as const)
+        .filter(([code]) => Boolean(code))
+    );
+    const entries = await Promise.all(sourceCodes.map(async (sourceCode) => {
+      const source = sourceByCode.get(sourceCode);
+      if (!source) {
+        return [sourceCode, { options: [], cacheTtlSeconds: 0 }] as const;
+      }
+
+      const options = await this.resolveOptionItemsFromSource(
+        client,
+        source,
+        sourceCode,
+        canManage,
+        postData
+      );
+      return [sourceCode, {
+        options,
+        cacheTtlSeconds: Math.max(0, Math.trunc(readNumber(source.cache_ttl_seconds)))
+      }] as const;
+    }));
+
+    return Object.fromEntries(entries);
+  }
+
+  private async resolveOptionItemsFromSource(
+    client: ReturnType<typeof createSupabaseClient>,
+    sourceRecord: Record<string, unknown>,
+    sourceCode: string,
+    canManage: boolean,
+    postData: Record<string, unknown>
+  ) {
+
+    const sourceType = normalizeOptionSourceType(sourceRecord.source_type);
+    const sourceConfig = readJsonObject(sourceRecord.source_config);
+    const tree = readBooleanLike(postData.tree ?? sourceConfig.tree, false);
+    let rows: Record<string, unknown>[];
+
+    if (sourceType === 'dict') {
+      rows = await this.resolveDictOptionItems(client, sourceCode, canManage);
+    } else if (sourceType === 'table' || sourceType === 'view') {
+      rows = await this.resolveRelationOptionItems(
+        client,
+        sourceType,
+        sourceConfig,
+        postData
+      );
+    } else if (sourceType === 'rpc') {
+      rows = await this.resolveRpcOptionItems(client, sourceConfig, postData);
+    } else {
+      rows = await this.resolveSqlOptionItems(client, sourceCode);
+    }
+
+    const normalized = normalizeOptionRows(rows, sourceCode, sourceConfig);
+    return tree ? buildOptionTree(normalized) : normalized;
+  }
+
+  private async resolveDictOptionItems(
+    client: ReturnType<typeof createSupabaseClient>,
+    sourceCode: string,
+    canManage: boolean
+  ) {
+    let query = client
+      .from('system_option_items')
+      .select('*')
+      .eq('source_code', sourceCode)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true });
+    if (!canManage) query = query.eq('status', 'active');
+    const { data, error } = await query;
+    if (error) {
+      optionTablesRequired(error);
+      throw new BadRequestException(error.message);
+    }
+    return (data ?? []) as unknown as Record<string, unknown>[];
+  }
+
+  private async resolveRelationOptionItems(
+    client: ReturnType<typeof createSupabaseClient>,
+    sourceType: 'table' | 'view',
+    sourceConfig: Record<string, unknown>,
+    postData: Record<string, unknown>
+  ) {
+    const relationName = readConfigString(
+      sourceConfig,
+      sourceType === 'view'
+        ? ['view', 'table', 'relation', 'from']
+        : ['table', 'relation', 'from']
+    );
+    const relation = readRelationIdentifier(relationName, 'source_config.table');
+    const labelField = readConfigString(sourceConfig, ['labelField', 'label_field'], 'label');
+    const valueField = readConfigString(sourceConfig, ['valueField', 'value_field'], 'value');
+    const disabledField = readConfigString(sourceConfig, ['disabledField', 'disabled_field']);
+    const parentField = readConfigString(sourceConfig, ['parentField', 'parent_field']);
+    const colorField = readConfigString(sourceConfig, ['colorField', 'color_field']);
+    const orderBy = readConfigString(sourceConfig, ['orderBy', 'order_by'], labelField);
+    const filters = {
+      ...readJsonObject(sourceConfig.filters),
+      ...readJsonObject(postData.filters)
+    };
+
+    [labelField, valueField, disabledField, parentField, colorField, orderBy, ...Object.keys(filters)]
+      .filter(Boolean)
+      .forEach((field) => assertIdentifierPath(field, 'source field'));
+    const selectFields = Array.from(new Set(
+      [labelField, valueField, disabledField, parentField, colorField]
+        .filter(Boolean)
+        .map((field) => field.split('.')[0])
+    )).join(',');
+    const baseQuery = relation.schema === 'public'
+      ? client.from(relation.name).select(selectFields)
+      : client.schema(relation.schema).from(relation.name).select(selectFields);
+    const query = applyOptionFilters(baseQuery, filters)
+      .order(orderBy, { ascending: sourceConfig.ascending !== false })
+      .limit(readPositiveLimit(postData.limit ?? sourceConfig.limit));
+    const { data, error } = await query;
+    if (error) throw new BadRequestException(error.message);
+    return (data ?? []) as unknown as Record<string, unknown>[];
+  }
+
+  private async resolveRpcOptionItems(
+    client: ReturnType<typeof createSupabaseClient>,
+    sourceConfig: Record<string, unknown>,
+    postData: Record<string, unknown>
+  ) {
+    const functionName = readConfigString(
+      sourceConfig,
+      ['functionName', 'function_name', 'rpc']
+    );
+    assertIdentifier(functionName, 'source_config.functionName');
+    const params = {
+      ...readJsonObject(sourceConfig.params),
+      ...readJsonObject(postData.params)
+    };
+    const { data, error } = await client.rpc(functionName, params);
+    if (error) throw new BadRequestException(error.message);
+    return (Array.isArray(data) ? data : isRecord(data) ? [data] : []) as Record<string, unknown>[];
+  }
+
+  private async resolveSqlOptionItems(
+    client: ReturnType<typeof createSupabaseClient>,
+    sourceCode: string
+  ) {
+    const { data, error } = await client.rpc('execute_system_option_sql', {
+      option_code: sourceCode
+    });
+    if (error) throw new BadRequestException(error.message);
+    return (Array.isArray(data) ? data : []) as Record<string, unknown>[];
+  }
+
   private async preventDeleteSystemRow(ctx: HookContext, tableName: string, message: string) {
     const id = readOptionalString(ctx.input.id);
     const code = readOptionalString(ctx.input.code);
@@ -731,6 +1137,7 @@ export class AdminService extends BaseService {
   private attachOptionSourceConfigJson = (ctx: HookContext) => {
     const attachConfig = (row: Record<string, unknown>) => ({
       ...row,
+      source_target: readOptionSourceTarget(row),
       source_config_json: toPrettyJson(row.source_config ?? {})
     });
 

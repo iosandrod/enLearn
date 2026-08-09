@@ -27,26 +27,32 @@ async function main() {
 
   await client.connect();
   try {
-    const calendars = await client.query(`
-      select id, account_id, name, description, created_at, updated_at
-      from public.planning_calendar
-      where name like '同名日历%'
-      order by created_at, id
-    `);
     const accounts = await client.query(`
       select id, primary_owner_user_id, name, slug, code, status, created_at, updated_at
       from basejump.accounts
-      where slug = 'planning-smoke-account'
+      where slug like 'planning-real-engine-smoke-%'
+         or slug like 'planning-concurrency-smoke-%'
+         or slug like 'planning-api-real-engine-smoke-%'
+         or slug = 'planning-smoke-account'
          or code = 'PLNSMOKE'
          or name = 'Planning smoke account'
       order by created_at, id
     `);
+    const executionRuns = await client.query(`
+      select id, account_id, scenario_id, name, status, trigger_run_id, submitted, finished
+      from public.planning_run
+      where name like 'Planning E2E %'
+         or name like 'Planning API real engine E2E %'
+         or name like 'Planning concurrency smoke %'
+         or name like 'Real engine smoke %'
+      order by submitted, id
+    `);
 
     console.log(JSON.stringify({
-      calendar_count: calendars.rowCount ?? calendars.rows.length,
-      calendars: calendars.rows,
       account_count: accounts.rowCount ?? accounts.rows.length,
-      accounts: accounts.rows
+      accounts: accounts.rows,
+      execution_run_count: executionRuns.rowCount ?? executionRuns.rows.length,
+      execution_runs: executionRuns.rows
     }, null, 2));
   } finally {
     await client.end();

@@ -31,9 +31,10 @@ const previewSchema: LowCodeFormSchema = {
 };
 
 function createDesignSchema(props: Record<string, unknown>) {
-  return (
-    readLowCodeFormSchema(props.schema) ??
-    createLowCodeFormSchema(props.fields, props.formDesignerModel)
+  return createLowCodeFormSchema(
+    props.fields,
+    props.formDesignerModel,
+    props.schema,
   );
 }
 

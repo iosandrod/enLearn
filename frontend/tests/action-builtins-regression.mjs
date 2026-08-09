@@ -4,9 +4,13 @@ import {
   BUILTIN_LOW_CODE_ACTION_KEYS,
   createBuiltinLowCodeAction,
   createBuiltinLowCodeActionEditorRow,
+  createBuiltinLowCodePageFunctionScript,
   createDefaultButtonGroupActions,
   createDefaultButtonGroupEditorRows,
   getBuiltinLowCodeActionPresets,
+  getBuiltinLowCodeActionPresetsForPage,
+  resolveBuiltinLowCodeActionSelection,
+  resolveBuiltinLowCodeActionPresetForButton,
 } from '../../packages/lowcode-framework/src/lowcode/actions/builtins.ts';
 
 const presets = getBuiltinLowCodeActionPresets();
@@ -31,6 +35,86 @@ assert.equal(
   '打印',
   'Common print actions must come from the built-in registry.',
 );
+
+assert.deepEqual(
+  getBuiltinLowCodeActionPresetsForPage('list')
+    .filter((preset) => preset.functionName)
+    .map((preset) => [preset.action.code, preset.functionName]),
+  [
+    ['create', 'create'],
+    ['edit', 'edit'],
+    ['approve', 'approve'],
+    ['unapprove', 'unapprove'],
+    ['close', 'close'],
+    ['open', 'open'],
+    ['refresh', 'refresh'],
+    ['print', 'print'],
+    ['exit', 'exit'],
+  ],
+  'List-page default buttons must map to the matching built-in page functions.',
+);
+assert.deepEqual(
+  getBuiltinLowCodeActionPresetsForPage('edit')
+    .map((preset) => [preset.action.code, preset.functionName]),
+  [
+    ['duplicate', 'copy'],
+    ['create', 'create'],
+    ['modify', 'modify'],
+    ['save', 'save'],
+    ['approve', 'approve'],
+    ['unapprove', 'unapprove'],
+    ['close', 'close'],
+    ['open', 'open'],
+    ['refresh', 'refresh'],
+    ['exit', 'exit'],
+  ],
+  'Edit-page default buttons must map duplicate to copy and all other standard functions.',
+);
+
+const listApprovePreset = getBuiltinLowCodeActionPresetsForPage('list')
+  .find((preset) => preset.key === BUILTIN_LOW_CODE_ACTION_KEYS.APPROVE);
+assert.equal(resolveBuiltinLowCodeActionSelection(listApprovePreset, 'list'), 'multiple');
+assert.equal(resolveBuiltinLowCodeActionSelection(listApprovePreset, 'edit'), 'none');
+
+const listCreate = createBuiltinLowCodeAction(
+  BUILTIN_LOW_CODE_ACTION_KEYS.CREATE,
+  {},
+  { pageType: 'list' },
+);
+assert.equal(listCreate.eventName, 'buttonGroup.create');
+assert.equal(listCreate.script, createBuiltinLowCodePageFunctionScript('create'));
+assert.match(listCreate.script, /async function main\(\)[\s\S]*?executeFunction[\s\S]*?name: "create"/);
+
+const editDuplicate = createBuiltinLowCodeActionEditorRow(
+  BUILTIN_LOW_CODE_ACTION_KEYS.DUPLICATE,
+  { pageType: 'edit' },
+);
+assert.equal(editDuplicate.eventName, 'buttonGroup.duplicate');
+assert.match(editDuplicate.script, /name: "copy"/);
+
+assert.equal(
+  resolveBuiltinLowCodeActionPresetForButton('list', {
+    code: 'create',
+    eventName: 'buttonGroup.create',
+  })?.functionName,
+  'create',
+  'Existing default buttons must be identifiable for script backfill.',
+);
+assert.equal(
+  resolveBuiltinLowCodeActionPresetForButton('list', {
+    code: 'create',
+    eventName: 'buttonGroup.click',
+  }),
+  undefined,
+  'A custom button that merely reuses a built-in code must not be treated as a default button.',
+);
+
+const importAction = createBuiltinLowCodeAction(
+  BUILTIN_LOW_CODE_ACTION_KEYS.IMPORT,
+  {},
+  { pageType: 'list' },
+);
+assert.equal(importAction.script, undefined, 'Unmapped extension buttons must not get a fake function call.');
 
 const firstDefaults = createDefaultButtonGroupActions();
 firstDefaults[0].label = 'changed';

@@ -44,7 +44,12 @@ const rows = computed(() =>
   resolveGridRows(props.block, runtimeSources.value, runtimeSearches.value)
 );
 const isLoading = computed(
-  () => (pageRuntime?.state.status.loadingGridId ?? props.loadingGridId) === props.block.id
+  () =>
+    (pageRuntime?.state.status.loadingGridId ?? props.loadingGridId) === props.block.id ||
+    Boolean(
+      props.block.sourceKey &&
+      pageRuntime?.state.status.loadingSourceKeys.includes(props.block.sourceKey)
+    )
 );
 const rowKey = computed(() => {
   const rowConfig = isRecord(props.block.schema.grid.rowConfig)

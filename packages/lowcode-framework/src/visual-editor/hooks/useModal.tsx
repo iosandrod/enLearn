@@ -13,6 +13,7 @@ import {
   getCurrentInstance,
   ComponentInternalInstance,
   isVNode,
+  shallowRef,
 } from 'vue';
 import { ElButton, ElDialog } from '../components/common/designer-ui';
 import { isFunction } from '../utils/is';
@@ -39,7 +40,7 @@ const Modal = defineComponent({
     const instance = getCurrentInstance()!;
 
     const state = reactive({
-      options: props.options,
+      options: shallowRef(props.options),
       visible: true,
     });
 

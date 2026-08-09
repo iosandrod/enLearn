@@ -37,7 +37,6 @@ const dashboardRoutes: RouteRecordRaw[] = [
   { path: '/dashboard/approval/console', component: () => import('../pages/dashboard/approval/console.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/account', component: () => import('../pages/dashboard/account.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/settings', component: () => import('../pages/dashboard/settings.vue'), meta: dashboardCachedRouteMeta },
-  { path: '/dashboard/low-code', component: () => import('../pages/dashboard/low-code/index.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/entity-design', component: () => import('../pages/dashboard/entity-design.vue'), meta: dashboardCachedRouteMeta },
   { path: '/dashboard/files', component: () => import('../pages/dashboard/files.vue'), meta: dashboardCachedRouteMeta },
   {

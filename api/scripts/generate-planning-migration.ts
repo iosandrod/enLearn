@@ -1281,25 +1281,35 @@ returns trigger
 language plpgsql
 as $function$
 declare
-  protected_version_id uuid;
+  old_version_id uuid;
+  new_version_id uuid;
+  parent_version_id uuid;
 begin
-  protected_version_id := case
-    when tg_op = 'INSERT' then new.plan_version_id
-    when tg_op = 'DELETE' then old.plan_version_id
-    else old.plan_version_id
-  end;
-  if (protected_version_id is not null and exists (
+  if tg_op <> 'INSERT' then
+    old_version_id := old.plan_version_id;
+  end if;
+  if tg_op <> 'DELETE' then
+    new_version_id := new.plan_version_id;
+    if tg_table_name in ('planning_operationplanmaterial', 'planning_operationplanresource') then
+      select plan_version_id into parent_version_id
+      from public.planning_operationplan
+      where account_id = new.account_id and id = new.operationplan_id;
+      new_version_id := coalesce(parent_version_id, new_version_id);
+    end if;
+  end if;
+
+  if (old_version_id is not null and exists (
     select 1 from public.planning_plan_version version
-    where version.account_id = case when tg_op = 'INSERT' then new.account_id else coalesce(old.account_id, new.account_id) end
-      and version.id = protected_version_id
-      and version.status in ('published', 'superseded')
-  )) or (tg_op = 'UPDATE' and new.plan_version_id is not null and exists (
+    where version.account_id = old.account_id
+      and version.id = old_version_id
+      and version.status in ('published', 'superseded', 'canceled')
+  )) or (new_version_id is not null and exists (
     select 1 from public.planning_plan_version version
     where version.account_id = new.account_id
-      and version.id = new.plan_version_id
-      and version.status in ('published', 'superseded')
+      and version.id = new_version_id
+      and version.status in ('published', 'superseded', 'canceled')
   )) then
-    raise exception 'Published plan results are immutable.' using errcode = '23514';
+    raise exception 'Terminal plan results are immutable.' using errcode = '23514';
   end if;
   return case when tg_op = 'DELETE' then old else new end;
 end;
@@ -1943,6 +1953,7 @@ function reconcileObsoleteRoutesSql() {
   );
   const activeRouteCodes = new Set([
     'planning-root',
+    'planning-console',
     ...activeGroupCodes,
     ...PLANNING_MODEL_DEFINITIONS.map((model) => `planning-${model.sourceTable.replace(/_/g, '-')}`)
   ]);

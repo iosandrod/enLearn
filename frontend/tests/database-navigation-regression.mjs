@@ -13,6 +13,17 @@ const migrationSource = await readFile(
   ),
   'utf8'
 );
+const databaseNavigationMigrationSource = await readFile(
+  new URL(
+    '../../supabase/migrations/20260809150000_lowcode_page_management_dynamic_route.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
+const dynamicDashboardPageSource = await readFile(
+  new URL('../pages/dashboard/[...slug].vue', import.meta.url),
+  'utf8'
+);
 
 assert.match(
   layoutSource,
@@ -28,6 +39,41 @@ assert.doesNotMatch(
   layoutSource,
   /window\.addEventListener\('focus'/,
   'Changing browser focus must not reload unchanged database navigation.'
+);
+assert.doesNotMatch(
+  routerSource,
+  /path:\s*['"]\/dashboard\/low-code['"]/,
+  'Low-code page management must not bypass the database renderer with a static route.'
+);
+assert.match(
+  routerSource,
+  /path:\s*['"]\/dashboard\/:slug\(\.\*\)\*['"][\s\S]*pages\/dashboard\/\[\.\.\.slug\]\.vue/,
+  'Database-backed dashboard pages must use the dynamic catch-all renderer.'
+);
+assert.match(
+  routerSource,
+  /path:\s*['"]\/dashboard\/low-code\/designer\/:code\?['"]/,
+  'The interactive visual designer must retain its dedicated application route.'
+);
+assert.match(
+  dynamicDashboardPageSource,
+  /getLowCodePage\(serviceApi,[\s\S]*route:\s*props\.routePath[\s\S]*includeData:\s*true/,
+  'The dynamic dashboard renderer must resolve page definitions and data by database route.'
+);
+assert.match(
+  databaseNavigationMigrationSource,
+  /page_code\s*=\s*'lowcode-pages'[\s\S]*where code\s*=\s*'lowcode-pages'/,
+  'The low-code page-management menu must be bound to its database page definition.'
+);
+assert.match(
+  databaseNavigationMigrationSource,
+  /insert into public\.lowcode_pages[\s\S]*'lowcode-pages'[\s\S]*on conflict \(code\) do nothing/,
+  'Fresh databases must seed low-code page management without overwriting database-edited schemas.'
+);
+assert.match(
+  databaseNavigationMigrationSource,
+  /"resource": "lowcode_pages"[\s\S]*"kind": "grid"/,
+  'The seeded management screen must load and render low-code page rows from the database.'
 );
 assert.match(
   layoutSource,

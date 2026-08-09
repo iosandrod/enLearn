@@ -216,6 +216,16 @@ async function main() {
       await page.goto(`${frontendUrl}/dashboard`, { waitUntil: 'domcontentloaded' });
       await waitForPage(page);
       assert.equal(await page.locator('.admin-menu').getByText('排产管理', { exact: true }).count(), 0);
+      const advancedTrigger = page.locator('.admin-tool-launcher__trigger', { hasText: '高级功能' }).first();
+      if (await advancedTrigger.count()) {
+        await advancedTrigger.click();
+        assert.equal(
+          await page.locator('.admin-tool-panel__item', { hasText: '排产控制台' }).count(),
+          0,
+          'A user without planning permissions must not see the planning console in Advanced tools.',
+        );
+        await advancedTrigger.click();
+      }
       await page.screenshot({ path: resolve(artifactsDir, 'planning-no-permission-menu.png'), fullPage: true });
 
       const deniedResponse = page.waitForResponse(async (response: any) => {
@@ -239,6 +249,23 @@ async function main() {
         /The requested page is not available in your navigation/,
       );
       await page.screenshot({ path: resolve(artifactsDir, 'planning-no-permission-denied.png'), fullPage: true });
+
+      const consoleDeniedResponse = page.waitForResponse(async (consoleResponse: any) => {
+        if (!consoleResponse.url().endsWith('/api/service') || consoleResponse.request().method() !== 'POST') return false;
+        try {
+          const body = consoleResponse.request().postDataJSON();
+          return body?.serviceName === 'lowcode' && body?.serviceMethod === 'listItems' &&
+            body?.postData?.tableName === 'lowcode_pages' &&
+            body?.postData?.filters?.route === '/dashboard/advanced/planning-console';
+        } catch {
+          return false;
+        }
+      }, { timeout: 30_000 });
+      await page.goto(`${frontendUrl}/dashboard/advanced/planning-console`, { waitUntil: 'domcontentloaded' });
+      const consoleResponse = await consoleDeniedResponse;
+      assert.equal(consoleResponse.status(), 403);
+      await waitForPage(page);
+      await page.getByText('Page not available', { exact: true }).waitFor({ state: 'visible' });
       assert.deepEqual(pageErrors, []);
     } finally {
       await deniedContext.close();
@@ -251,6 +278,8 @@ async function main() {
       viewer_delete_action: 'hidden',
       no_permission_planning_menu: 'hidden',
       no_permission_direct_page_status: 403,
+      no_permission_console_tool: 'hidden',
+      no_permission_console_status: 403,
       screenshots: 3,
       cleanup: 'verified',
     }, null, 2));

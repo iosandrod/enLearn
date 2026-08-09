@@ -5,13 +5,12 @@ import type {
 } from '../../../types/lowcode';
 import type { VisualToLowCodeConverter } from '../types';
 import {
-  isDefined,
+  createLowCodeFormSchema,
   isPlainRecord,
-  normalizeField,
   normalizeRows,
-  readFormDesignerLayout,
   readJsonArray,
   readJsonObject,
+  readLowCodeFormSchema,
   readString,
   readVisualBlockProps,
   toBlockId,
@@ -96,10 +95,14 @@ const converter: VisualToLowCodeConverter = {
   },
   toRuntimeBlock(block, context) {
     const props = readVisualBlockProps(block);
-    const fields = normalizeRows(props.fields).map(normalizeField).filter(isDefined);
+    const preservedSchema = readLowCodeFormSchema(props.schema);
+    const formSchema = createLowCodeFormSchema(
+      props.fields,
+      props.formDesignerModel,
+      props.schema,
+    );
     const sourceKey = readString(props.sourceKey);
     const submitSourceKey = readString(props.submitSourceKey, sourceKey);
-    const layout = readFormDesignerLayout(props.formDesignerModel);
     const submitLabel = readString(props.submitText, '保存');
     const resetLabel = readString(props.resetText, '重置');
     const initialValues = readJsonObject(props.initialValuesJson, {});
@@ -126,11 +129,12 @@ const converter: VisualToLowCodeConverter = {
         ? { formDesignerUpdatedAt: props.formDesignerUpdatedAt }
         : {}),
       schema: {
-        fields,
-        ...(layout ? { layout } : {}),
+        ...formSchema,
         actions: designedActions.length
           ? designedActions
-          : [
+          : preservedSchema
+            ? formSchema.actions
+            : [
               {
                 code: 'submit',
                 label: submitLabel,

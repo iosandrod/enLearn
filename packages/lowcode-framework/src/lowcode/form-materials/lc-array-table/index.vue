@@ -1256,6 +1256,9 @@ function cloneValue(value: unknown) {
   height: 100%;
   min-height: 0;
 }
+/* 
+描述
+*/
 
 .lc-array-table__toolbar {
   display: flex;

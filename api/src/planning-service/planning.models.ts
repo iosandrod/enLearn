@@ -445,7 +445,9 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
       datetime('started', '开始时间'), datetime('finished', '完成时间'), json('arguments', '运行参数', { default: {} }),
       text('status', '状态', { required: true, default: 'queued', options: choices('queued', 'running', 'succeeded', 'failed', 'canceled') }),
       text('message', '消息'), text('logfile', '日志文件'), text('trigger_run_id', '调度运行编号'),
-      integer('processid', '进程编号'), integer('progress', '进度', { default: 0 }), uuid('submitted_by', '提交人编号')
+      integer('processid', '进程编号'), integer('progress', '进度', { default: 0 }),
+      integer('attempt', '尝试次数', { readOnly: true, default: 1 }),
+      json('output', '运行输出', { readOnly: true }), uuid('submitted_by', '提交人编号')
     ]
   },
   {

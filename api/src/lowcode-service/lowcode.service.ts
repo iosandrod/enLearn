@@ -31,6 +31,7 @@ import type { LowCodePageRow } from './lowcode.types';
 import {
   buildTableListPageSchemaFromMetadata,
   mapDatabaseTableOptions,
+  normalizeDatabaseColumns,
   readTableRef
 } from './table-page-generator';
 
@@ -163,7 +164,7 @@ export class LowCodeService extends BaseService {
     return this.prepareRuntimePage(page, authorization);
   }
 
-  private prepareRuntimePage(
+  protected prepareRuntimePage(
     page: Record<string, unknown>,
     authorization: Awaited<ReturnType<typeof getUserAuthorization>>
   ) {
@@ -188,14 +189,25 @@ export class LowCodeService extends BaseService {
     };
   }
 
-  private applyPlanningRuntimeAccess(schema: Record<string, unknown>, canManage: boolean) {
+  protected applyPlanningRuntimeAccess(schema: Record<string, unknown>, canManage: boolean) {
+    const managementActions = new Set([
+      'create',
+      'save',
+      'preflight',
+      'run',
+      'cancel',
+      'publish'
+    ]);
     const visit = (values: unknown[]) => {
       for (const value of values) {
         if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
         const block = value as Record<string, unknown>;
         if (block.kind === 'buttonGroup' && Array.isArray(block.actions)) {
           block.actions = (block.actions as Array<Record<string, unknown>>).filter(
-            (action) => canManage || !['create', 'save'].includes(readString(action.code))
+            (action) => canManage || (
+              readString(action.permissionCode) !== 'planning.models.manage' &&
+              !managementActions.has(readString(action.code))
+            )
           );
         }
         if (block.kind === 'grid') {
@@ -277,7 +289,7 @@ export class LowCodeService extends BaseService {
     const columns = data && typeof data === 'object' && !Array.isArray(data)
       ? (data as { columns?: unknown }).columns
       : undefined;
-    return Array.isArray(columns) ? columns : [];
+    return normalizeDatabaseColumns(columns);
   }
 
   private async generateTableListPageSchema(

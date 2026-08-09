@@ -33,6 +33,7 @@
     "./runtime/scripts": "./src/runtime/scripts.ts",
     "./runtime/lowcode-context-drawer": "./src/runtime/lowcode-context-drawer.tsx",
     "./runtime/node-action-registry": "./src/runtime/node-action-registry.ts",
+    "./runtime/builtin-page-functions": "./src/runtime/builtin-page-functions.ts",
     "./actions": "./src/lowcode/actions/index.ts",
     "./core/host": "./src/core/host.ts",
     "./types/lowcode": "./src/types/lowcode.ts",
@@ -41,9 +42,11 @@
   },
   "peerDependencies": {
     "@vitejs/plugin-vue-jsx": "^5.1.6",
+    "@vue-flow/core": "^1.48.2",
     "@vueuse/core": "^14.3.0",
     "@vueuse/integrations": "^14.3.0",
     "dayjs": "^1.11.21",
+    "echarts": "^5.6.0",
     "lodash-es": "^4.18.1",
     "monaco-editor": "^0.33.0",
     "nanoid": "^6.0.0",
@@ -56,6 +59,8 @@
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
+    "@vue-flow/core": "^1.48.2",
+    "echarts": "^5.6.0",
     "typescript": "^5.4.5",
     "vite": "^7.3.6",
     "vue-tsc": "^3.3.7"

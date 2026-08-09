@@ -44,6 +44,7 @@ export function createDesignerScriptContextSource({
   const code = readString(pageRecord?.code, readString(pageSchema?.code, currentPage.path));
   const route = readString(pageRecord?.route, readString(pageSchema?.route, currentPage.path));
   const title = readString(pageRecord?.title, readString(pageSchema?.title, currentPage.title));
+  const pageType = pageRecord?.page_type ?? pageSchema?.pageType ?? 'custom';
   const dataSources = {
     ...(pageSchema?.dataSources ?? {}),
     ...converted.dataSources,
@@ -55,6 +56,7 @@ export function createDesignerScriptContextSource({
       code,
       route,
       title,
+      page_type: pageType,
       schema: {
         ...(pageSchema ?? {}),
         code,
@@ -82,7 +84,7 @@ export function createDesignerScriptContextSource({
             ...(Object.keys(pageSchema.apis ?? {}).length > 0
               ? ['http.execute' as const]
               : []),
-            ...((pageSchema.functions?.length ?? 0) > 0
+            ...(['list', 'edit'].includes(pageType) || (pageSchema.functions?.length ?? 0) > 0
               ? ['pageFunction.execute' as const]
               : []),
           ]),
@@ -94,7 +96,7 @@ export function createDesignerScriptContextSource({
           ...(Object.keys(pageSchema?.apis ?? {}).length > 0
             ? ['http.execute' as const]
             : []),
-          ...((pageSchema?.functions?.length ?? 0) > 0
+          ...(['list', 'edit'].includes(pageType) || (pageSchema?.functions?.length ?? 0) > 0
             ? ['pageFunction.execute' as const]
             : []),
         ],

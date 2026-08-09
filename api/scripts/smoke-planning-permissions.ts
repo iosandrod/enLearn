@@ -221,6 +221,11 @@ async function main() {
       expectedNavigationRoutes,
       'A planning viewer should receive the root, all groups, and all model pages.'
     );
+    assert.equal(
+      viewerRoutes.filter((route) => route.path === '/dashboard/advanced/planning-console').length,
+      1,
+      'A planning viewer should receive the advanced planning console route.'
+    );
 
     stage = 'viewer runtime page';
     const viewerPage = await serviceRequest(viewerToken, 'lowcode', 'getRuntimePage', {
@@ -262,6 +267,12 @@ async function main() {
     });
     assert.equal(viewerCreate.response.status, 403, 'A planning viewer must not create data.');
 
+    stage = 'viewer planning console';
+    const viewerConsole = await serviceRequest(viewerToken, 'lowcode', 'getRuntimePage', {
+      route: '/dashboard/advanced/planning-console'
+    });
+    assert.equal(viewerConsole.response.status, 200, JSON.stringify(viewerConsole.payload));
+
     stage = 'denied navigation';
     const deniedNavigation = await serviceRequest(
       noPermissionToken,
@@ -278,11 +289,25 @@ async function main() {
       0,
       'A user without planning permissions must not receive planning navigation.'
     );
+    assert.equal(
+      deniedRoutes.filter((route) => route.path === '/dashboard/advanced/planning-console').length,
+      0,
+      'A user without planning permissions must not receive the advanced planning console route.'
+    );
     stage = 'denied runtime page';
     const deniedPage = await serviceRequest(noPermissionToken, 'lowcode', 'getRuntimePage', {
       route: '/dashboard/planning/calendar'
     });
     assert.equal(deniedPage.response.status, 403, 'A user without planning permissions must not load planning pages.');
+    stage = 'denied planning console';
+    const deniedConsole = await serviceRequest(noPermissionToken, 'lowcode', 'getRuntimePage', {
+      route: '/dashboard/advanced/planning-console'
+    });
+    assert.equal(
+      deniedConsole.response.status,
+      403,
+      'A user without planning permissions must not load the advanced planning console.'
+    );
     stage = 'denied list';
     const deniedList = await serviceRequest(noPermissionToken, 'planning', 'listItems', {
       resource: 'planning_calendar',
@@ -300,8 +325,10 @@ async function main() {
       viewer_runtime_row_actions: 'read-only',
       viewer_list_status: 200,
       viewer_create_status: 403,
+      viewer_console_status: 200,
       no_permission_navigation_routes: 0,
       no_permission_page_status: 403,
+      no_permission_console_status: 403,
       no_permission_list_status: 403,
       cleanup: 'verified'
     }));

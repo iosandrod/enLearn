@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash-es';
-import type { LowCodeField, LowCodeOption } from '../../types/lowcode';
+import type { LowCodeField, LowCodeFormLayoutNode, LowCodeOption } from '../../types/lowcode';
 import { VisualEditorPropsType, type VisualEditorProps } from '../visual-editor.props';
 import type {
   VisualEditorBlockData,
@@ -125,9 +125,213 @@ export function createMaterialPropForm(
   return {
     title: definition?.title ?? component?.label ?? block.label,
     fields,
-    layout: definition?.layout,
+    layout: completeMaterialPropLayout(
+      definition?.layout,
+      fields,
+      definition?.separateArrayTableTabs === true,
+    ),
     actions: definition?.actions ?? [],
   };
+}
+
+function collectLayoutFieldKeys(
+  nodes: LowCodeFormLayoutNode[],
+  keys = new Set<string>(),
+) {
+  nodes.forEach((node) => {
+    if (node.kind === 'field') {
+      keys.add(node.field);
+      return;
+    }
+
+    if (node.kind === 'row') {
+      node.columns.forEach((column) => collectLayoutFieldKeys(column.blocks, keys));
+      return;
+    }
+
+    if (node.kind === 'stack') {
+      collectLayoutFieldKeys(node.blocks, keys);
+      return;
+    }
+
+    node.tabs.forEach((tab) => collectLayoutFieldKeys(tab.blocks, keys));
+  });
+
+  return keys;
+}
+
+function completeMaterialPropLayout(
+  layout: LowCodeFormLayoutNode[] | undefined,
+  fields: MaterialPropFormField[],
+  separateArrayTableTabs: boolean,
+) {
+  if (!layout?.length) return undefined;
+
+  const nextLayout = cloneDeep(layout);
+  const assignedFields = collectLayoutFieldKeys(nextLayout);
+  const missingFormFields = fields.filter((field) => !assignedFields.has(field.field));
+  const missingFields = missingFormFields
+    .map<LowCodeFormLayoutNode>((field) => ({ kind: 'field', field: field.field }));
+
+  const rootTabs = nextLayout.length === 1 && nextLayout[0].kind === 'tabs'
+    ? nextLayout[0]
+    : undefined;
+  if (!rootTabs) {
+    return missingFields.length ? [...nextLayout, ...missingFields] : nextLayout;
+  }
+
+  if (missingFields.length) {
+    appendMissingFieldsToTab(
+      rootTabs,
+      'style',
+      '样式',
+      missingFormFields.filter((field) => field.target === 'styles'),
+    );
+    appendMissingFieldsToTab(
+      rootTabs,
+      'other',
+      '其他',
+      missingFormFields.filter((field) => field.target !== 'styles'),
+    );
+  }
+  if (separateArrayTableTabs) {
+    promoteArrayTableFieldsToTabs(rootTabs, fields);
+  }
+
+  return nextLayout;
+}
+
+function promoteArrayTableFieldsToTabs(
+  tabsNode: Extract<LowCodeFormLayoutNode, { kind: 'tabs' }>,
+  fields: MaterialPropFormField[],
+) {
+  const arrayTableFields = new Map(
+    fields
+      .filter((field) => field.component === 'lc-array-table')
+      .map((field) => [field.field, field]),
+  );
+  if (!arrayTableFields.size) return;
+
+  const reservedKeys = new Set(tabsNode.tabs.map((tab) => tab.key));
+  const promotedFieldKeys = new Set<string>();
+  tabsNode.tabs = tabsNode.tabs.flatMap((tab) => {
+    const extracted = extractArrayTableFields(tab.blocks, arrayTableFields);
+    const tableFields = extracted.fields.filter((field) => {
+      if (promotedFieldKeys.has(field.field)) return false;
+      promotedFieldKeys.add(field.field);
+      return true;
+    });
+    if (!tableFields.length) return [tab];
+
+    const nextTabs = extracted.blocks.length
+      ? [{ ...tab, blocks: extracted.blocks }]
+      : [];
+    const pendingFields = [...tableFields];
+
+    if (!extracted.blocks.length) {
+      const firstField = pendingFields.shift()!;
+      nextTabs.push({
+        ...tab,
+        label: firstField.label || tab.label,
+        blocks: [{ kind: 'field', field: firstField.field }],
+      });
+    }
+
+    pendingFields.forEach((field) => {
+      nextTabs.push({
+        key: createArrayTableTabKey(`${tab.key}-${field.field}`, reservedKeys),
+        label: field.label || field.field,
+        blocks: [{ kind: 'field', field: field.field }],
+      });
+    });
+
+    return nextTabs;
+  });
+}
+
+function extractArrayTableFields(
+  nodes: LowCodeFormLayoutNode[],
+  arrayTableFields: Map<string, MaterialPropFormField>,
+): {
+  blocks: LowCodeFormLayoutNode[];
+  fields: MaterialPropFormField[];
+} {
+  const blocks: LowCodeFormLayoutNode[] = [];
+  const fields: MaterialPropFormField[] = [];
+
+  nodes.forEach((node) => {
+    if (node.kind === 'field') {
+      const tableField = arrayTableFields.get(node.field);
+      if (tableField) {
+        fields.push(tableField);
+      } else {
+        blocks.push(node);
+      }
+      return;
+    }
+
+    if (node.kind === 'row') {
+      const columns = node.columns.flatMap((column) => {
+        const extracted = extractArrayTableFields(column.blocks, arrayTableFields);
+        fields.push(...extracted.fields);
+        return extracted.blocks.length
+          ? [{ ...column, blocks: extracted.blocks }]
+          : [];
+      });
+      if (columns.length) blocks.push({ ...node, columns });
+      return;
+    }
+
+    if (node.kind === 'stack') {
+      const extracted = extractArrayTableFields(node.blocks, arrayTableFields);
+      fields.push(...extracted.fields);
+      if (extracted.blocks.length) {
+        blocks.push({ ...node, blocks: extracted.blocks });
+      }
+      return;
+    }
+
+    blocks.push(node);
+  });
+
+  return { blocks, fields };
+}
+
+function createArrayTableTabKey(base: string, reservedKeys: Set<string>) {
+  const normalized = base
+    .replace(/[^A-Za-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'table';
+  let key = normalized;
+  let suffix = 2;
+
+  while (reservedKeys.has(key)) {
+    key = `${normalized}-${suffix}`;
+    suffix += 1;
+  }
+
+  reservedKeys.add(key);
+  return key;
+}
+
+function appendMissingFieldsToTab(
+  tabsNode: Extract<LowCodeFormLayoutNode, { kind: 'tabs' }>,
+  key: string,
+  label: string,
+  fields: MaterialPropFormField[],
+) {
+  if (!fields.length) return;
+
+  const blocks = fields.map<LowCodeFormLayoutNode>((field) => ({
+    kind: 'field',
+    field: field.field,
+  }));
+  const targetTab = tabsNode.tabs.find((tab) => tab.key === key);
+  if (targetTab) {
+    targetTab.blocks.push(...blocks);
+    return;
+  }
+
+  tabsNode.tabs.push({ key, label, blocks });
 }
 
 export function createMaterialPropModel(

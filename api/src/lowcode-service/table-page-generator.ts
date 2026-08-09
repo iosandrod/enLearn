@@ -15,7 +15,25 @@ export type DatabaseColumn = {
   hasDefault: boolean;
   comment: string;
   isPrimaryKey: boolean;
+  title: string;
+  type: FrontendColumnType;
+  align: FrontendColumnAlign;
+  description: string;
 };
+
+export type FrontendColumnType =
+  | 'text'
+  | 'number'
+  | 'boolean'
+  | 'date'
+  | 'datetime'
+  | 'time'
+  | 'duration'
+  | 'json'
+  | 'array'
+  | 'enum';
+
+export type FrontendColumnAlign = 'left' | 'center' | 'right';
 
 export type DatabaseChildRelation = {
   constraintName: string;
@@ -115,12 +133,142 @@ function humanizeIdentifier(value: string) {
     .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+const frontendColumnTypes = new Set<FrontendColumnType>([
+  'text',
+  'number',
+  'boolean',
+  'date',
+  'datetime',
+  'time',
+  'duration',
+  'json',
+  'array',
+  'enum'
+]);
+
+const frontendColumnAlignments = new Set<FrontendColumnAlign>([
+  'left',
+  'center',
+  'right'
+]);
+
+function inferFrontendColumnType(dataType: string, udtName: string): FrontendColumnType {
+  const normalizedDataType = dataType.toLowerCase();
+  const normalizedUdtName = udtName.toLowerCase();
+
+  if (
+    normalizedDataType === 'array' ||
+    normalizedDataType.endsWith('[]') ||
+    normalizedUdtName.startsWith('_')
+  ) {
+    return 'array';
+  }
+  if (
+    normalizedDataType.includes('json') ||
+    ['json', 'jsonb'].includes(normalizedUdtName)
+  ) {
+    return 'json';
+  }
+  if (normalizedDataType === 'boolean' || normalizedUdtName === 'bool') return 'boolean';
+  if (normalizedDataType === 'date' || normalizedUdtName === 'date') return 'date';
+  if (
+    normalizedDataType.includes('timestamp') ||
+    normalizedUdtName.startsWith('timestamp')
+  ) {
+    return 'datetime';
+  }
+  if (
+    normalizedDataType.includes('time') ||
+    ['time', 'timetz'].includes(normalizedUdtName)
+  ) {
+    return 'time';
+  }
+  if (normalizedDataType === 'interval' || normalizedUdtName === 'interval') return 'duration';
+  if (
+    [
+      'integer',
+      'bigint',
+      'smallint',
+      'numeric',
+      'decimal',
+      'real',
+      'double precision'
+    ].includes(normalizedDataType) ||
+    [
+      'int2',
+      'int4',
+      'int8',
+      'numeric',
+      'decimal',
+      'float4',
+      'float8'
+    ].includes(normalizedUdtName)
+  ) {
+    return 'number';
+  }
+
+  return 'text';
+}
+
+function defaultColumnAlign(type: FrontendColumnType): FrontendColumnAlign {
+  if (type === 'number') return 'right';
+  if (['boolean', 'date', 'datetime', 'time', 'enum'].includes(type)) return 'center';
+  return 'left';
+}
+
+function readFrontendColumnType(value: unknown, fallback: FrontendColumnType) {
+  return typeof value === 'string' && frontendColumnTypes.has(value as FrontendColumnType)
+    ? value as FrontendColumnType
+    : fallback;
+}
+
+function readFrontendColumnAlign(value: unknown, fallback: FrontendColumnAlign) {
+  return typeof value === 'string' && frontendColumnAlignments.has(value as FrontendColumnAlign)
+    ? value as FrontendColumnAlign
+    : fallback;
+}
+
+export function parseColumnComment(
+  comment: unknown,
+  column: Pick<DatabaseColumn, 'name' | 'dataType' | 'udtName'>
+) {
+  const rawComment = readStringValue(comment);
+  const fallbackType = inferFrontendColumnType(column.dataType, column.udtName);
+  const fallbackTitle = humanizeIdentifier(column.name);
+  const looksLikeJson = rawComment.startsWith('{') || rawComment.startsWith('[');
+  let metadata: Record<string, unknown> | undefined;
+
+  if (looksLikeJson) {
+    try {
+      const parsed: unknown = JSON.parse(rawComment);
+      if (isRecord(parsed)) metadata = parsed;
+    } catch {
+      // Invalid structured comments fall back to database-derived metadata.
+    }
+  }
+
+  const title = metadata
+    ? readStringValue(metadata.title) || fallbackTitle
+    : looksLikeJson
+      ? fallbackTitle
+      : rawComment || fallbackTitle;
+  const type = readFrontendColumnType(metadata?.type, fallbackType);
+  const align = readFrontendColumnAlign(metadata?.align, defaultColumnAlign(type));
+  const description = metadata
+    ? readStringValue(metadata.description)
+    : looksLikeJson
+      ? ''
+      : rawComment;
+
+  return { title, type, align, description };
+}
+
 function tableTitle(table: DatabaseTableRef, comment = '') {
   return comment.trim() || humanizeIdentifier(table.name);
 }
 
 function columnTitle(column: DatabaseColumn) {
-  return column.comment.trim() || humanizeIdentifier(column.name);
+  return column.title;
 }
 
 function sourceKeyFor(table: DatabaseTableRef, suffix = 'rows') {
@@ -137,6 +285,11 @@ function preferredPrimaryKey(columns: DatabaseColumn[], fallback = 'id') {
 }
 
 function formatterForColumn(column: DatabaseColumn) {
+  if (column.type === 'datetime') return datetimeFormatter;
+  if (column.type === 'date') return dateFormatter;
+  if (column.type === 'boolean') return booleanFormatter;
+  if (column.type === 'number') return numberFormatter;
+
   const dataType = column.dataType.toLowerCase();
   const udtName = column.udtName.toLowerCase();
 
@@ -165,6 +318,7 @@ function gridColumn(column: DatabaseColumn, index: number) {
   return {
     field: column.name,
     title: columnTitle(column),
+    align: column.align,
     ...(index === 0 ? { fixed: 'left' } : {}),
     ...(widthForColumn(column)
       ? { width: widthForColumn(column) }
@@ -504,15 +658,26 @@ function readStringArray(value: unknown) {
   return Array.isArray(value) ? value.map(readStringValue).filter(Boolean) : [];
 }
 
-function readColumns(value: unknown): DatabaseColumn[] {
-  return Array.isArray(value) ? value.filter(isRecord).map((column) => ({
-    name: readStringValue(column.name),
-    ordinalPosition: Number(column.ordinalPosition) || 0,
-    dataType: readStringValue(column.dataType),
-    udtName: readStringValue(column.udtName),
-    isNullable: column.isNullable === true,
-    hasDefault: column.hasDefault === true,
-    comment: readStringValue(column.comment),
-    isPrimaryKey: column.isPrimaryKey === true
-  })).filter((column) => column.name) : [];
+export function normalizeDatabaseColumns(value: unknown): DatabaseColumn[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.filter(isRecord).map((column) => {
+    const baseColumn = {
+      name: readStringValue(column.name),
+      ordinalPosition: Number(column.ordinalPosition) || 0,
+      dataType: readStringValue(column.dataType),
+      udtName: readStringValue(column.udtName),
+      isNullable: column.isNullable === true,
+      hasDefault: column.hasDefault === true,
+      comment: readStringValue(column.comment),
+      isPrimaryKey: column.isPrimaryKey === true
+    };
+
+    return {
+      ...baseColumn,
+      ...parseColumnComment(baseColumn.comment, baseColumn)
+    };
+  }).filter((column) => column.name);
 }
+
+const readColumns = normalizeDatabaseColumns;

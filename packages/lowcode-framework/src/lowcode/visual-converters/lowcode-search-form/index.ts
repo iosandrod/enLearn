@@ -1,11 +1,9 @@
 import type { LowCodePageBlock } from '../../../types/lowcode';
 import type { VisualToLowCodeConverter } from '../types';
 import {
-  isDefined,
+  createLowCodeFormSchema,
   isPlainRecord,
-  normalizeField,
-  normalizeRows,
-  readFormDesignerLayout,
+  readLowCodeFormSchema,
   readString,
   readVisualBlockProps,
   toBlockId,
@@ -23,9 +21,13 @@ const converter: VisualToLowCodeConverter = {
   },
   toRuntimeBlock(block) {
     const props = readVisualBlockProps(block);
-    const fields = normalizeRows(props.fields).map(normalizeField).filter(isDefined);
+    const preservedSchema = readLowCodeFormSchema(props.schema);
+    const formSchema = createLowCodeFormSchema(
+      props.fields,
+      props.formDesignerModel,
+      props.schema,
+    );
     const sourceKey = readString(props.sourceKey, 'records');
-    const layout = readFormDesignerLayout(props.formDesignerModel);
 
     return {
       id: toBlockId(props.blockId, block._vid),
@@ -39,21 +41,22 @@ const converter: VisualToLowCodeConverter = {
         ? { formDesignerUpdatedAt: props.formDesignerUpdatedAt }
         : {}),
       schema: {
-        fields,
-        ...(layout ? { layout } : {}),
-        actions: [
-          {
-            code: 'submit',
-            label: '查询',
-            type: 'submit',
-            status: 'primary',
-          },
-          {
-            code: 'reset',
-            label: '重置',
-            type: 'reset',
-          },
-        ],
+        ...formSchema,
+        actions: preservedSchema
+          ? formSchema.actions
+          : [
+              {
+                code: 'submit',
+                label: '查询',
+                type: 'submit',
+                status: 'primary',
+              },
+              {
+                code: 'reset',
+                label: '重置',
+                type: 'reset',
+              },
+            ],
       },
     } as LowCodePageBlock;
   },

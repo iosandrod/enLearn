@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Client } from 'pg';
@@ -10,7 +11,10 @@ import {
 
 const MIGRATION_FILES = [
   'supabase/migrations/20260807140000_planning_service.sql',
-  'supabase/migrations/20260808160000_planning_extended_models.sql'
+  'supabase/migrations/20260808150000_planning_diagnostic_tables.sql',
+  'supabase/migrations/20260808160000_planning_extended_models.sql',
+  'supabase/migrations/20260808170000_planning_execution_runtime.sql',
+  'supabase/migrations/20260809120000_planning_console.sql'
 ];
 
 function directProjectConnectionString(value: string) {
@@ -72,6 +76,9 @@ async function main() {
       crud_registry_count: string;
       root_sidebar_count: string;
       descendant_navigation_override_count: string;
+      console_page_count: string;
+      console_version_count: string;
+      console_route_count: string;
     }>(`
       select
         (select count(*)::text from pg_catalog.pg_tables where schemaname = 'public' and tablename like 'planning_%') as table_count,
@@ -88,7 +95,10 @@ async function main() {
         (select count(*)::text from pg_catalog.pg_constraint c join pg_catalog.pg_class t on t.oid = c.conrelid join pg_catalog.pg_namespace n on n.oid = t.relnamespace where n.nspname = 'public' and t.relname like 'planning_%' and c.contype = 'f' and c.conname like '%_account_fk') as same_account_fk_count,
         (select count(*)::text from public.dynamic_crud_resource_registry where resource_name like 'planning\\_%' escape '\\') as crud_registry_count,
         (select count(*)::text from public.admin_routes where code = 'planning-root' and metadata->>'navigation' = 'sidebar') as root_sidebar_count,
-        (select count(*)::text from public.admin_routes where code like 'planning-%' and code <> 'planning-root' and metadata ? 'navigation') as descendant_navigation_override_count
+        (select count(*)::text from public.admin_routes where code like 'planning-%' and code not in ('planning-root', 'planning-console') and metadata ? 'navigation') as descendant_navigation_override_count,
+        (select count(*)::text from public.lowcode_pages where code = 'planning_console' and page_type = 'custom' and status = 'published') as console_page_count,
+        (select count(*)::text from public.lowcode_page_versions version join public.lowcode_pages page on page.id = version.page_id where page.code = 'planning_console' and version.version = page.version and version.schema = page.schema) as console_version_count,
+        (select count(*)::text from public.admin_routes route join public.admin_routes parent on parent.id = route.parent_id where route.code = 'planning-console' and route.path = '/dashboard/advanced/planning-console' and route.page_code = 'planning_console' and route.permission_code = 'planning.models.view' and route.status = 'active' and parent.code = 'advanced-root') as console_route_count
     `);
 
     const installed = rows[0];
@@ -107,22 +117,82 @@ async function main() {
       edit_page_count: String(expectedModels),
       linked_page_count: String(expectedModels),
       entity_count: String(expectedModels),
-      leaf_route_count: String(expectedModels),
+      leaf_route_count: String(expectedModels + 1),
       group_route_count: String(new Set(PLANNING_MODEL_DEFINITIONS.map((model) => model.group)).size + 1),
       permission_count: '2',
       role_permission_count: '4',
       same_account_fk_count: String(expectedRelations),
       crud_registry_count: String(expectedModels),
       root_sidebar_count: '1',
-      descendant_navigation_override_count: '0'
+      descendant_navigation_override_count: '0',
+      console_page_count: '1',
+      console_version_count: '1',
+      console_route_count: '1'
     };
 
     if (Object.entries(expected).some(([key, value]) => installed?.[key as keyof typeof installed] !== value)) {
       throw new Error(`Planning migration verification failed: ${JSON.stringify({ installed, expected })}`);
     }
 
+    const referenceIndexes = await client.query<{
+      columns: string;
+      index_name: string;
+      is_unique: boolean;
+      predicate: string | null;
+    }>(`
+      select index_class.relname as index_name,
+             index_meta.indisunique as is_unique,
+             pg_get_expr(index_meta.indpred, index_meta.indrelid) as predicate,
+             array_to_string(array(
+               select attribute.attname
+               from unnest(index_meta.indkey) with ordinality as key(attnum, position)
+               join pg_catalog.pg_attribute attribute
+                 on attribute.attrelid = index_meta.indrelid and attribute.attnum = key.attnum
+               order by key.position
+             ), ',') as columns
+      from pg_catalog.pg_index index_meta
+      join pg_catalog.pg_class table_class on table_class.oid = index_meta.indrelid
+      join pg_catalog.pg_namespace namespace on namespace.oid = table_class.relnamespace
+      join pg_catalog.pg_class index_class on index_class.oid = index_meta.indexrelid
+      where namespace.nspname = 'public'
+        and table_class.relname = 'planning_operationplan'
+        and index_class.relname in (
+          'planning_operationplan_manual_reference_key',
+          'planning_operationplan_version_reference_key'
+        )
+      order by index_class.relname
+    `);
+    const byName = new Map(referenceIndexes.rows.map((row) => [row.index_name, row]));
+    const manualReference = byName.get('planning_operationplan_manual_reference_key');
+    const versionReference = byName.get('planning_operationplan_version_reference_key');
+    assert.equal(manualReference?.is_unique, true);
+    assert.equal(manualReference?.columns, 'account_id,reference');
+    assert.match(manualReference?.predicate ?? '', /plan_version_id IS NULL/i);
+    assert.equal(versionReference?.is_unique, true);
+    assert.equal(versionReference?.columns, 'account_id,plan_version_id,reference');
+    assert.match(versionReference?.predicate ?? '', /plan_version_id IS NOT NULL/i);
+
+    const legacyReferenceConstraint = await client.query<{ count: string }>(`
+      select count(*)::text
+      from pg_catalog.pg_constraint constraint_meta
+      where constraint_meta.conrelid = 'public.planning_operationplan'::regclass
+        and constraint_meta.contype = 'u'
+        and array(
+          select attribute.attname
+          from unnest(constraint_meta.conkey) with ordinality as key(attnum, position)
+          join pg_catalog.pg_attribute attribute
+            on attribute.attrelid = constraint_meta.conrelid and attribute.attnum = key.attnum
+          order by key.position
+        ) = array['account_id', 'reference']::name[]
+    `);
+    assert.equal(legacyReferenceConstraint.rows[0]?.count, '0');
+
     await client.query('rollback');
-    console.log(JSON.stringify({ ...installed, transaction: 'verified rollback' }));
+    console.log(JSON.stringify({
+      ...installed,
+      operationplan_reference_scope: 'baseline/version',
+      transaction: 'verified rollback'
+    }));
   } catch (error) {
     await client.query('rollback').catch(() => undefined);
     throw error;

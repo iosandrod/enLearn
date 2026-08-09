@@ -497,8 +497,19 @@
     block: VisualEditorBlockData,
     result: FormDesignerResult,
   ) => {
+    const previousSchema = isRecord(block.props.schema)
+      ? cloneDeep(block.props.schema)
+      : {};
+    const designedSchema = createLowCodeFormSchemaFromDesignerResult(result);
     block.props.fields = cloneDeep(result.fields);
     delete block.props.columns;
+    block.props.schema = {
+      ...previousSchema,
+      ...designedSchema,
+      actions: Array.isArray(previousSchema.actions)
+        ? previousSchema.actions
+        : designedSchema.actions,
+    };
     block.props.formDesignerModel = cloneDeep(result.designerModel);
     block.props.formDesignerUpdatedAt = Date.now();
     selectComp(block);
@@ -555,10 +566,18 @@
   const openFormDesigner = async (block: VisualEditorBlockData) => {
     selectComp(block);
     const isSearchForm = block.componentKey === 'lowcode-search-form';
+    const runtimeSchema = isRecord(block.props?.schema) ? block.props.schema : {};
+    const schemaColumns = Number(runtimeSchema.columns);
     const result = await $$formDesigner({
       title: `${block.label || '表单'}设计`,
       mode: isSearchForm ? 'search' : 'edit',
       fields: Array.isArray(block.props?.fields) ? block.props.fields : [],
+      layout: Array.isArray(runtimeSchema.layout)
+        ? cloneDeep(runtimeSchema.layout)
+        : undefined,
+      columns: Number.isFinite(schemaColumns) && schemaColumns > 0
+        ? schemaColumns
+        : undefined,
       designerModel: block.props?.formDesignerModel || null,
       pageData: currentPage.value,
       pageRecord: props.pageRecord,
@@ -582,6 +601,9 @@
       business: {
         blockId: block.props?.blockId,
         title: block.props?.title,
+        tableType: block.props?.tableType,
+        tableName: block.props?.tableName,
+        viewName: block.props?.viewName,
         sourceKey: block.props?.sourceKey,
         serviceName: block.props?.serviceName,
         serviceMethod: block.props?.serviceMethod,

@@ -20,6 +20,7 @@ export type LowCodeField = {
     help?: string;
     props?: Record<string, unknown>;
     options?: LowCodeOption[];
+    optionsCode?: string;
     optionsSourceKey?: string;
     optionProps?: Record<string, unknown>;
     rules?: LowCodeRule[];
@@ -260,6 +261,7 @@ export type LowCodePageDataSource = {
     key: string;
     /** 数据源的可读名称，主要用于设计器和界面展示，不参与接口路由。 */
     label?: string;
+    sourceType?: 'custom' | 'table' | 'view';
     /**
      * 后端服务名，对应 `serviceApi.invoke(serviceName, ...)` 的第一个参数，
      * 例如 `admin`、`lowcode`、`notification`。
@@ -288,6 +290,7 @@ export type LowCodePageDataSource = {
     tableName?: string;
     /** `tableName` 的 snake_case 兼容字段，新配置优先使用 `tableName`。 */
     table_name?: string;
+    viewName?: string;
     /**
      * 传给服务方法的基础请求参数，例如 `resource`、`filters`、`sorts`、
      * `page` 和 `pageSize`。运行时还会按场景合并查询条件、表单值或行数据。
@@ -399,6 +402,7 @@ export type LowCodePageSearchFormBlock = LowCodeMaterialVersionedBlock & {
     description?: string;
     schema: LowCodeFormSchema;
     targetSourceKey?: string;
+    targetSourceKeys?: string[];
     initialValues?: Record<string, unknown>;
     formDesignerModel?: Record<string, unknown>;
     formDesignerUpdatedAt?: number;
@@ -410,6 +414,11 @@ export type LowCodePageGridBlock = LowCodeMaterialVersionedBlock & {
     description?: string;
     schema: LowCodeGridSchema;
     sourceKey?: string;
+    /** Apply the runtime search values to the returned rows in the browser. */
+    clientFilter?: boolean;
+    tableType?: 'custom' | 'table' | 'view';
+    tableName?: string;
+    viewName?: string;
     editorBlockId?: string;
     editRoute?: string;
     deleteSourceKey?: string;
@@ -482,7 +491,42 @@ export type LowCodePageTreeBlock = LowCodeMaterialVersionedBlock & {
     titleField?: string;
     childrenField?: string;
 };
-export type LowCodePageBlock = LowCodePageTextBlock | LowCodePageContainerBlock | LowCodePageSectionBlock | LowCodePageTabsBlock | LowCodePageToolbarBlock | LowCodePageButtonGroupBlock | LowCodePageFormBlock | LowCodePageSearchFormBlock | LowCodePageGridBlock | LowCodePageDetailBlock | LowCodePageModalBlock | LowCodePageDrawerBlock | LowCodePageStatCardBlock | LowCodePageTreeBlock;
+export type LowCodePagePlanningFlowBlock = LowCodeMaterialVersionedBlock & {
+    id: string;
+    kind: 'planningFlow';
+    title?: string;
+    description?: string;
+    sourceKey?: string;
+    height?: number | string;
+    fitViewOnInit?: boolean;
+};
+export type LowCodePagePlanningGanttBlock = LowCodeMaterialVersionedBlock & {
+    id: string;
+    kind: 'planningGantt';
+    title?: string;
+    description?: string;
+    sourceKey?: string;
+    height?: number | string;
+    rowLabelField?: string;
+    startField?: string;
+    endField?: string;
+    labelField?: string;
+    colorField?: string;
+    statusField?: string;
+};
+export type LowCodePagePlanningBomBlock = LowCodeMaterialVersionedBlock & {
+    id: string;
+    kind: 'planningBom';
+    title?: string;
+    description?: string;
+    sourceKey?: string;
+    rows?: Record<string, unknown>[];
+    height?: number | string;
+    keyField?: string;
+    titleField?: string;
+    childrenField?: string;
+};
+export type LowCodePageBlock = LowCodePageTextBlock | LowCodePageContainerBlock | LowCodePageSectionBlock | LowCodePageTabsBlock | LowCodePageToolbarBlock | LowCodePageButtonGroupBlock | LowCodePageFormBlock | LowCodePageSearchFormBlock | LowCodePageGridBlock | LowCodePageDetailBlock | LowCodePageModalBlock | LowCodePageDrawerBlock | LowCodePageStatCardBlock | LowCodePageTreeBlock | LowCodePagePlanningFlowBlock | LowCodePagePlanningGanttBlock | LowCodePagePlanningBomBlock;
 export type LowCodePageOverlayBlock = LowCodePageModalBlock | LowCodePageDrawerBlock;
 export type LowCodePageSchema = {
     schemaVersion?: number;

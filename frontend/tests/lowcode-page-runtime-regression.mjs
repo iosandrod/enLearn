@@ -217,7 +217,23 @@ for (const [name, source] of [
   assert.match(
     source,
     /useLowCodePageRuntime\(false\)/,
-    `The built-in ${name} material must prefer the injected page runtime.`
+    `The built-in ${name} material must support the injected page runtime.`
+  );
+}
+
+for (const [name, source] of [
+  ['form', formMaterialSource],
+  ['search form', searchMaterialSource],
+]) {
+  assert.match(
+    source,
+    /hasOwnedFormModel\.value[\s\S]*?props\.formModels\[props\.block\.id\][\s\S]*?pageRuntime\?\.state\.forms/,
+    `An explicit ${name} model must take ownership before an ambient page runtime.`,
+  );
+  assert.match(
+    source,
+    /if \(hasOwnedFormModel\.value \|\| !pageRuntime\)[\s\S]*?props\.formModels\[props\.block\.id\] = values/,
+    `Updates to an explicit ${name} model must be written back to that model.`,
   );
 }
 

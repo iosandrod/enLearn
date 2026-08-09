@@ -20,6 +20,7 @@ export type LowCodePageSchema = {
     {
       key: string;
       label?: string;
+      sourceType?: 'custom' | 'table' | 'view';
       serviceName?: string;
       serviceMethod?: string;
       saveMethod?: string;
@@ -28,6 +29,7 @@ export type LowCodePageSchema = {
       entity_code?: string;
       tableName?: string;
       table_name?: string;
+      viewName?: string;
       postData?: Record<string, unknown>;
       autoLoad?: boolean;
     }
@@ -93,6 +95,9 @@ const knownBlockKinds = new Set([
   'form',
   'grid',
   'modal',
+  'planningBom',
+  'planningFlow',
+  'planningGantt',
   'searchForm',
   'section',
   'statCard',
@@ -195,37 +200,72 @@ function hasDataSourceTableTarget(source: {
   return Boolean(source.entityCode || source.entity_code || source.tableName || source.table_name);
 }
 
-function normalizeDataSource(key: string, value: unknown) {
+function normalizeDataSource(
+  key: string,
+  value: unknown
+): NonNullable<LowCodePageSchema['dataSources']>[string] {
   const source = isRecord(value) ? value : {};
   const sourceKey = readString(source.key, key);
   const label = readString(source.label);
   const sourcePostData = readPostDataObject(source.postData);
   const sourceServiceName = readString(source.serviceName);
   const sourceServiceMethod = readString(source.serviceMethod);
-  const entityCode = readDataSourceEntityCode(source);
-  const tableName = readDataSourceTableName(source) || (entityCode ? tableNameFromEntityCode(entityCode) : '');
+  const requestedSourceType = readString(source.sourceType ?? source.source_type);
+  const hasExplicitCustomType = requestedSourceType === 'custom';
+  const rawEntityCode = hasExplicitCustomType ? '' : readDataSourceEntityCode(source);
+  const rawTableName = hasExplicitCustomType
+    ? ''
+    : readDataSourceTableName(source) || (rawEntityCode ? tableNameFromEntityCode(rawEntityCode) : '');
+  const viewName = readString(source.viewName ?? source.view_name);
+  const sourceType: 'custom' | 'table' | 'view' | '' = requestedSourceType === 'custom'
+    ? 'custom'
+    : requestedSourceType === 'table'
+      ? 'table'
+      : requestedSourceType === 'view'
+        ? 'view'
+    : viewName
+      ? 'view'
+      : rawTableName
+        ? 'table'
+        : '';
+  const normalizedViewName = sourceType === 'view' ? viewName || rawTableName : '';
+  const tableName = sourceType === 'custom'
+    ? ''
+    : sourceType === 'view'
+      ? normalizedViewName
+      : rawTableName;
+  const entityCode = sourceType === 'custom' ? '' : rawEntityCode;
   const usesListItems = Boolean(entityCode || tableName);
   const saveMethod = readString(source.saveMethod);
   const deleteMethod = readString(source.deleteMethod);
-  const postData = {
-    ...sourcePostData,
-    ...(tableName && !sourcePostData.tableName && !sourcePostData.table_name ? { tableName } : {}),
-  };
+  const postData = { ...sourcePostData };
+  if (sourceType !== 'custom') {
+    delete postData.tableName;
+    delete postData.table_name;
+    delete postData.entityCode;
+    delete postData.entity_code;
+    delete postData.viewName;
+    delete postData.view_name;
+    if (usesListItems) delete postData.resource;
+    if (tableName) postData.tableName = tableName;
+  }
 
   return {
     key: sourceKey,
     ...(label ? { label } : {}),
+    ...(sourceType ? { sourceType } : {}),
     serviceName: usesListItems ? 'admin' : sourceServiceName,
     serviceMethod: usesListItems ? 'listItems' : sourceServiceMethod,
     ...(saveMethod ? { saveMethod } : {}),
     ...(deleteMethod ? { deleteMethod } : {}),
     ...(tableName ? { tableName } : {}),
+    ...(normalizedViewName ? { viewName: normalizedViewName } : {}),
     ...(Object.keys(postData).length ? { postData } : {}),
     autoLoad: source.autoLoad !== false,
   };
 }
 
-function normalizeDataSources(value: unknown) {
+function normalizeDataSources(value: unknown): LowCodePageSchema['dataSources'] {
   if (!isRecord(value)) return {};
 
   return Object.fromEntries(
@@ -706,6 +746,19 @@ function validateBlock(
         `${path}.targetSourceKey`,
         `Target data source "${block.targetSourceKey}" does not exist.`
       );
+    }
+
+    if (Array.isArray(block.targetSourceKeys)) {
+      block.targetSourceKeys.forEach((sourceKey, index) => {
+        if (!dataSourceExists(schema, sourceKey)) {
+          pushIssue(
+            issues,
+            'error',
+            `${path}.targetSourceKeys.${index}`,
+            `Target data source "${sourceKey}" does not exist.`
+          );
+        }
+      });
     }
   }
 

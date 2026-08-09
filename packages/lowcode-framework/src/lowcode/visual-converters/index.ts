@@ -1,6 +1,7 @@
 import type {
   LowCodeButtonGroupAction,
   LowCodeField,
+  LowCodeFormLayoutNode,
   LowCodeGridColumn,
   LowCodePageBlock,
   LowCodePageDataSource,
@@ -214,12 +215,243 @@ function readDataSourceTableName(source?: LowCodePageDataSource) {
   return readString(source?.tableName ?? source?.table_name ?? source?.postData?.tableName ?? source?.postData?.table_name);
 }
 
+function readGridTableType(
+  block: Extract<LowCodePageBlock, { kind: 'grid' }>,
+  source?: LowCodePageDataSource,
+) {
+  const tableType = readString(block.tableType, readString(source?.sourceType));
+  if (tableType === 'custom' || tableType === 'table' || tableType === 'view') {
+    return tableType;
+  }
+  if (readString(block.viewName, readString(source?.viewName))) return 'view';
+  if (readString(block.tableName, readDataSourceTableName(source))) return 'table';
+  return 'custom';
+}
+
 function getDataSource(
   dataSources: Record<string, LowCodePageDataSource>,
   key: unknown,
 ) {
   const sourceKey = readString(key);
   return sourceKey ? dataSources[sourceKey] : undefined;
+}
+
+function createFormDesignerFieldBlock(
+  field: LowCodeField,
+  index: number,
+): VisualEditorBlockData {
+  const componentMap: Record<string, string> = {
+    'vxe-select': 'picker',
+    'vxe-tree-select': 'picker',
+    'vxe-switch': 'switch',
+    'vxe-radio-group': 'radio',
+    'vxe-checkbox-group': 'checkbox',
+    'lc-array-table': 'array-table',
+    'lc-sub-form': 'sub-form',
+  };
+  const componentKey = componentMap[field.component ?? ''] ?? 'input';
+  const props = isPlainRecord(field.props) ? field.props : {};
+  const block = {
+    _vid: toVisualId(field.field, `form_field_${index}`),
+    moduleName: 'formComponents',
+    componentKey,
+    label: field.label,
+    adjustPosition: true,
+    focus: false,
+    styles: { ...defaultVisualStyles },
+    hasResize: false,
+    props: {
+      name: field.field,
+      label: field.label,
+      placeholder: readString(props.placeholder),
+      required: Array.isArray(field.rules)
+        ? field.rules.some((rule) => rule?.required)
+        : false,
+      __formSpan: field.span ?? 1,
+      __formHelp: readString(field.help),
+      __lowcodeOptionsCode: readString(field.optionsCode),
+    },
+    draggable: true,
+    showStyleConfig: true,
+    animations: [],
+    actions: [],
+    events: [],
+    model: {},
+  } as VisualEditorBlockData;
+
+  if (field.component === 'vxe-textarea') block.props.type = 'textarea';
+  if (field.component === 'vxe-password-input') block.props.type = 'password';
+  if (
+    field.component &&
+    ![
+      'vxe-input',
+      'vxe-textarea',
+      'vxe-password-input',
+      'vxe-select',
+      'vxe-tree-select',
+      'vxe-switch',
+      'vxe-radio-group',
+      'vxe-checkbox-group',
+      'lc-array-table',
+      'lc-sub-form',
+    ].includes(field.component)
+  ) {
+    block.props.__lowcodeComponent = field.component;
+  }
+  if (field.options?.length) {
+    if (componentKey === 'picker') block.props.columns = cloneJson(field.options);
+    else if (componentKey === 'radio' || componentKey === 'checkbox') {
+      block.props.options = cloneJson(field.options);
+    } else {
+      block.props.__lowcodeOptions = cloneJson(field.options);
+    }
+  }
+  if (field.component === 'lc-array-table') Object.assign(block.props, cloneJson(props));
+  if (field.component === 'lc-sub-form') {
+    Object.assign(block.props, cloneJson(props));
+    block.props.__lowcodeComponent = 'lc-sub-form';
+  }
+
+  return block;
+}
+
+function createFormDesignerLayoutBlocks(
+  nodes: LowCodeFormLayoutNode[],
+  fieldBlocks: Map<string, VisualEditorBlockData>,
+  path: string[],
+): VisualEditorBlockData[] {
+  return nodes.flatMap((node, index) => {
+    if (node.kind === 'field') {
+      const fieldBlock = fieldBlocks.get(node.field);
+      if (!fieldBlock) return [];
+      fieldBlocks.delete(node.field);
+      return [fieldBlock];
+    }
+
+    if (node.kind === 'stack') {
+      return createFormDesignerLayoutBlocks(node.blocks, fieldBlocks, [...path, `stack${index}`]);
+    }
+
+    if (node.kind === 'tabs') {
+      const usedKeys = new Set<string>();
+      const panes = node.tabs.map((tab, tabIndex) => ({
+        title: tab.label,
+        name: tab.key || `tab${tabIndex + 1}`,
+      }));
+      const slots = node.tabs.reduce<Record<string, unknown>>((result, tab, tabIndex) => {
+        const tabKey = tab.key || `tab${tabIndex + 1}`;
+        let slotKey = toTabsSlotKey(tabKey, tabIndex);
+        if (usedKeys.has(slotKey)) slotKey = `${slotKey}_${tabIndex + 1}`;
+        usedKeys.add(slotKey);
+        result[slotKey] = {
+          key: slotKey,
+          label: tab.label,
+          children: createFormDesignerLayoutBlocks(
+            tab.blocks,
+            fieldBlocks,
+            [...path, `tab${tabIndex}`],
+          ),
+        };
+        return result;
+      }, {});
+
+      return [{
+        ...createVisualBlock({
+          block: { id: `form-layout-${path.join('-')}-tabs-${index}`, kind: 'tabs', tabs: [] },
+          componentKey: 'vxe-tabs',
+          moduleName: 'containerComponents',
+          label: 'VXE页签容器',
+          path: [...path, `tabs${index}`],
+          props: {
+            panes,
+            modelValue: readString(node.defaultKey, panes[0]?.name ?? ''),
+            slots,
+            type: 'default',
+            position: 'top',
+            width: '100%',
+            height: node.fillRemaining ? '100%' : '',
+            padding: true,
+            showBody: true,
+          },
+        }),
+        layout: node.fillRemaining ? { fillRemaining: true } : {},
+      }];
+    }
+
+    const columns = node.columns.map((column, columnIndex) => ({
+      span: column.span ?? 1,
+      blocks: column.blocks,
+      index: columnIndex,
+    }));
+    const totalWeight = columns.reduce((total, column) => {
+      const weight = Number(column.span);
+      return total + (Number.isFinite(weight) && weight > 0 ? weight : 1);
+    }, 0);
+    const normalizedSpans = columns.map((column) => {
+      const weight = Number(column.span);
+      return Math.max(1, Math.round((24 * (Number.isFinite(weight) && weight > 0 ? weight : 1)) / totalWeight));
+    });
+    normalizedSpans[normalizedSpans.length - 1] +=
+      24 - normalizedSpans.reduce((total, span) => total + span, 0);
+    const slots = columns.reduce<Record<string, unknown>>((result, column, columnIndex) => {
+      const slotKey = `slot${columnIndex}`;
+      result[slotKey] = {
+        key: slotKey,
+        span: normalizedSpans[columnIndex],
+        children: createFormDesignerLayoutBlocks(
+          column.blocks,
+          fieldBlocks,
+          [...path, `row${index}`, `column${columnIndex}`],
+        ),
+      };
+      return result;
+    }, { value: normalizedSpans.join(':') });
+
+    return [createVisualBlock({
+      block: { id: `form-layout-${path.join('-')}-row-${index}`, kind: 'container', blocks: [] },
+      componentKey: 'layout',
+      moduleName: 'containerComponents',
+      label: '布局容器',
+      path: [...path, `row${index}`],
+      props: {
+        gutter: node.gutter ?? '',
+        slots,
+      },
+    })];
+  });
+}
+
+function createFormDesignerModelFromSchema(
+  schema: Record<string, unknown>,
+  title: string,
+): VisualEditorModelValue | undefined {
+  const fields = Array.isArray(schema.fields) ? schema.fields as LowCodeField[] : [];
+  const layout = Array.isArray(schema.layout)
+    ? schema.layout as LowCodeFormLayoutNode[]
+    : [];
+  if (!layout.length) return undefined;
+
+  const fieldBlocks = new Map(
+    fields.map((field, index) => [field.field, createFormDesignerFieldBlock(field, index)]),
+  );
+  const blocks = createFormDesignerLayoutBlocks(layout, fieldBlocks, ['form']);
+  blocks.push(...fieldBlocks.values());
+
+  return {
+    pages: {
+      '/': {
+        title,
+        path: '/',
+        config: { bgColor: '', bgImage: '', keepAlive: false },
+        blocks,
+      },
+    },
+    models: [],
+    actions: cloneJson({
+      fetch: { name: '接口请求', apis: [] },
+      dialog: { name: '对话框', handlers: [] },
+    }),
+  };
 }
 
 function runtimeFieldToVisualField(field: LowCodeField) {
@@ -242,6 +474,7 @@ function runtimeFieldToVisualField(field: LowCodeField) {
     required,
     ...(field.span ? { span: field.span } : {}),
     ...(field.help ? { help: field.help } : {}),
+    ...(field.optionsCode ? { optionsCode: field.optionsCode } : {}),
     ...(field.optionsSourceKey ? { optionsSourceKey: field.optionsSourceKey } : {}),
     ...(readString(optionProps.label) ? { optionLabel: readString(optionProps.label) } : {}),
     ...(readString(optionProps.value) ? { optionValue: readString(optionProps.value) } : {}),
@@ -369,6 +602,8 @@ function convertRuntimeBlockToVisual(
       ? (grid.columns as LowCodeGridColumn[])
       : [];
     const source = getDataSource(context.dataSources, block.sourceKey);
+    const tableType = readGridTableType(block, source);
+    const sourceTarget = readDataSourceTableName(source);
 
     return createVisualBlock({
       block,
@@ -379,13 +614,19 @@ function convertRuntimeBlockToVisual(
       props: {
         blockId: block.id,
         title: readString(block.title, readString(schema.title, source?.label ?? '数据表格')),
+        tableType,
+        tableName: tableType === 'table'
+          ? readString(block.tableName, sourceTarget)
+          : '',
+        viewName: tableType === 'view'
+          ? readString(block.viewName, readString(source?.viewName, sourceTarget))
+          : '',
         sourceKey: readString(block.sourceKey, source?.key ?? 'records'),
         serviceName: source?.serviceName ?? 'admin',
         serviceMethod: source?.serviceMethod ?? 'listItems',
         saveMethod: source?.saveMethod ?? '',
         deleteMethod: source?.deleteMethod ?? '',
         entityCode: readDataSourceEntityCode(source),
-        tableName: readDataSourceTableName(source),
         postDataJson: stringifyJson(source?.postData, {}),
         showRowActions: hasRuntimeRowActions(schema, columns),
         rowActions: runtimeGridRowActionsToVisualRows(schema),
@@ -409,6 +650,13 @@ function convertRuntimeBlockToVisual(
         ? readString(block.targetSourceKey, 'records')
         : readString(block.sourceKey, 'record');
     const source = getDataSource(context.dataSources, sourceKey);
+    const title = readString(
+      block.title,
+      block.kind === 'searchForm' ? '查询条件' : '普通表单',
+    );
+    const formDesignerModel = isPlainRecord(block.formDesignerModel)
+      ? cloneJson(block.formDesignerModel)
+      : createFormDesignerModelFromSchema(schema, `${title}设计`);
 
     return createVisualBlock({
       block,
@@ -418,7 +666,7 @@ function convertRuntimeBlockToVisual(
       path,
       props: {
         blockId: block.id,
-        title: readString(block.title, block.kind === 'searchForm' ? '查询条件' : '普通表单'),
+        title,
         sourceKey,
         submitSourceKey:
           block.kind === 'form'
@@ -432,6 +680,7 @@ function convertRuntimeBlockToVisual(
         postDataJson: stringifyJson(source?.postData, {}),
         initialValuesJson:
           block.kind === 'form' ? stringifyJson(block.initialValues, {}) : undefined,
+        schema: cloneJson(schema),
         submitText: readString(submitAction?.label, '保存'),
         resetText: readString(resetAction?.label, '重置'),
         formActions:
@@ -440,7 +689,7 @@ function convertRuntimeBlockToVisual(
                 runtimeActionToVisualButton(action as LowCodeButtonGroupAction),
               )
             : undefined,
-        formDesignerModel: cloneJson(block.formDesignerModel),
+        formDesignerModel,
         formDesignerUpdatedAt: block.formDesignerUpdatedAt,
         fields,
       },
@@ -574,6 +823,64 @@ function convertRuntimeBlockToVisual(
         text: readString(block.content, readString(block.title, '文本')),
         size: 16,
       },
+    });
+  }
+
+  if (
+    block.kind === 'planningFlow' ||
+    block.kind === 'planningGantt' ||
+    block.kind === 'planningBom'
+  ) {
+    const source = getDataSource(context.dataSources, block.sourceKey);
+    const visualDefinition = block.kind === 'planningFlow'
+      ? { componentKey: 'planning-flow', label: '工艺路线图', dataset: 'flow' }
+      : block.kind === 'planningGantt'
+        ? { componentKey: 'planning-gantt', label: '排产甘特图', dataset: 'operationPlans' }
+        : { componentKey: 'planning-bom', label: '工艺 BOM', dataset: 'bom' };
+    const commonProps = {
+      blockId: block.id,
+      title: readString(block.title, visualDefinition.label),
+      description: readString(block.description),
+      sourceKey: readString(block.sourceKey, visualDefinition.dataset),
+      serviceName: source?.serviceName ?? 'planning',
+      serviceMethod: source?.serviceMethod ?? 'getPlanningConsoleData',
+      postDataJson: stringifyJson(source?.postData, {
+        dataset: visualDefinition.dataset,
+        filters: {},
+      }),
+      height: block.height ?? 420,
+    };
+
+    return createVisualBlock({
+      block,
+      componentKey: visualDefinition.componentKey,
+      moduleName: 'businessComponents',
+      label: visualDefinition.label,
+      path,
+      props: block.kind === 'planningFlow'
+        ? {
+            ...commonProps,
+            fitViewOnInit: block.fitViewOnInit !== false,
+          }
+        : block.kind === 'planningGantt'
+          ? {
+              ...commonProps,
+              rowLabelField: readString(block.rowLabelField, 'resource_name'),
+              startField: readString(block.startField, 'startdate'),
+              endField: readString(block.endField, 'enddate'),
+              labelField: readString(block.labelField, 'reference'),
+              statusField: readString(block.statusField, 'status'),
+              colorField: readString(block.colorField, 'gantt_color'),
+            }
+          : {
+              ...commonProps,
+              keyField: readString(block.keyField, 'id'),
+              titleField: readString(block.titleField, 'title'),
+              childrenField: readString(block.childrenField, 'children'),
+              rowsJson: Array.isArray(block.rows) && block.rows.length
+                ? stringifyJson(block.rows)
+                : '',
+            },
     });
   }
 

@@ -186,8 +186,8 @@ export const Row: any = defineComponent({
       <div
         {...(attrs as AnyRecord)}
         style={{
-          display: 'flex',
-          flexWrap: 'wrap',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(24, minmax(0, 1fr))',
           width: '100%',
           gap: attrs.gutter ? `${Number(attrs.gutter) || 0}px` : undefined,
           alignItems:
@@ -222,8 +222,9 @@ export const Col: any = defineComponent({
           {...(attrs as AnyRecord)}
           style={{
             position: 'relative',
-            flex: `0 0 ${(span / 24) * 100}%`,
-            maxWidth: `${(span / 24) * 100}%`,
+            gridColumn: `span ${span} / span ${span}`,
+            width: '100%',
+            maxWidth: '100%',
             minWidth: 0,
             boxSizing: 'border-box',
             ...(attrs.style as AnyRecord)
