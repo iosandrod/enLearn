@@ -2,6 +2,7 @@ import 'reflect-metadata';
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { responseCompressionMiddleware } from './common/middleware/compression.middleware';
 import { getEnv } from './common/utils/env';
@@ -9,7 +10,10 @@ import { registerChatSocket } from './chat-service/chat.socket';
 import { StandaloneAppModule } from './standalone/standalone.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(StandaloneAppModule);
+  const app = await NestFactory.create<NestExpressApplication>(StandaloneAppModule);
+
+  app.useBodyParser('json', { limit: '20mb' });
+  app.useBodyParser('urlencoded', { limit: '20mb', extended: true });
 
   app.enableCors({
     origin: true,

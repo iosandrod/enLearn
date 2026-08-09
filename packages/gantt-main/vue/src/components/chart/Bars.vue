@@ -395,7 +395,22 @@ function onClick(e) {
 }
 
 function taskStyle(task) {
-	return `left:${task.$x}px;top:${task.$y}px;width:${task.$w}px;height:${task.$h}px;line-height:${task.$h}px;`;
+	const color = typeof task.color === "string" ? task.color.trim() : "";
+	return {
+		left: `${task.$x}px`,
+		top: `${task.$y}px`,
+		width: `${task.$w}px`,
+		height: `${task.$h}px`,
+		lineHeight: `${task.$h}px`,
+		...(color
+			? {
+					"--wx-gantt-task-color": color,
+					"--wx-gantt-task-fill-color": color,
+					"--wx-gantt-task-border-color": color,
+					"--wx-gantt-task-border": `1px solid ${color}`,
+				}
+			: {}),
+	};
 }
 
 function baselineStyle(task) {

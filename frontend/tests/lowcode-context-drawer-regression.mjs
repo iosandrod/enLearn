@@ -210,7 +210,7 @@ assert.deepEqual(
 );
 assert.deepEqual(
   catalog.nodes[1].children[1].methods.map((method) => method.method),
-  ['reloadData'],
+  ['loadData', 'reloadData'],
 );
 assert.deepEqual(catalog.nodes[2].methods.map((method) => method.method), ['open']);
 assert.match(
@@ -218,6 +218,7 @@ assert.match(
   /node: "edit"[\s\S]*?method: "setData"/,
 );
 assert.equal(lowCodeNodeActionRegistry.grid.label, '表格');
+assert.equal(resolveLowCodeNodeAction('grid', 'loadData')?.executor, 'grid.loadData');
 assert.equal(resolveLowCodeNodeAction('grid', 'reloadData')?.executor, 'grid.reloadData');
 assert.equal(resolveLowCodeNodeAction('grid', 'setData'), undefined);
 assert.deepEqual(getLowCodeNodeActionMethods('text'), []);
@@ -380,7 +381,7 @@ assert.match(
 );
 assert.match(
   nodeRegistrySource,
-  /lowCodeNodeActionRegistry[^]*?form: nodeType[^]*?setDataMethod[^]*?grid: nodeType[^]*?reloadDataMethod[^]*?modal: nodeType[^]*?openMethod/,
+  /lowCodeNodeActionRegistry[^]*?form: nodeType[^]*?setDataMethod[^]*?grid: nodeType[^]*?loadDataMethod[^]*?reloadDataMethod[^]*?modal: nodeType[^]*?openMethod/,
   'Node types and callable methods must be maintained in one registry.',
 );
 assert.match(

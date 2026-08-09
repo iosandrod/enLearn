@@ -3,6 +3,7 @@ import type { VisualToLowCodeConverter } from '../types';
 import {
   createLowCodeFormSchema,
   isPlainRecord,
+  readJsonObject,
   readLowCodeFormSchema,
   readString,
   readVisualBlockProps,
@@ -17,6 +18,7 @@ const converter: VisualToLowCodeConverter = {
     blockId: 'query-form',
     title: '查询条件',
     sourceKey: 'records',
+    initialValuesJson: '{}',
     fields: [],
   },
   toRuntimeBlock(block) {
@@ -28,12 +30,14 @@ const converter: VisualToLowCodeConverter = {
       props.schema,
     );
     const sourceKey = readString(props.sourceKey, 'records');
+    const initialValues = readJsonObject(props.initialValuesJson, {});
 
     return {
       id: toBlockId(props.blockId, block._vid),
       kind: 'searchForm',
       title: readString(props.title, 'Query Conditions'),
       targetSourceKey: sourceKey,
+      ...(Object.keys(initialValues).length ? { initialValues } : {}),
       ...(isPlainRecord(props.formDesignerModel)
         ? { formDesignerModel: props.formDesignerModel }
         : {}),

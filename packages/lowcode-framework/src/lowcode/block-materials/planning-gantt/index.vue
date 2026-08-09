@@ -13,11 +13,35 @@
       </div>
     </header>
     <div
-      v-show="validRows.length"
+      v-if="validRows.length"
       ref="chartElement"
       class="lc-planning-gantt__chart"
       :class="{ 'has-selection': selectedTaskId }"
-    />
+    >
+      <Willow :fonts="false">
+        <Gantt
+          :key="ganttRenderKey"
+          :tasks="ganttTasks"
+          :links="[]"
+          :columns="ganttColumns"
+          :task-types="ganttTaskTypes"
+          :scales="ganttScales"
+          :selected="selectedTasks"
+          :start="ganttRange.start"
+          :end="ganttRange.end"
+          :cell-width="ganttCellWidth"
+          :cell-height="34"
+          :scale-height="28"
+          :grid-width="ganttGridWidth"
+          :auto-scale="false"
+          length-unit="hour"
+          duration-unit="hour"
+          cell-borders="full"
+          readonly
+          :onselecttask="handleTaskSelect"
+        />
+      </Willow>
+    </div>
     <div v-if="!validRows.length" class="lc-planning-gantt__empty">
       <i class="ri-calendar-schedule-line" aria-hidden="true" />
       <span>当前筛选条件下没有可绘制的计划单</span>
@@ -26,27 +50,28 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import * as echarts from 'echarts';
-import type { CustomSeriesRenderItem, EChartsOption } from 'echarts';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { Gantt, Willow } from '@svar-ui/vue-gantt';
+import type { ITask, TID } from '@svar-ui/vue-gantt';
+import '@svar-ui/vue-gantt/style.css';
 import { useLowCodePageRuntime } from '../../../runtime/page-runtime';
 import type { LowCodePagePlanningGanttBlock } from '../../../types/lowcode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 
 type GanttRow = Record<string, unknown> & {
-  __start: number;
-  __end: number;
+  __end: Date;
   __rowLabel: string;
-  __taskLabel: string;
-  __color: string;
+  __start: Date;
   __status: string;
+  __taskId: string;
+  __taskLabel: string;
+  __type: GanttTaskType;
 };
 
-type CartesianRenderCoordinates = {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+type GanttTaskType = 'proposed' | 'approved' | 'confirmed' | 'completed' | 'delayed';
+
+type GanttSelectionEvent = {
+  id?: TID;
 };
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePagePlanningGanttBlock>>();
@@ -54,214 +79,213 @@ const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtime = useLowCodePageRuntime(false);
 const chartElement = ref<HTMLDivElement>();
 const selectedTaskId = ref('');
-let chart: echarts.ECharts | null = null;
+const ganttRenderKey = ref(0);
+const ganttGridWidth = ref(260);
 let resizeObserver: ResizeObserver | null = null;
-let observedChartElement: HTMLDivElement | undefined;
+let tabRenderFrame = 0;
 
 const rows = computed(() => {
   const value = (runtime?.state.sources ?? props.resolvedData)[props.block.sourceKey ?? ''];
   return Array.isArray(value) ? value.filter(isRecord) : [];
 });
-const validRows = computed<GanttRow[]>(() => rows.value.flatMap((row) => {
-  const start = new Date(readString(row[props.block.startField ?? 'startdate'])).getTime();
-  const end = new Date(readString(row[props.block.endField ?? 'enddate'])).getTime();
-  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return [];
+
+const validRows = computed<GanttRow[]>(() => rows.value.flatMap((row, index) => {
+  const start = new Date(readString(row[props.block.startField ?? 'startdate']));
+  const end = new Date(readString(row[props.block.endField ?? 'enddate']));
+  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end < start) return [];
   const status = readString(row[props.block.statusField ?? 'status'], 'proposed');
   const delayed = Number(row.delay_hours ?? 0) > 0;
   return [{
     ...row,
-    __start: start,
-    __end: Math.max(end, start + 15 * 60_000),
+    __end: new Date(Math.max(end.getTime(), start.getTime() + 15 * 60_000)),
     __rowLabel: readString(row[props.block.rowLabelField ?? 'resource_name'], '未分配资源'),
-    __taskLabel: readString(row[props.block.labelField ?? 'reference'], readString(row.name, '计划单')),
-    __color: readString(row[props.block.colorField ?? 'gantt_color'], statusColor(status, delayed)),
+    __start: start,
     __status: status,
+    __taskId: readString(row.id, `planning-task-${index}`),
+    __taskLabel: readString(row[props.block.labelField ?? 'reference'], readString(row.name, '计划单')),
+    __type: taskType(status, delayed),
   }];
 }));
+
+const rowByTaskId = computed(() => new Map(validRows.value.map((row) => [row.__taskId, row])));
+
+const ganttTasks = computed<ITask[]>(() => {
+  const groups = new Map<string, GanttRow[]>();
+  for (const row of validRows.value) {
+    groups.set(row.__rowLabel, [...(groups.get(row.__rowLabel) ?? []), row]);
+  }
+  return [...groups.entries()].flatMap(([label, resourceRows], resourceIndex) => {
+    const parentId = `__planning-resource-${resourceIndex}`;
+    const start = new Date(Math.min(...resourceRows.map((row) => row.__start.getTime())));
+    const end = new Date(Math.max(...resourceRows.map((row) => row.__end.getTime())));
+    return [
+      {
+        id: parentId,
+        text: label,
+        parent: 0,
+        type: 'summary',
+        open: true,
+        start,
+        end,
+        resource: label,
+      },
+      ...resourceRows
+        .slice()
+        .sort((left, right) => left.__start.getTime() - right.__start.getTime())
+        .map((row) => ({
+          ...row,
+          id: row.__taskId,
+          text: row.__taskLabel,
+          parent: parentId,
+          type: row.__type,
+          start: row.__start,
+          end: row.__end,
+          progress: taskProgress(row.__status),
+          color: taskColor(row),
+        })),
+    ];
+  });
+});
+
+const ganttRange = computed(() => {
+  if (!validRows.value.length) {
+    const start = new Date();
+    return { start, end: new Date(start.getTime() + 86_400_000) };
+  }
+  const start = Math.min(...validRows.value.map((row) => row.__start.getTime()));
+  const end = Math.max(...validRows.value.map((row) => row.__end.getTime()));
+  const span = Math.max(60 * 60_000, end - start);
+  const padding = Math.max(60 * 60_000, Math.round(span * 0.04));
+  return {
+    start: new Date(start - padding),
+    end: new Date(end + padding),
+  };
+});
+
+const selectedTasks = computed<TID[]>(() => selectedTaskId.value ? [selectedTaskId.value] : []);
 const panelStyle = computed(() => ({ '--lc-gantt-height': toCssSize(props.block.height, '520px') }));
+const ganttCellWidth = computed(() => ganttScaleUnit.value === 'hour' ? 70 : 56);
+const ganttScaleUnit = computed<'hour' | 'day'>(() => {
+  if (!validRows.value.length) return 'day';
+  const span = ganttRange.value.end.getTime() - ganttRange.value.start.getTime();
+  return span <= 4 * 86_400_000 ? 'hour' : 'day';
+});
+const ganttScales = computed(() => ganttScaleUnit.value === 'hour'
+  ? [
+      { unit: 'day', step: 1, format: formatScaleDay },
+      { unit: 'hour', step: 2, format: formatScaleHour },
+    ]
+  : [
+      { unit: 'month', step: 1, format: formatScaleMonth },
+      { unit: 'day', step: 1, format: formatScaleDay },
+    ]);
+const ganttColumns = [
+  { id: 'text', header: '资源 / 计划单', width: 188, flexgrow: 1, sort: false },
+  { id: 'start', header: '开始', width: 112, align: 'center', sort: false },
+];
+const ganttTaskTypes = [
+  { id: 'proposed', label: '建议' },
+  { id: 'approved', label: '批准' },
+  { id: 'confirmed', label: '确认' },
+  { id: 'completed', label: '完成' },
+  { id: 'delayed', label: '延期' },
+  { id: 'summary', label: '资源' },
+  { id: 'milestone', label: '里程碑' },
+];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
+
 function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
+
 function toCssSize(value: unknown, fallback: string) {
   return typeof value === 'number' ? `${value}px` : readString(value, fallback);
 }
-function statusColor(status: string, delayed: boolean) {
-  if (delayed) return '#c2413b';
-  if (status === 'completed' || status === 'closed') return '#667085';
-  if (status === 'confirmed') return '#0f766e';
-  if (status === 'approved') return '#2563a6';
+
+function taskType(status: string, delayed: boolean): GanttTaskType {
+  if (delayed) return 'delayed';
+  if (status === 'completed' || status === 'closed') return 'completed';
+  if (status === 'confirmed') return 'confirmed';
+  if (status === 'approved') return 'approved';
+  return 'proposed';
+}
+
+function taskColor(row: GanttRow) {
+  return readString(row[props.block.colorField ?? 'gantt_color'], statusColor(row.__type));
+}
+
+function statusColor(type: GanttTaskType) {
+  if (type === 'delayed') return '#c2413b';
+  if (type === 'completed') return '#667085';
+  if (type === 'confirmed') return '#0f766e';
+  if (type === 'approved') return '#2563a6';
   return '#b7791f';
 }
-function dateLabel(value: number) {
-  return new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).format(value);
+
+function taskProgress(status: string) {
+  if (status === 'completed' || status === 'closed') return 100;
+  if (status === 'confirmed') return 70;
+  if (status === 'approved') return 35;
+  return 0;
 }
 
-const renderItem: CustomSeriesRenderItem = (params, api) => {
-  const categoryIndex = Number(api.value(0));
-  const start = api.coord([api.value(1), categoryIndex]);
-  const end = api.coord([api.value(2), categoryIndex]);
-  const rowHeight = Math.max(15, Number(api.size?.([0, 1])?.[1] ?? 26) * 0.58);
-  const coordinateSystem = params.coordSys as typeof params.coordSys & CartesianRenderCoordinates;
-  const clipped = echarts.graphic.clipRectByRect(
-    { x: start[0], y: start[1] - rowHeight / 2, width: Math.max(2, end[0] - start[0]), height: rowHeight },
-    {
-      x: coordinateSystem.x,
-      y: coordinateSystem.y,
-      width: coordinateSystem.width,
-      height: coordinateSystem.height,
-    }
-  );
-  if (!clipped) return undefined;
-  return {
-    type: 'rect',
-    shape: clipped,
-    style: api.style({ fill: api.value(3) as string, stroke: '#ffffff', lineWidth: 1 }),
-    emphasis: { style: { shadowBlur: 8, shadowColor: 'rgba(15,23,42,.24)' } },
-  };
-};
-
-function buildOption(): EChartsOption {
-  const rowLabels = [...new Set(validRows.value.map((row) => row.__rowLabel))];
-  const rowIndex = new Map(rowLabels.map((label, index) => [label, index]));
-  const values = validRows.value.map((row) => [
-    rowIndex.get(row.__rowLabel) ?? 0,
-    row.__start,
-    row.__end,
-    row.__color,
-    row.__taskLabel,
-    row.__status,
-    readString(row.id),
-  ]);
-  return {
-    animation: false,
-    grid: { top: 26, right: 24, bottom: 74, left: 154, containLabel: false },
-    tooltip: {
-      trigger: 'item',
-      formatter: (params: any) => {
-        const row = validRows.value[params.dataIndex];
-        if (!row) return '';
-        return [
-          `<strong>${escapeHtml(row.__taskLabel)}</strong>`,
-          `资源：${escapeHtml(row.__rowLabel)}`,
-          `开始：${dateLabel(row.__start)}`,
-          `结束：${dateLabel(row.__end)}`,
-          `数量：${escapeHtml(String(row.quantity ?? '-'))}`,
-          `状态：${escapeHtml(row.__status)}`,
-        ].join('<br>');
-      },
-    },
-    dataZoom: [
-      { type: 'slider', xAxisIndex: 0, height: 20, bottom: 34, borderColor: '#d7dee8', fillerColor: 'rgba(15,118,110,.14)', handleStyle: { color: '#0f766e' } },
-      { type: 'inside', xAxisIndex: 0, zoomOnMouseWheel: 'ctrl', moveOnMouseWheel: true },
-      { type: 'slider', yAxisIndex: 0, width: 12, right: 4, show: rowLabels.length > 14, borderColor: 'transparent' },
-    ],
-    xAxis: {
-      type: 'time',
-      position: 'top',
-      axisLine: { lineStyle: { color: '#bcc6d3' } },
-      axisLabel: { color: '#536174', fontSize: 10, formatter: (value: number) => dateLabel(value) },
-      splitLine: { show: true, lineStyle: { color: '#edf1f5', type: 'dashed' } },
-    },
-    yAxis: {
-      type: 'category',
-      inverse: true,
-      data: rowLabels,
-      axisTick: { show: false },
-      axisLine: { lineStyle: { color: '#d7dee8' } },
-      axisLabel: { color: '#344054', fontSize: 11, width: 138, overflow: 'truncate', margin: 10 },
-      splitLine: { show: true, lineStyle: { color: '#edf1f5' } },
-    },
-    series: [{
-      type: 'custom',
-      renderItem,
-      encode: { x: [1, 2], y: 0 },
-      data: values,
-      selectedMode: 'single',
-      select: {
-        itemStyle: {
-          borderColor: '#111827',
-          borderWidth: 2,
-          shadowBlur: 7,
-          shadowColor: 'rgba(17,24,39,.28)',
-        },
-      },
-    }],
-  };
+function formatScaleMonth(date: Date) {
+  return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long' }).format(date);
 }
 
-function escapeHtml(value: string) {
-  return value.replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character] ?? character));
+function formatScaleDay(date: Date) {
+  return new Intl.DateTimeFormat('zh-CN', { month: '2-digit', day: '2-digit' }).format(date);
 }
 
-async function renderChart() {
-  await nextTick();
-  const element = chartElement.value;
-  observeChartElement(element);
-  if (!element) return;
-  if (!validRows.value.length) {
-    chart?.clear();
-    return;
-  }
-  const { width, height } = element.getBoundingClientRect();
-  if (width < 2 || height < 2) return;
-  if (!chart || chart.getDom() !== element) {
-    chart?.dispose();
-    chart = echarts.init(element);
-  }
-  chart.setOption(buildOption(), true);
-  if (selectedTaskId.value) {
-    const selectedIndex = validRows.value.findIndex((row) => readString(row.id) === selectedTaskId.value);
-    if (selectedIndex >= 0) chart.dispatchAction({ type: 'select', seriesIndex: 0, dataIndex: selectedIndex });
-    else selectedTaskId.value = '';
-  }
-  chart.off('click');
-  chart.on('click', (params) => {
-    const row = validRows.value[params.dataIndex ?? -1];
-    if (!row) return;
-    selectedTaskId.value = readString(row.id);
-    chart?.dispatchAction({ type: 'unselect', seriesIndex: 0 });
-    chart?.dispatchAction({ type: 'select', seriesIndex: 0, dataIndex: params.dataIndex });
-    emit('runtimeEvent', {
-      name: 'planningGantt.taskSelect',
-      blockId: props.block.id,
-      blockKind: props.block.kind,
-      timestamp: Date.now(),
-      payload: { row, value: row.id, id: row.id },
-    });
+function formatScaleHour(date: Date) {
+  return new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false }).format(date);
+}
+
+function handleTaskSelect(event: GanttSelectionEvent) {
+  const id = event.id == null ? '' : String(event.id);
+  const row = rowByTaskId.value.get(id);
+  if (!row) return;
+  selectedTaskId.value = id;
+  emit('runtimeEvent', {
+    name: 'planningGantt.taskSelect',
+    blockId: props.block.id,
+    blockKind: props.block.kind,
+    timestamp: Date.now(),
+    payload: { row, value: row.id, id: row.id },
   });
-  chart.resize();
 }
 
-function observeChartElement(element: HTMLDivElement | undefined) {
-  if (!resizeObserver || observedChartElement === element) return;
-  if (observedChartElement) resizeObserver.unobserve(observedChartElement);
-  observedChartElement = element;
-  if (observedChartElement) resizeObserver.observe(observedChartElement);
+function updateGanttWidth() {
+  const width = chartElement.value?.getBoundingClientRect().width ?? 0;
+  if (width > 0) ganttGridWidth.value = Math.max(176, Math.min(320, Math.round(width * 0.3)));
 }
 
-watch(validRows, () => void renderChart(), { deep: true, flush: 'post' });
+async function refreshVisibleGantt() {
+  await nextTick();
+  updateGanttWidth();
+  if (!validRows.value.length || !chartElement.value?.offsetParent) return;
+  cancelAnimationFrame(tabRenderFrame);
+  tabRenderFrame = requestAnimationFrame(() => {
+    ganttRenderKey.value += 1;
+  });
+}
+
 onMounted(() => {
-  void renderChart();
-  window.addEventListener('lowcode:tab-activated', renderChart);
-  if (typeof ResizeObserver !== 'undefined') {
-    resizeObserver = new ResizeObserver((entries) => {
-      const box = entries[0]?.contentRect;
-      if (!box || box.width < 2 || box.height < 2) return;
-      chart?.resize();
-    });
-    observeChartElement(chartElement.value);
+  void refreshVisibleGantt();
+  window.addEventListener('lowcode:tab-activated', refreshVisibleGantt);
+  if (typeof ResizeObserver !== 'undefined' && chartElement.value) {
+    resizeObserver = new ResizeObserver(updateGanttWidth);
+    resizeObserver.observe(chartElement.value);
   }
 });
+
 onBeforeUnmount(() => {
-  window.removeEventListener('lowcode:tab-activated', renderChart);
+  window.removeEventListener('lowcode:tab-activated', refreshVisibleGantt);
   resizeObserver?.disconnect();
-  observedChartElement = undefined;
-  chart?.dispose();
-  chart = null;
+  cancelAnimationFrame(tabRenderFrame);
 });
 </script>
 
@@ -278,11 +302,34 @@ onBeforeUnmount(() => {
 .lc-planning-gantt__legend .is-confirmed { background: #0f766e; }
 .lc-planning-gantt__legend .is-delayed { background: #c2413b; }
 .lc-planning-gantt__chart, .lc-planning-gantt__empty { min-height: 340px; height: var(--lc-gantt-height); }
+.lc-planning-gantt__chart { overflow: hidden; background: #fff; }
+.lc-planning-gantt__chart :deep(.wx-willow-theme) {
+  width: 100%;
+  height: 100%;
+  --wx-color-primary: #0f766e;
+  --wx-color-primary-selected: #d7eee9;
+  --wx-font-family: Inter, "Microsoft YaHei", Arial, sans-serif;
+  --wx-font-size: 12px;
+  --wx-font-size-sm: 11px;
+  --wx-line-height: 18px;
+  --wx-gantt-select-color: #e7f5f1;
+  --wx-gantt-summary-color: #94a3b8;
+  --wx-gantt-summary-fill-color: #64748b;
+  --wx-gantt-summary-border-color: #64748b;
+  --wx-grid-header-font: 600 12px var(--wx-font-family);
+  --wx-grid-body-font: 400 12px var(--wx-font-family);
+  --wx-timescale-font: 600 11px var(--wx-font-family);
+}
+.lc-planning-gantt__chart :deep(.wx-gantt) { min-width: 0; }
+.lc-planning-gantt__chart :deep(.wx-bar) { font-size: 11px; }
+.lc-planning-gantt__chart :deep(.wx-table-container) { min-width: 176px; }
+.lc-planning-gantt__chart :deep(.wx-resizer-display-all .wx-button-expand-box) { display: none; }
 .lc-planning-gantt__empty { display: grid; place-content: center; justify-items: center; gap: 8px; background: #f8fafc; color: #758195; font-size: 12px; }
 .lc-planning-gantt__empty i { font-size: 26px; }
 @media (max-width: 720px) {
   .lc-planning-gantt__header { align-items: flex-start; }
   .lc-planning-gantt__legend { max-width: 45vw; overflow-x: auto; }
   .lc-planning-gantt__chart, .lc-planning-gantt__empty { height: min(64vh, var(--lc-gantt-height)); }
+  .lc-planning-gantt__chart :deep(.wx-table-container) { min-width: 176px; }
 }
 </style>

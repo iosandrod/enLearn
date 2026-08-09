@@ -180,6 +180,17 @@ async function clickTab(page: any, label: string) {
   await page.waitForTimeout(180);
 }
 
+async function clickInnerTab(page: any, label: string) {
+  const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const tab = page.locator(
+    '.planning-console-inner-tabs:visible .vxe-tabs-header--item',
+    { hasText: new RegExp(`^\\s*${escapedLabel}\\s*$`) }
+  ).first();
+  await tab.waitFor({ state: 'visible', timeout: 15_000 });
+  await tab.click();
+  await page.waitForTimeout(180);
+}
+
 async function insertDesignerMaterial(page: any, label: string) {
   const material = page.locator(`.left-aside [data-label="${label}"]`).first();
   const dropZone = page.locator('.simulator-drop-zone').first();
@@ -317,112 +328,10 @@ async function assertRootFitsViewport(page: any) {
   );
 }
 
-async function chartPixelStats(page: any) {
-  return page.locator('.lc-planning-gantt__chart canvas').first().evaluate((element: HTMLCanvasElement) => {
-    const context = element.getContext('2d');
-    if (!context || !element.width || !element.height) {
-      return { colored: 0, height: element.height, red: 0, sampled: 0, width: element.width };
-    }
-    const pixels = context.getImageData(0, 0, element.width, element.height).data;
-    const stride = Math.max(1, Math.floor((element.width * element.height) / 180_000));
-    let colored = 0;
-    let red = 0;
-    let sampled = 0;
-    for (let pixel = 0; pixel < element.width * element.height; pixel += stride) {
-      const index = pixel * 4;
-      const r = pixels[index];
-      const g = pixels[index + 1];
-      const b = pixels[index + 2];
-      const a = pixels[index + 3];
-      sampled += 1;
-      if (a > 12 && (r < 242 || g < 242 || b < 242)) colored += 1;
-      if (a > 80 && r > 130 && r > g * 1.35 && r > b * 1.15) red += 1;
-    }
-    return { colored, height: element.height, red, sampled, width: element.width };
-  });
-}
-
 async function clickFirstGanttTask(page: any) {
-  const canvas = page.locator('.lc-planning-gantt__chart canvas').first();
-  const point = await canvas.evaluate((element: HTMLCanvasElement) => {
-    const context = element.getContext('2d');
-    const bounds = element.getBoundingClientRect();
-    if (!context || !element.width || !element.height || !bounds.width || !bounds.height) return null;
-
-    const pixels = context.getImageData(0, 0, element.width, element.height).data;
-    const scaleX = element.width / bounds.width;
-    const scaleY = element.height / bounds.height;
-    const taskColors = [
-      [183, 121, 31],
-      [37, 99, 166],
-      [15, 118, 110],
-      [194, 65, 59]
-    ];
-    const minX = Math.max(0, Math.floor(154 * scaleX));
-    const maxX = Math.min(element.width, Math.ceil((bounds.width - 24) * scaleX));
-    const minY = Math.max(0, Math.floor(26 * scaleY));
-    const maxY = Math.min(element.height, Math.ceil((bounds.height - 74) * scaleY));
-    const minimumRun = Math.max(4, Math.ceil(5 * scaleX));
-
-    for (let y = minY; y < maxY; y += 1) {
-      let runStart = -1;
-      for (let x = minX; x <= maxX; x += 1) {
-        let taskPixel = false;
-        if (x < maxX) {
-          const offset = (y * element.width + x) * 4;
-          if (pixels[offset + 3] >= 180) {
-            for (let colorIndex = 0; colorIndex < taskColors.length; colorIndex += 1) {
-              const color = taskColors[colorIndex];
-              if (
-                Math.abs(pixels[offset] - color[0]) <= 12 &&
-                Math.abs(pixels[offset + 1] - color[1]) <= 12 &&
-                Math.abs(pixels[offset + 2] - color[2]) <= 12
-              ) {
-                taskPixel = true;
-                break;
-              }
-            }
-          }
-        }
-        if (taskPixel) {
-          if (runStart < 0) runStart = x;
-          continue;
-        }
-        if (runStart >= 0 && x - runStart >= minimumRun) {
-          const centerX = Math.floor((runStart + x - 1) / 2);
-          let bottom = y;
-          for (let nextY = y + 1; nextY < maxY; nextY += 1) {
-            const offset = (nextY * element.width + centerX) * 4;
-            let nextTaskPixel = false;
-            if (pixels[offset + 3] >= 180) {
-              for (let colorIndex = 0; colorIndex < taskColors.length; colorIndex += 1) {
-                const color = taskColors[colorIndex];
-                if (
-                  Math.abs(pixels[offset] - color[0]) <= 12 &&
-                  Math.abs(pixels[offset + 1] - color[1]) <= 12 &&
-                  Math.abs(pixels[offset + 2] - color[2]) <= 12
-                ) {
-                  nextTaskPixel = true;
-                  break;
-                }
-              }
-            }
-            if (!nextTaskPixel) break;
-            bottom = nextY;
-          }
-          return {
-            x: centerX / scaleX,
-            y: Math.floor((y + bottom) / 2) / scaleY
-          };
-        }
-        runStart = -1;
-      }
-    }
-    return null;
-  });
-
-  assert.ok(point, 'Unable to locate a rendered Gantt task on the canvas.');
-  await canvas.click({ position: point });
+  const task = page.locator('.lc-planning-gantt__chart .wx-bar.wx-task').first();
+  await task.waitFor({ state: 'visible', timeout: 30_000 });
+  await task.click();
 }
 
 async function seedFixture(client: Client, accountId: string, suffix: string): Promise<Fixture> {
@@ -753,6 +662,7 @@ async function main() {
   const postgres = new Client({
     connectionString: directProjectConnectionString(rawConnectionString),
     connectionTimeoutMillis: 30_000,
+    keepAlive: true,
     ssl: { rejectUnauthorized: false }
   });
   postgres.on('error', (error) => {
@@ -983,18 +893,22 @@ async function main() {
       await page.screenshot({ path: resolve(artifactsDir, 'planning-console-preflight.png'), fullPage: true });
 
       await clickTab(page, '排产甘特');
-      await page.locator('.lc-planning-gantt__chart canvas').first()
+      await page.locator('.lc-planning-gantt__chart .wx-gantt').first()
         .waitFor({ state: 'visible', timeout: 30_000 });
-      const ganttPixels = await chartPixelStats(page);
-      assert.ok(ganttPixels.width > 400 && ganttPixels.height > 200, `Gantt canvas is too small: ${JSON.stringify(ganttPixels)}`);
-      assert.ok(ganttPixels.colored > 300, `Gantt canvas appears blank: ${JSON.stringify(ganttPixels)}`);
-      assert.ok(ganttPixels.red > 10, `Delayed Gantt task is not rendered in red: ${JSON.stringify(ganttPixels)}`);
+      const ganttBox = await page.locator('.lc-planning-gantt__chart .wx-gantt').first().boundingBox();
+      assert.ok(ganttBox && ganttBox.width > 400 && ganttBox.height > 200, `Gantt is too small: ${JSON.stringify(ganttBox)}`);
+      assert.equal(await page.locator('.lc-planning-gantt__chart .wx-bar.wx-task').count(), 3);
+      assert.ok(
+        await page.locator('.lc-planning-gantt__chart .wx-bar.delayed').count() > 0,
+        'Delayed Gantt task is not rendered.'
+      );
       await clickFirstGanttTask(page);
       await page.locator('.lc-planning-gantt__chart.has-selection').waitFor({ state: 'visible', timeout: 10_000 });
       await page.screenshot({ path: resolve(artifactsDir, 'planning-console-gantt-desktop.png'), fullPage: true });
       await clickTab(page, '排产总览');
       await clickTab(page, '排产甘特');
-      assert.ok((await chartPixelStats(page)).colored > 300, 'Gantt became blank after its hidden tab was restored.');
+      await page.locator('.lc-planning-gantt__chart .wx-bar.wx-task').first()
+        .waitFor({ state: 'visible', timeout: 30_000 });
 
       await clickTab(page, '工艺路线');
       const flow = page.locator('.lc-planning-flow').first();
@@ -1084,6 +998,7 @@ async function main() {
       }, { reference: `MO-PACK-${suffix}` }, { timeout: 45_000 });
       await page.screenshot({ path: resolve(artifactsDir, 'planning-console-filtered-orders.png'), fullPage: true });
       await visibleRow(page, `DEMAND-UI-${suffix}`).waitFor({ state: 'visible', timeout: 30_000 });
+      await clickInnerTab(page, '计划单');
       await visibleRow(page, `MO-PACK-${suffix}`).waitFor({ state: 'visible', timeout: 30_000 });
       const runtimeSnapshot = await readPlanningConsoleRuntime(page) as {
         runtime?: {
@@ -1105,10 +1020,15 @@ async function main() {
       await clickTab(page, '物料与资源');
       await visibleRow(page, fixture.finishedItemName).waitFor({ state: 'visible', timeout: 30_000 });
       await visibleRow(page, `MO-PACK-${suffix}`).waitFor({ state: 'visible', timeout: 30_000 });
+      await clickInnerTab(page, '计划资源分配');
+      await visibleRow(page, `MO-PACK-${suffix}`).waitFor({ state: 'visible', timeout: 30_000 });
+      await visibleRow(page, `终检包装线-${suffix}`).waitFor({ state: 'visible', timeout: 30_000 });
+      await clickInnerTab(page, '资源负荷');
       await visibleRow(page, `终检包装线-${suffix}`).waitFor({ state: 'visible', timeout: 30_000 });
 
       await clickTab(page, '问题与约束');
       await visibleRow(page, '终检包装线超载 2 小时').waitFor({ state: 'visible', timeout: 30_000 });
+      await clickInnerTab(page, '需求约束');
       await visibleRow(page, '计划交付延期 26 小时').waitFor({ state: 'visible', timeout: 30_000 });
 
       await clickTab(page, '运行记录');
@@ -1148,10 +1068,12 @@ async function main() {
 
       await assertTabHitTarget(page, '排产甘特');
       await clickTab(page, '排产甘特');
-      await page.locator('.lc-planning-gantt__chart canvas').first()
+      await page.locator('.lc-planning-gantt__chart .wx-gantt').first()
         .waitFor({ state: 'visible', timeout: 30_000 });
-      const mobileGanttPixels = await chartPixelStats(page);
-      assert.ok(mobileGanttPixels.colored > 120, `Mobile Gantt appears blank: ${JSON.stringify(mobileGanttPixels)}`);
+      assert.ok(
+        await page.locator('.lc-planning-gantt__chart .wx-bar.wx-task').count() > 0,
+        'Mobile Gantt appears blank.'
+      );
       await page.screenshot({ path: resolve(artifactsDir, 'planning-console-gantt-mobile.png'), fullPage: true });
 
       await clickTab(page, '工艺 BOM');
@@ -1207,7 +1129,7 @@ async function main() {
       );
       await page.locator('.lc-planning-flow .vue-flow__node').first()
         .waitFor({ state: 'visible', timeout: 30_000 });
-      await page.locator('.lc-planning-gantt__chart canvas').first()
+      await page.locator('.lc-planning-gantt__chart .wx-gantt').first()
         .waitFor({ state: 'visible', timeout: 30_000 });
       await page.locator('.lc-planning-bom-node__row').first()
         .waitFor({ state: 'visible', timeout: 30_000 });

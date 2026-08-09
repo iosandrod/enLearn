@@ -96,4 +96,106 @@ assert.deepEqual(gridColumns?.[0]?.formatter, {
   emptyText: '0'
 });
 
+const masterDetailSchema = buildTableListPageSchemaFromMetadata({
+  table: { schema: 'public', name: 'sales_orders', fullName: 'public.sales_orders' },
+  columns: [
+    {
+      name: 'id',
+      ordinalPosition: 1,
+      dataType: 'uuid',
+      udtName: 'uuid',
+      isPrimaryKey: true,
+    },
+  ],
+  childRelations: [
+    {
+      constraintName: 'sales_order_lines_order_id_fkey',
+      childTable: {
+        schema: 'public',
+        name: 'sales_order_lines',
+        fullName: 'public.sales_order_lines',
+      },
+      childColumns: ['order_id'],
+      parentColumns: ['id'],
+      title: '销售订单明细',
+      columns: [
+        {
+          name: 'id',
+          ordinalPosition: 1,
+          dataType: 'uuid',
+          udtName: 'uuid',
+          isPrimaryKey: true,
+        },
+        {
+          name: 'order_id',
+          ordinalPosition: 2,
+          dataType: 'uuid',
+          udtName: 'uuid',
+        },
+      ],
+    },
+  ],
+}, { tableName: 'public.sales_orders' });
+const masterGrid = masterDetailSchema.blocks.find(
+  (block) => block.id === 'publicSalesOrders-grid',
+) as Record<string, unknown>;
+const detailTabs = masterDetailSchema.blocks.find(
+  (block) => block.id === 'publicSalesOrders-detail-tabs',
+) as Record<string, unknown>;
+const detailGrid = (detailTabs.tabs as Array<Record<string, unknown>>)[0]
+  .blocks as Array<Record<string, unknown>>;
+assert.equal(masterGrid.tableType, 'main');
+assert.equal(detailGrid[0].tableType, 'detail');
+assert.deepEqual(
+  ((masterGrid.schema as Record<string, unknown>).events as Record<string, unknown>)
+    .rowCurrentChange,
+  [
+    {
+      type: 'setDataSource',
+      sourceKey: 'publicSalesOrdersSelected',
+      value: '{{ event.row }}',
+    },
+    {
+      type: 'setSearchFilters',
+      sourceKey: 'publicSalesOrderLinesRows',
+      mode: 'replace',
+      values: { order_id: '{{ event.row.id }}' },
+    },
+  ],
+);
+
+const singleTableSchema = buildTableListPageSchemaFromMetadata({
+  table: { schema: 'public', name: 'customers', fullName: 'public.customers' },
+  columns: [
+    {
+      name: 'id',
+      ordinalPosition: 1,
+      dataType: 'uuid',
+      udtName: 'uuid',
+      isPrimaryKey: true,
+    },
+  ],
+  childRelations: [],
+}, { tableName: 'public.customers' });
+const singleTableGrid = singleTableSchema.blocks.find(
+  (block) => block.id === 'publicCustomers-grid',
+) as Record<string, unknown>;
+assert.deepEqual(
+  ((singleTableGrid.schema as Record<string, unknown>).events as Record<string, unknown>)
+    .rowCurrentChange,
+  [
+    {
+      type: 'setDataSource',
+      sourceKey: 'publicCustomersSelected',
+      value: '{{ event.row }}',
+    },
+    {
+      type: 'setSearchFilters',
+      sourceKey: 'publicCustomersSelectedRows',
+      mode: 'replace',
+      values: { id: '{{ event.row.id }}' },
+    },
+  ],
+);
+
 console.log('table page column metadata tests passed');

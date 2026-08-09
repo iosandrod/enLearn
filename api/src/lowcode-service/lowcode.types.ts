@@ -11,6 +11,8 @@ export type LowCodePageRow = {
   keep_alive: boolean;
   page_type: 'list' | 'edit' | 'detail' | 'custom';
   edit_page_id: string | null;
+  view_name: string | null;
+  table_name: string | null;
   schema: LowCodePageSchema;
   version: number;
   published_at: string | null;

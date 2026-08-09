@@ -468,6 +468,8 @@ export type LowCodePageRow = {
   keep_alive: boolean;
   page_type: LowCodePageType;
   edit_page_id: string | null;
+  view_name: string | null;
+  table_name: string | null;
   schema: LowCodePageSchema;
   version: number;
   created_by: string | null;

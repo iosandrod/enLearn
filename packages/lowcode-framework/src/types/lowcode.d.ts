@@ -577,10 +577,12 @@ export type LowCodePageRecord = {
     keep_alive: boolean;
     page_type: LowCodePageType;
     edit_page_id: string | null;
+    view_name: string | null;
+    table_name: string | null;
     schema: LowCodePageSchema;
     version: number;
     published_at: string | null;
     created_at: string;
     updated_at: string;
 };
-export type LowCodePageSummary = Pick<LowCodePageRecord, 'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'page_type' | 'edit_page_id' | 'version' | 'published_at' | 'created_at' | 'updated_at'>;
+export type LowCodePageSummary = Pick<LowCodePageRecord, 'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'page_type' | 'edit_page_id' | 'view_name' | 'table_name' | 'version' | 'published_at' | 'created_at' | 'updated_at'>;

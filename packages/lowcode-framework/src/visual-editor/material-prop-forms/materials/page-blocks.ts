@@ -453,6 +453,10 @@ export default defineMaterialPropForms([
     title: '查询表单属性',
     extendsVisualProps: true,
     fields: [
+      propField({ field: 'blockId', path: 'blockId', label: '区块 ID', defaultValue: 'query-form' }),
+      propField({ field: 'title', path: 'title', label: '标题', defaultValue: '查询条件' }),
+      propField({ field: 'sourceKey', path: 'sourceKey', label: '目标数据源', defaultValue: 'records' }),
+      jsonPropField({ field: 'initialValuesJson', path: 'initialValuesJson', label: '初始值', defaultValue: {} }),
       arrayTablePropField({
         field: 'fields',
         path: 'fields',

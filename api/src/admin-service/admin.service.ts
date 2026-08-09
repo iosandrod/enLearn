@@ -303,9 +303,6 @@ export class AdminService extends BaseService {
       'doc_date',
       'business_date',
       'status',
-      'approval_status',
-      'close_status',
-      'hold_status',
       'org_code',
       'org_name',
       'sales_org_code',
@@ -364,7 +361,6 @@ export class AdminService extends BaseService {
       'line_no',
       'row_no',
       'status',
-      'close_status',
       'item_id',
       'item_code',
       'item_name',
@@ -579,9 +575,6 @@ export class AdminService extends BaseService {
         defaults: {
           external_source: 'manual',
           status: 'draft',
-          approval_status: 'draft',
-          close_status: 'open',
-          hold_status: false,
           currency_code: 'CNY',
           exchange_rate: 1,
           price_includes_tax: true,
@@ -604,7 +597,6 @@ export class AdminService extends BaseService {
         defaults: {
           external_source: 'manual',
           status: 'open',
-          close_status: 'open',
           is_free_gift: false,
           metadata: {}
         },

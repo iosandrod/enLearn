@@ -167,26 +167,18 @@ async function executeEditTransition(
 }
 
 const approveCandidates = [
-  { field: 'approval_status', value: 'approved' },
-  { field: 'approve_status', value: 'approved' },
-  { field: 'audit_status', value: 'approved' },
   { field: 'status', value: 'approved' },
 ] as const;
 
 const unapproveCandidates = [
-  { field: 'approval_status', value: 'draft' },
-  { field: 'approve_status', value: 'draft' },
-  { field: 'audit_status', value: 'draft' },
   { field: 'status', value: 'draft' },
 ] as const;
 
 const closeCandidates = [
-  { field: 'close_status', value: 'closed' },
   { field: 'status', value: 'closed' },
 ] as const;
 
 const openCandidates = [
-  { field: 'close_status', value: 'open' },
   { field: 'status', value: 'open' },
 ] as const;
 
@@ -231,7 +223,7 @@ export const BUILTIN_LOW_CODE_PAGE_FUNCTIONS: readonly BuiltinLowCodePageFunctio
     id: 'list.close',
     name: 'close',
     label: '关闭',
-    description: '关闭选中数据，默认写入 close_status=closed。',
+    description: '关闭选中数据，默认写入 status=closed。',
     pageType: 'list',
     insertText: callInsertText('close'),
     execute: (context) => executeListTransition(context, '关闭', closeCandidates),
@@ -240,7 +232,7 @@ export const BUILTIN_LOW_CODE_PAGE_FUNCTIONS: readonly BuiltinLowCodePageFunctio
     id: 'list.open',
     name: 'open',
     label: '打开',
-    description: '重新打开选中数据，默认写入 close_status=open。',
+    description: '重新打开选中数据，默认写入 status=open。',
     pageType: 'list',
     insertText: callInsertText('open'),
     execute: (context) => executeListTransition(context, '打开', openCandidates),

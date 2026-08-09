@@ -23,7 +23,7 @@ const calls = [];
 const baseContext = {
   pageType: 'list',
   args: {},
-  getSelectedRows: () => [{ id: 'row-1', approval_status: 'draft' }],
+  getSelectedRows: () => [{ id: 'row-1', status: 'draft' }],
   getFormRecords: () => [],
   navigateToEdit: async (row) => calls.push(['navigateToEdit', row]),
   updateRecords: async (rows, values) => {
@@ -53,13 +53,13 @@ await assert.rejects(
 );
 
 await resolveBuiltinLowCodePageFunction('list', 'edit').execute(baseContext);
-assert.deepEqual(calls.shift(), ['navigateToEdit', { id: 'row-1', approval_status: 'draft' }]);
+assert.deepEqual(calls.shift(), ['navigateToEdit', { id: 'row-1', status: 'draft' }]);
 
 await resolveBuiltinLowCodePageFunction('list', 'approve').execute(baseContext);
 assert.deepEqual(calls.shift(), [
   'updateRecords',
-  [{ id: 'row-1', approval_status: 'draft' }],
-  { approval_status: 'approved' },
+  [{ id: 'row-1', status: 'draft' }],
+  { status: 'approved' },
 ]);
 assert.deepEqual(calls.shift(), ['refresh']);
 assert.deepEqual(calls.shift(), ['notify', '审核成功。', 'success']);
@@ -78,7 +78,7 @@ assert.deepEqual(calls.shift(), [
   'approveOrders',
   {
     reason: 'checked',
-    rows: [{ id: 'row-1', approval_status: 'draft' }],
+    rows: [{ id: 'row-1', status: 'draft' }],
   },
 ]);
 assert.deepEqual(calls.shift(), ['refresh']);
@@ -88,7 +88,7 @@ const editCalls = [];
 const editContext = {
   ...baseContext,
   pageType: 'edit',
-  getFormRecords: () => [{ id: 'row-1', close_status: 'open' }],
+  getFormRecords: () => [{ id: 'row-1', status: 'open' }],
   patchForms: async (values) => editCalls.push(['patchForms', values]),
   submitForms: async () => {
     editCalls.push(['submitForms']);
@@ -98,7 +98,7 @@ const editContext = {
 };
 await resolveBuiltinLowCodePageFunction('edit', 'close').execute(editContext);
 assert.deepEqual(editCalls, [
-  ['patchForms', { close_status: 'closed' }],
+  ['patchForms', { status: 'closed' }],
   ['submitForms'],
   ['notify', '关闭成功。', 'success'],
 ]);

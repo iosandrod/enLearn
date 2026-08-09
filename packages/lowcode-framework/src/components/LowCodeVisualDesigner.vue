@@ -184,6 +184,8 @@ const designerPageRecord = computed<LowCodePageRecord>(() => {
     keep_alive: keepAlive,
     page_type: current?.page_type ?? currentSchema?.pageType ?? 'custom',
     edit_page_id: current?.edit_page_id ?? null,
+    view_name: current?.view_name ?? null,
+    table_name: current?.table_name ?? null,
     schema: {
       ...(currentSchema ?? {}),
       code: form.value.code,

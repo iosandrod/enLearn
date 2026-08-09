@@ -695,8 +695,7 @@ function convertRuntimeBlockToVisual(
         entityCode: readDataSourceEntityCode(source),
         tableName: readDataSourceTableName(source),
         postDataJson: stringifyJson(source?.postData, {}),
-        initialValuesJson:
-          block.kind === 'form' ? stringifyJson(block.initialValues, {}) : undefined,
+        initialValuesJson: stringifyJson(block.initialValues, {}),
         schema: cloneJson(schema),
         submitText: readString(submitAction?.label, '保存'),
         resetText: readString(resetAction?.label, '重置'),

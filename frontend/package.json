@@ -10,6 +10,8 @@
     "test:navigation": "node tests/database-navigation-regression.mjs",
     "test:grid-header-menu": "node tests/grid-header-context-menu-regression.mjs",
     "test:grid-source-association": "node tests/grid-designer-source-association-regression.mjs",
+    "test:grid-load-data-action": "node tests/grid-load-data-action-regression.mjs",
+    "test:grid-load-data-action-browser": "node tests/grid-load-data-action-browser-launcher.mjs",
     "test:signin-account": "node tests/signin-account-field-regression.mjs",
     "test:dev-user-login": "node tests/dev-user-login-regression.mjs",
     "test:system-settings": "node tests/system-settings-page-regression.mjs",

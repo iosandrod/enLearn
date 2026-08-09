@@ -36,6 +36,7 @@ declare
     "scriptPolicy": {
       "capabilities": [
         "http.execute",
+        "action.execute",
         "source.refresh",
         "source.set"
       ]
@@ -113,7 +114,7 @@ declare
             "status": "primary",
             "icon": "ri-save-3-line",
             "permissionCode": "sales.orders.manage",
-            "script": "const form = this.forms['sales-order-edit-form'] || {}; const docNo = String(form.doc_no || '').trim(); const docDate = String(form.doc_date || '').trim(); if (!docNo || !docDate) return; const fields = ['external_source','external_id','external_doc_id','external_doc_no','doc_no','doc_type_code','doc_type_name','doc_date','business_date','status','approval_status','close_status','hold_status','org_code','org_name','sales_org_code','sales_org_name','sales_department_code','sales_department_name','salesperson_code','salesperson_name','operator_code','operator_name','customer_id','customer_code','customer_name','invoice_customer_code','invoice_customer_name','payer_customer_code','payer_customer_name','ship_to_customer_code','ship_to_customer_name','contact_name','contact_phone','delivery_address','currency_code','currency_name','exchange_rate','price_includes_tax','payment_terms_code','payment_terms_name','settlement_method_code','settlement_method_name','trade_terms_code','trade_terms_name','delivery_terms_code','delivery_terms_name','price_list_code','price_list_name','total_qty','total_amount','discount_amount','tax_exclusive_amount','tax_amount','tax_inclusive_amount','local_currency_amount','source_doc_type','source_doc_id','source_doc_no','remark','metadata']; const data = {}; for (const field of fields) { if (Object.prototype.hasOwnProperty.call(form, field)) data[field] = form[field]; } for (const dateField of ['doc_date','business_date']) { if (data[dateField] === '') data[dateField] = null; } const currentId = String(form.id || this.route.query.id || '').trim(); await this.executeHttp({ api: 'saveSalesOrder', body: { id: currentId, data } }); await this.$source.refresh('salesOrder');"
+            "script": "const form = this.forms['sales-order-edit-form'] || {}; const docNo = String(form.doc_no || '').trim(); const docDate = String(form.doc_date || '').trim(); if (!docNo || !docDate) return; const fields = ['external_source','external_id','external_doc_id','external_doc_no','doc_no','doc_type_code','doc_type_name','doc_date','business_date','status','org_code','org_name','sales_org_code','sales_org_name','sales_department_code','sales_department_name','salesperson_code','salesperson_name','operator_code','operator_name','customer_id','customer_code','customer_name','invoice_customer_code','invoice_customer_name','payer_customer_code','payer_customer_name','ship_to_customer_code','ship_to_customer_name','contact_name','contact_phone','delivery_address','currency_code','currency_name','exchange_rate','price_includes_tax','payment_terms_code','payment_terms_name','settlement_method_code','settlement_method_name','trade_terms_code','trade_terms_name','delivery_terms_code','delivery_terms_name','price_list_code','price_list_name','total_qty','total_amount','discount_amount','tax_exclusive_amount','tax_amount','tax_inclusive_amount','local_currency_amount','source_doc_type','source_doc_id','source_doc_no','remark','metadata']; const data = {}; for (const field of fields) { if (Object.prototype.hasOwnProperty.call(form, field)) data[field] = form[field]; } for (const dateField of ['doc_date','business_date']) { if (data[dateField] === '') data[dateField] = null; } const currentId = String(form.id || this.route.query.id || '').trim(); await this.executeHttp({ api: 'saveSalesOrder', body: { id: currentId, data } }); await this.$source.refresh('salesOrder');"
           }
         ]
       },
@@ -132,9 +133,6 @@ declare
           "doc_date": "",
           "business_date": "",
           "status": "draft",
-          "approval_status": "draft",
-          "close_status": "open",
-          "hold_status": false,
           "currency_code": "CNY",
           "exchange_rate": 1,
           "price_includes_tax": true,
@@ -155,10 +153,7 @@ declare
             { "field": "doc_type_name", "label": "单据类型", "component": "vxe-input", "props": { "clearable": true, "placeholder": "请输入单据类型" } },
             { "field": "doc_date", "label": "单据日期", "component": "vxe-input", "props": { "clearable": true, "type": "date", "placeholder": "请选择单据日期" }, "rules": [{ "required": true, "message": "请选择单据日期" }] },
             { "field": "business_date", "label": "业务日期", "component": "vxe-input", "props": { "clearable": true, "type": "date", "placeholder": "请选择业务日期" } },
-            { "field": "status", "label": "订单状态", "component": "vxe-select", "props": { "clearable": true, "placeholder": "请选择订单状态" }, "options": [{ "label": "草稿", "value": "draft" }, { "label": "已确认", "value": "confirmed" }, { "label": "执行中", "value": "processing" }, { "label": "已完成", "value": "completed" }, { "label": "已取消", "value": "cancelled" }] },
-            { "field": "approval_status", "label": "审批状态", "component": "vxe-select", "props": { "clearable": true, "placeholder": "请选择审批状态" }, "options": [{ "label": "草稿", "value": "draft" }, { "label": "审批中", "value": "pending" }, { "label": "已批准", "value": "approved" }, { "label": "已驳回", "value": "rejected" }] },
-            { "field": "close_status", "label": "关闭状态", "component": "vxe-select", "props": { "clearable": true, "placeholder": "请选择关闭状态" }, "options": [{ "label": "未关闭", "value": "open" }, { "label": "已关闭", "value": "closed" }] },
-            { "field": "hold_status", "label": "冻结", "component": "vxe-switch" },
+            { "field": "status", "label": "订单状态", "component": "vxe-select", "props": { "clearable": true, "placeholder": "请选择订单状态" }, "options": [{ "label": "草稿", "value": "draft" }, { "label": "审批中", "value": "pending" }, { "label": "已批准", "value": "approved" }, { "label": "已驳回", "value": "rejected" }, { "label": "冻结", "value": "on_hold" }, { "label": "打开", "value": "open" }, { "label": "已确认", "value": "confirmed" }, { "label": "执行中", "value": "processing" }, { "label": "已完成", "value": "completed" }, { "label": "已关闭", "value": "closed" }, { "label": "已取消", "value": "canceled" }] },
             { "field": "org_code", "label": "组织编码", "component": "vxe-input", "props": { "clearable": true, "placeholder": "请输入组织编码" } },
             { "field": "org_name", "label": "组织名称", "component": "vxe-input", "props": { "clearable": true, "placeholder": "请输入组织名称" } },
             { "field": "sales_org_code", "label": "销售组织编码", "component": "vxe-input", "props": { "clearable": true, "placeholder": "请输入销售组织编码" } },
@@ -226,8 +221,8 @@ declare
                   "label": "单据信息",
                   "blocks": [
                     { "kind": "row", "gutter": 12, "columns": [{ "span": 6, "blocks": [{ "kind": "field", "field": "doc_no" }] }, { "span": 6, "blocks": [{ "kind": "field", "field": "doc_type_code" }] }, { "span": 6, "blocks": [{ "kind": "field", "field": "doc_type_name" }] }, { "span": 6, "blocks": [{ "kind": "field", "field": "doc_date" }] }] },
-                    { "kind": "row", "gutter": 12, "columns": [{ "span": 6, "blocks": [{ "kind": "field", "field": "business_date" }] }, { "span": 6, "blocks": [{ "kind": "field", "field": "status" }] }, { "span": 6, "blocks": [{ "kind": "field", "field": "approval_status" }] }, { "span": 6, "blocks": [{ "kind": "field", "field": "close_status" }] }] },
-                    { "kind": "row", "gutter": 12, "columns": [{ "span": 6, "blocks": [{ "kind": "field", "field": "hold_status" }] }, { "span": 9, "blocks": [{ "kind": "field", "field": "org_code" }] }, { "span": 9, "blocks": [{ "kind": "field", "field": "org_name" }] }] },
+                    { "kind": "row", "gutter": 12, "columns": [{ "span": 12, "blocks": [{ "kind": "field", "field": "business_date" }] }, { "span": 12, "blocks": [{ "kind": "field", "field": "status" }] }] },
+                    { "kind": "row", "gutter": 12, "columns": [{ "span": 12, "blocks": [{ "kind": "field", "field": "org_code" }] }, { "span": 12, "blocks": [{ "kind": "field", "field": "org_name" }] }] },
                     { "kind": "row", "gutter": 12, "columns": [{ "span": 12, "blocks": [{ "kind": "field", "field": "sales_org_code" }] }, { "span": 12, "blocks": [{ "kind": "field", "field": "sales_org_name" }] }] },
                     { "kind": "row", "gutter": 12, "columns": [{ "span": 12, "blocks": [{ "kind": "field", "field": "sales_department_code" }] }, { "span": 12, "blocks": [{ "kind": "field", "field": "sales_department_name" }] }] },
                     { "kind": "row", "gutter": 12, "columns": [{ "span": 12, "blocks": [{ "kind": "field", "field": "salesperson_code" }] }, { "span": 12, "blocks": [{ "kind": "field", "field": "salesperson_name" }] }] },
@@ -294,6 +289,7 @@ declare
               {
                 "id": "sales-order-lines-grid",
                 "kind": "grid",
+                "tableType": "detail",
                 "sourceKey": "salesOrderLines",
                 "schema": {
                   "grid": {
@@ -332,7 +328,7 @@ declare
                       "code": "refresh-lines",
                       "label": "刷新明细",
                       "icon": "ri-refresh-line",
-                      "script": "const currentId = String(this.route.query.id || '').trim(); if (!currentId) { await this.$source.set('salesOrderLines', []); return; } const rows = await this.executeHttp({ api: 'listSalesOrderLines', body: { filters: { order_id: currentId }, requiredFilters: ['order_id'], sorts: [{ field: 'line_no', direction: 'asc' }, { field: 'created_at', direction: 'asc' }], limit: 1000 } }); await this.$source.set('salesOrderLines', Array.isArray(rows) ? rows : []);"
+                      "script": "await this.executeAction({ node: 'sales-order-lines-grid', method: 'loadData', filters: { order_id: String(this.route.query.id || '').trim() } });"
                     }
                   ],
                   "rowActions": { "edit": false, "delete": false }

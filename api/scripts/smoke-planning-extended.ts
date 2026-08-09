@@ -13,7 +13,8 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260807140000_planning_service.sql',
   'supabase/migrations/20260808150000_planning_diagnostic_tables.sql',
   'supabase/migrations/20260808160000_planning_extended_models.sql',
-  'supabase/migrations/20260808170000_planning_execution_runtime.sql'
+  'supabase/migrations/20260808170000_planning_execution_runtime.sql',
+  'supabase/migrations/20260810110000_unify_sales_order_status.sql'
 ];
 
 function directProjectConnectionString(value: string) {
@@ -107,15 +108,15 @@ async function main() {
 
     const order = await client.query<{ id: string }>(`
       insert into public.sales_orders (
-        account_id, doc_no, status, approval_status, close_status, customer_code, customer_name
-      ) values ($1, $2, 'open', 'approved', 'open', $3, $4)
+        account_id, doc_no, status, customer_code, customer_name
+      ) values ($1, $2, 'approved', $3, $4)
       returning id
     `, [accountId, `SO-${suffix}`, `CUS-${suffix}`, `Sync customer ${suffix}`]);
     const line = await client.query<{ id: string }>(`
       insert into public.sales_order_lines (
-        account_id, order_id, line_no, status, close_status, item_code, item_name,
+        account_id, order_id, line_no, status, item_code, item_name,
         ordered_qty, open_qty, need_date, warehouse_code
-      ) values ($1, $2, 10, 'open', 'open', $3, $4, 5, 5, '2026-09-01', $5)
+      ) values ($1, $2, 10, 'open', $3, $4, 5, 5, '2026-09-01', $5)
       returning id
     `, [accountId, order.rows[0].id, `ITEM-${suffix}`, `Sync item ${suffix}`, `WH-${suffix}`]);
 
@@ -185,32 +186,32 @@ async function main() {
     assert.equal(reopenedDemand.rows[0]?.status, 'open');
     assert.equal(reopenedDemand.rows[0]?.sync_status, 'synced');
 
-    await client.query(`update public.sales_orders set close_status = 'closed' where id = $1`, [order.rows[0].id]);
+    await client.query(`update public.sales_orders set status = 'closed' where id = $1`, [order.rows[0].id]);
     const closedByHeader = await client.query<{ status: string; sync_status: string }>(`
       select status, sync_status from public.planning_demand
       where account_id = $1 and source_line_id = $2
     `, [accountId, line.rows[0].id]);
     assert.equal(closedByHeader.rows[0]?.status, 'closed');
     assert.equal(closedByHeader.rows[0]?.sync_status, 'ignored');
-    await client.query(`update public.sales_orders set close_status = 'open' where id = $1`, [order.rows[0].id]);
+    await client.query(`update public.sales_orders set status = 'approved' where id = $1`, [order.rows[0].id]);
 
-    await client.query(`update public.sales_orders set hold_status = true where id = $1`, [order.rows[0].id]);
+    await client.query(`update public.sales_orders set status = 'on_hold' where id = $1`, [order.rows[0].id]);
     const heldDemand = await client.query<{ status: string; sync_status: string }>(`
       select status, sync_status from public.planning_demand
       where account_id = $1 and source_line_id = $2
     `, [accountId, line.rows[0].id]);
     assert.equal(heldDemand.rows[0]?.status, 'closed');
     assert.equal(heldDemand.rows[0]?.sync_status, 'ignored');
-    await client.query(`update public.sales_orders set hold_status = false where id = $1`, [order.rows[0].id]);
+    await client.query(`update public.sales_orders set status = 'approved' where id = $1`, [order.rows[0].id]);
 
-    await client.query(`update public.sales_orders set approval_status = 'draft' where id = $1`, [order.rows[0].id]);
+    await client.query(`update public.sales_orders set status = 'draft' where id = $1`, [order.rows[0].id]);
     const unapprovedDemand = await client.query<{ status: string; sync_status: string }>(`
       select status, sync_status from public.planning_demand
       where account_id = $1 and source_line_id = $2
     `, [accountId, line.rows[0].id]);
     assert.equal(unapprovedDemand.rows[0]?.status, 'closed');
     assert.equal(unapprovedDemand.rows[0]?.sync_status, 'pending');
-    await client.query(`update public.sales_orders set approval_status = 'approved' where id = $1`, [order.rows[0].id]);
+    await client.query(`update public.sales_orders set status = 'approved' where id = $1`, [order.rows[0].id]);
 
     await client.query('delete from public.sales_order_lines where id = $1', [line.rows[0].id]);
     const deletedLineDemand = await client.query<{ quantity: string; status: string; sync_status: string }>(`

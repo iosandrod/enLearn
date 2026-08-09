@@ -126,7 +126,7 @@ for (const source of [schemaSource, apiSchemaSource]) {
 }
 assert.match(
   rendererSource,
-  /resolveLowCodeNodeAction\(block\.kind, method\)[\s\S]*?switch \(action\.executor\)[\s\S]*?case 'overlay\.open'[\s\S]*?case 'grid\.reloadData'[\s\S]*?case 'form\.setData'/,
+  /resolveLowCodeNodeAction\(block\.kind, method\)[\s\S]*?if \(action\.execute\)[\s\S]*?switch \(action\.executor\)[\s\S]*?case 'overlay\.open'[\s\S]*?case 'grid\.reloadData'[\s\S]*?case 'form\.setData'/,
   'executeAction must dispatch only actions declared by the node registry.',
 );
 assert.match(

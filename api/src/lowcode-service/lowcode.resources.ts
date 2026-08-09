@@ -13,6 +13,8 @@ const pageFields = [
   'status',
   'keep_alive',
   'page_type',
+  'view_name',
+  'table_name',
   'schema',
   'version',
   'published_at',

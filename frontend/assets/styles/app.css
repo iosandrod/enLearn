@@ -1195,6 +1195,42 @@ a {
   overflow: hidden;
 }
 
+.planning-console-inner-tabs {
+  padding: 0;
+  border-color: #e2e8f0;
+  background: #f8fafc;
+}
+
+.planning-console-inner-tabs > .vxe-tabs > .vxe-tabs-header {
+  padding: 0 8px;
+  background: #f8fafc;
+}
+
+.planning-console-inner-tabs > .vxe-tabs > .vxe-tabs-header .vxe-tabs-header--item-inner {
+  height: 32px;
+}
+
+.planning-console-inner-tabs > .vxe-tabs > .vxe-tabs-header .vxe-tabs-header--item {
+  color: #475569;
+  font-size: 12px;
+}
+
+.planning-console-inner-tabs > .vxe-tabs > .vxe-tabs-header .vxe-tabs-header--item.is--active {
+  font-weight: 600;
+}
+
+.planning-console-inner-tabs > .vxe-tabs > .vxe-tabs--body {
+  background: #ffffff;
+}
+
+.planning-console-inner-tabs .lc-tab-pane-stack {
+  padding-top: 0;
+}
+
+.planning-console-inner-tabs .lc-tab-pane-stack > .content-panel {
+  border: 0;
+}
+
 .lc-tab-list {
   display: flex;
   align-items: center;

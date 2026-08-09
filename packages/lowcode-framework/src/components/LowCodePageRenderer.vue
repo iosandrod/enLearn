@@ -114,7 +114,10 @@ import {
 } from '../runtime/page-runtime';
 import { lowCodeScriptContextProviderKey } from '../runtime/script-context-provider';
 import type { LowCodeContextSource } from '../runtime/lowcode-context';
-import { resolveLowCodeNodeAction } from '../runtime/node-action-registry';
+import {
+  resolveLowCodeDataSourceNodeAction,
+  resolveLowCodeNodeAction,
+} from '../runtime/node-action-registry';
 
 const props = withDefaults(defineProps<{
   page: LowCodePageRecord & {
@@ -585,13 +588,14 @@ function mergeDataSourceSearchFilters(
 function resolveDataSourceRequest(
   key: string,
   source: LowCodePageDataSource,
-  postDataOverride?: Record<string, unknown>
+  postDataOverride?: Record<string, unknown>,
+  includeSearchFilters = true,
 ) {
   const basePostData = resolveRuntimePostData(postDataOverride ?? source.postData);
-  const postData = mergeDataSourceSearchFilters(
-    key,
-    withDataSourceTargetPostData(source, basePostData)
-  );
+  const targetedPostData = withDataSourceTargetPostData(source, basePostData);
+  const postData = includeSearchFilters
+    ? mergeDataSourceSearchFilters(key, targetedPostData)
+    : targetedPostData;
   const service = resolveDataSourceService(source, postData);
 
   return normalizeLegacyAdminListRequest(service.serviceName, service.serviceMethod, postData);
@@ -751,7 +755,20 @@ async function refreshDataSources(sourceKeys: string[] = []) {
         })
         .filter((entry): entry is readonly [string, LowCodePageDataSource] => Boolean(entry))
     : allEntries;
+  const pageBlocks = flattenPageBlocks(props.page.schema);
   const requests = entries.map(([key, source]) => {
+    const nodeAction = resolveLowCodeDataSourceNodeAction(pageBlocks, key);
+    if (nodeAction) {
+      return executeScriptNodeAction({
+        node: nodeAction.block.id,
+        method: nodeAction.action.method,
+      })
+        .then(() => '')
+        .catch((error: unknown) =>
+          `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.refreshDataSource')}`
+        );
+    }
+
     const version = beginSourceRequest(key);
     runtime.setSource(key, undefined);
 
@@ -1544,6 +1561,19 @@ async function loadPageData(nextPage: LowCodePageRecord) {
   }
 
   const requests = entries.map(([key, source]) => {
+    const nodeAction = resolveLowCodeDataSourceNodeAction(pageBlocks, key);
+    if (nodeAction) {
+      if (source.autoLoad === false) return Promise.resolve('');
+      return executeScriptNodeAction({
+        node: nodeAction.block.id,
+        method: nodeAction.action.method,
+      })
+        .then(() => '')
+        .catch((error: unknown) =>
+          `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.loadDataSource')}`
+        );
+    }
+
     const version = beginSourceRequest(key);
     return invokeDataSource(key, source)
       .then(([resolvedKey, value]) => {
@@ -1764,6 +1794,46 @@ async function executeScriptNodeAction(options: Record<string, unknown>) {
 
   const action = resolveLowCodeNodeAction(block.kind, method);
   if (!action) throw new Error(`节点 "${node}" 不支持动作 "${method}"。`);
+
+  if (action.execute) {
+    return action.execute({
+      block,
+      options,
+      blocks: flattenPageBlocks(props.page.schema),
+      searchFilters: searchFilters.value,
+      grids: runtime.state.grids,
+      getDataSource,
+      resolveDataSourceRequest: (sourceKey, source, postData) =>
+        resolveDataSourceRequest(sourceKey, source, postData, false),
+      resolveRuntimePostData,
+      invokeDataSourceRequest: async (request, source) => {
+        try {
+          return await host.getServiceApi().invoke(
+            request.serviceName,
+            request.serviceMethod,
+            request.postData,
+          );
+        } catch (error) {
+          if (shouldReturnEmptyForUnavailableList(error, source.serviceMethod ?? request.serviceMethod)) {
+            return [];
+          }
+          throw error;
+        }
+      },
+      setSource: (sourceKey, value) => runtime.setSource(sourceKey, value),
+      syncGridStates: () => syncPageGridStates(),
+      beginSourceRequest,
+      isCurrentSourceRequest,
+      finishSourceRequest,
+      setLoadingGrid: (blockId, loading) => {
+        if (loading) {
+          loadingGridId.value = blockId;
+        } else if (loadingGridId.value === blockId) {
+          loadingGridId.value = '';
+        }
+      },
+    });
+  }
 
   switch (action.executor) {
     case 'overlay.open': {
@@ -2048,10 +2118,7 @@ async function updateBuiltinRecords(
 function resetBuiltinForms(mode: 'create' | 'copy') {
   const primaryKeys = new Set(['id', 'created_at', 'created_by', 'updated_at', 'updated_by']);
   const stateFields: Record<string, unknown> = {
-    approval_status: 'draft',
-    approve_status: 'draft',
-    audit_status: 'draft',
-    close_status: 'open',
+    status: 'draft',
   };
 
   for (const block of flattenPageBlocks(props.page.schema)) {

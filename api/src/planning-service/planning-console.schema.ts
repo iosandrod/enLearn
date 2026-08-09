@@ -18,6 +18,12 @@ export const PLANNING_CONSOLE_SOURCE_KEYS = [
 
 type Row = Record<string, unknown>;
 
+export type PlanningConsoleInnerTabs = {
+  orders: Row;
+  supply: Row;
+  issues: Row;
+};
+
 const empty = { type: 'text', emptyText: '-' };
 const number = { type: 'number', locale: 'zh-CN', emptyText: '0' };
 const datetime = { type: 'datetime', locale: 'zh-CN', emptyText: '-' };
@@ -77,6 +83,25 @@ function consoleSource(dataset: typeof PLANNING_CONSOLE_SOURCE_KEYS[number]) {
     serviceMethod: 'getPlanningConsoleData',
     postData: { dataset, filters: consoleFilterExpressions() },
     autoLoad: true
+  };
+}
+
+export function selectPlanningConsoleInnerTabs(schema: LowCodePageSchema): PlanningConsoleInnerTabs {
+  const tabsBlock = schema.blocks.find((block) => block.id === 'planning_console_tabs');
+  const tabs = Array.isArray(tabsBlock?.tabs) ? tabsBlock.tabs : [];
+  const selectInnerTabs = (key: keyof PlanningConsoleInnerTabs) => {
+    const tab = tabs.find((candidate) => candidate && candidate.key === key);
+    const innerTabs = Array.isArray(tab?.blocks) ? tab.blocks[0] : undefined;
+    if (!innerTabs || typeof innerTabs !== 'object' || Array.isArray(innerTabs)) {
+      throw new Error(`Planning console ${key} inner tabs are missing.`);
+    }
+    return innerTabs as Row;
+  };
+
+  return {
+    orders: selectInnerTabs('orders'),
+    supply: selectInnerTabs('supply'),
+    issues: selectInnerTabs('issues')
   };
 }
 
@@ -495,60 +520,112 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
           },
           {
             key: 'orders', label: '需求与计划单', blocks: [
-              grid('planning_console_demands_grid', '需求', 'demands', [
-                column('name', '需求编号', { minWidth: 150 }), column('item_name', '物料', { minWidth: 160 }),
-                column('customer_name', '客户', { minWidth: 140 }), column('location_name', '地点', { minWidth: 130 }),
-                column('due', '交期', { minWidth: 170, formatter: datetime }), column('quantity', '需求量', { align: 'right', formatter: number }),
-                column('version_planned_quantity', '已计划', { align: 'right', formatter: number }),
-                column('coverage_percent', '覆盖率', { align: 'right', formatter: number }),
-                column('version_delivery_date', '计划交付', { minWidth: 170, formatter: datetime }),
-                column('lateness_hours', '延期小时', { align: 'right', formatter: number }), column('status', '状态')
-              ]),
-              grid('planning_console_operation_plans_grid', '计划单', 'operationPlans', [
-                column('reference', '计划单号', { minWidth: 160 }), column('type', '类型', { width: 90 }),
-                column('operation_name', '工序', { minWidth: 160 }), column('item_name', '物料', { minWidth: 160 }),
-                column('resource_name', '资源', { minWidth: 180 }), column('quantity', '数量', { align: 'right', formatter: number }),
-                column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime }),
-                column('duration_hours', '工时', { align: 'right', formatter: number }), column('delay_hours', '延期小时', { align: 'right', formatter: number }), column('status', '状态'),
-                column('demand_name', '需求', { minWidth: 150 }), column('version_code', '版本', { minWidth: 130 })
-              ])
+              {
+                id: 'planning_console_orders_tabs',
+                kind: 'tabs',
+                defaultKey: 'demands',
+                className: 'planning-console-inner-tabs planning-console-orders-tabs',
+                tabs: [
+                  {
+                    key: 'demands', label: '需求', blocks: [
+                      grid('planning_console_demands_grid', '需求', 'demands', [
+                        column('name', '需求编号', { minWidth: 150 }), column('item_name', '物料', { minWidth: 160 }),
+                        column('customer_name', '客户', { minWidth: 140 }), column('location_name', '地点', { minWidth: 130 }),
+                        column('due', '交期', { minWidth: 170, formatter: datetime }), column('quantity', '需求量', { align: 'right', formatter: number }),
+                        column('version_planned_quantity', '已计划', { align: 'right', formatter: number }),
+                        column('coverage_percent', '覆盖率', { align: 'right', formatter: number }),
+                        column('version_delivery_date', '计划交付', { minWidth: 170, formatter: datetime }),
+                        column('lateness_hours', '延期小时', { align: 'right', formatter: number }), column('status', '状态')
+                      ])
+                    ]
+                  },
+                  {
+                    key: 'operation-plans', label: '计划单', blocks: [
+                      grid('planning_console_operation_plans_grid', '计划单', 'operationPlans', [
+                        column('reference', '计划单号', { minWidth: 160 }), column('type', '类型', { width: 90 }),
+                        column('operation_name', '工序', { minWidth: 160 }), column('item_name', '物料', { minWidth: 160 }),
+                        column('resource_name', '资源', { minWidth: 180 }), column('quantity', '数量', { align: 'right', formatter: number }),
+                        column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime }),
+                        column('duration_hours', '工时', { align: 'right', formatter: number }), column('delay_hours', '延期小时', { align: 'right', formatter: number }), column('status', '状态'),
+                        column('demand_name', '需求', { minWidth: 150 }), column('version_code', '版本', { minWidth: 130 })
+                      ])
+                    ]
+                  }
+                ]
+              }
             ]
           },
           {
             key: 'supply', label: '物料与资源', blocks: [
-              grid('planning_console_materials_grid', '计划物料流', 'materials', [
-                column('flowdate', '流动时间', { minWidth: 170, formatter: datetime }),
-                column('operationplan_reference', '计划单', { minWidth: 160 }), column('item_name', '物料', { minWidth: 160 }),
-                column('location_name', '地点', { minWidth: 140 }), column('movement_type', '方向', { width: 90 }),
-                column('quantity', '数量', { align: 'right', formatter: number }), column('onhand', '结余库存', { align: 'right', formatter: number }),
-                column('minimum', '最低库存', { align: 'right', formatter: number }), column('status', '状态')
-              ]),
-              grid('planning_console_plan_resources_grid', '计划资源分配', 'planResources', [
-                column('resource_name', '资源', { minWidth: 170 }), column('operationplan_reference', '计划单', { minWidth: 160 }),
-                column('quantity', '负荷', { align: 'right', formatter: number }), column('setup', '换型'),
-                column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime }),
-                column('status', '状态')
-              ]),
-              grid('planning_console_resource_plans_grid', '资源负荷', 'resourcePlans', [
-                column('resource_name', '资源', { minWidth: 170 }), column('startdate', '时间桶', { minWidth: 170, formatter: datetime }),
-                column('available', '可用', { align: 'right', formatter: number }), column('load', '负荷', { align: 'right', formatter: number }),
-                column('setup', '换型', { align: 'right', formatter: number }), column('free', '空闲', { align: 'right', formatter: number }),
-                column('utilization_percent', '利用率', { align: 'right', formatter: number }), column('overloaded', '超载', { width: 90 })
-              ])
+              {
+                id: 'planning_console_supply_tabs',
+                kind: 'tabs',
+                defaultKey: 'materials',
+                className: 'planning-console-inner-tabs planning-console-supply-tabs',
+                tabs: [
+                  {
+                    key: 'materials', label: '计划物料流', blocks: [
+                      grid('planning_console_materials_grid', '计划物料流', 'materials', [
+                        column('flowdate', '流动时间', { minWidth: 170, formatter: datetime }),
+                        column('operationplan_reference', '计划单', { minWidth: 160 }), column('item_name', '物料', { minWidth: 160 }),
+                        column('location_name', '地点', { minWidth: 140 }), column('movement_type', '方向', { width: 90 }),
+                        column('quantity', '数量', { align: 'right', formatter: number }), column('onhand', '结余库存', { align: 'right', formatter: number }),
+                        column('minimum', '最低库存', { align: 'right', formatter: number }), column('status', '状态')
+                      ])
+                    ]
+                  },
+                  {
+                    key: 'plan-resources', label: '计划资源分配', blocks: [
+                      grid('planning_console_plan_resources_grid', '计划资源分配', 'planResources', [
+                        column('resource_name', '资源', { minWidth: 170 }), column('operationplan_reference', '计划单', { minWidth: 160 }),
+                        column('quantity', '负荷', { align: 'right', formatter: number }), column('setup', '换型'),
+                        column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime }),
+                        column('status', '状态')
+                      ])
+                    ]
+                  },
+                  {
+                    key: 'resource-plans', label: '资源负荷', blocks: [
+                      grid('planning_console_resource_plans_grid', '资源负荷', 'resourcePlans', [
+                        column('resource_name', '资源', { minWidth: 170 }), column('startdate', '时间桶', { minWidth: 170, formatter: datetime }),
+                        column('available', '可用', { align: 'right', formatter: number }), column('load', '负荷', { align: 'right', formatter: number }),
+                        column('setup', '换型', { align: 'right', formatter: number }), column('free', '空闲', { align: 'right', formatter: number }),
+                        column('utilization_percent', '利用率', { align: 'right', formatter: number }), column('overloaded', '超载', { width: 90 })
+                      ])
+                    ]
+                  }
+                ]
+              }
             ]
           },
           {
             key: 'issues', label: '问题与约束', blocks: [
-              grid('planning_console_problems_grid', '计划问题', 'problems', [
-                column('entity', '实体', { minWidth: 130 }), column('owner', '对象', { minWidth: 170 }),
-                column('name', '问题类型', { minWidth: 150 }), column('description', '问题说明', { minWidth: 360 }),
-                column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime })
-              ]),
-              grid('planning_console_constraints_grid', '需求约束', 'constraints', [
-                column('demand_name', '需求', { minWidth: 150 }), column('item_name', '物料', { minWidth: 150 }),
-                column('name', '约束类型', { minWidth: 150 }), column('description', '约束说明', { minWidth: 360 }),
-                column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime })
-              ])
+              {
+                id: 'planning_console_issues_tabs',
+                kind: 'tabs',
+                defaultKey: 'problems',
+                className: 'planning-console-inner-tabs planning-console-issues-tabs',
+                tabs: [
+                  {
+                    key: 'problems', label: '计划问题', blocks: [
+                      grid('planning_console_problems_grid', '计划问题', 'problems', [
+                        column('entity', '实体', { minWidth: 130 }), column('owner', '对象', { minWidth: 170 }),
+                        column('name', '问题类型', { minWidth: 150 }), column('description', '问题说明', { minWidth: 360 }),
+                        column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime })
+                      ])
+                    ]
+                  },
+                  {
+                    key: 'constraints', label: '需求约束', blocks: [
+                      grid('planning_console_constraints_grid', '需求约束', 'constraints', [
+                        column('demand_name', '需求', { minWidth: 150 }), column('item_name', '物料', { minWidth: 150 }),
+                        column('name', '约束类型', { minWidth: 150 }), column('description', '约束说明', { minWidth: 360 }),
+                        column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime })
+                      ])
+                    ]
+                  }
+                ]
+              }
             ]
           },
           {

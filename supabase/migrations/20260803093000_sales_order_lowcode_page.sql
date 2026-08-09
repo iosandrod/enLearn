@@ -56,6 +56,7 @@ insert into public.lowcode_pages (
         "postData": {
           "tableName": "sales_order_lines",
           "filters": { "order_id": "__none__" },
+          "requiredFilters": ["order_id"],
           "sorts": [
             { "field": "line_no", "direction": "asc" },
             { "field": "created_at", "direction": "asc" }
@@ -108,7 +109,7 @@ insert into public.lowcode_pages (
                 "type": "setSearchFilters",
                 "sourceKey": "salesOrders",
                 "mode": "replace",
-                "values": { "close_status": "open" }
+                "values": { "status": "open" }
               }
             ]
           },
@@ -125,6 +126,7 @@ insert into public.lowcode_pages (
       {
         "id": "sales-order-grid",
         "kind": "grid",
+        "tableType": "main",
         "sourceKey": "salesOrders",
         "schema": {
           "grid": {
@@ -147,9 +149,7 @@ insert into public.lowcode_pages (
               { "field": "tax_exclusive_amount", "title": "未税金额", "width": 130, "align": "right", "formatter": { "type": "number", "emptyText": "0" } },
               { "field": "tax_amount", "title": "税额", "width": 120, "align": "right", "formatter": { "type": "number", "emptyText": "0" } },
               { "field": "tax_inclusive_amount", "title": "价税合计", "width": 130, "align": "right", "formatter": { "type": "number", "emptyText": "0" } },
-              { "field": "status", "title": "状态", "width": 96, "align": "center" },
-              { "field": "approval_status", "title": "审批状态", "width": 110, "align": "center" },
-              { "field": "close_status", "title": "关闭状态", "width": 110, "align": "center" },
+              { "field": "status", "title": "订单状态", "width": 110, "align": "center" },
               { "field": "external_doc_no", "title": "U9单号", "minWidth": 150, "showOverflow": "tooltip" },
               { "field": "remark", "title": "备注", "minWidth": 220, "showOverflow": "tooltip" }
             ]
@@ -184,6 +184,7 @@ insert into public.lowcode_pages (
               {
                 "id": "sales-order-lines-grid",
                 "kind": "grid",
+                "tableType": "detail",
                 "sourceKey": "salesOrderLines",
                 "schema": {
                   "grid": {

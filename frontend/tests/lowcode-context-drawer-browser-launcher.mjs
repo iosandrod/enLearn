@@ -106,7 +106,7 @@ try {
   await drawer.locator('input').first().fill('records-grid');
   assert.equal(await drawer.locator('.lc-context-drawer__node', { hasText: 'records-grid' }).count(), 1);
   assert.equal(
-    await drawer.locator('.lc-context-drawer__node-method', { hasText: 'reloadData' }).count(),
+    await drawer.locator('.lc-context-drawer__node-method', { hasText: /^loadData\b/ }).count(),
     1,
   );
   await drawer.locator('input').first().fill('record-dialog');

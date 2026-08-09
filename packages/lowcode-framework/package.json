@@ -33,6 +33,8 @@
     "./runtime/scripts": "./src/runtime/scripts.ts",
     "./runtime/lowcode-context-drawer": "./src/runtime/lowcode-context-drawer.tsx",
     "./runtime/node-action-registry": "./src/runtime/node-action-registry.ts",
+    "./runtime/node-action-runtime": "./src/runtime/node-action-runtime.ts",
+    "./runtime/grid-node-actions": "./src/runtime/grid-node-actions.ts",
     "./runtime/builtin-page-functions": "./src/runtime/builtin-page-functions.ts",
     "./actions": "./src/lowcode/actions/index.ts",
     "./core/host": "./src/core/host.ts",
@@ -69,6 +71,7 @@
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "@svar-ui/vue-gantt": "workspace:*",
     "@jitl/quickjs-wasmfile-release-sync": "0.32.0",
     "quickjs-emscripten-core": "0.32.0"
   }

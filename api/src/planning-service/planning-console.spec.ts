@@ -439,6 +439,36 @@ function firstTabBlock(key: string) {
 assert.equal(firstTabBlock('gantt')?.kind, 'planningGantt');
 assert.equal(firstTabBlock('flow')?.kind, 'planningFlow');
 assert.equal(firstTabBlock('bom')?.kind, 'planningBom');
+const ordersTabs = firstTabBlock('orders');
+assert.equal(ordersTabs?.id, 'planning_console_orders_tabs');
+assert.equal(ordersTabs?.kind, 'tabs');
+assert.equal(ordersTabs?.defaultKey, 'demands');
+assert.deepEqual(
+  Array.isArray(ordersTabs?.tabs)
+    ? (ordersTabs.tabs as Array<Record<string, unknown>>).map((tab) => tab.key)
+    : [],
+  ['demands', 'operation-plans']
+);
+const supplyTabs = firstTabBlock('supply');
+assert.equal(supplyTabs?.id, 'planning_console_supply_tabs');
+assert.equal(supplyTabs?.kind, 'tabs');
+assert.equal(supplyTabs?.defaultKey, 'materials');
+assert.deepEqual(
+  Array.isArray(supplyTabs?.tabs)
+    ? (supplyTabs.tabs as Array<Record<string, unknown>>).map((tab) => tab.key)
+    : [],
+  ['materials', 'plan-resources', 'resource-plans']
+);
+const issuesTabs = firstTabBlock('issues');
+assert.equal(issuesTabs?.id, 'planning_console_issues_tabs');
+assert.equal(issuesTabs?.kind, 'tabs');
+assert.equal(issuesTabs?.defaultKey, 'problems');
+assert.deepEqual(
+  Array.isArray(issuesTabs?.tabs)
+    ? (issuesTabs.tabs as Array<Record<string, unknown>>).map((tab) => tab.key)
+    : [],
+  ['problems', 'constraints']
+);
 const visitBlocks = (values: unknown[]): Record<string, unknown>[] => values.flatMap((value) => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return [];
   const block = value as Record<string, unknown>;

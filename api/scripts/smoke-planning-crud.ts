@@ -16,7 +16,8 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260807140000_planning_service.sql',
   'supabase/migrations/20260808150000_planning_diagnostic_tables.sql',
   'supabase/migrations/20260808160000_planning_extended_models.sql',
-  'supabase/migrations/20260808170000_planning_execution_runtime.sql'
+  'supabase/migrations/20260808170000_planning_execution_runtime.sql',
+  'supabase/migrations/20260810110000_unify_sales_order_status.sql'
 ];
 
 type SavedRow = Record<string, unknown> & { id: string; account_id: string };

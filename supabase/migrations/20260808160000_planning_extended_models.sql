@@ -1634,9 +1634,8 @@ declare
   snapshot jsonb;
 begin
   select orders.account_id, orders.id order_id, orders.doc_no, orders.status order_status,
-         orders.approval_status, orders.close_status order_close_status, orders.hold_status,
          orders.customer_code, orders.customer_id, orders.customer_name,
-         lines.id line_id, lines.line_no, lines.status line_status, lines.close_status line_close_status,
+         lines.id line_id, lines.line_no, lines.status line_status,
          lines.item_code, lines.item_id source_item_id, lines.item_name, lines.warehouse_code,
          lines.ordered_qty, lines.open_qty, lines.need_date, lines.promise_date, lines.delivery_date,
          lines.project_code, lines.updated_at line_updated_at
@@ -1692,8 +1691,7 @@ begin
 
   target_status := case
     when lower(coalesce(source_row.order_status, '')) in ('canceled', 'cancelled', 'void', 'rejected') then 'canceled'
-    when lower(coalesce(source_row.order_close_status, '')) in ('closed', 'close')
-      or lower(coalesce(source_row.line_close_status, '')) in ('closed', 'close')
+    when lower(coalesce(source_row.order_status, '')) in ('closed', 'close')
       or lower(coalesce(source_row.line_status, '')) in ('canceled', 'cancelled', 'closed')
       or target_quantity <= 0 then 'closed'
     else 'open'
@@ -1718,10 +1716,12 @@ begin
   elsif target_due is null then
     v_sync_status := 'error';
     v_sync_message := 'Missing demand date.';
-  elsif source_row.hold_status then
+  elsif lower(coalesce(source_row.order_status, '')) in ('on_hold', 'hold', 'held') then
     v_sync_status := 'ignored';
     v_sync_message := 'Sales order is on hold.';
-  elsif lower(coalesce(source_row.approval_status, '')) not in ('approved', 'approve', 'passed') then
+  elsif lower(coalesce(source_row.order_status, '')) not in (
+    'open', 'approved', 'approve', 'passed', 'confirmed', 'processing', 'completed'
+  ) then
     v_sync_status := 'pending';
     v_sync_message := 'Sales order is not approved.';
   else
@@ -1886,14 +1886,14 @@ $function$;
 
 drop trigger if exists planning_sales_order_line_sync on public.sales_order_lines;
 create trigger planning_sales_order_line_sync
-after insert or delete or update of status, close_status, item_id, item_code, item_name, ordered_qty, open_qty,
+after insert or delete or update of status, item_id, item_code, item_name, ordered_qty, open_qty,
   need_date, promise_date, delivery_date, warehouse_code, project_code
 on public.sales_order_lines
 for each row execute function public.planning_sync_sales_order_trigger();
 
 drop trigger if exists planning_sales_order_sync on public.sales_orders;
 create trigger planning_sales_order_sync
-after delete or update of status, approval_status, close_status, hold_status, customer_id, customer_code, customer_name
+after delete or update of status, customer_id, customer_code, customer_name
 on public.sales_orders
 for each row execute function public.planning_sync_sales_order_trigger();
 
@@ -5145,4 +5145,3 @@ where (code = 'planning-root' or code like 'planning-%')
 select pg_notify('pgrst', 'reload schema');
 
 commit;
-

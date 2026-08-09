@@ -1,9 +1,12 @@
 import type { LowCodePageBlock } from '../types/lowcode';
+import { executeGridLoadDataNodeAction } from './grid-node-actions';
+import type { LowCodeNodeActionRuntimeHandler } from './node-action-runtime';
 
 export type LowCodeNodeKind = LowCodePageBlock['kind'];
 
 export type LowCodeNodeActionExecutor =
   | 'overlay.open'
+  | 'grid.loadData'
   | 'grid.reloadData'
   | 'form.setData';
 
@@ -19,9 +22,11 @@ export type LowCodeNodeActionMethodDefinition = {
   label: string;
   description: string;
   executor: LowCodeNodeActionExecutor;
+  dataSourceLoader?: boolean;
   parameters: LowCodeNodeActionParameter[];
   returns: string;
   createInsertText: (nodeId: string) => string;
+  execute?: LowCodeNodeActionRuntimeHandler;
 };
 
 export type LowCodeNodeTypeDefinition = {
@@ -41,6 +46,10 @@ function createOpenInsertText(nodeId: string) {
 
 function createReloadDataInsertText(nodeId: string) {
   return `await this.executeAction({\n  node: ${quoted(nodeId)},\n  method: "reloadData",\n  data: [],\n});`;
+}
+
+function createLoadDataInsertText(nodeId: string) {
+  return `const rows = await this.executeAction({\n  node: ${quoted(nodeId)},\n  method: "loadData",\n  filters: {},\n});`;
 }
 
 function createSetDataInsertText(nodeId: string) {
@@ -83,6 +92,39 @@ const reloadDataMethod: LowCodeNodeActionMethodDefinition = {
   ],
   returns: '返回规范化后的表格行数组。',
   createInsertText: createReloadDataInsertText,
+};
+
+const loadDataMethod: LowCodeNodeActionMethodDefinition = {
+  method: 'loadData',
+  label: '获取表格数据',
+  description: '按表格类型获取数据；主表使用查询条件，明细表使用主表当前行生成关联条件。',
+  executor: 'grid.loadData',
+  dataSourceLoader: true,
+  parameters: [
+    {
+      name: 'filters',
+      type: 'object',
+      description: '附加过滤条件，会覆盖数据源中的同名过滤条件。',
+    },
+    {
+      name: 'postData',
+      type: 'object',
+      description: '附加请求参数。',
+    },
+    {
+      name: 'mainGrid',
+      type: 'string',
+      description: '明细表关联的主表节点 ID；未填写时自动查找 tableType=main 的表格。',
+    },
+    {
+      name: 'filterMap',
+      type: 'Record<string, string>',
+      description: '明细字段到主表字段的映射，例如 { order_id: "id" }。',
+    },
+  ],
+  returns: '返回服务端获取的数据；缺少明细关联主表行时返回空数组。',
+  createInsertText: createLoadDataInsertText,
+  execute: executeGridLoadDataNodeAction,
 };
 
 const setDataMethod: LowCodeNodeActionMethodDefinition = {
@@ -137,7 +179,7 @@ export const lowCodeNodeActionRegistry: Record<
   buttonGroup: nodeType('buttonGroup', '按钮组', 'ri-layout-grid-line'),
   form: nodeType('form', '表单', 'ri-survey-line', [setDataMethod]),
   searchForm: nodeType('searchForm', '查询表单', 'ri-filter-3-line', [setDataMethod]),
-  grid: nodeType('grid', '表格', 'ri-table-2', [reloadDataMethod]),
+  grid: nodeType('grid', '表格', 'ri-table-2', [loadDataMethod, reloadDataMethod]),
   detail: nodeType('detail', '详情', 'ri-file-list-3-line'),
   modal: nodeType('modal', '弹框', 'ri-window-line', [openMethod]),
   drawer: nodeType('drawer', '抽屉', 'ri-layout-right-line', [openMethod]),
@@ -159,4 +201,19 @@ export function getLowCodeNodeActionMethods(kind: string) {
 
 export function resolveLowCodeNodeAction(kind: string, method: string) {
   return getLowCodeNodeTypeDefinition(kind)?.methods[method];
+}
+
+export function resolveLowCodeDataSourceNodeAction(
+  blocks: LowCodePageBlock[],
+  sourceKey: string,
+) {
+  for (const block of blocks) {
+    if (!('sourceKey' in block) || block.sourceKey !== sourceKey) continue;
+    const action = getLowCodeNodeActionMethods(block.kind).find(
+      (candidate) => candidate.dataSourceLoader,
+    );
+    if (action) return { block, action };
+  }
+
+  return undefined;
 }

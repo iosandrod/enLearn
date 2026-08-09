@@ -1,14 +1,23 @@
+import LowCodeForm from '../../../components/LowCodeForm.vue';
+import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
 import type {
-  VisualEditorBlockData,
-  VisualEditorComponent,
-  VisualEditorModelValue,
-} from '../../../visual-editor/visual-editor.utils';
+  LowCodeAction,
+  LowCodeFormProps,
+  LowCodeFormSchema,
+} from '../../../types/lowcode';
+import {
+  createLowCodeFormSchema,
+  isPlainRecord,
+  readJsonObject,
+  readLowCodeFormSchema,
+} from '../../../lowcode/visual-converters/helpers';
+import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
   createEditorInputProp,
+  createEditorJsonProp,
   createEditorTableProp,
 } from '../../../visual-editor/visual-editor.props';
 
-const previewFields = ['姓名', '手机', '状态'];
 const defaultFields = [
   {
     field: 'email',
@@ -22,7 +31,25 @@ const defaultFields = [
     component: 'vxe-input',
     placeholder: '请输入角色',
   },
-] as unknown as { label: string; value: string }[];
+];
+
+const defaultActions: LowCodeAction[] = [
+  {
+    code: 'submit',
+    label: '查询',
+    type: 'submit',
+    status: 'primary',
+  },
+  {
+    code: 'reset',
+    label: '重置',
+    type: 'reset',
+  },
+];
+
+const previewSchema: LowCodeFormSchema = createLowCodeFormSchema(defaultFields);
+previewSchema.columns = 2;
+previewSchema.actions = defaultActions;
 
 const formComponentOptions = [
   { label: '输入框', value: 'vxe-input' },
@@ -37,131 +64,68 @@ const formComponentOptions = [
   { label: '子表单', value: 'lc-sub-form' },
 ];
 
-function readDesignedBlocks(value: unknown) {
-  const model = value as VisualEditorModelValue | null | undefined;
-  const blocks = model?.pages?.['/']?.blocks;
+function createDesignSchema(props: Record<string, unknown>): LowCodeFormSchema {
+  const preservedSchema = readLowCodeFormSchema(props.schema);
+  const fields = Array.isArray(props.fields)
+    ? props.fields
+    : preservedSchema?.fields ?? [];
+  const schema = createLowCodeFormSchema(
+    fields,
+    props.formDesignerModel,
+    props.schema,
+  );
 
-  return Array.isArray(blocks) ? (blocks as VisualEditorBlockData[]) : [];
+  return preservedSchema
+    ? schema
+    : {
+        ...schema,
+        actions: defaultActions,
+      };
+}
+
+function createDesignModel(props: Record<string, unknown>) {
+  if (isPlainRecord(props.modelValue)) return props.modelValue;
+  return readJsonObject(props.initialValuesJson, {});
+}
+
+function createDesignFormProps(props: Record<string, unknown>): LowCodeFormProps {
+  return {
+    schema: createDesignSchema(props),
+    modelValue: createDesignModel(props),
+    optionSources: isPlainRecord(props.optionSources) ? props.optionSources : {},
+    loading: props.loading === true,
+    disabled: props.disabled === true,
+    readonly: props.readonly === true,
+  };
 }
 
 export default {
   key: 'lowcode-search-form',
   moduleName: 'businessComponents',
   label: '查询表单',
-  preview: () => (
-    <div
-      style={{
-        width: '220px',
-        border: '1px solid #dcdfe6',
-        borderRadius: '6px',
-        padding: '10px',
-        background: '#fff',
-      }}
-    >
-      <div style={{ fontWeight: 600, marginBottom: '8px' }}>查询表单</div>
-      <div style={{ display: 'grid', gap: '6px' }}>
-        {previewFields.map((field) => (
-          <div
-            key={field}
-            style={{
-              height: '24px',
-              border: '1px solid #ebeef5',
-              borderRadius: '4px',
-              color: '#909399',
-              fontSize: '12px',
-              lineHeight: '24px',
-              padding: '0 8px',
-            }}
-          >
-            {field}
-          </div>
-        ))}
-      </div>
-    </div>
-  ),
-  render({ props, styles, custom }) {
-    return () => {
-      const fields = Array.isArray(props.fields) && props.fields.length ? props.fields : [];
-      const designedBlocks = readDesignedBlocks(props.formDesignerModel);
-      const renderDesignedBlocks =
-        typeof custom.renderDesignedBlocks === 'function'
-          ? custom.renderDesignedBlocks
-          : undefined;
+  preview: () => <LowCodeForm schema={previewSchema} modelValue={{}} />,
+  render({ props, styles, block }) {
+    const { registerRef } = useGlobalProperties();
 
-      return (
-        <div
-          style={{
-            ...styles,
-            width: '100%',
-            display: 'block',
-            border: '1px solid #dcdfe6',
-            borderRadius: '6px',
-            background: '#fff',
-            padding: '12px',
+    return () => (
+      <div style={{ ...styles, width: '100%', minWidth: 0 }}>
+        <LowCodeForm
+          ref={(element) => registerRef(element, block._vid)}
+          {...createDesignFormProps(props)}
+          {...{
+            'onUpdate:modelValue': (value: Record<string, unknown>) => {
+              props.modelValue = value;
+            },
           }}
-        >
-          <div style={{ fontWeight: 600, marginBottom: '10px' }}>{props.title || '查询表单'}</div>
-          {designedBlocks.length && renderDesignedBlocks ? (
-            renderDesignedBlocks(
-              designedBlocks,
-              String(props.formDesignerUpdatedAt || ''),
-            )
-          ) : (
-          <div
-            style={{
-              display: 'grid',
-              gap: '8px',
-            }}
-          >
-            {fields.map((field: Record<string, unknown>, index: number) => (
-              <div
-                key={String(field.field || index)}
-              >
-                <div style={{ fontSize: '12px', color: '#606266', marginBottom: '4px' }}>
-                  {String(field.label || field.field || 'Field')}
-                </div>
-                <div
-                  style={{
-                    height: '28px',
-                    border: '1px solid #dcdfe6',
-                    borderRadius: '4px',
-                    background: '#f8fafc',
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-          )}
-          <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
-            <span
-              style={{
-                display: 'inline-block',
-                borderRadius: '4px',
-                background: '#409eff',
-                color: '#fff',
-                padding: '4px 12px',
-                fontSize: '12px',
-              }}
-            >
-              查询
-            </span>
-            <span
-              style={{
-                display: 'inline-block',
-                borderRadius: '4px',
-                border: '1px solid #dcdfe6',
-                padding: '4px 12px',
-                fontSize: '12px',
-              }}
-            >
-              重置
-            </span>
-          </div>
-        </div>
-      );
-    };
+        />
+      </div>
+    );
   },
   showStyleConfig: true,
+  events: [
+    { label: '查询提交', value: 'submit' },
+    { label: '模型值变化', value: 'update:model-value' },
+  ],
   props: {
     blockId: createEditorInputProp({
       label: 'Block ID',
@@ -175,12 +139,12 @@ export default {
       label: '目标数据源',
       defaultValue: 'records',
     }),
-    /* columns: createEditorInputNumberProp({
-      label: '列数',
-      defaultValue: 3,
-      min: 1,
-      max: 6,
-    }), */
+    initialValuesJson: createEditorJsonProp({
+      label: '初始值',
+      defaultValue: '{}',
+      rootType: 'object',
+      valueMode: 'string',
+    }),
     fields: createEditorTableProp({
       label: '查询字段',
       option: {
@@ -197,6 +161,8 @@ export default {
           },
           { label: '占位提示', field: 'placeholder' },
           { label: '必填', field: 'required', component: 'vxe-switch', width: 72 },
+          { label: '跨列', field: 'span' },
+          { label: '帮助文本', field: 'help' },
           {
             label: '选项 JSON',
             field: 'optionsJson',

@@ -48,6 +48,7 @@ export declare const Gantt: VueComponent<
 			}) => void;
 		}>;
 		readonly?: boolean;
+		taskTypes?: Array<{ id: string | number; label: string }>;
 		cellBorders?: "column" | "full";
 		highlightTime?: (date: Date, unit: "day" | "hour") => string;
 		init?: (api: IVueGanttApi) => void;

@@ -451,12 +451,19 @@ export function buildTableListPageSchema(options: TablePageSchemaOptions): LowCo
   const route = options.route?.trim() || `/dashboard/low-code/${normalizeIdentifier(options.code ?? options.table.name, options.table.name)}`;
   const code = options.code?.trim() || normalizeIdentifier(`${options.table.schema}-${options.table.name}`, options.table.name).replace(/_/g, '-');
 
-  const childSourceKeys = options.childRelations.map((relation) =>
-    sourceKeyFor(relation.childTable)
-  );
-  const rowCurrentDirectives = [
+  const rowCurrentDirectives: Array<Record<string, unknown>> = [
     { type: 'setDataSource', sourceKey: selectedSourceKey, value: '{{ event.row }}' },
-    { type: 'refreshDataSource', sourceKeys: childSourceKeys }
+    ...options.childRelations.map((relation) => ({
+      type: 'setSearchFilters',
+      sourceKey: sourceKeyFor(relation.childTable),
+      mode: 'replace',
+      values: Object.fromEntries(
+        relation.childColumns.map((childColumn, index) => [
+          childColumn,
+          `{{ event.row.${relation.parentColumns[index] ?? primaryKey} }}`
+        ])
+      )
+    }))
   ];
 
   const dataSources: NonNullable<LowCodePageSchema['dataSources']> = {
@@ -520,8 +527,10 @@ export function buildTableListPageSchema(options: TablePageSchemaOptions): LowCo
       autoLoad: false
     };
     rowCurrentDirectives.push({
-      type: 'refreshDataSource',
-      sourceKeys: [selectedRowsSourceKey]
+      type: 'setSearchFilters',
+      sourceKey: selectedRowsSourceKey,
+      mode: 'replace',
+      values: { [primaryKey]: `{{ event.row.${primaryKey} }}` }
     });
   }
 
@@ -536,6 +545,7 @@ export function buildTableListPageSchema(options: TablePageSchemaOptions): LowCo
             {
               id: `${childSourceKey}-grid`,
               kind: 'grid',
+              tableType: 'detail',
               layout: { fillRemaining: true },
               sourceKey: childSourceKey,
               schema: {
@@ -554,6 +564,7 @@ export function buildTableListPageSchema(options: TablePageSchemaOptions): LowCo
             {
               id: `${selectedRowsSourceKey}-grid`,
               kind: 'grid',
+              tableType: 'detail',
               layout: { fillRemaining: true },
               sourceKey: selectedRowsSourceKey,
               schema: {
@@ -607,6 +618,7 @@ export function buildTableListPageSchema(options: TablePageSchemaOptions): LowCo
       {
         id: `${base}-grid`,
         kind: 'grid',
+        tableType: 'main',
         title: `${title}列表`,
         sourceKey: mainSourceKey,
         schema: {

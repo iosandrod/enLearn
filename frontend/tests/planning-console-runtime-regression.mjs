@@ -5,6 +5,7 @@ const read = (path) => readFile(new URL(path, import.meta.url), 'utf8');
 const [
   rendererSource,
   tabsSource,
+  appStylesSource,
   flowSource,
   ganttSource,
   bomSource,
@@ -19,6 +20,7 @@ const [
 ] = await Promise.all([
   read('../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/tabs/index.vue'),
+  read('../assets/styles/app.css'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-flow/index.vue'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-gantt/index.vue'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-bom/index.vue'),
@@ -45,18 +47,26 @@ assert.match(blockHelpersSource, /block\.clientFilter === false[\s\S]*return row
 
 assert.match(tabsSource, /lowcode:tab-activated/);
 assert.match(tabsSource, /await nextTick\(\)/);
+assert.match(appStylesSource, /\.planning-console-inner-tabs/);
+assert.match(appStylesSource, /\.planning-console-inner-tabs[\s\S]*height: 32px/);
 
 assert.match(flowSource, /ResizeObserver/);
 assert.match(flowSource, /lowcode:tab-activated/);
 assert.match(flowSource, /planningFlow\.nodeSelect/);
 assert.match(flowSource, /fitView/);
 
-assert.match(ganttSource, /v-show="validRows\.length"/);
-assert.match(ganttSource, /chart\?\.clear\(\)/);
-assert.match(ganttSource, /chart\?\.dispose\(\)/);
+assert.match(ganttSource, /v-if="validRows\.length"/);
+assert.match(ganttSource, /from '@svar-ui\/vue-gantt'/);
+assert.match(ganttSource, /<Gantt/);
+assert.match(ganttSource, /<Willow/);
+assert.match(ganttSource, /readonly/);
+assert.match(ganttSource, /ganttTasks/);
+assert.match(ganttSource, /type: 'summary'/);
+assert.match(ganttSource, /:onselecttask="handleTaskSelect"/);
 assert.match(ganttSource, /lowcode:tab-activated/);
 assert.match(ganttSource, /planningGantt\.taskSelect/);
 assert.match(ganttSource, /row\.delay_hours/);
+assert.doesNotMatch(ganttSource, /from 'echarts'/);
 assert.doesNotMatch(ganttSource, /row\.lateness_hours/);
 
 assert.match(bomSource, /PlanningBomNode/);

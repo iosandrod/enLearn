@@ -35,6 +35,7 @@ const triggerWorkflowEditorRoot = resolve(__dirname, '..', 'packages', 'trigger-
 const workflowSchemaRoot = resolve(__dirname, '..', 'packages', 'workflow-schema', 'src');
 const areaPluginRoot = resolve(__dirname, '..', 'packages', 'area-plugin');
 const tableSearchPluginRoot = resolve(__dirname, '..', 'packages', 'table-search-plugin');
+const ganttRoot = resolve(__dirname, '..', 'packages', 'gantt-main');
 const tldrawVueRoot = resolve(__dirname, '..', 'packages', 'tldraw-vue');
 const tldrawVueSrcRoot = resolve(tldrawVueRoot, 'src');
 const tldrawVueEntry = existsSync(resolve(tldrawVueSrcRoot, 'index.ts'))
@@ -161,6 +162,10 @@ export default defineConfig({
       { find: '@enlearn/chat-widget', replacement: chatWidgetRoot },
       { find: '@enlearn/trigger-workflow-editor', replacement: triggerWorkflowEditorRoot },
       { find: '@enlearn/workflow-schema', replacement: workflowSchemaRoot },
+      { find: '@svar-ui/vue-gantt/style.css', replacement: resolve(ganttRoot, 'vue', 'src', 'runtime-style.ts') },
+      { find: '@svar-ui/vue-gantt', replacement: resolve(ganttRoot, 'vue', 'src', 'index.ts') },
+      { find: '@svar-ui/gantt-locales', replacement: resolve(ganttRoot, 'locales', 'index.ts') },
+      { find: '@svar-ui/gantt-store', replacement: resolve(ganttRoot, 'store', 'src', 'index.ts') },
       {
         find: /^vxe-table-plugin-extend-cell-area\/style\.css$/,
         replacement: resolve(areaPluginRoot, 'dist', 'style.css'),
@@ -215,7 +220,7 @@ export default defineConfig({
       { find: '~', replacement: __dirname },
       { find: '@', replacement: __dirname },
     ],
-    dedupe: ['vue', 'react', 'react-dom', '@vxe-ui/core', 'vxe-pc-ui', 'vxe-table'],
+    dedupe: ['vue', 'react', 'react-dom', '@vxe-ui/core', 'vxe-pc-ui', 'vxe-table', '@svar-ui/lib-dom', '@svar-ui/lib-state', '@svar-ui/lib-vue'],
   },
   optimizeDeps: {
     include: ['vue', 'vue-router'],
