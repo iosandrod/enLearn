@@ -159,6 +159,7 @@ await page.route('**/api/service', async (route) => {
   ) {
     requestOrder.push('options');
     relationRequests.push(body.postData);
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 1_000));
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -177,11 +178,20 @@ await page.route('**/api/service', async (route) => {
 
 try {
   await page.goto(`${baseUrl}/dashboard/planning/category/edit?id=${categoryId}`, {
-    waitUntil: 'networkidle',
+    waitUntil: 'domcontentloaded',
     timeout: 60_000,
   });
   assert.notEqual(new URL(page.url()).pathname, '/signin', 'Page redirected to sign in.');
-  await page.waitForTimeout(500);
+  const nameInput = page.locator('.vxe-form--item').filter({ hasText: '类别名称' })
+    .locator('input').first();
+  await nameInput.waitFor({ state: 'visible', timeout: 30_000 });
+  await page.waitForFunction(() => Array.from(
+    document.querySelectorAll('.lc-form input'),
+  ).some((input) => input.value === '成品'));
+  assert.equal(await nameInput.inputValue(), '成品');
+  await nameInput.fill('成品-编辑中');
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(200);
   if (relationRequests.length !== 1) {
     throw new Error(JSON.stringify({
       requestOrder,
@@ -196,6 +206,11 @@ try {
   assert.equal(relationRequests.length, 1);
   assert.equal(relationRequests[0].filters?.target_type, 'item');
   assert.equal(relationRequests[0].excludeId, categoryId);
+  assert.equal(
+    await nameInput.inputValue(),
+    '成品-编辑中',
+    'A later dependency wave must not overwrite edits in a form hydrated by an earlier wave.',
+  );
   assert.deepEqual(pageErrors, []);
   assert.deepEqual(consoleErrors, []);
 

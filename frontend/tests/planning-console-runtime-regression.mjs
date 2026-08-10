@@ -46,7 +46,7 @@ assert.match(rendererSource, /if \(!isCurrentSourceRequest\(key, version\)\) ret
 assert.match(rendererSource, /runtime\.setSource\(key, undefined\)[\s\S]*invokeDataSource\(key, source, true\)/);
 assert.match(
   rendererSource,
-  /async function loadDataSourceWaves[\s\S]*source\.loadAfterSourceKeys[\s\S]*hydrateSourceBoundForms\(pageBlocks, sources\)/,
+  /async function loadDataSourceWaves[\s\S]*source\.loadAfterSourceKeys[\s\S]*hydrateSourceBoundForms\(pageBlocks, sources, new Set\(ready\.map/,
   'Form-dependent data sources must wait for prerequisite rows to hydrate their forms.',
 );
 assert.match(rendererSource, /@media \(max-width: 820px\)[\s\S]*overflow-y: auto[\s\S]*\.lc-runtime-block--fill\.lc-node-tabs[\s\S]*min-height: min\(560px, calc\(100dvh - 16px\)\)/);

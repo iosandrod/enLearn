@@ -1610,12 +1610,14 @@ function collectSharedFormDefaults(blocks: LowCodePageBlock[]) {
 
 function hydrateSourceBoundForms(
   blocks: LowCodePageBlock[],
-  sources: Record<string, LowCodePageDataSource>
+  sources: Record<string, LowCodePageDataSource>,
+  loadedSourceKeys: ReadonlySet<string>
 ) {
   for (const block of blocks) {
     if (block.kind !== 'form') continue;
 
     const sourceKey = block.sourceKey ?? block.submitSourceKey;
+    if (!sourceKey || !loadedSourceKeys.has(sourceKey)) continue;
     const source = sourceKey ? sources[sourceKey] : undefined;
     const sourceValue = source ? resolvedData.value[source.key] : undefined;
     const sourceRecord = Array.isArray(sourceValue) ? sourceValue[0] : sourceValue;
@@ -1682,7 +1684,7 @@ async function loadDataSourceWaves(
     errors.push(...(await Promise.all(
       ready.map(([key, source]) => loadDataSourceEntry(key, source, pageBlocks))
     )).filter(Boolean));
-    hydrateSourceBoundForms(pageBlocks, sources);
+    hydrateSourceBoundForms(pageBlocks, sources, new Set(ready.map(([key]) => key)));
   }
 
   return errors;
