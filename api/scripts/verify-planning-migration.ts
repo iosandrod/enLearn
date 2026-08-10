@@ -9,6 +9,7 @@ import {
   assertLowCodeGridTableAssociations,
   assertPlanningConsoleAggregateSources,
   inspectLowCodeGridTableAssociations,
+  inspectLowCodePageVersionMismatches,
   inspectPlanningConsoleAggregateSources
 } from './lowcode-grid-table-associations';
 import {
@@ -16,6 +17,8 @@ import {
   unwrapMigrationTransaction
 } from './planning-migration-transaction';
 
+const CATEGORY_MIGRATION_FILE =
+  'supabase/migrations/20260810210000_planning_master_categories.sql';
 const MIGRATION_FILES = [
   'supabase/migrations/20260807140000_planning_service.sql',
   'supabase/migrations/20260808150000_planning_diagnostic_tables.sql',
@@ -26,7 +29,9 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260809120000_planning_console.sql',
   'supabase/migrations/20260810100000_planning_console_inner_tabs.sql',
   'supabase/migrations/20260810140000_planning_console_grid_tables.sql',
-  'supabase/migrations/20260810150000_lowcode_grid_table_associations.sql'
+  'supabase/migrations/20260810150000_lowcode_grid_table_associations.sql',
+  CATEGORY_MIGRATION_FILE,
+  'supabase/migrations/20260811120000_planning_structure_pages.sql'
 ];
 
 function directProjectConnectionString(value: string) {
@@ -57,6 +62,295 @@ function pooledProjectConnectionString(value: string) {
   }
 }
 
+let expectedCategoryFailure = 0;
+
+async function assertCategoryMutationRejected(
+  client: Client,
+  mutation: () => Promise<unknown>,
+  pattern: RegExp,
+  label: string
+) {
+  expectedCategoryFailure += 1;
+  const savepoint = `planning_category_guard_${expectedCategoryFailure}`;
+  await client.query(`savepoint ${savepoint}`);
+  await assert.rejects(mutation, pattern, label);
+  await client.query(`rollback to savepoint ${savepoint}`);
+  await client.query(`release savepoint ${savepoint}`);
+}
+
+type LegacyCategoryFixture = {
+  accountId: string;
+  itemId: string;
+  rootName: string;
+  leafName: string;
+  suffix: string;
+};
+
+async function seedLegacyCategoryFixture(client: Client): Promise<LegacyCategoryFixture> {
+  const accountResult = await client.query<{ id: string }>(`
+    select id from basejump.accounts order by created_at, id limit 1
+  `);
+  const accountId = accountResult.rows[0]?.id;
+  assert.ok(accountId, 'Category verification requires at least one account.');
+  const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  const rootName = `Legacy root ${suffix}`;
+  const leafName = `Legacy leaf ${suffix}`;
+  const legacy = await client.query<{ id: string }>(`
+    insert into public.planning_item (account_id, name, category, subcategory)
+    values ($1, $2, $3, $4)
+    returning id
+  `, [accountId, `Category verify legacy ${suffix}`, rootName, leafName]);
+  return {
+    accountId,
+    itemId: legacy.rows[0]!.id,
+    rootName,
+    leafName,
+    suffix
+  };
+}
+
+async function verifyPlanningCategories(
+  client: Client,
+  legacyFixture: LegacyCategoryFixture
+) {
+  const shape = await client.query<{
+    category_table: string;
+    category_columns: string;
+    rls_enabled: boolean;
+    policy_count: string;
+    category_fk_count: string;
+    restrictive_fk_count: string;
+    category_indexes: string;
+  }>(`
+    select
+      to_regclass('public.planning_category')::text as category_table,
+      (select count(*)::text from information_schema.columns
+       where table_schema = 'public' and table_name = 'planning_category') as category_columns,
+      (select relrowsecurity from pg_catalog.pg_class
+       where oid = 'public.planning_category'::regclass) as rls_enabled,
+      (select count(*)::text from pg_catalog.pg_policies
+       where schemaname = 'public' and tablename = 'planning_category') as policy_count,
+      (select count(*)::text from pg_catalog.pg_constraint
+       where conname in (
+         'planning_item_category_id_account_fk',
+         'planning_customer_category_id_account_fk',
+         'planning_supplier_category_id_account_fk',
+         'planning_category_parent_id_account_fk'
+       )) as category_fk_count,
+      (select count(*)::text from pg_catalog.pg_constraint
+       where conname in (
+         'planning_item_category_id_account_fk',
+         'planning_customer_category_id_account_fk',
+         'planning_supplier_category_id_account_fk',
+         'planning_category_parent_id_account_fk'
+       ) and confdeltype = 'r') as restrictive_fk_count,
+      (select count(*)::text from pg_catalog.pg_indexes
+       where schemaname = 'public' and indexname in (
+         'idx_planning_category_account',
+         'idx_planning_category_updated',
+         'idx_planning_category_tree',
+         'idx_planning_item_category',
+         'idx_planning_customer_category',
+         'idx_planning_supplier_category'
+       )) as category_indexes
+  `);
+  assert.deepEqual(shape.rows[0], {
+    category_table: 'planning_category',
+    category_columns: '16',
+    rls_enabled: true,
+    policy_count: '4',
+    category_fk_count: '4',
+    restrictive_fk_count: '4',
+    category_indexes: '6'
+  });
+
+  const { accountId, itemId, rootName: legacyRoot, leafName: legacyLeaf, suffix } =
+    legacyFixture;
+  const legacyBackfill = await client.query<{
+    category: string;
+    subcategory: string;
+    category_id: string;
+    target_type: string;
+    parent_name: string;
+  }>(`
+    select item.category, item.subcategory, item.category_id::text,
+           leaf.target_type, parent.name as parent_name
+    from public.planning_item item
+    join public.planning_category leaf
+      on leaf.account_id = item.account_id and leaf.id = item.category_id
+    left join public.planning_category parent
+      on parent.account_id = leaf.account_id and parent.id = leaf.parent_id
+    where item.account_id = $1 and item.id = $2
+  `, [accountId, itemId]);
+  assert.ok(legacyBackfill.rows[0], 'Legacy category backfill must resolve the fixture item.');
+  assert.equal(legacyBackfill.rows[0]?.category, legacyRoot);
+  assert.equal(legacyBackfill.rows[0]?.subcategory, legacyLeaf);
+  assert.equal(legacyBackfill.rows[0]?.target_type, 'item');
+  assert.equal(legacyBackfill.rows[0]?.parent_name, legacyRoot);
+
+  const normalizedCodes = await client.query<{
+    chinese_code: string;
+    latin_code: string;
+  }>(`
+    select public.planning_normalize_category_code('纯中文类别') as chinese_code,
+           public.planning_normalize_category_code('Raw Materials') as latin_code
+  `);
+  assert.match(normalizedCodes.rows[0]?.chinese_code ?? '', /^CAT_[A-F0-9]{12}$/);
+  assert.equal(normalizedCodes.rows[0]?.latin_code, 'RAW_MATERIALS');
+
+  const categories = await client.query<{
+    item_root: string;
+    item_middle: string;
+    item_leaf: string;
+    customer_root: string;
+    inactive_item: string;
+  }>(`
+    with item_root as (
+      insert into public.planning_category (account_id, target_type, code, name)
+      values ($1, 'item', $2, $3) returning id
+    ), item_middle as (
+      insert into public.planning_category (account_id, target_type, code, name, parent_id)
+      select $1, 'item', $4, $5, id from item_root returning id
+    ), item_leaf as (
+      insert into public.planning_category (account_id, target_type, code, name, parent_id)
+      select $1, 'item', $6, $7, id from item_middle returning id
+    ), customer_root as (
+      insert into public.planning_category (account_id, target_type, code, name)
+      values ($1, 'customer', $8, $9) returning id
+    ), inactive_item as (
+      insert into public.planning_category (account_id, target_type, code, name, status)
+      values ($1, 'item', $10, $11, 'inactive') returning id
+    )
+    select item_root.id::text as item_root,
+           item_middle.id::text as item_middle,
+           item_leaf.id::text as item_leaf,
+           customer_root.id::text as customer_root,
+           inactive_item.id::text as inactive_item
+    from item_root, item_middle, item_leaf, customer_root, inactive_item
+  `, [
+    accountId,
+    `VERIFY_ITEM_ROOT_${suffix}`, `Verify root ${suffix}`,
+    `VERIFY_ITEM_MIDDLE_${suffix}`, `Verify middle ${suffix}`,
+    `VERIFY_ITEM_LEAF_${suffix}`, `Verify leaf ${suffix}`,
+    `VERIFY_CUSTOMER_${suffix}`, `Verify customer ${suffix}`,
+    `VERIFY_INACTIVE_${suffix}`, `Verify inactive ${suffix}`
+  ]);
+  const category = categories.rows[0];
+  assert.ok(category);
+
+  const assigned = await client.query<{
+    id: string;
+    category: string;
+    subcategory: string;
+  }>(`
+    insert into public.planning_item (account_id, name, category_id)
+    values ($1, $2, $3)
+    returning id, category, subcategory
+  `, [accountId, `Category verify assigned ${suffix}`, category.item_leaf]);
+  assert.equal(assigned.rows[0]?.category, `Verify root ${suffix}`);
+  assert.equal(assigned.rows[0]?.subcategory, `Verify leaf ${suffix}`);
+
+  await client.query(`
+    update public.planning_item
+    set category = $1, subcategory = $2
+    where account_id = $3 and id = $4
+  `, [`Drifted root ${suffix}`, `Drifted leaf ${suffix}`, accountId, assigned.rows[0]?.id]);
+  const compatibilityProtected = await client.query<{
+    category: string;
+    subcategory: string;
+  }>(`
+    select category, subcategory from public.planning_item
+    where account_id = $1 and id = $2
+  `, [accountId, assigned.rows[0]?.id]);
+  assert.equal(compatibilityProtected.rows[0]?.category, `Verify root ${suffix}`);
+  assert.equal(compatibilityProtected.rows[0]?.subcategory, `Verify leaf ${suffix}`);
+
+  await client.query(`
+    update public.planning_category set name = $1 where account_id = $2 and id = $3
+  `, [`Verify renamed root ${suffix}`, accountId, category.item_root]);
+  const resynced = await client.query<{ category: string; subcategory: string }>(`
+    select category, subcategory from public.planning_item
+    where account_id = $1 and id = $2
+  `, [accountId, assigned.rows[0]?.id]);
+  assert.equal(resynced.rows[0]?.category, `Verify renamed root ${suffix}`);
+  assert.equal(resynced.rows[0]?.subcategory, `Verify leaf ${suffix}`);
+
+  await client.query(`
+    update public.planning_item set category_id = null
+    where account_id = $1 and id = $2
+  `, [accountId, assigned.rows[0]?.id]);
+  const cleared = await client.query<{ category: string | null; subcategory: string | null }>(`
+    select category, subcategory from public.planning_item
+    where account_id = $1 and id = $2
+  `, [accountId, assigned.rows[0]?.id]);
+  assert.equal(cleared.rows[0]?.category, null);
+  assert.equal(cleared.rows[0]?.subcategory, null);
+
+  await assertCategoryMutationRejected(
+    client,
+    () => client.query(`
+      insert into public.planning_item (account_id, name, category_id)
+      values ($1, $2, $3)
+    `, [accountId, `Category verify inactive assignment ${suffix}`, category.inactive_item]),
+    /Inactive categories cannot be newly assigned/,
+    'Inactive category assignment must be rejected.'
+  );
+  await assertCategoryMutationRejected(
+    client,
+    () => client.query(`
+      insert into public.planning_item (account_id, name, category_id)
+      values ($1, $2, $3)
+    `, [accountId, `Category verify wrong type ${suffix}`, category.customer_root]),
+    /cannot be assigned to item/,
+    'Cross-type category assignment must be rejected.'
+  );
+  await assertCategoryMutationRejected(
+    client,
+    () => client.query(`
+      insert into public.planning_category (account_id, target_type, code, name, parent_id)
+      values ($1, 'supplier', $2, $3, $4)
+    `, [accountId, `VERIFY_WRONG_PARENT_${suffix}`, `Verify wrong parent ${suffix}`, category.customer_root]),
+    /same account and target type/,
+    'Cross-type category parent must be rejected.'
+  );
+  await assertCategoryMutationRejected(
+    client,
+    () => client.query(`
+      update public.planning_category set parent_id = $1
+      where account_id = $2 and id = $3
+    `, [category.item_leaf, accountId, category.item_root]),
+    /cannot contain a cycle/,
+    'Category hierarchy cycles must be rejected.'
+  );
+  await assertCategoryMutationRejected(
+    client,
+    () => client.query(`
+      delete from public.planning_category where account_id = $1 and id = $2
+    `, [accountId, category.item_middle]),
+    /foreign key constraint|still referenced/i,
+    'Categories with children must not be deleted.'
+  );
+  await client.query(`
+    update public.planning_item set category_id = $1 where account_id = $2 and id = $3
+  `, [category.item_leaf, accountId, assigned.rows[0]?.id]);
+  await assertCategoryMutationRejected(
+    client,
+    () => client.query(`
+      delete from public.planning_category where account_id = $1 and id = $2
+    `, [accountId, category.item_leaf]),
+    /foreign key constraint|still referenced/i,
+    'Assigned categories must not be deleted.'
+  );
+
+  return {
+    shape: shape.rows[0],
+    legacyBackfill: true,
+    legacyTextProtection: true,
+    deepHierarchy: true,
+    integrityGuards: 6
+  };
+}
+
 async function main() {
   const env = getEnv();
   const explicitDirectUrl = Object.prototype.hasOwnProperty.call(process.env, 'DIRECT_URL')
@@ -68,11 +362,16 @@ async function main() {
   const repoRoot = process.cwd().toLowerCase().endsWith('api')
     ? resolve(process.cwd(), '..')
     : process.cwd();
-  const migration = (await Promise.all(
-    MIGRATION_FILES.map(async (file) => unwrapMigrationTransaction(
-      await readFile(resolve(repoRoot, file), 'utf8')
-    ))
-  )).join('\n\n');
+  const migrationParts = await Promise.all(
+    MIGRATION_FILES.map(async (file) => ({
+      file,
+      sql: unwrapMigrationTransaction(await readFile(resolve(repoRoot, file), 'utf8'))
+    }))
+  );
+  const categoryMigrationIndex = migrationParts.findIndex(
+    ({ file }) => file === CATEGORY_MIGRATION_FILE
+  );
+  assert.ok(categoryMigrationIndex >= 0, 'Category migration is missing from verifier input.');
   const configuredConnectionString = explicitDirectUrl
     ? directProjectConnectionString(rawConnectionString)
     : pooledProjectConnectionString(rawConnectionString);
@@ -86,9 +385,21 @@ async function main() {
 
   await client.connect();
   try {
+    const baselineVersionMismatches = await inspectLowCodePageVersionMismatches(client);
     await client.query('begin');
-    await client.query(migration);
+    for (const { sql } of migrationParts.slice(0, categoryMigrationIndex)) {
+      await client.query(sql);
+    }
+    await client.query('set constraints all immediate');
+    const legacyCategoryFixture = await seedLegacyCategoryFixture(client);
+    for (const { sql } of migrationParts.slice(categoryMigrationIndex)) {
+      await client.query(sql);
+    }
     await assertTransactionActive(client);
+    const categoryVerification = await verifyPlanningCategories(
+      client,
+      legacyCategoryFixture
+    );
 
     const { rows } = await client.query<{
       table_count: string;
@@ -147,7 +458,7 @@ async function main() {
       edit_page_count: String(expectedModels),
       linked_page_count: String(expectedModels),
       entity_count: String(expectedModels),
-      leaf_route_count: String(expectedModels + 1),
+      leaf_route_count: String(expectedModels + 3),
       group_route_count: String(new Set(PLANNING_MODEL_DEFINITIONS.map((model) => model.group)).size + 1),
       permission_count: '2',
       role_permission_count: '4',
@@ -225,7 +536,9 @@ async function main() {
     }
 
     const gridTableAudit = await inspectLowCodeGridTableAssociations(client);
-    assertLowCodeGridTableAssociations(gridTableAudit);
+    assertLowCodeGridTableAssociations(gridTableAudit, {
+      versionMismatchBaseline: baselineVersionMismatches
+    });
     const planningAggregateAudit = await inspectPlanningConsoleAggregateSources(client);
     assertPlanningConsoleAggregateSources(planningAggregateAudit);
 
@@ -288,7 +601,9 @@ async function main() {
       console_grid_tables: linkedGridIds.size,
       lowcode_grid_tables: gridTableAudit.associatedGrids,
       lowcode_grids_without_single_table: gridTableAudit.unresolvedGrids.length,
+      preexisting_lowcode_page_version_mismatches: baselineVersionMismatches,
       physical_table_options: gridTableAudit.optionCount,
+      planning_categories: categoryVerification,
       operationplan_reference_scope: 'baseline/version',
       transaction: 'verified rollback'
     }));

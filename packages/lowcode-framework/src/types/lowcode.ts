@@ -413,6 +413,9 @@ export type LowCodePageDataSource = {
    */
   autoLoad?: boolean;
 
+  /** Data sources that must finish and hydrate their bound forms before this source loads. */
+  loadAfterSourceKeys?: string[];
+
 };
 
 /** A page-owned, named service endpoint callable from an isolated page script. */

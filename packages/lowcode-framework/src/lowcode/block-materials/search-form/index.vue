@@ -30,7 +30,7 @@ import {
 } from '../runtime-form-designer';
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageSearchFormBlock>>();
-const emit = defineEmits<LowCodeBlockMaterialEmits>();
+  const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
 const pageRuntime = useLowCodePageRuntime(false);
 const formRef = ref<InstanceType<typeof LowCodeForm>>();

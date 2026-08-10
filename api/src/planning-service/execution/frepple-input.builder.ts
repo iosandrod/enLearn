@@ -42,6 +42,7 @@ export class FreppleInputBuilder {
     parameters: PlanningSolverParameters
   ): PlanningEngineInput {
     const lookup = new SnapshotLookup(snapshot);
+    const categories = new CategoryLookup(snapshot.rows.planning_category);
     const operationMaterials = groupBy(snapshot.rows.planning_operationmaterial, 'operation_id');
     const operationResources = groupBy(snapshot.rows.planning_operationresource, 'operation_id');
     const explicitSuboperations = groupBy(snapshot.rows.planning_suboperation, 'operation_id');
@@ -212,9 +213,20 @@ export class FreppleInputBuilder {
         })),
         ...supplierCalendarLocations(snapshot.rows.planning_supplier, lookup)
       ],
-      customers: snapshot.rows.planning_customer.map((row) => hierarchy(row, lookup, 'customer')),
-      suppliers: snapshot.rows.planning_supplier.map((row) => hierarchy(row, lookup, 'supplier')),
+      customers: snapshot.rows.planning_customer.map((row) => hierarchy(
+        row,
+        lookup,
+        'customer',
+        categories.freppleFields(row, 'customer')
+      )),
+      suppliers: snapshot.rows.planning_supplier.map((row) => hierarchy(
+        row,
+        lookup,
+        'supplier',
+        categories.freppleFields(row, 'supplier')
+      )),
       items: snapshot.rows.planning_item.map((row) => hierarchy(row, lookup, 'item', {
+        ...categories.freppleFields(row, 'item'),
         type: stringValue(row.type) === 'make to order' ? 'item_mto' : 'item_mts',
         cost: numberValue(row.cost),
         weight: numberValue(row.weight),
@@ -460,6 +472,38 @@ function hierarchy(
     source: stringValue(row.source),
     ...fields
   });
+}
+
+class CategoryLookup {
+  private readonly byId: Map<string, PlanningRow>;
+
+  constructor(rows: PlanningRow[]) {
+    this.byId = new Map(rows.map((row) => [row.id, row]));
+  }
+
+  freppleFields(row: PlanningRow, targetType: 'item' | 'customer' | 'supplier') {
+    const selected = this.byId.get(stringValue(row.category_id) ?? '');
+    if (!selected || stringValue(selected.target_type) !== targetType) {
+      return {
+        category: stringValue(row.category),
+        subcategory: stringValue(row.subcategory)
+      };
+    }
+    let root = selected;
+    const visited = new Set([selected.id]);
+    while (true) {
+      const parentId = stringValue(root.parent_id);
+      if (!parentId || visited.has(parentId)) break;
+      const parent = this.byId.get(parentId);
+      if (!parent || stringValue(parent.target_type) !== targetType) break;
+      visited.add(parentId);
+      root = parent;
+    }
+    return {
+      category: stringValue(root.name),
+      subcategory: root.id === selected.id ? undefined : stringValue(selected.name)
+    };
+  }
 }
 
 function calendarBucket(row: PlanningRow) {

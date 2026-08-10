@@ -144,6 +144,7 @@ function normalizeArrayTableColumns(value: unknown) {
     const component = readString(column.component);
     const width = readDimension(column.width);
     const minWidth = readDimension(column.minWidth);
+    const optionsCode = readString(column.optionsCode);
     const options = Array.isArray(column.options)
       ? cloneJson(column.options)
       : readJsonArray<LowCodeOption>(column.optionsJson);
@@ -162,6 +163,7 @@ function normalizeArrayTableColumns(value: unknown) {
       ...(typeof column.defaultValue !== 'undefined'
         ? { defaultValue: cloneJson(column.defaultValue) }
         : {}),
+      ...(optionsCode ? { optionsCode } : {}),
       ...(options?.length ? { options } : {}),
       ...(Object.keys(props).length ? { props } : {}),
     };

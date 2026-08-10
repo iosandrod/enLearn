@@ -67,7 +67,7 @@
                 @update:model-value="(value) => setCell(scope.row, column.field, readSelectValue(column, value))"
               >
                 <vxe-option
-                  v-for="option in column.options"
+                  v-for="option in resolveColumnOptions(column)"
                   :key="String(option.value)"
                   :label="option.label"
                   :value="option.value"
@@ -221,8 +221,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import type { VxeButtonProps } from 'vxe-pc-ui';
+import { useLowCodeHost } from '../../../core/host';
 import {
   mergeSystemTableOptions,
   resolveSystemTableConfig,
@@ -236,6 +237,7 @@ import type {
   LowCodeOption,
 } from '../../../types/lowcode';
 import { openGlobalDialog } from '../../../runtime/global-dialog';
+import { lowCodeOptionSourceRegistry } from '../../../runtime/option-source-registry';
 import LcJsonEditor from '../lc-json-editor/index.vue';
 import LcMonacoEditor from '../lc-monaco-editor/index.vue';
 import type { LowCodeFormMaterialProps } from '../types';
@@ -253,6 +255,7 @@ type ArrayTableColumn = {
   defaultValue?: unknown;
   props?: Record<string, unknown>;
   options?: LowCodeOption[];
+  optionsCode?: string;
   readonly?: boolean;
 };
 
@@ -312,7 +315,9 @@ const emit = defineEmits<{
   'update:modelValue': [value: unknown[]];
 }>();
 
+const host = useLowCodeHost();
 const rows = ref<Record<string, unknown>[]>([]);
+const codeOptionSources = reactive<Record<string, unknown[]>>({});
 const tableRef = ref<{
   recalculate?: (refull?: boolean) => Promise<unknown> | void;
   refreshColumn?: () => Promise<unknown> | void;
@@ -342,6 +347,10 @@ const columns = computed(() => {
 
   return normalizedColumns;
 });
+const optionsCodes = computed(() => [
+  ...new Set(columns.value.map((column) => column.optionsCode).filter(Boolean)),
+] as string[]);
+const optionsCodeKey = computed(() => optionsCodes.value.join('\u0000'));
 const explicitTableConfig = computed(() => {
   const config = isRecord(fieldProps.value.gridOptions)
     ? cloneRecord(fieldProps.value.gridOptions)
@@ -506,7 +515,38 @@ watch(
   { deep: true }
 );
 
+let unsubscribeOptionSources: (() => void) | undefined;
+
+watch(
+  optionsCodeKey,
+  () => {
+    unsubscribeOptionSources?.();
+    const codes = optionsCodes.value;
+    const activeCodes = new Set(codes);
+    Object.keys(codeOptionSources).forEach((code) => {
+      if (!activeCodes.has(code)) delete codeOptionSources[code];
+    });
+    if (!codes.length) return;
+
+    unsubscribeOptionSources = lowCodeOptionSourceRegistry.subscribe(
+      codes,
+      (code, options) => {
+        codeOptionSources[code] = options;
+      },
+      () => {
+        try {
+          return host.getServiceApi();
+        } catch {
+          return undefined;
+        }
+      },
+    );
+  },
+  { immediate: true },
+);
+
 onMounted(() => resizeTable());
+onBeforeUnmount(() => unsubscribeOptionSources?.());
 
 function resizeTable() {
   nextTick(() => {
@@ -538,6 +578,7 @@ function normalizeColumns(value: unknown): ArrayTableColumn[] {
           ...(isRecord(column.props) ? cloneRecord(column.props) : {}),
           ...readJsonObject(column.propsJson),
         },
+        optionsCode: readString(column.optionsCode) || undefined,
         options: Array.isArray(column.options)
           ? cloneValue(column.options) as LowCodeOption[]
           : readJsonArray<LowCodeOption>(column.optionsJson) ?? [],
@@ -963,13 +1004,43 @@ function handleRowAction(action: ArrayTableRowAction, row: Record<string, unknow
 }
 
 function getSelectModelValue(column: ArrayTableColumn, value: unknown): any {
-  const option = column.options?.find((item) => isSameValue(readOptionRawValue(item), value));
+  const option = resolveColumnOptions(column).find((item) =>
+    isSameValue(readOptionRawValue(item), value)
+  );
   return option?.value ?? value;
 }
 
 function readSelectValue(column: ArrayTableColumn, value: unknown) {
-  const option = column.options?.find((item) => item.value === value);
+  const option = resolveColumnOptions(column).find((item) => item.value === value);
   return option ? readOptionRawValue(option) : value;
+}
+
+function resolveColumnOptions(column: ArrayTableColumn) {
+  if (column.optionsCode) {
+    const source =
+      codeOptionSources[column.optionsCode] ??
+      lowCodeOptionSourceRegistry.peek(column.optionsCode);
+
+    if (Array.isArray(source)) {
+      return source.map(normalizeOption);
+    }
+  }
+
+  return column.options ?? [];
+}
+
+function normalizeOption(option: unknown): LowCodeOption {
+  if (!isRecord(option)) {
+    return { label: String(option), value: String(option) };
+  }
+
+  const label = option.label ?? option.name ?? option.title ?? option.code ?? option.id ?? '';
+  const value = option.value ?? option.code ?? option.id ?? label;
+  return {
+    ...option,
+    label: String(label),
+    value: typeof value === 'number' ? value : String(value),
+  } as LowCodeOption;
 }
 
 function readOptionRawValue(option: LowCodeOption) {

@@ -5,6 +5,7 @@ import {
   PLANNING_MODEL_DEFINITIONS
 } from '../src/planning-service/planning.models';
 import {
+  buildPlanningCategoryMigrationSql,
   buildPlanningEditSchema,
   buildPlanningListSchema,
   buildPlanningRoutesSql
@@ -54,15 +55,33 @@ for (const model of PLANNING_MODEL_DEFINITIONS) {
   }
   for (const relation of model.fields.filter((field) => field.kind === 'relation')) {
     const formField = fields.find((field: any) => field.field === relation.name);
-    assert.equal(formField?.component, 'vxe-select');
+    assert.equal(formField?.component, relation.relationTree ? 'vxe-tree-select' : 'vxe-select');
     assert.equal(formField?.optionsSourceKey, `${relation.relation}Options`);
-    assert.deepEqual(formField?.optionProps, { label: 'label', value: 'id' });
+    assert.deepEqual(
+      formField?.optionProps,
+      relation.relationTree
+        ? { label: 'label', value: 'id', children: 'children' }
+        : { label: 'label', value: 'id' }
+    );
     const source = edit.dataSources[`${relation.relation}Options`];
     assert.equal(source?.serviceMethod, 'listRelationOptions');
     assert.equal(
       source?.postData?.labelField,
-      PLANNING_MODEL_BY_KEY.get(relation.relation!)?.businessKey ?? 'id'
+      relation.relationLabelField ??
+        PLANNING_MODEL_BY_KEY.get(relation.relation!)?.businessKey ??
+        'id'
     );
+    const expectedFilters = {
+      ...(relation.relationFilters ?? {}),
+      ...Object.fromEntries(Object.entries(relation.relationFilterBindings ?? {}).map(
+        ([targetField, sourceField]) => [
+          targetField,
+          `{{ forms.${model.key}_edit_form.${sourceField} }}`
+        ]
+      ))
+    };
+    assert.deepEqual(source?.postData?.filters ?? {}, expectedFilters);
+    assert.equal(Boolean(source?.postData?.tree), Boolean(relation.relationTree));
 
     const grid = list.blocks.find((block: any) => block.kind === 'grid');
     const relationColumn = grid?.schema?.grid?.columns?.find(
@@ -87,5 +106,74 @@ assert.ok(planningRunEditFields.some(
   (field: any) => field.field === 'output' && field.props?.disabled === true
 ));
 assert.ok(planningRunList.blocks.some((block: any) => block.kind === 'grid'));
+
+for (const [modelKey, targetType] of [
+  ['planning_item', 'item'],
+  ['planning_customer', 'customer'],
+  ['planning_supplier', 'supplier']
+] as const) {
+  const model = PLANNING_MODEL_BY_KEY.get(modelKey)!;
+  const categoryField = model.fields.find((field) => field.name === 'category_id');
+  assert.equal(categoryField?.relation, 'planning_category');
+  assert.deepEqual(categoryField?.relationFilters, {
+    target_type: targetType,
+    status: 'active'
+  });
+  assert.equal(categoryField?.relationTree, true);
+  assert.ok(model.fields.some((field) => field.name === 'category' && field.readOnly));
+  assert.ok(model.fields.some((field) => field.name === 'subcategory' && field.readOnly));
+}
+
+const categoryModel = PLANNING_MODEL_BY_KEY.get('planning_category')!;
+const categoryEdit = buildPlanningEditSchema(categoryModel) as any;
+const categoryParentSource = categoryEdit.dataSources.planning_categoryOptions;
+assert.deepEqual(categoryParentSource.postData.filters, {
+  status: 'active',
+  target_type: '{{ forms.planning_category_edit_form.target_type }}'
+});
+assert.deepEqual(categoryParentSource.loadAfterSourceKeys, ['planning_categoryRows']);
+assert.equal(
+  categoryParentSource.postData.excludeId,
+  '{{ forms.planning_category_edit_form.id }}'
+);
+const categoryEditForm = categoryEdit.blocks
+  .find((block: any) => block.kind === 'tabs')
+  ?.tabs?.[0]?.blocks?.find((block: any) => block.kind === 'form');
+const targetTypeField = categoryEditForm?.schema?.fields?.find(
+  (field: any) => field.field === 'target_type'
+);
+assert.deepEqual(targetTypeField?.events?.change, [
+  {
+    type: 'setFormField',
+    blockId: 'planning_category_edit_form',
+    field: 'parent_id',
+    value: ''
+  },
+  { type: 'refreshDataSources', sourceKeys: ['planning_categoryOptions'] }
+]);
+
+const categoryMigration = buildPlanningCategoryMigrationSql();
+assert.match(categoryMigration, /create table if not exists public\.planning_category/);
+assert.match(categoryMigration, /alter table public\.planning_item\s+add column if not exists category_id uuid/);
+assert.match(categoryMigration, /CAT_' \|\| upper\(left\(md5\(btrim\(p_value\)\), 12\)\)/);
+assert.match(categoryMigration, /before insert or update of category_id on public\.planning_item/);
+assert.match(categoryMigration, /when \(old\.category_id is not null and new\.category_id is null\)/);
+assert.match(categoryMigration, /before update of category, subcategory on public\.planning_item/);
+assert.match(categoryMigration, /when \(new\.category_id is not null\)/);
+assert.match(categoryMigration, /after update of name, parent_id on public\.planning_category/);
+assert.match(categoryMigration, /where parent\.code = 'planning-1'/);
+assert.match(categoryMigration, /comment on table public\.%I is %L/);
+assert.match(categoryMigration, /planning_category-list/);
+assert.match(categoryMigration, /planning_item-list/);
+assert.match(categoryMigration, /planning_customer-list/);
+assert.match(categoryMigration, /planning_supplier-list/);
+assert.doesNotMatch(categoryMigration, /create table if not exists public\.planning_forecast/);
+assert.doesNotMatch(categoryMigration, /planning_demand-list/);
+assert.doesNotMatch(categoryMigration, /planning-operationplan/);
+assert.doesNotMatch(categoryMigration, /update public\.admin_routes\s+set status = 'inactive'/);
+assert.doesNotMatch(categoryMigration, /insert into public\.admin_permissions/);
+
+assert.match(routesSql, /'planning-routing-view'/);
+assert.match(routesSql, /'planning-bom-view'/);
 
 console.log('planning low-code page schema tests passed');

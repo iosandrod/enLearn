@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { BadRequestException } from '@nestjs/common';
 
 import { PLANNING_CONSOLE_PAGE_SCHEMA } from '../planning-service/planning-console.schema';
 import { LowCodeService } from './lowcode.service';
@@ -80,6 +81,40 @@ assert.throws(
   }),
   /Block must be an object/,
   'Saving a low-code page must reject invalid runtime blocks.',
+);
+assert.throws(
+  () => service.preparePageWrite({
+    resource: 'lowcode_pages',
+    data: {
+      schema: {
+        schemaVersion: 1,
+        code: 'invalid-schema-save-test',
+        route: '/dashboard/invalid-schema-save-test',
+        title: 'Invalid schema save test',
+        blocks: [{ id: 'unsupported-block', kind: 'unsupported' }],
+      },
+    },
+  }),
+  (error: unknown) => {
+    assert.ok(error instanceof BadRequestException);
+    assert.equal(error.getStatus(), 400);
+    assert.deepEqual(error.getResponse(), {
+      statusCode: 400,
+      code: 'LOW_CODE_SCHEMA_VALIDATION_FAILED',
+      error: 'Low-code page schema validation failed',
+      message: [
+        'Schema validation failed with 1 error(s).',
+        'blocks.0.kind: Block kind "unsupported" is not registered.',
+      ].join('\n'),
+      issues: [{
+        level: 'error',
+        path: 'blocks.0.kind',
+        message: 'Block kind "unsupported" is not registered.',
+      }],
+    });
+    return true;
+  },
+  'Schema validation failures must be returned as structured HTTP 400 errors.',
 );
 
 const readOnlySchema = cloneSchema();

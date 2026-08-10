@@ -148,17 +148,11 @@ const gridConfig = computed(() => {
       }
     : { ...resolvedGrid };
 
-  if (
-    props.schema.events?.rowCurrentChange ||
-    props.schema.events?.currentRowChange ||
-    props.schema.eventNames?.rowCurrentChange
-  ) {
-    const rowConfig = isRecord(nextConfig.rowConfig) ? nextConfig.rowConfig : {};
-    nextConfig.rowConfig = {
-      ...rowConfig,
-      isCurrent: rowConfig.isCurrent ?? true,
-    };
-  }
+  const rowConfig = isRecord(nextConfig.rowConfig) ? nextConfig.rowConfig : {};
+  nextConfig.rowConfig = {
+    ...rowConfig,
+    isCurrent: true,
+  };
 
   if (isRecord(nextConfig.treeConfig)) {
     delete nextConfig.stripe;

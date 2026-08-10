@@ -125,6 +125,7 @@ type GridDesignerSourceColumn = {
 
 const physicalTableOptionSourceCode = 'physical_table_name';
 const databaseViewOptionSourceCode = 'database_view_name';
+const gridColumnEditTypeOptionSourceCode = 'grid_column_edit_type';
 
 const gridDesignerSourcePageCodes: Record<GridDesignerSourceKind, string> = {
   entity: 'admin-system-entities',
@@ -158,16 +159,6 @@ const columnTypeOptions = [
   { label: '复选', value: 'checkbox' },
   { label: '展开', value: 'expand' },
   { label: '网页内容', value: 'html' },
-];
-
-const columnEditTypeOptions = [
-  { label: '不启用', value: '' },
-  { label: '文本输入', value: 'VxeInput' },
-  { label: '数字输入', value: 'VxeNumberInput' },
-  { label: '日期选择', value: 'VxeDatePicker' },
-  { label: '下拉选择', value: 'VxeSelect' },
-  { label: '开关', value: 'VxeSwitch' },
-  { label: '多行文本', value: 'VxeTextarea' },
 ];
 
 const gridTableTypeOptions = [
@@ -1323,6 +1314,7 @@ type ArrayEditorColumn = {
   defaultValue?: unknown;
   props?: Record<string, unknown>;
   options?: Array<{ label: string; value: unknown; rawValue?: unknown; disabled?: boolean }>;
+  optionsCode?: string;
   readonly?: boolean;
 };
 
@@ -2275,7 +2267,7 @@ const ServiceComponent = defineComponent({
         title: '编辑类型',
         component: 'vxe-select',
         width: 180,
-        options: toArrayTableOptions(columnEditTypeOptions),
+        optionsCode: gridColumnEditTypeOptionSourceCode,
       },
       {
         field: 'type',

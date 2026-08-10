@@ -234,6 +234,7 @@ export type VisualEditorTableColumnOption = {
   defaultValue?: unknown;
   props?: Record<string, unknown>;
   options?: VisualEditorSelectOptions;
+  optionsCode?: string;
 };
 
 interface EditorTableProp {

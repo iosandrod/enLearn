@@ -437,6 +437,51 @@ function testRoutingStepItemsAreNotIndependentReplenishments() {
   assert.equal(step?.item, undefined);
 }
 
+function testMasterCategoryCompatibility() {
+  const data = snapshot({
+    planning_category: [
+      row('item-root', {
+        target_type: 'item', code: 'RAW', name: '原材料', status: 'active'
+      }),
+      row('item-child', {
+        target_type: 'item', code: 'RAW_PCB', name: 'PCB 电路板',
+        parent_id: 'item-root', status: 'active'
+      }),
+      row('item-leaf', {
+        target_type: 'item', code: 'RAW_PCB_CONTROL', name: '控制板',
+        parent_id: 'item-child', status: 'active'
+      }),
+      row('customer-category', {
+        target_type: 'customer', code: 'DOMESTIC', name: '国内客户', status: 'inactive'
+      })
+    ],
+    planning_item: [row('pcb', {
+      name: 'RM-PCB-CTRL-100', category_id: 'item-leaf',
+      category: '旧分类', subcategory: '旧子分类'
+    })],
+    planning_customer: [row('customer', {
+      name: 'Customer', category_id: 'customer-category'
+    })]
+  });
+
+  const item = buildFreppleInput(data, parameters).request.model.items[0];
+  assert.equal(item.category, '原材料');
+  assert.equal(item.subcategory, '控制板');
+  assert.ok(preflightPlanningData(data).errors.some(
+    (issue) => issue.code === 'CATEGORY_INACTIVE' && issue.recordId === 'customer'
+  ));
+
+  data.rows.planning_item[0].category_id = 'customer-category';
+  assert.ok(preflightPlanningData(data).errors.some(
+    (issue) => issue.code === 'CATEGORY_TARGET_MISMATCH' && issue.recordId === 'pcb'
+  ));
+
+  data.rows.planning_item[0].category_id = null;
+  const legacyItem = buildFreppleInput(data, parameters).request.model.items[0];
+  assert.equal(legacyItem.category, '旧分类');
+  assert.equal(legacyItem.subcategory, '旧子分类');
+}
+
 testBuilderContracts();
 testCalendarClockFieldsUseSeconds();
 testDurationFieldsUseNumericSeconds();
@@ -445,4 +490,5 @@ testMtoBufferNamesAndCollisions();
 testManufacturingOutputValidation();
 testDemandBatchRequiresMtoItem();
 testRoutingStepItemsAreNotIndependentReplenishments();
+testMasterCategoryCompatibility();
 console.log('frePPLe input builder and preflight tests passed');

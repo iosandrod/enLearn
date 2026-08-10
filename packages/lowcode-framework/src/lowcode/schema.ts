@@ -212,6 +212,9 @@ function normalizeDataSource(
     ...(tableName ? { tableName } : {}),
     ...(normalizedViewName ? { viewName: normalizedViewName } : {}),
     ...(Object.keys(postData).length ? { postData } : {}),
+    ...(Array.isArray(source.loadAfterSourceKeys)
+      ? { loadAfterSourceKeys: normalizeStringList(source.loadAfterSourceKeys) }
+      : {}),
     autoLoad: source.autoLoad !== false,
   };
 }
@@ -465,6 +468,37 @@ function pushIssue(
   issues.push({ level, path, message });
 }
 
+function validateDataSourceDependencyCycles(
+  schema: LowCodePageSchema,
+  issues: LowCodeSchemaIssue[]
+) {
+  const sources = schema.dataSources ?? {};
+  const visited = new Set<string>();
+  const visiting = new Set<string>();
+
+  function visit(key: string) {
+    if (visited.has(key)) return;
+    if (visiting.has(key)) {
+      pushIssue(
+        issues,
+        'error',
+        `dataSources.${key}.loadAfterSourceKeys`,
+        `Data source dependency cycle includes "${key}".`
+      );
+      return;
+    }
+
+    visiting.add(key);
+    for (const dependencyKey of sources[key]?.loadAfterSourceKeys ?? []) {
+      if (sources[dependencyKey]) visit(dependencyKey);
+    }
+    visiting.delete(key);
+    visited.add(key);
+  }
+
+  Object.keys(sources).forEach(visit);
+}
+
 function validateDataSources(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
   Object.entries(schema.dataSources ?? {}).forEach(([key, source]) => {
     const path = `dataSources.${key}`;
@@ -481,7 +515,22 @@ function validateDataSources(schema: LowCodePageSchema, issues: LowCodeSchemaIss
     if (!source.serviceMethod && !hasTableTarget) {
       pushIssue(issues, 'error', `${path}.serviceMethod`, 'Service method is required.');
     }
+
+    for (const dependencyKey of source.loadAfterSourceKeys ?? []) {
+      if (dependencyKey === key) {
+        pushIssue(issues, 'error', `${path}.loadAfterSourceKeys`, 'A data source cannot depend on itself.');
+      } else if (!schema.dataSources?.[dependencyKey]) {
+        pushIssue(
+          issues,
+          'error',
+          `${path}.loadAfterSourceKeys`,
+          `Data source dependency "${dependencyKey}" does not exist.`
+        );
+      }
+    }
   });
+
+  validateDataSourceDependencyCycles(schema, issues);
 }
 
 function validateDirectives(
@@ -606,9 +655,6 @@ function validateScriptPolicy(schema: LowCodePageSchema, issues: LowCodeSchemaIs
 }
 
 function dataSourceExists(schema: LowCodePageSchema, key?: unknown) {
-  if(1==1){
-    return true
-  }//
   const sourceKey = readString(key);
   return !sourceKey || Boolean(schema.dataSources?.[sourceKey]);
 }

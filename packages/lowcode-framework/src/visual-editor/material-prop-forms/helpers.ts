@@ -29,6 +29,7 @@ type ArrayTableColumnInput = {
   defaultValue?: unknown;
   props?: Record<string, unknown>;
   options?: LowCodeOption[];
+  optionsCode?: string;
 };
 
 type ArrayTableFieldInput = FieldInput & {

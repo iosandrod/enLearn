@@ -54,6 +54,18 @@
         </vxe-form-item>
       </div>
     </div>
+
+    <div v-if="formActions.length" class="lc-actions">
+      <vxe-button
+        v-for="action in formActions"
+        :key="action.code"
+        :status="action.status"
+        :disabled="action.disabled"
+        @click="handleAction(action)"
+      >
+        {{ action.label }}
+      </vxe-button>
+    </div>
   </vxe-form>
 </template>
 

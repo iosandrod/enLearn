@@ -17,6 +17,7 @@ const [
   flowMaterialSource,
   ganttMaterialSource,
   bomMaterialSource,
+  gridSource,
 ] = await Promise.all([
   read('../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/tabs/index.vue'),
@@ -32,6 +33,7 @@ const [
   read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-flow/index.ts'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-gantt/index.ts'),
   read('../../packages/lowcode-framework/src/lowcode/block-materials/planning-bom/index.ts'),
+  read('../../packages/lowcode-framework/src/components/LowCodeGrid.vue'),
 ]);
 
 assert.match(rendererSource, /function searchTargetSourceKeys[\s\S]*targetSourceKeys/);
@@ -42,8 +44,18 @@ assert.match(rendererSource, /function beginSourceRequest[\s\S]*runtime\.setSour
 assert.match(rendererSource, /function isCurrentSourceRequest[\s\S]*sourceRequestVersions\.get\(key\) === version/);
 assert.match(rendererSource, /if \(!isCurrentSourceRequest\(key, version\)\) return ''/);
 assert.match(rendererSource, /runtime\.setSource\(key, undefined\)[\s\S]*invokeDataSource\(key, source, true\)/);
+assert.match(
+  rendererSource,
+  /async function loadDataSourceWaves[\s\S]*source\.loadAfterSourceKeys[\s\S]*hydrateSourceBoundForms\(pageBlocks, sources\)/,
+  'Form-dependent data sources must wait for prerequisite rows to hydrate their forms.',
+);
 assert.match(rendererSource, /@media \(max-width: 820px\)[\s\S]*overflow-y: auto[\s\S]*\.lc-runtime-block--fill\.lc-node-tabs[\s\S]*min-height: min\(560px, calc\(100dvh - 16px\)\)/);
 assert.match(blockHelpersSource, /block\.clientFilter === false[\s\S]*return rows/);
+assert.match(
+  gridSource,
+  /const rowConfig = isRecord\(nextConfig\.rowConfig\)[\s\S]*isCurrent: true/,
+  'Low-code grids must always enable current-row highlighting at runtime.',
+);
 
 assert.match(tabsSource, /lowcode:tab-activated/);
 assert.match(tabsSource, /await nextTick\(\)/);

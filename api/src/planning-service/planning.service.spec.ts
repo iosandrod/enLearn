@@ -21,8 +21,8 @@ const service = new PlanningService() as unknown as {
   ): Promise<Record<string, unknown>>;
 };
 
-assert.equal(PLANNING_MODEL_DEFINITIONS.length, 44);
-assert.equal(Object.keys(resources).length, 44);
+assert.equal(PLANNING_MODEL_DEFINITIONS.length, 45);
+assert.equal(Object.keys(resources).length, 45);
 assert.deepEqual(Object.keys(resources), PLANNING_MODEL_KEYS);
 
 for (const model of PLANNING_MODEL_DEFINITIONS) {
@@ -55,6 +55,7 @@ for (const model of PLANNING_MODEL_DEFINITIONS) {
 
 assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.access === 'view').length, 9);
 assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_parameter').length, 1);
+assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_category').length, 1);
 assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_forecastplan').length, 1);
 assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_source_mapping').length, 1);
 assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_plan_version').length, 1);
@@ -166,6 +167,54 @@ async function testConsoleOptionBoundary() {
   assert.equal(options.length, 1000, 'Planning console options must cap results at 1000 rows.');
 }
 
-void Promise.all([testPlanningPayloadNormalization(), testConsoleOptionBoundary()]).then(() => {
+async function testCategoryRelationOptions() {
+  const calls: Array<[string, unknown]> = [];
+  const rows = [
+    { id: 'root', name: '原材料', parent_id: null },
+    { id: 'child', name: 'PCB 电路板', parent_id: 'root' }
+  ];
+  const query = {
+    select() { return query; },
+    eq(field: string, value: unknown) { calls.push([field, value]); return query; },
+    neq(field: string, value: unknown) { calls.push([`neq:${field}`, value]); return query; },
+    order() { return query; },
+    limit() { return Promise.resolve({ data: rows, error: null }); }
+  };
+  const optionService = new PlanningService() as unknown as {
+    executeAction(method: string, postData: Record<string, unknown>, context: unknown): Promise<unknown>;
+    createCrudContext: (...args: unknown[]) => Promise<Record<string, unknown>>;
+    assertPermission: (...args: unknown[]) => Promise<void>;
+    accountValue(context: unknown, field: string): string;
+  };
+  optionService.createCrudContext = async () => ({
+    client: { from: () => query },
+    config: resources.planning_category,
+    name: 'planning_category'
+  });
+  optionService.assertPermission = async () => undefined;
+  optionService.accountValue = () => 'account-1';
+
+  const options = await optionService.executeAction('listRelationOptions', {
+    resource: 'planning_category',
+    labelField: 'name',
+    filters: { target_type: 'item', status: 'active' },
+    excludeId: 'current-category',
+    tree: true
+  }, { accountId: 'account-1' }) as Array<Record<string, unknown>>;
+  assert.ok(calls.some(([field, value]) => field === 'target_type' && value === 'item'));
+  assert.ok(calls.some(([field, value]) => field === 'status' && value === 'active'));
+  assert.ok(calls.some(([field, value]) => field === 'neq:id' && value === 'current-category'));
+  assert.deepEqual(options, [{
+    id: 'root',
+    label: '原材料',
+    children: [{ id: 'child', label: 'PCB 电路板' }]
+  }]);
+}
+
+void Promise.all([
+  testPlanningPayloadNormalization(),
+  testConsoleOptionBoundary(),
+  testCategoryRelationOptions()
+]).then(() => {
   console.log('planning service configuration tests passed');
 });

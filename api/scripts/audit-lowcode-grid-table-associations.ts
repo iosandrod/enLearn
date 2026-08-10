@@ -34,6 +34,7 @@ async function main() {
       optionCount: audit.optionCount,
       prefixedOptionCount: audit.prefixedOptionCount,
       versionMismatchCount: audit.versionMismatchCount,
+      versionMismatches: audit.versionMismatches,
       nullBlockCount: audit.nullBlockCount,
       unexpectedSourceTypeCount: audit.unexpectedSourceTypeCount,
       planningConsoleAggregateSources: planningSources

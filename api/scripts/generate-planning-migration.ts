@@ -7,7 +7,7 @@ import {
   type PlanningModelDefinition
 } from '../src/planning-service/planning.models';
 
-const MIGRATION_FILE = 'supabase/migrations/20260808160000_planning_extended_models.sql';
+const MIGRATION_FILE = 'supabase/migrations/20260810210000_planning_master_categories.sql';
 
 const CORE_MODEL_KEYS = new Set([
   'planning_calendar', 'planning_calendarbucket', 'planning_location', 'planning_customer',
@@ -23,7 +23,25 @@ const EXTENDED_MODEL_DEFINITIONS = PLANNING_MODEL_DEFINITIONS.filter(
   (model) => !CORE_MODEL_KEYS.has(model.key)
 );
 
+const CATEGORY_TARGETS = [
+  ['planning_item', 'item'],
+  ['planning_customer', 'customer'],
+  ['planning_supplier', 'supplier']
+] as const;
+
+const CATEGORY_MODEL = PLANNING_MODEL_BY_KEY.get('planning_category');
+if (!CATEGORY_MODEL) throw new Error('planning_category model is not registered.');
+
+const CATEGORY_AFFECTED_MODEL_KEYS = new Set([
+  'planning_category',
+  ...CATEGORY_TARGETS.map(([table]) => table)
+]);
+const CATEGORY_AFFECTED_MODELS = PLANNING_MODEL_DEFINITIONS.filter(
+  (model) => CATEGORY_AFFECTED_MODEL_KEYS.has(model.key)
+);
+
 const uniqueConstraints: Record<string, string[][]> = {
+  planning_category: [['target_type', 'code']],
   planning_calendarbucket: [['calendar_id', 'startdate', 'enddate', 'priority']],
   planning_itemsupplier: [['item_id', 'location_id', 'supplier_id', 'effective_start']],
   planning_itemdistribution: [['item_id', 'location_id', 'origin_id', 'effective_start']],
@@ -110,7 +128,9 @@ function tableSql(model: PlanningModelDefinition) {
     "  created_at timestamptz not null default timezone('utc'::text, now())",
     "  updated_at timestamptz not null default timezone('utc'::text, now())",
     '  unique (account_id, id)',
-    ...(model.businessKey ? [`  unique (account_id, ${sqlIdentifier(model.businessKey)})`] : []),
+    ...(model.businessKey && model.businessKeyUnique !== false
+      ? [`  unique (account_id, ${sqlIdentifier(model.businessKey)})`]
+      : []),
     ...(uniqueConstraints[model.key] ?? []).map((fields) => `  unique (account_id, ${fields.map(sqlIdentifier).join(', ')})`)
   ];
 
@@ -119,6 +139,15 @@ function tableSql(model: PlanningModelDefinition) {
 
 function existingTableColumnsSql() {
   const addedColumns: Record<string, PlanningFieldDefinition[]> = {
+    planning_item: [
+      { name: 'category_id', label: '类别', kind: 'relation', relation: 'planning_category' }
+    ],
+    planning_customer: [
+      { name: 'category_id', label: '类别', kind: 'relation', relation: 'planning_category' }
+    ],
+    planning_supplier: [
+      { name: 'category_id', label: '类别', kind: 'relation', relation: 'planning_category' }
+    ],
     planning_demand: [
       { name: 'source_type', label: '来源类型', kind: 'text', default: 'manual', options: [
         { label: 'manual', value: 'manual' },
@@ -172,6 +201,9 @@ function existingTableColumnsSql() {
 
 function existingTableForeignKeysSql() {
   const relations: Array<[string, string, string, string]> = [
+    ['planning_item', 'category_id', 'planning_category', 'restrict'],
+    ['planning_customer', 'category_id', 'planning_category', 'restrict'],
+    ['planning_supplier', 'category_id', 'planning_category', 'restrict'],
     ['planning_operationplan', 'plan_version_id', 'planning_plan_version', 'set null'],
     ['planning_operationplanresource', 'plan_version_id', 'planning_plan_version', 'set null'],
     ['planning_operationplanmaterial', 'plan_version_id', 'planning_plan_version', 'set null'],
@@ -185,6 +217,26 @@ function existingTableForeignKeysSql() {
   }).join('\n\n');
 }
 
+function categoryColumnsSql() {
+  return CATEGORY_TARGETS.map(([table]) => `alter table public.${table}
+  add column if not exists category_id uuid;
+create index if not exists idx_${table}_category
+  on public.${table}(account_id, category_id);`).join('\n\n');
+}
+
+function categoryForeignKeysSql() {
+  const categoryParent = foreignKeySql(CATEGORY_MODEL);
+  const categoryAssignments = CATEGORY_TARGETS.map(([table]) => {
+    const constraint = `${table}_category_id_account_fk`;
+    return `alter table public.${table} drop constraint if exists ${constraint};
+alter table public.${table} add constraint ${constraint}
+  foreign key (account_id, category_id)
+  references public.planning_category(account_id, id)
+  on delete restrict deferrable initially deferred;`;
+  }).join('\n\n');
+  return [categoryParent, categoryAssignments].filter(Boolean).join('\n\n');
+}
+
 function foreignKeySql(model: PlanningModelDefinition) {
   return model.fields
     .filter((field) => field.kind === 'relation' && field.relation)
@@ -192,11 +244,13 @@ function foreignKeySql(model: PlanningModelDefinition) {
       const target = PLANNING_MODEL_BY_KEY.get(field.relation!);
       if (!target) throw new Error(`Unknown relation target: ${field.relation}`);
       const constraint = `${model.key}_${field.name}_account_fk`;
-      const onDelete = model.key === 'planning_operationplanmaterial' || model.key === 'planning_operationplanresource'
-        ? 'cascade'
-        : field.required
-          ? 'restrict'
-          : 'set null';
+      const onDelete = field.relationOnDelete ?? (
+        model.key === 'planning_operationplanmaterial' || model.key === 'planning_operationplanresource'
+          ? 'cascade'
+          : field.required
+            ? 'restrict'
+            : 'set null'
+      );
       return [
         `alter table public.${model.key} drop constraint if exists ${constraint};`,
         `alter table public.${model.key} add constraint ${constraint}`,
@@ -212,6 +266,7 @@ function choiceLabel(field: PlanningFieldDefinition, value: string) {
 }
 
 function relationLabelField(field: PlanningFieldDefinition) {
+  if (field.relationLabelField) return field.relationLabelField;
   const target = field.relation ? PLANNING_MODEL_BY_KEY.get(field.relation) : undefined;
   return target?.businessKey ?? 'id';
 }
@@ -220,7 +275,26 @@ function relationSourceKey(field: PlanningFieldDefinition) {
   return field.relation ? `${field.relation}Options` : '';
 }
 
-function formField(field: PlanningFieldDefinition) {
+function relationFilterBindingEvents(
+  model: PlanningModelDefinition,
+  field: PlanningFieldDefinition
+) {
+  if (!field.relationFilterBindings) return {};
+  const sourceKey = relationSourceKey(field);
+  const blockId = `${model.key}_edit_form`;
+  return Object.values(field.relationFilterBindings).reduce<Record<string, unknown[]>>(
+    (events, sourceField) => {
+      events[sourceField] = [
+        { type: 'setFormField', blockId, field: field.name, value: '' },
+        { type: 'refreshDataSources', sourceKeys: [sourceKey] }
+      ];
+      return events;
+    },
+    {}
+  );
+}
+
+function formField(model: PlanningModelDefinition, field: PlanningFieldDefinition) {
   const props: Record<string, unknown> = {
     clearable: field.kind !== 'boolean',
     placeholder: field.kind === 'relation' ? `请选择${field.label}` : `请输入${field.label}`
@@ -251,9 +325,14 @@ function formField(field: PlanningFieldDefinition) {
   if (field.options?.length) result.options = field.options;
   if (field.kind === 'relation') {
     props.filterable = true;
+    if (field.relationTree) result.component = 'vxe-tree-select';
     result.optionsSourceKey = relationSourceKey(field);
-    result.optionProps = { label: 'label', value: 'id' };
+    result.optionProps = field.relationTree
+      ? { label: 'label', value: 'id', children: 'children' }
+      : { label: 'label', value: 'id' };
   }
+  const bindingEvents = relationFilterBindingEvents(model, field);
+  if (bindingEvents[field.name]) result.events = { change: bindingEvents[field.name] };
   if (field.required) {
     result.rules = [{ required: true, message: `请输入${field.label}` }];
   }
@@ -326,8 +405,26 @@ function dataSource(model: PlanningModelDefinition, edit: boolean) {
           serviceMethod: 'listRelationOptions',
           postData: {
             resource: field.relation,
-            labelField: relationLabelField(field)
+            labelField: relationLabelField(field),
+            ...(edit && field.relation === model.key
+              ? { excludeId: `{{ forms.${model.key}_edit_form.id }}` }
+              : {}),
+            ...(field.relationFilters || field.relationFilterBindings ? {
+              filters: {
+                ...(field.relationFilters ?? {}),
+                ...Object.fromEntries(Object.entries(field.relationFilterBindings ?? {}).map(
+                  ([targetField, sourceField]) => [
+                    targetField,
+                    `{{ forms.${model.key}_edit_form.${sourceField} }}`
+                  ]
+                ))
+              }
+            } : {}),
+            ...(field.relationTree ? { tree: true } : {})
           },
+          ...(edit && field.relationFilterBindings
+            ? { loadAfterSourceKeys: [sourceKey] }
+            : {}),
           autoLoad: true
         }];
       })
@@ -417,6 +514,7 @@ export function buildPlanningListSchema(model: PlanningModelDefinition) {
       }] : []),
       {
         id: `${model.key}-grid`, kind: 'grid', title: `${model.title}列表`, sourceKey,
+        sourceType: 'custom', tableName: model.key,
         schema: {
           grid: {
             border: true, stripe: true, showOverflow: 'tooltip', height: 520,
@@ -489,7 +587,15 @@ export function buildPlanningEditSchema(model: PlanningModelDefinition) {
             initialValues: initialValues(model),
             schema: {
               columns: 4,
-              fields: model.fields.map(formField),
+              fields: model.fields.map((field) => {
+                const result = formField(model, field);
+                const dependentEvents = model.fields.flatMap((candidate) =>
+                  relationFilterBindingEvents(model, candidate)[field.name] ?? []
+                );
+                return dependentEvents.length
+                  ? { ...result, events: { ...((result.events as Record<string, unknown>) ?? {}), change: dependentEvents } }
+                  : result;
+              }),
               actions: []
             }
           }]
@@ -673,7 +779,7 @@ on public.wf_job_run
 for each row execute function public.planning_sync_workflow_run();`;
 }
 
-function dynamicCrudConfig(model: PlanningModelDefinition) {
+export function buildPlanningDynamicCrudConfig(model: PlanningModelDefinition) {
   const writable = model.fields.filter((field) => !field.readOnly).map((field) => field.name);
   const required = model.fields.filter((field) => field.required).map((field) => field.name);
   const managedCreate = ['account_id', 'created_at', 'updated_at', 'created_by', 'updated_by'];
@@ -715,7 +821,7 @@ function dynamicCrudConfig(model: PlanningModelDefinition) {
 
 function dynamicCrudRegistrySql() {
   return EXTENDED_MODEL_DEFINITIONS.map((model) => {
-    const config = dynamicCrudConfig(model);
+    const config = buildPlanningDynamicCrudConfig(model);
     return `select public.register_dynamic_crud_resource(
   ${sqlString(model.key)},
   ${sqlString(model.key)},
@@ -930,7 +1036,7 @@ function coreCrudRegistryRefreshSql() {
   return PLANNING_MODEL_DEFINITIONS
     .filter((model) => refreshedKeys.has(model.key))
     .map((model) => {
-      const config = dynamicCrudConfig(model);
+      const config = buildPlanningDynamicCrudConfig(model);
       return `select public.register_dynamic_crud_resource(
   ${sqlString(model.key)},
   ${sqlString(model.key)},
@@ -1745,7 +1851,414 @@ where accounts.status = 'active'
 on conflict (account_id, name) do nothing;`;
 }
 
-function pagesSql() {
+function legacyCategorySourceSql() {
+  return CATEGORY_TARGETS.map(([table, targetType]) => `select account_id, ${sqlString(targetType)}::text as target_type,
+         nullif(btrim(category), '') as category_name,
+         nullif(btrim(subcategory), '') as subcategory_name
+  from public.${table}`).join('\n  union all\n  ');
+}
+
+function categoryPoliciesAndAuditSql() {
+  return `create or replace function public.planning_set_audit_fields()
+returns trigger
+language plpgsql
+as $function$
+begin
+  new.updated_at := timezone('utc'::text, now());
+  if to_jsonb(new) ? 'lastmodified' then
+    new := jsonb_populate_record(new, jsonb_build_object('lastmodified', timezone('utc'::text, now())));
+  end if;
+  if to_jsonb(new) ? 'attempted_at' and (to_jsonb(new)->>'attempted_at') is null then
+    new := jsonb_populate_record(new, jsonb_build_object('attempted_at', timezone('utc'::text, now())));
+  end if;
+  if tg_op = 'INSERT' then
+    new.created_at := coalesce(new.created_at, new.updated_at);
+  end if;
+  return new;
+end;
+$function$;
+
+create index if not exists idx_planning_category_account
+  on public.planning_category(account_id);
+create index if not exists idx_planning_category_updated
+  on public.planning_category(account_id, updated_at desc);
+create index if not exists idx_planning_category_tree
+  on public.planning_category(account_id, target_type, parent_id, sort_order, code);
+
+alter table public.planning_category enable row level security;
+
+drop policy if exists "Planning viewers can read planning_category" on public.planning_category;
+create policy "Planning viewers can read planning_category" on public.planning_category
+  for select to authenticated
+  using (
+    public.has_account_permission(account_id, 'planning.models.view')
+    or public.has_account_permission(account_id, 'planning.models.manage')
+  );
+
+drop policy if exists "Planning managers can insert planning_category" on public.planning_category;
+create policy "Planning managers can insert planning_category" on public.planning_category
+  for insert to authenticated
+  with check (public.has_account_permission(account_id, 'planning.models.manage'));
+
+drop policy if exists "Planning managers can update planning_category" on public.planning_category;
+create policy "Planning managers can update planning_category" on public.planning_category
+  for update to authenticated
+  using (public.has_account_permission(account_id, 'planning.models.manage'))
+  with check (public.has_account_permission(account_id, 'planning.models.manage'));
+
+drop policy if exists "Planning managers can delete planning_category" on public.planning_category;
+create policy "Planning managers can delete planning_category" on public.planning_category
+  for delete to authenticated
+  using (public.has_account_permission(account_id, 'planning.models.manage'));
+
+grant select, insert, update, delete on public.planning_category to authenticated, service_role;
+
+drop trigger if exists planning_category_audit on public.planning_category;
+create trigger planning_category_audit
+before insert or update on public.planning_category
+for each row execute function public.planning_set_audit_fields();`;
+}
+
+function categoryLegacyBackfillSql() {
+  const sourceCategories = legacyCategorySourceSql();
+  return `drop trigger if exists planning_item_category_clear on public.planning_item;
+drop trigger if exists planning_customer_category_clear on public.planning_customer;
+drop trigger if exists planning_supplier_category_clear on public.planning_supplier;
+
+alter table public.planning_category
+  drop constraint if exists planning_category_parent_not_self_check;
+alter table public.planning_category
+  add constraint planning_category_parent_not_self_check
+  check (parent_id is null or parent_id <> id);
+
+create or replace function public.planning_normalize_category_code(p_value text)
+returns text
+language sql
+immutable
+strict
+as $function$
+  select coalesce(
+    nullif(upper(trim(both '_' from regexp_replace(btrim(p_value), '[^A-Za-z0-9]+', '_', 'g'))), ''),
+    'CAT_' || upper(left(md5(btrim(p_value)), 12))
+  )
+$function$;
+
+with source_categories as (
+  ${sourceCategories}
+), root_categories as (
+  select account_id, target_type, category_name
+  from source_categories
+  where category_name is not null
+  group by account_id, target_type, category_name
+), normalized_roots as (
+  select *, public.planning_normalize_category_code(category_name) as base_code
+  from root_categories
+), ranked_roots as (
+  select *, row_number() over (
+    partition by account_id, target_type, base_code
+    order by category_name
+  ) as code_rank
+  from normalized_roots
+)
+insert into public.planning_category (
+  account_id, target_type, code, name, status, sort_order, source
+)
+select account_id, target_type,
+       base_code || case when code_rank = 1 then '' else '_' || code_rank::text end,
+       category_name, 'active', 0, 'legacy-category-migration'
+from ranked_roots
+on conflict (account_id, target_type, code) do nothing;
+
+with source_categories as (
+  ${sourceCategories}
+), child_categories as (
+  select account_id, target_type, category_name, subcategory_name
+  from source_categories
+  where category_name is not null and subcategory_name is not null
+  group by account_id, target_type, category_name, subcategory_name
+), resolved_children as (
+  select source.*, parent.id as parent_id, parent.code as parent_code
+  from child_categories source
+  join public.planning_category parent
+    on parent.account_id = source.account_id
+   and parent.target_type = source.target_type
+   and parent.parent_id is null
+   and parent.name = source.category_name
+), normalized_children as (
+  select *, parent_code || '_' ||
+    public.planning_normalize_category_code(subcategory_name) as base_code
+  from resolved_children
+), ranked_children as (
+  select *, row_number() over (
+    partition by account_id, target_type, base_code
+    order by parent_id, subcategory_name
+  ) as code_rank
+  from normalized_children
+)
+insert into public.planning_category (
+  account_id, target_type, code, name, parent_id, status, sort_order, source
+)
+select account_id, target_type,
+       base_code || case when code_rank = 1 then '' else '_' || code_rank::text end,
+       subcategory_name, parent_id, 'active', 0, 'legacy-category-migration'
+from ranked_children
+on conflict (account_id, target_type, code) do nothing;
+
+${CATEGORY_TARGETS.map(([table, targetType]) => `update public.${table} record
+set category_id = coalesce(
+  (
+    select child.id
+    from public.planning_category parent
+    join public.planning_category child
+      on child.account_id = parent.account_id
+     and child.target_type = parent.target_type
+     and child.parent_id = parent.id
+     and child.name = nullif(btrim(record.subcategory), '')
+    where parent.account_id = record.account_id
+      and parent.target_type = ${sqlString(targetType)}
+      and parent.parent_id is null
+      and parent.name = nullif(btrim(record.category), '')
+    order by child.code
+    limit 1
+  ),
+  (
+    select parent.id
+    from public.planning_category parent
+    where parent.account_id = record.account_id
+      and parent.target_type = ${sqlString(targetType)}
+      and parent.parent_id is null
+      and parent.name = nullif(btrim(record.category), '')
+    order by parent.code
+    limit 1
+  )
+)
+where record.category_id is null
+  and nullif(btrim(record.category), '') is not null;`).join('\n\n')}`;
+}
+
+function categoryIntegrityTriggersSql() {
+  return `create or replace function public.planning_validate_category_parent()
+returns trigger
+language plpgsql
+as $function$
+declare
+  parent_category public.planning_category%rowtype;
+  cursor_id uuid;
+begin
+  if new.parent_id is null then return new; end if;
+
+  select * into parent_category
+  from public.planning_category
+  where account_id = new.account_id and id = new.parent_id;
+  if not found or parent_category.target_type <> new.target_type then
+    raise exception 'Category parent must use the same account and target type.' using errcode = '23514';
+  end if;
+
+  cursor_id := new.parent_id;
+  while cursor_id is not null loop
+    if cursor_id = new.id then
+      raise exception 'Category hierarchy cannot contain a cycle.' using errcode = '23514';
+    end if;
+    select parent_id into cursor_id
+    from public.planning_category
+    where account_id = new.account_id and id = cursor_id;
+  end loop;
+  return new;
+end;
+$function$;
+
+drop trigger if exists planning_category_parent_guard on public.planning_category;
+create trigger planning_category_parent_guard
+before insert or update of account_id, target_type, parent_id on public.planning_category
+for each row execute function public.planning_validate_category_parent();
+
+create or replace function public.planning_protect_category_change()
+returns trigger
+language plpgsql
+as $function$
+begin
+  if new.account_id is distinct from old.account_id
+     or new.target_type is distinct from old.target_type
+  then
+    if exists (
+      select 1 from public.planning_category child
+      where child.account_id = old.account_id and child.parent_id = old.id
+    ) or exists (
+      select 1 from public.planning_item record
+      where record.account_id = old.account_id and record.category_id = old.id
+    ) or exists (
+      select 1 from public.planning_customer record
+      where record.account_id = old.account_id and record.category_id = old.id
+    ) or exists (
+      select 1 from public.planning_supplier record
+      where record.account_id = old.account_id and record.category_id = old.id
+    ) then
+      raise exception 'A referenced category cannot change account or target type.' using errcode = '23514';
+    end if;
+  end if;
+  return new;
+end;
+$function$;
+
+drop trigger if exists planning_category_change_guard on public.planning_category;
+create trigger planning_category_change_guard
+before update of account_id, target_type on public.planning_category
+for each row execute function public.planning_protect_category_change();
+
+${CATEGORY_TARGETS.map(([table, targetType]) => `create or replace function public.${table}_sync_category()
+returns trigger
+language plpgsql
+as $function$
+declare
+  selected_category public.planning_category%rowtype;
+  root_category public.planning_category%rowtype;
+begin
+  if new.category_id is null then
+    return new;
+  end if;
+
+  select * into selected_category
+  from public.planning_category
+  where account_id = new.account_id and id = new.category_id;
+  if not found then
+    raise exception 'Category does not belong to this account.' using errcode = '23503';
+  end if;
+  if selected_category.target_type <> ${sqlString(targetType)} then
+    raise exception 'Category target type % cannot be assigned to ${targetType}.', selected_category.target_type using errcode = '23514';
+  end if;
+  if (tg_op = 'INSERT' or new.category_id is distinct from old.category_id)
+     and selected_category.status <> 'active' then
+    raise exception 'Inactive categories cannot be newly assigned.' using errcode = '23514';
+  end if;
+
+  with recursive ancestors(id, parent_id, depth) as (
+    select selected_category.id, selected_category.parent_id, 0
+    union all
+    select parent.id, parent.parent_id, ancestors.depth + 1
+    from public.planning_category parent
+    join ancestors on ancestors.parent_id = parent.id
+    where parent.account_id = new.account_id
+      and parent.target_type = selected_category.target_type
+  )
+  select category.* into root_category
+  from ancestors
+  join public.planning_category category
+    on category.account_id = new.account_id and category.id = ancestors.id
+  order by ancestors.depth desc
+  limit 1;
+
+  new.category := root_category.name;
+  new.subcategory := case
+    when root_category.id = selected_category.id then null
+    else selected_category.name
+  end;
+  return new;
+end;
+$function$;
+
+drop trigger if exists ${table}_category_sync on public.${table};
+create trigger ${table}_category_sync
+before insert or update of category_id on public.${table}
+for each row execute function public.${table}_sync_category();`).join('\n\n')}
+
+${CATEGORY_TARGETS.map(([table]) => `create or replace function public.${table}_clear_category()
+returns trigger
+language plpgsql
+as $function$
+begin
+  new.category := null;
+  new.subcategory := null;
+  return new;
+end;
+$function$;`).join('\n\n')}`;
+}
+
+function categoryPostBackfillTriggersSql() {
+  return `create or replace function public.planning_resync_category_assignments()
+returns trigger
+language plpgsql
+as $function$
+declare
+  category_ids uuid[];
+begin
+  if new.name is not distinct from old.name
+     and new.parent_id is not distinct from old.parent_id then
+    return new;
+  end if;
+
+  with recursive subtree(id) as (
+    select new.id
+    union all
+    select child.id
+    from public.planning_category child
+    join subtree parent on child.parent_id = parent.id
+    where child.account_id = new.account_id
+      and child.target_type = new.target_type
+  )
+  select array_agg(id) into category_ids from subtree;
+
+  if new.target_type = 'item' then
+    update public.planning_item record
+    set category_id = record.category_id
+    where record.account_id = new.account_id
+      and record.category_id = any(category_ids);
+  elsif new.target_type = 'customer' then
+    update public.planning_customer record
+    set category_id = record.category_id
+    where record.account_id = new.account_id
+      and record.category_id = any(category_ids);
+  elsif new.target_type = 'supplier' then
+    update public.planning_supplier record
+    set category_id = record.category_id
+    where record.account_id = new.account_id
+      and record.category_id = any(category_ids);
+  end if;
+  return new;
+end;
+$function$;
+
+drop trigger if exists planning_category_assignment_resync on public.planning_category;
+create trigger planning_category_assignment_resync
+after update of name, parent_id on public.planning_category
+for each row execute function public.planning_resync_category_assignments();
+
+${CATEGORY_TARGETS.map(([table]) => `drop trigger if exists ${table}_category_clear on public.${table};
+create trigger ${table}_category_clear
+before update of category_id on public.${table}
+for each row
+when (old.category_id is not null and new.category_id is null)
+execute function public.${table}_clear_category();`).join('\n\n')}
+
+${CATEGORY_TARGETS.map(([table]) => `drop trigger if exists ${table}_category_legacy_fields_sync on public.${table};
+create trigger ${table}_category_legacy_fields_sync
+before update of category, subcategory on public.${table}
+for each row
+when (new.category_id is not null)
+execute function public.${table}_sync_category();`).join('\n\n')}`;
+}
+
+function categoryCrudRegistrySql() {
+  return CATEGORY_AFFECTED_MODELS.map((model) => {
+    const config = buildPlanningDynamicCrudConfig(model);
+    return `select public.register_dynamic_crud_resource(
+  ${sqlString(model.key)},
+  ${sqlString(model.key)},
+  encode(digest(convert_to(${sqlString(JSON.stringify(config))}, 'UTF8'), 'sha256'), 'hex'),
+  ${jsonSql(config)}
+);`;
+  }).join('\n\n');
+}
+
+function planningEntitySortOrder(model: PlanningModelDefinition) {
+  if (model.key === 'planning_category') return 319;
+  const categoryIndex = PLANNING_MODEL_DEFINITIONS.findIndex(
+    (candidate) => candidate.key === 'planning_category'
+  );
+  const modelIndex = PLANNING_MODEL_DEFINITIONS.indexOf(model);
+  return 320 + modelIndex - (modelIndex > categoryIndex ? 1 : 0);
+}
+
+function pagesSql(models?: readonly PlanningModelDefinition[]) {
   const refreshedKeys = new Set([
     'planning_demand',
     'planning_operationplan',
@@ -1755,10 +2268,10 @@ function pagesSql() {
     'planning_constraint',
     'planning_resourceplan'
   ]);
-  const pageModels = PLANNING_MODEL_DEFINITIONS.filter(
+  const pageModels = models ?? PLANNING_MODEL_DEFINITIONS.filter(
     (model) => !CORE_MODEL_KEYS.has(model.key) || refreshedKeys.has(model.key)
   );
-  return pageModels.map((model, index) => {
+  return pageModels.map((model) => {
     const list = buildPlanningListSchema(model);
     const edit = buildPlanningEditSchema(model);
     const route = list.route;
@@ -1808,14 +2321,6 @@ on conflict (code) do update set
     else public.lowcode_pages.updated_at
   end;
 
-update public.lowcode_pages list_page
-set edit_page_id = edit_page.id,
-    updated_at = timezone('utc'::text, now())
-from public.lowcode_pages edit_page
-where list_page.code = ${sqlString(listCode)}
-  and edit_page.code = ${sqlString(editCode)}
-  and list_page.edit_page_id is distinct from edit_page.id;
-
 insert into public.lowcode_page_versions (page_id, version, schema, published_at)
 select id, version, schema, published_at
 from public.lowcode_pages
@@ -1824,13 +2329,21 @@ on conflict (page_id, version) do update set
   schema = excluded.schema,
   published_at = excluded.published_at;
 
+update public.lowcode_pages list_page
+set edit_page_id = edit_page.id,
+    updated_at = timezone('utc'::text, now())
+from public.lowcode_pages edit_page
+where list_page.code = ${sqlString(listCode)}
+  and edit_page.code = ${sqlString(editCode)}
+  and list_page.edit_page_id is distinct from edit_page.id;
+
 insert into public.admin_entities (
   code, title, table_name, route_path, page_code, icon, description,
   primary_key, status, sort_order, schema
 ) values (
   ${sqlString(model.key)}, ${sqlString(model.title)}, ${sqlString(`public.${model.key}`)},
   ${sqlString(route)}, ${sqlString(listCode)}, ${sqlString(model.icon)}, ${sqlString(model.description)},
-  'id', 'active', ${320 + index}, ${jsonSql({
+  'id', 'active', ${planningEntitySortOrder(model)}, ${jsonSql({
     sourceTable: model.sourceTable,
     freppleModel: model.key.replace(/^planning_/, ''),
     service: 'planning',
@@ -1954,6 +2467,8 @@ function reconcileObsoleteRoutesSql() {
   const activeRouteCodes = new Set([
     'planning-root',
     'planning-console',
+    'planning-routing-view',
+    'planning-bom-view',
     ...activeGroupCodes,
     ...PLANNING_MODEL_DEFINITIONS.map((model) => `planning-${model.sourceTable.replace(/_/g, '-')}`)
   ]);
@@ -1964,39 +2479,208 @@ where (code = 'planning-root' or code like 'planning-%')
 }
 
 export function buildPlanningRoutesSql() {
-  return routesSql();
+  return [routesSql(), reconcileObsoleteRoutesSql()].join('\n\n');
 }
 
-function migrationSql() {
-  const header = `-- frePPLe-compatible planning data service for enLearn.
--- Scope: extended configuration, forecast, diagnostic, execution, scenario,
--- time-bucket, attribute, archive, source-integration and plan-version models.
--- The C++ solver remains external.
+function categoryRouteSql() {
+  const model = CATEGORY_MODEL;
+  const routeCode = `planning-${model.sourceTable.replace(/_/g, '-')}`;
+  const routePath = `/dashboard/planning/${model.sourceTable.replace(/_/g, '-')}`;
+  return `insert into public.admin_routes (
+  code, title, path, parent_id, route_type, icon, page_code, permission_code,
+  visible, keep_alive, layout, status, sort_order, metadata
+)
+select
+  ${sqlString(routeCode)}, ${sqlString(model.title)}, ${sqlString(routePath)}, parent.id,
+  'page', ${sqlString(model.icon)}, ${sqlString(`${model.key}-list`)}, 'planning.models.view',
+  true, true, 'dashboard', 'active', 35,
+  ${jsonSql({ module: 'planning', group: model.group, sourceTable: model.sourceTable })}
+from public.admin_routes parent
+where parent.code = 'planning-1'
+on conflict (code) do update set
+  title = excluded.title,
+  path = excluded.path,
+  parent_id = excluded.parent_id,
+  route_type = excluded.route_type,
+  icon = excluded.icon,
+  page_code = excluded.page_code,
+  permission_code = excluded.permission_code,
+  visible = excluded.visible,
+  keep_alive = excluded.keep_alive,
+  layout = excluded.layout,
+  status = excluded.status,
+  sort_order = excluded.sort_order,
+  metadata = excluded.metadata,
+  updated_at = timezone('utc'::text, now());`;
+}
+
+function categoryCommentsSql() {
+  const assignmentTableComments: Record<string, [string, string]> = {
+    planning_item: [
+      '计划物料',
+      '维护原料、半成品和成品的成本、单位、层级、统一类别及需求特征，是供需计划的物料主数据。'
+    ],
+    planning_customer: [
+      '计划客户',
+      '维护计划需求和预测引用的客户主数据、层级及统一类别，用于客户维度的供需分析。'
+    ],
+    planning_supplier: [
+      '计划供应商',
+      '维护采购来源、供应商层级、统一类别和可用日历，为物料供应规则和采购计划提供主数据。'
+    ]
+  };
+  const tableMetadata = {
+    planning_category: [
+      '主数据类别',
+      '统一维护物料、客户和供应商的账套级层级类别；类别用于归类、筛选和分析，不直接改变排产约束。'
+    ],
+    ...assignmentTableComments
+  };
+  const tableComments = `do $comments$
+declare
+  table_metadata jsonb := ${jsonSql(tableMetadata)};
+  table_name text;
+  metadata jsonb;
+  relations jsonb;
+begin
+  foreach table_name in array array[
+    'planning_category', 'planning_item', 'planning_customer', 'planning_supplier'
+  ] loop
+    metadata := table_metadata -> table_name;
+    select coalesce(jsonb_agg(relation order by relation->>'table', relation->>'type'), '[]'::jsonb)
+    into relations
+    from (
+      select jsonb_build_object(
+        'table', related_namespace.nspname || '.' || related_table.relname,
+        'type', 'references',
+        'localColumns', (
+          select jsonb_agg(local_attribute.attname order by local_key.ordinality)
+          from unnest(constraint_meta.conkey) with ordinality local_key(attnum, ordinality)
+          join pg_attribute local_attribute
+            on local_attribute.attrelid = constraint_meta.conrelid
+           and local_attribute.attnum = local_key.attnum
+        ),
+        'relatedColumns', (
+          select jsonb_agg(related_attribute.attname order by related_key.ordinality)
+          from unnest(constraint_meta.confkey) with ordinality related_key(attnum, ordinality)
+          join pg_attribute related_attribute
+            on related_attribute.attrelid = constraint_meta.confrelid
+           and related_attribute.attnum = related_key.attnum
+        ),
+        'constraint', constraint_meta.conname,
+        'onDelete', case constraint_meta.confdeltype
+          when 'c' then 'CASCADE' when 'r' then 'RESTRICT' when 'n' then 'SET NULL'
+          when 'd' then 'SET DEFAULT' else 'NO ACTION'
+        end
+      ) as relation
+      from pg_constraint constraint_meta
+      join pg_class related_table on related_table.oid = constraint_meta.confrelid
+      join pg_namespace related_namespace on related_namespace.oid = related_table.relnamespace
+      where constraint_meta.contype = 'f'
+        and constraint_meta.conrelid = ('public.' || table_name)::regclass
+
+      union all
+
+      select jsonb_build_object(
+        'table', related_namespace.nspname || '.' || related_table.relname,
+        'type', 'referenced_by',
+        'localColumns', (
+          select jsonb_agg(local_attribute.attname order by local_key.ordinality)
+          from unnest(constraint_meta.confkey) with ordinality local_key(attnum, ordinality)
+          join pg_attribute local_attribute
+            on local_attribute.attrelid = constraint_meta.confrelid
+           and local_attribute.attnum = local_key.attnum
+        ),
+        'relatedColumns', (
+          select jsonb_agg(related_attribute.attname order by related_key.ordinality)
+          from unnest(constraint_meta.conkey) with ordinality related_key(attnum, ordinality)
+          join pg_attribute related_attribute
+            on related_attribute.attrelid = constraint_meta.conrelid
+           and related_attribute.attnum = related_key.attnum
+        ),
+        'constraint', constraint_meta.conname,
+        'onDelete', case constraint_meta.confdeltype
+          when 'c' then 'CASCADE' when 'r' then 'RESTRICT' when 'n' then 'SET NULL'
+          when 'd' then 'SET DEFAULT' else 'NO ACTION'
+        end
+      ) as relation
+      from pg_constraint constraint_meta
+      join pg_class related_table on related_table.oid = constraint_meta.conrelid
+      join pg_namespace related_namespace on related_namespace.oid = related_table.relnamespace
+      where constraint_meta.contype = 'f'
+        and constraint_meta.confrelid = ('public.' || table_name)::regclass
+    ) relation_rows;
+
+    execute format(
+      'comment on table public.%I is %L',
+      table_name,
+      json_build_object(
+        'title', metadata ->> 0,
+        'description', metadata ->> 1,
+        'relation', relations
+      )::text
+    );
+  end loop;
+end
+$comments$;`;
+  const columnComments: Array<[string, string, string, string, string]> = [
+    ['planning_category', 'target_type', '类别对象', 'text', '标识类别适用于物料、客户或供应商。'],
+    ['planning_category', 'code', '类别编码', 'text', '类别在账套和对象类型内的稳定唯一编码。'],
+    ['planning_category', 'name', '类别名称', 'text', '类别的业务显示名称。'],
+    ['planning_category', 'parent_id', '上级类别', 'text', '关联同账套、同对象类型的上级类别。'],
+    ['planning_category', 'description', '说明', 'text', '类别的业务用途说明。'],
+    ['planning_category', 'status', '状态', 'enum', '控制类别是否允许被新分配。'],
+    ['planning_category', 'sort_order', '排序', 'number', '同级类别的显示顺序。'],
+    ['planning_category', 'metadata', '扩展信息', 'json', '以 JSON 结构保存类别扩展信息。'],
+    ['planning_category', 'source', '数据来源', 'text', '记录类别的数据来源。'],
+    ['planning_category', 'lastmodified', '最后修改', 'datetime', '记录类别最后修改时间。'],
+    ...CATEGORY_TARGETS.map(([table]) => [
+      table, 'category_id', '类别', 'text', '关联统一主数据类别表中的类别。'
+    ] as [string, string, string, string, string])
+  ];
+  const commonCategoryColumns: Array<[string, string, string, string]> = [
+    ['id', '主键', 'text', '当前类别记录的唯一标识。'],
+    ['account_id', '账套', 'text', '类别所属账套的唯一标识。'],
+    ['created_by', '创建人', 'text', '创建类别记录的用户。'],
+    ['updated_by', '更新人', 'text', '最后更新类别记录的用户。'],
+    ['created_at', '创建时间', 'datetime', '类别记录的创建时间。'],
+    ['updated_at', '更新时间', 'datetime', '类别记录的更新时间。']
+  ];
+  const comments = [
+    ...columnComments,
+    ...commonCategoryColumns.map(([column, title, type, description]) => [
+      'planning_category', column, title, type, description
+    ] as [string, string, string, string, string])
+  ].map(([table, column, title, type, description]) =>
+    `comment on column public.${table}.${column} is ${sqlString(JSON.stringify({
+      title,
+      type,
+      align: type === 'number' ? 'right' : type === 'datetime' || type === 'enum' ? 'center' : 'left',
+      description
+    }))};`
+  );
+  return [tableComments, ...comments].join('\n\n');
+}
+
+export function buildPlanningCategoryMigrationSql() {
+  const header = `-- Unified master-data categories for planning.
+-- Scope: planning_category plus category assignments for items, customers and suppliers.
 
 begin;`;
-  const newTableDefinitions = EXTENDED_MODEL_DEFINITIONS.filter((model) =>
-    !['planning_problem', 'planning_constraint', 'planning_resourceplan'].includes(model.key)
-  );
-  const tables = newTableDefinitions.map(tableSql).join('\n\n');
-  const foreignKeys = newTableDefinitions.map(foreignKeySql).filter(Boolean).join('\n\n');
   return [
     header,
-    permissionsSql(),
-    tables,
-    existingTableColumnsSql(),
-    foreignKeys,
-    existingTableForeignKeysSql(),
-    commonFunctionsSql(),
-    policiesAndTriggersSql(),
-    extendedConstraintsSql(),
-    integrationAndVersionSql(),
-    workflowPlanningBridgeSql(),
-    seedExtendedPlanningDataSql(),
-    dynamicCrudRegistrySql(),
-    coreCrudRegistryRefreshSql(),
-    pagesSql(),
-    routesSql(),
-    reconcileObsoleteRoutesSql(),
+    tableSql(CATEGORY_MODEL),
+    categoryColumnsSql(),
+    categoryForeignKeysSql(),
+    categoryPoliciesAndAuditSql(),
+    categoryIntegrityTriggersSql(),
+    categoryLegacyBackfillSql(),
+    'set constraints all immediate;',
+    categoryPostBackfillTriggersSql(),
+    categoryCrudRegistrySql(),
+    pagesSql(CATEGORY_AFFECTED_MODELS),
+    categoryRouteSql(),
+    categoryCommentsSql(),
     "select pg_notify('pgrst', 'reload schema');",
     'commit;'
   ].join('\n\n');
@@ -2007,12 +2691,12 @@ export async function generatePlanningMigration() {
     ? resolve(process.cwd(), '..')
     : process.cwd();
   const target = resolve(repoRoot, MIGRATION_FILE);
-  const sql = migrationSql();
+  const sql = buildPlanningCategoryMigrationSql();
   await writeFile(target, sql, 'utf8');
   console.log(JSON.stringify({
     target,
     totalModels: PLANNING_MODEL_DEFINITIONS.length,
-    extendedModels: EXTENDED_MODEL_DEFINITIONS.length,
+    categoryModels: CATEGORY_AFFECTED_MODELS.length,
     bytes: Buffer.byteLength(sql)
   }));
 }

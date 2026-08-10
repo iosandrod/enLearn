@@ -15,6 +15,11 @@ const ENGINE_DATE_LIMIT = Date.parse('2030-12-31T00:00:00.000Z');
 const LOCKED_OPERATIONPLAN_STATUSES = new Set(['approved', 'confirmed', 'completed']);
 const INPUT_OPERATIONPLAN_TYPES = new Set(['MO', 'WO', 'PO', 'DO', 'DLVR']);
 const ACTIVE_DEMAND_STATUSES = new Set(['open', 'quote']);
+const CATEGORY_TARGET_BY_TABLE: Partial<Record<PlanningInputTable, string>> = {
+  planning_item: 'item',
+  planning_customer: 'customer',
+  planning_supplier: 'supplier'
+};
 
 const COMPOSITE_KEYS: Partial<Record<PlanningInputTable, string[][]>> = {
   planning_calendarbucket: [['calendar_id', 'startdate', 'enddate', 'priority']],
@@ -58,6 +63,7 @@ export class PlanningPreflightValidator {
     validateRequiredFields(snapshot, add);
     validateBusinessKeys(snapshot, add);
     validateRelations(snapshot, add);
+    validateMasterCategories(snapshot, add);
     validateFieldValues(snapshot, add);
     validateDateRanges(snapshot, add);
     validateLotSizes(snapshot, add);
@@ -126,7 +132,8 @@ function validateBusinessKeys(snapshot: PlanningDataSnapshot, add: AddIssue) {
   for (const table of PLANNING_INPUT_TABLES) {
     const model = PLANNING_MODEL_BY_KEY.get(table);
     const keySets = [
-      ...(model?.businessKey ? [[model.businessKey]] : []),
+      ...(model?.businessKey && model.businessKeyUnique !== false ? [[model.businessKey]] : []),
+      ...(table === 'planning_category' ? [['target_type', 'code']] : []),
       ...(COMPOSITE_KEYS[table] ?? [])
     ];
     for (const fields of keySets) {
@@ -182,6 +189,62 @@ function validateRelations(snapshot: PlanningDataSnapshot, add: AddIssue) {
       }
     }
   }
+}
+
+function validateMasterCategories(snapshot: PlanningDataSnapshot, add: AddIssue) {
+  const categories = new Map(snapshot.rows.planning_category.map((row) => [row.id, row]));
+  for (const category of snapshot.rows.planning_category) {
+    const parentId = optionalString(category.parent_id);
+    if (!parentId) continue;
+    const parent = categories.get(parentId);
+    if (!parent) continue;
+    if (optionalString(parent.target_type) !== optionalString(category.target_type)) {
+      add(rowIssue(
+        'CATEGORY_PARENT_TARGET_MISMATCH',
+        `类别 ${category.id} 与上级类别 ${parentId} 的对象类型不一致。`,
+        'planning_category',
+        category,
+        'parent_id'
+      ));
+    }
+  }
+  for (const [table, expectedTarget] of Object.entries(CATEGORY_TARGET_BY_TABLE) as Array<[
+    PlanningInputTable,
+    string
+  ]>) {
+    for (const row of snapshot.rows[table]) {
+      const categoryId = optionalString(row.category_id);
+      if (!categoryId) continue;
+      const category = categories.get(categoryId);
+      if (!category) continue;
+      if (optionalString(category.target_type) !== expectedTarget) {
+        add(rowIssue(
+          'CATEGORY_TARGET_MISMATCH',
+          `类别 ${categoryId} 不能分配给 ${table}。`,
+          table,
+          row,
+          'category_id'
+        ));
+      }
+      if (optionalString(category.status) !== 'active') {
+        add(rowIssue(
+          'CATEGORY_INACTIVE',
+          `类别 ${categoryId} 已停用，不能用于排产主数据。`,
+          table,
+          row,
+          'category_id'
+        ));
+      }
+    }
+  }
+
+  validateDirectedCycles(
+    'planning_category',
+    snapshot.rows.planning_category,
+    (row) => optionalString(row.parent_id),
+    'CATEGORY_HIERARCHY_CYCLE',
+    add
+  );
 }
 
 function validateFieldValues(snapshot: PlanningDataSnapshot, add: AddIssue) {

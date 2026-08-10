@@ -503,6 +503,7 @@ type ArrayTableColumnOption = {
   defaultValue?: unknown;
   props?: Record<string, unknown>;
   options?: LowCodeOption[];
+  optionsCode?: string;
 };
 
 const booleanColumnFields = new Set([
@@ -596,6 +597,7 @@ function createTableColumns(propConfig: VisualEditorProps): ArrayTableColumnOpti
       ? { defaultValue: option.defaultValue }
       : {}),
     ...(option.props ? { props: option.props } : {}),
+    ...(option.optionsCode ? { optionsCode: option.optionsCode } : {}),
     ...(option.options ? { options: option.options.map(toLowCodeOption) } : {}),
   }));
 }

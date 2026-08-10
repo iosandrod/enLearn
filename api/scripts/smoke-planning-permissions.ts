@@ -70,7 +70,7 @@ async function main() {
   let managerRoleId = '';
   let stage = 'setup';
   const expectedNavigationRoutes = PLANNING_MODEL_DEFINITIONS.length +
-    new Set(PLANNING_MODEL_DEFINITIONS.map((model) => model.group)).size + 1;
+    new Set(PLANNING_MODEL_DEFINITIONS.map((model) => model.group)).size + 3;
 
   await postgres.connect();
   try {

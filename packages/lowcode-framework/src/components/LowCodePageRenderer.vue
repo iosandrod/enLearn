@@ -1608,8 +1608,89 @@ function collectSharedFormDefaults(blocks: LowCodePageBlock[]) {
   return defaultsBySource;
 }
 
+function hydrateSourceBoundForms(
+  blocks: LowCodePageBlock[],
+  sources: Record<string, LowCodePageDataSource>
+) {
+  for (const block of blocks) {
+    if (block.kind !== 'form') continue;
+
+    const sourceKey = block.sourceKey ?? block.submitSourceKey;
+    const source = sourceKey ? sources[sourceKey] : undefined;
+    const sourceValue = source ? resolvedData.value[source.key] : undefined;
+    const sourceRecord = Array.isArray(sourceValue) ? sourceValue[0] : sourceValue;
+
+    if (isRecord(sourceRecord)) {
+      runtime.replaceForm(block.id, mergeFormModelValues(
+        formModels.value[block.id] ?? {},
+        sourceRecord
+      ));
+    }
+  }
+}
+
+async function loadDataSourceEntry(
+  key: string,
+  source: LowCodePageDataSource,
+  pageBlocks: LowCodePageBlock[]
+) {
+  const nodeAction = resolveLowCodeDataSourceNodeAction(pageBlocks, key);
+  if (nodeAction) {
+    if (source.autoLoad === false) return '';
+    return executeScriptNodeAction({
+      node: nodeAction.block.id,
+      method: nodeAction.action.method,
+    })
+      .then(() => '')
+      .catch((error: unknown) =>
+        `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.loadDataSource')}`
+      );
+  }
+
+  const version = beginSourceRequest(key);
+  return invokeDataSource(key, source)
+    .then(([resolvedKey, value]) => {
+      if (!isCurrentSourceRequest(key, version)) return '';
+      if (typeof value !== 'undefined') runtime.setSource(resolvedKey, value);
+      return '';
+    })
+    .catch((error: unknown) => {
+      if (!isCurrentSourceRequest(key, version)) return '';
+      return `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.loadDataSource')}`;
+    })
+    .finally(() => finishSourceRequest(key, version));
+}
+
+async function loadDataSourceWaves(
+  entries: Array<[string, LowCodePageDataSource]>,
+  pageBlocks: LowCodePageBlock[],
+  sources: Record<string, LowCodePageDataSource>
+) {
+  const pending = new Map(entries);
+  const errors: string[] = [];
+
+  while (pending.size) {
+    const ready = [...pending.entries()].filter(([, source]) =>
+      (source.loadAfterSourceKeys ?? []).every((dependencyKey) => !pending.has(dependencyKey))
+    );
+    if (!ready.length) {
+      errors.push(`Data source dependency cycle: ${[...pending.keys()].join(', ')}`);
+      break;
+    }
+
+    ready.forEach(([key]) => pending.delete(key));
+    errors.push(...(await Promise.all(
+      ready.map(([key, source]) => loadDataSourceEntry(key, source, pageBlocks))
+    )).filter(Boolean));
+    hydrateSourceBoundForms(pageBlocks, sources);
+  }
+
+  return errors;
+}
+
 async function loadPageData(nextPage: LowCodePageRecord) {
-  const entries = Object.entries(nextPage.schema.dataSources ?? {});
+  const sources = nextPage.schema.dataSources ?? {};
+  const entries = Object.entries(sources);
   const pageBlocks = flattenPageBlocks(nextPage.schema);
   const sharedFormDefaults = collectSharedFormDefaults(pageBlocks);
   const preserveGrids = runtimePageId === nextPage.id;
@@ -1645,49 +1726,7 @@ async function loadPageData(nextPage: LowCodePageRecord) {
     return [];
   }
 
-  const requests = entries.map(([key, source]) => {
-    const nodeAction = resolveLowCodeDataSourceNodeAction(pageBlocks, key);
-    if (nodeAction) {
-      if (source.autoLoad === false) return Promise.resolve('');
-      return executeScriptNodeAction({
-        node: nodeAction.block.id,
-        method: nodeAction.action.method,
-      })
-        .then(() => '')
-        .catch((error: unknown) =>
-          `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.loadDataSource')}`
-        );
-    }
-
-    const version = beginSourceRequest(key);
-    return invokeDataSource(key, source)
-      .then(([resolvedKey, value]) => {
-        if (!isCurrentSourceRequest(key, version)) return '';
-        if (typeof value !== 'undefined') runtime.setSource(resolvedKey, value);
-        return '';
-      })
-      .catch((error: unknown) => {
-        if (!isCurrentSourceRequest(key, version)) return '';
-        return `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.loadDataSource')}`;
-      })
-      .finally(() => finishSourceRequest(key, version));
-  });
-  const errors = (await Promise.all(requests)).filter(Boolean);
-
-  for (const block of pageBlocks) {
-    if (block.kind !== 'form') continue;
-
-    const source = getDataSource(block.sourceKey ?? block.submitSourceKey);
-    const sourceValue = source ? resolvedData.value[source.key] : undefined;
-    const sourceRecord = Array.isArray(sourceValue) ? sourceValue[0] : sourceValue;
-
-    if (isRecord(sourceRecord)) {
-      runtime.replaceForm(block.id, mergeFormModelValues(
-        formModels.value[block.id] ?? {},
-        sourceRecord
-      ));
-    }
-  }
+  const errors = await loadDataSourceWaves(entries, pageBlocks, sources);
 
   syncPageGridStates(nextPage.schema);
   restoreGridInteractionState(gridInteractionState);

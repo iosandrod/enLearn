@@ -4,6 +4,7 @@ export const PLANNING_INPUT_TABLES = [
   'planning_parameter',
   'planning_calendar',
   'planning_calendarbucket',
+  'planning_category',
   'planning_location',
   'planning_customer',
   'planning_item',

@@ -108,8 +108,11 @@ const routingBom = buildPlanningBomTree(
   [{ id: 'route-relation', operation_id: 'route', suboperation_id: 'route-step', priority: 10 }]
 );
 const routedOperation = (routingBom[0].children as Record<string, unknown>[])[0];
+assert.equal(routedOperation.type, 'routing');
+assert.equal(routedOperation.entityType, 'operation');
 const routedComponent = (routedOperation.children as Record<string, unknown>[])[0];
 assert.equal(routedComponent.title, '路线组件');
+assert.equal(routedComponent.entityType, 'item');
 
 function flattenBomNodes(nodes: Record<string, unknown>[]): Record<string, unknown>[] {
   return nodes.flatMap((node) => [

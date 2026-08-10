@@ -16,7 +16,9 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260810140000_planning_console_grid_tables.sql',
   'supabase/migrations/20260810150000_lowcode_grid_table_associations.sql',
   'supabase/migrations/20260810180000_planning_version_lifecycle_forward_fix.sql',
-  'supabase/migrations/20260810181000_planning_console_script_context_forward_fix.sql'
+  'supabase/migrations/20260810181000_planning_console_script_context_forward_fix.sql',
+  'supabase/migrations/20260810210000_planning_master_categories.sql',
+  'supabase/migrations/20260811120000_planning_structure_pages.sql'
 ];
 
 function directProjectConnectionString(value: string) {
@@ -97,7 +99,7 @@ async function main() {
       installed.pages !== String(expectedModels * 2) ||
       installed.entities !== String(expectedModels) ||
       installed.routes !== String(
-        expectedModels + new Set(PLANNING_MODEL_DEFINITIONS.map((model) => model.group)).size + 2
+        expectedModels + new Set(PLANNING_MODEL_DEFINITIONS.map((model) => model.group)).size + 4
       ) ||
       installed.registry !== String(expectedModels) ||
       installed.root_sidebar !== '1' ||

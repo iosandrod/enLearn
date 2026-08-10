@@ -304,7 +304,9 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.lc-planning-gantt { display: grid; min-height: 0; overflow: hidden; grid-template-rows: auto minmax(0, 1fr); padding: 0; }
+.lc-planning-gantt { display: flex;
+  flex-direction: column;
+   min-height: 0; overflow: hidden; grid-template-rows: auto minmax(0, 1fr); padding: 0; }
 .lc-planning-gantt__header { display: flex; min-height: 44px; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #e2e8f0; padding: 7px 12px; }
 .lc-planning-gantt__header > div:first-child { display: grid; min-width: 0; gap: 1px; }
 .lc-planning-gantt__header strong { color: #172033; font-size: 13px; }

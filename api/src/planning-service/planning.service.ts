@@ -347,21 +347,32 @@ export class PlanningService extends BaseService {
       const businessField = this.readOptionalString(postData.labelField ?? postData.label_field);
       const labelField = businessField || 'id';
       this.assertIdentifier(labelField, 'labelField');
+      const filters = this.readRecord(postData.filters);
+      const excludeId = this.readOptionalString(postData.excludeId ?? postData.exclude_id);
       let query = client
         .from(relation.config.tableName)
         .select('*')
         .eq(
           relation.config.accountField ?? 'account_id',
           this.accountValue(context, relation.config.accountField ?? 'account_id')
-        )
+        );
+      query = this.applyListItemsFilters(query, filters);
+      if (excludeId) {
+        this.assertIdentifier(relation.config.primaryKey ?? 'id', 'primaryKey');
+        query = query.neq(relation.config.primaryKey ?? 'id', excludeId);
+      }
+      const { data, error } = await query
         .order(labelField, { ascending: true })
         .limit(1000);
-      const { data, error } = await query;
       if (error) throw new BadRequestException(error.message);
-      return ((data ?? []) as unknown as Record<string, unknown>[]).map((row) => ({
+      const options = ((data ?? []) as unknown as Record<string, unknown>[]).map((row) => ({
           id: row.id,
-          label: String(row[labelField] ?? row.id ?? '')
+          label: String(row[labelField] ?? row.id ?? ''),
+          parentId: row.parent_id ?? null
         }));
+      return this.readBoolean(postData.tree, false)
+        ? this.buildRelationOptionTree(options)
+        : options.map(({ parentId: _parentId, ...option }) => option);
     }
 
     if (method === 'listPlanningConsoleVersions') {
@@ -450,13 +461,19 @@ export class PlanningService extends BaseService {
     const { client } = await getCurrentUser(context);
     const fieldsByTarget = new Map<string, typeof relationFields>();
     for (const field of relationFields) {
-      const current = fieldsByTarget.get(field.relation!) ?? [];
+      const labelField = field.relationLabelField ??
+        PLANNING_MODEL_BY_KEY.get(field.relation!)?.businessKey ??
+        'id';
+      const targetKey = `${field.relation!}:${labelField}`;
+      const current = fieldsByTarget.get(targetKey) ?? [];
       current.push(field);
-      fieldsByTarget.set(field.relation!, current);
+      fieldsByTarget.set(targetKey, current);
     }
 
     const labelsByTarget = new Map<string, Map<string, string>>();
-    await Promise.all([...fieldsByTarget.entries()].map(async ([targetKey, fields]) => {
+    await Promise.all([...fieldsByTarget.entries()].map(async ([mapKey, fields]) => {
+      const targetKey = fields[0]?.relation;
+      if (!targetKey) return;
       const target = PLANNING_MODEL_BY_KEY.get(targetKey);
       if (!target) return;
       const ids = [...new Set(
@@ -465,7 +482,7 @@ export class PlanningService extends BaseService {
       )];
       if (!ids.length) return;
 
-      const labelField = target.businessKey ?? 'id';
+      const labelField = fields[0]?.relationLabelField ?? target.businessKey ?? 'id';
       const { data, error } = await client
         .from(target.key)
         .select('*')
@@ -473,7 +490,7 @@ export class PlanningService extends BaseService {
         .in('id', ids)
         .limit(1000);
       if (error) throw new BadRequestException(error.message);
-      labelsByTarget.set(targetKey, new Map(
+      labelsByTarget.set(mapKey, new Map(
         ((data ?? []) as unknown as Record<string, unknown>[]).map((row) => [
           String(row.id ?? ''),
           String(row[labelField] ?? row.id ?? '')
@@ -484,11 +501,40 @@ export class PlanningService extends BaseService {
     for (const row of rows) {
       for (const field of relationFields) {
         const id = this.readOptionalString(row[field.name]);
+        const labelField = field.relationLabelField ??
+          PLANNING_MODEL_BY_KEY.get(field.relation!)?.businessKey ??
+          'id';
+        const mapKey = `${field.relation!}:${labelField}`;
         row[`${field.name}_label`] = id
-          ? labelsByTarget.get(field.relation!)?.get(id) ?? id
+          ? labelsByTarget.get(mapKey)?.get(id) ?? id
           : '';
       }
     }
+  }
+
+  private buildRelationOptionTree(
+    options: Array<{ id: unknown; label: string; parentId: unknown }>
+  ): Array<{ id: unknown; label: string; children?: unknown[] }> {
+    const byId = new Map(options.map((option) => [String(option.id ?? ''), {
+      id: option.id,
+      label: option.label,
+      children: [] as unknown[]
+    }]));
+    const roots: Array<{ id: unknown; label: string; children: unknown[] }> = [];
+    for (const option of options) {
+      const node = byId.get(String(option.id ?? ''));
+      if (!node) continue;
+      const parent = option.parentId ? byId.get(String(option.parentId)) : undefined;
+      if (parent && parent !== node) parent.children.push(node);
+      else roots.push(node);
+    }
+    type RelationOptionNode = { id: unknown; label: string; children?: RelationOptionNode[] };
+    const compact = (node: { id: unknown; label: string; children: unknown[] }): RelationOptionNode => ({
+      id: node.id,
+      label: node.label,
+      ...(node.children.length ? { children: node.children.map((child) => compact(child as typeof node)) } : {})
+    });
+    return roots.map(compact);
   }
 
   private async authorizeExecution(context: ServiceContext) {

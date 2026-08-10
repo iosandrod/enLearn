@@ -91,6 +91,7 @@
       </VueFlow>
       <div class="lc-planning-bom__legend" aria-label="节点类型图例">
         <span><i class="is-product" />产成品</span>
+        <span><i class="is-routing" />工艺路线</span>
         <span><i class="is-operation" />工序</span>
         <span><i class="is-item" />组件</span>
       </div>
@@ -380,6 +381,7 @@ function toCssSize(value: unknown, fallback: string) {
 
 function nodeIcon(value: unknown) {
   const type = readString(value, 'item');
+  if (type === 'routing') return 'ri-route-line';
   if (type === 'operation') return 'ri-settings-3-line';
   if (type === 'product') return 'ri-archive-stack-line';
   return 'ri-box-3-line';
@@ -387,6 +389,7 @@ function nodeIcon(value: unknown) {
 
 function nodeTypeLabel(value: unknown) {
   const type = readString(value, 'item');
+  if (type === 'routing') return '工艺路线';
   if (type === 'operation') return '工序';
   if (type === 'product') return '产成品';
   return '组件';
@@ -394,19 +397,22 @@ function nodeTypeLabel(value: unknown) {
 
 function nodeTone(value: unknown) {
   const type = readString(value, 'item');
+  if (type === 'routing') return 'routing';
   if (type === 'operation') return 'operation';
   if (type === 'product') return 'product';
   return 'item';
 }
 
 function edgeColor(value: unknown) {
-  return readString(value) === 'operation' ? '#7d9fc9' : '#75a99d';
+  const type = readString(value);
+  return type === 'routing' || type === 'operation' ? '#7d9fc9' : '#75a99d';
 }
 </script>
 
 <style scoped>
 .lc-planning-bom {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   min-height: 0;
   overflow: hidden;
   grid-template-rows: auto minmax(0, 1fr);
@@ -504,6 +510,7 @@ function edgeColor(value: unknown) {
 .lc-planning-bom__legend span { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
 .lc-planning-bom__legend i { width: 8px; height: 8px; border-radius: 2px; background: #0f766e; }
 .lc-planning-bom__legend i.is-product { background: #9a6700; }
+.lc-planning-bom__legend i.is-routing { background: #2563a6; }
 .lc-planning-bom__legend i.is-operation { background: #2563a6; }
 
 .lc-planning-bom-node {
@@ -525,6 +532,7 @@ function edgeColor(value: unknown) {
 }
 
 .lc-planning-bom-node.is-operation { border-color: #b9cce4; border-left-color: #2563a6; }
+.lc-planning-bom-node.is-routing { border-color: #b9cce4; border-left-color: #2563a6; }
 .lc-planning-bom-node.is-product { border-color: #dfca96; border-left-color: #9a6700; }
 .lc-planning-bom-node.is-cycle { border-color: #e0aaa5; border-left-color: #c2413b; background: #fffafa; }
 .lc-planning-bom-node.is-selected {
@@ -543,6 +551,7 @@ function edgeColor(value: unknown) {
 }
 
 .lc-planning-bom-node.is-operation .lc-planning-bom-node__icon { background: #eaf1fb; color: #2563a6; }
+.lc-planning-bom-node.is-routing .lc-planning-bom-node__icon { background: #eaf1fb; color: #2563a6; }
 .lc-planning-bom-node.is-product .lc-planning-bom-node__icon { background: #fff4dc; color: #9a6700; }
 .lc-planning-bom-node.is-cycle .lc-planning-bom-node__icon { background: #feeceb; color: #c2413b; }
 
@@ -624,6 +633,7 @@ function edgeColor(value: unknown) {
   box-shadow: 0 0 0 1px #0f766e;
 }
 .lc-planning-bom-node.is-operation :deep(.vue-flow__handle) { background: #2563a6; box-shadow: 0 0 0 1px #2563a6; }
+.lc-planning-bom-node.is-routing :deep(.vue-flow__handle) { background: #2563a6; box-shadow: 0 0 0 1px #2563a6; }
 .lc-planning-bom-node.is-product :deep(.vue-flow__handle) { background: #9a6700; box-shadow: 0 0 0 1px #9a6700; }
 
 .lc-planning-bom__empty {

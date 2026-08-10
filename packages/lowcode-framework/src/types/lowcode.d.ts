@@ -319,6 +319,8 @@ export type LowCodePageDataSource = {
      * 设为 `false` 时跳过首次加载，但仍可由刷新动作或运行时指令主动加载。
      */
     autoLoad?: boolean;
+    /** Data sources that must finish and hydrate their bound forms before this source loads. */
+    loadAfterSourceKeys?: string[];
 };
 /** A page-owned, named service endpoint callable from an isolated page script. */
 export type LowCodePageApi = {

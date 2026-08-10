@@ -81,6 +81,13 @@ export type LowCodeGridTableAuditRow = {
   table_exists: boolean;
 };
 
+export type LowCodePageVersionMismatch = {
+  page_id: string;
+  page_code: string;
+  current_version: number;
+  latest_stored_version: number;
+};
+
 export type LowCodeGridTableAudit = {
   grids: LowCodeGridTableAuditRow[];
   totalGrids: number;
@@ -92,6 +99,7 @@ export type LowCodeGridTableAudit = {
   optionCount: number;
   prefixedOptionCount: number;
   versionMismatchCount: number;
+  versionMismatches: LowCodePageVersionMismatch[];
   nullBlockCount: number;
   unexpectedSourceTypeCount: number;
 };
@@ -106,6 +114,40 @@ type LowCodePlanningSourceAuditRow = {
 
 export function lowCodeGridAssociationKey(pageCode: string, gridId: string) {
   return `${pageCode}::${gridId}`;
+}
+
+export async function inspectLowCodePageVersionMismatches(
+  client: Pick<Client, 'query'>
+): Promise<LowCodePageVersionMismatch[]> {
+  const result = await client.query<LowCodePageVersionMismatch>(`
+    select page.id::text as page_id,
+           page.code as page_code,
+           page.version::integer as current_version,
+           coalesce((
+             select max(version.version)::integer
+             from public.lowcode_page_versions version
+             where version.page_id = page.id
+           ), 0) as latest_stored_version
+    from public.lowcode_pages page
+    where exists (
+      select 1
+      from jsonb_array_elements(
+        jsonb_path_query_array(
+          page.schema,
+          'strict $.** ? (@.kind == "grid" && exists(@.tableName))'
+        )
+      ) block
+    )
+      and not exists (
+        select 1
+        from public.lowcode_page_versions version
+        where version.page_id = page.id
+          and version.version = page.version
+          and version.schema = page.schema
+      )
+    order by page.code, page.id
+  `);
+  return result.rows;
 }
 
 export async function inspectLowCodeGridTableAssociations(
@@ -143,26 +185,7 @@ export async function inspectLowCodeGridTableAssociations(
       )::integer as prefixed_option_count
     from public.system_physical_table_options
   `);
-  const versionResult = await client.query<{ mismatch_count: number }>(`
-    select count(*)::integer as mismatch_count
-    from public.lowcode_pages page
-    where exists (
-      select 1
-      from jsonb_array_elements(
-        jsonb_path_query_array(
-          page.schema,
-          'strict $.** ? (@.kind == "grid" && exists(@.tableName))'
-        )
-      ) block
-    )
-      and not exists (
-        select 1
-        from public.lowcode_page_versions version
-        where version.page_id = page.id
-          and version.version = page.version
-          and version.schema = page.schema
-      )
-  `);
+  const versionMismatches = await inspectLowCodePageVersionMismatches(client);
   const nullBlockResult = await client.query<{ null_block_count: number }>(`
     select count(*)::integer as null_block_count
     from public.lowcode_pages page
@@ -199,7 +222,8 @@ export async function inspectLowCodeGridTableAssociations(
     prefixedAssociations,
     optionCount: optionResult.rows[0]?.option_count ?? 0,
     prefixedOptionCount: optionResult.rows[0]?.prefixed_option_count ?? 0,
-    versionMismatchCount: versionResult.rows[0]?.mismatch_count ?? 0,
+    versionMismatchCount: versionMismatches.length,
+    versionMismatches,
     nullBlockCount: nullBlockResult.rows[0]?.null_block_count ?? 0,
     unexpectedSourceTypeCount:
       sourceTypeResult.rows[0]?.unexpected_source_type_count ?? 0
@@ -243,7 +267,19 @@ export function assertPlanningConsoleAggregateSources(
   }
 }
 
-export function assertLowCodeGridTableAssociations(audit: LowCodeGridTableAudit) {
+function versionMismatchKey(mismatch: LowCodePageVersionMismatch) {
+  return [
+    mismatch.page_id,
+    mismatch.page_code,
+    mismatch.current_version,
+    mismatch.latest_stored_version
+  ].join(':');
+}
+
+export function assertLowCodeGridTableAssociations(
+  audit: LowCodeGridTableAudit,
+  options: { versionMismatchBaseline?: readonly LowCodePageVersionMismatch[] } = {}
+) {
   const issues: string[] = [];
   if (audit.unknownUnresolvedGrids.length) {
     issues.push(`unresolved=${JSON.stringify(audit.unknownUnresolvedGrids)}`);
@@ -263,8 +299,14 @@ export function assertLowCodeGridTableAssociations(audit: LowCodeGridTableAudit)
   if (audit.prefixedOptionCount !== 0) {
     issues.push(`prefixedDropdownOptions=${audit.prefixedOptionCount}`);
   }
-  if (audit.versionMismatchCount !== 0) {
-    issues.push(`versionMismatches=${audit.versionMismatchCount}`);
+  const baselineVersionMismatches = new Set(
+    (options.versionMismatchBaseline ?? []).map(versionMismatchKey)
+  );
+  const newVersionMismatches = audit.versionMismatches.filter(
+    (mismatch) => !baselineVersionMismatches.has(versionMismatchKey(mismatch))
+  );
+  if (newVersionMismatches.length) {
+    issues.push(`versionMismatches=${JSON.stringify(newVersionMismatches)}`);
   }
   if (audit.nullBlockCount !== 0) {
     issues.push(`nullSchemaNodes=${audit.nullBlockCount}`);

@@ -41,6 +41,7 @@ const listener = (code, options) => {
 
 const unsubscribeA = registry.subscribe(['physical_table_name'], listener, provider);
 const unsubscribeB = registry.subscribe(['database_view_name'], listener, provider);
+const unsubscribeC = registry.subscribe(['grid_column_edit_type'], listener, provider);
 await new Promise((resolve) => setTimeout(resolve, 80));
 
 assert.equal(calls.length, 1, 'Codes registered together must use one request.');
@@ -48,17 +49,20 @@ assert.equal(calls[0].serviceName, 'admin');
 assert.equal(calls[0].serviceMethod, 'resolveOptionItemsBatch');
 assert.deepEqual(
   [...calls[0].payload.sourceCodes].sort(),
-  ['database_view_name', 'physical_table_name'],
+  ['database_view_name', 'grid_column_edit_type', 'physical_table_name'],
 );
 assert.equal(received.physical_table_name[0].value, 'physical_table_name');
 assert.equal(received.database_view_name[0].value, 'database_view_name');
+assert.equal(received.grid_column_edit_type[0].value, 'grid_column_edit_type');
 
 unsubscribeA();
 unsubscribeB();
+unsubscribeC();
 delete received.physical_table_name;
 delete received.database_view_name;
+delete received.grid_column_edit_type;
 const unsubscribeCached = registry.subscribe(
-  ['physical_table_name', 'database_view_name'],
+  ['physical_table_name', 'database_view_name', 'grid_column_edit_type'],
   listener,
   provider,
 );
@@ -70,6 +74,7 @@ assert.equal(
   'A new subscriber must receive cached options synchronously.',
 );
 assert.equal(received.database_view_name[0].value, 'database_view_name');
+assert.equal(received.grid_column_edit_type[0].value, 'grid_column_edit_type');
 unsubscribeCached();
 
 calls.length = 0;

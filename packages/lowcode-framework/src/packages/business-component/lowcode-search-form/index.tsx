@@ -106,7 +106,6 @@ export default {
   preview: () => <LowCodeForm schema={previewSchema} modelValue={{}} />,
   render({ props, styles, block }) {
     const { registerRef } = useGlobalProperties();
-
     return () => (
       <div style={{ ...styles, width: '100%', minWidth: 0 }}>
         <LowCodeForm

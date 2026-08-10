@@ -8,20 +8,61 @@ const designerSource = await readFile(
   ),
   'utf8',
 );
+const arrayTableSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/lowcode/form-materials/lc-array-table/index.vue',
+    import.meta.url,
+  ),
+  'utf8',
+);
+const migrationSource = await readFile(
+  new URL(
+    '../../supabase/migrations/20260811100000_grid_column_edit_type_options.sql',
+    import.meta.url,
+  ),
+  'utf8',
+);
 
-for (const [label, renderer] of [
-  ['文本输入 VxeInput', 'VxeInput'],
-  ['数字输入 VxeNumberInput', 'VxeNumberInput'],
-  ['日期选择 VxeDatePicker', 'VxeDatePicker'],
-  ['下拉选择 VxeSelect', 'VxeSelect'],
-  ['开关 VxeSwitch', 'VxeSwitch'],
-  ['多行文本 VxeTextarea', 'VxeTextarea'],
+assert.doesNotMatch(
+  designerSource,
+  /columnEditTypeOptions/,
+  'Edit renderer choices must not remain hardcoded in the grid designer.',
+);
+assert.match(
+  designerSource,
+  /const gridColumnEditTypeOptionSourceCode = 'grid_column_edit_type'/,
+  'The grid designer must reference the database dropdown source code.',
+);
+assert.match(
+  designerSource,
+  /field: 'editType'[\s\S]*?component: 'vxe-select'[\s\S]*?optionsCode: gridColumnEditTypeOptionSourceCode/,
+  'The edit-type array-table column must resolve its choices through optionsCode.',
+);
+assert.match(
+  arrayTableSource,
+  /optionsCode\?: string;[\s\S]*lowCodeOptionSourceRegistry\.subscribe\([\s\S]*resolveColumnOptions/,
+  'Array-table select columns must use the shared option-source registry.',
+);
+
+for (const renderer of [
+  '',
+  'VxeInput',
+  'VxeNumberInput',
+  'VxeDatePicker',
+  'VxeSelect',
+  'VxeSwitch',
+  'VxeTextarea',
 ]) {
   assert.ok(
-    designerSource.includes(`{ label: '${label}', value: '${renderer}' }`),
-    `${renderer} must be available as a column edit type.`,
+    migrationSource.includes(`'${renderer}'`),
+    `${renderer || 'the disabled choice'} must be seeded in the database.`,
   );
 }
+assert.match(
+  migrationSource,
+  /on conflict \(source_code, value\) do update set[\s\S]*delete from public\.system_option_items[\s\S]*value not in/,
+  'The migration must idempotently upsert the authoritative edit-type list and remove stale items.',
+);
 
 assert.match(
   designerSource,

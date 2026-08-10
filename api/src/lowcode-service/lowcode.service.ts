@@ -28,7 +28,10 @@ import {
 } from './lowcode.helpers';
 import { lowCodeResources } from './lowcode.resources';
 import type { LowCodePageRow } from './lowcode.types';
-import { prepareLowCodePageSchema } from './lowcode.schema';
+import {
+  LowCodeSchemaValidationError,
+  prepareLowCodePageSchema
+} from './lowcode.schema';
 import {
   buildTableListPageSchemaFromMetadata,
   mapDatabaseTableOptions,
@@ -52,8 +55,23 @@ export class LowCodeService extends BaseService {
     const data = this.isRecord(postData.data) ? postData.data : postData;
     if (!Object.prototype.hasOwnProperty.call(data, 'schema')) return postData;
 
-    this.assertRuntimeBlockArrays(data.schema);
-    const schema = prepareLowCodePageSchema(data.schema);
+    let schema;
+    try {
+      this.assertRuntimeBlockArrays(data.schema);
+      schema = prepareLowCodePageSchema(data.schema);
+    } catch (error) {
+      if (error instanceof LowCodeSchemaValidationError) {
+        throw new BadRequestException({
+          statusCode: 400,
+          code: 'LOW_CODE_SCHEMA_VALIDATION_FAILED',
+          error: 'Low-code page schema validation failed',
+          message: error.message,
+          issues: error.issues
+        });
+      }
+      throw error;
+    }
+
     if (data === postData) return { ...postData, schema };
     return { ...postData, data: { ...data, schema } };
   }

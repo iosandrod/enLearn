@@ -986,6 +986,7 @@ export function buildPlanningBomTree(
     return {
       id: `${nextPath.join('/')}:item`,
       entityId: itemId,
+      entityType: 'item',
       title: readString(item.name) || itemId,
       subtitle: cycle ? '循环引用' : readString(item.description),
       type: depth === 0 ? 'product' : 'item',
@@ -994,13 +995,15 @@ export function buildPlanningBomTree(
       cycle,
       children: itemOperations.map((operation, operationIndex) => {
         const operationId = readString(operation.id);
+        const operationType = readString(operation.type);
         return {
           id: `${nextPath.join('/')}:operation:${operationId}:${operationIndex}`,
           entityId: operationId,
+          entityType: 'operation',
           operationId,
           title: readString(operation.name) || operationId,
-          subtitle: readString(operation.type),
-          type: 'operation',
+          subtitle: operationType,
+          type: operationType === 'routing' ? 'routing' : 'operation',
           children: operationComponents(operationId).map((material, index) =>
             buildItemNode(
               readString(material.item_id),

@@ -18,6 +18,11 @@ export type PlanningFieldDefinition = {
   required?: boolean;
   default?: unknown;
   relation?: string;
+  relationFilters?: Record<string, string | number | boolean>;
+  relationLabelField?: string;
+  relationOnDelete?: 'cascade' | 'restrict' | 'set null';
+  relationTree?: boolean;
+  relationFilterBindings?: Record<string, string>;
   options?: Array<{ label: string; value: string }>;
   readOnly?: boolean;
 };
@@ -44,6 +49,7 @@ export type PlanningModelDefinition = {
     | '集成管理';
   icon: string;
   businessKey?: 'name' | 'reference' | 'code';
+  businessKeyUnique?: boolean;
   access?: 'manage' | 'view';
   fields: PlanningFieldDefinition[];
 };
@@ -115,6 +121,17 @@ const categoryFields = [
   text('category', '分类'),
   text('subcategory', '子分类')
 ];
+const masterCategoryFields = (targetType: 'item' | 'customer' | 'supplier') => [
+  text('description', '说明'),
+  relation('category_id', '类别', 'planning_category', {
+    relationFilters: { target_type: targetType, status: 'active' },
+    relationLabelField: 'name',
+    relationOnDelete: 'restrict',
+    relationTree: true
+  }),
+  text('category', '分类', { readOnly: true }),
+  text('subcategory', '子分类', { readOnly: true })
+];
 const hierarchyFields = (target: string) => [
   relation('owner_id', '上级', target),
   integer('lft', '左节点', { readOnly: true }),
@@ -144,6 +161,42 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
     ]
   },
   {
+    key: 'planning_category', sourceTable: 'category', title: '主数据类别', group: '基础数据',
+    icon: 'ri-folder-tree-line', businessKey: 'code', businessKeyUnique: false,
+    description: '统一维护物料、客户和供应商的账套级层级类别。',
+    fields: [
+      text('target_type', '类别对象', {
+        required: true,
+        options: [
+          { label: '物料', value: 'item' },
+          { label: '客户', value: 'customer' },
+          { label: '供应商', value: 'supplier' }
+        ]
+      }),
+      text('code', '类别编码', { required: true }),
+      text('name', '类别名称', { required: true }),
+      relation('parent_id', '上级类别', 'planning_category', {
+        relationFilters: { status: 'active' },
+        relationFilterBindings: { target_type: 'target_type' },
+        relationLabelField: 'name',
+        relationOnDelete: 'restrict',
+        relationTree: true
+      }),
+      text('description', '说明'),
+      text('status', '状态', {
+        required: true,
+        default: 'active',
+        options: [
+          { label: '启用', value: 'active' },
+          { label: '停用', value: 'inactive' }
+        ]
+      }),
+      integer('sort_order', '排序', { default: 0 }),
+      json('metadata', '扩展信息', { default: {} }),
+      ...auditFields
+    ]
+  },
+  {
     key: 'planning_location', sourceTable: 'location', title: '地点', group: '基础数据',
     icon: 'ri-map-pin-line', businessKey: 'name', description: '工厂、仓库和其他计划地点。',
     fields: [text('name', '名称', { required: true }), ...hierarchyFields('planning_location'), ...categoryFields, relation('available_id', '可用日历', 'planning_calendar'), ...auditFields]
@@ -151,13 +204,13 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
   {
     key: 'planning_customer', sourceTable: 'customer', title: '客户', group: '基础数据',
     icon: 'ri-user-star-line', businessKey: 'name', description: '计划需求所引用的客户主数据。',
-    fields: [text('name', '名称', { required: true }), ...hierarchyFields('planning_customer'), ...categoryFields, ...auditFields]
+    fields: [text('name', '名称', { required: true }), ...hierarchyFields('planning_customer'), ...masterCategoryFields('customer'), ...auditFields]
   },
   {
     key: 'planning_item', sourceTable: 'item', title: '物料', group: '基础数据',
     icon: 'ri-box-3-line', businessKey: 'name', description: '原料、半成品和成品物料。',
     fields: [
-      text('name', '名称', { required: true }), ...hierarchyFields('planning_item'), ...categoryFields,
+      text('name', '名称', { required: true }), ...hierarchyFields('planning_item'), ...masterCategoryFields('item'),
       number('cost', '成本'), text('type', '计划类型', { options: choices('make to stock', 'make to order') }),
       number('weight', '重量'), number('volume', '体积'), integer('periodofcover', '覆盖周期'), text('uom', '单位'),
       integer('latedemandcount', '延期需求数', { readOnly: true }), number('latedemandquantity', '延期需求量', { readOnly: true }),
@@ -171,7 +224,7 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
   {
     key: 'planning_supplier', sourceTable: 'supplier', title: '供应商', group: '基础数据',
     icon: 'ri-truck-line', businessKey: 'name', description: '采购来源与供应商主数据。',
-    fields: [text('name', '名称', { required: true }), ...hierarchyFields('planning_supplier'), ...categoryFields, relation('available_id', '可用日历', 'planning_calendar'), ...auditFields]
+    fields: [text('name', '名称', { required: true }), ...hierarchyFields('planning_supplier'), ...masterCategoryFields('supplier'), relation('available_id', '可用日历', 'planning_calendar'), ...auditFields]
   },
   {
     key: 'planning_itemsupplier', sourceTable: 'itemsupplier', title: '物料供应', group: '采购配送',
