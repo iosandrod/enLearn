@@ -153,21 +153,21 @@ function assertJsonParsed(result: JsonParseResult): asserts result is JsonParseS
 
 const columnTypeOptions = [
   { label: '默认', value: '' },
-  { label: '序号 seq', value: 'seq' },
-  { label: '单选 radio', value: 'radio' },
-  { label: '复选 checkbox', value: 'checkbox' },
-  { label: '展开 expand', value: 'expand' },
-  { label: 'HTML', value: 'html' },
+  { label: '序号', value: 'seq' },
+  { label: '单选', value: 'radio' },
+  { label: '复选', value: 'checkbox' },
+  { label: '展开', value: 'expand' },
+  { label: '网页内容', value: 'html' },
 ];
 
 const columnEditTypeOptions = [
   { label: '不启用', value: '' },
-  { label: '文本输入 VxeInput', value: 'VxeInput' },
-  { label: '数字输入 VxeNumberInput', value: 'VxeNumberInput' },
-  { label: '日期选择 VxeDatePicker', value: 'VxeDatePicker' },
-  { label: '下拉选择 VxeSelect', value: 'VxeSelect' },
-  { label: '开关 VxeSwitch', value: 'VxeSwitch' },
-  { label: '多行文本 VxeTextarea', value: 'VxeTextarea' },
+  { label: '文本输入', value: 'VxeInput' },
+  { label: '数字输入', value: 'VxeNumberInput' },
+  { label: '日期选择', value: 'VxeDatePicker' },
+  { label: '下拉选择', value: 'VxeSelect' },
+  { label: '开关', value: 'VxeSwitch' },
+  { label: '多行文本', value: 'VxeTextarea' },
 ];
 
 const gridTableTypeOptions = [
@@ -178,60 +178,60 @@ const gridTableTypeOptions = [
 
 const alignOptions = [
   { label: '默认', value: '' },
-  { label: '左对齐 left', value: 'left' },
-  { label: '居中 center', value: 'center' },
-  { label: '右对齐 right', value: 'right' },
+  { label: '左对齐', value: 'left' },
+  { label: '居中', value: 'center' },
+  { label: '右对齐', value: 'right' },
 ];
 
 const fixedOptions = [
   { label: '不固定', value: '' },
-  { label: '左侧 left', value: 'left' },
-  { label: '右侧 right', value: 'right' },
+  { label: '固定在左侧', value: 'left' },
+  { label: '固定在右侧', value: 'right' },
 ];
 
 const sizeOptions = [
   { label: '默认', value: '' },
-  { label: 'medium', value: 'medium' },
-  { label: 'small', value: 'small' },
-  { label: 'mini', value: 'mini' },
+  { label: '中等', value: 'medium' },
+  { label: '小型', value: 'small' },
+  { label: '迷你', value: 'mini' },
 ];
 
 const borderOptions = [
-  { label: 'true', value: true },
-  { label: 'false', value: false },
-  { label: 'default', value: 'default' },
-  { label: 'full', value: 'full' },
-  { label: 'outer', value: 'outer' },
-  { label: 'inner', value: 'inner' },
-  { label: 'none', value: 'none' },
+  { label: '显示边框', value: true },
+  { label: '隐藏边框', value: false },
+  { label: '默认边框', value: 'default' },
+  { label: '完整边框', value: 'full' },
+  { label: '外边框', value: 'outer' },
+  { label: '内边框', value: 'inner' },
+  { label: '无边框', value: 'none' },
 ];
 
 const overflowOptions = [
   { label: '默认', value: '' },
-  { label: 'true', value: true },
-  { label: 'false', value: false },
-  { label: 'ellipsis', value: 'ellipsis' },
-  { label: 'title', value: 'title' },
-  { label: 'tooltip', value: 'tooltip' },
+  { label: '启用', value: true },
+  { label: '禁用', value: false },
+  { label: '显示省略号', value: 'ellipsis' },
+  { label: '标题提示', value: 'title' },
+  { label: '浮层提示', value: 'tooltip' },
 ];
 
 const rendererPropFields: LowCodeField[] = [
-  { field: 'placeholder', label: 'placeholder', component: 'vxe-input' },
-  { field: 'clearable', label: 'clearable', component: 'vxe-switch' },
-  { field: 'disabled', label: 'disabled', component: 'vxe-switch' },
-  { field: 'readonly', label: 'readonly', component: 'vxe-switch' },
+  { field: 'placeholder', label: '占位提示', component: 'vxe-input' },
+  { field: 'clearable', label: '可清空', component: 'vxe-switch' },
+  { field: 'disabled', label: '禁用', component: 'vxe-switch' },
+  { field: 'readonly', label: '只读', component: 'vxe-switch' },
 ];
 
 const rendererObjectFields: LowCodeField[] = [
-  { field: 'name', label: 'name', component: 'vxe-input', props: { placeholder: 'VxeInput' } },
+  { field: 'name', label: '渲染器名称', component: 'vxe-input', props: { placeholder: 'VxeInput' } },
   createSubFormField({
     field: 'props',
-    label: 'props',
+    label: '组件属性',
     fields: rendererPropFields,
   }),
   createSubFormField({
     field: 'attrs',
-    label: 'attrs',
+    label: '附加属性',
     fields: rendererPropFields,
   }),
 ];
@@ -239,34 +239,34 @@ const rendererObjectFields: LowCodeField[] = [
 const formatterObjectFields: LowCodeField[] = [
   {
     field: 'type',
-    label: 'type',
+    label: '格式化类型',
     component: 'vxe-select',
     options: [
-      { label: 'text', value: 'text' },
-      { label: 'date', value: 'date' },
-      { label: 'datetime', value: 'datetime' },
-      { label: 'currency', value: 'currency' },
-      { label: 'number', value: 'number' },
-      { label: 'enum', value: 'enum' },
+      { label: '文本', value: 'text' },
+      { label: '日期', value: 'date' },
+      { label: '日期时间', value: 'datetime' },
+      { label: '货币', value: 'currency' },
+      { label: '数字', value: 'number' },
+      { label: '枚举', value: 'enum' },
     ],
   },
-  { field: 'emptyText', label: 'emptyText', component: 'vxe-input' },
-  { field: 'locale', label: 'locale', component: 'vxe-input' },
+  { field: 'emptyText', label: '空值文本', component: 'vxe-input' },
+  { field: 'locale', label: '区域设置', component: 'vxe-input' },
   createSubFormField({
     field: 'options',
-    label: 'options',
+    label: '格式选项',
     fields: [
-      { field: 'dateStyle', label: 'dateStyle', component: 'vxe-input' },
-      { field: 'timeStyle', label: 'timeStyle', component: 'vxe-input' },
-      { field: 'style', label: 'style', component: 'vxe-input' },
-      { field: 'currency', label: 'currency', component: 'vxe-input' },
-      { field: 'minimumFractionDigits', label: 'minimumFractionDigits', component: 'lc-number-input' },
-      { field: 'maximumFractionDigits', label: 'maximumFractionDigits', component: 'lc-number-input' },
+      { field: 'dateStyle', label: '日期样式', component: 'vxe-input' },
+      { field: 'timeStyle', label: '时间样式', component: 'vxe-input' },
+      { field: 'style', label: '数字样式', component: 'vxe-input' },
+      { field: 'currency', label: '货币代码', component: 'vxe-input' },
+      { field: 'minimumFractionDigits', label: '最少小数位', component: 'lc-number-input' },
+      { field: 'maximumFractionDigits', label: '最多小数位', component: 'lc-number-input' },
     ],
   }),
   createSubFormField({
     field: 'map',
-    label: 'map',
+    label: '枚举映射',
     fields: [],
   }),
 ];
@@ -279,140 +279,140 @@ type AdvancedGridConfigDefinition = {
 
 const triggerOptions = [
   { label: '默认', value: '' },
-  { label: 'manual', value: 'manual' },
-  { label: 'click', value: 'click' },
-  { label: 'dblclick', value: 'dblclick' },
+  { label: '手动', value: 'manual' },
+  { label: '单击', value: 'click' },
+  { label: '双击', value: 'dblclick' },
 ];
 
 const editModeOptions = [
   { label: '默认', value: '' },
-  { label: 'row', value: 'row' },
-  { label: 'cell', value: 'cell' },
+  { label: '整行编辑', value: 'row' },
+  { label: '单元格编辑', value: 'cell' },
 ];
 
 const pagerConfigFields: LowCodeField[] = [
-  { field: 'enabled', label: 'enabled', component: 'vxe-switch' },
-  { field: 'pageSize', label: 'pageSize', component: 'lc-number-input' },
-  { field: 'currentPage', label: 'currentPage', component: 'lc-number-input' },
+  { field: 'enabled', label: '启用分页', component: 'vxe-switch' },
+  { field: 'pageSize', label: '每页条数', component: 'lc-number-input' },
+  { field: 'currentPage', label: '当前页', component: 'lc-number-input' },
   {
     field: 'pageSizes',
-    label: 'pageSizes',
+    label: '每页条数选项',
     component: 'lc-array-table',
-    props: { valueMode: 'primitive', valueField: 'value', valueTitle: 'pageSize', toolbarButtons: [{ code: 'add', label: '新增', command: 'add', status: 'primary' }] },
+    props: { valueMode: 'primitive', valueField: 'value', valueTitle: '每页条数', toolbarButtons: [{ code: 'add', label: '新增', command: 'add', status: 'primary' }] },
   },
   {
     field: 'layouts',
-    label: 'layouts',
+    label: '分页布局',
     component: 'lc-array-table',
-    props: { valueMode: 'primitive', valueField: 'value', valueTitle: 'layout', toolbarButtons: [{ code: 'add', label: '新增', command: 'add', status: 'primary' }] },
+    props: { valueMode: 'primitive', valueField: 'value', valueTitle: '布局项', toolbarButtons: [{ code: 'add', label: '新增', command: 'add', status: 'primary' }] },
   },
-  { field: 'autoHidden', label: 'autoHidden', component: 'vxe-switch' },
-  { field: 'perfect', label: 'perfect', component: 'vxe-switch' },
+  { field: 'autoHidden', label: '单页自动隐藏', component: 'vxe-switch' },
+  { field: 'perfect', label: '完整布局', component: 'vxe-switch' },
 ];
 
 const toolbarConfigFields: LowCodeField[] = [
-  { field: 'enabled', label: 'enabled', component: 'vxe-switch' },
-  { field: 'refresh', label: 'refresh', component: 'vxe-switch' },
-  { field: 'import', label: 'import', component: 'vxe-switch' },
-  { field: 'export', label: 'export', component: 'vxe-switch' },
-  { field: 'print', label: 'print', component: 'vxe-switch' },
-  { field: 'zoom', label: 'zoom', component: 'vxe-switch' },
-  { field: 'custom', label: 'custom', component: 'vxe-switch' },
+  { field: 'enabled', label: '启用工具栏', component: 'vxe-switch' },
+  { field: 'refresh', label: '显示刷新', component: 'vxe-switch' },
+  { field: 'import', label: '显示导入', component: 'vxe-switch' },
+  { field: 'export', label: '显示导出', component: 'vxe-switch' },
+  { field: 'print', label: '显示打印', component: 'vxe-switch' },
+  { field: 'zoom', label: '显示全屏', component: 'vxe-switch' },
+  { field: 'custom', label: '显示列设置', component: 'vxe-switch' },
   createSubFormField({
     field: 'slots',
-    label: 'slots',
+    label: '插槽',
     fields: [
-      { field: 'buttons', label: 'buttons', component: 'vxe-input' },
-      { field: 'tools', label: 'tools', component: 'vxe-input' },
+      { field: 'buttons', label: '按钮插槽', component: 'vxe-input' },
+      { field: 'tools', label: '工具插槽', component: 'vxe-input' },
     ],
   }),
 ];
 
 const proxyConfigFields: LowCodeField[] = [
-  { field: 'enabled', label: 'enabled', component: 'vxe-switch' },
-  { field: 'autoLoad', label: 'autoLoad', component: 'vxe-switch' },
-  { field: 'seq', label: 'seq', component: 'vxe-switch' },
-  { field: 'sort', label: 'sort', component: 'vxe-switch' },
-  { field: 'filter', label: 'filter', component: 'vxe-switch' },
-  { field: 'form', label: 'form', component: 'vxe-switch' },
+  { field: 'enabled', label: '启用数据代理', component: 'vxe-switch' },
+  { field: 'autoLoad', label: '自动加载', component: 'vxe-switch' },
+  { field: 'seq', label: '序号代理', component: 'vxe-switch' },
+  { field: 'sort', label: '排序代理', component: 'vxe-switch' },
+  { field: 'filter', label: '筛选代理', component: 'vxe-switch' },
+  { field: 'form', label: '表单代理', component: 'vxe-switch' },
   createSubFormField({
     field: 'props',
-    label: 'props',
+    label: '响应字段映射',
     fields: [
-      { field: 'result', label: 'result', component: 'vxe-input', props: { placeholder: 'result' } },
-      { field: 'total', label: 'total', component: 'vxe-input', props: { placeholder: 'total' } },
-      { field: 'message', label: 'message', component: 'vxe-input', props: { placeholder: 'message' } },
+      { field: 'result', label: '数据字段', component: 'vxe-input', props: { placeholder: 'result' } },
+      { field: 'total', label: '总数字段', component: 'vxe-input', props: { placeholder: 'total' } },
+      { field: 'message', label: '消息字段', component: 'vxe-input', props: { placeholder: 'message' } },
     ],
   }),
   createSubFormField({
     field: 'ajax',
-    label: 'ajax',
+    label: '请求方法',
     fields: [
-      { field: 'query', label: 'query', component: 'vxe-input' },
-      { field: 'queryAll', label: 'queryAll', component: 'vxe-input' },
-      { field: 'save', label: 'save', component: 'vxe-input' },
-      { field: 'delete', label: 'delete', component: 'vxe-input' },
+      { field: 'query', label: '查询方法', component: 'vxe-input' },
+      { field: 'queryAll', label: '全量查询方法', component: 'vxe-input' },
+      { field: 'save', label: '保存方法', component: 'vxe-input' },
+      { field: 'delete', label: '删除方法', component: 'vxe-input' },
     ],
   }),
 ];
 
 const editConfigFields: LowCodeField[] = [
-  { field: 'enabled', label: 'enabled', component: 'vxe-switch' },
-  { field: 'mode', label: 'mode', component: 'vxe-select', options: editModeOptions },
-  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
-  { field: 'showStatus', label: 'showStatus', component: 'vxe-switch' },
-  { field: 'showIcon', label: 'showIcon', component: 'vxe-switch' },
-  { field: 'autoClear', label: 'autoClear', component: 'vxe-switch' },
-  { field: 'showUpdateStatus', label: 'showUpdateStatus', component: 'vxe-switch' },
-  { field: 'showInsertStatus', label: 'showInsertStatus', component: 'vxe-switch' },
-  { field: 'activeMethod', label: 'activeMethod', component: 'vxe-input' },
-  { field: 'beforeEditMethod', label: 'beforeEditMethod', component: 'vxe-input' },
+  { field: 'enabled', label: '启用编辑', component: 'vxe-switch' },
+  { field: 'mode', label: '编辑模式', component: 'vxe-select', options: editModeOptions },
+  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
+  { field: 'showStatus', label: '显示编辑状态', component: 'vxe-switch' },
+  { field: 'showIcon', label: '显示状态图标', component: 'vxe-switch' },
+  { field: 'autoClear', label: '自动清除状态', component: 'vxe-switch' },
+  { field: 'showUpdateStatus', label: '显示更新状态', component: 'vxe-switch' },
+  { field: 'showInsertStatus', label: '显示新增状态', component: 'vxe-switch' },
+  { field: 'activeMethod', label: '激活校验方法', component: 'vxe-input' },
+  { field: 'beforeEditMethod', label: '编辑前置方法', component: 'vxe-input' },
 ];
 
 const checkboxConfigFields: LowCodeField[] = [
-  { field: 'checkField', label: 'checkField', component: 'vxe-input' },
-  { field: 'labelField', label: 'labelField', component: 'vxe-input' },
-  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
-  { field: 'showHeader', label: 'showHeader', component: 'vxe-switch' },
-  { field: 'reserve', label: 'reserve', component: 'vxe-switch' },
-  { field: 'range', label: 'range', component: 'vxe-switch' },
-  { field: 'highlight', label: 'highlight', component: 'vxe-switch' },
-  { field: 'strict', label: 'strict', component: 'vxe-switch' },
-  { field: 'checkStrictly', label: 'checkStrictly', component: 'vxe-switch' },
+  { field: 'checkField', label: '选中状态字段', component: 'vxe-input' },
+  { field: 'labelField', label: '标签字段', component: 'vxe-input' },
+  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
+  { field: 'showHeader', label: '显示表头复选框', component: 'vxe-switch' },
+  { field: 'reserve', label: '保留选中状态', component: 'vxe-switch' },
+  { field: 'range', label: '启用范围选择', component: 'vxe-switch' },
+  { field: 'highlight', label: '高亮选中行', component: 'vxe-switch' },
+  { field: 'strict', label: '严格模式', component: 'vxe-switch' },
+  { field: 'checkStrictly', label: '严格勾选模式', component: 'vxe-switch' },
 ];
 
 const radioConfigFields: LowCodeField[] = [
-  { field: 'checkRowKey', label: 'checkRowKey', component: 'vxe-input' },
-  { field: 'labelField', label: 'labelField', component: 'vxe-input' },
-  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
-  { field: 'reserve', label: 'reserve', component: 'vxe-switch' },
-  { field: 'highlight', label: 'highlight', component: 'vxe-switch' },
-  { field: 'strict', label: 'strict', component: 'vxe-switch' },
+  { field: 'checkRowKey', label: '选中行键值', component: 'vxe-input' },
+  { field: 'labelField', label: '标签字段', component: 'vxe-input' },
+  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
+  { field: 'reserve', label: '保留选中状态', component: 'vxe-switch' },
+  { field: 'highlight', label: '高亮选中行', component: 'vxe-switch' },
+  { field: 'strict', label: '严格模式', component: 'vxe-switch' },
 ];
 
 const sortConfigFields: LowCodeField[] = [
-  { field: 'remote', label: 'remote', component: 'vxe-switch' },
-  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
-  { field: 'multiple', label: 'multiple', component: 'vxe-switch' },
-  { field: 'chronological', label: 'chronological', component: 'vxe-switch' },
+  { field: 'remote', label: '远程排序', component: 'vxe-switch' },
+  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
+  { field: 'multiple', label: '多列排序', component: 'vxe-switch' },
+  { field: 'chronological', label: '按点击顺序排序', component: 'vxe-switch' },
   {
     field: 'orders',
-    label: 'orders',
+    label: '排序方向选项',
     component: 'lc-array-table',
-    props: { valueMode: 'primitive', valueField: 'value', valueTitle: 'order', toolbarButtons: [{ code: 'add', label: '新增', command: 'add', status: 'primary' }] },
+    props: { valueMode: 'primitive', valueField: 'value', valueTitle: '排序方向', toolbarButtons: [{ code: 'add', label: '新增', command: 'add', status: 'primary' }] },
   },
   createSubFormField({
     field: 'defaultSort',
-    label: 'defaultSort',
+    label: '默认排序',
     fields: [
-      { field: 'field', label: 'field', component: 'vxe-input' },
+      { field: 'field', label: '排序字段', component: 'vxe-input' },
       {
         field: 'order',
-        label: 'order',
+        label: '排序方向',
         component: 'vxe-select',
         options: [
-          { label: 'asc', value: 'asc' },
-          { label: 'desc', value: 'desc' },
+          { label: '升序', value: 'asc' },
+          { label: '降序', value: 'desc' },
         ],
       },
     ],
@@ -420,48 +420,48 @@ const sortConfigFields: LowCodeField[] = [
 ];
 
 const filterConfigFields: LowCodeField[] = [
-  { field: 'remote', label: 'remote', component: 'vxe-switch' },
-  { field: 'showIcon', label: 'showIcon', component: 'vxe-switch' },
-  { field: 'showFilterFooter', label: 'showFilterFooter', component: 'vxe-switch' },
-  { field: 'filterMethod', label: 'filterMethod', component: 'vxe-input' },
+  { field: 'remote', label: '远程筛选', component: 'vxe-switch' },
+  { field: 'showIcon', label: '显示筛选图标', component: 'vxe-switch' },
+  { field: 'showFilterFooter', label: '显示筛选底栏', component: 'vxe-switch' },
+  { field: 'filterMethod', label: '筛选方法', component: 'vxe-input' },
 ];
 
 const treeConfigFields: LowCodeField[] = [
-  { field: 'transform', label: 'transform', component: 'vxe-switch' },
-  { field: 'rowField', label: 'rowField', component: 'vxe-input', props: { placeholder: 'id' } },
-  { field: 'parentField', label: 'parentField', component: 'vxe-input', props: { placeholder: 'parentId' } },
-  { field: 'childrenField', label: 'childrenField', component: 'vxe-input', props: { placeholder: 'children' } },
-  { field: 'hasChild', label: 'hasChild', component: 'vxe-input' },
-  { field: 'indent', label: 'indent', component: 'lc-number-input' },
-  { field: 'showIcon', label: 'showIcon', component: 'vxe-switch' },
-  { field: 'expandAll', label: 'expandAll', component: 'vxe-switch' },
-  { field: 'lazy', label: 'lazy', component: 'vxe-switch' },
-  { field: 'accordion', label: 'accordion', component: 'vxe-switch' },
-  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
+  { field: 'transform', label: '自动转换树结构', component: 'vxe-switch' },
+  { field: 'rowField', label: '行标识字段', component: 'vxe-input', props: { placeholder: 'id' } },
+  { field: 'parentField', label: '父级字段', component: 'vxe-input', props: { placeholder: 'parentId' } },
+  { field: 'childrenField', label: '子级字段', component: 'vxe-input', props: { placeholder: 'children' } },
+  { field: 'hasChild', label: '子节点标识字段', component: 'vxe-input' },
+  { field: 'indent', label: '层级缩进', component: 'lc-number-input' },
+  { field: 'showIcon', label: '显示树图标', component: 'vxe-switch' },
+  { field: 'expandAll', label: '默认展开全部', component: 'vxe-switch' },
+  { field: 'lazy', label: '懒加载', component: 'vxe-switch' },
+  { field: 'accordion', label: '手风琴展开', component: 'vxe-switch' },
+  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
 ];
 
 const expandConfigFields: LowCodeField[] = [
-  { field: 'expandAll', label: 'expandAll', component: 'vxe-switch' },
-  { field: 'accordion', label: 'accordion', component: 'vxe-switch' },
-  { field: 'lazy', label: 'lazy', component: 'vxe-switch' },
-  { field: 'trigger', label: 'trigger', component: 'vxe-select', options: triggerOptions },
-  { field: 'labelField', label: 'labelField', component: 'vxe-input' },
-  { field: 'iconOpen', label: 'iconOpen', component: 'vxe-input' },
-  { field: 'iconClose', label: 'iconClose', component: 'vxe-input' },
-  { field: 'visibleMethod', label: 'visibleMethod', component: 'vxe-input' },
+  { field: 'expandAll', label: '默认展开全部', component: 'vxe-switch' },
+  { field: 'accordion', label: '手风琴展开', component: 'vxe-switch' },
+  { field: 'lazy', label: '懒加载', component: 'vxe-switch' },
+  { field: 'trigger', label: '触发方式', component: 'vxe-select', options: triggerOptions },
+  { field: 'labelField', label: '标签字段', component: 'vxe-input' },
+  { field: 'iconOpen', label: '展开图标', component: 'vxe-input' },
+  { field: 'iconClose', label: '收起图标', component: 'vxe-input' },
+  { field: 'visibleMethod', label: '展开校验方法', component: 'vxe-input' },
 ];
 
 const advancedGridConfigDefinitions: AdvancedGridConfigDefinition[] = [
-  { field: 'pagerConfigJson', label: 'pagerConfig', fields: pagerConfigFields },
-  { field: 'toolbarConfigJson', label: 'toolbarConfig', fields: toolbarConfigFields },
-  { field: 'proxyConfigJson', label: 'proxyConfig', fields: proxyConfigFields },
-  { field: 'editConfigJson', label: 'editConfig', fields: editConfigFields },
-  { field: 'checkboxConfigJson', label: 'checkboxConfig', fields: checkboxConfigFields },
-  { field: 'radioConfigJson', label: 'radioConfig', fields: radioConfigFields },
-  { field: 'sortConfigJson', label: 'sortConfig', fields: sortConfigFields },
-  { field: 'filterConfigJson', label: 'filterConfig', fields: filterConfigFields },
-  { field: 'treeConfigJson', label: 'treeConfig', fields: treeConfigFields },
-  { field: 'expandConfigJson', label: 'expandConfig', fields: expandConfigFields },
+  { field: 'pagerConfigJson', label: '分页配置', fields: pagerConfigFields },
+  { field: 'toolbarConfigJson', label: '工具栏配置', fields: toolbarConfigFields },
+  { field: 'proxyConfigJson', label: '数据代理配置', fields: proxyConfigFields },
+  { field: 'editConfigJson', label: '编辑配置', fields: editConfigFields },
+  { field: 'checkboxConfigJson', label: '复选配置', fields: checkboxConfigFields },
+  { field: 'radioConfigJson', label: '单选配置', fields: radioConfigFields },
+  { field: 'sortConfigJson', label: '排序配置', fields: sortConfigFields },
+  { field: 'filterConfigJson', label: '筛选配置', fields: filterConfigFields },
+  { field: 'treeConfigJson', label: '树形配置', fields: treeConfigFields },
+  { field: 'expandConfigJson', label: '展开配置', fields: expandConfigFields },
 ];
 
 const columnAdvancedFormSections: Array<{ title: string; fields: LowCodeField[] }> = [
@@ -470,19 +470,19 @@ const columnAdvancedFormSections: Array<{ title: string; fields: LowCodeField[] 
     fields: [
       {
         field: 'maxWidth',
-        label: 'maxWidth',
+        label: '最大宽度',
         component: 'vxe-input',
         props: { placeholder: 'maxWidth' },
       },
       {
         field: 'headerAlign',
-        label: 'headerAlign',
+        label: '表头对齐',
         component: 'vxe-select',
         options: alignOptions,
       },
       {
         field: 'footerAlign',
-        label: 'footerAlign',
+        label: '表尾对齐',
         component: 'vxe-select',
         options: alignOptions,
       },
@@ -493,18 +493,18 @@ const columnAdvancedFormSections: Array<{ title: string; fields: LowCodeField[] 
     fields: [
       {
         field: 'resizable',
-        label: 'resizable',
+        label: '可调整宽度',
         component: 'vxe-switch',
       },
       {
         field: 'showHeaderOverflow',
-        label: 'showHeaderOverflow',
+        label: '表头溢出处理',
         component: 'vxe-select',
         options: overflowOptions as any,
       },
       {
         field: 'showFooterOverflow',
-        label: 'showFooterOverflow',
+        label: '表尾溢出处理',
         component: 'vxe-select',
         options: overflowOptions as any,
       },
@@ -515,7 +515,7 @@ const columnAdvancedFormSections: Array<{ title: string; fields: LowCodeField[] 
     fields: [
       {
         field: 'filters',
-        label: 'filters',
+        label: '筛选项',
         component: 'lc-array-table',
         props: {
           toolbarButtons: [{ code: 'add', label: '新增筛选', command: 'add', status: 'primary' }],
@@ -526,9 +526,9 @@ const columnAdvancedFormSections: Array<{ title: string; fields: LowCodeField[] 
             checked: false,
           },
           columns: [
-            { field: 'label', title: 'label', minWidth: 110 },
-            { field: 'value', title: 'value', minWidth: 110 },
-            { field: 'checked', title: 'checked', component: 'vxe-switch', width: 86 },
+            { field: 'label', title: '标签', minWidth: 110 },
+            { field: 'value', title: '值', minWidth: 110 },
+            { field: 'checked', title: '默认选中', component: 'vxe-switch', width: 86 },
           ],
         },
       },
@@ -539,17 +539,17 @@ const columnAdvancedFormSections: Array<{ title: string; fields: LowCodeField[] 
     fields: [
       createSubFormField({
         field: 'cellRender',
-        label: 'cellRender',
+        label: '单元格渲染',
         fields: rendererObjectFields,
       }),
       createSubFormField({
         field: 'editRender',
-        label: 'editRender',
+        label: '编辑渲染',
         fields: rendererObjectFields,
       }),
       createSubFormField({
         field: 'params',
-        label: 'params',
+        label: '参数',
         fields: formatterObjectFields,
       }),
     ],
@@ -895,6 +895,29 @@ function humanizeIdentifier(value: unknown) {
     .join(' ');
 }
 
+function parseColumnCommentOverrides(
+  comment: unknown,
+): Partial<Pick<GridDesignerColumn, 'title' | 'type'>> | null {
+  const rawComment = readString(comment);
+  if (!rawComment) return null;
+
+  try {
+    const metadata: unknown = JSON.parse(rawComment);
+    if (!isPlainRecord(metadata)) return null;
+
+    const title = readString(metadata.title);
+    const type = readString(metadata.type);
+    if (!title && !type) return null;
+
+    return {
+      ...(title ? { title } : {}),
+      ...(type ? { type } : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+
 function createColumnsFromSource(columns: GridDesignerSourceColumn[]) {
   return columns.map<GridDesignerColumn>((column, index) => {
     const field = readString(column.field, `field_${index + 1}`);
@@ -1064,13 +1087,20 @@ function normalizeBusiness(value: unknown): GridDesignerBusinessInfo {
       : explicitTableName || postDataTarget
         ? 'table'
         : 'custom');
-  const tableName = sourceType === 'table' ? explicitTableName || postDataTarget : '';
+  const tableName = sourceType === 'view'
+    ? ''
+    : explicitTableName || (sourceType === 'table' ? postDataTarget : '');
   const viewName = sourceType === 'view' ? explicitViewName || postDataTarget : '';
   const normalizedPostDataJson = parsedPostData.ok && (
     typeof parsedPostData.value === 'undefined' || isPlainRecord(parsedPostData.value)
   )
       ? JSON.stringify(
-        createSourcePostData(postData, tableName || viewName, sourceType !== 'custom'),
+        createSourcePostData(
+          postData,
+          sourceType === 'custom' ? '' : tableName || viewName,
+          sourceType !== 'custom',
+          sourceType !== 'custom',
+        ),
         null,
         2,
       )
@@ -1297,10 +1327,10 @@ type ArrayEditorColumn = {
 };
 
 const directiveArrayColumns: ArrayEditorColumn[] = [
-  { field: 'type', title: 'type', minWidth: 130, defaultValue: 'setDataSource' },
-  { field: 'sourceKey', title: 'sourceKey', minWidth: 150 },
-  { field: 'targetKey', title: 'targetKey', minWidth: 150 },
-  { field: 'value', title: 'value', minWidth: 180 },
+  { field: 'type', title: '指令类型', minWidth: 130, defaultValue: 'setDataSource' },
+  { field: 'sourceKey', title: '数据源标识', minWidth: 150 },
+  { field: 'targetKey', title: '目标标识', minWidth: 150 },
+  { field: 'value', title: '值', minWidth: 180 },
 ];
 
 function inferArrayColumns(value: unknown[]): ArrayEditorColumn[] {
@@ -1720,16 +1750,22 @@ const ServiceComponent = defineComponent({
     ) => {
       const target = readString(value);
       if (!target) return;
+      const preserveCustomService = state.business.sourceType === 'custom' && (
+        readString(state.business.serviceName) !== 'admin' ||
+        readString(state.business.serviceMethod) !== 'listItems'
+      );
       const row = {
         label: target,
         value: target,
       };
 
-      state.business.sourceType = kind;
+      if (!preserveCustomService) state.business.sourceType = kind;
       state.business.tableName = kind === 'table' ? target : '';
       state.business.viewName = kind === 'view' ? target : '';
       syncBusinessSourceTarget();
       syncActiveDesignerDialogModel();
+
+      if (preserveCustomService) return;
 
       try {
         const source = await loadPhysicalTableSource(row);
@@ -1738,6 +1774,65 @@ const ServiceComponent = defineComponent({
         }
       } catch (error) {
         ElMessage.error(error instanceof Error ? error.message : '关联数据源加载失败');
+      }
+    };
+
+    let syncingTableComments = false;
+    const syncColumnsFromTableComments = async () => {
+      if (syncingTableComments) return;
+
+      const tableName = readString(state.business.tableName);
+      if (!tableName) {
+        ElMessage.warning('请先关联真实表');
+        return;
+      }
+
+      const serviceApi = getServiceApi();
+      if (!serviceApi) {
+        ElMessage.error('当前页面未提供数据服务，无法读取真实表字段');
+        return;
+      }
+
+      syncingTableComments = true;
+      try {
+        const columnRows = await serviceApi.invoke<unknown[]>('lowcode', 'listTableColumns', {
+          tableName,
+        });
+        const overridesByField = new Map<
+          string,
+          Partial<Pick<GridDesignerColumn, 'title' | 'type'>>
+        >();
+
+        if (Array.isArray(columnRows)) {
+          columnRows.filter(isPlainRecord).forEach((column) => {
+            const field = readString(column.name, readString(column.column_name));
+            const overrides = parseColumnCommentOverrides(column.comment);
+            if (field && overrides) overridesByField.set(field, overrides);
+          });
+        }
+
+        let syncedCount = 0;
+        state.columns = state.columns.map((column) => {
+          const overrides = overridesByField.get(readString(column.field));
+          if (!overrides) return column;
+
+          syncedCount += 1;
+          return {
+            ...column,
+            ...overrides,
+          };
+        });
+        syncActiveDesignerDialogModel();
+
+        if (syncedCount) {
+          ElMessage.success(`已从真实表同步 ${syncedCount} 列的标题和类型`);
+        } else {
+          ElMessage.warning('真实表中没有可同步的 JSON 列注释');
+        }
+      } catch (error) {
+        ElMessage.error(error instanceof Error ? error.message : '真实表字段同步失败');
+      } finally {
+        syncingTableComments = false;
       }
     };
 
@@ -2021,8 +2116,8 @@ const ServiceComponent = defineComponent({
       createSubFormSchema({ columns, fields });
 
     const businessInfoSchema = createSchema([
-      { field: 'blockId', label: 'blockId', component: 'vxe-input' },
-      { field: 'title', label: 'title', component: 'vxe-input' },
+      { field: 'blockId', label: '区块标识', component: 'vxe-input' },
+      { field: 'title', label: '表格标题', component: 'vxe-input' },
       {
         field: 'tableType',
         label: '表格类型',
@@ -2051,79 +2146,79 @@ const ServiceComponent = defineComponent({
           placeholder: '请选择视图',
         },
       },
-      { field: 'sourceKey', label: 'sourceKey', component: 'vxe-input' },
-      { field: 'serviceName', label: 'serviceName', component: 'vxe-input' },
-      { field: 'serviceMethod', label: 'serviceMethod', component: 'vxe-input' },
-      { field: 'saveMethod', label: 'saveMethod', component: 'vxe-input' },
-      { field: 'deleteMethod', label: 'deleteMethod', component: 'vxe-input' },
-      { field: 'showRowActions', label: 'showRowActions', component: 'vxe-switch' },
+      { field: 'sourceKey', label: '数据源标识', component: 'vxe-input' },
+      { field: 'serviceName', label: '服务名称', component: 'vxe-input' },
+      { field: 'serviceMethod', label: '查询方法', component: 'vxe-input' },
+      { field: 'saveMethod', label: '保存方法', component: 'vxe-input' },
+      { field: 'deleteMethod', label: '删除方法', component: 'vxe-input' },
+      { field: 'showRowActions', label: '显示行操作', component: 'vxe-switch' },
       {
         field: 'postDataJson',
-        label: 'postDataJson',
+        label: '请求参数',
         component: 'lc-json-editor',
         props: { rows: 4 },
       },
     ]);
 
     const gridOptionsSchema = createSchema([
-      { field: 'id', label: 'id', component: 'vxe-input' },
-      { field: 'size', label: 'size', component: 'vxe-select', options: sizeOptions },
-      { field: 'height', label: 'height', component: 'vxe-input', props: { placeholder: 'auto / 480' } },
+      { field: 'id', label: '表格标识', component: 'vxe-input' },
+      { field: 'size', label: '组件尺寸', component: 'vxe-select', options: sizeOptions },
+      { field: 'height', label: '表格高度', component: 'vxe-input', props: { placeholder: 'auto / 480' } },
       {
         field: 'mobileDisplay',
-        label: 'mobileDisplay',
+        label: '移动端显示方式',
         component: 'vxe-select',
         options: [
-          { label: 'table', value: 'table' },
-          { label: 'card', value: 'card' },
+          { label: '表格', value: 'table' },
+          { label: '卡片', value: 'card' },
         ],
       },
-      { field: 'rowHeight', label: 'rowHeight', component: 'vxe-number-input', props: { min: 34, max: 120 } },
-      { field: 'headerHeight', label: 'headerHeight', component: 'vxe-number-input', props: { min: 34, max: 100 } },
-      { field: 'overscanRowCount', label: 'overscanRowCount', component: 'vxe-number-input', props: { min: 1, max: 50 } },
-      { field: 'overscanColumnCount', label: 'overscanColumnCount', component: 'vxe-number-input', props: { min: 1, max: 20 } },
-      { field: 'maxHeight', label: 'maxHeight', component: 'vxe-input' },
-      { field: 'border', label: 'border', component: 'vxe-select', options: borderOptions as any },
-      { field: 'stripe', label: 'stripe', component: 'vxe-switch' },
-      { field: 'round', label: 'round', component: 'vxe-switch' },
-      { field: 'showHeader', label: 'showHeader', component: 'vxe-switch' },
-      { field: 'showFooter', label: 'showFooter', component: 'vxe-switch' },
-      { field: 'showOverflow', label: 'showOverflow', component: 'vxe-select', options: overflowOptions as any },
+      { field: 'rowHeight', label: '行高', component: 'vxe-number-input', props: { min: 34, max: 120 } },
+      { field: 'headerHeight', label: '表头高度', component: 'vxe-number-input', props: { min: 34, max: 100 } },
+      { field: 'overscanRowCount', label: '预渲染行数', component: 'vxe-number-input', props: { min: 1, max: 50 } },
+      { field: 'overscanColumnCount', label: '预渲染列数', component: 'vxe-number-input', props: { min: 1, max: 20 } },
+      { field: 'maxHeight', label: '最大高度', component: 'vxe-input' },
+      { field: 'border', label: '边框样式', component: 'vxe-select', options: borderOptions as any },
+      { field: 'stripe', label: '显示斑马纹', component: 'vxe-switch' },
+      { field: 'round', label: '圆角边框', component: 'vxe-switch' },
+      { field: 'showHeader', label: '显示表头', component: 'vxe-switch' },
+      { field: 'showFooter', label: '显示表尾', component: 'vxe-switch' },
+      { field: 'showOverflow', label: '内容溢出处理', component: 'vxe-select', options: overflowOptions as any },
       {
         field: 'showHeaderOverflow',
-        label: 'showHeaderOverflow',
+        label: '表头溢出处理',
         component: 'vxe-select',
         options: overflowOptions as any,
       },
-      { field: 'align', label: 'align', component: 'vxe-select', options: alignOptions },
-      { field: 'headerAlign', label: 'headerAlign', component: 'vxe-select', options: alignOptions },
-      { field: 'autoResize', label: 'autoResize', component: 'vxe-switch' },
-      { field: 'keepSource', label: 'keepSource', component: 'vxe-switch' },
+      { field: 'align', label: '内容对齐', component: 'vxe-select', options: alignOptions },
+      { field: 'headerAlign', label: '表头对齐', component: 'vxe-select', options: alignOptions },
+      { field: 'autoResize', label: '自动调整尺寸', component: 'vxe-switch' },
+      { field: 'keepSource', label: '保留源数据', component: 'vxe-switch' },
     ]);
 
     const rowConfigSubFields: LowCodeField[] = [
-      { field: 'keyField', label: 'keyField', component: 'vxe-input' },
-      { field: 'useKey', label: 'useKey', component: 'vxe-switch' },
-      { field: 'isCurrent', label: 'isCurrent', component: 'vxe-switch' },
-      { field: 'isHover', label: 'isHover', component: 'vxe-switch' },
-      { field: 'resizable', label: 'resizable', component: 'vxe-switch' },
-      { field: 'drag', label: 'drag', component: 'vxe-switch' },
+      { field: 'keyField', label: '行键字段', component: 'vxe-input' },
+      { field: 'useKey', label: '启用行键', component: 'vxe-switch' },
+      { field: 'isCurrent', label: '高亮当前行', component: 'vxe-switch' },
+      { field: 'isHover', label: '高亮悬停行', component: 'vxe-switch' },
+      { field: 'resizable', label: '可调整行高', component: 'vxe-switch' },
+      { field: 'drag', label: '允许拖动行', component: 'vxe-switch' },
     ];
 
     const columnConfigSubFields: LowCodeField[] = [
-      { field: 'useKey', label: 'useKey', component: 'vxe-switch' },
-      { field: 'resizable', label: 'resizable', component: 'vxe-switch' },
-      { field: 'isCurrent', label: 'isCurrent', component: 'vxe-switch' },
-      { field: 'isHover', label: 'isHover', component: 'vxe-switch' },
-      { field: 'drag', label: 'drag', component: 'vxe-switch' },
-      { field: 'minWidth', label: 'minWidth', component: 'vxe-input' },
+      { field: 'useKey', label: '启用列键', component: 'vxe-switch' },
+      { field: 'resizable', label: '可调整列宽', component: 'vxe-switch' },
+      { field: 'isCurrent', label: '高亮当前列', component: 'vxe-switch' },
+      { field: 'isHover', label: '高亮悬停列', component: 'vxe-switch' },
+      { field: 'drag', label: '允许拖动列', component: 'vxe-switch' },
+      { field: 'minWidth', label: '最小列宽', component: 'vxe-input' },
     ];
 
     const rowConfigSchema = createSchema(
       [
         createSubFormField({
           field: 'rowConfig',
-          label: 'rowConfig',
+          label: '行配置',
           fields: rowConfigSubFields,
           columns: 3,
         }),
@@ -2135,7 +2230,7 @@ const ServiceComponent = defineComponent({
       [
         createSubFormField({
           field: 'columnConfig',
-          label: 'columnConfig',
+          label: '列配置',
           fields: columnConfigSubFields,
           columns: 3,
         }),
@@ -2173,8 +2268,8 @@ const ServiceComponent = defineComponent({
     };
 
     const createColumnDesignerArrayColumns = (): ArrayEditorColumn[] => [
-      { field: 'field', title: 'field', minWidth: 150 },
-      { field: 'title', title: 'title', minWidth: 150 },
+      { field: 'field', title: '字段名', minWidth: 150 },
+      { field: 'title', title: '列标题', minWidth: 150 },
       {
         field: 'editType',
         title: '编辑类型',
@@ -2184,49 +2279,49 @@ const ServiceComponent = defineComponent({
       },
       {
         field: 'type',
-        title: 'type',
+        title: '列类型',
         component: 'vxe-select',
         width: 132,
         options: toArrayTableOptions(columnTypeOptions),
       },
-      { field: 'width', title: 'width', width: 108, props: { placeholder: 'auto' } },
-      { field: 'minWidth', title: 'minWidth', width: 118 },
+      { field: 'width', title: '宽度', width: 108, props: { placeholder: '自动' } },
+      { field: 'minWidth', title: '最小宽度', width: 118 },
       {
         field: 'fixed',
-        title: 'fixed',
+        title: '固定位置',
         component: 'vxe-select',
         width: 116,
         options: toArrayTableOptions(fixedOptions),
       },
       {
         field: 'align',
-        title: 'align',
+        title: '对齐方式',
         component: 'vxe-select',
         width: 124,
         options: toArrayTableOptions(alignOptions),
       },
       {
         field: 'sortable',
-        title: 'sortable',
+        title: '可排序',
         component: 'vxe-switch',
         width: 96,
       },
       {
         field: 'visible',
-        title: 'visible',
+        title: '显示',
         component: 'vxe-switch',
         width: 92,
       },
       {
         field: 'showOverflow',
-        title: 'showOverflow',
+        title: '溢出处理',
         component: 'vxe-select',
         width: 138,
         options: toArrayTableOptions(overflowOptions),
       },
       {
         field: 'formatter',
-        title: 'formatter',
+        title: '格式化配置',
         minWidth: 210,
         props: {
           placeholder: '{"type":"text"} 或格式化器名',
@@ -2243,11 +2338,11 @@ const ServiceComponent = defineComponent({
         width: 78,
       },
       { field: 'label', title: '事件说明', width: 130, readonly: true },
-      { field: 'vxeName', title: 'VxeGrid 事件属性', width: 170, readonly: true },
+      { field: 'vxeName', title: '表格事件属性', width: 170, readonly: true },
       { field: 'nativeName', title: '原生事件名', width: 190, readonly: true },
       {
         field: 'eventName',
-        title: '运行事件名 eventName',
+        title: '运行事件名',
         minWidth: 220,
         props: { placeholder: 'grid.rowDblclick' },
       },
@@ -2309,6 +2404,12 @@ const ServiceComponent = defineComponent({
                   label: '关联视图',
                   prefixIcon: 'ri-eye-2-line',
                   execute: async () => openSourcePicker('view'),
+                },
+                {
+                  code: 'sync-table-comments',
+                  label: '同步列注释',
+                  prefixIcon: 'ri-refresh-line',
+                  execute: async () => syncColumnsFromTableComments(),
                 },
               ],
               rowKey: '__id',
@@ -2482,7 +2583,7 @@ const ServiceComponent = defineComponent({
                   createInfoTabPanelBlock('grid-designer-grid-options-panel', [
                     createFormBlock(
                       gridOptionsBlockId,
-                      'VxeGrid 表格入参',
+                      '表格参数',
                       gridOptionsSchema,
                       'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-options-card',
                     ),
@@ -2496,7 +2597,7 @@ const ServiceComponent = defineComponent({
                   createInfoTabPanelBlock('grid-designer-row-config-panel', [
                     createFormBlock(
                       rowConfigBlockId,
-                      'rowConfig',
+                      '行配置',
                       rowConfigSchema,
                       'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-row-column-card',
                     ),
@@ -2510,7 +2611,7 @@ const ServiceComponent = defineComponent({
                   createInfoTabPanelBlock('grid-designer-column-config-panel', [
                     createFormBlock(
                       columnConfigBlockId,
-                      'columnConfig',
+                      '列配置',
                       columnConfigSchema,
                       'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-row-column-card',
                     ),
@@ -2583,12 +2684,12 @@ const ServiceComponent = defineComponent({
                   createInfoTabPanelBlock('grid-designer-extra-props-panel', [
                     createFormBlock(
                       extraPropsBlockId,
-                      'extraProps',
+                      '扩展属性',
                       createSchema(
                         [
                           {
                             field: 'value',
-                            label: 'extraProps',
+                            label: '扩展属性',
                             component: 'lc-json-editor',
                             props: { rows: 12 },
                           },

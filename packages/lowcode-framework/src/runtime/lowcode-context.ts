@@ -7,7 +7,7 @@ import {
   getLowCodeScriptApiDefinitions,
   type LowCodeScriptCapabilityName,
 } from './scripts';
-import { getBuiltinLowCodePageFunctions } from './builtin-page-functions';
+import { getBuiltinLowCodePageFunctions } from './page-function';
 import {
   getLowCodeNodeActionMethods,
   getLowCodeNodeTypeDefinition,

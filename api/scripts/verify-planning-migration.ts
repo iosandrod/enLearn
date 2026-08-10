@@ -3,7 +3,14 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { Client } from 'pg';
 import { getEnv, normalizePostgresConnectionString } from '../src/common/utils/env';
+import { PLANNING_CONSOLE_GRID_TABLES } from '../src/planning-service/planning-console.schema';
 import { PLANNING_MODEL_DEFINITIONS } from '../src/planning-service/planning.models';
+import {
+  assertLowCodeGridTableAssociations,
+  assertPlanningConsoleAggregateSources,
+  inspectLowCodeGridTableAssociations,
+  inspectPlanningConsoleAggregateSources
+} from './lowcode-grid-table-associations';
 import {
   assertTransactionActive,
   unwrapMigrationTransaction
@@ -15,8 +22,11 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260808160000_planning_extended_models.sql',
   'supabase/migrations/20260808170000_planning_execution_runtime.sql',
   'supabase/migrations/20260810110000_unify_sales_order_status.sql',
+  'supabase/migrations/20260810135000_bare_grid_table_options.sql',
   'supabase/migrations/20260809120000_planning_console.sql',
-  'supabase/migrations/20260810100000_planning_console_inner_tabs.sql'
+  'supabase/migrations/20260810100000_planning_console_inner_tabs.sql',
+  'supabase/migrations/20260810140000_planning_console_grid_tables.sql',
+  'supabase/migrations/20260810150000_lowcode_grid_table_associations.sql'
 ];
 
 function directProjectConnectionString(value: string) {
@@ -36,9 +46,23 @@ function directProjectConnectionString(value: string) {
   }
 }
 
+function pooledProjectConnectionString(value: string) {
+  try {
+    const url = new URL(normalizePostgresConnectionString(value));
+    url.searchParams.delete('sslmode');
+    url.searchParams.delete('uselibpqcompat');
+    return url.toString();
+  } catch {
+    return normalizePostgresConnectionString(value);
+  }
+}
+
 async function main() {
   const env = getEnv();
-  const rawConnectionString = process.env.DIRECT_URL ?? env.DIRECT_URL ?? env.DATABASE_URL;
+  const explicitDirectUrl = Object.prototype.hasOwnProperty.call(process.env, 'DIRECT_URL')
+    ? process.env.DIRECT_URL?.trim()
+    : undefined;
+  const rawConnectionString = explicitDirectUrl ?? env.DIRECT_URL ?? env.DATABASE_URL;
   if (!rawConnectionString) throw new Error('DIRECT_URL or DATABASE_URL is required.');
 
   const repoRoot = process.cwd().toLowerCase().endsWith('api')
@@ -49,12 +73,16 @@ async function main() {
       await readFile(resolve(repoRoot, file), 'utf8')
     ))
   )).join('\n\n');
+  const configuredConnectionString = explicitDirectUrl
+    ? directProjectConnectionString(rawConnectionString)
+    : pooledProjectConnectionString(rawConnectionString);
   const client = new Client({
-    connectionString: directProjectConnectionString(rawConnectionString),
+    connectionString: configuredConnectionString,
     connectionTimeoutMillis: 30_000,
     keepAlive: true,
     ssl: { rejectUnauthorized: false }
   });
+  client.on('error', () => undefined);
 
   await client.connect();
   try {
@@ -136,6 +164,71 @@ async function main() {
       throw new Error(`Planning migration verification failed: ${JSON.stringify({ installed, expected })}`);
     }
 
+    const consoleGridTables = await client.query<{
+      grid_id: string;
+      table_name: string;
+      source_type: string;
+    }>(`
+      select block->>'id' as grid_id,
+             block->>'tableName' as table_name,
+             block->>'sourceType' as source_type
+      from public.lowcode_pages page
+      cross join lateral jsonb_path_query(
+        page.schema,
+        'strict $.** ? (@.kind == "grid" && exists(@.tableName))'
+      ) as block
+      where page.code = 'planning_console'
+        and block->>'id' = any($1::text[])
+      order by block->>'id'
+    `, [Object.keys(PLANNING_CONSOLE_GRID_TABLES)]);
+    const linkedGridTables = Object.fromEntries(
+      consoleGridTables.rows.map((row) => [row.grid_id, row])
+    );
+    for (const [gridId, tableName] of Object.entries(PLANNING_CONSOLE_GRID_TABLES)) {
+      assert.equal(linkedGridTables[gridId]?.table_name, tableName);
+      assert.equal(linkedGridTables[gridId]?.source_type, 'custom');
+      assert.equal(linkedGridTables[gridId]?.table_name.startsWith('public.'), false);
+    }
+    const linkedGridIds = new Set(consoleGridTables.rows.map((row) => row.grid_id));
+    assert.equal(linkedGridIds.size, Object.keys(PLANNING_CONSOLE_GRID_TABLES).length);
+
+    const aggregateSources = await client.query<{
+      source_type: string;
+      service_name: string;
+      service_method: string;
+      table_name: string | null;
+    }>(`
+      select source.value->>'sourceType' as source_type,
+             source.value->>'serviceName' as service_name,
+             source.value->>'serviceMethod' as service_method,
+             source.value->>'tableName' as table_name
+      from public.lowcode_pages page
+      cross join lateral jsonb_each(page.schema->'dataSources') as source(key, value)
+      where page.code = 'planning_console'
+        and source.key = any($1::text[])
+    `, [[
+      'demands',
+      'operationPlans',
+      'materials',
+      'planResources',
+      'resourcePlans',
+      'problems',
+      'constraints',
+      'runs'
+    ]]);
+    assert.equal(aggregateSources.rows.length, Object.keys(PLANNING_CONSOLE_GRID_TABLES).length);
+    for (const source of aggregateSources.rows) {
+      assert.equal(source.source_type, 'custom');
+      assert.equal(source.service_name, 'planning');
+      assert.equal(source.service_method, 'getPlanningConsoleData');
+      assert.equal(source.table_name, null);
+    }
+
+    const gridTableAudit = await inspectLowCodeGridTableAssociations(client);
+    assertLowCodeGridTableAssociations(gridTableAudit);
+    const planningAggregateAudit = await inspectPlanningConsoleAggregateSources(client);
+    assertPlanningConsoleAggregateSources(planningAggregateAudit);
+
     const referenceIndexes = await client.query<{
       columns: string;
       index_name: string;
@@ -192,6 +285,10 @@ async function main() {
     await client.query('rollback');
     console.log(JSON.stringify({
       ...installed,
+      console_grid_tables: linkedGridIds.size,
+      lowcode_grid_tables: gridTableAudit.associatedGrids,
+      lowcode_grids_without_single_table: gridTableAudit.unresolvedGrids.length,
+      physical_table_options: gridTableAudit.optionCount,
       operationplan_reference_scope: 'baseline/version',
       transaction: 'verified rollback'
     }));

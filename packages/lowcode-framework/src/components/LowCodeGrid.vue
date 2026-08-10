@@ -13,6 +13,7 @@
 
     <div class="lc-grid__table-scroll" :style="tableScrollStyle">
       <vxe-grid
+        ref="vxeGridRef"
         class="lc-grid__table"
         v-bind="gridConfig"
         :data="rows"
@@ -75,7 +76,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import type { VxeGridInstance } from 'vxe-table';
 import {
   mergeSystemTableOptions,
   resolveSystemTableConfig,
@@ -106,6 +108,7 @@ const emit = defineEmits<{
   gridEvent: [payload: LowCodeGridEventPayload];
 }>();
 const systemSettings = useSystemSettings();
+const vxeGridRef = ref<VxeGridInstance<Record<string, unknown>>>();
 
 type LowCodeGridEventPayload = {
   key: string;
@@ -282,6 +285,35 @@ function handleCellDblclick(payload: unknown) {
   emit('cellDblclick', { row, rawEvent });
   emit('rowDblclick', { row, rawEvent });
 }
+
+async function validate() {
+  const grid = vxeGridRef.value;
+  if (!grid) return false;
+
+  try {
+    const errors = await grid.fullValidate(true);
+    return !errors || Object.keys(errors).length === 0;
+  } catch {
+    return false;
+  }
+}
+
+async function clearValidation() {
+  await vxeGridRef.value?.clearValidate();
+}
+
+async function setCurrentRow(row: Record<string, unknown> | null) {
+  const grid = vxeGridRef.value;
+  if (!grid) return;
+  if (row) await grid.setCurrentRow(row);
+  else await grid.clearCurrentRow();
+}
+
+defineExpose({
+  validate,
+  clearValidation,
+  setCurrentRow,
+});
 </script>
 
 <style scoped>

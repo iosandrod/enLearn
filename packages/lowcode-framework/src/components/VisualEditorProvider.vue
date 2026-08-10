@@ -15,7 +15,7 @@
       <slot name="actions" />
     </template>
   </VisualEditor>
-  <GlobalDialogHost />
+  <GlobalDialogHost v-if="showGlobalDialogHost" />
 </template>
 
 <script setup lang="ts">
@@ -50,6 +50,7 @@ const props = withDefaults(
     workbenchMode?: 'page' | 'form';
     pageRecord?: LowCodePageRecord | null;
     persistToSession?: boolean;
+    showGlobalDialogHost?: boolean;
   }>(),
   {
     initialData: null,
@@ -62,7 +63,8 @@ const props = withDefaults(
     showPageSetting: true,
     workbenchMode: 'page',
     pageRecord: null,
-    persistToSession: true
+    persistToSession: true,
+    showGlobalDialogHost: true,
   }
 );
 

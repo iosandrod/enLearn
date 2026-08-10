@@ -219,6 +219,7 @@ export type LowCodeFormProps = {
     tooltipConfig?: Record<string, unknown>;
     collapseConfig?: Record<string, unknown>;
     params?: Record<string, unknown>;
+    labelContextMenu?: boolean;
 };
 export type LowCodeGridAction = {
     code: string;
@@ -272,6 +273,7 @@ export type LowCodePageDataSource = {
     key: string;
     /** 数据源的可读名称，主要用于设计器和界面展示，不参与接口路由。 */
     label?: string;
+    /** 表格设计器中的来源类型，用于区分自定义服务、真实表和数据库视图。 */
     sourceType?: 'custom' | 'table' | 'view';
     /**
      * 后端服务名，对应 `serviceApi.invoke(serviceName, ...)` 的第一个参数，
@@ -298,9 +300,11 @@ export type LowCodePageDataSource = {
      * 实际数据库表名，例如 `lowcode_pages`。配置后，运行时会将其补入请求参数，
      * 并默认通过 `admin.listItems` 读取该表。
      */
+    /** Physical-table association shown by the grid designer; custom sources keep their own service request. */
     tableName?: string;
     /** `tableName` 的 snake_case 兼容字段，新配置优先使用 `tableName`。 */
     table_name?: string;
+    /** 关联的数据库视图名；实际查询仍通过 `tableName` 传给列表服务。 */
     viewName?: string;
     /**
      * 传给服务方法的基础请求参数，例如 `resource`、`filters`、`sorts`、
@@ -316,6 +320,7 @@ export type LowCodePageDataSource = {
      */
     autoLoad?: boolean;
 };
+/** A page-owned, named service endpoint callable from an isolated page script. */
 export type LowCodePageApi = {
     serviceName: string;
     serviceMethod: string;
@@ -427,7 +432,9 @@ export type LowCodePageGridBlock = LowCodeMaterialVersionedBlock & {
     sourceKey?: string;
     /** Apply the runtime search values to the returned rows in the browser. */
     clientFilter?: boolean;
+    /** Grid role in a normal or master-detail layout. */
     tableType?: 'normal' | 'main' | 'detail';
+    /** Data-source association used by the grid designer. */
     sourceType?: 'custom' | 'table' | 'view';
     tableName?: string;
     viewName?: string;
@@ -525,6 +532,7 @@ export type LowCodePagePlanningGanttBlock = LowCodeMaterialVersionedBlock & {
     labelField?: string;
     colorField?: string;
     statusField?: string;
+    includedTypes?: string[];
 };
 export type LowCodePagePlanningBomBlock = LowCodeMaterialVersionedBlock & {
     id: string;
@@ -562,6 +570,13 @@ export type LowCodePageSchema = {
     scriptPolicy?: {
         apiNames?: string[];
         capabilities?: import('../runtime/scripts').LowCodeScriptCapabilityName[];
+        context?: {
+            dataSourceKeys?: string[];
+            formBlockIds?: string[];
+            searchSourceKeys?: string[];
+            gridBlockIds?: string[];
+        };
+        limits?: import('../runtime/scripts').LowCodeScriptExecutionLimits;
     };
     blocks: LowCodePageBlock[];
     overlays?: LowCodePageOverlayBlock[];

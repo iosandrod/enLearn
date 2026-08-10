@@ -270,13 +270,15 @@ await secondRequest;
 assert.deepEqual(assignedVersions, [[{ id: 'current-line' }]]);
 assert.deepEqual(loadingVersions.at(-1), { version: 2, loading: false });
 
-const [rendererSource, registrySource, salesOrderPage, migration] = await Promise.all([
+const [rendererSource, registrySource, gridActionSource, salesOrderPage, migration] = await Promise.all([
   readFile(new URL('components/LowCodePageRenderer.vue', frameworkRoot), 'utf8'),
   readFile(new URL('runtime/node-action-registry.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('runtime/node-action/grid-action.ts', frameworkRoot), 'utf8'),
   readFile(new URL('../../supabase/migrations/20260803093000_sales_order_lowcode_page.sql', import.meta.url), 'utf8'),
   readFile(new URL('../../supabase/migrations/20260809200000_grid_load_data_action.sql', import.meta.url), 'utf8'),
 ]);
-assert.match(registrySource, /method: 'loadData'[\s\S]*?execute: executeGridLoadDataNodeAction/);
+assert.match(gridActionSource, /method: 'loadData'[\s\S]*?execute: executeGridLoadDataNodeAction/);
+assert.match(registrySource, /grid:\s*gridNodeActionDefinition/);
 assert.match(rendererSource, /if \(action\.execute\)[\s\S]*?return action\.execute/);
 assert.match(registrySource, /resolveLowCodeDataSourceNodeAction/);
 assert.match(rendererSource, /resolveLowCodeDataSourceNodeAction\(pageBlocks, key\)/);

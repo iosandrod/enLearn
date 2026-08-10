@@ -632,9 +632,9 @@ function convertRuntimeBlockToVisual(
         title: readString(block.title, readString(schema.title, source?.label ?? '数据表格')),
         tableType,
         sourceType,
-        tableName: sourceType === 'table'
-          ? readString(block.tableName, sourceTarget)
-          : '',
+        tableName: sourceType === 'view'
+          ? ''
+          : readString(block.tableName, sourceType === 'table' ? sourceTarget : ''),
         viewName: sourceType === 'view'
           ? readString(block.viewName, readString(source?.viewName, sourceTarget))
           : '',

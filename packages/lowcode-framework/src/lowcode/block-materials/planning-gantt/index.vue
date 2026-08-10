@@ -74,6 +74,7 @@ type GanttSelectionEvent = {
   id?: TID;
 };
 
+const UNASSIGNED_RESOURCE_LABEL = '未分配资源';
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePagePlanningGanttBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtime = useLowCodePageRuntime(false);
@@ -86,7 +87,15 @@ let tabRenderFrame = 0;
 
 const rows = computed(() => {
   const value = (runtime?.state.sources ?? props.resolvedData)[props.block.sourceKey ?? ''];
-  return Array.isArray(value) ? value.filter(isRecord) : [];
+  if (!Array.isArray(value)) return [];
+  const includedTypes = new Set(
+    Array.isArray(props.block.includedTypes)
+      ? props.block.includedTypes.map((type) => readString(type)).filter(Boolean)
+      : []
+  );
+  return value.filter((row) =>
+    isRecord(row) && (!includedTypes.size || includedTypes.has(readString(row.type)))
+  );
 });
 
 const validRows = computed<GanttRow[]>(() => rows.value.flatMap((row, index) => {
@@ -98,7 +107,7 @@ const validRows = computed<GanttRow[]>(() => rows.value.flatMap((row, index) => 
   return [{
     ...row,
     __end: new Date(Math.max(end.getTime(), start.getTime() + 15 * 60_000)),
-    __rowLabel: readString(row[props.block.rowLabelField ?? 'resource_name'], '未分配资源'),
+    __rowLabel: readString(row[props.block.rowLabelField ?? 'resource_name'], UNASSIGNED_RESOURCE_LABEL),
     __start: start,
     __status: status,
     __taskId: readString(row.id, `planning-task-${index}`),
@@ -114,7 +123,12 @@ const ganttTasks = computed<ITask[]>(() => {
   for (const row of validRows.value) {
     groups.set(row.__rowLabel, [...(groups.get(row.__rowLabel) ?? []), row]);
   }
-  return [...groups.entries()].flatMap(([label, resourceRows], resourceIndex) => {
+  const orderedGroups = [...groups.entries()].sort(([left], [right]) => {
+    if (left === UNASSIGNED_RESOURCE_LABEL) return 1;
+    if (right === UNASSIGNED_RESOURCE_LABEL) return -1;
+    return left.localeCompare(right, 'zh-CN');
+  });
+  return orderedGroups.flatMap(([label, resourceRows], resourceIndex) => {
     const parentId = `__planning-resource-${resourceIndex}`;
     const start = new Date(Math.min(...resourceRows.map((row) => row.__start.getTime())));
     const end = new Date(Math.max(...resourceRows.map((row) => row.__end.getTime())));
@@ -329,7 +343,7 @@ onBeforeUnmount(() => {
 @media (max-width: 720px) {
   .lc-planning-gantt__header { align-items: flex-start; }
   .lc-planning-gantt__legend { max-width: 45vw; overflow-x: auto; }
-  .lc-planning-gantt__chart, .lc-planning-gantt__empty { height: min(64vh, var(--lc-gantt-height)); }
+  .lc-planning-gantt__chart, .lc-planning-gantt__empty { height: min(50vh, 420px, var(--lc-gantt-height)); }
   .lc-planning-gantt__chart :deep(.wx-table-container) { min-width: 176px; }
 }
 </style>

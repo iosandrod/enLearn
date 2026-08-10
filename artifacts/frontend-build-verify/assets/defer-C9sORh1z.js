@@ -1,0 +1,1 @@
+var e=()=>{let e={};return e.promise=new Promise((t,n)=>{e.resolve=t,e.reject=n}),e};export{e as t};

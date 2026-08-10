@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Runtime form designer save smoke</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      #app {
+        padding: 24px;
+        box-sizing: border-box;
+      }
+
+      #result {
+        position: fixed;
+        z-index: -1;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick, reactive, ref } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'remixicon/fonts/remixicon.css';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import '../assets/styles/app.css';
+      import '../assets/styles/visual-editor-utilities.scss';
+      import LowCodePageRenderer from '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue';
+
+      const useReactivePage = new URLSearchParams(location.search).get('page') === 'reactive';
+      const renderer = ref(null);
+      const saveCalls = [];
+      const initialPageRecord = {
+        id: `runtime-form-designer-save-${useReactivePage ? 'reactive' : 'plain'}`,
+        code: 'runtime-form-designer-save',
+        route: '/runtime-form-designer-save',
+        title: '运行时表单设计保存',
+        description: null,
+        layout: 'dashboard',
+        status: 'published',
+        keep_alive: false,
+        page_type: 'edit',
+        edit_page_id: null,
+        schema: {
+          schemaVersion: 3,
+          code: 'runtime-form-designer-save',
+          route: '/runtime-form-designer-save',
+          title: '运行时表单设计保存',
+          pageType: 'edit',
+          layout: 'dashboard',
+          status: 'published',
+          keepAlive: false,
+          dataSources: {},
+          blocks: [
+            {
+              id: 'runtime-edit-form',
+              kind: 'form',
+              title: '编辑表单',
+              initialValues: {
+                name: '初始姓名',
+                code: 'INIT-001',
+              },
+              schema: {
+                columns: 2,
+                fields: [
+                  {
+                    field: 'name',
+                    label: '姓名',
+                    component: 'vxe-input',
+                    props: { placeholder: '请输入姓名' },
+                  },
+                  {
+                    field: 'code',
+                    label: '编码',
+                    component: 'vxe-input',
+                    props: { placeholder: '请输入编码' },
+                  },
+                ],
+                actions: [],
+              },
+            },
+            {
+              id: 'runtime-search-form',
+              kind: 'searchForm',
+              title: '查询表单',
+              initialValues: {
+                keyword: '初始关键字',
+              },
+              schema: {
+                fields: [
+                  {
+                    field: 'keyword',
+                    label: '关键字',
+                    component: 'vxe-input',
+                    props: { placeholder: '请输入关键字' },
+                  },
+                ],
+                actions: [],
+              },
+            },
+          ],
+          overlays: [],
+        },
+        version: 1,
+        published_at: null,
+        created_at: '',
+        updated_at: '',
+      };
+      const pageRecord = useReactivePage ? reactive(initialPageRecord) : initialPageRecord;
+      const serviceApi = {
+        async invoke(serviceName, serviceMethod, payload = {}) {
+          if (serviceName === 'lowcode' && serviceMethod === 'listItems') {
+            return [];
+          }
+          if (serviceName === 'lowcode' && serviceMethod === 'listTablePageOptions') {
+            return [];
+          }
+          if (serviceName === 'entityDesign' && serviceMethod === 'listDesign') {
+            return { tables: [] };
+          }
+          if (serviceName !== 'lowcode' || serviceMethod !== 'saveItem') {
+            throw new Error(`Unexpected service call: ${serviceName}.${serviceMethod}`);
+          }
+
+          saveCalls.push(structuredClone(payload));
+          return {
+            ...pageRecord,
+            ...payload.data,
+            schema: structuredClone(payload.data.schema),
+          };
+        },
+      };
+
+      const App = defineComponent({
+        setup() {
+          return () => h(LowCodePageRenderer, {
+            ref: renderer,
+            page: pageRecord,
+            serviceApi,
+            locale: 'zh-CN',
+            route: {
+              query: {},
+              params: {},
+              path: pageRecord.route,
+              fullPath: pageRecord.route,
+            },
+          });
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+
+      window.__runtimeFormDesignerSaveSmoke = {
+        pageRecord,
+        saveCalls,
+        snapshot() {
+          return renderer.value?.getSnapshot?.() ?? null;
+        },
+      };
+
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

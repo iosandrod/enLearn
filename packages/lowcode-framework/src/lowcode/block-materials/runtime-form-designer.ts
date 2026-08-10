@@ -134,7 +134,6 @@ export async function openRuntimeFormDesigner(
     serviceApi: runtimeBlockEditor.getServiceApi?.(),
     onConfirm: async (result: FormDesignerResult) => {
       const designedSchema = formDesigner.createLowCodeFormSchemaFromDesignerResult(result);
-
       await runtimeBlockEditor.updateBlock({
         blockId: block.id,
         changes: {

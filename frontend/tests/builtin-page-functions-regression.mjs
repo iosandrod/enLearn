@@ -3,7 +3,8 @@ import { readFile } from 'node:fs/promises';
 import {
   getBuiltinLowCodePageFunctions,
   resolveBuiltinLowCodePageFunction,
-} from '../../packages/lowcode-framework/src/runtime/builtin-page-functions.ts';
+} from '../../packages/lowcode-framework/src/runtime/page-function/index.ts';
+import * as legacyPageFunctions from '../../packages/lowcode-framework/src/runtime/builtin-page-functions.ts';
 
 const listFunctions = getBuiltinLowCodePageFunctions('list');
 const editFunctions = getBuiltinLowCodePageFunctions('edit');
@@ -18,6 +19,11 @@ assert.deepEqual(
 );
 assert.equal(resolveBuiltinLowCodePageFunction('list', 'copy'), undefined);
 assert.equal(resolveBuiltinLowCodePageFunction('edit', 'print'), undefined);
+assert.equal(
+  legacyPageFunctions.resolveBuiltinLowCodePageFunction('list', 'refresh')?.id,
+  'list.refresh',
+  'The previous built-in page-function import path must remain compatible.',
+);
 
 const calls = [];
 const baseContext = {
@@ -110,6 +116,46 @@ const rendererSource = await readFile(
 const contextSource = await readFile(
   new URL('../../packages/lowcode-framework/src/runtime/lowcode-context.ts', import.meta.url),
   'utf8',
+);
+const [listPageFunctionSource, editPageFunctionSource, pageFunctionIndexSource] =
+  await Promise.all([
+    readFile(
+      new URL(
+        '../../packages/lowcode-framework/src/runtime/page-function/list-page-function.ts',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+    readFile(
+      new URL(
+        '../../packages/lowcode-framework/src/runtime/page-function/edit-page-function.ts',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+    readFile(
+      new URL(
+        '../../packages/lowcode-framework/src/runtime/page-function/index.ts',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  ]);
+
+assert.match(
+  listPageFunctionSource,
+  /BUILTIN_LOW_CODE_LIST_PAGE_FUNCTIONS[\s\S]*?id: 'list\.create'[\s\S]*?id: 'list\.exit'/,
+  'List-page executable functions must live in list-page-function.ts.',
+);
+assert.match(
+  editPageFunctionSource,
+  /BUILTIN_LOW_CODE_EDIT_PAGE_FUNCTIONS[\s\S]*?id: 'edit\.copy'[\s\S]*?id: 'edit\.exit'/,
+  'Edit-page executable functions must live in edit-page-function.ts.',
+);
+assert.match(
+  pageFunctionIndexSource,
+  /BUILTIN_LOW_CODE_LIST_PAGE_FUNCTIONS[\s\S]*?BUILTIN_LOW_CODE_EDIT_PAGE_FUNCTIONS[\s\S]*?getBuiltinLowCodePageFunctions/,
+  'The page-function index must aggregate page-owned function definitions.',
 );
 
 assert.match(

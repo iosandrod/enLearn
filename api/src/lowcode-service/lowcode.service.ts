@@ -28,6 +28,7 @@ import {
 } from './lowcode.helpers';
 import { lowCodeResources } from './lowcode.resources';
 import type { LowCodePageRow } from './lowcode.types';
+import { prepareLowCodePageSchema } from './lowcode.schema';
 import {
   buildTableListPageSchemaFromMetadata,
   mapDatabaseTableOptions,
@@ -37,6 +38,67 @@ import {
 
 @Injectable()
 export class LowCodeService extends BaseService {
+  protected override async saveItem(
+    postData: Parameters<BaseService['execute']>[1],
+    context: ServiceContext
+  ) {
+    return super.saveItem(this.preparePageWrite(postData), context);
+  }
+
+  private preparePageWrite(postData: Parameters<BaseService['execute']>[1]) {
+    const resource = readString(postData.resource);
+    if (resource !== 'lowcode_pages') return postData;
+
+    const data = this.isRecord(postData.data) ? postData.data : postData;
+    if (!Object.prototype.hasOwnProperty.call(data, 'schema')) return postData;
+
+    this.assertRuntimeBlockArrays(data.schema);
+    const schema = prepareLowCodePageSchema(data.schema);
+    if (data === postData) return { ...postData, schema };
+    return { ...postData, data: { ...data, schema } };
+  }
+
+  private assertRuntimeBlockArrays(value: unknown) {
+    if (!this.isRecord(value)) return;
+
+    const visitBlocks = (blocks: unknown, path: string) => {
+      if (!Array.isArray(blocks)) {
+        throw new BadRequestException(`${path}: Blocks must be an array.`);
+      }
+
+      blocks.forEach((candidate, index) => {
+        const blockPath = `${path}.${index}`;
+        if (!this.isRecord(candidate)) {
+          throw new BadRequestException(`${blockPath}: Block must be an object.`);
+        }
+
+        if (Object.prototype.hasOwnProperty.call(candidate, 'blocks')) {
+          visitBlocks(candidate.blocks, `${blockPath}.blocks`);
+        }
+        if (Object.prototype.hasOwnProperty.call(candidate, 'overlays')) {
+          visitBlocks(candidate.overlays, `${blockPath}.overlays`);
+        }
+        if (Object.prototype.hasOwnProperty.call(candidate, 'tabs')) {
+          if (!Array.isArray(candidate.tabs)) {
+            throw new BadRequestException(`${blockPath}.tabs: Tabs must be an array.`);
+          }
+          candidate.tabs.forEach((tab, tabIndex) => {
+            const tabPath = `${blockPath}.tabs.${tabIndex}`;
+            if (!this.isRecord(tab)) {
+              throw new BadRequestException(`${tabPath}: Tab pane must be an object.`);
+            }
+            visitBlocks(tab.blocks, `${tabPath}.blocks`);
+          });
+        }
+      });
+    };
+
+    visitBlocks(value.blocks, 'blocks');
+    if (Object.prototype.hasOwnProperty.call(value, 'overlays')) {
+      visitBlocks(value.overlays, 'overlays');
+    }
+  }
+
   protected override async listItems(
     postData: Record<string, unknown>,
     context: ServiceContext

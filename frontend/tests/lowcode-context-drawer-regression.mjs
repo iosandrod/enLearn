@@ -206,11 +206,11 @@ assert.equal(catalog.nodes[1].children[0].blockId, 'edit');
 assert.equal(catalog.nodes[2].children[0].blockId, 'details');
 assert.deepEqual(
   catalog.nodes[1].children[0].methods.map((method) => method.method),
-  ['setData'],
+  ['setData', 'validate', 'getData', 'refreshOptions', 'resetData'],
 );
 assert.deepEqual(
   catalog.nodes[1].children[1].methods.map((method) => method.method),
-  ['loadData', 'reloadData'],
+  ['loadData', 'reloadData', 'validate', 'addRow', 'deleteCurrentRow'],
 );
 assert.deepEqual(catalog.nodes[2].methods.map((method) => method.method), ['open']);
 assert.match(
@@ -220,6 +220,12 @@ assert.match(
 assert.equal(lowCodeNodeActionRegistry.grid.label, '表格');
 assert.equal(resolveLowCodeNodeAction('grid', 'loadData')?.executor, 'grid.loadData');
 assert.equal(resolveLowCodeNodeAction('grid', 'reloadData')?.executor, 'grid.reloadData');
+assert.equal(resolveLowCodeNodeAction('grid', 'validate')?.executor, 'grid.validate');
+assert.equal(resolveLowCodeNodeAction('grid', 'addRow')?.executor, 'grid.addRow');
+assert.equal(
+  resolveLowCodeNodeAction('grid', 'deleteCurrentRow')?.executor,
+  'grid.deleteCurrentRow',
+);
 assert.equal(resolveLowCodeNodeAction('grid', 'setData'), undefined);
 assert.deepEqual(getLowCodeNodeActionMethods('text'), []);
 
@@ -332,6 +338,9 @@ const [
   contextDrawerSource,
   drawerSource,
   nodeRegistrySource,
+  buttonGroupActionSource,
+  formActionSource,
+  gridActionSource,
   hostSource,
   dialogHostSource,
   designerSource,
@@ -342,6 +351,9 @@ const [
   readFile(new URL('runtime/lowcode-context-drawer.tsx', frameworkRoot), 'utf8'),
   readFile(new URL('components/LowCodeContextDrawerPanel.vue', frameworkRoot), 'utf8'),
   readFile(new URL('runtime/node-action-registry.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('runtime/node-action/button-group-action.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('runtime/node-action/form-action.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('runtime/node-action/grid-action.ts', frameworkRoot), 'utf8'),
   readFile(new URL('components/GlobalDrawerHost.tsx', frameworkRoot), 'utf8'),
   readFile(new URL('components/GlobalDialogHost.tsx', frameworkRoot), 'utf8'),
   readFile(new URL('components/LowCodeVisualDesigner.vue', frameworkRoot), 'utf8'),
@@ -381,8 +393,23 @@ assert.match(
 );
 assert.match(
   nodeRegistrySource,
-  /lowCodeNodeActionRegistry[^]*?form: nodeType[^]*?setDataMethod[^]*?grid: nodeType[^]*?loadDataMethod[^]*?reloadDataMethod[^]*?modal: nodeType[^]*?openMethod/,
-  'Node types and callable methods must be maintained in one registry.',
+  /lowCodeNodeActionRegistry[^]*?buttonGroup:\s*buttonGroupNodeActionDefinition[^]*?form:\s*formNodeActionDefinition[^]*?searchForm:\s*searchFormNodeActionDefinition[^]*?grid:\s*gridNodeActionDefinition/,
+  'The registry must aggregate the definitions owned by each node module.',
+);
+assert.match(
+  buttonGroupActionSource,
+  /buttonGroupNodeActionDefinition[^]*?kind: 'buttonGroup'[^]*?methods: \{\}/,
+  'Button-group node metadata must live in its node action module.',
+);
+assert.match(
+  formActionSource,
+  /executeFormSetDataNodeAction[^]*?executeFormValidateNodeAction[^]*?executeFormGetDataNodeAction[^]*?executeFormRefreshOptionsNodeAction[^]*?executeFormResetDataNodeAction[^]*?formNodeActionDefinition[^]*?searchFormNodeActionDefinition/,
+  'Form and search-form methods must live in the form node action module.',
+);
+assert.match(
+  gridActionSource,
+  /executeGridLoadDataNodeAction[^]*?executeGridReloadDataNodeAction[^]*?executeGridValidateNodeAction[^]*?executeGridAddRowNodeAction[^]*?executeGridDeleteCurrentRowNodeAction[^]*?gridNodeActionDefinition/,
+  'Grid methods must live in the grid node action module.',
 );
 assert.match(
   hostSource,

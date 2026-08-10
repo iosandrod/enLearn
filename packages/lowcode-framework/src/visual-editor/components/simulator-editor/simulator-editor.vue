@@ -888,7 +888,8 @@
     min-height: 0;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow: auto;
+    // overflow: hidden;
   }
 
   .simulator-overlay-shelf {

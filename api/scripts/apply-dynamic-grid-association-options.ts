@@ -51,6 +51,11 @@ async function main() {
         (select count(*)::integer from public.system_physical_table_options) as table_option_count,
         (
           select count(*)::integer
+          from public.system_physical_table_options
+          where value like 'public.%' or label like 'public.%'
+        ) as prefixed_table_option_count,
+        (
+          select count(*)::integer
           from public.lowcode_pages page,
           lateral jsonb_array_elements(page.schema#>'{blocks,1,schema,grid,columns}') column_item
           where page.code = 'admin-system-options'
@@ -65,6 +70,7 @@ async function main() {
       result?.table_view !== 'system_physical_table_options' ||
       result?.database_view !== 'system_database_view_options' ||
       result?.table_option_count < 1 ||
+      result?.prefixed_table_option_count !== 0 ||
       result?.page_column_count !== 1
     ) {
       throw new Error(`Dynamic option verification failed: ${JSON.stringify(result)}`);

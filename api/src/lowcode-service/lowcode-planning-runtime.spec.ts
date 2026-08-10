@@ -5,6 +5,7 @@ import { LowCodeService } from './lowcode.service';
 
 type RuntimeService = {
   applyPlanningRuntimeAccess(schema: Record<string, unknown>, canManage: boolean): void;
+  preparePageWrite(postData: Record<string, unknown>): Record<string, unknown>;
 };
 
 function cloneSchema() {
@@ -36,6 +37,50 @@ function actions(schema: Record<string, unknown>) {
 }
 
 const service = new LowCodeService() as unknown as RuntimeService;
+
+const validPageWrite = service.preparePageWrite({
+  resource: 'lowcode_pages',
+  data: {
+    schema: {
+      schemaVersion: 1,
+      code: 'runtime-save-test',
+      route: '/dashboard/runtime-save-test',
+      title: 'Runtime save test',
+      blocks: [],
+    },
+  },
+});
+assert.deepEqual(
+  (validPageWrite.data as Record<string, unknown>).schema,
+  {
+    schemaVersion: 1,
+    code: 'runtime-save-test',
+    route: '/dashboard/runtime-save-test',
+    title: 'Runtime save test',
+    pageType: 'custom',
+    layout: 'dashboard',
+    status: 'draft',
+    keepAlive: true,
+    dataSources: {},
+    blocks: [],
+  },
+);
+assert.throws(
+  () => service.preparePageWrite({
+    resource: 'lowcode_pages',
+    data: {
+      schema: {
+        schemaVersion: 1,
+        code: 'invalid-runtime-save-test',
+        route: '/dashboard/invalid-runtime-save-test',
+        title: 'Invalid runtime save test',
+        blocks: [null],
+      },
+    },
+  }),
+  /Block must be an object/,
+  'Saving a low-code page must reject invalid runtime blocks.',
+);
 
 const readOnlySchema = cloneSchema();
 service.applyPlanningRuntimeAccess(readOnlySchema, false);

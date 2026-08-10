@@ -72,6 +72,40 @@ assert.equal(
 assert.equal(received.database_view_name[0].value, 'database_view_name');
 unsubscribeCached();
 
+calls.length = 0;
+await registry.refresh(['physical_table_name'], provider);
+assert.equal(calls.length, 1, 'Explicit refresh must bypass a fresh cache entry.');
+assert.deepEqual(calls[0].payload.sourceCodes, ['physical_table_name']);
+
+registry.invalidate();
+calls.length = 0;
+let resolveSlowRequest;
+const slowServiceApi = {
+  invoke(_serviceName, _serviceMethod, payload) {
+    calls.push(payload.sourceCodes);
+    return new Promise((resolve) => {
+      resolveSlowRequest = resolve;
+    });
+  },
+};
+const unsubscribeSlow = registry.subscribe(['race_code'], listener, () => slowServiceApi);
+await new Promise((resolve) => setTimeout(resolve, 40));
+const refreshPromise = registry.refresh(['race_code'], provider);
+await refreshPromise;
+resolveSlowRequest({
+  race_code: {
+    options: [{ label: 'stale', value: 'stale' }],
+    cacheTtlSeconds: 60,
+  },
+});
+await new Promise((resolve) => setTimeout(resolve, 0));
+assert.equal(
+  registry.peek('race_code')[0].value,
+  'race_code',
+  'A stale request must not overwrite an explicit refresh result.',
+);
+unsubscribeSlow();
+
 registry.invalidate();
 calls.length = 0;
 const zeroTtlServiceApi = {
@@ -100,5 +134,6 @@ const source = await readFile(entryPoint, 'utf8');
 assert.match(source, /cacheTtlSeconds/);
 assert.match(source, /inFlight/);
 assert.match(source, /subscribers/);
+assert.match(source, /version: 2/);
 
 console.log('Option source registry runtime regression test passed.');

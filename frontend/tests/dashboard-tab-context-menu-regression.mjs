@@ -14,6 +14,18 @@ const formDefinitionSource = await readFile(
   new URL('../utils/lowCodeFormDefinitions.ts', import.meta.url),
   'utf8'
 );
+const designDialogSource = await readFile(
+  new URL('../../packages/lowcode-framework/src/designer/design-dialog.ts', import.meta.url),
+  'utf8'
+);
+const visualDesignerSource = await readFile(
+  new URL('../../packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue', import.meta.url),
+  'utf8'
+);
+const visualProviderSource = await readFile(
+  new URL('../../packages/lowcode-framework/src/components/VisualEditorProvider.vue', import.meta.url),
+  'utf8'
+);
 const formDefinitionMigration = await readFile(
   new URL('../../supabase/migrations/20260808200000_lowcode_form_definitions.sql', import.meta.url),
   'utf8'
@@ -98,6 +110,46 @@ assert.match(
   layoutSource,
   /if \(option\.code === 'open-page-info-designer'\) \{\s*void openLowCodePageInfoDesignerByCode\(pageCode, tab\);\s*\}/,
   'The page information action must edit the low-code page behind the selected tab.'
+);
+assert.match(
+  layoutSource,
+  /if \(option\.code === 'open-visual-designer'\) \{\s*void openLowCodeDesignerByCode\(pageCode, tab\);\s*\}/,
+  'The visual-design action must open the selected page in the shared design dialog.'
+);
+assert.match(
+  layoutSource,
+  /openDesignDialog\(\{[\s\S]*?id: VISUAL_DESIGN_DIALOG_ID,[\s\S]*?code: pageCode,[\s\S]*?serviceApi,[\s\S]*?router/,
+  'Dashboard visual design must use openDesignDialog instead of navigating away.'
+);
+assert.doesNotMatch(
+  layoutSource,
+  /async function openLowCodeDesignerByCode[\s\S]*?router\.push\(\{ path: `\/dashboard\/low-code\/designer\/\$\{pageCode\}` \}\)/,
+  'Opening the visual designer from a tab must not navigate to the standalone route.'
+);
+assert.match(
+  designDialogSource,
+  /export function openDesignDialog[\s\S]*?openGlobalDialog\(\{[\s\S]*?body: \(\) => h\(DesignerComponent/,
+  'The shared design dialog must be implemented on top of the global-dialog service.'
+);
+assert.match(
+  designDialogSource,
+  /onConfirm: async \(\) => \{[\s\S]*?await controller\.save\(\)/,
+  'Confirming the shared design dialog must save through its designer controller.'
+);
+assert.match(
+  visualDesignerSource,
+  /:show-global-dialog-host="!embedded"/,
+  'An embedded visual designer must reuse the outer global-dialog host.'
+);
+assert.match(
+  visualDesignerSource,
+  /provideLowCodeHost\(\{[\s\S]*?serviceApi: computed\(\(\) => props\.serviceApi\)/,
+  'The embedded designer must provide its host dependencies to nested visual-editor components.'
+);
+assert.match(
+  visualProviderSource,
+  /<GlobalDialogHost v-if="showGlobalDialogHost" \/>/,
+  'The visual editor provider must allow an embedding dialog to disable its nested host.'
 );
 assert.match(
   layoutSource,

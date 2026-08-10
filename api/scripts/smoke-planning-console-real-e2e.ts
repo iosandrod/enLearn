@@ -124,12 +124,12 @@ async function query<T extends JsonRecord = JsonRecord>(
   values: unknown[] = []
 ) {
   let lastError: unknown;
-  for (let attempt = 0; attempt < 6; attempt += 1) {
+  for (let attempt = 0; attempt < 20; attempt += 1) {
     try {
       return await client.query<T>(text, values);
     } catch (error) {
       lastError = error;
-      if (!isTransientPostgresError(error) || attempt === 5) throw error;
+      if (!isTransientPostgresError(error) || attempt === 19) throw error;
       await delay(250 * (attempt + 1));
     }
   }

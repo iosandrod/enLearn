@@ -250,7 +250,9 @@
         </div>
         <span v-else class="admin-user">{{ displayUserLabel }}</span>
         <vxe-button size="mini" mode="text" status="primary" @click="reloadRoutes">
+        <div class="white">
           刷新菜单
+        </div>
         </vxe-button>
         <vxe-button size="mini" mode="text" @click="auth.signOut">退出</vxe-button>
       </div>
@@ -326,6 +328,7 @@ import {
   GlobalDialogHost,
   openGlobalDialog,
 } from '@enlearn/lowcode-framework/runtime';
+import { openDesignDialog } from '@enlearn/lowcode-framework/designer';
 import {
   closeDashboardTabs,
   formatDashboardTabTitle,
@@ -386,6 +389,7 @@ type VisitedTab = {
 
 const SYSTEM_SETTINGS_DIALOG_ID = 'system-settings-editor-dialog';
 const PAGE_INFO_DESIGN_DIALOG_ID = 'dashboard-page-info-design-dialog';
+const VISUAL_DESIGN_DIALOG_ID = 'dashboard-visual-design-dialog';
 const APPROVAL_CONSOLE_PATH = '/dashboard/approval/console';
 
 const auth = useAuth();
@@ -963,7 +967,7 @@ function openTabContextMenuAt(x: number, y: number, tab: VisitedTab) {
         if (option.code === 'close-right') void closeVisitedTabs(tab, 'right');
         if (option.code === 'close-others') void closeVisitedTabs(tab, 'others');
         if (option.code === 'open-visual-designer') {
-          void openLowCodeDesignerByCode(pageCode);
+          void openLowCodeDesignerByCode(pageCode, tab);
         }
         if (option.code === 'open-page-info-designer') {
           void openLowCodePageInfoDesignerByCode(pageCode, tab);
@@ -1306,10 +1310,30 @@ async function openLowCodeDesigner(item: AdminRouteNode) {
   await openLowCodeDesignerByCode(resolveLowCodePageCode(item));
 }
 
-async function openLowCodeDesignerByCode(pageCode: string) {
-  if (!pageCode) return;
-  await router.push({ path: `/dashboard/low-code/designer/${pageCode}` });
-  publishLowCodeDesignerLoadPage(pageCode);
+async function openLowCodeDesignerByCode(pageCode: string, tab?: VisitedTab) {
+  if (!pageCode || findGlobalDialog(VISUAL_DESIGN_DIALOG_ID)) return;
+
+  routeError.value = '';
+  try {
+    const result = await openDesignDialog({
+      id: VISUAL_DESIGN_DIALOG_ID,
+      code: pageCode,
+      title: `${tab?.title || pageCode}设计`,
+      serviceApi,
+      router,
+      locale: 'zh-CN',
+    });
+    if (result.action !== 'confirm') return;
+
+    const targetTab = tab ?? visitedTabs.value.find(
+      (item) => resolveVisitedTabPageCode(item) === pageCode,
+    );
+    if (targetTab) await reloadVisitedTab(targetTab);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '可视化设计打开失败。';
+    routeError.value = message;
+    showPageInfoDesignMessage(message, 'error');
+  }
 }
 
 async function openLowCodeEditPage(item: AdminRouteNode) {

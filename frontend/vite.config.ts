@@ -150,6 +150,7 @@ export default defineConfig({
       { find: '@enlearn/lowcode-framework/runtime/directives', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'directives.ts') },
       { find: '@enlearn/lowcode-framework/runtime/scripts', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'scripts.ts') },
       { find: '@enlearn/lowcode-framework/runtime', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'index.ts') },
+      { find: '@enlearn/lowcode-framework/designer/design-dialog', replacement: resolve(lowcodeFrameworkRoot, 'designer', 'design-dialog.ts') },
       { find: '@enlearn/lowcode-framework/designer', replacement: resolve(lowcodeFrameworkRoot, 'designer', 'index.ts') },
       { find: '@enlearn/lowcode-framework/materials', replacement: resolve(lowcodeFrameworkRoot, 'materials', 'index.ts') },
       { find: '@enlearn/lowcode-framework/core/host', replacement: resolve(lowcodeFrameworkRoot, 'core', 'host.ts') },

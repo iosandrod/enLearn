@@ -10,8 +10,13 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260808160000_planning_extended_models.sql',
   'supabase/migrations/20260808170000_planning_execution_runtime.sql',
   'supabase/migrations/20260810110000_unify_sales_order_status.sql',
+  'supabase/migrations/20260810135000_bare_grid_table_options.sql',
   'supabase/migrations/20260809120000_planning_console.sql',
-  'supabase/migrations/20260810100000_planning_console_inner_tabs.sql'
+  'supabase/migrations/20260810100000_planning_console_inner_tabs.sql',
+  'supabase/migrations/20260810140000_planning_console_grid_tables.sql',
+  'supabase/migrations/20260810150000_lowcode_grid_table_associations.sql',
+  'supabase/migrations/20260810180000_planning_version_lifecycle_forward_fix.sql',
+  'supabase/migrations/20260810181000_planning_console_script_context_forward_fix.sql'
 ];
 
 function directProjectConnectionString(value: string) {
@@ -27,9 +32,19 @@ function directProjectConnectionString(value: string) {
   return url.toString();
 }
 
+function pooledProjectConnectionString(value: string) {
+  const url = new URL(normalizePostgresConnectionString(value));
+  url.searchParams.delete('sslmode');
+  url.searchParams.delete('uselibpqcompat');
+  return url.toString();
+}
+
 async function main() {
   const env = getEnv();
-  const rawConnectionString = process.env.DIRECT_URL ?? env.DIRECT_URL ?? env.DATABASE_URL;
+  const explicitDirectUrl = Object.prototype.hasOwnProperty.call(process.env, 'DIRECT_URL')
+    ? process.env.DIRECT_URL?.trim()
+    : undefined;
+  const rawConnectionString = explicitDirectUrl ?? env.DIRECT_URL ?? env.DATABASE_URL;
   if (!rawConnectionString) throw new Error('DIRECT_URL or DATABASE_URL is required.');
   const repoRoot = process.cwd().toLowerCase().endsWith('api')
     ? resolve(process.cwd(), '..')
@@ -37,12 +52,16 @@ async function main() {
   const migration = (await Promise.all(
     MIGRATION_FILES.map((file) => readFile(resolve(repoRoot, file), 'utf8'))
   )).join('\n\n');
+  const configuredConnectionString = explicitDirectUrl
+    ? directProjectConnectionString(rawConnectionString)
+    : pooledProjectConnectionString(rawConnectionString);
   const client = new Client({
-    connectionString: directProjectConnectionString(rawConnectionString),
+    connectionString: configuredConnectionString,
     connectionTimeoutMillis: 30_000,
     keepAlive: true,
     ssl: { rejectUnauthorized: false }
   });
+  client.on('error', () => undefined);
 
   await client.connect();
   try {

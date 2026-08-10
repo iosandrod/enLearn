@@ -64,6 +64,20 @@ export type LowCodePageSchema = {
   scriptPolicy?: {
     apiNames?: string[];
     capabilities?: string[];
+    context?: {
+      dataSourceKeys?: string[];
+      formBlockIds?: string[];
+      searchSourceKeys?: string[];
+      gridBlockIds?: string[];
+    };
+    limits?: {
+      timeoutMs?: number;
+      startupTimeoutMs?: number;
+      memoryLimitBytes?: number;
+      maxStackSizeBytes?: number;
+      maxApiCalls?: number;
+      maxPayloadBytes?: number;
+    };
   };
   blocks: Array<Record<string, unknown>>;
   overlays?: Array<Record<string, unknown>>;
@@ -123,6 +137,32 @@ function normalizeStringList(value: unknown) {
 function normalizeScriptPolicy(value: unknown): LowCodePageSchema['scriptPolicy'] | undefined {
   if (!isRecord(value)) return undefined;
 
+  const rawContext = isRecord(value.context) ? value.context : undefined;
+  const normalizedContext = rawContext
+    ? Object.fromEntries([
+        'dataSourceKeys',
+        'formBlockIds',
+        'searchSourceKeys',
+        'gridBlockIds',
+      ].flatMap((key) => Array.isArray(rawContext[key])
+        ? [[key, normalizeStringList(rawContext[key])]]
+        : []))
+    : {};
+  const rawLimits = isRecord(value.limits) ? value.limits : undefined;
+  const normalizedLimits = rawLimits
+    ? Object.fromEntries([
+        'timeoutMs',
+        'startupTimeoutMs',
+        'memoryLimitBytes',
+        'maxStackSizeBytes',
+        'maxApiCalls',
+        'maxPayloadBytes',
+      ].flatMap((key) => {
+        const limit = Number(rawLimits[key]);
+        return Number.isFinite(limit) && limit > 0 ? [[key, Math.floor(limit)]] : [];
+      }))
+    : {};
+
   return {
     ...(Array.isArray(value.apiNames)
       ? { apiNames: normalizeStringList(value.apiNames) }
@@ -130,6 +170,8 @@ function normalizeScriptPolicy(value: unknown): LowCodePageSchema['scriptPolicy'
     ...(Array.isArray(value.capabilities)
       ? { capabilities: normalizeStringList(value.capabilities) }
       : {}),
+    ...(Object.keys(normalizedContext).length ? { context: normalizedContext } : {}),
+    ...(Object.keys(normalizedLimits).length ? { limits: normalizedLimits } : {}),
   };
 }
 
@@ -625,6 +667,11 @@ function validateScriptPolicy(schema: LowCodePageSchema, issues: LowCodeSchemaIs
         `scriptPolicy.capabilities.${index}`,
         `Unknown script capability "${capability}".`,
       );
+    }
+  });
+  Object.entries(schema.scriptPolicy?.limits ?? {}).forEach(([key, value]) => {
+    if (!Number.isFinite(value) || Number(value) <= 0) {
+      pushIssue(issues, 'error', `scriptPolicy.limits.${key}`, 'Script limits must be positive numbers.');
     }
   });
 }

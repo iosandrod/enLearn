@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, provide, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue';
 import type {
   LowCodeAction,
   LowCodeButtonGroupAction,
@@ -103,7 +103,7 @@ import {
   resolveBuiltinLowCodePageFunction,
   type BuiltinLowCodePageFunctionContext,
   type BuiltinLowCodePageFunctionMode,
-} from '../runtime/builtin-page-functions';
+} from '../runtime/page-function';
 import {
   lowCodeRuntimeBlockEditorKey,
   type LowCodeRuntimeBlockUpdate,
@@ -118,6 +118,7 @@ import {
   resolveLowCodeDataSourceNodeAction,
   resolveLowCodeNodeAction,
 } from '../runtime/node-action-registry';
+import { lowCodeOptionSourceRegistry } from '../runtime/option-source-registry';
 
 const props = withDefaults(defineProps<{
   page: LowCodePageRecord & {
@@ -191,6 +192,12 @@ const dataLoading = computed({
 const runtimeEventBus = createLowCodeEventBus();
 const pendingActionEvents = new WeakMap<object, Promise<void>>();
 const formBaselines: Record<string, Record<string, unknown>> = {};
+const runtimeBlockRenderRevision = ref(0);
+let runtimeBlockReloadSuppression: {
+  pageId: string;
+  version: number;
+  fullPath: string;
+} | undefined;
 const MAX_PAGE_FUNCTION_CALL_DEPTH = 16;
 let loadSequence = 0;
 let sourceRequestSequence = 0;
@@ -233,16 +240,30 @@ const themeStyle = computed(() =>
     Object.entries(host.getTheme().variables ?? {}).map(([key, value]) => [key, String(value)])
   )
 );
-const layoutBlocks = computed(() =>
-  markLastBlockFill(props.page.schema.blocks.filter((block) => !isOverlayBlock(block)))
-);
-const pageOverlays = computed<LowCodePageOverlayBlock[]>(() => [
-  ...props.page.schema.blocks.filter(isOverlayBlock),
-  ...(props.page.schema.overlays ?? []),
-]);
+const layoutBlocks = computed(() => {
+  runtimeBlockRenderRevision.value;
+  return markLastBlockFill(
+    validBlocks(props.page.schema.blocks).filter((block) => !isOverlayBlock(block))
+  );
+});
+const pageOverlays = computed<LowCodePageOverlayBlock[]>(() => {
+  runtimeBlockRenderRevision.value;
+  return [
+    ...validBlocks(props.page.schema.blocks).filter(isOverlayBlock),
+    ...validBlocks(props.page.schema.overlays).filter(isOverlayBlock),
+  ];
+});
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isRuntimeBlock(value: unknown): value is LowCodePageBlock {
+  return isRecord(value) && readString(value.id) !== '' && readString(value.kind) !== '';
+}
+
+function validBlocks(value: unknown): LowCodePageBlock[] {
+  return Array.isArray(value) ? value.filter(isRuntimeBlock) : [];
 }
 
 function isOverlayBlock(block: LowCodePageBlock): block is LowCodePageOverlayBlock {
@@ -796,6 +817,45 @@ async function refreshDataSources(sourceKeys: string[] = []) {
   return errors;
 }
 
+function uniqueStrings(values: unknown[]) {
+  return [...new Set(values
+    .map((value) => typeof value === 'string' ? value.trim() : '')
+    .filter(Boolean))];
+}
+
+async function refreshFormNodeOptions(
+  blockId: string,
+  options: { codes?: string[]; sourceKeys?: string[] } = {},
+) {
+  const block = findRuntimeBlock(blockId);
+  if (!block || (block.kind !== 'form' && block.kind !== 'searchForm')) {
+    throw new Error(`页面表单节点 "${blockId}" 不存在。`);
+  }
+
+  const configuredCodes = uniqueStrings(
+    block.schema.fields.map((field) => field.optionsCode),
+  );
+  const configuredSourceKeys = uniqueStrings(
+    block.schema.fields.map((field) => field.optionsSourceKey),
+  );
+  const codes = Array.isArray(options.codes)
+    ? uniqueStrings(options.codes).filter((code) => configuredCodes.includes(code))
+    : configuredCodes;
+  const sourceKeys = Array.isArray(options.sourceKeys)
+    ? uniqueStrings(options.sourceKeys).filter((key) => configuredSourceKeys.includes(key))
+    : configuredSourceKeys;
+
+  if (codes.length) {
+    await lowCodeOptionSourceRegistry.refresh(codes, () => host.getServiceApi());
+  }
+  if (sourceKeys.length) {
+    const errors = await refreshDataSources(sourceKeys);
+    if (errors.length) throw new Error(errors[0]);
+  }
+
+  return { codes, sourceKeys };
+}
+
 function cloneScriptValue<T>(value: T, fallback: T): T {
   try {
     const serialized = JSON.stringify(value);
@@ -855,28 +915,28 @@ function getChildBlocks(block: LowCodePageBlock): LowCodePageBlock[] {
   const children: LowCodePageBlock[] = [];
 
   if ('blocks' in block && Array.isArray(block.blocks)) {
-    children.push(...block.blocks);
+    children.push(...validBlocks(block.blocks));
   }
 
-  if (block.kind === 'tabs') {
-    children.push(...block.tabs.flatMap((tab) => tab.blocks));
+  if (block.kind === 'tabs' && Array.isArray(block.tabs)) {
+    children.push(...block.tabs.flatMap((tab) => validBlocks(tab?.blocks)));
   }
 
   if (isOverlayBlock(block) && Array.isArray(block.overlays)) {
-    children.push(...block.overlays);
+    children.push(...validBlocks(block.overlays));
   }
 
   return children;
 }
 
 function flattenBlocks(blocks: LowCodePageBlock[]): LowCodePageBlock[] {
-  return blocks.flatMap((block) => [block, ...flattenBlocks(getChildBlocks(block))]);
+  return validBlocks(blocks).flatMap((block) => [block, ...flattenBlocks(getChildBlocks(block))]);
 }
 
 function flattenPageBlocks(schema: LowCodePageRecord['schema']) {
   return flattenBlocks([
-    ...schema.blocks,
-    ...(schema.overlays ?? []),
+    ...validBlocks(schema.blocks),
+    ...validBlocks(schema.overlays),
   ]);
 }
 
@@ -891,10 +951,15 @@ function initializePageGridStates(blocks: LowCodePageBlock[]) {
   });
 
   gridBlocks.forEach((block) => {
-    runtime.ensureGrid(block.id, {
+    const grid = runtime.ensureGrid(block.id, {
       sourceKey: block.sourceKey,
       rowKey: getGridRowKey(block),
     });
+    if (!block.sourceKey && !runtime.isGridInitialized(block.id) && Array.isArray(block.rows)) {
+      runtime.setGridRows(block.id, block.rows.filter(isRecord), {
+        rowKey: getGridRowKey(block),
+      });
+    }
   });
 }
 
@@ -904,6 +969,7 @@ function syncPageGridStates(schema: LowCodePageRecord['schema'] = props.page.sch
 
   blocks.forEach((block) => {
     if (block.kind !== 'grid') return;
+    if (!block.sourceKey && runtime.isGridInitialized(block.id)) return;
     runtime.setGridRows(
       block.id,
       resolveGridRows(block, resolvedData.value, searchFilters.value),
@@ -1026,7 +1092,25 @@ async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
       }
     );
 
+    const reloadSuppression = {
+      pageId: readString(saved.id, props.page.id),
+      version: Number(saved.version ?? nextVersion),
+      fullPath: readString(props.route?.fullPath ?? host.getRoute().fullPath),
+    };
+    runtimeBlockReloadSuppression = reloadSuppression;
     Object.assign(props.page, saved);
+    void nextTick(() => {
+      if (runtimeBlockReloadSuppression === reloadSuppression) {
+        runtimeBlockReloadSuppression = undefined;
+      }
+    });
+    const renderedBlock = flattenPageBlocks(props.page.schema).find(
+      (block) => block.id === (update.changes.id ?? update.blockId)
+    );
+    if (renderedBlock) {
+      Object.assign(renderedBlock, cloneRuntimeValue(update.changes));
+    }
+    runtimeBlockRenderRevision.value += 1;
     message.value = targetBlock.kind === 'form' || targetBlock.kind === 'searchForm'
       ? '表单配置已保存。'
       : targetBlock.kind === 'grid'
@@ -1034,9 +1118,7 @@ async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
         : '按钮配置已保存。';
     messageClass.value = 'lc-help';
 
-    return flattenPageBlocks(props.page.schema).find(
-      (block) => block.id === (update.changes.id ?? update.blockId)
-    ) ?? targetBlock;
+    return renderedBlock ?? targetBlock;
   } catch (error) {
     message.value = error instanceof Error ? error.message : '页面配置保存失败。';
     messageClass.value = 'lc-error';
@@ -1190,9 +1272,12 @@ function syncRuntimeGridToVisualProps(
   const sourceTarget = readString(source?.tableName ?? source?.table_name);
   visualProps.tableType = tableType;
   visualProps.sourceType = sourceType;
-  visualProps.tableName = sourceType === 'table'
-    ? readString(update.changes.tableName, readString(targetBlock.tableName, sourceTarget))
-    : '';
+  visualProps.tableName = sourceType === 'view'
+    ? ''
+    : readString(
+        update.changes.tableName,
+        readString(targetBlock.tableName, sourceType === 'table' ? sourceTarget : ''),
+      );
   visualProps.viewName = sourceType === 'view'
     ? readString(
         update.changes.viewName,
@@ -1537,7 +1622,7 @@ async function loadPageData(nextPage: LowCodePageRecord) {
   }
 
   invalidateSourceRequests();
-  runtime.resetData({ preserveGrids });
+  runtime.resetData({ preserveGrids, preserveLocalGridRows: preserveGrids });
   runtimePageId = nextPage.id;
   initializePageGridStates(pageBlocks);
 
@@ -1617,7 +1702,16 @@ const loadingText = computed(() =>
 
 watch(
   [() => props.page.id, () => props.page.version, () => props.route?.fullPath ?? host.getRoute().fullPath],
-  async ([nextPage]) => {
+  async ([nextPage, nextVersion, nextFullPath]) => {
+    if (
+      runtimeBlockReloadSuppression?.pageId === nextPage &&
+      runtimeBlockReloadSuppression.version === nextVersion &&
+      runtimeBlockReloadSuppression.fullPath === readString(nextFullPath)
+    ) {
+      runtimeBlockReloadSuppression = undefined;
+      return;
+    }
+
     const currentLoad = ++loadSequence;
     message.value = '';
     dataLoading.value = true;
@@ -1648,6 +1742,14 @@ watch(
     }
   },
   { immediate: true }
+);
+
+watch(
+  () => flattenPageBlocks(props.page.schema)
+    .filter((block): block is LowCodePageGridBlock => block.kind === 'grid')
+    .map((block) => [block.id, block.sourceKey ?? '', getGridRowKey(block)]),
+  () => syncPageGridStates(),
+  { deep: true },
 );
 
 const unsubscribeRuntimeEvents = runtimeEventBus.subscribe(handlePublishedRuntimeEvent);
@@ -1722,14 +1824,6 @@ function readScriptRowsArg(args: unknown[], index: number) {
 function readScriptOptionsArg(args: unknown[], label: string) {
   if (!isRecord(args[0])) throw new Error(`${label} 参数必须是对象。`);
   return cloneRuntimeValue(args[0]);
-}
-
-function readRowsValue(value: unknown) {
-  if (Array.isArray(value)) return value.filter(isRecord).map((row) => cloneRuntimeValue(row));
-  if (isRecord(value) && Array.isArray(value.rows)) {
-    return value.rows.filter(isRecord).map((row) => cloneRuntimeValue(row));
-  }
-  return [];
 }
 
 function findNestedRuntimeBlock(block: LowCodePageBlock, blockId: string) {
@@ -1820,6 +1914,7 @@ async function executeScriptNodeAction(options: Record<string, unknown>) {
           throw error;
         }
       },
+      getSourceValue: (sourceKey) => runtime.state.sources[sourceKey],
       setSource: (sourceKey, value) => runtime.setSource(sourceKey, value),
       syncGridStates: () => syncPageGridStates(),
       beginSourceRequest,
@@ -1832,32 +1927,33 @@ async function executeScriptNodeAction(options: Record<string, unknown>) {
           loadingGridId.value = '';
         }
       },
+      getFormValues: (blockId) => runtime.state.forms[blockId] ?? {},
+      getFormBaseline: (blockId) => formBaselines[blockId] ?? {},
+      patchFormValues: (blockId, values) => runtime.patchForm(blockId, values),
+      replaceFormValues: (blockId, values) => runtime.replaceForm(blockId, values),
+      validateForm: (blockId) => runtime.getFormController(blockId)?.validate()
+        ?? Promise.reject(new Error(`表单节点 "${blockId}" 当前未挂载，无法校验。`)),
+      clearFormValidation: (blockId) =>
+        runtime.getFormController(blockId)?.clearValidation(),
+      refreshFormOptions: (blockId, refreshOptions) =>
+        refreshFormNodeOptions(blockId, refreshOptions),
+      setGridRows: (blockId, rows, actionOptions) =>
+        runtime.setGridRows(blockId, rows, actionOptions),
+      setGridCurrentRow: async (blockId, row) => {
+        runtime.setGridCurrentRow(blockId, row);
+        await runtime.getGridController(blockId)?.setCurrentRow(
+          runtime.state.grids[blockId]?.currentRow ?? null,
+        );
+      },
+      validateGrid: (blockId) => runtime.getGridController(blockId)?.validate()
+        ?? Promise.reject(new Error(`表格节点 "${blockId}" 当前未挂载，无法校验。`)),
     });
   }
 
-  switch (action.executor) {
-    case 'overlay.open': {
-      if (!isOverlayBlock(block)) break;
-      const result = await openLowCodeGlobalDialog(createNodeDialogConfig(block, options));
-      if (result.action !== 'confirm') return null;
-      return cloneScriptValue(result.values, {});
-    }
-    case 'grid.reloadData': {
-      if (block.kind !== 'grid') break;
-      const rows = readRowsValue(options.data);
-      if (block.sourceKey) runtime.setSource(block.sourceKey, rows);
-      else runtime.setGridRows(block.id, rows, { rowKey: getGridRowKey(block) });
-      syncPageGridStates();
-      return rows;
-    }
-    case 'form.setData': {
-      if (block.kind !== 'form' && block.kind !== 'searchForm') break;
-      if (!isRecord(options.data)) throw new Error('表单 setData 的 data 必须是对象。');
-      const data = cloneRuntimeValue(options.data);
-      if (options.mode === 'replace') runtime.replaceForm(block.id, data);
-      else runtime.patchForm(block.id, data);
-      return cloneScriptValue(runtime.state.forms[block.id], {});
-    }
+  if (action.executor === 'overlay.open' && isOverlayBlock(block)) {
+    const result = await openLowCodeGlobalDialog(createNodeDialogConfig(block, options));
+    if (result.action !== 'confirm') return null;
+    return cloneScriptValue(result.values, {});
   }
 
   throw new Error(`节点动作执行器 "${action.executor}" 与节点 "${node}" 不匹配。`);
@@ -1947,6 +2043,13 @@ function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSn
   const route = host.getRoute();
   const eventPayload = cloneScriptValue(event.payload ?? {}, {});
   const safeAction = sanitizeScriptAction(eventPayload.action);
+  const contextPolicy = props.page.schema.scriptPolicy?.context;
+  const selectContextEntries = <T>(
+    source: Record<string, T>,
+    keys: string[] | undefined,
+  ) => Array.isArray(keys)
+    ? Object.fromEntries(keys.filter((key) => key in source).map((key) => [key, source[key]]))
+    : source;
   delete eventPayload.script;
   delete eventPayload.directives;
   if (safeAction) eventPayload.action = safeAction;
@@ -1967,10 +2070,10 @@ function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSn
       path: route.path ?? '',
       fullPath: route.fullPath ?? '',
     },
-    data: resolvedData.value,
-    forms: formModels.value,
-    searches: searchFilters.value,
-    grids: gridStates.value,
+    data: selectContextEntries(resolvedData.value, contextPolicy?.dataSourceKeys),
+    forms: selectContextEntries(formModels.value, contextPolicy?.formBlockIds),
+    searches: selectContextEntries(searchFilters.value, contextPolicy?.searchSourceKeys),
+    grids: selectContextEntries(gridStates.value, contextPolicy?.gridBlockIds),
     event: {
       ...eventPayload,
       name: event.name,
@@ -2440,7 +2543,7 @@ async function handleScriptCapability(
 async function executeIsolatedScript(script: string, event: LowCodeRuntimeEvent) {
   const context = createScriptContext(event);
   return executeLowCodeScript(
-    { script, context },
+    { script, context, limits: props.page.schema.scriptPolicy?.limits },
     (request) => handleScriptCapability(request, context, event),
   );
 }

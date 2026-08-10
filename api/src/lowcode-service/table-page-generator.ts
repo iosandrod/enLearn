@@ -56,6 +56,11 @@ export type DatabaseTableOption = {
   primaryKey?: string;
 };
 
+type TableCommentMetadata = {
+  title: string;
+  description: string;
+};
+
 type TablePageSchemaOptions = {
   table: DatabaseTableRef;
   columns: DatabaseColumn[];
@@ -263,8 +268,27 @@ export function parseColumnComment(
   return { title, type, align, description };
 }
 
+function parseTableComment(comment: unknown): TableCommentMetadata {
+  const rawComment = readStringValue(comment);
+  if (!rawComment) return { title: '', description: '' };
+
+  try {
+    const parsed: unknown = JSON.parse(rawComment);
+    if (isRecord(parsed)) {
+      return {
+        title: readStringValue(parsed.title),
+        description: readStringValue(parsed.description)
+      };
+    }
+  } catch {
+    // Legacy plain-text comments remain valid descriptions and titles.
+  }
+
+  return { title: rawComment, description: rawComment };
+}
+
 function tableTitle(table: DatabaseTableRef, comment = '') {
-  return comment.trim() || humanizeIdentifier(table.name);
+  return parseTableComment(comment).title || humanizeIdentifier(table.name);
 }
 
 function columnTitle(column: DatabaseColumn) {
@@ -426,16 +450,25 @@ export function normalizeTablePageInspection(value: unknown) {
           childColumns: readStringArray(relation.childColumns),
           parentColumns: readStringArray(relation.parentColumns),
           columns: readColumns(relation.columns),
-          title: readStringValue(relation.title)
+          title: tableTitle(
+            {
+              schema: readStringValue(relation.childTable.schema),
+              name: readStringValue(relation.childTable.name),
+              fullName: readStringValue(relation.childTable.fullName)
+            },
+            readStringValue(relation.title)
+          )
         };
       })
     : [];
   const comment = readStringValue(value.comment);
+  const commentMetadata = parseTableComment(comment);
   return {
     table,
     columns,
     childRelations,
-    title: tableTitle(table, comment),
+    title: commentMetadata.title || tableTitle(table),
+    description: commentMetadata.description,
     comment,
     entityCode: readStringValue(value.entityCode) || undefined
   };
@@ -653,7 +686,7 @@ export function buildTableListPageSchemaFromMetadata(
     columns: inspection.columns,
     childRelations: inspection.childRelations,
     title: options.title ?? inspection.title,
-    description: options.description ?? inspection.comment,
+    description: options.description ?? inspection.description,
     entityCode: options.entityCode ?? inspection.entityCode
   });
 }

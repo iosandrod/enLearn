@@ -31,8 +31,10 @@ type LowCodeFormProps = {
     tooltipConfig?: VxeLowCodeFormProps['tooltipConfig'];
     collapseConfig?: VxeLowCodeFormProps['collapseConfig'];
     params?: VxeLowCodeFormProps['params'];
+    labelContextMenu?: boolean;
 };
 declare function validate(): Promise<boolean>;
+declare function clearValidation(): Promise<void>;
 declare function snapshot(): {
     [x: string]: unknown;
 };
@@ -41,6 +43,7 @@ declare const __VLS_export: import("vue").DefineComponent<LowCodeFormProps, {
     submit: typeof handleSubmit;
     validate: typeof validate;
     snapshot: typeof snapshot;
+    clearValidation: typeof clearValidation;
 }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {
     submit: (value: Record<string, unknown>) => any;
     action: (action: LowCodeAction, value: Record<string, unknown>) => any;
@@ -51,6 +54,7 @@ declare const __VLS_export: import("vue").DefineComponent<LowCodeFormProps, {
         previousValue: unknown;
         values: Record<string, unknown>;
     }) => any;
+    labelContextMenu: (event: MouseEvent) => any;
 }, string, import("vue").PublicProps, Readonly<LowCodeFormProps> & Readonly<{
     onSubmit?: (value: Record<string, unknown>) => any;
     onAction?: (action: LowCodeAction, value: Record<string, unknown>) => any;
@@ -61,6 +65,7 @@ declare const __VLS_export: import("vue").DefineComponent<LowCodeFormProps, {
         previousValue: unknown;
         values: Record<string, unknown>;
     }) => any;
+    onLabelContextMenu?: (event: MouseEvent) => any;
 }>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
 declare const _default: typeof __VLS_export;
 export default _default;

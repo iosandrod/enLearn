@@ -16,6 +16,17 @@ export const PLANNING_CONSOLE_SOURCE_KEYS = [
   'bom'
 ] as const;
 
+export const PLANNING_CONSOLE_GRID_TABLES = {
+  planning_console_demands_grid: 'planning_demand',
+  planning_console_operation_plans_grid: 'planning_operationplan',
+  planning_console_materials_grid: 'planning_operationplanmaterial',
+  planning_console_plan_resources_grid: 'planning_operationplanresource',
+  planning_console_resource_plans_grid: 'planning_resourceplan',
+  planning_console_problems_grid: 'planning_problem',
+  planning_console_constraints_grid: 'planning_constraint',
+  planning_console_runs_grid: 'planning_run'
+} as const;
+
 type Row = Record<string, unknown>;
 
 export type PlanningConsoleInnerTabs = {
@@ -48,13 +59,14 @@ function grid(
   title: string,
   sourceKey: string,
   columns: Row[],
-  options: { height?: number; current?: boolean; rowActions?: Row } = {}
+  options: { height?: number; current?: boolean; rowActions?: Row; tableName?: string } = {}
 ) {
   return {
     id,
     kind: 'grid',
     title,
     sourceKey,
+    ...(options.tableName ? { sourceType: 'custom', tableName: options.tableName } : {}),
     clientFilter: false,
     schema: {
       grid: {
@@ -279,6 +291,12 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
       }
     },
     scriptPolicy: {
+      context: {
+        dataSourceKeys: ['runtimeCapabilities', 'summary', 'versionOptions'],
+        formBlockIds: ['planning_console_filter'],
+        searchSourceKeys: [],
+        gridBlockIds: ['planning_console_runs_grid']
+      },
       capabilities: [
         'http.execute',
         'source.refresh',
@@ -502,7 +520,8 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
             key: 'gantt', label: '排产甘特', blocks: [{
               id: 'planning_console_gantt', kind: 'planningGantt', sourceKey: 'operationPlans', height: 520,
               title: '资源排产甘特图', description: '按资源查看计划单时间占用、状态和延期情况。',
-              rowLabelField: 'resource_name', startField: 'startdate', endField: 'enddate', labelField: 'reference', statusField: 'status'
+              rowLabelField: 'resource_name', startField: 'startdate', endField: 'enddate', labelField: 'reference', statusField: 'status',
+              includedTypes: ['MO', 'WO', 'PO', 'DO']
             }]
           },
           {
@@ -536,7 +555,7 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
                         column('coverage_percent', '覆盖率', { align: 'right', formatter: number }),
                         column('version_delivery_date', '计划交付', { minWidth: 170, formatter: datetime }),
                         column('lateness_hours', '延期小时', { align: 'right', formatter: number }), column('status', '状态')
-                      ])
+                      ], { tableName: PLANNING_CONSOLE_GRID_TABLES.planning_console_demands_grid })
                     ]
                   },
                   {
@@ -548,7 +567,7 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
                         column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime }),
                         column('duration_hours', '工时', { align: 'right', formatter: number }), column('delay_hours', '延期小时', { align: 'right', formatter: number }), column('status', '状态'),
                         column('demand_name', '需求', { minWidth: 150 }), column('version_code', '版本', { minWidth: 130 })
-                      ])
+                      ], { tableName: PLANNING_CONSOLE_GRID_TABLES.planning_console_operation_plans_grid })
                     ]
                   }
                 ]
@@ -571,7 +590,7 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
                         column('location_name', '地点', { minWidth: 140 }), column('movement_type', '方向', { width: 90 }),
                         column('quantity', '数量', { align: 'right', formatter: number }), column('onhand', '结余库存', { align: 'right', formatter: number }),
                         column('minimum', '最低库存', { align: 'right', formatter: number }), column('status', '状态')
-                      ])
+                      ], { tableName: PLANNING_CONSOLE_GRID_TABLES.planning_console_materials_grid })
                     ]
                   },
                   {
@@ -581,7 +600,7 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
                         column('quantity', '负荷', { align: 'right', formatter: number }), column('setup', '换型'),
                         column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime }),
                         column('status', '状态')
-                      ])
+                      ], { tableName: PLANNING_CONSOLE_GRID_TABLES.planning_console_plan_resources_grid })
                     ]
                   },
                   {
@@ -591,7 +610,7 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
                         column('available', '可用', { align: 'right', formatter: number }), column('load', '负荷', { align: 'right', formatter: number }),
                         column('setup', '换型', { align: 'right', formatter: number }), column('free', '空闲', { align: 'right', formatter: number }),
                         column('utilization_percent', '利用率', { align: 'right', formatter: number }), column('overloaded', '超载', { width: 90 })
-                      ])
+                      ], { tableName: PLANNING_CONSOLE_GRID_TABLES.planning_console_resource_plans_grid })
                     ]
                   }
                 ]
@@ -612,7 +631,7 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
                         column('entity', '实体', { minWidth: 130 }), column('owner', '对象', { minWidth: 170 }),
                         column('name', '问题类型', { minWidth: 150 }), column('description', '问题说明', { minWidth: 360 }),
                         column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime })
-                      ])
+                      ], { tableName: PLANNING_CONSOLE_GRID_TABLES.planning_console_problems_grid })
                     ]
                   },
                   {
@@ -621,7 +640,7 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
                         column('demand_name', '需求', { minWidth: 150 }), column('item_name', '物料', { minWidth: 150 }),
                         column('name', '约束类型', { minWidth: 150 }), column('description', '约束说明', { minWidth: 360 }),
                         column('startdate', '开始', { minWidth: 170, formatter: datetime }), column('enddate', '结束', { minWidth: 170, formatter: datetime })
-                      ])
+                      ], { tableName: PLANNING_CONSOLE_GRID_TABLES.planning_console_constraints_grid })
                     ]
                   }
                 ]
@@ -636,7 +655,11 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
                 column('progress', '进度', { width: 90, align: 'right', formatter: number }), column('attempt', '尝试', { width: 80, align: 'right', formatter: number }),
                 column('submitted', '提交时间', { minWidth: 170, formatter: datetime }), column('started', '开始时间', { minWidth: 170, formatter: datetime }),
                 column('finished', '完成时间', { minWidth: 170, formatter: datetime }), column('message', '运行消息', { minWidth: 300 })
-              ], { height: 510, current: true })
+              ], {
+                height: 510,
+                current: true,
+                tableName: PLANNING_CONSOLE_GRID_TABLES.planning_console_runs_grid
+              })
             ]
           }
         ]

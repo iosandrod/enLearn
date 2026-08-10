@@ -1,0 +1,3 @@
+﻿import { Client } from 'pg';
+import { getEnv, normalizePostgresConnectionString } from '../src/common/utils/env';
+async function main(){const e=getEnv();const c=new Client({connectionString:normalizePostgresConnectionString(e.DIRECT_URL??e.DATABASE_URL!),ssl:{rejectUnauthorized:false}});c.on('error',()=>{});await c.connect();const r=await c.query(`select o.name,o.item_id,i.name item_name,o.owner_id from planning_operation o left join planning_item i on i.id=o.item_id and i.account_id=o.account_id where o.account_id='00000000-0000-4000-8000-000000000001' and o.source='electronics-demo' order by o.name`);console.log(JSON.stringify(r.rows,null,2));await c.end()}void main();

@@ -62,16 +62,28 @@ assert.match(ganttSource, /<Willow/);
 assert.match(ganttSource, /readonly/);
 assert.match(ganttSource, /ganttTasks/);
 assert.match(ganttSource, /type: 'summary'/);
+assert.match(ganttSource, /length-unit="hour"/);
+assert.match(ganttSource, /duration-unit="hour"/);
 assert.match(ganttSource, /:onselecttask="handleTaskSelect"/);
 assert.match(ganttSource, /lowcode:tab-activated/);
 assert.match(ganttSource, /planningGantt\.taskSelect/);
 assert.match(ganttSource, /row\.delay_hours/);
+assert.match(ganttSource, /props\.block\.includedTypes/);
+assert.match(ganttSource, /UNASSIGNED_RESOURCE_LABEL/);
 assert.doesNotMatch(ganttSource, /from 'echarts'/);
 assert.doesNotMatch(ganttSource, /row\.lateness_hours/);
 
-assert.match(bomSource, /PlanningBomNode/);
+assert.match(bomSource, /<VueFlow/);
+assert.match(bomSource, /from '@vue-flow\/core'/);
+assert.match(bomSource, /buildGraph/);
+assert.match(bomSource, /toggleNode/);
+assert.match(bomSource, /roots\.forEach\(\(root, index\)/);
+assert.match(bomSource, /ResizeObserver/);
+assert.match(bomSource, /lowcode:tab-activated/);
 assert.match(bomSource, /planningBom\.nodeSelect/);
-assert.match(bomSource, /overflow:\s*auto/);
+assert.match(bomSource, /fitView/);
+assert.doesNotMatch(bomSource, /PlanningBomNode/);
+assert.doesNotMatch(bomSource, /<table/);
 
 assert.match(materialRegistrySource, /import\.meta\.glob<MaterialModule>\('\.\/\*\/index\.ts'/);
 for (const kind of ['planningFlow', 'planningGantt', 'planningBom']) {

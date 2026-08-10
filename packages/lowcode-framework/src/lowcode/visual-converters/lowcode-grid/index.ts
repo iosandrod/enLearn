@@ -113,13 +113,17 @@ function resolveGridSourceAssociation(
         ? 'table'
         : 'custom'
   );
-  const tableName = sourceType === 'table'
-    ? explicitTableName || postDataTableName || (entityCode === 'users' ? 'profiles' : entityCode)
-    : '';
+  const tableName = sourceType === 'view'
+    ? ''
+    : explicitTableName || (
+        sourceType === 'table'
+          ? postDataTableName || (entityCode === 'users' ? 'profiles' : entityCode)
+          : ''
+      );
   const viewName = sourceType === 'view'
     ? explicitViewName || postDataTableName
     : '';
-  const targetName = tableName || viewName;
+  const targetName = sourceType === 'table' ? tableName : sourceType === 'view' ? viewName : '';
   const normalizedPostData = { ...postData };
 
   if (sourceType !== 'custom') {

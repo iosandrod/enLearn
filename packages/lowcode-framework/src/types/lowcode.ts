@@ -295,6 +295,7 @@ export type LowCodeFormProps = {
   tooltipConfig?: Record<string, unknown>;
   collapseConfig?: Record<string, unknown>;
   params?: Record<string, unknown>;
+  labelContextMenu?: boolean;
 };
 
 export type LowCodeGridAction = {
@@ -388,6 +389,7 @@ export type LowCodePageDataSource = {
    * 实际数据库表名，例如 `lowcode_pages`。配置后，运行时会将其补入请求参数，
    * 并默认通过 `admin.listItems` 读取该表。
    */
+  /** Physical-table association shown by the grid designer; custom sources keep their own service request. */
   tableName?: string;
 
   /** `tableName` 的 snake_case 兼容字段，新配置优先使用 `tableName`。 */
@@ -647,6 +649,7 @@ export type LowCodePagePlanningGanttBlock = LowCodeMaterialVersionedBlock & {
   labelField?: string;
   colorField?: string;
   statusField?: string;
+  includedTypes?: string[];
 };
 
 export type LowCodePagePlanningBomBlock = LowCodeMaterialVersionedBlock & {
@@ -705,6 +708,13 @@ export type LowCodePageSchema = {
   scriptPolicy?: {
     apiNames?: string[];
     capabilities?: import('../runtime/scripts').LowCodeScriptCapabilityName[];
+    context?: {
+      dataSourceKeys?: string[];
+      formBlockIds?: string[];
+      searchSourceKeys?: string[];
+      gridBlockIds?: string[];
+    };
+    limits?: import('../runtime/scripts').LowCodeScriptExecutionLimits;
   };
   blocks: LowCodePageBlock[];
   overlays?: LowCodePageOverlayBlock[];

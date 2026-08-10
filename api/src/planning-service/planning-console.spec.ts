@@ -11,6 +11,7 @@ import {
 import {
   PLANNING_CONSOLE_PAGE_CODE,
   PLANNING_CONSOLE_PAGE_SCHEMA,
+  PLANNING_CONSOLE_GRID_TABLES,
   PLANNING_CONSOLE_ROUTE,
   PLANNING_CONSOLE_SOURCE_KEYS
 } from './planning-console.schema';
@@ -92,6 +93,23 @@ const semiOperation = (semiItem.children as Record<string, unknown>[])[0];
 const rawItem = (semiOperation.children as Record<string, unknown>[])[0];
 assert.equal(rawItem.title, '原料 C');
 assert.equal(rawItem.quantity, 3);
+
+const routingBom = buildPlanningBomTree(
+  [
+    { id: 'routed-finished', name: '路线成品' },
+    { id: 'routed-component', name: '路线组件' }
+  ],
+  [
+    { id: 'route', name: '成品路线', type: 'routing', item_id: 'routed-finished' },
+    { id: 'route-step', name: '装配工序', type: 'time_per', owner_id: 'route' }
+  ],
+  [{ id: 'route-input', operation_id: 'route-step', item_id: 'routed-component', quantity: -1 }],
+  'routed-finished',
+  [{ id: 'route-relation', operation_id: 'route', suboperation_id: 'route-step', priority: 10 }]
+);
+const routedOperation = (routingBom[0].children as Record<string, unknown>[])[0];
+const routedComponent = (routedOperation.children as Record<string, unknown>[])[0];
+assert.equal(routedComponent.title, '路线组件');
 
 function flattenBomNodes(nodes: Record<string, unknown>[]): Record<string, unknown>[] {
   return nodes.flatMap((node) => [
@@ -437,6 +455,7 @@ function firstTabBlock(key: string) {
   return Array.isArray(tab?.blocks) ? tab.blocks[0] as Record<string, unknown> | undefined : undefined;
 }
 assert.equal(firstTabBlock('gantt')?.kind, 'planningGantt');
+assert.deepEqual(firstTabBlock('gantt')?.includedTypes, ['MO', 'WO', 'PO', 'DO']);
 assert.equal(firstTabBlock('flow')?.kind, 'planningFlow');
 assert.equal(firstTabBlock('bom')?.kind, 'planningBom');
 const ordersTabs = firstTabBlock('orders');
@@ -480,8 +499,21 @@ const visitBlocks = (values: unknown[]): Record<string, unknown>[] => values.fla
     : [];
   return [block, ...nested, ...tabBlocks];
 });
-for (const block of visitBlocks(blocks).filter((candidate) => candidate.kind === 'grid')) {
+const allBlocks = visitBlocks(blocks);
+for (const block of allBlocks.filter((candidate) => candidate.kind === 'grid')) {
   assert.equal(block.clientFilter, false);
+}
+for (const [gridId, tableName] of Object.entries(PLANNING_CONSOLE_GRID_TABLES)) {
+  const block = allBlocks.find((candidate) => candidate.id === gridId);
+  assert.equal(block?.sourceType, 'custom', `${gridId} must retain its aggregate data source.`);
+  assert.equal(block?.tableName, tableName, `${gridId} must link to ${tableName}.`);
+
+  const sourceKey = String(block?.sourceKey ?? '');
+  const linkedSource = normalizedSchema.dataSources?.[sourceKey] as Record<string, unknown> | undefined;
+  assert.equal(linkedSource?.sourceType, 'custom');
+  assert.equal(linkedSource?.serviceName, 'planning');
+  assert.equal(linkedSource?.serviceMethod, 'getPlanningConsoleData');
+  assert.equal(linkedSource?.tableName, undefined, `${gridId} must not query its linked table directly.`);
 }
 
 void Promise.all([testLargeSummary(), testRunBoundary()]).then(() => {

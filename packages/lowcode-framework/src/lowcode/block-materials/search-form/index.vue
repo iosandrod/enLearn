@@ -1,6 +1,8 @@
 <template>
   <article class="content-panel">
     <LowCodeForm
+      :key="block.formDesignerUpdatedAt ?? 0"
+      ref="formRef"
       :model-value="formModel"
       :schema="block.schema"
       :option-sources="resolvedData"
@@ -16,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
 import LowCodeForm from '../../../components/LowCodeForm.vue';
 import type { LowCodeAction, LowCodeField, LowCodePageSearchFormBlock } from '../../../types/lowcode';
 import { lowCodeRuntimeBlockEditorKey } from '../../../runtime/block-editor';
@@ -31,6 +33,8 @@ const props = defineProps<LowCodeBlockMaterialProps<LowCodePageSearchFormBlock>>
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
 const pageRuntime = useLowCodePageRuntime(false);
+const formRef = ref<InstanceType<typeof LowCodeForm>>();
+let unregisterFormController: (() => void) | undefined;
 const hasOwnedFormModel = computed(() =>
   Object.prototype.hasOwnProperty.call(props.formModels, props.block.id)
 );
@@ -45,6 +49,16 @@ const formModel = computed(
 const isLoading = computed(
   () => (pageRuntime?.state.status.loadingBlockId ?? props.loadingBlockId) === props.block.id
 );
+
+onMounted(() => {
+  if (!pageRuntime || !formRef.value) return;
+  unregisterFormController = pageRuntime.registerFormController(props.block.id, {
+    validate: () => formRef.value?.validate() ?? Promise.resolve(false),
+    clearValidation: () => formRef.value?.clearValidation(),
+  });
+});
+
+onBeforeUnmount(() => unregisterFormController?.());
 
 function updateFormModel(values: Record<string, unknown>) {
   if (hasOwnedFormModel.value || !pageRuntime) {

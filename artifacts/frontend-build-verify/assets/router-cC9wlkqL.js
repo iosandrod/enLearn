@@ -1,0 +1,1 @@
+import{t as e}from"./router-B1F7VFLw.js";export{e as router};

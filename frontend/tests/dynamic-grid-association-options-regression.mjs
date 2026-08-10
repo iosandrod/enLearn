@@ -11,6 +11,8 @@ const [
   fieldTypes,
   optionRegistry,
   applyScript,
+  bareTableMigration,
+  bareTableApplyScript,
 ] = await Promise.all([
   readSource('../../supabase/migrations/20260809110000_dynamic_grid_association_options.sql'),
   readSource('../../api/src/admin-service/admin.service.ts'),
@@ -20,6 +22,8 @@ const [
   readSource('../../packages/lowcode-framework/src/types/lowcode.ts'),
   readSource('../../packages/lowcode-framework/src/runtime/option-source-registry.ts'),
   readSource('../../api/scripts/apply-dynamic-grid-association-options.ts'),
+  readSource('../../supabase/migrations/20260810135000_bare_grid_table_options.sql'),
+  readSource('../../api/scripts/apply-bare-grid-table-options.ts'),
 ]);
 
 for (const viewName of [
@@ -32,6 +36,26 @@ for (const viewName of [
     `${viewName} must return the common label/value option shape.`,
   );
 }
+assert.match(
+  migration,
+  /create or replace view public\.system_physical_table_options[\s\S]*tables\.table_name::text as value[\s\S]*tables\.table_name::text as label/,
+  'Physical-table options must return bare table names without the public schema prefix.',
+);
+assert.doesNotMatch(
+  migration,
+  /tables\.table_schema \|\| '\\.' \|\| tables\.table_name as (?:value|label)/,
+  'Physical-table dropdown labels and values must not include public.',
+);
+assert.match(
+  bareTableMigration,
+  /create or replace view public\.system_physical_table_options[\s\S]*tables\.table_name::text as value[\s\S]*tables\.table_name::text as label/,
+  'Existing deployments must receive the bare table-name option view.',
+);
+assert.match(
+  bareTableApplyScript,
+  /prefixed_option_count !== 0/,
+  'The focused apply script must reject public-prefixed table options.',
+);
 
 for (const [code, name] of [
   ['physical_table_name', '真实表名'],
@@ -129,8 +153,8 @@ assert.match(
 );
 assert.match(
   applyScript,
-  /source_count !== 2[\s\S]*item_count !== 0[\s\S]*table_option_count < 1[\s\S]*page_column_count !== 1/,
-  'The apply script must verify both sources, no option-item rows, returned options, and the list column.',
+  /source_count !== 2[\s\S]*item_count !== 0[\s\S]*table_option_count < 1[\s\S]*prefixed_table_option_count !== 0[\s\S]*page_column_count !== 1/,
+  'The apply script must verify both sources, no option-item rows, bare table names, returned options, and the list column.',
 );
 
 console.log('Dynamic grid association options regression test passed.');

@@ -76,9 +76,14 @@ begin
     if not (system_write and new.status = 'superseded') then
       raise exception 'Published plan versions are immutable.' using errcode = '23514';
     end if;
-    if (to_jsonb(new) - 'status' - 'is_current' - 'updated_at')
+    -- The plan-version guard legitimately clears publication metadata during
+    -- a status transition away from published. Permit only these lifecycle
+    -- fields during the system-managed published -> superseded transition.
+    if (to_jsonb(new) - 'status' - 'is_current' - 'updated_at' - 'lastmodified'
+                      - 'published_at' - 'published_by')
        is distinct from
-       (to_jsonb(old) - 'status' - 'is_current' - 'updated_at') then
+       (to_jsonb(old) - 'status' - 'is_current' - 'updated_at' - 'lastmodified'
+                      - 'published_at' - 'published_by') then
       raise exception 'Published plan version content is immutable.' using errcode = '23514';
     end if;
   end if;

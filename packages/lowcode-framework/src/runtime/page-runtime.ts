@@ -47,10 +47,33 @@ export type LowCodeGridRuntimeEvent = {
 
 export type LowCodePageRuntimeResetOptions = {
   preserveGrids?: boolean;
+  preserveLocalGridRows?: boolean;
+};
+
+export type LowCodePageRuntimeFormController = {
+  validate(): Promise<boolean>;
+  clearValidation(): Promise<void> | void;
+};
+
+export type LowCodePageRuntimeGridController = {
+  validate(): Promise<boolean>;
+  clearValidation(): Promise<void> | void;
+  setCurrentRow(row: LowCodeRuntimeRecord | null): Promise<void> | void;
 };
 
 export type LowCodePageRuntimeContext = {
   state: LowCodePageRuntimeState;
+  registerFormController(
+    blockId: string,
+    controller: LowCodePageRuntimeFormController,
+  ): () => void;
+  getFormController(blockId: string): LowCodePageRuntimeFormController | undefined;
+  registerGridController(
+    blockId: string,
+    controller: LowCodePageRuntimeGridController,
+  ): () => void;
+  getGridController(blockId: string): LowCodePageRuntimeGridController | undefined;
+  isGridInitialized(blockId: string): boolean;
   resetData(options?: LowCodePageRuntimeResetOptions): void;
   reset(): void;
   setSource(key: string, value: unknown): void;
@@ -175,6 +198,33 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
       messageClass: 'lc-help',
     },
   });
+  const formControllers = new Map<string, LowCodePageRuntimeFormController>();
+  const gridControllers = new Map<string, LowCodePageRuntimeGridController>();
+  const initializedGridIds = new Set<string>();
+
+  function registerFormController(
+    blockId: string,
+    controller: LowCodePageRuntimeFormController,
+  ) {
+    formControllers.set(blockId, controller);
+    return () => {
+      if (formControllers.get(blockId) === controller) {
+        formControllers.delete(blockId);
+      }
+    };
+  }
+
+  function registerGridController(
+    blockId: string,
+    controller: LowCodePageRuntimeGridController,
+  ) {
+    gridControllers.set(blockId, controller);
+    return () => {
+      if (gridControllers.get(blockId) === controller) {
+        gridControllers.delete(blockId);
+      }
+    };
+  }
 
   function ensureGrid(
     blockId: string,
@@ -201,9 +251,15 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
     });
     state.grids[blockId] = grid;
 
-    const sourceRows = options.sourceKey ? state.sources[options.sourceKey] : undefined;
-    if (Array.isArray(sourceRows)) {
+    const sourceValue = options.sourceKey ? state.sources[options.sourceKey] : undefined;
+    const sourceRows = Array.isArray(sourceValue)
+      ? sourceValue
+      : isRecord(sourceValue) && Array.isArray(sourceValue.rows)
+        ? sourceValue.rows
+        : undefined;
+    if (sourceRows) {
       grid.rows = sourceRows.filter(isRecord);
+      initializedGridIds.add(blockId);
     }
 
     return grid;
@@ -216,6 +272,7 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
   ) {
     const grid = ensureGrid(blockId, options);
     grid.rows = Array.isArray(rows) ? rows : [];
+    initializedGridIds.add(blockId);
     reconcileGridRows(grid);
   }
 
@@ -284,7 +341,12 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
     clearRecord(state.sources);
     clearRecord(state.forms);
     clearRecord(state.searches);
-    if (!options.preserveGrids) clearRecord(state.grids);
+    if (!options.preserveGrids) {
+      clearRecord(state.grids);
+      initializedGridIds.clear();
+    } else if (!options.preserveLocalGridRows) {
+      Object.keys(state.grids).forEach((blockId) => initializedGridIds.delete(blockId));
+    }
     state.status.loadingSourceKeys = [];
   }
 
@@ -306,6 +368,11 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
 
   return {
     state,
+    registerFormController,
+    getFormController: (blockId) => formControllers.get(blockId),
+    registerGridController,
+    getGridController: (blockId) => gridControllers.get(blockId),
+    isGridInitialized: (blockId) => initializedGridIds.has(blockId),
     resetData,
     reset,
     setSource(key, value) {
@@ -313,9 +380,14 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
 
       Object.entries(state.grids).forEach(([blockId, grid]) => {
         if (grid.sourceKey !== key) return;
+        const rows = Array.isArray(value)
+          ? value
+          : isRecord(value) && Array.isArray(value.rows)
+            ? value.rows
+            : [];
         setGridRows(
           blockId,
-          Array.isArray(value) ? value.filter(isRecord) : [],
+          rows.filter(isRecord),
           { sourceKey: key, rowKey: grid.rowKey }
         );
       });

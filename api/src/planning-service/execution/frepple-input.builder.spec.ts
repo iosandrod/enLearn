@@ -117,6 +117,127 @@ function testBuilderContracts() {
   );
 }
 
+function testCalendarClockFieldsUseSeconds() {
+  const data = snapshot({
+    planning_calendar: [row('calendar', { name: 'Work calendar' })],
+    planning_calendarbucket: [row('calendar-bucket', {
+      calendar_id: 'calendar', value: 1, monday: true,
+      starttime: '08:00:00', endtime: '16:59:59'
+    })]
+  });
+  const input = buildFreppleInput(data, parameters);
+  const buckets = input.request.model.calendars[0]?.buckets as Array<Record<string, unknown>>;
+  const bucket = buckets?.[0];
+  assert.equal(bucket?.starttime, 8 * 3_600);
+  assert.equal(bucket?.endtime, 17 * 3_600);
+}
+
+function testDurationFieldsUseNumericSeconds() {
+  const data = snapshot({
+    planning_calendar: [row('calendar', { name: 'Work calendar' })],
+    planning_location: [
+      row('plant', { name: 'Plant' }),
+      row('origin', { name: 'Origin' })
+    ],
+    planning_item: [
+      row('finished', { name: 'Finished item' }),
+      row('component', { name: 'Component' })
+    ],
+    planning_supplier: [row('supplier', { name: 'Supplier' })],
+    planning_setupmatrix: [row('matrix', { name: 'Setup matrix' })],
+    planning_setuprule: [row('rule', {
+      setupmatrix_id: 'matrix', priority: 1, duration: 900
+    })],
+    planning_resource: [row('resource', {
+      name: 'Line', maxearly: 1_800, setupmatrix_id: 'matrix'
+    })],
+    planning_operation: [
+      row('blocked-by', { name: 'Previous step', type: 'fixed_time', duration: 30 }),
+      row('make', {
+        name: 'Make item', type: 'time_per', item_id: 'finished', location_id: 'plant',
+        available_id: 'calendar', fence: 60, posttime: 120, duration: 300,
+        duration_per: 12.5, batchwindow: 600
+      })
+    ],
+    planning_operationmaterial: [
+      row('input', {
+        operation_id: 'make', item_id: 'component', location_id: 'plant',
+        quantity: -1, type: 'start', offset: -45
+      }),
+      row('output', {
+        operation_id: 'make', item_id: 'finished', location_id: 'plant',
+        quantity: 1, type: 'end'
+      })
+    ],
+    planning_operation_dependency: [row('dependency', {
+      operation_id: 'make', blockedby_id: 'blocked-by', safety_leadtime: 3_600,
+      hard_safety_leadtime: 7_200
+    })],
+    planning_itemsupplier: [row('supply', {
+      supplier_id: 'supplier', item_id: 'component', location_id: 'origin',
+      leadtime: 86_400, extra_safety_leadtime: 1_800,
+      hard_safety_leadtime: 3_600, batchwindow: 43_200, fence: 7_200
+    })],
+    planning_itemdistribution: [row('distribution', {
+      item_id: 'component', origin_id: 'origin', location_id: 'plant',
+      leadtime: 14_400, batchwindow: 28_800, fence: 900
+    })],
+    planning_demand: [row('demand', {
+      name: 'Demand', item_id: 'finished', location_id: 'plant',
+      due: '2026-08-10T00:00:00.000Z', quantity: 1, maxlateness: 2_592_000
+    })]
+  });
+
+  const model = buildFreppleInput(data, parameters).request.model;
+  const operation = model.operations.find((candidate) => candidate.name === 'Make item')!;
+  const flow = (operation.flows as Array<Record<string, unknown>>)[0];
+  const dependency = (operation.dependencies as Array<Record<string, unknown>>)[0];
+  const setupRule = (model.setupmatrices[0].rules as Array<Record<string, unknown>>)[0];
+
+  assert.deepEqual({
+    batchwindow: operation.batchwindow,
+    duration: operation.duration,
+    durationPer: operation.duration_per,
+    fence: operation.fence,
+    posttime: operation.posttime
+  }, {
+    batchwindow: 600,
+    duration: 300,
+    durationPer: 12.5,
+    fence: 60,
+    posttime: 120
+  });
+  assert.equal(flow.offset, -45);
+  assert.equal(dependency.safety_leadtime, 3_600);
+  assert.equal(dependency.hard_safety_leadtime, 7_200);
+  assert.equal(setupRule.duration, 900);
+  assert.equal(model.resources[0].maxearly, 1_800);
+  assert.deepEqual({
+    batchwindow: model.itemsuppliers[0].batchwindow,
+    extra: model.itemsuppliers[0].extra_safety_leadtime,
+    fence: model.itemsuppliers[0].fence,
+    hard: model.itemsuppliers[0].hard_safety_leadtime,
+    leadtime: model.itemsuppliers[0].leadtime
+  }, {
+    batchwindow: 43_200,
+    extra: 1_800,
+    fence: 7_200,
+    hard: 3_600,
+    leadtime: 86_400
+  });
+  assert.deepEqual({
+    batchwindow: model.itemdistributions[0].batchwindow,
+    fence: model.itemdistributions[0].fence,
+    leadtime: model.itemdistributions[0].leadtime
+  }, {
+    batchwindow: 28_800,
+    fence: 900,
+    leadtime: 14_400
+  });
+  assert.equal(model.demands[0].maxlateness, 2_592_000);
+  assert.equal(JSON.stringify(model).includes('PT'), false);
+}
+
 function testPreflightCompatibilityContracts() {
   const data = snapshot({
     planning_location: [row('location', { name: 'Supplier A' })],
@@ -180,7 +301,148 @@ function testMtoBufferNamesAndCollisions() {
   ));
 }
 
+function testManufacturingOutputValidation() {
+  const invalid = snapshot({
+    planning_location: [row('location', { name: 'Plant' })],
+    planning_item: [row('finished', { name: 'Finished item', type: 'make to stock' })],
+    planning_operation: [row('route', {
+      name: 'Finished route',
+      type: 'routing',
+      item_id: 'finished',
+      location_id: 'location'
+    })]
+  });
+  assert.ok(preflightPlanningData(invalid).errors.some(
+    (issue) => issue.code === 'OPERATION_OUTPUT_MISSING' && issue.recordId === 'route'
+  ));
+
+  const missingInputBuffer = snapshot({
+    planning_location: invalid.rows.planning_location,
+    planning_item: [
+      ...invalid.rows.planning_item,
+      row('component', { name: 'Component', type: 'make to stock' })
+    ],
+    planning_operation: [row('make', {
+      name: 'Make finished item',
+      type: 'time_per',
+      item_id: 'finished',
+      location_id: 'location'
+    })],
+    planning_operationmaterial: [
+      row('component-input', {
+        operation_id: 'make', item_id: 'component', location_id: 'location',
+        quantity: -1, type: 'start'
+      }),
+      row('finished-output', {
+        operation_id: 'make', item_id: 'finished', location_id: 'location',
+        quantity: 1, type: 'end'
+      })
+    ]
+  });
+  assert.ok(preflightPlanningData(missingInputBuffer).errors.some(
+    (issue) => issue.code === 'OPERATION_INPUT_BUFFER_MISSING' &&
+      issue.recordId === 'component-input'
+  ));
+
+  const routingStepWithoutOutput = snapshot({
+    planning_location: invalid.rows.planning_location,
+    planning_item: invalid.rows.planning_item,
+    planning_operation: [
+      row('route-with-output', {
+        name: 'Route', type: 'routing', item_id: 'finished', location_id: 'location'
+      }),
+      row('intermediate-step', {
+        name: 'Intermediate step', type: 'fixed_time', item_id: 'finished',
+        location_id: 'location', owner_id: 'route-with-output'
+      }),
+      row('output-step', {
+        name: 'Output step', type: 'fixed_time', item_id: 'finished',
+        location_id: 'location', owner_id: 'route-with-output'
+      })
+    ],
+    planning_operationmaterial: [row('route-output', {
+      operation_id: 'output-step', item_id: 'finished', location_id: 'location',
+      quantity: 1, type: 'end'
+    })]
+  });
+  assert.ok(!preflightPlanningData(routingStepWithoutOutput).errors.some(
+    (issue) => issue.code === 'OPERATION_OUTPUT_MISSING' && issue.recordId === 'intermediate-step'
+  ));
+
+  const valid = snapshot({
+    planning_location: invalid.rows.planning_location,
+    planning_item: invalid.rows.planning_item,
+    planning_operation: [
+      invalid.rows.planning_operation[0],
+      row('last-step', {
+        name: 'Last step',
+        type: 'fixed_time',
+        owner_id: 'route',
+        location_id: 'location'
+      })
+    ],
+    planning_operationmaterial: [row('finished-output', {
+      operation_id: 'last-step',
+      item_id: 'finished',
+      location_id: 'location',
+      quantity: 1,
+      type: 'end'
+    })]
+  });
+  assert.ok(!preflightPlanningData(valid).errors.some(
+    (issue) => issue.code === 'OPERATION_OUTPUT_MISSING'
+  ));
+}
+
+function testDemandBatchRequiresMtoItem() {
+  const data = snapshot({
+    planning_location: [row('location', { name: 'Plant' })],
+    planning_customer: [row('customer', { name: 'Customer' })],
+    planning_item: [row('finished', { name: 'Finished item', type: 'make to stock' })],
+    planning_demand: [row('demand', {
+      name: 'D-1', customer_id: 'customer', item_id: 'finished', location_id: 'location',
+      due: '2026-08-10T00:00:00.000Z', status: 'open', quantity: 1, batch: 'PROJECT-1'
+    })]
+  });
+  assert.ok(preflightPlanningData(data).errors.some(
+    (issue) => issue.code === 'DEMAND_BATCH_REQUIRES_MTO_ITEM'
+  ));
+}
+
+function testRoutingStepItemsAreNotIndependentReplenishments() {
+  const data = snapshot({
+    planning_location: [row('location', { name: 'Plant' })],
+    planning_item: [row('finished', { name: 'Finished item', type: 'make to stock' })],
+    planning_operation: [
+      row('route', {
+        name: 'Finished route', type: 'routing', item_id: 'finished', location_id: 'location'
+      }),
+      row('step', {
+        name: 'Packing step', type: 'time_per', item_id: 'finished', location_id: 'location',
+        owner_id: 'route', duration: 60, duration_per: 10
+      })
+    ],
+    planning_suboperation: [row('route-step', {
+      operation_id: 'route', suboperation_id: 'step', priority: 10
+    })],
+    planning_operationmaterial: [row('finished-output', {
+      operation_id: 'step', item_id: 'finished', location_id: 'location',
+      quantity: 1, type: 'end'
+    })]
+  });
+  const input = buildFreppleInput(data, parameters);
+  const route = input.request.model.operations.find((operation) => operation.name === 'Finished route');
+  const step = input.request.model.operations.find((operation) => operation.name === 'Packing step');
+  assert.deepEqual(route?.item, { name: 'Finished item' });
+  assert.equal(step?.item, undefined);
+}
+
 testBuilderContracts();
+testCalendarClockFieldsUseSeconds();
+testDurationFieldsUseNumericSeconds();
 testPreflightCompatibilityContracts();
 testMtoBufferNamesAndCollisions();
+testManufacturingOutputValidation();
+testDemandBatchRequiresMtoItem();
+testRoutingStepItemsAreNotIndependentReplenishments();
 console.log('frePPLe input builder and preflight tests passed');

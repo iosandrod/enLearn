@@ -920,12 +920,38 @@ export function buildPlanningBomTree(
   items: PlanningRow[],
   operations: PlanningRow[],
   operationMaterials: PlanningRow[],
-  rootItemId?: string
+  rootItemId?: string,
+  suboperations: PlanningRow[] = []
 ) {
   const itemsById = new Map(items.map((row) => [readString(row.id), row]));
+  const operationsById = new Map(operations.map((row) => [readString(row.id), row]));
   const operationsByProduct = new Map<string, PlanningRow[]>();
   const componentsByOperation = new Map<string, PlanningRow[]>();
   const consumedIds = new Set<string>();
+  const routeStepsByOperation = new Map<string, PlanningRow[]>();
+
+  for (const relation of suboperations) {
+    const operationId = readString(relation.operation_id);
+    const suboperation = operationsById.get(readString(relation.suboperation_id));
+    if (!operationId || !suboperation) continue;
+    routeStepsByOperation.set(operationId, [
+      ...(routeStepsByOperation.get(operationId) ?? []),
+      { ...suboperation, route_priority: readNumber(relation.priority) }
+    ]);
+  }
+  for (const operation of operations) {
+    const ownerId = readString(operation.owner_id);
+    if (!ownerId) continue;
+    const existing = routeStepsByOperation.get(ownerId) ?? [];
+    if (!existing.some((row) => readString(row.id) === readString(operation.id))) {
+      routeStepsByOperation.set(ownerId, [...existing, operation]);
+    }
+  }
+  for (const [operationId, steps] of routeStepsByOperation) {
+    routeStepsByOperation.set(operationId, [...steps].sort((left, right) =>
+      readNumber(left.route_priority ?? left.priority) - readNumber(right.route_priority ?? right.priority)
+    ));
+  }
 
   for (const operation of operations) {
     const productId = readString(operation.item_id);
@@ -938,6 +964,14 @@ export function buildPlanningBomTree(
     const itemId = readString(material.item_id);
     if (itemId) consumedIds.add(itemId);
   }
+
+  const operationComponents = (operationId: string) => {
+    const direct = componentsByOperation.get(operationId) ?? [];
+    const routed = (routeStepsByOperation.get(operationId) ?? []).flatMap((step) =>
+      componentsByOperation.get(readString(step.id)) ?? []
+    );
+    return [...direct, ...routed];
+  };
 
   const roots = rootItemId
     ? [rootItemId]
@@ -967,7 +1001,7 @@ export function buildPlanningBomTree(
           title: readString(operation.name) || operationId,
           subtitle: readString(operation.type),
           type: 'operation',
-          children: (componentsByOperation.get(operationId) ?? []).map((material, index) =>
+          children: operationComponents(operationId).map((material, index) =>
             buildItemNode(
               readString(material.item_id),
               [...nextPath, `${operationId}-${index}`],
@@ -988,12 +1022,13 @@ async function loadBom(
   accountId: string,
   filters: PlanningConsoleFilters
 ) {
-  const [items, operations, materials] = await Promise.all([
+  const [items, operations, materials, suboperations] = await Promise.all([
     selectRows(client, accountId, 'planning_item', 'id,name,description,uom'),
-    selectRows(client, accountId, 'planning_operation', 'id,name,type,item_id'),
-    selectRows(client, accountId, 'planning_operationmaterial', 'id,operation_id,item_id,quantity,quantity_fixed,type')
+    selectRows(client, accountId, 'planning_operation', 'id,name,type,item_id,owner_id,priority'),
+    selectRows(client, accountId, 'planning_operationmaterial', 'id,operation_id,item_id,quantity,quantity_fixed,type'),
+    selectRows(client, accountId, 'planning_suboperation', 'id,operation_id,suboperation_id,priority')
   ]);
-  return buildPlanningBomTree(items, operations, materials, filters.itemId);
+  return buildPlanningBomTree(items, operations, materials, filters.itemId, suboperations);
 }
 
 export async function loadPlanningConsoleSummary(

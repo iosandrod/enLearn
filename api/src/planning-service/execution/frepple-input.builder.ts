@@ -60,7 +60,9 @@ export class FreppleInputBuilder {
     const childOperations = groupBy(snapshot.rows.planning_operation, 'owner_id');
     const childOperationIds = new Set([
       ...snapshot.rows.planning_suboperation.map((row) => stringValue(row.suboperation_id)),
-      ...snapshot.rows.planning_operation.map((row) => stringValue(row.owner_id))
+      ...snapshot.rows.planning_operation
+        .filter((row) => Boolean(stringValue(row.owner_id)))
+        .map((row) => row.id)
     ].filter((value): value is string => Boolean(value)));
 
     const calendars = [
@@ -102,6 +104,9 @@ export class FreppleInputBuilder {
         description: stringValue(row.description),
         category: stringValue(row.category),
         subcategory: stringValue(row.subcategory),
+        // A routing parent is the replenishment operation for its item. Its
+        // child steps may contain material flows, but must not be registered
+        // as independent replenishment alternatives for the same item.
         item: childOperationIds.has(operationId) ? undefined : lookup.ref('item', row.item_id),
         location: lookup.ref('location', row.location_id),
         priority: numberValue(row.priority),
@@ -464,8 +469,10 @@ function calendarBucket(row: PlanningRow) {
     priority: numberValue(row.priority),
     value: numberValue(row.value),
     days: calendarDays(row),
-    starttime: duration(timeSeconds(row.starttime)),
-    endtime: duration(Math.min(timeSeconds(row.endtime, 86_399) + 1, 86_400)),
+    // frePPLe's JSON reader expects calendar clock fields as raw seconds. Its
+    // generic duration reader treats ISO strings such as "PT8H" as atol("PT8H") = 0.
+    starttime: timeSeconds(row.starttime),
+    endtime: Math.min(timeSeconds(row.endtime, 86_399) + 1, 86_400),
     source: stringValue(row.source)
   });
 }
@@ -674,22 +681,10 @@ function engineEndDate(value: unknown) {
 }
 
 export function duration(value: unknown) {
-  const seconds = numberValue(value);
-  if (seconds === undefined) return undefined;
-  const sign = seconds < 0 ? '-' : '';
-  let remaining = Math.abs(seconds);
-  const days = Math.floor(remaining / 86_400);
-  remaining -= days * 86_400;
-  const hours = Math.floor(remaining / 3_600);
-  remaining -= hours * 3_600;
-  const minutes = Math.floor(remaining / 60);
-  remaining -= minutes * 60;
-  const secondText = Number.isInteger(remaining)
-    ? String(remaining)
-    : remaining.toFixed(9).replace(/0+$/, '').replace(/\.$/, '');
-  const datePart = days ? `${days}D` : '';
-  const timePart = `${hours ? `${hours}H` : ''}${minutes ? `${minutes}M` : ''}${remaining || (!days && !hours && !minutes) ? `${secondText}S` : ''}`;
-  return `${sign}P${datePart}${timePart ? `T${timePart}` : ''}`;
+  // planning-data-loader normalizes PostgreSQL intervals to seconds. The
+  // frePPLe JSON reader accepts numeric seconds for Duration fields, while
+  // string values are parsed with atol (so ISO values such as PT8H become 0).
+  return numberValue(value);
 }
 
 function timeSeconds(value: unknown, fallback = 0) {

@@ -1,8 +1,63 @@
 import assert from 'node:assert/strict';
 import {
   buildTableListPageSchemaFromMetadata,
+  mapDatabaseTableOptions,
+  normalizeTablePageInspection,
   normalizeDatabaseColumns
 } from './table-page-generator';
+
+const tableComment = JSON.stringify({
+  title: '销售订单',
+  description: '保存销售订单主数据。',
+  relation: [
+    {
+      table: 'public.sales_order_lines',
+      type: 'referenced_by',
+      localColumns: ['id'],
+      relatedColumns: ['order_id'],
+      constraint: 'sales_order_lines_order_id_fkey',
+      onDelete: 'CASCADE'
+    }
+  ]
+});
+
+const tableOptions = mapDatabaseTableOptions([
+  {
+    table_schema: 'public',
+    table_name: 'sales_orders',
+    table_comment: tableComment
+  }
+]);
+assert.equal(tableOptions[0]?.title, '销售订单');
+assert.equal(tableOptions[0]?.label, '销售订单 (public.sales_orders)');
+assert.equal(tableOptions[0]?.comment, tableComment);
+
+const tableInspection = normalizeTablePageInspection({
+  table: { schema: 'public', name: 'sales_orders', fullName: 'public.sales_orders' },
+  comment: tableComment,
+  columns: [],
+  childRelations: [
+    {
+      constraintName: 'sales_order_lines_order_id_fkey',
+      childTable: {
+        schema: 'public',
+        name: 'sales_order_lines',
+        fullName: 'public.sales_order_lines'
+      },
+      childColumns: ['order_id'],
+      parentColumns: ['id'],
+      columns: [],
+      title: JSON.stringify({
+        title: '销售订单明细',
+        description: '保存销售订单明细数据。',
+        relation: []
+      })
+    }
+  ]
+});
+assert.equal(tableInspection.title, '销售订单');
+assert.equal(tableInspection.description, '保存销售订单主数据。');
+assert.equal(tableInspection.childRelations[0]?.title, '销售订单明细');
 
 const columns = normalizeDatabaseColumns([
   {

@@ -1,6 +1,7 @@
 export { default as LowCodeVisualDesigner } from '../components/LowCodeVisualDesigner.vue';
 export { default as VisualEditorProvider } from '../components/VisualEditorProvider.vue';
 export { default as VisualEditor } from '../visual-editor/index.vue';
+export * from './design-dialog';
 
 export * from '../core';
 export * from '../visual-editor/visual-editor.props';

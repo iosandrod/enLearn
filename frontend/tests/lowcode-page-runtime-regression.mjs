@@ -29,6 +29,33 @@ assert.deepEqual(runtime.state.searches.items, {
   status: 'enabled',
 });
 
+let validationCleared = false;
+const unregisterFormController = runtime.registerFormController('edit-form', {
+  validate: async () => true,
+  clearValidation: () => {
+    validationCleared = true;
+  },
+});
+assert.equal(await runtime.getFormController('edit-form')?.validate(), true);
+await runtime.getFormController('edit-form')?.clearValidation();
+assert.equal(validationCleared, true);
+unregisterFormController();
+assert.equal(runtime.getFormController('edit-form'), undefined);
+
+let gridCurrentRow = null;
+const unregisterGridController = runtime.registerGridController('items-grid', {
+  validate: async () => true,
+  clearValidation: () => undefined,
+  setCurrentRow: (row) => {
+    gridCurrentRow = row;
+  },
+});
+assert.equal(await runtime.getGridController('items-grid')?.validate(), true);
+await runtime.getGridController('items-grid')?.setCurrentRow({ id: 1 });
+assert.deepEqual(gridCurrentRow, { id: 1 });
+unregisterGridController();
+assert.equal(runtime.getGridController('items-grid'), undefined);
+
 runtime.ensureGrid('items-grid', { sourceKey: 'items', rowKey: 'id' });
 runtime.setSource('items', [
   { id: 1, name: 'Alpha' },
@@ -52,6 +79,7 @@ runtime.applyGridEvent('items-grid', {
 });
 
 const interactedGrid = runtime.state.grids['items-grid'];
+assert.equal(runtime.isGridInitialized('items-grid'), true);
 assert.equal(interactedGrid.currentRow, initialRows[0]);
 assert.deepEqual(interactedGrid.selectedRows, initialRows);
 assert.equal(interactedGrid.contextRow, initialRows[0]);
@@ -69,6 +97,16 @@ assert.equal(refreshedGrid.currentRow?.name, 'Alpha refreshed');
 assert.equal(refreshedGrid.selectedRows[1], refreshedGrid.rows[1]);
 assert.equal(refreshedGrid.contextRow, refreshedGrid.rows[0]);
 assert.equal(refreshedGrid.currentCell?.row, refreshedGrid.rows[0]);
+
+runtime.setGridRows('local-grid', []);
+assert.equal(runtime.isGridInitialized('local-grid'), true);
+assert.deepEqual(runtime.state.grids['local-grid'].rows, []);
+runtime.resetData({ preserveGrids: true, preserveLocalGridRows: true });
+assert.equal(
+  runtime.isGridInitialized('local-grid'),
+  true,
+  'A locally edited empty Grid must remain initialized across a same-page refresh.',
+);
 
 runtime.applyGridEvent('items-grid', {
   key: 'radioChange',
@@ -235,7 +273,30 @@ for (const [name, source] of [
     /if \(hasOwnedFormModel\.value \|\| !pageRuntime\)[\s\S]*?props\.formModels\[props\.block\.id\] = values/,
     `Updates to an explicit ${name} model must be written back to that model.`,
   );
+  assert.match(
+    source,
+    /registerFormController\(props\.block\.id,[\s\S]*?validate:[\s\S]*?clearValidation:/,
+    `The ${name} material must register its mounted validation controller.`,
+  );
 }
+
+assert.match(
+  rendererSource,
+  /getFormBaseline:[\s\S]*?validateForm:[\s\S]*?clearFormValidation:[\s\S]*?refreshFormOptions:/,
+  'Form node actions must receive baseline, validation, and option-refresh adapters.',
+);
+
+assert.match(
+  rendererSource,
+  /getSourceValue:[\s\S]*?setGridRows:[\s\S]*?setGridCurrentRow:[\s\S]*?validateGrid:/,
+  'Grid node actions must receive source, row-selection, and validation adapters.',
+);
+
+assert.match(
+  gridMaterialSource,
+  /registerGridController\(props\.block\.id,[\s\S]*?validate:[\s\S]*?setCurrentRow:/,
+  'The Grid material must register its mounted controller.',
+);
 
 assert.match(
   gridMaterialSource,

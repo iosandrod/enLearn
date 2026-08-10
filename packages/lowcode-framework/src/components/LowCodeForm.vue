@@ -681,6 +681,10 @@ async function validate() {
   }
 }
 
+async function clearValidation() {
+  await vxeFormRef.value?.clearValidate();
+}
+
 function snapshot() {
   syncVxeFormData();
   const value = { ...formData };
@@ -725,7 +729,7 @@ async function handleAction(action: LowCodeAction) {
     });
     Object.assign(formData, initialModel.value);
     syncVxeFormData();
-    void vxeFormRef.value?.clearValidate();
+    void clearValidation();
   }
 
   emit('action', action, snapshot());
@@ -734,7 +738,8 @@ async function handleAction(action: LowCodeAction) {
 defineExpose({
   submit: handleSubmit,
   validate,
-  snapshot
+  snapshot,
+  clearValidation,
 });
 </script>
 

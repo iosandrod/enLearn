@@ -65,6 +65,7 @@ export class PlanningPreflightValidator {
     validateEngineCompatibility(snapshot, add);
     validateBufferNames(snapshot, add);
     validateSuboperationDefinitions(snapshot, add);
+    validateManufacturingOutputs(snapshot, add);
     validateDemandGroups(snapshot, add);
     validateDemands(snapshot, add);
     validateOperationPlans(snapshot, add);
@@ -521,6 +522,80 @@ function validateSuboperationDefinitions(snapshot: PlanningDataSnapshot, add: Ad
   }
 }
 
+function validateManufacturingOutputs(snapshot: PlanningDataSnapshot, add: AddIssue) {
+  const current = currentDate(snapshot);
+  const operations = new Map(snapshot.rows.planning_operation.map((row) => [row.id, row]));
+  const childrenByOwner = groupRows(snapshot.rows.planning_operation, 'owner_id');
+  const explicitChildrenByOwner = groupRows(snapshot.rows.planning_suboperation, 'operation_id');
+  const positiveFlowsByOperation = new Map<string, PlanningRow[]>();
+  for (const flow of snapshot.rows.planning_operationmaterial) {
+    if (!isEffective(flow, current) || (optionalFinite(flow.quantity) ?? 0) <= 0) continue;
+    const operationId = optionalString(flow.operation_id);
+    if (operationId) {
+      positiveFlowsByOperation.set(operationId, [
+        ...(positiveFlowsByOperation.get(operationId) ?? []),
+        flow
+      ]);
+    }
+  }
+
+  const routeProducesItem = (route: PlanningRow, itemId: string) => {
+    if ((positiveFlowsByOperation.get(route.id) ?? [])
+      .some((flow) => optionalString(flow.item_id) === itemId)) return true;
+    const childIds = new Set([
+      ...(childrenByOwner.get(route.id) ?? []).map((row) => row.id),
+      ...(explicitChildrenByOwner.get(route.id) ?? [])
+        .map((row) => optionalString(row.suboperation_id))
+        .filter((id): id is string => Boolean(id))
+    ]);
+    return [...childIds].some((childId) => (positiveFlowsByOperation.get(childId) ?? [])
+      .some((flow) => optionalString(flow.item_id) === itemId));
+  };
+
+  for (const operation of operations.values()) {
+    const itemId = optionalString(operation.item_id);
+    if (!itemId || !isEffective(operation, current) || optionalFinite(operation.priority) === 0) {
+      continue;
+    }
+    const type = optionalString(operation.type) ?? 'fixed_time';
+    if (optionalString(operation.owner_id)) continue;
+    const producesItem = type === 'routing'
+      ? routeProducesItem(operation, itemId)
+      : (positiveFlowsByOperation.get(operation.id) ?? [])
+        .some((flow) => optionalString(flow.item_id) === itemId);
+    if (!producesItem) {
+      add(rowIssue(
+        'OPERATION_OUTPUT_MISSING',
+        '生产工艺没有任何有效的正数量产出流，frePPLe 无法用它补充关联物料。',
+        'planning_operation',
+        operation,
+        'item_id'
+      ));
+    }
+  }
+
+  for (const flow of snapshot.rows.planning_operationmaterial) {
+    if (!isEffective(flow, current) || (optionalFinite(flow.quantity) ?? 0) >= 0) continue;
+    const itemId = optionalString(flow.item_id);
+    const operation = operations.get(optionalString(flow.operation_id) ?? '');
+    const locationId = optionalString(flow.location_id) || optionalString(operation?.location_id);
+    if (!itemId || !locationId) continue;
+    const hasBuffer = snapshot.rows.planning_buffer.some((buffer) =>
+      optionalString(buffer.item_id) === itemId &&
+      optionalString(buffer.location_id) === locationId
+    );
+    if (!hasBuffer) {
+      add(rowIssue(
+        'OPERATION_INPUT_BUFFER_MISSING',
+        '工序投入物料在工序地点没有显式缓冲记录；frePPLe 会创建隐式零库存缓冲，结果可能与主数据库存脱节。',
+        'planning_operationmaterial',
+        flow,
+        'item_id,location_id'
+      ));
+    }
+  }
+}
+
 function validateDemandGroups(snapshot: PlanningDataSnapshot, add: AddIssue) {
   const demandNames = new Set(
     snapshot.rows.planning_demand
@@ -638,6 +713,9 @@ function reportCycles(
 }
 
 function validateDemands(snapshot: PlanningDataSnapshot, add: AddIssue) {
+  const itemTypes = new Map(
+    snapshot.rows.planning_item.map((row) => [row.id, optionalString(row.type) ?? 'make to stock'])
+  );
   for (const row of snapshot.rows.planning_demand) {
     const status = optionalString(row.status) ?? 'open';
     if (!ACTIVE_DEMAND_STATUSES.has(status)) continue;
@@ -658,6 +736,16 @@ function validateDemands(snapshot: PlanningDataSnapshot, add: AddIssue) {
         'planning_demand',
         row,
         'due'
+      ));
+    }
+    const itemId = optionalString(row.item_id);
+    if (optionalString(row.batch) && itemTypes.get(itemId ?? '') !== 'make to order') {
+      add(rowIssue(
+        'DEMAND_BATCH_REQUIRES_MTO_ITEM',
+        '按批次追踪的需求只能用于 make to order 物料；make to stock 需求批次会创建无法由普通库存和工艺补充的独立缓冲。',
+        'planning_demand',
+        row,
+        'batch'
       ));
     }
   }

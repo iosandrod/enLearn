@@ -37,6 +37,7 @@ const FRONTEND_URL = (process.env.FRONTEND_URL ?? 'http://127.0.0.1:3000').repla
 const API_URL = (process.env.API_URL ?? 'http://127.0.0.1:3002').replace(/\/$/, '');
 const BROWSER_EXECUTABLE = process.env.PLANNING_UI_BROWSER ??
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+const GANTT_ONLY = process.env.PLANNING_GANTT_ONLY === '1';
 const CONSOLE_PATH = '/dashboard/advanced/planning-console';
 const TAB_LABELS = [
   '排产总览',
@@ -175,6 +176,8 @@ function actionButton(page: any, label: string) {
 
 async function clickTab(page: any, label: string) {
   const tab = page.locator('.lc-node-tabs .vxe-tabs-header--item', { hasText: label }).first();
+  await tab.waitFor({ state: 'attached', timeout: 15_000 });
+  await tab.scrollIntoViewIfNeeded();
   await tab.waitFor({ state: 'visible', timeout: 15_000 });
   await tab.click();
   await page.waitForTimeout(180);
@@ -403,9 +406,12 @@ async function seedFixture(client: Client, accountId: string, suffix: string): P
       account_id, operation_id, item_id, location_id, quantity, type, name, priority
     ) values
       ($1, $2, $5, $8, -2, 'start', '钢卷投入', 10),
+      ($1, $2, $6, $8, 1, 'end', '切割组件产出', 11),
       ($1, $3, $6, $8, -1, 'start', '切割组件投入', 20),
+      ($1, $3, $7, $8, 1, 'end', '半成品产出', 21),
       ($1, $4, $7, $8, -1, 'start', '半成品投入', 30),
-      ($1, $4, $9, $8, -1, 'start', '包装辅料投入', 31)
+      ($1, $4, $9, $8, -1, 'start', '包装辅料投入', 31),
+      ($1, $4, $10, $8, 1, 'end', '成品产出', 32)
   `, [
     accountId,
     cutOperation.id,
@@ -415,7 +421,27 @@ async function seedFixture(client: Client, accountId: string, suffix: string): P
     componentItem.id,
     subassemblyItem.id,
     locationId,
-    packagingItem.id
+    packagingItem.id,
+    finishedItem.id
+  ]);
+
+  await client.query(`
+    insert into public.planning_buffer (
+      account_id, item_id, location_id, batch, type, onhand, minimum, description
+    ) values
+      ($1, $2, $7, '', 'default', 100, 20, '钢卷库存'),
+      ($1, $3, $7, '', 'default', 0, 0, '切割组件缓冲'),
+      ($1, $4, $7, '', 'default', 0, 0, '半成品缓冲'),
+      ($1, $5, $7, '', 'default', 100, 10, '包装辅料库存'),
+      ($1, $6, $7, '', 'default', 0, 0, '成品缓冲')
+  `, [
+    accountId,
+    rawItem.id,
+    componentItem.id,
+    subassemblyItem.id,
+    packagingItem.id,
+    finishedItem.id,
+    locationId
   ]);
 
   await client.query(`
@@ -873,7 +899,110 @@ async function main() {
 
       for (const label of TAB_LABELS) {
         await page.locator('.lc-node-tabs .vxe-tabs-header--item', { hasText: label }).first()
-          .waitFor({ state: 'visible', timeout: 15_000 });
+          .waitFor({ state: 'attached', timeout: 15_000 });
+      }
+      if (GANTT_ONLY) {
+        const captureInstalled = await page.locator('.lowcode-runtime-page').first()
+          .evaluate((element: HTMLElement) => {
+            let instance = (element as HTMLElement & { __vueParentComponent?: any }).__vueParentComponent;
+            while (instance) {
+              if (typeof instance.exposed?.getSnapshot === 'function') {
+                const props = instance.props as {
+                  onRuntimeEvent?: (event: { name?: unknown; payload?: Record<string, unknown> }) => unknown;
+                };
+                const original = props.onRuntimeEvent;
+                if (typeof original !== 'function') return false;
+                const events: Array<{ id?: unknown; name?: unknown; value?: unknown }> = [];
+                (window as Window & { __planningGanttEvents?: typeof events }).__planningGanttEvents = events;
+                props.onRuntimeEvent = (event) => {
+                  events.push({
+                    id: event.payload?.id,
+                    name: event.name,
+                    value: event.payload?.value
+                  });
+                  return original(event);
+                };
+                return true;
+              }
+              instance = instance.parent;
+            }
+            return false;
+          });
+        assert.ok(captureInstalled, 'Unable to instrument planning Gantt runtime events.');
+        await clickTab(page, '排产甘特');
+        const gantt = page.locator('.lc-planning-gantt__chart .wx-gantt').first();
+        await gantt.waitFor({ state: 'visible', timeout: 30_000 });
+        const desktopMetrics = await gantt.evaluate((element: HTMLElement) => {
+          const rect = element.getBoundingClientRect();
+          return { width: rect.width, height: rect.height };
+        });
+        assert.ok(
+          desktopMetrics.width > 400 && desktopMetrics.height > 200,
+          `Gantt is too small: ${JSON.stringify(desktopMetrics)}`
+        );
+
+        const desktopTasks = await page.locator('.lc-planning-gantt__chart .wx-bar.wx-task')
+          .evaluateAll((tasks: HTMLElement[]) => tasks.map((task) => ({
+            color: getComputedStyle(task).backgroundColor,
+            type: task.dataset.taskType,
+            width: task.getBoundingClientRect().width
+          })));
+        assert.equal(desktopTasks.length, 3);
+        assert.deepEqual(
+          Object.fromEntries(desktopTasks.map((task) => [task.type, task.color])),
+          {
+            approved: 'rgb(37, 99, 166)',
+            delayed: 'rgb(194, 65, 59)',
+            proposed: 'rgb(183, 121, 31)'
+          }
+        );
+        assert.ok(desktopTasks.every((task) => task.width > 0), `Gantt contains a zero-width task: ${JSON.stringify(desktopTasks)}`);
+        await clickFirstGanttTask(page);
+        await page.locator('.lc-planning-gantt__chart.has-selection').waitFor({ state: 'visible', timeout: 10_000 });
+        await page.waitForFunction(() => {
+          const events = (window as Window & {
+            __planningGanttEvents?: Array<{ id?: unknown; name?: unknown }>;
+          }).__planningGanttEvents ?? [];
+          return events.some((event) => event.name === 'planningGantt.taskSelect' && event.id);
+        }, undefined, { timeout: 10_000 });
+        await page.screenshot({ path: resolve(artifactsDir, 'planning-console-gantt-desktop.png'), fullPage: true });
+
+        await clickTab(page, '排产总览');
+        await clickTab(page, '排产甘特');
+        await page.locator('.lc-planning-gantt__chart .wx-bar.wx-task').first()
+          .waitFor({ state: 'visible', timeout: 30_000 });
+        assert.equal(await page.locator('.lc-planning-gantt__chart .wx-bar.wx-task').count(), 3);
+
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.waitForTimeout(300);
+        const mobileMetrics = await gantt.evaluate((element: HTMLElement) => {
+          const chart = element.closest<HTMLElement>('.lc-planning-gantt__chart');
+          const rect = element.getBoundingClientRect();
+          return {
+            width: rect.width,
+            height: rect.height,
+            chartWidth: chart?.getBoundingClientRect().width ?? 0
+          };
+        });
+        assert.ok(
+          mobileMetrics.width > 150 && mobileMetrics.height >= 340 && mobileMetrics.height <= 420,
+          `Mobile Gantt is not usable: ${JSON.stringify(mobileMetrics)}`
+        );
+        assert.ok(mobileMetrics.chartWidth <= 390, `Mobile Gantt overflows the viewport: ${JSON.stringify(mobileMetrics)}`);
+        assert.equal(await page.locator('.lc-planning-gantt__chart .wx-bar.wx-task').count(), 3);
+        await assertRootFitsViewport(page);
+        await page.screenshot({ path: resolve(artifactsDir, 'planning-console-gantt-mobile.png'), fullPage: false });
+        assert.deepEqual(pageErrors, [], `Manager browser page errors: ${pageErrors.join('\n')}`);
+        assert.deepEqual(failedApiResponses, [], `Manager failed API responses: ${failedApiResponses.join('\n')}`);
+
+        console.log(JSON.stringify({
+          desktop: { ...desktopMetrics, tasks: desktopTasks },
+          mobile: { ...mobileMetrics, taskCount: 3 },
+          page_errors: 0,
+          failed_api_responses: 0,
+          cleanup: 'verified in finally'
+        }, null, 2));
+        return;
       }
       assert.equal(await statValue(page, '控制权限'), '控制权限 可执行');
       assert.equal(await statValue(page, '排产引擎'), '排产引擎 可用');
@@ -899,9 +1028,17 @@ async function main() {
       assert.ok(ganttBox && ganttBox.width > 400 && ganttBox.height > 200, `Gantt is too small: ${JSON.stringify(ganttBox)}`);
       assert.equal(await page.locator('.lc-planning-gantt__chart .wx-bar.wx-task').count(), 3);
       assert.ok(
-        await page.locator('.lc-planning-gantt__chart .wx-bar.delayed').count() > 0,
+        await page.locator('.lc-planning-gantt__chart .wx-bar[data-task-type="delayed"]').count() > 0,
         'Delayed Gantt task is not rendered.'
       );
+      const ganttStatusColors = await page.locator('.lc-planning-gantt__chart .wx-bar.wx-task')
+        .evaluateAll((tasks: HTMLElement[]) => Object.fromEntries(tasks.map((task) => [
+          task.dataset.taskType,
+          getComputedStyle(task).backgroundColor
+        ])));
+      assert.equal(ganttStatusColors.proposed, 'rgb(183, 121, 31)');
+      assert.equal(ganttStatusColors.approved, 'rgb(37, 99, 166)');
+      assert.equal(ganttStatusColors.delayed, 'rgb(194, 65, 59)');
       await clickFirstGanttTask(page);
       await page.locator('.lc-planning-gantt__chart.has-selection').waitFor({ state: 'visible', timeout: 10_000 });
       await page.screenshot({ path: resolve(artifactsDir, 'planning-console-gantt-desktop.png'), fullPage: true });
@@ -935,15 +1072,23 @@ async function main() {
 
       await clickTab(page, '工艺 BOM');
       const bom = page.locator('.lc-planning-bom').first();
-      await bom.locator('.lc-planning-bom-node__row').first().waitFor({ state: 'visible', timeout: 30_000 });
-      assert.equal(await bom.locator('.lc-planning-bom-node__row').count(), 8);
-      await bom.locator('.lc-planning-bom-node__content').first().click();
-      await bom.locator('.lc-planning-bom-node__row.is-selected').first()
+      await bom.locator('.vue-flow__node').first().waitFor({ state: 'visible', timeout: 30_000 });
+      assert.equal(await bom.locator('.vue-flow__node').count(), 8);
+      assert.equal(await bom.locator('.vue-flow__edge').count(), 7);
+      await bom.locator('.lc-planning-bom-node__hit').first().click();
+      await bom.locator('.lc-planning-bom-node.is-selected').first()
         .waitFor({ state: 'visible', timeout: 10_000 });
+      const bomTransformBefore = await bom.locator('.vue-flow__transformationpane').getAttribute('style');
+      await bom.getByRole('button', { name: '放大' }).click();
+      await page.waitForTimeout(220);
+      const bomTransformAfter = await bom.locator('.vue-flow__transformationpane').getAttribute('style');
+      assert.notEqual(bomTransformAfter, bomTransformBefore, 'BOM zoom did not update the viewport transform.');
       await bom.locator('.lc-planning-bom-node__toggle').first().click();
-      assert.equal(await bom.locator('.lc-planning-bom-node__row').count(), 1);
+      assert.equal(await bom.locator('.vue-flow__node').count(), 1);
       await bom.locator('.lc-planning-bom-node__toggle').first().click();
-      assert.equal(await bom.locator('.lc-planning-bom-node__row').count(), 8);
+      assert.equal(await bom.locator('.vue-flow__node').count(), 8);
+      await bom.getByRole('button', { name: '适应视图' }).click();
+      await page.waitForTimeout(260);
       await page.screenshot({ path: resolve(artifactsDir, 'planning-console-bom-desktop.png'), fullPage: true });
 
       await selectOption(page, 'scenarioId', fixture.scenarioName);
@@ -1074,16 +1219,35 @@ async function main() {
         await page.locator('.lc-planning-gantt__chart .wx-bar.wx-task').count() > 0,
         'Mobile Gantt appears blank.'
       );
-      await page.screenshot({ path: resolve(artifactsDir, 'planning-console-gantt-mobile.png'), fullPage: true });
+      const mobileGanttMetrics = await page.locator('.lc-planning-gantt__chart .wx-gantt').first()
+        .evaluate((element: HTMLElement) => {
+          const chart = element.closest<HTMLElement>('.lc-planning-gantt__chart');
+          const rect = element.getBoundingClientRect();
+          return {
+            width: rect.width,
+            height: rect.height,
+            chartWidth: chart?.getBoundingClientRect().width ?? 0
+          };
+        });
+      assert.ok(
+        mobileGanttMetrics.width > 150 && mobileGanttMetrics.height >= 340 && mobileGanttMetrics.height <= 420,
+        `Mobile Gantt is not usable: ${JSON.stringify(mobileGanttMetrics)}`
+      );
+      assert.ok(
+        mobileGanttMetrics.chartWidth <= 390,
+        `Mobile Gantt overflows the viewport: ${JSON.stringify(mobileGanttMetrics)}`
+      );
+      await page.screenshot({ path: resolve(artifactsDir, 'planning-console-gantt-mobile.png'), fullPage: false });
 
       await clickTab(page, '工艺 BOM');
-      const mobileTreeMetrics = await page.locator('.lc-planning-bom__tree').evaluate((element: HTMLElement) => ({
-        clientWidth: element.clientWidth,
-        scrollWidth: element.scrollWidth
+      const mobileBomMetrics = await page.locator('.lc-planning-bom__canvas').evaluate((element: HTMLElement) => ({
+        width: element.getBoundingClientRect().width,
+        height: element.getBoundingClientRect().height,
+        nodes: element.querySelectorAll('.vue-flow__node').length
       }));
       assert.ok(
-        mobileTreeMetrics.scrollWidth > mobileTreeMetrics.clientWidth,
-        `BOM should provide local horizontal scrolling on mobile: ${JSON.stringify(mobileTreeMetrics)}`
+        mobileBomMetrics.width <= 390 && mobileBomMetrics.height >= 300 && mobileBomMetrics.nodes > 0,
+        `Mobile BOM flow is not usable: ${JSON.stringify(mobileBomMetrics)}`
       );
       await assertRootFitsViewport(page);
       await page.screenshot({ path: resolve(artifactsDir, 'planning-console-bom-mobile.png'), fullPage: true });
@@ -1131,7 +1295,7 @@ async function main() {
         .waitFor({ state: 'visible', timeout: 30_000 });
       await page.locator('.lc-planning-gantt__chart .wx-gantt').first()
         .waitFor({ state: 'visible', timeout: 30_000 });
-      await page.locator('.lc-planning-bom-node__row').first()
+      await page.locator('.lc-planning-bom .vue-flow__node').first()
         .waitFor({ state: 'visible', timeout: 30_000 });
       await page.screenshot({
         path: resolve(artifactsDir, 'planning-console-designer-materials.png'),
@@ -1208,8 +1372,8 @@ async function main() {
       preflight: 'passed without errors',
       server_side_filters: 'verified',
       flow: '3 nodes / 2 edges / zoom / fit view / select / tab restore',
-      gantt: 'desktop and mobile pixels / delayed color / task select / tab restore',
-      bom: '8 nodes / select / collapse / mobile local scroll; 40 roots / 7 levels / cycle in unit coverage',
+      gantt: 'desktop and mobile DOM / delayed color / task select / tab restore',
+      bom: 'Vue Flow / 8 nodes / 7 edges / zoom / fit / select / collapse / mobile canvas; 40 roots / 7 levels / cycle in unit coverage',
       designer_materials: 'flow / gantt / BOM visible and inserted',
       cancel_action: 'verified queued -> canceled',
       viewer_actions: 'refresh only',

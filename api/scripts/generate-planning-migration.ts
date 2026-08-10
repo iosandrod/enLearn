@@ -1998,8 +1998,7 @@ begin;`;
     routesSql(),
     reconcileObsoleteRoutesSql(),
     "select pg_notify('pgrst', 'reload schema');",
-    'commit;',
-    ''
+    'commit;'
   ].join('\n\n');
 }
 

@@ -10,7 +10,7 @@ import {
 } from '../../packages/lowcode-framework/src/runtime/scripts.ts';
 
 const frameworkRoot = new URL('../../packages/lowcode-framework/src/', import.meta.url);
-const [rendererSource, workerSource, scriptsSource, buttonMaterialSource, converterSource, monacoTypesSource, schemaSource, apiSchemaSource] =
+const [rendererSource, workerSource, scriptsSource, buttonMaterialSource, converterSource, monacoTypesSource, schemaSource, apiSchemaSource, formActionSource, gridActionSource] =
   await Promise.all([
     readFile(new URL('components/LowCodePageRenderer.vue', frameworkRoot), 'utf8'),
     readFile(new URL('runtime/script-runtime.worker.ts', frameworkRoot), 'utf8'),
@@ -20,6 +20,8 @@ const [rendererSource, workerSource, scriptsSource, buttonMaterialSource, conver
     readFile(new URL('visual-editor/components/button-group-designer/button-script-monaco.ts', frameworkRoot), 'utf8'),
     readFile(new URL('lowcode/schema.ts', frameworkRoot), 'utf8'),
     readFile(new URL('../../api/src/lowcode-service/lowcode.schema.ts', import.meta.url), 'utf8'),
+    readFile(new URL('runtime/node-action/form-action.ts', frameworkRoot), 'utf8'),
+    readFile(new URL('runtime/node-action/grid-action.ts', frameworkRoot), 'utf8'),
   ]);
 
 assert.match(
@@ -126,8 +128,28 @@ for (const source of [schemaSource, apiSchemaSource]) {
 }
 assert.match(
   rendererSource,
-  /resolveLowCodeNodeAction\(block\.kind, method\)[\s\S]*?if \(action\.execute\)[\s\S]*?switch \(action\.executor\)[\s\S]*?case 'overlay\.open'[\s\S]*?case 'grid\.reloadData'[\s\S]*?case 'form\.setData'/,
-  'executeAction must dispatch only actions declared by the node registry.',
+  /resolveLowCodeNodeAction\(block\.kind, method\)[\s\S]*?if \(action\.execute\)[\s\S]*?return action\.execute/,
+  'executeAction must dispatch executable methods declared by the node registry.',
+);
+assert.match(
+  formActionSource,
+  /executeFormSetDataNodeAction[\s\S]*?executeFormValidateNodeAction[\s\S]*?executeFormGetDataNodeAction[\s\S]*?executeFormRefreshOptionsNodeAction[\s\S]*?executeFormResetDataNodeAction/,
+  'Form node execution must be owned by the form node action module.',
+);
+assert.match(
+  gridActionSource,
+  /executeGridLoadDataNodeAction[\s\S]*?executeGridReloadDataNodeAction[\s\S]*?executeGridValidateNodeAction[\s\S]*?executeGridAddRowNodeAction[\s\S]*?executeGridDeleteCurrentRowNodeAction[\s\S]*?execute: executeGridLoadDataNodeAction[\s\S]*?execute: executeGridReloadDataNodeAction[\s\S]*?execute: executeGridValidateNodeAction[\s\S]*?execute: executeGridAddRowNodeAction[\s\S]*?execute: executeGridDeleteCurrentRowNodeAction/,
+  'Grid execution must be owned by the grid node action module.',
+);
+assert.match(
+  rendererSource,
+  /action\.executor === 'overlay\.open'[\s\S]*?openLowCodeGlobalDialog/,
+  'Overlay open remains a renderer executor until its node module is migrated.',
+);
+assert.doesNotMatch(
+  rendererSource,
+  /case 'grid\.reloadData'|case 'form\.setData'/,
+  'Migrated node executors must not drift back into the page renderer.',
 );
 assert.match(
   rendererSource,

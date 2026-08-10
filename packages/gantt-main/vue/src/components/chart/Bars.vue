@@ -591,6 +591,7 @@ onUnmounted(() => {
 				:style="taskStyle(task)"
 				:data-id="setID(task.id)"
 				:data-task-id="setID(task.id)"
+				:data-task-type="task.type"
 				:tabindex="focused === task.id ? '0' : '-1'"
 			>
 				<template v-if="!props.readonly && !hasDuplicatedIds">

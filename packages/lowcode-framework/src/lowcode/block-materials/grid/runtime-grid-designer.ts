@@ -254,7 +254,7 @@ function createRuntimeDataSource(
   const deleteMethod = readString(result.business.deleteMethod);
   if (saveMethod) source.saveMethod = saveMethod;
   if (deleteMethod) source.deleteMethod = deleteMethod;
-  if (tableName) source.tableName = tableName;
+  if (tableName && sourceType !== 'custom') source.tableName = tableName;
   if (linkedViewName) source.viewName = linkedViewName;
 
   return source;
@@ -315,9 +315,9 @@ export async function openRuntimeGridDesigner(
           sourceKey,
           tableType: result.business.tableType,
           sourceType: result.business.sourceType,
-          tableName: result.business.sourceType === 'table'
-            ? readString(result.business.tableName)
-            : '',
+          tableName: result.business.sourceType === 'view'
+            ? ''
+            : readString(result.business.tableName),
           viewName: result.business.sourceType === 'view'
             ? readString(result.business.viewName)
             : '',

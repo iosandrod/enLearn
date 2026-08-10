@@ -25,7 +25,7 @@ type OptionCacheEntry = {
 };
 
 export type LowCodeOptionSourceRegistry = {
-  readonly version: 1;
+  readonly version: 2;
   readonly cache: Map<string, OptionCacheEntry>;
   readonly inFlight: Map<string, Promise<LowCodeOptionSourceBatchResponse>>;
   readonly subscribers: Map<string, Set<LowCodeOptionSourceListener>>;
@@ -35,6 +35,10 @@ export type LowCodeOptionSourceRegistry = {
     listener: LowCodeOptionSourceListener,
     getServiceApi: ServiceApiProvider,
   ): () => void;
+  refresh(
+    codes: string[],
+    getServiceApi: ServiceApiProvider,
+  ): Promise<Record<string, LowCodeOptionSourceItems>>;
   peek(code: string): LowCodeOptionSourceItems | undefined;
   invalidate(code?: string): void;
 };
@@ -122,6 +126,40 @@ function createRegistry(): LowCodeOptionSourceRegistry {
     return undefined;
   };
 
+  const loadCodes = async (
+    codes: string[],
+    serviceApi: LowCodeHostServiceApi,
+  ) => {
+    const request = serviceApi.invoke<LowCodeOptionSourceBatchResponse>(
+      'admin',
+      'resolveOptionItemsBatch',
+      { sourceCodes: codes },
+    );
+    codes.forEach((code) => inFlight.set(code, request));
+
+    try {
+      const response = await request;
+      const resolved: Record<string, LowCodeOptionSourceItems> = {};
+      codes.forEach((code) => {
+        if (inFlight.get(code) !== request) return;
+        const entry = readBatchEntry(response?.[code]);
+        cache.set(code, {
+          options: entry.options,
+          expiresAt: entry.cacheTtlSeconds > 0
+            ? Date.now() + entry.cacheTtlSeconds * 1000
+            : Number.POSITIVE_INFINITY,
+        });
+        resolved[code] = entry.options;
+        publish(code, entry.options);
+      });
+      return resolved;
+    } finally {
+      codes.forEach((code) => {
+        if (inFlight.get(code) === request) inFlight.delete(code);
+      });
+    }
+  };
+
   const flush = async () => {
     state.timer = undefined;
     const requestedCodes = [...state.pendingCodes];
@@ -136,30 +174,7 @@ function createRegistry(): LowCodeOptionSourceRegistry {
       return;
     }
 
-    const request = serviceApi.invoke<LowCodeOptionSourceBatchResponse>(
-      'admin',
-      'resolveOptionItemsBatch',
-      { sourceCodes: codes },
-    );
-    codes.forEach((code) => inFlight.set(code, request));
-
-    try {
-      const response = await request;
-      codes.forEach((code) => {
-        const entry = readBatchEntry(response?.[code]);
-        cache.set(code, {
-          options: entry.options,
-          expiresAt: entry.cacheTtlSeconds > 0
-            ? Date.now() + entry.cacheTtlSeconds * 1000
-            : Number.POSITIVE_INFINITY,
-        });
-        publish(code, entry.options);
-      });
-    } finally {
-      codes.forEach((code) => {
-        if (inFlight.get(code) === request) inFlight.delete(code);
-      });
-    }
+    await loadCodes(codes, serviceApi);
   };
 
   const schedule = () => {
@@ -170,7 +185,7 @@ function createRegistry(): LowCodeOptionSourceRegistry {
   };
 
   const registry: LowCodeOptionSourceRegistry = {
-    version: 1,
+    version: 2,
     cache,
     inFlight,
     subscribers,
@@ -206,6 +221,21 @@ function createRegistry(): LowCodeOptionSourceRegistry {
         });
       };
     },
+    async refresh(codes, getServiceApi) {
+      const normalized = normalizeCodes(codes);
+      if (!normalized.length) return {};
+
+      const serviceApi = getServiceApi();
+      if (!serviceApi) {
+        throw new Error('下拉选项数据服务不可用。');
+      }
+
+      normalized.forEach((code) => {
+        cache.delete(code);
+        state.pendingCodes.delete(code);
+      });
+      return loadCodes(normalized, serviceApi);
+    },
     peek(code) {
       return readFreshCache(normalizeCode(code));
     },
@@ -227,6 +257,6 @@ const globalScope = globalThis as GlobalOptionRegistryScope;
 const existingRegistry = globalScope[GLOBAL_REGISTRY_KEY];
 
 export const lowCodeOptionSourceRegistry =
-  existingRegistry?.version === 1 ? existingRegistry : createRegistry();
+  existingRegistry?.version === 2 ? existingRegistry : createRegistry();
 
 globalScope[GLOBAL_REGISTRY_KEY] = lowCodeOptionSourceRegistry;

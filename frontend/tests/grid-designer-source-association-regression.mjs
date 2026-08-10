@@ -35,6 +35,23 @@ for (const [code, label, kind] of [
   );
 }
 
+assert.match(designerSource, /code: 'sync-table-comments'[\s\S]*label: '同步列注释'/);
+assert.match(
+  designerSource,
+  /execute: async \(\) => syncColumnsFromTableComments\(\)/,
+  'The column designer must expose the real-table comment sync action.',
+);
+assert.match(
+  designerSource,
+  /function parseColumnCommentOverrides[\s\S]*JSON\.parse\(rawComment\)[\s\S]*isPlainRecord\(metadata\)[\s\S]*metadata\.title[\s\S]*metadata\.type/,
+  'Only JSON object comments may provide title and type overrides.',
+);
+assert.match(
+  designerSource,
+  /const syncColumnsFromTableComments = async[\s\S]*readString\(state\.business\.tableName\)[\s\S]*'lowcode', 'listTableColumns'[\s\S]*parseColumnCommentOverrides\(column\.comment\)[\s\S]*overridesByField\.get\(readString\(column\.field\)\)[\s\S]*\.\.\.overrides[\s\S]*syncActiveDesignerDialogModel\(\)/,
+  'Comment sync must fetch the associated real table and overwrite matching column titles and types.',
+);
+
 assert.match(
   designerSource,
   /confirmLowCodePage\(\{[\s\S]*pageCode: gridDesignerSourcePageCodes\[kind\][\s\S]*includeData: true[\s\S]*requireSelection: true/,

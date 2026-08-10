@@ -85,6 +85,11 @@ assert.match(
 );
 assert.match(
   designerSource,
+  /sourceType === 'custom' \? '' : tableName \|\| viewName[/\s\S]*sourceType !== 'custom',[/\s\S]*sourceType !== 'custom'/,
+  'A custom-source association must not leak into the service postData.',
+);
+assert.match(
+  designerSource,
   /row\.fullName \?\? row\.full_name[/\s\S]*row\.schemaName \?\? row\.schema_name[/\s\S]*row\.tableName \?\? row\.table_name/,
   'Real-table selection must accept both camelCase and snake_case catalog rows.',
 );
@@ -111,17 +116,27 @@ assert.match(
 );
 assert.match(
   visualConverterSource,
-  /const tableType = readGridTableType\(block, source\)[/\s\S]*const sourceType = readGridSourceType\(block, source\)[/\s\S]*tableName: sourceType === 'table'[/\s\S]*viewName: sourceType === 'view'/,
+  /const tableType = readGridTableType\(block, source\)[/\s\S]*const sourceType = readGridSourceType\(block, source\)[/\s\S]*tableName: sourceType === 'view'[/\s\S]*readString\(block\.tableName[/\s\S]*viewName: sourceType === 'view'/,
   'Runtime-to-visual conversion must restore the association metadata.',
 );
 assert.match(
   runtimeDesignerSource,
-  /sourceType,[/\s\S]*if \(tableName\) source\.tableName = tableName[/\s\S]*if \(linkedViewName\) source\.viewName = linkedViewName/,
-  'Runtime grid edits must persist the association on the data source.',
+  /tableName: readString\(block\.tableName, sourceType === 'table' \? source\?\.tableName : ''\)/,
+  'Runtime grid edits must restore a block-owned custom association.',
+);
+assert.match(
+  runtimeDesignerSource,
+  /tableName: result\.business\.sourceType === 'view'[/\s\S]*readString\(result\.business\.tableName\)/,
+  'Runtime grid edits must persist a custom table association on the block.',
+);
+assert.match(
+  runtimeDesignerSource,
+  /if \(tableName && sourceType !== 'custom'\) source\.tableName = tableName/,
+  'A custom block association must not turn the aggregate data source into a direct table source.',
 );
 assert.match(
   rendererSource,
-  /visualProps\.tableType = tableType[/\s\S]*visualProps\.sourceType = sourceType[/\s\S]*visualProps\.tableName = sourceType === 'table'[/\s\S]*visualProps\.viewName = sourceType === 'view'/,
+  /visualProps\.tableType = tableType[/\s\S]*visualProps\.sourceType = sourceType[/\s\S]*visualProps\.tableName = sourceType === 'view'[/\s\S]*readString\(targetBlock\.tableName[/\s\S]*visualProps\.viewName = sourceType === 'view'/,
   'Runtime edits must synchronize association fields into the embedded visual model.',
 );
 assert.match(
@@ -227,7 +242,7 @@ assert.deepEqual(viewConversion.source.postData, {
 const customConversion = convertGrid({
   tableType: 'main',
   sourceType: 'custom',
-  tableName: '',
+  tableName: 'public.intentional_custom_table',
   viewName: '',
   serviceName: 'reporting',
   serviceMethod: 'runReport',
@@ -240,6 +255,7 @@ const customConversion = convertGrid({
 assert.equal(customConversion.source.sourceType, 'custom');
 assert.equal(customConversion.block.tableType, 'main');
 assert.equal(customConversion.block.sourceType, 'custom');
+assert.equal(customConversion.block.tableName, 'public.intentional_custom_table');
 assert.equal(customConversion.source.tableName, undefined);
 assert.equal(customConversion.source.viewName, undefined);
 assert.deepEqual(customConversion.source.postData, {

@@ -370,7 +370,7 @@ export function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor {
         settle(() => reject(new Error(event.message || '脚本 Worker 加载失败。')));
       });
 
-      worker.postMessage({
+      worker.postMessage(toLowCodeScriptSerializable({
         type: 'execute',
         requestId,
         request: {
@@ -379,7 +379,7 @@ export function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor {
             request.context,
           ) as LowCodeScriptContextSnapshot,
         },
-      });
+      }));
     });
   };
 }

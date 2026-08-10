@@ -38,6 +38,11 @@ for (const source of [formBlockSource, searchFormBlockSource]) {
   assert.match(source, /label-context-menu/, 'Runtime forms must enable label context menus.');
   assert.match(
     source,
+    /<LowCodeForm[\s\S]*?:key="block\.formDesignerUpdatedAt \?\? 0"/,
+    'Runtime forms must remount after a successful designer save so VXE rebuilds the layout.',
+  );
+  assert.match(
+    source,
     /@label-context-menu="openFormContextMenu"/,
     'Runtime forms must handle the promoted label context-menu event.',
   );
@@ -99,6 +104,21 @@ assert.match(
   rendererSource,
   /function persistRuntimeBlockUpdate[\s\S]*?resource: 'lowcode_pages'[\s\S]*?schema: nextSchema/,
   'Runtime form edits must use the existing page persistence bridge.',
+);
+assert.match(
+  rendererSource,
+  /Object\.assign\(props\.page, saved\);[\s\S]*?const renderedBlock = flattenPageBlocks\(props\.page\.schema\)\.find[\s\S]*?Object\.assign\(renderedBlock, cloneRuntimeValue\(update\.changes\)\)/,
+  'A saved runtime block must also be patched in place so the rendered page updates immediately.',
+);
+assert.match(
+  rendererSource,
+  /const runtimeBlockRenderRevision = ref\(0\);[\s\S]*?const layoutBlocks = computed[\s\S]*?runtimeBlockRenderRevision\.value[\s\S]*?runtimeBlockRenderRevision\.value \+= 1/,
+  'Runtime block saves must invalidate rendering even when the host page object is not deeply reactive.',
+);
+assert.match(
+  rendererSource,
+  /runtimeBlockReloadSuppression = reloadSuppression;[\s\S]*?Object\.assign\(props\.page, saved\);[\s\S]*?runtimeBlockReloadSuppression\?\.pageId === nextPage[\s\S]*?return;/,
+  'A local designer save must not reload page data and discard current form values.',
 );
 assert.match(
   rendererSource,

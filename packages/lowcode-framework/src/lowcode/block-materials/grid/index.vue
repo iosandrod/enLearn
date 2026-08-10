@@ -1,6 +1,7 @@
 <template>
   <article class="content-panel">
     <LowCodeGrid
+      ref="gridRef"
       :schema="pageGridSchema"
       :rows="rows"
       :loading="isLoading"
@@ -18,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, watch } from 'vue';
+import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import LowCodeGrid from '../../../components/LowCodeGrid.vue';
 import { useLowCodeHost } from '../../../core/host';
 import { resolveGridRows } from '../helpers';
@@ -34,15 +35,22 @@ const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
 const host = useLowCodeHost();
 const pageRuntime = useLowCodePageRuntime(false);
+const gridRef = ref<InstanceType<typeof LowCodeGrid>>();
+let unregisterGridController: (() => void) | undefined;
 const runtimeSources = computed(
   () => pageRuntime?.state.sources ?? props.resolvedData
 );
 const runtimeSearches = computed(
   () => pageRuntime?.state.searches ?? props.searchFilters
 );
-const rows = computed(() =>
-  resolveGridRows(props.block, runtimeSources.value, runtimeSearches.value)
-);
+const rows = computed(() => {
+  if (!props.block.sourceKey) {
+    const runtimeGrid = pageRuntime?.state.grids[props.block.id];
+    if (runtimeGrid) return runtimeGrid.rows;
+  }
+
+  return resolveGridRows(props.block, runtimeSources.value, runtimeSearches.value);
+});
 const isLoading = computed(
   () =>
     (pageRuntime?.state.status.loadingGridId ?? props.loadingGridId) === props.block.id ||
@@ -67,6 +75,17 @@ const pageGridSchema = computed(() => ({
   },
 }));
 
+onMounted(() => {
+  if (!pageRuntime || !gridRef.value) return;
+  unregisterGridController = pageRuntime.registerGridController(props.block.id, {
+    validate: () => gridRef.value?.validate() ?? Promise.resolve(false),
+    clearValidation: () => gridRef.value?.clearValidation(),
+    setCurrentRow: (row) => gridRef.value?.setCurrentRow(row),
+  });
+});
+
+onBeforeUnmount(() => unregisterGridController?.());
+
 type GridRuntimeEventPayload = {
   key: string;
   row?: Record<string, unknown> | null;
@@ -79,6 +98,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function syncGridRows() {
+  if (!props.block.sourceKey && pageRuntime?.state.grids[props.block.id]) return;
   pageRuntime?.setGridRows(props.block.id, rows.value, {
     sourceKey: props.block.sourceKey,
     rowKey: rowKey.value,

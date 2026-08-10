@@ -1,5 +1,9 @@
 <template>
-  <section class="visual-designer-page" :class="designerThemeClass" :style="designerThemeStyle">
+  <section
+    class="visual-designer-page"
+    :class="[designerThemeClass, { 'visual-designer-page--embedded': embedded }]"
+    :style="designerThemeStyle"
+  >
     <div class="visual-designer-frame">
       <div v-if="loading" class="content-panel">
         <p class="page-description">正在加载低代码设计器...</p>
@@ -17,6 +21,8 @@
           :key="providerKey"
           :initial-data="visualModel"
           :page-record="designerPageRecord"
+          :show-header="!embedded"
+          :show-global-dialog-host="!embedded"
           @save="saveVisualProject"
         >
           <template #meta>
@@ -73,6 +79,7 @@ import {
   openGlobalDialog,
 } from '../runtime/global-dialog';
 import {
+  provideLowCodeHost,
   useLowCodeHost,
   type LowCodeHostRouter,
   type LowCodeHostServiceApi,
@@ -89,7 +96,18 @@ const props = defineProps<{
   messages?: LowCodeMessages;
   theme?: LowCodeTheme;
   backRoute?: string;
+  embedded?: boolean;
 }>();
+
+const embedded = computed(() => props.embedded === true);
+
+provideLowCodeHost({
+  serviceApi: computed(() => props.serviceApi),
+  router: computed(() => props.router),
+  locale: computed(() => props.locale),
+  messages: computed(() => props.messages),
+  theme: computed(() => props.theme),
+});
 
 type DesignerPageStatus = 'draft' | 'published' | 'archived';
 type DesignerPageForm = {
@@ -552,6 +570,7 @@ async function saveVisualProject(payload: {
     if (!overrideStatus) {
       form.value.status = originalStatus;
     }
+    return saved;
   } catch (error) {
     message.value = error instanceof Error ? error.message : '保存失败。';
     messageType.value = 'error';
@@ -562,16 +581,37 @@ async function saveVisualProject(payload: {
   }
 }
 
+async function save() {
+  if (saving.value) {
+    throw new Error('页面正在保存，请稍候。');
+  }
+
+  const snapshot = providerRef.value?.getSnapshot();
+  if (!snapshot) {
+    throw new Error('请等待设计器初始化完成后再保存。');
+  }
+
+  return saveVisualProject(snapshot);
+}
+
+async function publish() {
+  if (saving.value) {
+    throw new Error('页面正在保存，请稍候。');
+  }
+
+  const snapshot = providerRef.value?.getSnapshot();
+  if (!snapshot) {
+    throw new Error('请等待设计器初始化完成后再发布。');
+  }
+
+  return saveVisualProject(snapshot, 'published');
+}
+
 async function requestSave() {
   if (saving.value) return;
 
   try {
-    const snapshot = providerRef.value?.getSnapshot();
-    if (!snapshot) {
-      throw new Error('请等待设计器初始化完成后再保存。');
-    }
-
-    await saveVisualProject(snapshot);
+    await save();
   } catch (error) {
     message.value = error instanceof Error ? error.message : '保存失败。';
     messageType.value = 'error';
@@ -582,12 +622,7 @@ async function requestPublish() {
   if (saving.value) return;
 
   try {
-    const snapshot = providerRef.value?.getSnapshot();
-    if (!snapshot) {
-      throw new Error('请等待设计器初始化完成后再发布。');
-    }
-
-    await saveVisualProject(snapshot, 'published');
+    await publish();
   } catch (error) {
     message.value = error instanceof Error ? error.message : '发布失败。';
     messageType.value = 'error';
@@ -701,5 +736,11 @@ function openPageInfo() {
 async function goBackToList() {
   await host.getRouter().push(props.backRoute ?? '/dashboard/low-code');
 }
+
+defineExpose({
+  save,
+  publish,
+  reload: () => reload(),
+});
 
 </script>
