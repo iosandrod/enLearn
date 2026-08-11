@@ -10,6 +10,7 @@ import { FilesModule } from '../files-service/files.module';
 import { ServiceGatewayController } from '../gateway/service-gateway.controller';
 import { ServiceRouterService } from '../gateway/service-router.service';
 import { LowCodeModule } from '../lowcode-service/lowcode.module';
+import { MesModule } from '../mes-service/mes.module';
 import { NotificationModule } from '../notification-service/notification.module';
 import { PaymentModule } from '../payment-service/payment.module';
 import { PostsModule } from '../posts-service/posts.module';
@@ -32,6 +33,7 @@ import { StandaloneServiceRouter } from './standalone-service-router.service';
     FilesModule,
     ChatModule,
     PlanningModule,
+    MesModule,
     WorkflowModule
   ],
   controllers: [ServiceGatewayController],

@@ -31,6 +31,13 @@ export type LowCodePageRuntimeStatus = {
   messageClass: string;
 };
 
+// export type LowCodePageRuntimeState = {
+//   sources: Record<string, unknown>;
+//   forms: Record<string, LowCodeRuntimeRecord>;
+//   searches: Record<string, LowCodeRuntimeRecord>;
+//   grids: Record<string, LowCodePageRuntimeGridState>;
+//   status: LowCodePageRuntimeStatus;
+// };
 export type LowCodePageRuntimeState = {
   sources: Record<string, unknown>;
   forms: Record<string, LowCodeRuntimeRecord>;
@@ -53,6 +60,7 @@ export type LowCodePageRuntimeResetOptions = {
 export type LowCodePageRuntimeFormController = {
   validate(): Promise<boolean>;
   clearValidation(): Promise<void> | void;
+  setValues?(values: LowCodeRuntimeRecord): Promise<void> | void;
 };
 
 export type LowCodePageRuntimeGridController = {
@@ -393,10 +401,17 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
       });
     },
     replaceForm(blockId, values) {
-      state.forms[blockId] = { ...values };
+      const current = state.forms[blockId];
+      if (current) {
+        clearRecord(current);
+        Object.assign(current, values);
+      } else {
+        state.forms[blockId] = { ...values };
+      }
     },
     patchForm(blockId, values) {
-      state.forms[blockId] = { ...(state.forms[blockId] ?? {}), ...values };
+      if (state.forms[blockId]) Object.assign(state.forms[blockId], values);
+      else state.forms[blockId] = { ...values };
     },
     replaceSearch(sourceKey, values) {
       state.searches[sourceKey] = { ...values };

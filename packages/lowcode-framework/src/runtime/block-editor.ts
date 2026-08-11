@@ -20,6 +20,10 @@ export type LowCodeRuntimeBlockEditor = {
   getPageRecord?(): LowCodePageRecord;
   getServiceApi?(): LowCodeHostServiceApi;
   getScriptContextSource?(): import('./lowcode-context').LowCodeContextSource;
+  executeFieldScript?(
+    script: string,
+    event: import('../types/lowcode').LowCodeRuntimeEvent,
+  ): Promise<unknown>;
 };
 
 export const lowCodeRuntimeBlockEditorKey: InjectionKey<LowCodeRuntimeBlockEditor> =

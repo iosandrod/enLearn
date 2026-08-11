@@ -79,12 +79,16 @@ async function editRuntimeForm({
   nextLabel,
   enteredValue,
   expectedSaveCount,
+  menuText = '设计当前表单',
 }) {
   const runtimeForm = page.locator('.lowcode-runtime-page .lc-form').filter({
     has: page.locator('.vxe-form--item-title', { hasText: currentLabel }),
   }).first();
   await runtimeForm.waitFor({ state: 'visible' });
-  const input = runtimeForm.locator('.lc-field input').first();
+  const fieldItem = runtimeForm.locator('.vxe-form--item').filter({
+    has: page.locator('.vxe-form--item-title', { hasText: currentLabel }),
+  }).first();
+  const input = fieldItem.locator('.lc-field input').first();
   await input.fill(enteredValue);
   assert.equal(await input.inputValue(), enteredValue);
 
@@ -92,7 +96,7 @@ async function editRuntimeForm({
   await label.click({ button: 'right' });
   const designMenuItem = page.locator(
     '.enlearn-context-menu .vxe-context-menu--item-wrapper',
-    { hasText: '设计当前表单' },
+    { hasText: menuText },
   ).last();
   await designMenuItem.waitFor({ state: 'visible' });
   await designMenuItem.click();
@@ -121,10 +125,135 @@ async function editRuntimeForm({
     has: page.locator('.vxe-form--item-title', { hasText: nextLabel }),
   }).first();
   await updatedForm.waitFor({ state: 'visible' });
+  const updatedFieldItem = updatedForm.locator('.vxe-form--item').filter({
+    has: page.locator('.vxe-form--item-title', { hasText: nextLabel }),
+  }).first();
   assert.equal(
-    await updatedForm.locator('.lc-field input').first().inputValue(),
+    await updatedFieldItem.locator('.lc-field input').first().inputValue(),
     enteredValue,
     `${currentLabel} value must survive the designer save and form remount.`,
+  );
+}
+
+async function editRuntimeField({
+  page,
+  currentLabel,
+  enteredValue,
+  expectedSaveCount,
+  nextLabel = currentLabel,
+  requiredMessage = `${nextLabel}不能为空`,
+  defaultValueScript = 'async function main() { return "AUTO-001"; }',
+  optionsCode = 'order_code',
+  updateScript = 'async function main(event) { return event.value; }',
+  validationMessage = `${nextLabel}格式不正确`,
+  validationScript = 'async function main(event) { return Boolean(event.value); }',
+}) {
+  const runtimeForm = page.locator('.lowcode-runtime-page .lc-form').filter({
+    has: page.locator('.vxe-form--item-title', { hasText: currentLabel }),
+  }).first();
+  const fieldItem = runtimeForm.locator('.vxe-form--item').filter({
+    has: page.locator('.vxe-form--item-title', { hasText: currentLabel }),
+  }).first();
+  const input = fieldItem.locator('.lc-field input').first();
+  await input.fill(enteredValue);
+
+  await fieldItem.locator('.vxe-form--item-title').click({ button: 'right' });
+  const menuItem = page.locator(
+    '.enlearn-context-menu .vxe-context-menu--item-wrapper',
+    { hasText: '设计当前字段' },
+  ).last();
+  await menuItem.waitFor({ state: 'visible' });
+  await menuItem.click();
+
+  const dialog = page.locator('.runtime-form-field-editor-dialog').last();
+  await dialog.waitFor({ state: 'visible' });
+  assert.equal(
+    await page.locator('.form-designer-dialog:visible').count(),
+    0,
+    'Designing one field must not open the full form designer.',
+  );
+
+  const fieldControl = (label) => dialog.locator('.vxe-form--item').filter({
+    has: page.locator('.vxe-form--item-title', { hasText: label }),
+  }).first();
+  await fieldControl('字段名称').locator('input').fill(nextLabel);
+  await fieldControl('必须录入').locator('button, input').first().click();
+  await fieldControl('必录提示').locator('input').fill(requiredMessage);
+  await fieldControl('默认值类型').locator('.vxe-select').click();
+  await page.locator('.vxe-select-option', { hasText: '函数' }).last().click();
+  await fieldControl('默认值函数').locator('textarea').fill(defaultValueScript);
+  await fieldControl('关联下拉 Code').locator('input').fill(optionsCode);
+  await fieldControl('值更新事件').locator('textarea').fill(updateScript);
+  await fieldControl('校验提示').locator('input').fill(validationMessage);
+  await fieldControl('校验函数').locator('textarea').fill(validationScript);
+
+  await dialog.locator('.lc-global-dialog__footer .vxe-button', { hasText: '保存' }).click();
+  await dialog.waitFor({ state: 'hidden' });
+  await page.waitForFunction(
+    (count) => window.__runtimeFormDesignerSaveSmoke.saveCalls.length === count,
+    expectedSaveCount,
+  );
+
+  const updatedForm = page.locator('.lowcode-runtime-page .lc-form').filter({
+    has: page.locator('.vxe-form--item-title', { hasText: nextLabel }),
+  }).first();
+  await updatedForm.waitFor({ state: 'visible' });
+  const updatedField = updatedForm.locator('.vxe-form--item').filter({
+    has: page.locator('.vxe-form--item-title', { hasText: nextLabel }),
+  }).first();
+  assert.equal(await updatedField.locator('.lc-field input').first().inputValue(), enteredValue);
+}
+
+function runtimeField(page, label) {
+  return page.locator('.lowcode-runtime-page .vxe-form--item').filter({
+    has: page.locator('.vxe-form--item-title', { hasText: label }),
+  }).first();
+}
+
+async function verifyFieldScriptBehavior(page) {
+  await page.waitForFunction(() => (
+    window.__runtimeFormDesignerSaveSmoke
+      .snapshot()
+      ?.formModels?.['runtime-edit-form']
+      ?.generatedCode === 'AUTO-form-generatedCode'
+  ));
+
+  const updateSource = runtimeField(page, '更新源').locator('.lc-field input').first();
+  await updateSource.fill('VALUE-42');
+  await page.waitForFunction(() => (
+    window.__runtimeFormDesignerSaveSmoke
+      .snapshot()
+      ?.formModels?.['runtime-edit-form']
+      ?.updateTarget === 'PATCHED-VALUE-42'
+  ));
+  assert.equal(
+    await runtimeField(page, '更新目标').locator('.lc-field input').first().inputValue(),
+    'PATCHED-VALUE-42',
+    'An update script must patch both the runtime model and mounted field control.',
+  );
+
+  const validationField = runtimeField(page, '脚本校验值');
+  const validationInput = validationField.locator('.lc-field input').first();
+  const editForm = page.locator('.lowcode-runtime-page .lc-form').filter({
+    has: page.locator('.vxe-form--item-title', { hasText: '脚本校验值' }),
+  }).first();
+  const validateButton = editForm.locator('.lc-actions .vxe-button', { hasText: '执行校验' });
+  await validationInput.fill('valid');
+  await validateButton.click();
+  await page.waitForTimeout(80);
+  assert.equal(await validationField.locator('.vxe-form--item--valid-error-msg').count(), 0);
+
+  await validationInput.fill('message');
+  await validateButton.click();
+  await page.waitForFunction(() => document.body.innerText.includes('函数返回的校验提示'));
+  assert.equal(await validationField.locator('.vxe-form--item--valid-error-msg').textContent(), '函数返回的校验提示');
+
+  await validationInput.fill('throw');
+  await validateButton.click();
+  await page.waitForFunction(() => document.body.innerText.includes('函数抛出的校验提示'));
+  assert.match(
+    await validationField.locator('.vxe-form--item--valid-error-msg').textContent(),
+    /函数抛出的校验提示$/,
   );
 }
 
@@ -138,6 +267,7 @@ async function runScenario(pageMode) {
   );
   const bootResult = JSON.parse(await activePage.locator('#result').textContent());
   assert.equal(bootResult.ok, true, pageErrors.join('\n'));
+  await verifyFieldScriptBehavior(activePage);
 
   await editRuntimeForm({
     page: activePage,
@@ -146,12 +276,28 @@ async function runScenario(pageMode) {
     enteredValue: `保留姓名-${pageMode}`,
     expectedSaveCount: 1,
   });
-  await editRuntimeForm({
+  await editRuntimeField({
+    page: activePage,
+    currentLabel: '编码',
+    enteredValue: `保留编码-${pageMode}`,
+    expectedSaveCount: 2,
+    requiredMessage: '编码不能为空',
+    validationMessage: '编码格式不正确',
+    validationScript:
+      'async function main(event) { return String(event.value || "").startsWith("保留"); }',
+  });
+  await editRuntimeField({
     page: activePage,
     currentLabel: '关键字',
-    nextLabel: `关键字已更新-${pageMode}`,
     enteredValue: `保留关键字-${pageMode}`,
-    expectedSaveCount: 2,
+    expectedSaveCount: 3,
+    nextLabel: `关键字已更新-${pageMode}`,
+    optionsCode: 'search_keyword',
+    defaultValueScript: 'async function main() { return "SEARCH-AUTO"; }',
+    updateScript: 'async function main(event) { return event.value; }',
+    validationMessage: '关键字格式不正确',
+    validationScript:
+      'async function main(event) { return String(event.value || "").startsWith("保留"); }',
   });
 
   const result = await activePage.evaluate(() => {
@@ -162,21 +308,69 @@ async function runScenario(pageMode) {
       snapshot: smoke.snapshot(),
     };
   });
-  assert.equal(result.saveCalls.length, 2);
+  assert.equal(result.saveCalls.length, 3);
   assert.equal(result.saveCalls[0].resource, 'lowcode_pages');
   assert.equal(result.saveCalls[0].id, result.pageRecord.id);
   assert.equal(result.saveCalls[0].data.version, 2);
   assert.equal(result.saveCalls[1].data.version, 3);
-  assert.equal(result.pageRecord.version, 3);
+  assert.equal(result.saveCalls[2].data.version, 4);
+  assert.equal(result.pageRecord.version, 4);
   assert.equal(
     result.pageRecord.schema.blocks[0].schema.fields[0].label,
     `姓名已更新-${pageMode}`,
   );
   assert.equal(
+    result.pageRecord.schema.blocks[0].schema.fields[1].optionsCode,
+    'order_code',
+  );
+  assert.equal(result.pageRecord.schema.blocks[0].schema.fields[1].defaultValueType, 'function');
+  assert.match(result.pageRecord.schema.blocks[0].schema.fields[1].defaultValueScript, /AUTO-001/);
+  assert.match(result.pageRecord.schema.blocks[0].schema.fields[1].updateScript, /event\.value/);
+  assert.match(result.pageRecord.schema.blocks[0].schema.fields[1].validationScript, /startsWith/);
+  assert.equal(
+    result.pageRecord.schema.blocks[0].schema.fields[1].rules.some((rule) => rule.required),
+    true,
+  );
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(result.pageRecord.schema.blocks[0].initialValues, 'code'),
+    false,
+    'Function defaults must replace the previous literal initial value.',
+  );
+  assert.deepEqual(
+    result.pageRecord.schema.blocks[0].schema.actions,
+    [{ code: 'validate', label: '执行校验', type: 'submit' }],
+  );
+  assert.equal(result.pageRecord.schema.blocks[0].schema.fields[0].field, 'name');
+  assert.equal(
     result.pageRecord.schema.blocks[1].schema.fields[0].label,
     `关键字已更新-${pageMode}`,
   );
+  assert.equal(
+    result.pageRecord.schema.blocks[1].schema.fields[0].optionsCode,
+    'search_keyword',
+  );
+  assert.equal(
+    result.pageRecord.schema.blocks[1].schema.fields[0].defaultValueType,
+    'function',
+  );
+  assert.match(
+    result.pageRecord.schema.blocks[1].schema.fields[0].validationScript,
+    /startsWith/,
+  );
+  assert.equal(
+    result.pageRecord.schema.blocks[1].schema.fields[0].rules.some((rule) => rule.required),
+    true,
+  );
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(
+      result.pageRecord.schema.blocks[1].initialValues,
+      'keyword',
+    ),
+    false,
+    'Search-form function defaults must replace literal initial values.',
+  );
   assert.equal(result.snapshot.formModels['runtime-edit-form'].name, `保留姓名-${pageMode}`);
+  assert.equal(result.snapshot.formModels['runtime-edit-form'].code, `保留编码-${pageMode}`);
   assert.equal(
     result.snapshot.formModels['runtime-search-form'].keyword,
     `保留关键字-${pageMode}`,

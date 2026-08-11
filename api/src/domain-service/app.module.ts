@@ -6,6 +6,7 @@ import { ChatModule } from '../chat-service/chat.module';
 import { EntityDesignModule } from '../entity-design-service/entity-design.module';
 import { FilesModule } from '../files-service/files.module';
 import { LowCodeModule } from '../lowcode-service/lowcode.module';
+import { MesModule } from '../mes-service/mes.module';
 import { NotificationModule } from '../notification-service/notification.module';
 import { PaymentModule } from '../payment-service/payment.module';
 import { PostsModule } from '../posts-service/posts.module';
@@ -26,7 +27,8 @@ import { DomainServiceRouter } from './service-router.service';
     EntityDesignModule,
     FilesModule,
     ChatModule,
-    PlanningModule
+    PlanningModule,
+    MesModule
   ],
   controllers: [ServiceRpcController],
   providers: [DomainServiceRouter]

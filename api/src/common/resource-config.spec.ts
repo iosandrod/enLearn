@@ -7,6 +7,7 @@ import { ChatService } from '../chat-service/chat.service';
 import { EntityDesignService } from '../entity-design-service/entity-design.service';
 import { FilesService } from '../files-service/files.service';
 import { LowCodeService } from '../lowcode-service/lowcode.service';
+import { MesService } from '../mes-service/mes.service';
 import { NotificationService } from '../notification-service/notification.service';
 import { PostsService } from '../posts-service/posts.service';
 import { PlanningService } from '../planning-service/planning.service';
@@ -26,6 +27,7 @@ const services = [
   new EntityDesignService(),
   new FilesService(),
   new LowCodeService(),
+  new MesService(),
   new NotificationService(),
   new PostsService(),
   new PlanningService()

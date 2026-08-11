@@ -13,6 +13,27 @@
       } from '../../packages/lowcode-framework/src/runtime/scripts.ts';
 
       const output = document.querySelector('#result');
+      const scriptLogs = [];
+      const originalConsoleLog = console.log.bind(console);
+      const originalConsoleInfo = console.info.bind(console);
+      const originalConsoleWarn = console.warn.bind(console);
+      const originalConsoleError = console.error.bind(console);
+      console.log = (...args) => {
+        scriptLogs.push({ level: 'log', args });
+        originalConsoleLog(...args);
+      };
+      console.info = (...args) => {
+        scriptLogs.push({ level: 'info', args });
+        originalConsoleInfo(...args);
+      };
+      console.warn = (...args) => {
+        scriptLogs.push({ level: 'warn', args });
+        originalConsoleWarn(...args);
+      };
+      console.error = (...args) => {
+        scriptLogs.push({ level: 'error', args });
+        originalConsoleError(...args);
+      };
       window.addEventListener('error', (event) => {
         output.textContent = JSON.stringify({
           ok: false,
@@ -57,6 +78,10 @@
           {
             script: `
               async function main() {
+                console.log('sales-order-form-data', this.forms.edit);
+                console.info('script-info');
+                console.warn('script-warn');
+                console.error('script-error');
                 const dialogValues = await this.executeAction({
                   node: 'sql-dialog',
                   method: 'open',
@@ -100,6 +125,7 @@
                 hasWindow: typeof window !== 'undefined',
                 hasDocument: typeof document !== 'undefined',
                 hasHostBridge: typeof __lowCodeHostCall !== 'undefined',
+                hasHostLog: typeof __lowCodeHostLog !== 'undefined',
                 hasWrapperCall: typeof call !== 'undefined',
                 hasWrapperSnapshot: typeof snapshot !== 'undefined',
               };
@@ -165,6 +191,14 @@
             isolated.value.hasHostBridge === false &&
             isolated.value.hasWrapperCall === false &&
             isolated.value.hasWrapperSnapshot === false &&
+            isolated.value.hasHostLog === false &&
+            scriptLogs.some(
+              ({ level, args: [label, value] }) =>
+                level === 'log' && label === 'sales-order-form-data' && value?.count === 1,
+            ) &&
+            scriptLogs.some(({ level, args }) => level === 'info' && args[0] === 'script-info') &&
+            scriptLogs.some(({ level, args }) => level === 'warn' && args[0] === 'script-warn') &&
+            scriptLogs.some(({ level, args }) => level === 'error' && args[0] === 'script-error') &&
             context.forms.edit.count === 1 &&
             /interrupted|timeout|超时/i.test(timeoutMessage) &&
             rejectedApiMessage.includes('API denied by host policy') &&
@@ -172,6 +206,7 @@
           result,
           mainResult,
           isolated,
+          scriptLogs,
           timeoutMessage,
           rejectedApiMessage,
           apiLimitMessage,

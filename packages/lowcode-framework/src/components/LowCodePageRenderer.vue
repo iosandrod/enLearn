@@ -217,6 +217,9 @@ provide(lowCodeRuntimeBlockEditorKey, {
   getPageRecord: () => props.page,
   getServiceApi: () => host.getServiceApi(),
   getScriptContextSource: createScriptContextSource,
+  executeFieldScript: async (script, event) => (
+    await executeIsolatedScript(script, event)
+  ).value,
 });
 provide(lowCodeScriptContextProviderKey, {
   getSource: createScriptContextSource,
@@ -1157,7 +1160,16 @@ function updateVisualButtonGroupBlocks(
       const schema = isRecord(update.changes.schema) ? update.changes.schema : {};
       const fields = Array.isArray(schema.fields) ? schema.fields : [];
       visualProps.fields = fields.map(runtimeFormFieldToVisualField);
-      visualProps.formDesignerModel = cloneRuntimeValue(update.changes.formDesignerModel);
+      visualProps.initialValuesJson = JSON.stringify(
+        isRecord(update.changes.initialValues)
+          ? update.changes.initialValues
+          : targetBlock.initialValues ?? {},
+      );
+      visualProps.formDesignerModel = cloneRuntimeValue(
+        'formDesignerModel' in update.changes
+          ? update.changes.formDesignerModel
+          : targetBlock.formDesignerModel ?? visualProps.formDesignerModel,
+      );
       visualProps.formDesignerUpdatedAt = update.changes.formDesignerUpdatedAt ?? Date.now();
       candidate.props = visualProps;
     }
@@ -1261,10 +1273,15 @@ function syncRuntimeGridToVisualProps(
 
   visualProps.blockId = update.changes.id ?? visualProps.blockId;
   visualProps.title = update.changes.title ?? schema.title ?? '';
-  const tableType = readString(
+  const requestedTableType = readString(
     update.changes.tableType,
-    readString(targetBlock.tableType, 'normal'),
+    readString(targetBlock.tableType, 'default'),
   );
+  const tableType = requestedTableType === 'normal'
+    ? 'default'
+    : requestedTableType === 'main' || requestedTableType === 'detail'
+      ? requestedTableType
+      : 'default';
   const sourceType = readString(
     update.changes.sourceType,
     readString(targetBlock.sourceType, readString(source?.sourceType, 'custom')),
@@ -1318,6 +1335,11 @@ function runtimeFormFieldToVisualField(value: unknown): Record<string, unknown> 
     component: readString(field.component, 'vxe-input'),
     placeholder: readString(props.placeholder),
     required: rules.some((rule) => rule.required === true),
+    defaultValueType: readString(field.defaultValueType),
+    defaultValueScript: readString(field.defaultValueScript),
+    updateScript: readString(field.updateScript),
+    validationScript: readString(field.validationScript),
+    validationMessage: readString(field.validationMessage),
     span: field.span ?? '',
     help: readString(field.help),
     optionsCode: readString(field.optionsCode),
@@ -1344,11 +1366,54 @@ function runtimeButtonToVisualButton(value: unknown): Record<string, unknown> {
   };
 }
 
-function deriveFormModel(
+function deriveStaticFormModel(
   block: LowCodePageFormBlock | LowCodePageSearchFormBlock,
   row?: Record<string, unknown>
 ) {
   return mergeFormModelValues(block.initialValues ?? {}, row ?? {});
+}
+
+async function resolveFormFunctionDefaults(
+  block: LowCodePageFormBlock | LowCodePageSearchFormBlock,
+  model: Record<string, unknown>,
+) {
+  const nextModel = cloneRuntimeValue(model);
+  for (const field of block.schema.fields) {
+    if (
+      field.defaultValueType !== 'function' ||
+      !readString(field.defaultValueScript) ||
+      field.field in nextModel
+    ) {
+      continue;
+    }
+
+    const event: LowCodeRuntimeEvent = {
+      name: 'form.fieldDefaultValue',
+      blockId: block.id,
+      blockKind: block.kind,
+      timestamp: Date.now(),
+      payload: {
+        field: field.field,
+        values: cloneRuntimeValue(nextModel),
+      },
+    };
+    try {
+      const result = await executeIsolatedScript(field.defaultValueScript, event);
+      if (typeof result.value !== 'undefined') {
+        nextModel[field.field] = cloneRuntimeValue(result.value);
+      }
+    } catch (error) {
+      reportRuntimeDirectiveError(error);
+    }
+  }
+  return nextModel;
+}
+
+async function deriveFormModel(
+  block: LowCodePageFormBlock | LowCodePageSearchFormBlock,
+  row?: Record<string, unknown>,
+) {
+  return resolveFormFunctionDefaults(block, deriveStaticFormModel(block, row));
 }
 
 function mergeFormModelValues(
@@ -1712,12 +1777,12 @@ async function loadPageData(nextPage: LowCodePageRecord) {
   for (const block of pageBlocks) {
     if (block.kind === 'form') {
       const sourceKey = block.sourceKey ?? block.submitSourceKey;
-      runtime.replaceForm(block.id, deriveFormModel(
+      runtime.replaceForm(block.id, await deriveFormModel(
         block,
         sourceKey ? sharedFormDefaults[sourceKey] : undefined
       ));
     } else if (block.kind === 'searchForm') {
-      runtime.replaceForm(block.id, deriveFormModel(block));
+      runtime.replaceForm(block.id, await deriveFormModel(block));
     }
   }
 
@@ -2500,6 +2565,9 @@ async function handleScriptCapability(
         throw new Error(`表单 "${blockId}" 不存在。`);
       }
       runtime.patchForm(blockId, readScriptRecordArg(args, 1));
+      await runtime.getFormController(blockId)?.setValues?.(
+        runtime.state.forms[blockId] ?? {},
+      );
       return cloneScriptValue(runtime.state.forms[blockId], {});
     }
     case 'form.replace': {
@@ -2509,6 +2577,9 @@ async function handleScriptCapability(
         throw new Error(`表单 "${blockId}" 不存在。`);
       }
       runtime.replaceForm(blockId, readScriptRecordArg(args, 1));
+      await runtime.getFormController(blockId)?.setValues?.(
+        runtime.state.forms[blockId] ?? {},
+      );
       return cloneScriptValue(runtime.state.forms[blockId], {});
     }
     case 'grid.setRows': {
@@ -3238,7 +3309,7 @@ async function handleGridEdit(
     return;
   }
 
-  runtime.replaceForm(formBlock.id, deriveFormModel(formBlock, row));
+  runtime.replaceForm(formBlock.id, await deriveFormModel(formBlock, row));
   message.value = '';
 }
 

@@ -55,6 +55,15 @@ export const compProps = {
     label: 'Block ID',
     defaultValue: 'edit-form',
   }),
+  formType: createEditorSelectProp({
+    label: '表单类型',
+    defaultValue: 'default',
+    options: [
+      { label: 'edit', value: 'edit' },
+      { label: 'search', value: 'search' },
+      { label: 'default', value: 'default' },
+    ],
+  }),
   title: createEditorInputProp({
     label: '标题',
     defaultValue: '普通表单',

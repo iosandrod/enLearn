@@ -254,6 +254,19 @@ export class LowCodeService extends BaseService {
     const moduleName = schema && typeof schema === 'object'
       ? readString((schema as Record<string, unknown>).code).split('_')[0]
       : '';
+    if (moduleName === 'mes') {
+      const canManageMes = hasRequiredPermission(
+        authorization,
+        'mes.execution.manage'
+      );
+      this.applyMesRuntimeAccess(schema, canManageMes);
+      return {
+        ...page,
+        schema,
+        runtime_capabilities: { mes: { canManage: canManageMes } }
+      };
+    }
+
     if (moduleName !== 'planning') return page;
 
     const canManagePlanning = hasRequiredPermission(
@@ -313,6 +326,48 @@ export class LowCodeService extends BaseService {
             if (Array.isArray(tab.blocks)) visit(tab.blocks);
           }
         }
+      }
+    };
+
+    if (Array.isArray(schema.blocks)) visit(schema.blocks);
+    if (Array.isArray(schema.overlays)) visit(schema.overlays);
+  }
+
+  protected applyMesRuntimeAccess(schema: Record<string, unknown>, canManage: boolean) {
+    if (canManage) return;
+
+    const visit = (values: unknown[]) => {
+      for (const value of values) {
+        if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
+        const block = value as Record<string, unknown>;
+        if (block.kind === 'buttonGroup' && Array.isArray(block.actions)) {
+          block.actions = (block.actions as Array<Record<string, unknown>>).filter(
+            (action) => readString(action.permissionCode) !== 'mes.execution.manage'
+          );
+        }
+        if (block.kind === 'grid') {
+          const blockSchema = block.schema && typeof block.schema === 'object' && !Array.isArray(block.schema)
+            ? block.schema as Record<string, unknown>
+            : undefined;
+          if (blockSchema) {
+            const rowActions = blockSchema.rowActions && typeof blockSchema.rowActions === 'object' &&
+              !Array.isArray(blockSchema.rowActions)
+              ? blockSchema.rowActions as Record<string, unknown>
+              : undefined;
+            if (rowActions && Array.isArray(rowActions.actions)) {
+              rowActions.actions = (rowActions.actions as Array<Record<string, unknown>>).filter(
+                (action) => readString(action.permissionCode) !== 'mes.execution.manage'
+              );
+            }
+          }
+        }
+        if (Array.isArray(block.blocks)) visit(block.blocks);
+        if (Array.isArray(block.tabs)) {
+          for (const tab of block.tabs as Array<Record<string, unknown>>) {
+            if (Array.isArray(tab.blocks)) visit(tab.blocks);
+          }
+        }
+        if (Array.isArray(block.overlays)) visit(block.overlays);
       }
     };
 

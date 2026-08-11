@@ -38,9 +38,9 @@ for (const [field, label] of [
 }
 
 for (const [label, value] of [
-  ['普通表格', 'normal'],
-  ['主表', 'main'],
-  ['明细表', 'detail'],
+  ['main', 'main'],
+  ['detail', 'detail'],
+  ['default', 'default'],
 ]) {
   assert.ok(
     designerSource.includes(`{ label: '${label}', value: '${value}' }`),
@@ -208,6 +208,14 @@ function convertGrid(props) {
   });
   return { block, source: dataSources.records };
 }
+
+const defaultConversion = convertGrid({
+  tableType: 'default',
+  sourceType: 'custom',
+  serviceName: 'reporting',
+  serviceMethod: 'runReport',
+});
+assert.equal(defaultConversion.block.tableType, 'default');
 
 const viewConversion = convertGrid({
   tableType: 'detail',

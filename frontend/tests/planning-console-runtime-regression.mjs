@@ -66,6 +66,17 @@ assert.match(flowSource, /ResizeObserver/);
 assert.match(flowSource, /lowcode:tab-activated/);
 assert.match(flowSource, /planningFlow\.nodeSelect/);
 assert.match(flowSource, /fitView/);
+assert.match(flowSource, /const rawEdges = computed/);
+assert.match(flowSource, /combined:\$\{sourceId\}:\$\{targetId\}/);
+assert.match(flowSource, /const hasStructuralPath/);
+assert.match(flowSource, /!ownerOnly \|\| !hasStructuralPath/);
+assert.match(flowSource, /pathOptions: \{ offset: 30, borderRadius: 8 \}/);
+assert.match(flowSource, /fontSize: 15,[\s\S]*fontWeight: 800/);
+assert.match(flowSource, /verticalDirection \* 28/);
+assert.match(flowSource, /setCenter\(firstNode\.position\.x \+ 126, firstNode\.position\.y \+ 64/);
+assert.match(flowSource, /operationTone\(node\.data\.type\) === 'routing'/);
+assert.match(flowSource, /zoom: 0\.82/);
+assert.match(flowSource, /width: 252px/);
 
 assert.match(ganttSource, /v-if="validRows\.length"/);
 assert.match(ganttSource, /from '@svar-ui\/vue-gantt'/);

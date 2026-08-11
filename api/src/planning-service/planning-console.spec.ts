@@ -64,6 +64,11 @@ assert.ok(
   Number((flow.nodes.find((node) => node.id === 'assemble')?.position as { x: number }).x) >
     Number((flow.nodes.find((node) => node.id === 'cut')?.position as { x: number }).x)
 );
+assert.equal(
+  Number((flow.nodes.find((node) => node.id === 'assemble')?.position as { x: number }).x) -
+    Number((flow.nodes.find((node) => node.id === 'cut')?.position as { x: number }).x),
+  360
+);
 assert.equal(flow.nodes.find((node) => node.id === 'assemble')?.resourceSummary, '装配线');
 
 const bom = buildPlanningBomTree(

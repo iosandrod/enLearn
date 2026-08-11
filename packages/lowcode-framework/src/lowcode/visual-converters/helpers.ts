@@ -116,9 +116,28 @@ export function createLowCodeFormSchema(
   designerModel?: unknown,
   fallbackSchema?: unknown,
 ): LowCodeFormSchema {
-  const normalizedFields = normalizeRows(fields).map(normalizeField).filter(isDefined);
-  const layout = readFormDesignerLayout(designerModel);
   const preservedSchema = readLowCodeFormSchema(fallbackSchema);
+  const preservedByField = new Map(
+    (preservedSchema?.fields ?? []).map((field) => [field.field, field]),
+  );
+  const normalizedFields = normalizeRows(fields)
+    .map(normalizeField)
+    .filter(isDefined)
+    .map((field) => {
+      const preserved = preservedByField.get(field.field);
+      if (!preserved) return field;
+      const requiredRules = field.rules?.filter((rule) => rule.required === true) ?? [];
+      const unrelatedRules = preserved.rules?.filter((rule) => rule.required !== true) ?? [];
+      const rules = [...unrelatedRules, ...requiredRules];
+      const merged: LowCodeField = {
+        ...cloneJson(preserved),
+        ...field,
+        ...(rules.length ? { rules } : {}),
+      };
+      if (!rules.length) delete merged.rules;
+      return merged;
+    });
+  const layout = readFormDesignerLayout(designerModel);
 
   return {
     ...(preservedSchema ?? {}),
@@ -222,6 +241,11 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
     ...(optionChildren ? { children: optionChildren } : {}),
   };
   const required = readBoolean(row.required, false);
+  const defaultValueType = readString(row.defaultValueType);
+  const defaultValueScript = readString(row.defaultValueScript);
+  const updateScript = readString(row.updateScript);
+  const validationScript = readString(row.validationScript);
+  const validationMessage = readString(row.validationMessage);
   const placeholder = readString(row.placeholder);
   const help = readString(row.help);
   const span = readNumber(row.span);
@@ -265,8 +289,14 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
     ...(help ? { help } : {}),
     ...(span ? { span } : {}),
     ...(required
-      ? { rules: [{ required: true, message: `${label} is required` }] }
+      ? { rules: [{ required: true, message: `${label}不能为空` }] }
       : {}),
+    ...(defaultValueType === 'function' && defaultValueScript
+      ? { defaultValueType: 'function', defaultValueScript }
+      : {}),
+    ...(updateScript ? { updateScript } : {}),
+    ...(validationScript ? { validationScript } : {}),
+    ...(validationMessage ? { validationMessage } : {}),
   };
 }
 

@@ -758,6 +758,8 @@ function collectFlowEdges(
 }
 
 function layoutFlowNodes(operations: PlanningRow[], edges: PlanningRow[]) {
+  const columnStep = 360;
+  const rowStep = 156;
   const ids = operations.map((row) => readString(row.id)).filter(Boolean);
   const indegree = new Map(ids.map((id) => [id, 0]));
   const nextById = new Map<string, string[]>();
@@ -789,7 +791,10 @@ function layoutFlowNodes(operations: PlanningRow[], edges: PlanningRow[]) {
   }
   const positions = new Map<string, { x: number; y: number }>();
   for (const [level, levelIds] of rowsByLevel) {
-    levelIds.forEach((id, index) => positions.set(id, { x: 40 + level * 286, y: 36 + index * 142 }));
+    levelIds.forEach((id, index) => positions.set(id, {
+      x: 40 + level * columnStep,
+      y: 36 + index * rowStep
+    }));
   }
   return positions;
 }

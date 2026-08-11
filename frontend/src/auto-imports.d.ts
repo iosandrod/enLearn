@@ -118,6 +118,9 @@ declare global {
   // @ts-ignore
   export type { RouteCacheInvalidation } from '../composables/useRouteCache'
   import('../composables/useRouteCache')
+  // @ts-ignore
+  export type { ServiceInvokeOptions } from '../composables/useServiceApi'
+  import('../composables/useServiceApi')
 }
 
 // for vue template auto import

@@ -105,6 +105,13 @@ try {
     assert.equal(result.isolated.value.guestValue, 1);
     assert.equal(result.isolated.value.hasWindow, false);
     assert.equal(result.isolated.value.hasDocument, false);
+    assert.equal(result.isolated.value.hasHostLog, false);
+    assert.deepEqual(result.scriptLogs, [
+      { level: 'log', args: ['sales-order-form-data', { count: 1 }] },
+      { level: 'info', args: ['script-info'] },
+      { level: 'warn', args: ['script-warn'] },
+      { level: 'error', args: ['script-error'] },
+    ]);
     assert.match(result.timeoutMessage, /interrupted|timeout|超时/i);
     assert.match(result.rejectedApiMessage, /API denied by host policy/);
     assert.match(result.apiLimitMessage, /调用次数超过限制/);

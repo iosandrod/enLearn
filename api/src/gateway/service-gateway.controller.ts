@@ -37,7 +37,7 @@ function normalizeBody(body: ServiceInvokeDto): NormalizedServiceInvoke {
     typeof body.serviceName === 'string' ? body.serviceName.trim() : '';
   if (!isPublicServiceName(serviceName)) {
     throw new BadRequestException(
-      'serviceName must be either "account", "payment", "user", "lowcode", "admin", "posts", "notification", "workflow", "entityDesign", "files", "chat", or "planning".'
+      'serviceName must be either "account", "payment", "user", "lowcode", "admin", "posts", "notification", "workflow", "entityDesign", "files", "chat", "planning", or "mes".'
     );
   }
 

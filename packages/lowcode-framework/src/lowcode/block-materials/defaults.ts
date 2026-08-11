@@ -179,6 +179,7 @@ export function createDefaultGridBlock(overrides?: Partial<LowCodePageGridBlock>
       kind: 'grid',
       title: 'Records',
       sourceKey: 'records',
+      tableType: 'default',
       schema: {
         title: 'Records',
         grid: {

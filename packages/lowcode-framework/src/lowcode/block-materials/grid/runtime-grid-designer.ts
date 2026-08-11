@@ -76,8 +76,9 @@ function readGridTableType(
   source?: LowCodePageDataSource,
 ) {
   const value = readString(block.tableType);
-  if (value === 'normal' || value === 'main' || value === 'detail') return value;
-  return 'normal';
+  if (value === 'normal') return 'default';
+  if (value === 'main' || value === 'detail' || value === 'default') return value;
+  return 'default';
 }
 
 function readGridSourceType(

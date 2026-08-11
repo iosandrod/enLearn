@@ -17,6 +17,7 @@ import {
   type LowCodeScriptCapabilityRequest,
   type LowCodeScriptExecutionRequest,
   type LowCodeScriptExecutionResult,
+  type LowCodeScriptLogLevel,
 } from './scripts';
 
 type ExecuteMessage = {
@@ -75,6 +76,12 @@ const allowedCapabilityNames = new Set<LowCodeScriptCapabilityName>([
   'source.refreshAll',
   'source.set',
 ]);
+const allowedLogLevels = new Set<LowCodeScriptLogLevel>([
+  'log',
+  'info',
+  'warn',
+  'error',
+]);
 
 function toPositiveInteger(value: unknown, fallback: number) {
   const number = Number(value);
@@ -122,11 +129,28 @@ function createScriptSource(script: string, contextJson: string) {
   "use strict";
   const snapshot = JSON.parse(${JSON.stringify(contextJson)});
   const hostCall = globalThis.__lowCodeHostCall;
+  const hostLog = globalThis.__lowCodeHostLog;
   delete globalThis.__lowCodeHostCall;
+  delete globalThis.__lowCodeHostLog;
   const call = async (name, ...args) => {
     const response = await hostCall(name, JSON.stringify(args));
     return JSON.parse(response);
   };
+  const writeLog = (level, args) => {
+    let serialized;
+    try {
+      serialized = JSON.stringify(args);
+    } catch {
+      serialized = JSON.stringify(args.map((value) => String(value)));
+    }
+    hostLog(level, serialized);
+  };
+  const scriptConsole = Object.freeze({
+    log: (...args) => writeLog("log", args),
+    info: (...args) => writeLog("info", args),
+    warn: (...args) => writeLog("warn", args),
+    error: (...args) => writeLog("error", args),
+  });
   const freeze = (value) => {
     if (!value || typeof value !== "object" || Object.isFrozen(value)) return value;
     Object.values(value).forEach(freeze);
@@ -190,8 +214,8 @@ function createScriptSource(script: string, contextJson: string) {
     executeFunction: (options) => call("pageFunction.execute", options),
   });
   const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-  const userScript = new AsyncFunction(${JSON.stringify(userScriptSource)});
-  return await userScript.call(scriptThis);
+  const userScript = new AsyncFunction("console", ${JSON.stringify(userScriptSource)});
+  return await userScript.call(scriptThis, scriptConsole);
 })()
 `;
 }
@@ -245,6 +269,7 @@ async function execute(message: ExecuteMessage) {
     vm,
   });
   let apiCalls = 0;
+  let logCalls = 0;
   let capabilityId = 0;
 
   try {
@@ -285,6 +310,39 @@ async function execute(message: ExecuteMessage) {
     });
     vm.setProp(vm.global, '__lowCodeHostCall', hostCall);
     hostCall.dispose();
+
+    const hostLog = vm.newFunction('__lowCodeHostLog', (levelHandle, argsHandle) => {
+      logCalls += 1;
+      if (logCalls > maxApiCalls) {
+        throw new Error(`Script log count exceeds the limit (${maxApiCalls}).`);
+      }
+
+      const level = vm.getString(levelHandle) as LowCodeScriptLogLevel;
+      if (!allowedLogLevels.has(level)) {
+        throw new Error(`Script log level "${level}" is not supported.`);
+      }
+      const argsJson = vm.getString(argsHandle);
+      if (byteLength(argsJson) > maxPayloadBytes) {
+        throw new Error(`Script log payload exceeds the limit (${maxPayloadBytes} bytes).`);
+      }
+
+      let args: unknown;
+      try {
+        args = JSON.parse(argsJson);
+      } catch {
+        throw new Error('Script log arguments must be JSON serializable.');
+      }
+      if (!Array.isArray(args)) throw new Error('Script log arguments are invalid.');
+
+      workerScope.postMessage({
+        type: 'log',
+        requestId: message.requestId,
+        level,
+        args,
+      });
+    });
+    vm.setProp(vm.global, '__lowCodeHostLog', hostLog);
+    hostLog.dispose();
 
     const evaluation = vm.evalCode(
       createScriptSource(message.request.script, contextJson),

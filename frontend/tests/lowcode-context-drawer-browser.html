@@ -60,12 +60,16 @@
             code: 'records',
             route: '/records',
             title: '记录页面',
-            dataSources: { records: { key: 'records' } },
+            dataSources: {
+              records: { key: 'records', label: '记录主表' },
+              auditRows: { key: 'auditRows', label: '变更记录' },
+            },
             blocks: [
               {
                 id: 'records-form',
                 kind: 'form',
                 title: '记录表单',
+                sourceKey: 'records',
                 schema: {
                   fields: [
                     { field: 'name', label: '名称', component: 'vxe-input' },
@@ -77,8 +81,15 @@
                 id: 'records-grid',
                 kind: 'grid',
                 title: '记录表格',
+                sourceKey: 'auditRows',
+                tableType: 'detail',
                 schema: {
-                  grid: { columns: [{ field: 'id', title: '编号' }] },
+                  grid: {
+                    columns: [
+                      { field: 'id', title: '编号' },
+                      { field: 'changed_at', title: '变更时间' },
+                    ],
+                  },
                 },
               },
             ],
@@ -99,9 +110,16 @@
             ],
           },
         },
-        data: { records: [{ id: 1, name: 'Ada' }] },
+        data: {
+          records: [{ id: 1, name: 'Ada' }],
+          auditRows: [{ id: 'audit-1', changed_at: '2026-08-11' }],
+        },
         forms: { 'records-form': { name: 'Ada' } },
-        grids: { 'records-grid': { currentRow: { id: 1, name: 'Ada' } } },
+        grids: {
+          'records-grid': {
+            currentRow: { id: 'audit-1', changed_at: '2026-08-11' },
+          },
+        },
         apiNames: ['records.allowed'],
         capabilities: ['api.invoke', 'action.execute', 'form.patch', 'message.info'],
       };

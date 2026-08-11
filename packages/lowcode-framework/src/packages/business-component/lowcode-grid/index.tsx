@@ -52,6 +52,12 @@ const gridSizeOptions = [
   { label: 'mini', value: 'mini' },
 ];
 
+const gridTableTypeOptions = [
+  { label: 'main', value: 'main' },
+  { label: 'detail', value: 'detail' },
+  { label: 'default', value: 'default' },
+];
+
 const vxeGridPropKeys = [
   'border',
   'stripe',
@@ -244,6 +250,11 @@ export default {
     title: createEditorInputProp({
       label: '标题',
       defaultValue: '数据列表',
+    }),
+    tableType: createEditorSelectProp({
+      label: '表格类型',
+      options: gridTableTypeOptions,
+      defaultValue: 'default',
     }),
     sourceKey: createEditorInputProp({
       label: '数据源',

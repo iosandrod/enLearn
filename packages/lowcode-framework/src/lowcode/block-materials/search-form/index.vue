@@ -7,6 +7,7 @@
       :schema="block.schema"
       :option-sources="resolvedData"
       :loading="isLoading"
+      :field-validator="validateFieldScript"
       :label-context-menu="Boolean(runtimeBlockEditor)"
       @update:model-value="updateFormModel"
       @submit="handleSubmit"
@@ -28,6 +29,7 @@ import {
   openRuntimeFormContextMenu,
   openRuntimeFormDesigner,
 } from '../runtime-form-designer';
+import { openRuntimeFormFieldEditor } from '../runtime-form-field-editor';
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageSearchFormBlock>>();
   const emit = defineEmits<LowCodeBlockMaterialEmits>();
@@ -55,6 +57,7 @@ onMounted(() => {
   unregisterFormController = pageRuntime.registerFormController(props.block.id, {
     validate: () => formRef.value?.validate() ?? Promise.resolve(false),
     clearValidation: () => formRef.value?.clearValidation(),
+    setValues: (values) => formRef.value?.setValues(values),
   });
 });
 
@@ -71,10 +74,15 @@ function updateFormModel(values: Record<string, unknown>) {
   }
 }
 
-function openFormContextMenu(event: MouseEvent) {
+function openFormContextMenu(event: MouseEvent, field: LowCodeField) {
   if (!runtimeBlockEditor) return;
-  openRuntimeFormContextMenu(event, () => {
-    void openRuntimeFormDesigner(props.block, 'search', runtimeBlockEditor);
+  openRuntimeFormContextMenu(event, {
+    onDesignForm: () => {
+      void openRuntimeFormDesigner(props.block, 'search', runtimeBlockEditor);
+    },
+    onDesignField: () => {
+      void openRuntimeFormFieldEditor(props.block, field, runtimeBlockEditor);
+    },
   });
 }
 
@@ -124,6 +132,34 @@ function handleFieldChange(payload: {
     field: payload.field.field,
     fieldConfig: payload.field,
     directives: payload.field.events?.change ?? payload.field.events?.onChange ?? [],
+    script: payload.field.updateScript ?? '',
   });
+}
+
+async function validateFieldScript(
+  field: LowCodeField,
+  value: unknown,
+  values: Record<string, unknown>,
+) {
+  if (!field.validationScript || !runtimeBlockEditor?.executeFieldScript) return true;
+  try {
+    const result = await runtimeBlockEditor.executeFieldScript(field.validationScript, {
+      name: 'searchForm.fieldValidate',
+      blockId: props.block.id,
+      blockKind: props.block.kind,
+      timestamp: Date.now(),
+      payload: { field: field.field, value, values },
+    });
+    if (result === true || result === null || typeof result === 'undefined') return true;
+    if (typeof result === 'string' && result.trim()) return result.trim();
+    if (result === false) return field.validationMessage || `${field.label}校验不通过`;
+    if (result && typeof result === 'object' && 'message' in result) {
+      const message = String((result as Record<string, unknown>).message ?? '').trim();
+      return message || field.validationMessage || `${field.label}校验不通过`;
+    }
+    return field.validationMessage || `${field.label}校验不通过`;
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error);
+  }
 }
 </script>

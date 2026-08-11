@@ -7,6 +7,7 @@ import { ChatService } from '../chat-service/chat.service';
 import { EntityDesignService } from '../entity-design-service/entity-design.service';
 import { FilesService } from '../files-service/files.service';
 import { LowCodeService } from '../lowcode-service/lowcode.service';
+import { MesService } from '../mes-service/mes.service';
 import { NotificationService } from '../notification-service/notification.service';
 import { PaymentService } from '../payment-service/payment.service';
 import { PostsService } from '../posts-service/posts.service';
@@ -40,7 +41,9 @@ export class DomainServiceRouter {
     @Inject(ChatService)
     private readonly chatService: ChatService,
     @Inject(PlanningService)
-    private readonly planningService: PlanningService
+    private readonly planningService: PlanningService,
+    @Inject(MesService)
+    private readonly mesService: MesService
   ) {
     this.executors = {
       account: accountService,
@@ -53,7 +56,8 @@ export class DomainServiceRouter {
       entityDesign: entityDesignService,
       files: filesService,
       chat: chatService,
-      planning: planningService
+      planning: planningService,
+      mes: mesService
     };
   }
 

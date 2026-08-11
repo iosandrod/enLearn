@@ -79,6 +79,17 @@ function mergeField(
     ...(rules.length ? { rules } : {}),
   };
 
+  for (const key of [
+    'defaultValueType',
+    'defaultValueScript',
+    'updateScript',
+    'validationScript',
+    'validationMessage',
+  ] as const) {
+    if (typeof original[key] !== 'undefined') merged[key] = original[key];
+    else delete merged[key];
+  }
+
   if (!Object.keys(props).length) delete merged.props;
   if (!rules.length) delete merged.rules;
   if (!designed.options) delete merged.options;
@@ -146,7 +157,13 @@ export async function openRuntimeFormDesigner(
   });
 }
 
-export function openRuntimeFormContextMenu(event: MouseEvent, onDesign: () => void) {
+export function openRuntimeFormContextMenu(
+  event: MouseEvent,
+  actions: {
+    onDesignForm: () => void;
+    onDesignField: () => void;
+  },
+) {
   VxeUI.contextMenu.openByEvent(event, {
     className: 'enlearn-context-menu',
     options: [
@@ -156,11 +173,17 @@ export function openRuntimeFormContextMenu(event: MouseEvent, onDesign: () => vo
           name: '设计当前表单',
           prefixIcon: 'ri-layout-grid-line',
         },
+        {
+          code: 'design-current-field',
+          name: '设计当前字段',
+          prefixIcon: 'ri-edit-box-line',
+        },
       ],
     ],
     events: {
       optionClick({ option }) {
-        if (option.code === 'design-current-form') onDesign();
+        if (option.code === 'design-current-form') actions.onDesignForm();
+        if (option.code === 'design-current-field') actions.onDesignField();
       },
     },
   });

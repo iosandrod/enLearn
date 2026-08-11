@@ -12,6 +12,7 @@ const playwrightPath = join(
   workspaceDir,
   'node_modules/.pnpm/playwright-core@1.57.0/node_modules/playwright-core/index.js',
 );
+const screenshotPath = join(workspaceDir, 'artifacts/lowcode-context-field-tree.png');
 
 async function freePort() {
   return new Promise((resolve, reject) => {
@@ -131,8 +132,35 @@ try {
   await tabs.filter({ hasText: '字段' }).click();
 
   const searchInput = drawer.locator('input').first();
+  await searchInput.fill('');
+  const fieldTable = drawer.locator('.lc-context-drawer__field-tree .vxe-table');
+  await fieldTable.waitFor({ state: 'visible' });
+  const mainTableRow = fieldTable.locator(
+    '.lc-context-drawer__field-table-row',
+    { hasText: '记录表单' },
+  ).first();
+  assert.equal(await mainTableRow.count(), 1);
+  await fieldTable.locator('.lc-context-drawer__field-row', { hasText: '名称' }).waitFor({
+    state: 'visible',
+  });
+  await searchInput.fill('记录表格');
+  assert.equal(
+    await fieldTable.locator('.lc-context-drawer__field-table-row', { hasText: '记录表格' }).count(),
+    1,
+    'The field tree must expose every Grid as a searchable table row.',
+  );
+  await searchInput.fill('');
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll('.lc-context-drawer__field-row')]
+      .filter((row) => row.getClientRects().length > 0).length >= 3,
+  );
+  assert.ok(
+    (await fieldTable.locator('.lc-context-drawer__field-row').count()) >= 3,
+    'Configured and sampled fields must render as tree children.',
+  );
+  await page.screenshot({ path: screenshotPath, fullPage: true });
   await searchInput.fill('名称');
-  const fieldEntry = drawer.locator('.lc-context-drawer__entry', { hasText: '名称' }).first();
+  const fieldEntry = fieldTable.locator('.lc-context-drawer__field-row', { hasText: '名称' }).first();
   await fieldEntry.waitFor({ state: 'visible' });
 
   assert.equal(
@@ -151,6 +179,22 @@ try {
   assert.equal(
     insertedCode,
     'const selected = this.forms["records-form"]?.["name"];',
+  );
+
+  await page.evaluate(() => window.__lcMonacoEditors[0].trigger('test', 'undo', null));
+  await page.waitForFunction(
+    () => window.__contextDrawerSmoke.state.code.value === 'const selected = "replace-me";',
+  );
+  await searchInput.fill('变更时间');
+  const gridField = fieldTable.locator(
+    '.lc-context-drawer__field-row',
+    { hasText: '变更时间' },
+  ).first();
+  await gridField.click();
+  await page.waitForFunction(
+    () => window.__contextDrawerSmoke.state.code.value.includes(
+      'this.grids["records-grid"]?.currentRow?.["changed_at"]',
+    ),
   );
 
   await page.evaluate(() => window.__lcMonacoEditors[0].trigger('test', 'undo', null));
@@ -196,9 +240,9 @@ try {
   const readonlyDialog = page.locator('.vxe-modal--wrapper').last();
   await readonlyDialog.waitFor({ state: 'visible' });
   await drawer.waitFor({ state: 'visible' });
-  assert.equal(await drawer.locator('.lc-context-drawer__insert').count(), 0);
+  assert.equal(await drawer.locator('.lc-context-drawer__field-insert').count(), 0);
   const readonlyBefore = await page.evaluate(() => window.__contextDrawerSmoke.state.readonlyCode.value);
-  await drawer.locator('.lc-context-drawer__entry').first().click();
+  await drawer.locator('.lc-context-drawer__field-row').first().click();
   const readonlyAfter = await page.evaluate(() => window.__contextDrawerSmoke.state.readonlyCode.value);
   assert.equal(readonlyAfter, readonlyBefore);
 

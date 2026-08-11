@@ -38,7 +38,9 @@ const pageRuntime = useLowCodePageRuntime(false);
 const gridRef = ref<InstanceType<typeof LowCodeGrid>>();
 let unregisterGridController: (() => void) | undefined;
 const runtimeSources = computed(
-  () => pageRuntime?.state.sources ?? props.resolvedData
+  () =>{let obj= pageRuntime?.state.sources ?? props.resolvedData
+    return obj//
+  }
 );
 const runtimeSearches = computed(
   () => pageRuntime?.state.searches ?? props.searchFilters

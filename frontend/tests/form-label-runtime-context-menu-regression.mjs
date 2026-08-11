@@ -7,7 +7,9 @@ const [
   formBlockSource,
   searchFormBlockSource,
   runtimeDesignerSource,
+  fieldEditorSource,
   designerSource,
+  migrationSource,
   converterHelpersSource,
   rendererSource,
 ] = await Promise.all([
@@ -15,10 +17,12 @@ const [
   readFile(new URL('lowcode/block-materials/form/index.vue', frameworkRoot), 'utf8'),
   readFile(new URL('lowcode/block-materials/search-form/index.vue', frameworkRoot), 'utf8'),
   readFile(new URL('lowcode/block-materials/runtime-form-designer.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('lowcode/block-materials/runtime-form-field-editor.ts', frameworkRoot), 'utf8'),
   readFile(
     new URL('visual-editor/components/form-designer/form-designer.service.tsx', frameworkRoot),
     'utf8',
   ),
+  readFile(new URL('../../../supabase/migrations/20260811160000_runtime_form_field_editor.sql', frameworkRoot), 'utf8'),
   readFile(new URL('lowcode/visual-converters/helpers.ts', frameworkRoot), 'utf8'),
   readFile(new URL('components/LowCodePageRenderer.vue', frameworkRoot), 'utf8'),
 ]);
@@ -30,7 +34,7 @@ assert.match(
 );
 assert.match(
   formSource,
-  /if \(!props\.labelContextMenu\) return;[\s\S]*?event\.preventDefault\(\);[\s\S]*?emit\('labelContextMenu', event\)/,
+  /if \(!props\.labelContextMenu\) return;[\s\S]*?data-lc-field[\s\S]*?fieldsByKey\.value\[fieldName\][\s\S]*?event\.preventDefault\(\);[\s\S]*?emit\('labelContextMenu', event, field\)/,
   'The native context menu should be suppressed only when label design is enabled.',
 );
 
@@ -48,8 +52,8 @@ for (const source of [formBlockSource, searchFormBlockSource]) {
   );
   assert.match(
     source,
-    /openRuntimeFormDesigner\(props\.block, '(edit|search)', runtimeBlockEditor\)/,
-    'Runtime form blocks must open the shared form designer in the correct mode.',
+    /openRuntimeFormDesigner\(props\.block, '(edit|search)', runtimeBlockEditor\)[\s\S]*?openRuntimeFormFieldEditor\(props\.block, field, runtimeBlockEditor\)/,
+    'Runtime forms must keep full-form design and field-property editing separate.',
   );
 }
 
@@ -57,6 +61,31 @@ assert.match(
   runtimeDesignerSource,
   /code: 'design-current-form',[\s\S]*?name: '设计当前表单'/,
   'The context menu must expose the requested design-current-form action.',
+);
+assert.match(
+  runtimeDesignerSource,
+  /code: 'design-current-field',[\s\S]*?name: '设计当前字段'/,
+  'The context menu must expose the requested design-current-field action.',
+);
+assert.match(
+  fieldEditorSource,
+  /RUNTIME_FORM_FIELD_EDITOR_CODE = 'runtime-form-field-editor'[\s\S]*?loadLowCodeFormDefinition[\s\S]*?openGlobalDialog<FieldEditorModel>/,
+  'The field editor must load its LowCodeForm schema from the database and use a lightweight dialog.',
+);
+assert.match(
+  fieldEditorSource,
+  /schema: \{[\s\S]*?fields,[\s\S]*?initialValues: createUpdatedInitialValues/,
+  'The field editor must persist only the selected field schema and its initial value.',
+);
+assert.match(
+  migrationSource,
+  /'runtime-form-field-editor'[\s\S]*?"field": "required"[\s\S]*?"field": "defaultValueType"[\s\S]*?"field": "optionsCode"[\s\S]*?"field": "updateScript"[\s\S]*?"field": "validationScript"/,
+  'The database form schema must expose all requested field properties.',
+);
+assert.doesNotMatch(
+  fieldEditorSource,
+  /\$\$formDesigner|form-designer-dialog|selectedField/,
+  'Designing one field must not invoke the full drag-and-drop form designer.',
 );
 assert.match(
   runtimeDesignerSource,
@@ -78,6 +107,11 @@ assert.match(
   /actions: cloneValue\(original\.actions \?\? \[\]\)/,
   'Form design must retain existing runtime actions.',
 );
+assert.match(
+  runtimeDesignerSource,
+  /'defaultValueType',[\s\S]*?'defaultValueScript',[\s\S]*?'updateScript',[\s\S]*?'validationScript',[\s\S]*?'validationMessage',[\s\S]*?original\[key\]/,
+  'Full-form design must preserve field scripts configured by the lightweight editor.',
+);
 
 assert.match(
   designerSource,
@@ -93,6 +127,11 @@ assert.match(
   converterHelpersSource,
   /columns\.some\(\(column\) => column\.blocks\.length > 0\)/,
   'Saving a designed row must retain empty layout columns used as spacing.',
+);
+assert.match(
+  converterHelpersSource,
+  /preservedByField[\s\S]*?cloneJson\(preserved\)[\s\S]*?\.\.\.field/,
+  'Visual round trips must retain field metadata not owned by the visual field row.',
 );
 assert.match(
   designerSource,

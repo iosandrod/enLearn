@@ -33,6 +33,8 @@ export type LowCodeScriptCapabilityRequest = {
   args: unknown[];
 };
 
+export type LowCodeScriptLogLevel = 'log' | 'info' | 'warn' | 'error';
+
 export type LowCodeScriptContextSnapshot = {
   page: Record<string, unknown>;
   route: Record<string, unknown>;
@@ -122,6 +124,22 @@ function readPositiveLimit(value: unknown, fallback: number, minimum = 1) {
 
 function serializedByteLength(value: LowCodeScriptSerializable) {
   return new TextEncoder().encode(JSON.stringify(value)).byteLength;
+}
+
+function writeLowCodeScriptLog(level: LowCodeScriptLogLevel, args: unknown[]) {
+  if (level === 'info') {
+    globalThis.console.info(...args);
+    return;
+  }
+  if (level === 'warn') {
+    globalThis.console.warn(...args);
+    return;
+  }
+  if (level === 'error') {
+    globalThis.console.error(...args);
+    return;
+  }
+  globalThis.console.log(...args);
 }
 
 export function registerLowCodeScriptApi(
@@ -307,6 +325,17 @@ export function createLowCodeWorkerScriptExecutor(): LowCodeScriptExecutor {
         }
 
         if (data.requestId !== requestId || settled) return;
+
+        if (data.type === 'log') {
+          const level = data.level;
+          if (
+            (level === 'log' || level === 'info' || level === 'warn' || level === 'error') &&
+            Array.isArray(data.args)
+          ) {
+            writeLowCodeScriptLog(level, data.args);
+          }
+          return;
+        }
 
         if (data.type === 'capability') {
           const capabilityRequest = data.request as LowCodeScriptCapabilityRequest;

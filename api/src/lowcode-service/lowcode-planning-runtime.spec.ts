@@ -6,6 +6,7 @@ import { LowCodeService } from './lowcode.service';
 
 type RuntimeService = {
   applyPlanningRuntimeAccess(schema: Record<string, unknown>, canManage: boolean): void;
+  applyMesRuntimeAccess(schema: Record<string, unknown>, canManage: boolean): void;
   preparePageWrite(postData: Record<string, unknown>): Record<string, unknown>;
 };
 
@@ -135,5 +136,42 @@ service.applyPlanningRuntimeAccess(managerSchema, true);
 assert.deepEqual(actions(managerSchema).map((action) => action.code), [
   'preflight', 'run', 'cancel', 'publish', 'refresh'
 ]);
+
+const mesSchema = {
+  blocks: [
+    {
+      id: 'mes-actions',
+      kind: 'buttonGroup',
+      actions: [
+        { code: 'refresh', label: 'Refresh' },
+        { code: 'pause', label: 'Pause', permissionCode: 'mes.execution.manage' }
+      ]
+    },
+    {
+      id: 'mes-grid',
+      kind: 'grid',
+      schema: {
+        grid: { columns: [{ field: 'id', title: 'ID' }] },
+        rowActions: {
+          edit: false,
+          delete: false,
+          actions: [
+            { code: 'inspect', label: 'Inspect' },
+            { code: 'reverse', label: 'Reverse', permissionCode: 'mes.execution.manage' }
+          ]
+        }
+      }
+    }
+  ]
+};
+service.applyMesRuntimeAccess(mesSchema, false);
+assert.deepEqual(
+  (mesSchema.blocks[0].actions ?? []).map((action) => action.code),
+  ['refresh']
+);
+assert.deepEqual(
+  (mesSchema.blocks[1].schema?.rowActions?.actions ?? []).map((action) => action.code),
+  ['inspect']
+);
 
 console.log('planning low-code runtime access tests passed');

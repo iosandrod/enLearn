@@ -20,11 +20,30 @@ export type LowCodeContextEntry = {
   category: Exclude<LowCodeContextCategory, 'nodes'>;
   group: string;
   label: string;
+  field?: string;
+  sourceKey?: string;
+  blockId?: string;
   description?: string;
   insertText: string;
   icon?: string;
   badge?: string;
   keywords?: string[];
+};
+
+export type LowCodeContextFieldTreeNode = {
+  id: string;
+  type: 'table' | 'field';
+  label: string;
+  role?: string;
+  field?: string;
+  sourceKey?: string;
+  blockId?: string;
+  tableType?: 'main' | 'detail' | 'default';
+  description?: string;
+  icon?: string;
+  badge?: string;
+  entry?: LowCodeContextEntry;
+  children: LowCodeContextFieldTreeNode[];
 };
 
 export type LowCodeContextNode = {
@@ -70,6 +89,7 @@ export type LowCodeContextSource = {
 
 export type LowCodeContextCatalog = {
   fields: LowCodeContextEntry[];
+  fieldTree: LowCodeContextFieldTreeNode[];
   apis: LowCodeContextEntry[];
   functions: LowCodeContextEntry[];
   nodes: LowCodeContextNode[];
@@ -299,6 +319,10 @@ function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
+function readBlockString(block: LowCodePageBlock, key: string, fallback = '') {
+  return readString((block as unknown as Record<string, unknown>)[key], fallback);
+}
+
 function jsString(value: string) {
   return JSON.stringify(value);
 }
@@ -354,7 +378,8 @@ function readGridSampleFields(source: LowCodeContextSource, block: LowCodePageBl
       : undefined,
     Array.isArray(grid.rows) && isRecord(grid.rows[0]) ? grid.rows[0] : undefined,
   ].filter(isRecord);
-  const sourceRows = block.sourceKey ? source.data?.[block.sourceKey] : undefined;
+  const sourceKey = readBlockString(block, 'sourceKey');
+  const sourceRows = sourceKey ? source.data?.[sourceKey] : undefined;
   const sourceRecord = Array.isArray(sourceRows)
     ? sourceRows.find(isRecord)
     : isRecord(sourceRows) ? sourceRows : undefined;
@@ -390,22 +415,28 @@ function flattenBlocks(blocks: LowCodePageBlock[]): LowCodePageBlock[] {
   return blocks.flatMap((block) => [block, ...flattenBlocks(childBlocks(block))]);
 }
 
-function createFieldEntry(
-  id: string,
-  group: string,
-  label: string,
-  description: string,
-  insertText: string,
-  badge: string,
-): LowCodeContextEntry {
+function createFieldEntry(options: {
+  id: string;
+  group: string;
+  label: string;
+  field?: string;
+  sourceKey?: string;
+  blockId?: string;
+  description: string;
+  insertText: string;
+  badge: string;
+}): LowCodeContextEntry {
   return {
-    id,
+    id: options.id,
     category: 'fields',
-    group,
-    label,
-    description,
-    insertText,
-    badge,
+    group: options.group,
+    label: options.label,
+    field: options.field,
+    sourceKey: options.sourceKey,
+    blockId: options.blockId,
+    description: options.description,
+    insertText: options.insertText,
+    badge: options.badge,
     icon: 'ri-braces-line',
   };
 }
@@ -424,24 +455,27 @@ function createFieldEntries(source: LowCodeContextSource) {
   dataKeys.forEach((sourceKey) => {
     const sourceFields = fieldsFromValue(source.data?.[sourceKey]);
     sourceFields.forEach((field) => {
-      entries.push(createFieldEntry(
-        `data:${sourceKey}:${field}`,
-        `数据源 · ${sourceKey}`,
+      entries.push(createFieldEntry({
+        id: `data:${sourceKey}:${field}`,
+        group: `数据源 · ${sourceKey}`,
+        label: field,
         field,
-        `数据源 ${sourceKey} 的绑定字段`,
-        createDataFieldAccess(sourceKey, field, source.data?.[sourceKey]),
-        'DATA',
-      ));
+        sourceKey,
+        description: `数据源 ${sourceKey} 的绑定字段`,
+        insertText: createDataFieldAccess(sourceKey, field, source.data?.[sourceKey]),
+        badge: 'DATA',
+      }));
     });
     if (!sourceFields.length) {
-      entries.push(createFieldEntry(
-        `data:${sourceKey}`,
-        '数据源',
+      entries.push(createFieldEntry({
+        id: `data:${sourceKey}`,
+        group: '数据源',
+        label: sourceKey,
         sourceKey,
-        '当前页面绑定的数据源',
-        `this.$source.get(${jsString(sourceKey)})`,
-        'SOURCE',
-      ));
+        description: '当前页面绑定的数据源',
+        insertText: `this.$source.get(${jsString(sourceKey)})`,
+        badge: 'SOURCE',
+      }));
     }
   });
 
@@ -450,50 +484,66 @@ function createFieldEntries(source: LowCodeContextSource) {
       const label = readString(field.label, field.field);
       if (block.kind === 'searchForm') {
         const sourceKey = readString(block.targetSourceKey, block.id);
-        entries.push(createFieldEntry(
-          `search:${block.id}:${field.field}`,
-          `查询表单 · ${block.title ?? block.id}`,
+        entries.push(createFieldEntry({
+          id: `search:${block.id}:${field.field}`,
+          group: `查询表单 · ${block.title ?? block.id}`,
           label,
-          field.field,
-          `this.searches[${jsString(sourceKey)}]?.[${jsString(field.field)}]`,
-          'SEARCH',
-        ));
+          field: field.field,
+          sourceKey,
+          blockId: block.id,
+          description: field.field,
+          insertText: `this.searches[${jsString(sourceKey)}]?.[${jsString(field.field)}]`,
+          badge: 'SEARCH',
+        }));
         return;
       }
-      entries.push(createFieldEntry(
-        `form:${block.id}:${field.field}`,
-        `表单 · ${block.title ?? block.id}`,
+      entries.push(createFieldEntry({
+        id: `form:${block.id}:${field.field}`,
+        group: `表单 · ${block.title ?? block.id}`,
         label,
-        field.field,
-        `this.forms[${jsString(block.id)}]?.[${jsString(field.field)}]`,
-        'FORM',
-      ));
+        field: field.field,
+        sourceKey: readBlockString(
+          block,
+          'sourceKey',
+          readBlockString(block, 'submitSourceKey'),
+        ),
+        blockId: block.id,
+        description: field.field,
+        insertText: `this.forms[${jsString(block.id)}]?.[${jsString(field.field)}]`,
+        badge: 'FORM',
+      }));
     });
 
     const gridColumns = readGridColumnFields(block);
     gridColumns.forEach((column) => {
-      entries.push(createFieldEntry(
-        `grid:${block.id}:${column.field}`,
-        `表格 · ${block.title ?? block.id}`,
-        column.label,
-        column.field,
-        `this.grids[${jsString(block.id)}]?.currentRow?.[${jsString(column.field)}]`,
-        'GRID',
-      ));
+      entries.push(createFieldEntry({
+        id: `grid:${block.id}:${column.field}`,
+        group: `表格 · ${block.title ?? block.id}`,
+        label: column.label,
+        field: column.field,
+        sourceKey: block.kind === 'grid' ? readBlockString(block, 'sourceKey') : '',
+        blockId: block.id,
+        description: column.field,
+        insertText: `this.grids[${jsString(block.id)}]?.currentRow?.[${jsString(column.field)}]`,
+        badge: 'GRID',
+      }));
     });
     if (block.kind === 'grid') {
       const configuredFields = new Set(gridColumns.map((column) => column.field));
       readGridSampleFields(source, block)
         .filter((field) => !configuredFields.has(field))
         .forEach((field) => {
-          entries.push(createFieldEntry(
-            `grid:${block.id}:${field}`,
-            `表格 · ${block.title ?? block.id}`,
+          entries.push(createFieldEntry({
+            id: `grid:${block.id}:${field}`,
+            group: `表格 · ${block.title ?? block.id}`,
+            label: field,
             field,
-            '由当前表格运行数据识别的字段',
-            `this.grids[${jsString(block.id)}]?.currentRow?.[${jsString(field)}]`,
-            'GRID',
-          ));
+            sourceKey: readBlockString(block, 'sourceKey'),
+            blockId: block.id,
+            description: '由当前表格运行数据识别的字段',
+            insertText: `this.grids[${jsString(block.id)}]?.currentRow?.[${jsString(field)}]`,
+            badge: 'GRID',
+          }));
         });
     }
 
@@ -501,18 +551,244 @@ function createFieldEntries(source: LowCodeContextSource) {
       const sourceKey = block.kind === 'detail'
         ? readString(block.sourceKey, block.id)
         : block.id;
-      entries.push(createFieldEntry(
-        `detail:${block.id}:${field.field}`,
-        `详情 · ${block.title ?? block.id}`,
-        field.label,
-        field.field,
-        createDataFieldAccess(sourceKey, field.field, source.data?.[sourceKey]),
-        'DETAIL',
-      ));
+      entries.push(createFieldEntry({
+        id: `detail:${block.id}:${field.field}`,
+        group: `详情 · ${block.title ?? block.id}`,
+        label: field.label,
+        field: field.field,
+        sourceKey,
+        blockId: block.id,
+        description: field.field,
+        insertText: createDataFieldAccess(sourceKey, field.field, source.data?.[sourceKey]),
+        badge: 'DETAIL',
+      }));
     });
   });
 
   return entries;
+}
+
+type FieldTreeOwner = {
+  id: string;
+  label: string;
+  role: string;
+  sourceKey: string;
+  blockId: string;
+  tableType: 'main' | 'detail' | 'default';
+  block?: LowCodePageBlock;
+  entryBadges: Set<string>;
+  entries: LowCodeContextEntry[];
+};
+
+function readGridTableType(block: LowCodePageBlock): FieldTreeOwner['tableType'] {
+  if (block.kind !== 'grid') return 'default';
+  return block.tableType === 'main' || block.tableType === 'detail'
+    ? block.tableType
+    : 'default';
+}
+
+function ownerRole(tableType: FieldTreeOwner['tableType'], kind: LowCodePageBlock['kind']) {
+  if (tableType === 'main') return '主表';
+  if (tableType === 'detail') return '明细 Grid';
+  if (kind === 'form') return '主表';
+  return '其他 Grid';
+}
+
+function preferredFieldEntry(
+  owner: FieldTreeOwner,
+  candidates: LowCodeContextEntry[],
+) {
+  const preferredBadges = owner.role === '主表'
+    ? ['FORM', 'GRID', 'DATA', 'DETAIL']
+    : ['GRID', 'DATA', 'FORM', 'DETAIL'];
+  const badgeRank = (entry: LowCodeContextEntry) => {
+    const index = preferredBadges.indexOf(entry.badge ?? '');
+    return index < 0 ? preferredBadges.length : index;
+  };
+  return [...candidates].sort((left, right) => badgeRank(left) - badgeRank(right))[0];
+}
+
+function fieldNode(owner: FieldTreeOwner, entry: LowCodeContextEntry) {
+  const field = readString(entry.field, entry.label);
+  return {
+    id: `${owner.id}/field:${field}`,
+    type: 'field' as const,
+    label: entry.label,
+    field,
+    sourceKey: owner.sourceKey || entry.sourceKey,
+    blockId: owner.blockId || entry.blockId,
+    description: entry.description,
+    icon: entry.icon,
+    badge: entry.badge,
+    entry,
+    children: [],
+  } satisfies LowCodeContextFieldTreeNode;
+}
+
+function createFieldTree(
+  source: LowCodeContextSource,
+  fields: LowCodeContextEntry[],
+): LowCodeContextFieldTreeNode[] {
+  const schema = source.page?.schema;
+  const blocks = schema
+    ? flattenBlocks([...schema.blocks, ...(schema.overlays ?? [])])
+    : [];
+  const grids = blocks.filter(
+    (block): block is Extract<LowCodePageBlock, { kind: 'grid' }> => block.kind === 'grid',
+  );
+  const forms = blocks.filter(
+    (block): block is Extract<LowCodePageBlock, { kind: 'form' }> => block.kind === 'form',
+  );
+  const searchForms = blocks.filter(
+    (block): block is Extract<LowCodePageBlock, { kind: 'searchForm' }> =>
+      block.kind === 'searchForm',
+  );
+  const owners: FieldTreeOwner[] = [];
+  const claimedSourceKeys = new Set<string>();
+  const gridSourceKeys = new Set(
+    grids.map((block) => readBlockString(block, 'sourceKey')).filter(Boolean),
+  );
+
+  grids.filter((block) => block.tableType === 'main')
+    .forEach((block) => {
+      const sourceKey = readBlockString(block, 'sourceKey');
+      if (sourceKey) claimedSourceKeys.add(sourceKey);
+      owners.push({
+        id: `table:grid:${block.id}`,
+        label: readString(block.title, block.id),
+        role: '主表',
+        sourceKey,
+        blockId: block.id,
+        tableType: 'main',
+        block,
+        entryBadges: new Set(['FORM', 'GRID', 'DATA', 'SOURCE']),
+        entries: [],
+      });
+    });
+
+  forms.forEach((block) => {
+    const sourceKey = readString(block.sourceKey, readString(block.submitSourceKey));
+    if (sourceKey && gridSourceKeys.has(sourceKey)) return;
+    if (sourceKey) claimedSourceKeys.add(sourceKey);
+    owners.push({
+      id: `table:form:${block.id}`,
+      label: readString(block.title, block.id),
+      role: '主表',
+      sourceKey,
+      blockId: block.id,
+      tableType: 'main',
+      block,
+      entryBadges: new Set(['FORM', 'DATA', 'SOURCE']),
+      entries: [],
+    });
+  });
+
+  grids.filter((block) => block.tableType !== 'main')
+    .forEach((block) => {
+      const sourceKey = readBlockString(block, 'sourceKey');
+      if (sourceKey) claimedSourceKeys.add(sourceKey);
+      const tableType = readGridTableType(block);
+      owners.push({
+        id: `table:grid:${block.id}`,
+        label: readString(block.title, block.id),
+        role: ownerRole(tableType, block.kind),
+        sourceKey,
+        blockId: block.id,
+        tableType,
+        block,
+        entryBadges: new Set(['FORM', 'GRID', 'DATA', 'SOURCE']),
+        entries: [],
+      });
+    });
+
+  searchForms.forEach((block) => {
+    const sourceKey = readString(block.targetSourceKey, block.id);
+    owners.push({
+      id: `table:search:${block.id}`,
+      label: readString(block.title, block.id),
+      role: '查询表单',
+      sourceKey,
+      blockId: block.id,
+      tableType: 'default',
+      block,
+      entryBadges: new Set(['SEARCH']),
+      entries: [],
+    });
+  });
+
+  uniqueStrings([
+    ...Object.keys(schema?.dataSources ?? {}),
+    ...Object.keys(source.data ?? {}),
+  ]).filter((sourceKey) => !claimedSourceKeys.has(sourceKey)).forEach((sourceKey) => {
+    owners.push({
+      id: `table:source:${sourceKey}`,
+      label: readString(schema?.dataSources?.[sourceKey]?.label, sourceKey),
+      role: '数据源',
+      sourceKey,
+      blockId: '',
+      tableType: 'default',
+      entryBadges: new Set(['DATA', 'SOURCE', 'DETAIL']),
+      entries: [],
+    });
+  });
+
+  const unclaimedEntries: LowCodeContextEntry[] = [];
+  fields.forEach((entry) => {
+    const candidates = owners.filter((owner) => {
+      if (entry.blockId && owner.blockId === entry.blockId) return true;
+      return Boolean(entry.sourceKey && owner.sourceKey === entry.sourceKey);
+    });
+    const owner = candidates.find((candidate) => candidate.entryBadges.has(entry.badge ?? ''));
+    if (owner) owner.entries.push(entry);
+    else unclaimedEntries.push(entry);
+  });
+
+  const claimedEntryIds = new Set(
+    owners.flatMap((owner) => owner.entries.map((entry) => entry.id)),
+  );
+  const remainingEntries = unclaimedEntries.filter((entry) => !claimedEntryIds.has(entry.id));
+
+  if (remainingEntries.length) {
+    owners.push({
+      id: 'table:other-context',
+      label: '其他页面字段',
+      role: '其他',
+      sourceKey: '',
+      blockId: '',
+      tableType: 'default',
+      entryBadges: new Set(),
+      entries: remainingEntries,
+    });
+  }
+
+  return owners.map((owner) => {
+    const entriesByField = new Map<string, LowCodeContextEntry[]>();
+    owner.entries.forEach((entry) => {
+      const field = readString(entry.field);
+      if (!field) return;
+      entriesByField.set(field, [...(entriesByField.get(field) ?? []), entry]);
+    });
+    const fieldEntries = [...entriesByField.values()]
+      .map((entries) => preferredFieldEntry(owner, entries))
+      .filter(Boolean);
+    const sourceEntry = owner.entries.find((entry) => entry.badge === 'SOURCE');
+    const children = fieldEntries.map((entry) => fieldNode(owner, entry));
+
+    return {
+      id: owner.id,
+      type: 'table',
+      label: owner.label,
+      role: owner.role,
+      sourceKey: owner.sourceKey,
+      blockId: owner.blockId,
+      tableType: owner.tableType,
+      description: owner.block ? readBlockString(owner.block, 'description') : '',
+      icon: owner.role === '主表' ? 'ri-table-2' : 'ri-table-line',
+      badge: owner.role,
+      entry: children.length ? undefined : sourceEntry,
+      children,
+    } satisfies LowCodeContextFieldTreeNode;
+  }).filter((owner) => owner.children.length || owner.entry);
 }
 
 function createApiEntries(source: LowCodeContextSource) {
@@ -627,11 +903,13 @@ export function createLowCodeContextCatalog(
 ): LowCodeContextCatalog {
   const extraEntries = source.entries ?? [];
   const schema = source.page?.schema;
+  const fields = [
+    ...createFieldEntries(source),
+    ...extraEntries.filter((entry) => entry.category === 'fields'),
+  ];
   return {
-    fields: [
-      ...createFieldEntries(source),
-      ...extraEntries.filter((entry) => entry.category === 'fields'),
-    ],
+    fields,
+    fieldTree: createFieldTree(source, fields),
     apis: [
       ...createApiEntries(source),
       ...extraEntries.filter((entry) => entry.category === 'apis'),

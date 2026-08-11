@@ -78,9 +78,9 @@ export const BUILTIN_LOW_CODE_EDIT_PAGE_FUNCTIONS: readonly BuiltinLowCodePageFu
     pageType: 'edit',
     insertText: createPageFunctionInsertText('save'),
     execute: async (context) => {
-      const saved = await context.submitForms();
-      if (!saved) throw new Error('保存失败。');
-      return true;
+      // const saved = await context.submitForms();
+      // if (!saved) throw new Error('保存失败。');
+      // return true;
     },
   },
   {

@@ -17,6 +17,15 @@ import {
   upsertFormDataSource,
 } from '../helpers';
 
+type FormType = 'edit' | 'search' | 'default';
+
+function normalizeFormType(value: unknown): FormType {
+  const formType = readString(value, 'default');
+  return formType === 'edit' || formType === 'search' || formType === 'default'
+    ? formType
+    : 'default';
+}
+
 function normalizeActionStatus(value: unknown): LowCodeAction['status'] {
   const status = readString(value);
   return ['primary', 'success', 'warning', 'danger', 'info'].includes(status)
@@ -73,6 +82,7 @@ const converter: VisualToLowCodeConverter = {
   order: 20,
   defaultProps: {
     blockId: 'edit-form',
+    formType: 'default',
     title: '编辑信息',
     sourceKey: 'record',
     submitSourceKey: 'record',
@@ -95,6 +105,7 @@ const converter: VisualToLowCodeConverter = {
   },
   toRuntimeBlock(block, context) {
     const props = readVisualBlockProps(block);
+    const formType = normalizeFormType(props.formType);
     const preservedSchema = readLowCodeFormSchema(props.schema);
     const formSchema = createLowCodeFormSchema(
       props.fields,
@@ -118,6 +129,7 @@ const converter: VisualToLowCodeConverter = {
     return {
       id: toBlockId(props.blockId, block._vid),
       kind: 'form',
+      formType,
       title: readString(props.title, 'Edit Form'),
       ...(sourceKey ? { sourceKey } : {}),
       ...(submitSourceKey ? { submitSourceKey } : {}),

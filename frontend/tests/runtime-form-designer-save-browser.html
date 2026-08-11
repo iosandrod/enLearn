@@ -65,6 +65,9 @@
           layout: 'dashboard',
           status: 'published',
           keepAlive: false,
+          scriptPolicy: {
+            capabilities: ['form.patch'],
+          },
           dataSources: {},
           blocks: [
             {
@@ -90,8 +93,55 @@
                     component: 'vxe-input',
                     props: { placeholder: '请输入编码' },
                   },
+                  {
+                    field: 'generatedCode',
+                    label: '函数默认编码',
+                    component: 'vxe-input',
+                    defaultValueType: 'function',
+                    defaultValueScript: `
+                      async function main(event) {
+                        return "AUTO-" + event.blockKind + "-" + event.field;
+                      }
+                    `,
+                  },
+                  {
+                    field: 'updateSource',
+                    label: '更新源',
+                    component: 'vxe-input',
+                    updateScript: `
+                      async function main(event) {
+                        await this.$form.patch(event.blockId, {
+                          updateTarget: "PATCHED-" + event.value,
+                        });
+                      }
+                    `,
+                  },
+                  {
+                    field: 'updateTarget',
+                    label: '更新目标',
+                    component: 'vxe-input',
+                  },
+                  {
+                    field: 'validationValue',
+                    label: '脚本校验值',
+                    component: 'vxe-input',
+                    validationMessage: '配置的校验提示',
+                    validationScript: `
+                      async function main(event) {
+                        if (event.value === "valid") return true;
+                        if (event.value === "message") return "函数返回的校验提示";
+                        throw new Error("函数抛出的校验提示");
+                      }
+                    `,
+                  },
                 ],
-                actions: [],
+                actions: [
+                  {
+                    code: 'validate',
+                    label: '执行校验',
+                    type: 'submit',
+                  },
+                ],
               },
             },
             {
@@ -125,6 +175,44 @@
       const serviceApi = {
         async invoke(serviceName, serviceMethod, payload = {}) {
           if (serviceName === 'lowcode' && serviceMethod === 'listItems') {
+            if (payload.resource === 'lowcode_form_definitions') {
+              const requestedCode = Array.isArray(payload.filters?.code)
+                ? payload.filters.code[0]
+                : payload.filters?.code;
+              if (requestedCode === 'runtime-form-field-editor') {
+                return [{
+                  code: 'runtime-form-field-editor',
+                  name: '运行时字段属性编辑',
+                  enabled: true,
+                  schema: {
+                    columns: 2,
+                    fields: [
+                      { field: 'field', label: '字段编码', component: 'vxe-input', props: { readonly: true } },
+                      { field: 'label', label: '字段名称', component: 'vxe-input' },
+                      { field: 'required', label: '必须录入', component: 'vxe-switch' },
+                      { field: 'requiredMessage', label: '必录提示', component: 'vxe-input' },
+                      {
+                        field: 'defaultValueType',
+                        label: '默认值类型',
+                        component: 'vxe-select',
+                        options: [
+                          { label: '无默认值', value: 'none' },
+                          { label: '固定值', value: 'literal' },
+                          { label: '函数', value: 'function' },
+                        ],
+                      },
+                      { field: 'defaultValue', label: '默认值', component: 'vxe-input' },
+                      { field: 'optionsCode', label: '关联下拉 Code', component: 'vxe-input' },
+                      { field: 'validationMessage', label: '校验提示', component: 'vxe-input' },
+                      { field: 'defaultValueScript', label: '默认值函数', component: 'vxe-textarea', span: 2 },
+                      { field: 'updateScript', label: '值更新事件', component: 'vxe-textarea', span: 2 },
+                      { field: 'validationScript', label: '校验函数', component: 'vxe-textarea', span: 2 },
+                    ],
+                    actions: [],
+                  },
+                }];
+              }
+            }
             return [];
           }
           if (serviceName === 'lowcode' && serviceMethod === 'listTablePageOptions') {

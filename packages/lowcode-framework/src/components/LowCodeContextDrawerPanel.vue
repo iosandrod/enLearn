@@ -5,7 +5,7 @@
         v-model="query"
         clearable
         prefix-icon="ri-search-line"
-        placeholder="搜索字段、API、函数或节点"
+        placeholder="搜索表、字段、API、函数或节点"
       />
     </div>
 
@@ -26,8 +26,80 @@
       </button>
     </div>
 
-    <div class="lc-context-drawer__content">
-      <template v-if="activeTab !== 'nodes'">
+    <div
+      class="lc-context-drawer__content"
+      :class="{ 'is-field-table': activeTab === 'fields' }"
+    >
+      <div v-if="activeTab === 'fields'" class="lc-context-drawer__field-tree">
+        <vxe-table
+          ref="fieldTableRef"
+          auto-resize
+          border
+          size="mini"
+          height="100%"
+          show-overflow="tooltip"
+          :data="filteredFieldTree"
+          :row-config="fieldTreeRowConfig"
+          :tree-config="fieldTreeConfig"
+          :row-class-name="fieldTreeRowClassName"
+          @cell-click="handleFieldTreeCellClick"
+        >
+          <vxe-column
+            field="label"
+            title="表 / 字段"
+            min-width="176"
+            tree-node
+          >
+            <template #default="{ row }">
+              <span
+                class="lc-context-drawer__field-name"
+                :class="{ 'is-table': row.type === 'table' }"
+              >
+                <i :class="row.icon || (row.type === 'table' ? 'ri-table-line' : 'ri-braces-line')" />
+                <span class="flex flex-row">
+                  <strong>{{ row.label }}</strong>
+                  <small v-if="row.type === 'field' && row.field !== row.label">
+                    {{ row.field }}
+                  </small>
+                  <small v-else-if="row.type === 'table'">
+                    {{ row.children.length }} 个字段
+                  </small>
+                </span>
+              </span>
+            </template>
+          </vxe-column>
+          <vxe-column title="来源" min-width="116">
+            <template #default="{ row }">
+              <span class="lc-context-drawer__field-source">
+                <strong>{{ row.sourceKey || '-' }}</strong>
+                <small v-if="row.blockId">{{ row.blockId }}</small>
+              </span>
+            </template>
+          </vxe-column>
+          <vxe-column title="类型" width="74" align="center">
+            <template #default="{ row }">
+              <span class="lc-context-drawer__field-kind">
+                {{ row.type === 'table' ? row.role : row.badge }}
+              </span>
+            </template>
+          </vxe-column>
+          <vxe-column width="42" align="center">
+            <template #default="{ row }">
+              <button
+                v-if="allowInsert && row.entry"
+                type="button"
+                class="lc-context-drawer__field-insert"
+                :title="`插入 ${row.entry.insertText}`"
+                @click.stop="insertEntry(row.entry)"
+              >
+                <i class="ri-add-line" aria-hidden="true" />
+              </button>
+            </template>
+          </vxe-column>
+        </vxe-table>
+      </div>
+
+      <template v-else-if="activeTab !== 'nodes'">
         <section
           v-for="section in groupedEntries"
           :key="section.group"
@@ -147,11 +219,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import type {
   LowCodeContextCatalog,
   LowCodeContextCategory,
   LowCodeContextEntry,
+  LowCodeContextFieldTreeNode,
   LowCodeContextNode,
   LowCodeContextNodeMethod,
 } from '../runtime/lowcode-context';
@@ -169,9 +242,29 @@ const props = defineProps<{
 const query = ref('');
 const activeTab = ref<LowCodeContextCategory>(props.initialTab ?? 'fields');
 const expandedNodeIds = ref(new Set(flattenNodes(props.catalog.nodes).map((node) => node.id)));
+const fieldTableRef = ref<{
+  setAllTreeExpand?: (expanded: boolean) => Promise<void>;
+}>();
+const fieldTreeRowConfig = { keyField: 'id', isHover: true };
+const fieldTreeConfig = {
+  transform: false,
+  childrenField: 'children',
+  expandAll: true,
+  showLine: true,
+  indent: 16,
+  trigger: 'row' as const,
+};
+
+function countFieldTreeEntries(nodes: LowCodeContextFieldTreeNode[]): number {
+  return nodes.reduce((count, node) =>
+    count + (node.type === 'field' || node.entry ? 1 : 0) + countFieldTreeEntries(node.children),
+  0);
+}
+
+const fieldTreeEntryCount = computed(() => countFieldTreeEntries(props.catalog.fieldTree));
 
 const tabs = computed(() => [
-  { key: 'fields' as const, label: '字段', icon: 'ri-table-line', count: props.catalog.fields.length },
+  { key: 'fields' as const, label: '字段', icon: 'ri-table-line', count: fieldTreeEntryCount.value },
   { key: 'apis' as const, label: 'API', icon: 'ri-shield-keyhole-line', count: props.catalog.apis.length },
   { key: 'functions' as const, label: '函数', icon: 'ri-function-line', count: props.catalog.functions.length },
   {
@@ -218,6 +311,56 @@ const groupedEntries = computed(() => {
     });
   return [...groups].map(([group, entries]) => ({ group, entries }));
 });
+
+function fieldTreeNodeMatches(node: LowCodeContextFieldTreeNode, search: string) {
+  if (!search) return true;
+  return [
+    node.label,
+    node.role,
+    node.field,
+    node.sourceKey,
+    node.blockId,
+    node.description,
+    node.badge,
+    node.entry?.insertText,
+    ...(node.entry?.keywords ?? []),
+  ].some((value) => value?.toLocaleLowerCase().includes(search));
+}
+
+function filterFieldTree(
+  nodes: LowCodeContextFieldTreeNode[],
+  search: string,
+): LowCodeContextFieldTreeNode[] {
+  if (!search) return nodes;
+  return nodes.flatMap((node) => {
+    const matches = fieldTreeNodeMatches(node, search);
+    const children = matches
+      ? node.children
+      : filterFieldTree(node.children, search);
+    return matches || children.length ? [{ ...node, children }] : [];
+  });
+}
+
+const filteredFieldTree = computed(() =>
+  filterFieldTree(props.catalog.fieldTree, normalizeSearch(query.value)),
+);
+
+watch([activeTab, filteredFieldTree], async ([tab]) => {
+  if (tab !== 'fields') return;
+  await nextTick();
+  await fieldTableRef.value?.setAllTreeExpand?.(true);
+}, { flush: 'post', immediate: true });
+
+function fieldTreeRowClassName({ row }: { row: LowCodeContextFieldTreeNode }) {
+  return row.type === 'table'
+    ? 'lc-context-drawer__field-table-row'
+    : 'lc-context-drawer__field-row';
+}
+
+function handleFieldTreeCellClick({ row }: { row: LowCodeContextFieldTreeNode }) {
+  if (row.type !== 'field' || !row.entry) return;
+  insertEntry(row.entry);
+}
 
 function flattenNodes(nodes: LowCodeContextNode[]) {
   return nodes.flatMap((node) => [node, ...flattenNodes(node.children)]);
@@ -304,9 +447,11 @@ const visibleNodeRows = computed(() => {
 });
 
 const isEmpty = computed(() =>
-  activeTab.value === 'nodes'
-    ? visibleNodeRows.value.length === 0
-    : groupedEntries.value.length === 0,
+  activeTab.value === 'fields'
+    ? filteredFieldTree.value.length === 0
+    : activeTab.value === 'nodes'
+      ? visibleNodeRows.value.length === 0
+      : groupedEntries.value.length === 0,
 );
 
 function toggleNode(node: LowCodeContextNode) {
@@ -409,6 +554,123 @@ function methodSignature(method: LowCodeContextNodeMethod) {
 .lc-context-drawer__content {
   min-height: 0;
   overflow: auto;
+}
+
+.lc-context-drawer__content.is-field-table {
+  overflow: hidden;
+}
+
+.lc-context-drawer__field-tree {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.lc-context-drawer__field-tree .vxe-table {
+  border: 0;
+  color: #273548;
+}
+
+.lc-context-drawer__field-tree .vxe-header--column {
+  color: #566477;
+  background: #f5f7fa;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.lc-context-drawer__field-tree .vxe-cell {
+  padding-right: 7px;
+  padding-left: 7px;
+}
+
+.lc-context-drawer__field-tree .lc-context-drawer__field-table-row > td {
+  background: #f7f9fb;
+}
+
+.lc-context-drawer__field-tree .lc-context-drawer__field-table-row:hover > td,
+.lc-context-drawer__field-tree .lc-context-drawer__field-row:hover > td {
+  background: #eef9f4;
+}
+
+.lc-context-drawer__field-tree .lc-context-drawer__field-row {
+  cursor: pointer;
+}
+
+.lc-context-drawer__field-name,
+.lc-context-drawer__field-source {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.lc-context-drawer__field-name > i {
+  flex: 0 0 auto;
+  color: #708094;
+  font-size: 14px;
+}
+
+.lc-context-drawer__field-name.is-table > i {
+  color: #087f5b;
+}
+
+.lc-context-drawer__field-name > span,
+.lc-context-drawer__field-source {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.lc-context-drawer__field-name strong,
+.lc-context-drawer__field-source strong,
+.lc-context-drawer__field-name small,
+.lc-context-drawer__field-source small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lc-context-drawer__field-name strong,
+.lc-context-drawer__field-source strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.lc-context-drawer__field-name small,
+.lc-context-drawer__field-source small {
+  color: #8792a2;
+  font-size: 9px;
+}
+
+.lc-context-drawer__field-kind {
+  display: inline-block;
+  max-width: 64px;
+  overflow: hidden;
+  color: #667486;
+  font-family: Consolas, "SFMono-Regular", monospace;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lc-context-drawer__field-insert {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  color: #0b8b65;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.lc-context-drawer__field-insert:hover,
+.lc-context-drawer__field-insert:focus-visible {
+  color: #056747;
+  background: #dff5eb;
+  outline: none;
 }
 
 .lc-context-drawer__section > header {

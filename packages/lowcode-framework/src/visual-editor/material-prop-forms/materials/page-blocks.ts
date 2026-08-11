@@ -39,6 +39,18 @@ const alignOptions = [
   option('右对齐', 'right'),
 ];
 
+const formTypeOptions = [
+  option('edit', 'edit'),
+  option('search', 'search'),
+  option('default', 'default'),
+];
+
+const gridTableTypeOptions = [
+  option('main', 'main'),
+  option('detail', 'detail'),
+  option('default', 'default'),
+];
+
 const gridRendererPropFields = [
   { field: 'placeholder', label: 'placeholder', component: 'vxe-input' as const },
   { field: 'clearable', label: 'clearable', component: 'vxe-switch' as const },
@@ -271,6 +283,15 @@ export default defineMaterialPropForms([
     title: '表格属性',
     extendsVisualProps: true,
     fields: [
+      propField({
+        field: 'tableType',
+        path: 'tableType',
+        label: '表格类型',
+        component: 'lc-option-select',
+        valueKind: 'raw',
+        defaultValue: 'default',
+        options: gridTableTypeOptions,
+      }),
       arrayTablePropField({
         field: 'columns',
         path: 'columns',
@@ -475,6 +496,15 @@ export default defineMaterialPropForms([
     extendsVisualProps: true,
     fields: [
       propField({ field: 'blockId', path: 'blockId', label: '区块 ID', defaultValue: 'edit-form' }),
+      propField({
+        field: 'formType',
+        path: 'formType',
+        label: '表单类型',
+        component: 'lc-option-select',
+        valueKind: 'raw',
+        defaultValue: 'default',
+        options: formTypeOptions,
+      }),
       propField({ field: 'title', path: 'title', label: '标题', defaultValue: '编辑信息' }),
       propField({ field: 'sourceKey', path: 'sourceKey', label: '读取数据源', defaultValue: '' }),
       propField({ field: 'submitSourceKey', path: 'submitSourceKey', label: '提交数据源', defaultValue: '' }),

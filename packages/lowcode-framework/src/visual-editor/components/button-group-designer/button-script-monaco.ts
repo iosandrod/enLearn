@@ -37,6 +37,13 @@ interface LowCodeRecord {
   readonly [key: string]: unknown;
 }
 
+declare const console: {
+  log(...data: unknown[]): void;
+  info(...data: unknown[]): void;
+  warn(...data: unknown[]): void;
+  error(...data: unknown[]): void;
+};
+
 interface LowCodeButtonScriptContextSnapshot {
   readonly page: LowCodeRecord;
   readonly route: LowCodeRecord;

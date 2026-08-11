@@ -26,6 +26,14 @@ export type LowCodeField = {
     rules?: LowCodeRule[];
     span?: number;
     events?: Record<string, LowCodeRuntimeDirective[]>;
+    /** Resolve the initial value by running defaultValueScript in the isolated runtime. */
+    defaultValueType?: 'function';
+    defaultValueScript?: string;
+    /** Run after the field value changes. */
+    updateScript?: string;
+    /** Return true/null for success, false for validationMessage, or a string/Error-like message. */
+    validationScript?: string;
+    validationMessage?: string;
 };
 export type LowCodeFormLayoutColumn = {
     span?: number | string;
@@ -226,6 +234,7 @@ export type LowCodeGridAction = {
     label: string;
     status?: 'primary' | 'success' | 'warning' | 'danger' | 'info';
     icon?: string;
+    permissionCode?: string;
     disabled?: boolean;
     eventName?: string;
     script?: string;
@@ -404,6 +413,7 @@ export type LowCodePageButtonGroupBlock = LowCodeMaterialVersionedBlock & {
 export type LowCodePageFormBlock = LowCodeMaterialVersionedBlock & {
     id: string;
     kind: 'form';
+    formType?: 'edit' | 'search' | 'default';
     title?: string;
     description?: string;
     schema: LowCodeFormSchema;
@@ -431,17 +441,17 @@ export type LowCodePageGridBlock = LowCodeMaterialVersionedBlock & {
     title?: string;
     description?: string;
     schema: LowCodeGridSchema;
-    sourceKey?: string;
     /** Apply the runtime search values to the returned rows in the browser. */
     clientFilter?: boolean;
-    /** Grid role in a normal or master-detail layout. */
-    tableType?: 'normal' | 'main' | 'detail';
+    /** Grid role in a default or master-detail layout. */
+    tableType?: 'main' | 'detail' | 'default';
     /** Data-source association used by the grid designer. */
     sourceType?: 'custom' | 'table' | 'view';
     tableName?: string;
     viewName?: string;
     editorBlockId?: string;
     editRoute?: string;
+    sourceKey?: string;
     deleteSourceKey?: string;
     rows?: Record<string, unknown>[];
 };

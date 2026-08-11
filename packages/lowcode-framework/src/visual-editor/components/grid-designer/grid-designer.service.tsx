@@ -57,7 +57,7 @@ export type GridDesignerColumn = {
   [key: string]: unknown;
 };
 
-export type GridDesignerTableType = 'normal' | 'main' | 'detail';
+export type GridDesignerTableType = 'main' | 'detail' | 'default';
 export type GridDesignerSourceType = 'custom' | 'table' | 'view';
 
 export type GridDesignerBusinessInfo = {
@@ -162,9 +162,9 @@ const columnTypeOptions = [
 ];
 
 const gridTableTypeOptions = [
-  { label: '普通表格', value: 'normal' },
-  { label: '主表', value: 'main' },
-  { label: '明细表', value: 'detail' },
+  { label: 'main', value: 'main' },
+  { label: 'detail', value: 'detail' },
+  { label: 'default', value: 'default' },
 ];
 
 const alignOptions = [
@@ -1032,7 +1032,7 @@ function createDefaultBusiness(): GridDesignerBusinessInfo {
   return {
     blockId: 'records-grid',
     title: '数据列表',
-    tableType: 'normal',
+    tableType: 'default',
     sourceType: 'table',
     tableName: 'profiles',
     viewName: '',
@@ -1062,7 +1062,7 @@ function normalizeBusiness(value: unknown): GridDesignerBusinessInfo {
     ? 'main'
     : requestedTableType === 'detail'
       ? 'detail'
-      : 'normal';
+      : 'default';
   const requestedSourceType = readString(row.sourceType);
   const legacySourceType = requestedTableType === 'custom' ||
     requestedTableType === 'table' ||
@@ -2790,7 +2790,7 @@ const ServiceComponent = defineComponent({
             ? 'main'
             : tableType === 'detail'
               ? 'detail'
-              : 'normal';
+              : 'default';
           syncActiveDesignerDialogModel();
         }
         if (changedField === 'sourceType') {

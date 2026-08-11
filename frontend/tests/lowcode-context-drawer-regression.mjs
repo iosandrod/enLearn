@@ -114,8 +114,25 @@ const page = {
                 id: 'records-grid',
                 kind: 'grid',
                 title: 'Records grid',
+                sourceKey: 'records',
+                tableType: 'main',
                 schema: {
                   grid: { columns: [{ field: 'id', title: 'ID' }] },
+                },
+              },
+              {
+                id: 'audit-grid',
+                kind: 'grid',
+                title: 'Audit grid',
+                sourceKey: 'auditRows',
+                tableType: 'detail',
+                schema: {
+                  grid: {
+                    columns: [
+                      { field: 'changed_at', title: 'Changed at' },
+                      { field: 'operator', title: 'Operator' },
+                    ],
+                  },
                 },
               },
             ],
@@ -166,6 +183,26 @@ assert.ok(catalog.fields.some((item) =>
 );
 assert.ok(catalog.fields.some((item) =>
   item.insertText === 'this.grids["records-grid"]?.currentRow?.["id"]'),
+);
+assert.deepEqual(
+  catalog.fieldTree.map((table) => ({
+    label: table.label,
+    role: table.role,
+    fields: table.children.map((field) => field.field),
+  })),
+  [
+    { label: 'Records grid', role: '主表', fields: ['id', 'name'] },
+    { label: 'Edit', role: '主表', fields: ['name'] },
+    { label: 'Audit grid', role: '明细 Grid', fields: ['changed_at', 'operator'] },
+    { label: 'Query', role: '查询表单', fields: ['keyword'] },
+    { label: 'profile', role: '数据源', fields: ['email'] },
+  ],
+  'Field context must be organized as master tables and other grids with deduplicated fields.',
+);
+assert.equal(
+  catalog.fieldTree[0].children.find((field) => field.field === 'id')?.entry?.insertText,
+  'this.grids["records-grid"]?.currentRow?.["id"]',
+  'A main Grid field must insert the Grid current-row expression.',
 );
 assert.deepEqual(catalog.apis.map((item) => item.label), ['records.allowed']);
 assert.deepEqual(
@@ -388,7 +425,7 @@ assert.match(
 );
 assert.match(
   drawerSource,
-  /搜索字段、API、函数或节点[^]*?row\.node\.methods[^]*?row\.method\.method[^]*?methodSignature[^]*?insertNodeMethod/,
+  /搜索表、字段、API、函数或节点[^]*?<vxe-table[^]*?:tree-config="fieldTreeConfig"[^]*?表 \/ 字段[^]*?row\.node\.methods[^]*?row\.method\.method[^]*?methodSignature[^]*?insertNodeMethod/,
   'The reusable drawer must list and insert every method for each node.',
 );
 assert.match(

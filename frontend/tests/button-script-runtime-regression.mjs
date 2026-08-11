@@ -56,8 +56,18 @@ assert.match(
 );
 assert.match(
   workerSource,
-  /const hostCall = globalThis\.__lowCodeHostCall;[\s\S]*?delete globalThis\.__lowCodeHostCall;[\s\S]*?new AsyncFunction\([\s\S]*?userScript\.call\(scriptThis\)/,
-  'User code must run in a separate function scope after the raw host bridge is removed.',
+  /const hostCall = globalThis\.__lowCodeHostCall;[\s\S]*?const hostLog = globalThis\.__lowCodeHostLog;[\s\S]*?delete globalThis\.__lowCodeHostCall;[\s\S]*?delete globalThis\.__lowCodeHostLog;[\s\S]*?new AsyncFunction\("console"[\s\S]*?userScript\.call\(scriptThis, scriptConsole\)/,
+  'User code must run in a separate function scope after raw host bridges are removed.',
+);
+assert.match(
+  workerSource,
+  /const scriptConsole = Object\.freeze\([\s\S]*?log:[\s\S]*?info:[\s\S]*?warn:[\s\S]*?error:[\s\S]*?type: 'log'/,
+  'The isolated worker must forward bounded script console output without exposing its host bridge.',
+);
+assert.match(
+  scriptsSource,
+  /function writeLowCodeScriptLog[\s\S]*?data\.type === 'log'[\s\S]*?writeLowCodeScriptLog/,
+  'Script console messages must be forwarded to the browser developer console.',
 );
 assert.match(
   scriptsSource,

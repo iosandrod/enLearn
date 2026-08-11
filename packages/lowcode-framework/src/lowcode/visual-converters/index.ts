@@ -220,10 +220,11 @@ function readGridTableType(
   source?: LowCodePageDataSource,
 ) {
   const tableType = readString(block.tableType);
-  if (tableType === 'normal' || tableType === 'main' || tableType === 'detail') {
+  if (tableType === 'normal') return 'default';
+  if (tableType === 'main' || tableType === 'detail' || tableType === 'default') {
     return tableType;
   }
-  return 'normal';
+  return 'default';
 }
 
 function readGridSourceType(
@@ -487,6 +488,11 @@ function runtimeFieldToVisualField(field: LowCodeField) {
     component: field.component || 'vxe-input',
     placeholder: readString(props.placeholder),
     required,
+    ...(field.defaultValueType ? { defaultValueType: field.defaultValueType } : {}),
+    ...(field.defaultValueScript ? { defaultValueScript: field.defaultValueScript } : {}),
+    ...(field.updateScript ? { updateScript: field.updateScript } : {}),
+    ...(field.validationScript ? { validationScript: field.validationScript } : {}),
+    ...(field.validationMessage ? { validationMessage: field.validationMessage } : {}),
     ...(field.span ? { span: field.span } : {}),
     ...(field.help ? { help: field.help } : {}),
     ...(field.optionsCode ? { optionsCode: field.optionsCode } : {}),
@@ -683,6 +689,15 @@ function convertRuntimeBlockToVisual(
       path,
       props: {
         blockId: block.id,
+        formType:
+          block.kind === 'form' &&
+          (block.formType === 'edit' ||
+            block.formType === 'search' ||
+            block.formType === 'default')
+            ? block.formType
+            : block.kind === 'searchForm'
+              ? 'search'
+              : 'default',
         title,
         sourceKey,
         submitSourceKey:

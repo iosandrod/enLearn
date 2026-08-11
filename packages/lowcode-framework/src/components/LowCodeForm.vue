@@ -4,7 +4,7 @@
     v-bind="mergedFormProps"
     class="lc-form"
     :class="{ 'lc-form--fill': fillRemainingLayout }"
-    :data="vxeFormData"
+    :data="formData"
     :loading="loading"
     :rules="formRules"
     :custom-layout="true"
@@ -18,7 +18,10 @@
       :style="formLayoutStyle"
     >
       <template #field="{ field }">
-        <vxe-form-item v-bind="resolveFormItemProps(field)">
+        <vxe-form-item
+          v-bind="resolveFormItemProps(field)"
+          :data-lc-field="field.field"
+        >
           <LowCodeFormField
             :field="field"
             :model-value="readFieldValue(field)"
@@ -40,7 +43,10 @@
         :class="fieldGridCellClass(field)"
         :style="fieldGridCellStyle(field)"
       >
-        <vxe-form-item v-bind="resolveFormItemProps(field)">
+        <vxe-form-item
+          v-bind="resolveFormItemProps(field)"
+          :data-lc-field="field.field"
+        >
           <LowCodeFormField
             :field="field"
             :model-value="readFieldValue(field)"
@@ -54,8 +60,10 @@
         </vxe-form-item>
       </div>
     </div>
-
-    <div v-if="formActions.length" class="lc-actions">
+    <!--
+      不要使用按钮，注释掉
+    -->
+    <!-- <div v-if="formActions.length" class="lc-actions">
       <vxe-button
         v-for="action in formActions"
         :key="action.code"
@@ -65,7 +73,7 @@
       >
         {{ action.label }}
       </vxe-button>
-    </div>
+    </div> -->
   </vxe-form>
 </template>
 
@@ -138,7 +146,10 @@ const props = defineProps({
   titleAlign: String as PropType<'left' | 'center' | 'right'>,
   titleWidth: [Number, String],
   titleColon: Boolean,
-  titleAsterisk: Boolean,
+  titleAsterisk: {
+    type: Boolean,
+    default: true,
+  },
   titleOverflow: [Boolean, String] as PropType<boolean | 'ellipsis' | 'title' | 'tooltip'>,
   vertical: Boolean,
   padding: {
@@ -149,6 +160,11 @@ const props = defineProps({
   readonly: Boolean,
   disabled: Boolean,
   rules: Object as PropType<Record<string, VxeLowCodeFormRule[]>>,
+  fieldValidator: Function as PropType<(
+    field: LowCodeField,
+    value: unknown,
+    values: Record<string, unknown>,
+  ) => Promise<true | string> | true | string>,
   preventSubmit: Boolean,
   validConfig: Object as PropType<Record<string, unknown>>,
   tooltipConfig: Object as PropType<Record<string, unknown>>,
@@ -169,7 +185,7 @@ const emit = defineEmits<{
       values: Record<string, unknown>;
     },
   ];
-  labelContextMenu: [event: MouseEvent];
+  labelContextMenu: [event: MouseEvent, field: LowCodeField];
 }>();
 
 const attrs = useAttrs();
@@ -178,7 +194,6 @@ const vxeFormRef = ref<VxeFormInstance<LowCodeFormModel>>();
 const formGridRef = ref<HTMLElement>();
 const formGridRowCount = ref(0);
 const formData = reactive<Record<string, unknown>>({ ...props.modelValue });
-const vxeFormData = reactive<Record<string, unknown>>({});
 const initialModel = ref<Record<string, unknown>>({ ...props.modelValue });
 const codeOptionSources = reactive<Record<string, unknown[]>>({});
 const fields = computed(() =>
@@ -207,21 +222,17 @@ const formColumnCount = computed(() => readFormColumnCount());
 const defaultVxeSpan = computed(() =>
   normalizeVxeSpan(props.span, Math.max(1, Math.floor(24 / formColumnCount.value)))
 );
-const fieldKeyByName = computed(() =>
-  fields.value.reduce<Record<string, string>>((prev, field, index) => {
-    prev[field.field] = createVxeFieldKey(field.field, index);
-    return prev;
-  }, {})
-);
 const formRules = computed<VxeLowCodeFormRules>(() => {
   return fields.value.reduce<VxeLowCodeFormRules>((rules, field) => {
-    const vxeField = getVxeFieldKey(field);
     const schemaRules = (field.rules ?? []).map((rule) => createVxeRule(rule));
-    const externalRules = readExternalRules(field.field, vxeField);
-    const itemRules = [...schemaRules, ...externalRules];
+    const scriptRules = field.validationScript && props.fieldValidator
+      ? [createFieldValidationRule(field)]
+      : [];
+    const externalRules = readExternalRules(field.field);
+    const itemRules = [...schemaRules, ...scriptRules, ...externalRules];
 
     if (itemRules.length) {
-      rules[vxeField] = itemRules;
+      rules[field.field] = itemRules;
     }
 
     return rules;
@@ -229,15 +240,14 @@ const formRules = computed<VxeLowCodeFormRules>(() => {
 });
 const formItemPropsByField = computed(() =>
   fields.value.reduce<Record<string, VxeFormItemProps<LowCodeFormModel>>>((prev, field) => {
-    const vxeField = getVxeFieldKey(field);
     const span = getFieldVxeSpan(field);
 
     prev[field.field] = {
-      field: vxeField,
+      field: field.field,
       title: field.label,
       showTitle: field.showTitle,
       span,
-      rules: formRules.value[vxeField],
+      rules: formRules.value[field.field],
       className: 'lc-form-item',
       contentClassName: 'lc-form-item__content',
       titleClassName: 'lc-form-item__title',
@@ -316,7 +326,6 @@ watch(
     Object.keys(formData).forEach((key) => delete formData[key]);
     Object.assign(formData, nextValue);
     if (!isLocalUpdate) initialModel.value = { ...nextValue };
-    syncVxeFormData();
   },
   { deep: true }
 );
@@ -324,7 +333,6 @@ watch(
 watch(
   () => props.schema.fields,
   () => {
-    syncVxeFormData();
     scheduleFormGridMeasurement();
   },
   { deep: true, immediate: true }
@@ -452,15 +460,6 @@ function normalizeVxeSpan(value: unknown, fallback = 24) {
   return Math.min(24, Math.max(1, Math.round(numeric)));
 }
 
-function createVxeFieldKey(field: string, index: number) {
-  const suffix = field.replace(/[^A-Za-z0-9_$]+/g, '_').replace(/^_+|_+$/g, '');
-  return `__lc_field_${index}_${suffix || 'value'}`;
-}
-
-function getVxeFieldKey(field: LowCodeField) {
-  return fieldKeyByName.value[field.field] ?? createVxeFieldKey(field.field, 0);
-}
-
 function isWideField(field: LowCodeField) {
   return [
     'lc-array-table',
@@ -503,7 +502,7 @@ function fieldGridCellStyle(field: LowCodeField) {
 
 function resolveFormItemProps(field: LowCodeField) {
   return formItemPropsByField.value[field.field] ?? {
-    field: getVxeFieldKey(field),
+    field: field.field,
     title: field.label,
     showTitle: field.showTitle,
     span: getFieldVxeSpan(field),
@@ -589,29 +588,10 @@ function formValuesEqual(left: unknown, right: unknown): boolean {
   return false;
 }
 
-function syncVxeFieldValue(field: LowCodeField, value: unknown) {
-  vxeFormData[getVxeFieldKey(field)] = value;
-}
-
-function syncVxeFormData() {
-  const nextKeys = new Set(fields.value.map((field) => getVxeFieldKey(field)));
-
-  Object.keys(vxeFormData).forEach((key) => {
-    if (!nextKeys.has(key)) {
-      delete vxeFormData[key];
-    }
-  });
-
-  fields.value.forEach((field) => {
-    syncVxeFieldValue(field, readFieldValue(field));
-  });
-}
-
 function setFieldValue(field: LowCodeField, value: unknown) {
   formData[field.field] = value;
-  syncVxeFieldValue(field, value);
   emit('update:modelValue', { ...formData });
-  vxeFormRef.value?.updateStatus({ field: getVxeFieldKey(field) }, value);
+  vxeFormRef.value?.updateStatus({ field: field.field }, value);
 }
 
 function handleFieldChange(payload: {
@@ -650,25 +630,24 @@ function createVxeRule(rule: LowCodeRule): VxeLowCodeFormRule {
   };
 }
 
-function readExternalRules(field: string, vxeField: string) {
-  const rules: VxeLowCodeFormRule[] = [];
-  const source = props.rules;
+function createFieldValidationRule(field: LowCodeField): VxeLowCodeFormRule {
+  const message = field.validationMessage || `${field.label}校验不通过`;
 
-  if (!source) return rules;
+  return {
+    content: message,
+    message,
+    trigger: 'change',
+    async validator({ itemValue }) {
+      if (!props.fieldValidator) return;
+      const result = await props.fieldValidator(field, itemValue, { ...formData });
+      if (result !== true) throw new Error(result || message);
+    },
+  };
+}
 
-  const directRules = source[field];
-  if (Array.isArray(directRules)) {
-    rules.push(...directRules);
-  }
-
-  if (vxeField !== field) {
-    const internalRules = source[vxeField];
-    if (Array.isArray(internalRules)) {
-      rules.push(...internalRules);
-    }
-  }
-
-  return rules;
+function readExternalRules(field: string) {
+  const rules = props.rules?.[field];
+  return Array.isArray(rules) ? rules : [];
 }
 
 function isValidResult(value: unknown) {
@@ -683,8 +662,6 @@ function isValidResult(value: unknown) {
 }
 
 async function validate() {
-  syncVxeFormData();
-
   try {
     const result = await vxeFormRef.value?.validate();
     return isValidResult(result);
@@ -698,7 +675,6 @@ async function clearValidation() {
 }
 
 function snapshot() {
-  syncVxeFormData();
   const value = { ...formData };
   emit('update:modelValue', value);
   return value;
@@ -724,9 +700,20 @@ function handleLabelContextMenu(event: MouseEvent) {
   const title = target.closest('.vxe-form--item-title');
   if (!title || title.closest('.lc-form') !== currentTarget) return;
 
+  const formItem = title.closest('[data-lc-field]');
+  const fieldName = formItem?.getAttribute('data-lc-field') ?? '';
+  const field = fieldsByKey.value[fieldName];
+  if (!field) return;
+
   event.preventDefault();
   event.stopPropagation();
-  emit('labelContextMenu', event);
+  emit('labelContextMenu', event, field);
+}
+
+function setValues(values: Record<string, unknown>) {
+  Object.keys(formData).forEach((key) => delete formData[key]);
+  Object.assign(formData, values);
+  emit('update:modelValue', { ...formData });
 }
 
 async function handleAction(action: LowCodeAction) {
@@ -740,7 +727,6 @@ async function handleAction(action: LowCodeAction) {
       delete formData[key];
     });
     Object.assign(formData, initialModel.value);
-    syncVxeFormData();
     void clearValidation();
   }
 
@@ -751,6 +737,7 @@ defineExpose({
   submit: handleSubmit,
   validate,
   snapshot,
+  setValues,
   clearValidation,
 });
 </script>

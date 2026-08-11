@@ -76,12 +76,13 @@ function toRuntimeGridOptions(gridProps: Record<string, unknown>) {
   return options;
 }
 
-type GridTableType = 'normal' | 'main' | 'detail';
+type GridTableType = 'main' | 'detail' | 'default';
 type GridSourceType = 'custom' | 'table' | 'view';
 
 function normalizeGridTableType(value: unknown): GridTableType | '' {
   const tableType = readString(value);
-  return tableType === 'normal' || tableType === 'main' || tableType === 'detail'
+  if (tableType === 'normal') return 'default';
+  return tableType === 'main' || tableType === 'detail' || tableType === 'default'
     ? tableType
     : '';
 }
@@ -214,7 +215,7 @@ const converter: VisualToLowCodeConverter = {
   defaultProps: {
     blockId: 'records-grid',
     title: '数据列表',
-    tableType: 'normal',
+    tableType: 'default',
     sourceType: 'table',
     tableName: 'profiles',
     viewName: '',
@@ -240,7 +241,7 @@ const converter: VisualToLowCodeConverter = {
     const props = readVisualBlockProps(block);
     const gridProps = normalizeVisualGridProps(props);
     const sourceKey = readString(props.sourceKey, 'records');
-    const tableType = normalizeGridTableType(props.tableType) || 'normal';
+    const tableType = normalizeGridTableType(props.tableType) || 'default';
     const serviceName = readString(props.serviceName, 'admin');
     const serviceMethod = readString(props.serviceMethod, 'listItems');
     const saveMethod = readString(props.saveMethod);
