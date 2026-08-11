@@ -106,6 +106,7 @@ const runtimeToEditorComponent: Record<string, string> = {
   'lc-json-editor': 'input',
   'lc-monaco-editor': 'input',
   'lc-number-input': 'input',
+  'base-info': 'input',
   'lc-array-table': 'array-table',
   'lc-sub-form': 'sub-form',
 };
@@ -453,6 +454,12 @@ function createFieldBlock(field: FormDesignerField, index: number) {
     }
   }
 
+  if (runtimeComponent === 'base-info') {
+    const fieldProps = isRecord(field.props) ? field.props : {};
+    Object.assign(block.props, cloneDeep(fieldProps));
+    block.props.__lowcodeComponent = 'base-info';
+  }
+
   const options = parseJsonArray(field.optionsJson);
   if (options?.length) {
     if (componentKey === 'picker') {
@@ -734,6 +741,23 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
     optionsCode: readString(block.props?.__lowcodeOptionsCode),
     optionsJson: getOptionsJson(block, runtimeComponent),
   };
+
+  if (runtimeComponent === 'base-info') {
+    const {
+      __formSpan: _formSpan,
+      __formHelp: _formHelp,
+      __lowcodeComponent: _lowcodeComponent,
+      __lowcodeOptionsCode: _lowcodeOptionsCode,
+      __lowcodeOptions: _lowcodeOptions,
+      name: _name,
+      label: _label,
+      required: _required,
+      type: _type,
+      ...props
+    } = block.props ?? {};
+    result.props = cloneDeep(props);
+    result.propsJson = stringifyFieldProps(result.props);
+  }
 
   if (runtimeComponent === 'lc-sub-form') {
     const schema = readLowCodeFormSchema(block.props?.schema);

@@ -25,6 +25,19 @@ export type MobileServiceRequest = {
   requestId: string;
 };
 
+export function createMobileServiceRequest(
+  serviceName: string,
+  serviceMethod: string,
+  postData: Record<string, unknown> = {},
+  requestId = randomRequestId(),
+): MobileServiceRequest {
+  const request = normalizeMobileServiceRequest(serviceName, serviceMethod, postData);
+  return {
+    ...request,
+    requestId: requestId.trim() || randomRequestId(),
+  };
+}
+
 function isServiceEnvelope<T>(value: unknown): value is ServiceEnvelope<T> {
   return Boolean(
     value &&
@@ -99,8 +112,8 @@ export function createMobileServiceApi() {
     postData: Record<string, unknown> = {},
     options: MobileServiceInvokeOptions = {},
   ): Promise<T> {
-    const request = normalizeMobileServiceRequest(serviceName, serviceMethod, postData);
     const requestId = options.requestId?.trim() || randomRequestId();
+    const request = normalizeMobileServiceRequest(serviceName, serviceMethod, postData);
 
     async function send() {
       const config = getRuntimeConfig();
@@ -149,6 +162,14 @@ export function createMobileServiceApi() {
       request.postData,
       { requestId: request.requestId },
     );
+  }
+
+  function prepareRequest(
+    serviceName: string,
+    serviceMethod: string,
+    postData: Record<string, unknown> = {},
+  ) {
+    return createMobileServiceRequest(serviceName, serviceMethod, postData);
   }
 
   async function getPage(code: string, fromPage = '') {
@@ -286,6 +307,7 @@ export function createMobileServiceApi() {
   return {
     invoke,
     replay,
+    prepareRequest,
     getPage,
     getPageByRoute,
     getPageById,

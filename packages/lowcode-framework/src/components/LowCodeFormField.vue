@@ -6,7 +6,10 @@
       :field="renderField"
       :model-value="modelValue"
       :options="options"
+      :form-values="formValues"
       @update:model-value="handleUpdate"
+      @patch-model="handlePatchModel"
+      @select="handleSelect"
     />
     <!-- <span v-if="field.help" class="lc-help">{{ field.help }}</span>
     <span v-if="error" class="lc-error">{{ error }}</span> -->
@@ -18,6 +21,10 @@ import { computed } from 'vue';
 import { getLowCodeFormMaterial } from '../lowcode/form-materials';
 import type { LowCodeField } from '../types/lowcode';
 import type { LowCodeResolvedOption } from '../lowcode/form-materials';
+import type {
+  LowCodeFormMaterialPatchPayload,
+  LowCodeFormMaterialSelectPayload,
+} from '../lowcode/form-materials';
 
 const props = withDefaults(
   defineProps<{
@@ -28,6 +35,7 @@ const props = withDefaults(
     showLabel?: boolean;
     disabled?: boolean;
     readonly?: boolean;
+    formValues?: Record<string, unknown>;
   }>(),
   {
     options: () => [],
@@ -35,12 +43,15 @@ const props = withDefaults(
     showLabel: true,
     disabled: false,
     readonly: false,
+    formValues: () => ({}),
   }
 );
 
 const emit = defineEmits<{
   'update:modelValue': [value: any];
   change: [payload: { field: LowCodeField; value: any; previousValue: any }];
+  patchModel: [payload: LowCodeFormMaterialPatchPayload];
+  relateSelect: [payload: LowCodeFormMaterialSelectPayload];
 }>();
 
 const renderField = computed<LowCodeField>(() => {
@@ -74,5 +85,13 @@ function handleUpdate(value: any) {
     value,
     previousValue,
   });
+}
+
+function handlePatchModel(payload: LowCodeFormMaterialPatchPayload) {
+  emit('patchModel', payload);
+}
+
+function handleSelect(payload: LowCodeFormMaterialSelectPayload) {
+  emit('relateSelect', payload);
 }
 </script>

@@ -1797,15 +1797,30 @@ export abstract class BaseService implements ServiceExecutor {
     return required.every((field) => {
       this.assertIdentifierPath(field, 'required filter field');
       const value = filters[field];
-      if (value === undefined || value === null || value === '') return false;
-      if (Array.isArray(value)) return value.length > 0;
+      if (this.isUnresolvedRequiredFilterValue(value)) return false;
+      if (Array.isArray(value)) {
+        return value.length > 0
+          && value.every((item) => !this.isUnresolvedRequiredFilterValue(item));
+      }
       if (this.isRecord(value)) {
         const operand = value.value;
-        return operand !== undefined && operand !== null && operand !== '' &&
-          (!Array.isArray(operand) || operand.length > 0);
+        if (this.isUnresolvedRequiredFilterValue(operand)) return false;
+        return !Array.isArray(operand)
+          || (operand.length > 0
+            && operand.every((item) => !this.isUnresolvedRequiredFilterValue(item)));
       }
       return true;
     });
+  }
+
+  protected isUnresolvedRequiredFilterValue(value: unknown) {
+    if (value === undefined || value === null || value === '') return true;
+    if (typeof value !== 'string') return false;
+    const normalized = value.trim();
+    return normalized === ''
+      || normalized === '__none__'
+      || normalized.includes('{{')
+      || normalized.includes('}}');
   }
 
   protected emptyListItemsResult(postData: ServicePostData) {

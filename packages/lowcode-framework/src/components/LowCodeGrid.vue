@@ -40,13 +40,13 @@
         @zoom="(payload) => handleGenericGridEvent('zoom', payload)"
       >
         <template #actions="{ row }">
-          <template v-if="customRowActions.length">
+          <template v-if="hasCustomRowActions">
             <vxe-button
-              v-for="action in customRowActions"
+              v-for="action in visibleRowActions(row)"
               :key="action.code"
               size="mini"
               :status="action.status"
-              :disabled="action.disabled"
+              :disabled="isRowActionDisabled(action, row)"
               @click="emitRowAction(action, row)"
             >
               <i v-if="action.icon" :class="action.icon" aria-hidden="true" />
@@ -54,7 +54,7 @@
             </vxe-button>
           </template>
           <vxe-button
-            v-if="!customRowActions.length && schema.rowActions?.edit !== false"
+            v-if="!hasCustomRowActions && schema.rowActions?.edit !== false"
             size="mini"
             status="primary"
             @click="$emit('edit', row)"
@@ -62,7 +62,7 @@
             {{ schema.rowActions?.editLabel ?? 'Edit' }}
           </vxe-button>
           <vxe-button
-            v-if="!customRowActions.length && schema.rowActions?.delete !== false"
+            v-if="!hasCustomRowActions && schema.rowActions?.delete !== false"
             size="mini"
             status="danger"
             @click="$emit('delete', row)"
@@ -84,6 +84,10 @@ import {
   useSystemSettings,
 } from '../core/system-settings';
 import { normalizeLowCodeGridColumns } from '../utils/lowcode';
+import {
+  isLowCodeRowActionDisabled,
+  visibleLowCodeRowActions,
+} from '../runtime/row-action-state';
 import type {
   LowCodeGridAction,
   LowCodeGridRowAction,
@@ -118,6 +122,18 @@ type LowCodeGridEventPayload = {
 };
 
 const customRowActions = computed(() => props.schema.rowActions?.actions ?? []);
+const hasCustomRowActions = computed(() => customRowActions.value.length > 0);
+
+function visibleRowActions(row: Record<string, unknown>) {
+  return visibleLowCodeRowActions(customRowActions.value, row);
+}
+
+function isRowActionDisabled(
+  action: LowCodeGridRowAction,
+  row: Record<string, unknown>,
+) {
+  return isLowCodeRowActionDisabled(action, row);
+}
 
 const tableScrollStyle = computed(() => {
   if (props.fill) return undefined;
@@ -206,6 +222,7 @@ function handleToolbar(action: LowCodeGridAction) {
 }
 
 function emitRowAction(action: LowCodeGridRowAction, row: Record<string, unknown>) {
+  if (isRowActionDisabled(action, row)) return;
   emit('rowAction', { action, row });
 }
 

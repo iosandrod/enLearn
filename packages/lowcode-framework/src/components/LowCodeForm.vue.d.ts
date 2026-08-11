@@ -25,6 +25,7 @@ type LowCodeFormProps = {
     className?: VxeLowCodeFormProps['className'];
     readonly?: VxeLowCodeFormProps['readonly'];
     disabled?: VxeLowCodeFormProps['disabled'];
+    mode?: 'create' | 'copy' | 'edit';
     rules?: VxeLowCodeFormProps['rules'];
     fieldValidator?: (field: LowCodeField, value: unknown, values: Record<string, unknown>) => Promise<true | string> | true | string;
     preventSubmit?: VxeLowCodeFormProps['preventSubmit'];
@@ -57,6 +58,12 @@ declare const __VLS_export: import("vue").DefineComponent<LowCodeFormProps, {
         previousValue: unknown;
         values: Record<string, unknown>;
     }) => any;
+    relateSelect: (payload: {
+        field: LowCodeField;
+        row: Record<string, unknown>;
+        values: Record<string, unknown>;
+        formValues: Record<string, unknown>;
+    }) => any;
     labelContextMenu: (event: MouseEvent, field: LowCodeField) => any;
 }, string, import("vue").PublicProps, Readonly<LowCodeFormProps> & Readonly<{
     onSubmit?: (value: Record<string, unknown>) => any;
@@ -67,6 +74,12 @@ declare const __VLS_export: import("vue").DefineComponent<LowCodeFormProps, {
         value: unknown;
         previousValue: unknown;
         values: Record<string, unknown>;
+    }) => any;
+    onRelateSelect?: (payload: {
+        field: LowCodeField;
+        row: Record<string, unknown>;
+        values: Record<string, unknown>;
+        formValues: Record<string, unknown>;
     }) => any;
     onLabelContextMenu?: (event: MouseEvent, field: LowCodeField) => any;
 }>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;

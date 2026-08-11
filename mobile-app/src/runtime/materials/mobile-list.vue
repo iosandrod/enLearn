@@ -24,12 +24,13 @@
         <span class="list-field-value">{{ readCell(row, column, rowIndex) }}</span>
       </div>
 
-      <div v-if="rowActions.length" class="row-actions">
+      <div v-if="visibleRowActions(row).length" class="row-actions">
         <button
-          v-for="action in rowActions"
+          v-for="action in visibleRowActions(row)"
           :key="action.code"
           class="row-action"
-          @click="publishRowAction(action, row)"
+          :disabled="isRowActionDisabled(action, row)"
+          @click.stop="publishRowAction(action, row)"
         >
           <span class="row-action-text">{{ action.label }}</span>
         </button>
@@ -46,6 +47,10 @@ import type {
   MobileMaterialProps,
   SharedLowCodeAction,
 } from '../types';
+import {
+  isLowCodeRowActionDisabled,
+  visibleLowCodeRowActions,
+} from '../../../../packages/lowcode-framework/src/runtime/row-action-state';
 
 const props = defineProps<MobileMaterialProps>();
 const emit = defineEmits<MobileMaterialEmits>();
@@ -90,6 +95,14 @@ const rowActions = computed<SharedLowCodeAction[]>(() => {
   return actions;
 });
 
+function visibleRowActions(row: Record<string, unknown>) {
+  return visibleLowCodeRowActions(rowActions.value, row);
+}
+
+function isRowActionDisabled(action: SharedLowCodeAction, row: Record<string, unknown>) {
+  return isLowCodeRowActionDisabled(action, row);
+}
+
 function rowKey(row: Record<string, unknown>) {
   const keyField = props.block.schema?.grid?.rowConfig?.keyField ?? 'id';
   return String(row[keyField] ?? JSON.stringify(row));
@@ -126,6 +139,7 @@ function publishCurrentRow(row: Record<string, unknown>) {
 }
 
 function publishRowAction(action: SharedLowCodeAction, row: Record<string, unknown>) {
+  if (isRowActionDisabled(action, row)) return;
   emit('runtimeEvent', {
     name: action.eventName ?? 'grid.rowAction',
     blockId: props.block.id,

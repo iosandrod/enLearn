@@ -6,6 +6,7 @@ const password = process.env.ENLEARN_MOBILE_E2E_PASSWORD ?? '123456';
 const allowedMaterials = new Set([
   'text', 'container', 'section', 'form', 'searchForm', 'grid', 'detail',
   'statCard', 'tabs', 'toolbar', 'buttonGroup', 'modal', 'drawer', 'tree',
+  'planningFlow', 'planningGantt', 'planningBom',
 ]);
 const allowedDirectives = new Set([
   'navigate', 'routePush', 'showMessage', 'refreshPage', 'refreshDataSource',
@@ -24,6 +25,7 @@ const unavailableEmptyListMethods = new Set([
   'listSystemExecutionTasks',
   'listWorkflowTimerJobs',
 ]);
+const requestTimeoutMs = Number(process.env.ENLEARN_MOBILE_AUDIT_TIMEOUT_MS ?? 20_000);
 
 function readString(value, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
@@ -91,8 +93,29 @@ function normalizeDataSourceRequest(source) {
   return { serviceName, serviceMethod, postData, originalServiceMethod };
 }
 
-async function jsonRequest(path, init) {
-  const response = await fetch(`${apiBaseUrl.replace(/\/+$/, '')}/${path}`, init);
+function isUnresolvedTemplate(value) {
+  if (typeof value === 'string') {
+    const normalized = value.trim();
+    return normalized === '__none__'
+      || normalized.includes('{{')
+      || normalized.includes('}}');
+  }
+  if (Array.isArray(value)) return value.some(isUnresolvedTemplate);
+  if (value && typeof value === 'object') {
+    return Object.values(value).some(isUnresolvedTemplate);
+  }
+  return false;
+}
+
+async function jsonRequest(path, init = {}) {
+  const timeout = AbortSignal.timeout(requestTimeoutMs);
+  const response = await fetch(`${apiBaseUrl.replace(/\/+$/, '')}/${path}`, {
+    ...init,
+    signal: init.signal ? AbortSignal.any([init.signal, timeout]) : timeout,
+  }).catch((error) => {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`${path} failed: ${message}`);
+  });
   const text = await response.text();
   const payload = text ? JSON.parse(text) : null;
   if (!response.ok) throw new Error(payload?.message ?? `${path} failed with ${response.status}`);
@@ -112,14 +135,32 @@ const headers = {
   Authorization: `Bearer ${auth.session.access_token}`,
   'X-Account-Id': auth.activeAccount.account_id,
 };
+let requestSequence = 0;
 
 async function invoke(serviceName, serviceMethod, postData = {}) {
   const payload = await jsonRequest('service', {
     method: 'POST',
-    headers,
+    headers: {
+      ...headers,
+      'X-Request-Id': `mobile-audit-${Date.now()}-${++requestSequence}`,
+    },
     body: JSON.stringify({ serviceName, serviceMethod, postData }),
   });
   return payload?.data ?? payload;
+}
+
+async function mapWithConcurrency(values, concurrency, mapper) {
+  const results = new Array(values.length);
+  let cursor = 0;
+  await Promise.all(Array.from({ length: Math.min(concurrency, values.length) }, async () => {
+    while (true) {
+      const index = cursor;
+      cursor += 1;
+      if (index >= values.length) return;
+      results[index] = await mapper(values[index], index);
+    }
+  }));
+  return results;
 }
 
 function visitBlocks(blocks, visitor) {
@@ -158,10 +199,19 @@ function visitDirectives(page, visitor) {
 
 const routes = await invoke('admin', 'listNavigationRoutes');
 const pageCodes = [...new Set(routes.map((route) => route.page_code).filter(Boolean))];
-const pages = await Promise.all(pageCodes.map((code) => invoke('lowcode', 'getRuntimePage', { code })));
+const pageConcurrency = Math.max(
+  1,
+  Math.min(Number(process.env.ENLEARN_MOBILE_AUDIT_CONCURRENCY ?? 4), 8),
+);
+const pages = await mapWithConcurrency(
+  pageCodes,
+  pageConcurrency,
+  (code) => invoke('lowcode', 'getRuntimePage', { code }),
+);
 const unsupportedMaterials = new Set();
 const unsupportedDirectives = new Set();
 const dataSourceFailures = [];
+const autoLoadRequests = [];
 for (const page of pages) {
   visitBlocks(page.schema.blocks, (block) => {
     if (!allowedMaterials.has(block.kind)) unsupportedMaterials.add(`${page.code}:${block.kind}`);
@@ -181,6 +231,12 @@ for (const page of pages) {
   for (const [sourceKey, source] of Object.entries(page.schema.dataSources ?? {})) {
     if (source.autoLoad === false) continue;
     const request = normalizeDataSourceRequest({ ...source, key: source.key ?? sourceKey });
+    if (isUnresolvedTemplate(request.postData)) continue;
+    autoLoadRequests.push({ page, sourceKey, request });
+  }
+}
+
+await mapWithConcurrency(autoLoadRequests, pageConcurrency, async ({ page, sourceKey, request }) => {
     try {
       await invoke(request.serviceName, request.serviceMethod, request.postData);
     } catch (error) {
@@ -189,8 +245,7 @@ for (const page of pages) {
         && (message.includes('does not exist') || message.includes('Could not find the table'));
       if (!tolerated) dataSourceFailures.push(`${page.code}.${sourceKey}: ${message}`);
     }
-  }
-}
+});
 
 assert.deepEqual([...unsupportedMaterials], [], 'authorized pages must only use registered mobile materials');
 assert.deepEqual([...unsupportedDirectives], [], 'authorized pages must only use supported mobile directives');

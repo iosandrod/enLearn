@@ -35,6 +35,28 @@ async function main() {
   );
   assert.equal(service.calls, 0, 'missing required filters must not reach the database');
 
+  for (const unresolved of ['__none__', '{{ route.query.id }}']) {
+    assert.deepEqual(
+      await service.execute('listItems', {
+        resource: 'test_rows',
+        filters: { id: unresolved },
+        requiredFilters: ['id']
+      }, context),
+      []
+    );
+  }
+  assert.equal(service.calls, 0, 'placeholder required filters must not reach the database');
+
+  assert.deepEqual(
+    await service.execute('listItems', {
+      resource: 'test_rows',
+      filters: { id: { op: 'in', value: ['__none__'] } },
+      requiredFilters: ['id']
+    }, context),
+    []
+  );
+  assert.equal(service.calls, 0, 'placeholder filter operands must not reach the database');
+
   assert.deepEqual(
     await service.execute('listItems', {
       resource: 'test_rows',

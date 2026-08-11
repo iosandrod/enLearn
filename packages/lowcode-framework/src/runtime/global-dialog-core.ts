@@ -278,6 +278,7 @@ export type GlobalDialogInstance<
   config: GlobalDialogConfig<TValues>;
   model: TValues;
   busyAction: string;
+  errorMessage: string;
   createdAt: number;
   resolve: (result: GlobalDialogResult<TValues>) => void;
 };
@@ -362,6 +363,7 @@ export function openGlobalDialog<
       },
       model: createInitialModel(config),
       busyAction: '',
+      errorMessage: '',
       createdAt: Date.now(),
       resolve,
     }) as GlobalDialogInstance<TValues>;

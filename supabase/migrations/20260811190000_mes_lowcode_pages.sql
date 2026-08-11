@@ -501,6 +501,7 @@ with page_seed(code, route, title, description, schema) as (
                           "icon": "ri-play-line",
                           "status": "success",
                           "permissionCode": "mes.execution.manage",
+                          "visible": { "field": "status", "operator": "eq", "value": "ready" },
                           "directives": [
                             { "type": "invokeService", "serviceName": "mes", "serviceMethod": "startOperation", "postData": { "operationId": "{{ row.id }}", "expectedVersion": "{{ row.row_version }}" } },
                             { "type": "refreshDataSource", "sourceKeys": ["workOrders", "operations"] },
@@ -513,6 +514,7 @@ with page_seed(code, route, title, description, schema) as (
                           "icon": "ri-pause-line",
                           "status": "warning",
                           "permissionCode": "mes.execution.manage",
+                          "visible": { "field": "status", "operator": "eq", "value": "in_progress" },
                           "directives": [
                             {
                               "type": "openGlobalDialog",
@@ -549,6 +551,7 @@ with page_seed(code, route, title, description, schema) as (
                           "icon": "ri-restart-line",
                           "status": "success",
                           "permissionCode": "mes.execution.manage",
+                          "visible": { "field": "status", "operator": "eq", "value": "paused" },
                           "directives": [
                             { "type": "invokeService", "serviceName": "mes", "serviceMethod": "resumeOperation", "postData": { "operationId": "{{ row.id }}", "expectedVersion": "{{ row.row_version }}" } },
                             { "type": "refreshDataSource", "sourceKeys": ["workOrders", "operations"] },
@@ -561,6 +564,7 @@ with page_seed(code, route, title, description, schema) as (
                           "icon": "ri-file-check-line",
                           "status": "primary",
                           "permissionCode": "mes.execution.manage",
+                          "visible": { "field": "status", "operator": "eq", "value": "in_progress" },
                           "directives": [
                             {
                               "type": "openGlobalDialog",
@@ -598,6 +602,7 @@ with page_seed(code, route, title, description, schema) as (
                           "icon": "ri-checkbox-circle-line",
                           "status": "primary",
                           "permissionCode": "mes.execution.manage",
+                          "visible": { "field": "status", "operator": "eq", "value": "in_progress" },
                           "directives": [
                             { "type": "invokeService", "serviceName": "mes", "serviceMethod": "completeOperation", "postData": { "operationId": "{{ row.id }}", "expectedVersion": "{{ row.row_version }}" } },
                             { "type": "refreshDataSource", "sourceKeys": ["workOrders", "operations"] },
@@ -651,6 +656,10 @@ with page_seed(code, route, title, description, schema) as (
                           "icon": "ri-inbox-archive-line",
                           "status": "primary",
                           "permissionCode": "mes.execution.manage",
+                          "visible": [
+                            { "field": "requirement_type", "operator": "eq", "value": "consume" },
+                            { "field": "operation_status", "operator": "in", "value": ["ready", "in_progress", "paused"] }
+                          ],
                           "directives": [
                             {
                               "type": "openGlobalDialog",
@@ -689,6 +698,11 @@ with page_seed(code, route, title, description, schema) as (
                           "icon": "ri-arrow-go-back-line",
                           "status": "warning",
                           "permissionCode": "mes.execution.manage",
+                          "visible": [
+                            { "field": "requirement_type", "operator": "eq", "value": "consume" },
+                            { "field": "operation_status", "operator": "in", "value": ["ready", "in_progress", "paused", "completed"] },
+                            { "field": "available_to_return", "operator": "gt", "value": 0 }
+                          ],
                           "directives": [
                             {
                               "type": "openGlobalDialog",
@@ -769,6 +783,7 @@ with page_seed(code, route, title, description, schema) as (
                           "icon": "ri-arrow-go-back-line",
                           "status": "danger",
                           "permissionCode": "mes.execution.manage",
+                          "visible": { "field": "reversible", "operator": "eq", "value": true },
                           "directives": [
                             {
                               "type": "openGlobalDialog",
@@ -846,6 +861,7 @@ with page_seed(code, route, title, description, schema) as (
                           "icon": "ri-arrow-go-back-line",
                           "status": "danger",
                           "permissionCode": "mes.execution.manage",
+                          "visible": { "field": "reversible", "operator": "eq", "value": true },
                           "directives": [
                             {
                               "type": "openGlobalDialog",
@@ -985,6 +1001,7 @@ with page_seed(code, route, title, description, schema) as (
                   "icon": "ri-arrow-go-back-line",
                   "status": "danger",
                   "permissionCode": "mes.execution.manage",
+                  "visible": { "field": "reversible", "operator": "eq", "value": true },
                   "directives": [
                     {
                       "type": "openGlobalDialog",
@@ -1113,6 +1130,7 @@ with page_seed(code, route, title, description, schema) as (
                   "icon": "ri-arrow-go-back-line",
                   "status": "danger",
                   "permissionCode": "mes.execution.manage",
+                  "visible": { "field": "reversible", "operator": "eq", "value": true },
                   "directives": [
                     {
                       "type": "openGlobalDialog",

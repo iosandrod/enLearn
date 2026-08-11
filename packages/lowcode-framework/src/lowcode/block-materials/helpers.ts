@@ -55,8 +55,8 @@ export function resolveGridRows(
   block: LowCodePageGridBlock,
   resolvedData: Record<string, unknown>,
   searchFilters: Record<string, Record<string, unknown>>
-) {//
-  const sourceValue = getSourceValue(resolvedData, block.id);
+) {
+  const sourceValue = getSourceValue(resolvedData, block.sourceKey);
   const sourceRows = Array.isArray(sourceValue)
     ? sourceValue
     : typeof sourceValue === 'object' && sourceValue !== null && Array.isArray(

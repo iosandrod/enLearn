@@ -153,6 +153,10 @@ const host = useLowCodeHost(() => ({
   theme: props.theme,
 }));
 const runtime = createLowCodePageRuntime();
+runtime.state.status.formMode =
+  props.page.page_type === 'edit' && !readString(host.getRoute().query?.id)
+    ? 'create'
+    : 'edit';
 provide(lowCodePageRuntimeKey, runtime);
 
 const resolvedData = computed(() => runtime.state.sources);
@@ -203,7 +207,12 @@ let loadSequence = 0;
 let sourceRequestSequence = 0;
 const sourceRequestVersions = new Map<string, number>();
 let runtimePageId = '';
-let builtinPageFunctionMode: BuiltinLowCodePageFunctionMode = 'edit';
+const builtinPageFunctionMode = computed<BuiltinLowCodePageFunctionMode>({
+  get: () => runtime.state.status.formMode,
+  set: (mode) => {
+    runtime.state.status.formMode = mode;
+  },
+});
 let lastSavedFormRecord: Record<string, unknown> | undefined;
 
 onMounted(() => {
@@ -1168,7 +1177,7 @@ function updateVisualButtonGroupBlocks(
       visualProps.formDesignerModel = cloneRuntimeValue(
         'formDesignerModel' in update.changes
           ? update.changes.formDesignerModel
-          : targetBlock.formDesignerModel ?? visualProps.formDesignerModel,
+          : null,
       );
       visualProps.formDesignerUpdatedAt = update.changes.formDesignerUpdatedAt ?? Date.now();
       candidate.props = visualProps;
@@ -1518,7 +1527,7 @@ function buildFormSubmissionValues(
   blocks: LowCodePageFormBlock[]
 ) {
   const isCreating =
-    props.page.page_type === 'edit' && builtinPageFunctionMode !== 'edit';
+    props.page.page_type === 'edit' && builtinPageFunctionMode.value !== 'edit';
   if (isCreating) {
     return blocks.reduce<Record<string, unknown>>((values, block) => ({
       ...values,
@@ -1764,7 +1773,7 @@ async function loadPageData(nextPage: LowCodePageRecord) {
   const gridInteractionState = preserveGrids ? captureGridInteractionState() : {};
 
   if (!preserveGrids || props.page.page_type === 'edit') {
-    builtinPageFunctionMode = readString(host.getRoute().query?.id)
+    builtinPageFunctionMode.value = readString(host.getRoute().query?.id)
       ? 'edit'
       : 'create';
   }
@@ -1881,6 +1890,7 @@ async function publishRuntimeEventNow(event: LowCodeRuntimeEvent) {
     await props.onRuntimeEvent?.(event);
   } catch (error) {
     reportRuntimeDirectiveError(error);
+    throw error;
   }
 }
 
@@ -1896,6 +1906,7 @@ async function handlePublishedRuntimeEvent(event: LowCodeRuntimeEvent) {
       await executeRuntimeDirective(directive, event);
     } catch (error) {
       reportRuntimeDirectiveError(error);
+      if (event.payload?.action === 'confirm') throw error;
       break;
     }
   }
@@ -2421,12 +2432,12 @@ function createBuiltinPageFunctionContext(
     invokeService: (serviceName, serviceMethod, postData) =>
       host.getServiceApi().invoke(serviceName, serviceMethod, postData),
     prepareForms: async (mode) => {
-      builtinPageFunctionMode = mode;
+      builtinPageFunctionMode.value = mode;
       return resetBuiltinForms(mode);
     },
     patchForms: async (values) => patchBuiltinForms(values),
     submitForms: async () => {
-      const navigateAfterCreate = builtinPageFunctionMode !== 'edit';
+      const navigateAfterCreate = builtinPageFunctionMode.value !== 'edit';
       const groups = collectFormSubmissionGroups();
       if (!groups.size) throw new Error('当前编辑页没有配置可保存的表单数据源。');
       const saved = await submitForms({ reload: !navigateAfterCreate });
@@ -2434,7 +2445,7 @@ function createBuiltinPageFunctionContext(
 
       const savedId = readSavedRecordId(lastSavedFormRecord, groups);
       if (!savedId) return saved;
-      builtinPageFunctionMode = 'edit';
+      builtinPageFunctionMode.value = 'edit';
       await host.getRouter().push(appendRouteQuery(props.page.route, {
         ...readRouteQueryWithoutRecordId(),
         id: savedId,
@@ -2442,7 +2453,7 @@ function createBuiltinPageFunctionContext(
       return saved;
     },
     setMode: async (mode) => {
-      builtinPageFunctionMode = mode;
+      builtinPageFunctionMode.value = mode;
       await publishRuntimeEvent({
         name: 'page.modeChange',
         blockId: event.blockId,
@@ -3019,6 +3030,26 @@ async function openGlobalDialogDirective(
     directive.model ?? config.model ?? config.form?.model ?? {},
     event
   );
+  const createFollowUpEvent = (
+    action: string,
+    values: Record<string, unknown>,
+    payload?: unknown,
+  ): LowCodeRuntimeEvent => ({
+    name: resolveDirectiveString(
+      directive.resultEvent ?? directive.event,
+      event,
+      `dialog.${action}`
+    ),
+    blockId: event.blockId,
+    blockKind: event.blockKind,
+    timestamp: Date.now(),
+    payload: {
+      action,
+      values,
+      payload,
+      directives: resolveDialogFollowUpDirectives(directive, action),
+    },
+  });
   const result = await openLowCodeGlobalDialog({
     ...config,
     model,
@@ -3028,7 +3059,24 @@ async function openGlobalDialogDirective(
           model,
         }
       : config.form,
+    onConfirm: async (context) => {
+      const configuredResult = await config.onConfirm?.(context);
+      if (
+        configuredResult === false ||
+        (isRecord(configuredResult) && 'close' in configuredResult && configuredResult.close === false)
+      ) {
+        return configuredResult;
+      }
+
+      await publishRuntimeEvent(createFollowUpEvent(
+        'confirm',
+        context.model,
+        isRecord(configuredResult) ? configuredResult.payload : undefined,
+      ));
+      return configuredResult;
+    },
   });
+  if (result.action === 'confirm') return;
   const followUpDirectives = resolveDialogFollowUpDirectives(directive, result.action);
   const resultEvent = resolveDirectiveString(
     directive.resultEvent ?? directive.event,

@@ -1,4 +1,5 @@
 import type { VxeButtonProps } from 'vxe-pc-ui';
+import type { LowCodeRowActionPredicate } from '../runtime/row-action-state';
 
 export type LowCodeOption = {
   label: string;
@@ -29,9 +30,48 @@ export type LowCodeBuiltInFieldComponent =
   | 'lc-monaco-editor'
   | 'lc-number-input'
   | 'lc-option-select'
+  | 'base-info'
   | 'lc-sub-form';
 
 export type LowCodeFieldComponent = LowCodeBuiltInFieldComponent | (string & {});
+
+export type LowCodeRelateInfoFieldMapping = {
+  sourceField: string;
+  targetField: string;
+};
+
+export type LowCodeRelateInfoConfig = {
+  sourceType?: 'entity' | 'lowcode_page' | 'lowcodePage';
+  resource?: string;
+  tableName?: string;
+  viewName?: string;
+  entityCode?: string;
+  pageId?: string;
+  pageCode?: string;
+  pageRoute?: string;
+  lowcodePage?: string;
+  sourceKey?: string;
+  serviceName?: string;
+  serviceMethod?: string;
+  postData?: Record<string, unknown>;
+  resultPath?: string;
+  valueField?: string;
+  displayField?: string;
+  displayValueField?: string;
+  fieldMappings?: LowCodeRelateInfoFieldMapping[];
+  mappings?: LowCodeRelateInfoFieldMapping[] | Record<string, string>;
+  columns?: LowCodeGridColumn[];
+  searchField?: string;
+  searchFields?: string[];
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  pageSize?: number;
+  rowKey?: string;
+  popupWidth?: number | string;
+  popupHeight?: number | string;
+  reloadOnFocus?: boolean;
+  allowInput?: boolean;
+};
 
 export type LowCodeField = {
   field: string;
@@ -47,6 +87,10 @@ export type LowCodeField = {
   rules?: LowCodeRule[];
   span?: number;
   events?: Record<string, LowCodeRuntimeDirective[]>;
+  /** Disable this field while the edit page is creating or copying a record. */
+  createDisabled?: boolean;
+  /** Disable this field while the edit page is modifying an existing record. */
+  editDisabled?: boolean;
   /** Resolve the initial value by running defaultValueScript in the isolated runtime. */
   defaultValueType?: 'function';
   defaultValueScript?: string;
@@ -297,6 +341,7 @@ export type LowCodeFormProps = {
   className?: string;
   readonly?: boolean;
   disabled?: boolean;
+  mode?: 'create' | 'copy' | 'edit';
   rules?: Record<string, unknown[]>;
   preventSubmit?: boolean;
   validConfig?: Record<string, unknown>;
@@ -319,6 +364,9 @@ export type LowCodeGridAction = {
 };
 
 export type LowCodeGridRowAction = LowCodeGridAction & {
+  visible?: LowCodeRowActionPredicate;
+  when?: LowCodeRowActionPredicate;
+  disabled?: LowCodeRowActionPredicate;
   plain?: boolean;
   text?: boolean;
 };

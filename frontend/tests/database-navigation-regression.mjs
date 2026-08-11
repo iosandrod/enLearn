@@ -81,6 +81,21 @@ assert.match(
   'Concurrent database navigation refreshes must share one request.'
 );
 assert.match(
+  layoutSource,
+  /serviceApi\.invoke<AdminRouteNode\[]>\([\s\S]*?'admin',[\s\S]*?'listNavigationRoutes'/,
+  'The dashboard must load the backend-authorized navigation projection instead of raw route rows.'
+);
+assert.doesNotMatch(
+  layoutSource,
+  /listItems<AdminRouteNode\[]>\('admin',[\s\S]*?tableName:\s*'admin_routes'/,
+  'The sidebar must not bypass backend route authorization with generic CRUD.'
+);
+assert.doesNotMatch(
+  layoutSource,
+  /function canViewRoute|auth\.permissions\.value\.includes\(node\.permission_code\)/,
+  'An already authorized backend route must not be hidden again by stale client permission state.'
+);
+assert.match(
   migrationSource,
   /where route\.code = 'file-management'[\s\S]*advanced_root\.code = 'advanced-root'/,
   'File management must belong to the Advanced Functions route group.'

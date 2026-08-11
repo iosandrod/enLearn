@@ -181,6 +181,7 @@ export type GlobalDialogInstance<TValues extends Record<string, unknown> = Recor
     config: GlobalDialogConfig<TValues>;
     model: TValues;
     busyAction: string;
+    errorMessage: string;
     createdAt: number;
     resolve: (result: GlobalDialogResult<TValues>) => void;
 };

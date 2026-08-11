@@ -60,6 +60,7 @@ const formComponentOptions = [
   { label: '数字输入', value: 'lc-number-input' },
   { label: 'JSON 编辑器', value: 'lc-json-editor' },
   { label: '代码编辑器', value: 'lc-monaco-editor' },
+  { label: '关联资料', value: 'base-info' },
   { label: '表格输入', value: 'lc-array-table' },
   { label: '子表单', value: 'lc-sub-form' },
 ];

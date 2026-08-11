@@ -16,6 +16,12 @@ import type { VisualEditorModelValue } from '../../visual-editor/visual-editor.u
 type RuntimeFormBlock = LowCodePageFormBlock | LowCodePageSearchFormBlock;
 type RuntimeFormMode = 'search' | 'edit';
 
+type DesignerModelField = {
+  field: string;
+  component: string;
+  relateInfoConfig?: unknown;
+};
+
 function cloneValue<T>(value: T): T {
   try {
     return JSON.parse(JSON.stringify(value)) as T;
@@ -56,6 +62,75 @@ function runtimeFieldToDesignerField(field: LowCodeField): FormDesignerField {
   };
 }
 
+function readString(value: unknown) {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function designerModelFields(model: unknown): DesignerModelField[] {
+  if (!isRecord(model) || !isRecord(model.pages)) return [];
+  const result: DesignerModelField[] = [];
+
+  const visit = (blocks: unknown) => {
+    if (!Array.isArray(blocks)) return;
+
+    blocks.filter(isRecord).forEach((block) => {
+      const props = isRecord(block.props) ? block.props : {};
+      const field = readString(props.name);
+      if (field) {
+        const override = readString(props.__lowcodeComponent);
+        const componentKey = readString(block.componentKey);
+        const component = override || (
+          componentKey === 'input'
+            ? props.type === 'textarea'
+              ? 'vxe-textarea'
+              : props.type === 'password'
+                ? 'vxe-password-input'
+                : 'vxe-input'
+            : ({
+                picker: 'vxe-select',
+                switch: 'vxe-switch',
+                radio: 'vxe-radio-group',
+                checkbox: 'vxe-checkbox-group',
+                'array-table': 'lc-array-table',
+                'sub-form': 'lc-sub-form',
+              } as Record<string, string>)[componentKey] || componentKey
+        );
+        result.push({
+          field,
+          component,
+          relateInfoConfig: cloneValue(props.relateInfoConfig),
+        });
+      }
+
+      if (isRecord(props.slots)) {
+        Object.values(props.slots).filter(isRecord).forEach((slot) => visit(slot.children));
+      }
+    });
+  };
+
+  Object.values(model.pages).filter(isRecord).forEach((page) => visit(page.blocks));
+  return result;
+}
+
+function isDesignerModelCurrent(block: RuntimeFormBlock) {
+  if (!block.formDesignerModel) return false;
+  const modelFields = designerModelFields(block.formDesignerModel);
+  return modelFields.length === block.schema.fields.length && block.schema.fields.every(
+    (field, index) =>
+      modelFields[index]?.field === field.field &&
+      modelFields[index]?.component === field.component &&
+      (
+        field.component !== 'base-info' ||
+        JSON.stringify(modelFields[index]?.relateInfoConfig ?? {}) ===
+          JSON.stringify(field.props?.relateInfoConfig ?? {})
+      ),
+  );
+}
+
 function mergeField(
   original: LowCodeField | undefined,
   designed: LowCodeField,
@@ -86,6 +161,13 @@ function mergeField(
     'validationScript',
     'validationMessage',
   ] as const) {
+    if (typeof original[key] !== 'undefined') {
+      Object.assign(merged, { [key]: original[key] });
+    }
+    else delete merged[key];
+  }
+
+  for (const key of ['createDisabled', 'editDisabled'] as const) {
     if (typeof original[key] !== 'undefined') merged[key] = original[key];
     else delete merged[key];
   }
@@ -139,7 +221,9 @@ export async function openRuntimeFormDesigner(
     fields: block.schema.fields.map(runtimeFieldToDesignerField),
     layout: block.schema.layout,
     columns: block.schema.columns,
-    designerModel: (block.formDesignerModel as VisualEditorModelValue | undefined) ?? null,
+    designerModel: isDesignerModelCurrent(block)
+      ? block.formDesignerModel as VisualEditorModelValue
+      : null,
     pageData: runtimeBlockEditor.getPageSchema?.(),
     pageRecord: runtimeBlockEditor.getPageRecord?.(),
     serviceApi: runtimeBlockEditor.getServiceApi?.(),

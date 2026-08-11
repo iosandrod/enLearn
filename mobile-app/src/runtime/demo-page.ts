@@ -14,6 +14,8 @@ export function createDemoPage(): MobilePageRecord {
     keep_alive: true,
     page_type: 'custom',
     edit_page_id: null,
+    view_name: null,
+    table_name: null,
     version: 1,
     published_at: null,
     created_at: now,

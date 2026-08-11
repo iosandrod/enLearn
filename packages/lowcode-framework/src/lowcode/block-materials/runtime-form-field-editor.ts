@@ -1,4 +1,5 @@
 import { VxeUI } from 'vxe-pc-ui';
+import type { LowCodeHostServiceApi } from '../../core/host';
 import type { LowCodeRuntimeBlockEditor } from '../../runtime/block-editor';
 import { openGlobalDialog } from '../../runtime/global-dialog';
 import type {
@@ -6,8 +7,10 @@ import type {
   LowCodeFormSchema,
   LowCodePageFormBlock,
   LowCodePageSearchFormBlock,
+  LowCodeRelateInfoConfig,
   LowCodeRule,
 } from '../../types/lowcode';
+import { lowCodeOptionSourceRegistry } from '../../runtime/option-source-registry';
 import { loadLowCodeFormDefinition } from '../form-definition-loader';
 
 export const RUNTIME_FORM_FIELD_EDITOR_CODE = 'runtime-form-field-editor';
@@ -16,8 +19,12 @@ type RuntimeFormBlock = LowCodePageFormBlock | LowCodePageSearchFormBlock;
 type FieldEditorModel = Record<string, unknown> & {
   field: string;
   label: string;
+  component: LowCodeField['component'];
   required: boolean;
   requiredMessage: string;
+  createDisabled: boolean;
+  editDisabled: boolean;
+  relateInfoConfig: LowCodeRelateInfoConfig;
   defaultValueType: 'none' | 'literal' | 'function';
   defaultValue?: unknown;
   defaultValueScript: string;
@@ -37,6 +44,55 @@ function cloneValue<T>(value: T): T {
   } catch {
     return value;
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function normalizeRelateInfoConfig(value: unknown): LowCodeRelateInfoConfig {
+  if (!isRecord(value)) return {};
+  const config = cloneValue(value) as LowCodeRelateInfoConfig;
+  const mappings = config.fieldMappings ?? config.mappings;
+
+  if (Array.isArray(mappings)) {
+    config.fieldMappings = mappings
+      .filter(isRecord)
+      .map((mapping) => ({
+        sourceField: readString(mapping.sourceField),
+        targetField: readString(mapping.targetField),
+      }))
+      .filter((mapping) => mapping.sourceField && mapping.targetField);
+    delete config.mappings;
+  } else if (isRecord(mappings)) {
+    config.fieldMappings = Object.entries(mappings)
+      .map(([targetField, sourceField]) => ({
+        sourceField: readString(sourceField),
+        targetField: readString(targetField),
+      }))
+      .filter((mapping) => mapping.sourceField && mapping.targetField);
+    delete config.mappings;
+  }
+
+  return config;
+}
+
+function createDefaultRelateInfoConfig(fieldName: string) {
+  return {
+    sourceType: 'entity',
+    valueField: 'id',
+    displayField: 'name',
+    displayValueField: `${fieldName}_label`,
+    searchable: true,
+    pageSize: 100,
+    fieldMappings: [{ sourceField: 'id', targetField: fieldName }],
+  } satisfies LowCodeRelateInfoConfig;
+}
+
+function createRelateInfoConfig(field: LowCodeField) {
+  const config = normalizeRelateInfoConfig(field.props?.relateInfoConfig);
+  if (Object.keys(config).length || field.component !== 'base-info') return config;
+  return createDefaultRelateInfoConfig(field.field);
 }
 
 function notifyError(error: unknown) {
@@ -71,8 +127,12 @@ function createEditorModel(block: RuntimeFormBlock, field: LowCodeField): FieldE
   return {
     field: field.field,
     label: field.label,
+    component: field.component,
     required: Boolean(requiredRule),
     requiredMessage: requiredRule?.message || `${field.label}不能为空`,
+    createDisabled: field.createDisabled === true,
+    editDisabled: field.editDisabled === true,
+    relateInfoConfig: createRelateInfoConfig(field),
     defaultValueType,
     defaultValue: hasLiteralDefault
       ? formatLiteralDefaultValue(block.initialValues?.[field.field])
@@ -103,6 +163,7 @@ function updateRequiredRule(
 
 function createUpdatedField(field: LowCodeField, values: FieldEditorModel) {
   const label = readString(values.label) || field.label;
+  const component = readString(values.component) || field.component;
   const rules = updateRequiredRule(
     field.rules,
     values.required === true,
@@ -111,6 +172,9 @@ function createUpdatedField(field: LowCodeField, values: FieldEditorModel) {
   const updated: LowCodeField = {
     ...cloneValue(field),
     label,
+    component,
+    ...(values.createDisabled === true ? { createDisabled: true } : {}),
+    ...(values.editDisabled === true ? { editDisabled: true } : {}),
     ...(readString(values.optionsCode) ? { optionsCode: readString(values.optionsCode) } : {}),
     ...(values.defaultValueType === 'function'
       ? {
@@ -130,8 +194,22 @@ function createUpdatedField(field: LowCodeField, values: FieldEditorModel) {
       : {}),
     ...(rules.length ? { rules } : {}),
   };
+  const props = cloneValue(updated.props ?? {});
+  const configuredRelateInfo = normalizeRelateInfoConfig(values.relateInfoConfig);
+  const relateInfoConfig = component === 'base-info' && !Object.keys(configuredRelateInfo).length
+    ? createDefaultRelateInfoConfig(field.field)
+    : configuredRelateInfo;
+  if (Object.keys(relateInfoConfig).length) {
+    props.relateInfoConfig = relateInfoConfig;
+  } else {
+    delete props.relateInfoConfig;
+  }
+  if (Object.keys(props).length) updated.props = props;
+  else delete updated.props;
 
   if (!readString(values.optionsCode)) delete updated.optionsCode;
+  if (values.createDisabled !== true) delete updated.createDisabled;
+  if (values.editDisabled !== true) delete updated.editDisabled;
   if (values.defaultValueType !== 'function') {
     delete updated.defaultValueType;
     delete updated.defaultValueScript;
@@ -186,6 +264,21 @@ function hydrateEditorSchema(schema: LowCodeFormSchema) {
   return cloneValue(schema);
 }
 
+async function preloadEditorOptionSources(
+  schema: LowCodeFormSchema,
+  serviceApi: LowCodeHostServiceApi,
+) {
+  const missingCodes = [...new Set(
+    schema.fields
+      .map((candidate) => readString(candidate.optionsCode))
+      .filter(Boolean),
+  )].filter((code) => !lowCodeOptionSourceRegistry.peek(code));
+
+  if (missingCodes.length) {
+    await lowCodeOptionSourceRegistry.refresh(missingCodes, () => serviceApi);
+  }
+}
+
 export async function openRuntimeFormFieldEditor(
   block: RuntimeFormBlock,
   field: LowCodeField,
@@ -199,6 +292,7 @@ export async function openRuntimeFormFieldEditor(
       serviceApi,
       RUNTIME_FORM_FIELD_EDITOR_CODE,
     );
+    await preloadEditorOptionSources(definition.schema, serviceApi);
     const model = createEditorModel(block, field);
     const result = await openGlobalDialog<FieldEditorModel>({
       title: `${field.label || field.field} - 字段属性`,
@@ -206,6 +300,7 @@ export async function openRuntimeFormFieldEditor(
       className: 'runtime-form-field-editor-dialog',
       props: {
         top: '5vh',
+        height: 'min(860px, calc(100vh - 48px))',
         destroyOnClose: true,
       },
       model,

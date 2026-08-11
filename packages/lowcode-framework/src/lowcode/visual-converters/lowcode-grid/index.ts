@@ -192,6 +192,8 @@ function normalizeGridRowActions(value: unknown) {
       const icon = readString(row.icon);
       const eventName = readString(row.eventName);
       const directives = normalizeRuntimeDirectives(row.directivesJson ?? row.directives);
+      const visible = readJsonObject(row.visibleJson ?? row.visible, {});
+      const disabled = readJsonObject(row.disabledJson, {});
 
       return {
         code,
@@ -199,7 +201,12 @@ function normalizeGridRowActions(value: unknown) {
         ...(status ? { status } : {}),
         ...(icon ? { icon } : {}),
         ...(eventName ? { eventName } : {}),
-        ...(readBoolean(row.disabled, false) ? { disabled: true } : {}),
+        ...(Object.keys(visible).length ? { visible } : {}),
+        ...(Object.keys(disabled).length
+          ? { disabled }
+          : readBoolean(row.disabled, false)
+            ? { disabled: true }
+            : {}),
         ...(readBoolean(row.plain, false) ? { plain: true } : {}),
         ...(readBoolean(row.text, false) ? { text: true } : {}),
         ...(directives.length ? { directives } : {}),

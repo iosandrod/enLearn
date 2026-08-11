@@ -41,6 +41,64 @@ type ContentNodeMeta = {
   style?: unknown;
 };
 
+type DialogFormController = {
+  validate: () => Promise<boolean>;
+  setForm: (form: InstanceType<typeof LowCodeForm> | null) => void;
+};
+
+const dialogFormControllers = new Map<string, Set<DialogFormController>>();
+const dialogFormControllersByKey = new Map<string, Map<string, DialogFormController>>();
+
+function registerDialogFormController(
+  dialogId: string,
+  controller: DialogFormController,
+) {
+  const controllers = dialogFormControllers.get(dialogId) ?? new Set<DialogFormController>();
+  controllers.add(controller);
+  dialogFormControllers.set(dialogId, controllers);
+}
+
+function unregisterDialogFormController(
+  dialogId: string,
+  controller: DialogFormController,
+) {
+  const controllers = dialogFormControllers.get(dialogId);
+  if (!controllers) return;
+  controllers.delete(controller);
+  const byKey = dialogFormControllersByKey.get(dialogId);
+  byKey?.forEach((value, key) => {
+    if (value === controller) byKey.delete(key);
+  });
+  if (!controllers.size) {
+    dialogFormControllers.delete(dialogId);
+    dialogFormControllersByKey.delete(dialogId);
+  }
+}
+
+async function validateDialogForms(dialogId: string) {
+  const controllers = [...(dialogFormControllers.get(dialogId) ?? [])];
+  const results = await Promise.all(controllers.map((controller) => controller.validate()));
+  return results.every(Boolean);
+}
+
+function ensureDialogFormController(dialogId: string, key: string) {
+  const byKey = dialogFormControllersByKey.get(dialogId) ?? new Map<string, DialogFormController>();
+  dialogFormControllersByKey.set(dialogId, byKey);
+  const existing = byKey.get(key);
+  if (existing) return existing;
+
+  let formInstance: InstanceType<typeof LowCodeForm> | null = null;
+  const controller: DialogFormController = {
+    validate: () => formInstance?.validate() ?? Promise.resolve(false),
+    setForm: (value) => {
+      formInstance = value;
+    },
+  };
+  byKey.set(key, controller);
+  registerDialogFormController(dialogId, controller);
+  return controller;
+}
+
 function readValue<T>(value: GlobalDialogMaybeRef<T> | undefined, fallback?: T) {
   const resolved = unref(value);
   return typeof resolved === 'undefined' ? fallback : resolved;
@@ -132,6 +190,7 @@ async function handleDialogAction<TValues extends Record<string, unknown>>(
   if (readValue(action.disabled, false)) return;
 
   instance.busyAction = action.code;
+  instance.errorMessage = '';
 
   try {
     const context = createGlobalDialogContext(instance);
@@ -148,6 +207,7 @@ async function handleDialogAction<TValues extends Record<string, unknown>>(
     }
 
     if (action.role === 'confirm' || action.code === 'confirm') {
+      if (!(await validateDialogForms(instance.id))) return;
       const confirmResult = await instance.config.onConfirm?.(context);
       if (shouldStayOpen(confirmResult)) return;
 
@@ -166,6 +226,10 @@ async function handleDialogAction<TValues extends Record<string, unknown>>(
     ) {
       await closeGlobalDialog(instance.id, buildCloseResult(instance, action, actionResult));
     }
+  } catch (error) {
+    instance.errorMessage = error instanceof Error
+      ? error.message
+      : 'The operation could not be completed.';
   } finally {
     instance.busyAction = '';
   }
@@ -214,6 +278,8 @@ function renderForm<TValues extends Record<string, unknown>>(
 ) {
   const context = createGlobalDialogContext(instance);
   const formModel = resolveFormModel(instance, form);
+  const formKey = node?.key ?? 'root-form';
+  const controller = ensureDialogFormController(instance.id, formKey);
   const formProps = {
     schema: readValue(form.schema),
     modelValue: formModel,
@@ -238,6 +304,11 @@ function renderForm<TValues extends Record<string, unknown>>(
 
   return (
     <LowCodeForm
+      ref={(value: unknown) => {
+        const formInstance = (value as InstanceType<typeof LowCodeForm> | null) ?? null;
+        controller.setForm(formInstance);
+        if (!formInstance) unregisterDialogFormController(instance.id, controller);
+      }}
       key={node?.key}
       class={node?.className}
       style={node?.style as any}
@@ -582,6 +653,8 @@ export default defineComponent({
     onMounted(() => window.addEventListener('keydown', handleEscape, true));
     onBeforeUnmount(() => {
       window.removeEventListener('keydown', handleEscape, true);
+      dialogFormControllers.clear();
+      dialogFormControllersByKey.clear();
       host.unregister();
     });
 
@@ -629,7 +702,12 @@ export default defineComponent({
                 {...modalProps}
                 v-slots={{
                   default: () => (
-                    <div class="lc-global-dialog__body">{renderBody(instance) as any}</div>
+                    <div class="lc-global-dialog__body">
+                      {instance.errorMessage
+                        ? <div class="lc-global-dialog__error" role="alert">{instance.errorMessage}</div>
+                        : null}
+                      {renderBody(instance) as any}
+                    </div>
                   ),
                   footer: () => renderFooter(instance),
                 }}

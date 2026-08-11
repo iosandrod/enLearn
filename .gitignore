@@ -9,6 +9,10 @@
 # testing
 /coverage
 /api/.trigger/*
+/artifacts/.mes-*.json
+/artifacts/.mes-*.mjs
+/artifacts/.mes-*.tmp
+/artifacts/mes-*.log
 # nuxt
 /nuxt-app/.nuxt/
 /nuxt-app/.output/

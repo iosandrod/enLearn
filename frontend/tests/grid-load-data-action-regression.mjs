@@ -282,6 +282,26 @@ assert.match(registrySource, /grid:\s*gridNodeActionDefinition/);
 assert.match(rendererSource, /if \(action\.execute\)[\s\S]*?return action\.execute/);
 assert.match(registrySource, /resolveLowCodeDataSourceNodeAction/);
 assert.match(rendererSource, /resolveLowCodeDataSourceNodeAction\(pageBlocks, key\)/);
+assert.match(
+  rendererSource,
+  /resolveGridRows\(block, resolvedData\.value, searchFilters\.value\)/,
+  'Grid synchronization must resolve rows from the configured source key.',
+);
+const gridMaterialSource = await readFile(
+  new URL('lowcode/block-materials/grid/index.vue', frameworkRoot),
+  'utf8',
+);
+const gridHelperSource = await readFile(
+  new URL('lowcode/block-materials/helpers.ts', frameworkRoot),
+  'utf8',
+);
+assert.match(gridHelperSource, /getSourceValue\(resolvedData, block\.sourceKey\)/);
+assert.match(
+  gridMaterialSource,
+  /loadingSourceKeys\.includes\(props\.block\.sourceKey\)/,
+  'A source-backed grid must use the source key tracked by the request lifecycle.',
+);
+assert.doesNotMatch(gridMaterialSource, /let obj=|return obj\/\//);
 assert.doesNotMatch(rendererSource, /method: 'loadData'/);
 assert.doesNotMatch(rendererSource, /case 'grid\.loadData'/);
 assert.doesNotMatch(rendererSource, /executeGridLoadDataAction/);

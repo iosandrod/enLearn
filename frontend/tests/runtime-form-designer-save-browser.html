@@ -41,10 +41,15 @@
       import '../assets/styles/app.css';
       import '../assets/styles/visual-editor-utilities.scss';
       import LowCodePageRenderer from '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue';
+      import { lowCodeOptionSourceRegistry } from '../../packages/lowcode-framework/src/runtime/option-source-registry';
 
       const useReactivePage = new URLSearchParams(location.search).get('page') === 'reactive';
+      const runtimeMode = new URLSearchParams(location.search).get('mode') === 'edit'
+        ? 'edit'
+        : 'create';
       const renderer = ref(null);
       const saveCalls = [];
+      lowCodeOptionSourceRegistry.invalidate();
       const initialPageRecord = {
         id: `runtime-form-designer-save-${useReactivePage ? 'reactive' : 'plain'}`,
         code: 'runtime-form-designer-save',
@@ -94,6 +99,18 @@
                     props: { placeholder: '请输入编码' },
                   },
                   {
+                    field: 'createLocked',
+                    label: '新增禁用示例',
+                    component: 'vxe-input',
+                    createDisabled: true,
+                  },
+                  {
+                    field: 'editLocked',
+                    label: '编辑禁用示例',
+                    component: 'vxe-input',
+                    editDisabled: true,
+                  },
+                  {
                     field: 'generatedCode',
                     label: '函数默认编码',
                     component: 'vxe-input',
@@ -133,6 +150,29 @@
                         throw new Error("函数抛出的校验提示");
                       }
                     `,
+                  },
+                  {
+                    field: 'relatedItem',
+                    label: '关联物料',
+                    component: 'base-info',
+                    props: {
+                      clearable: true,
+                      relateInfoConfig: {
+                        sourceType: 'entity',
+                        entityCode: 'planning_item',
+                        tableName: 'planning_item',
+                        resource: 'planning_item',
+                        serviceName: 'planning',
+                        serviceMethod: 'listItems',
+                        valueField: 'id',
+                        displayField: 'name',
+                        displayValueField: 'relatedItem_label',
+                        fieldMappings: [
+                          { sourceField: 'id', targetField: 'relatedItem' },
+                          { sourceField: 'name', targetField: 'relatedItemName' },
+                        ],
+                      },
+                    },
                   },
                 ],
                 actions: [
@@ -189,8 +229,69 @@
                     fields: [
                       { field: 'field', label: '字段编码', component: 'vxe-input', props: { readonly: true } },
                       { field: 'label', label: '字段名称', component: 'vxe-input' },
+                      {
+                        field: 'component',
+                        label: '组件类型',
+                        component: 'vxe-select',
+                        optionsCode: 'form_field_component_type',
+                        props: { clearable: false, filterable: true },
+                      },
                       { field: 'required', label: '必须录入', component: 'vxe-switch' },
                       { field: 'requiredMessage', label: '必录提示', component: 'vxe-input' },
+                      { field: 'createDisabled', label: '新增禁用', component: 'vxe-switch' },
+                      { field: 'editDisabled', label: '编辑禁用', component: 'vxe-switch' },
+                      {
+                        field: 'relateInfoConfig',
+                        label: '关联资料配置',
+                        component: 'lc-sub-form',
+                        span: 2,
+                        props: {
+                          columns: 2,
+                          padding: false,
+                          schema: {
+                            columns: 2,
+                            fields: [
+                              {
+                                field: 'sourceType',
+                                label: '来源类型',
+                                component: 'vxe-select',
+                                options: [
+                                  { label: '实体/表/视图', value: 'entity' },
+                                  { label: '低代码页面', value: 'lowcode_page' },
+                                ],
+                              },
+                              { field: 'entityCode', label: '实体编码', component: 'vxe-input' },
+                              { field: 'tableName', label: '表名/视图名', component: 'vxe-input' },
+                              { field: 'resource', label: '业务资源', component: 'vxe-input' },
+                              { field: 'pageCode', label: '页面编码', component: 'vxe-input' },
+                              { field: 'sourceKey', label: '页面数据源', component: 'vxe-input' },
+                              { field: 'serviceName', label: '服务名称', component: 'vxe-input' },
+                              { field: 'serviceMethod', label: '服务方法', component: 'vxe-input' },
+                              { field: 'valueField', label: '值字段', component: 'vxe-input' },
+                              { field: 'displayField', label: '显示字段', component: 'vxe-input' },
+                              { field: 'displayValueField', label: '显示值目标字段', component: 'vxe-input' },
+                              { field: 'searchField', label: '搜索字段', component: 'vxe-input' },
+                              {
+                                field: 'fieldMappings',
+                                label: '字段映射',
+                                component: 'lc-array-table',
+                                span: 2,
+                                props: {
+                                  columns: [
+                                    { field: 'sourceField', title: '来源字段', minWidth: 180 },
+                                    { field: 'targetField', title: '目标表单字段', minWidth: 180 },
+                                  ],
+                                  defaultRow: { sourceField: '', targetField: '' },
+                                  toolbarButtons: [
+                                    { code: 'add', label: '新增映射', command: 'add', status: 'primary' },
+                                  ],
+                                },
+                              },
+                            ],
+                            actions: [],
+                          },
+                        },
+                      },
                       {
                         field: 'defaultValueType',
                         label: '默认值类型',
@@ -202,7 +303,18 @@
                         ],
                       },
                       { field: 'defaultValue', label: '默认值', component: 'vxe-input' },
-                      { field: 'optionsCode', label: '关联下拉 Code', component: 'vxe-input' },
+                      {
+                        field: 'optionsCode',
+                        label: '关联下拉 Code',
+                        component: 'vxe-select',
+                        optionsCode: 'option_source_code',
+                        props: {
+                          clearable: true,
+                          filterable: true,
+                          allowCreate: true,
+                          placeholder: '请选择或输入下拉 Code',
+                        },
+                      },
                       { field: 'validationMessage', label: '校验提示', component: 'vxe-input' },
                       { field: 'defaultValueScript', label: '默认值函数', component: 'vxe-textarea', span: 2 },
                       { field: 'updateScript', label: '值更新事件', component: 'vxe-textarea', span: 2 },
@@ -217,6 +329,27 @@
           }
           if (serviceName === 'lowcode' && serviceMethod === 'listTablePageOptions') {
             return [];
+          }
+          if (serviceName === 'admin' && serviceMethod === 'resolveOptionItemsBatch') {
+            return Object.fromEntries((payload.sourceCodes ?? []).map((code) => [
+              code,
+              {
+                options: code === 'option_source_code'
+                  ? [
+                      { label: '订单编码 (order_code)', value: 'order_code' },
+                      { label: '搜索关键字 (search_keyword)', value: 'search_keyword' },
+                    ]
+                  : code === 'form_field_component_type'
+                    ? [
+                        { label: '输入框', value: 'vxe-input' },
+                        { label: '多行文本', value: 'vxe-textarea' },
+                        { label: '下拉选择', value: 'vxe-select' },
+                        { label: '关联资料', value: 'base-info' },
+                      ]
+                    : [],
+                cacheTtlSeconds: 0,
+              },
+            ]));
           }
           if (serviceName === 'entityDesign' && serviceMethod === 'listDesign') {
             return { tables: [] };
@@ -242,7 +375,7 @@
             serviceApi,
             locale: 'zh-CN',
             route: {
-              query: {},
+              query: runtimeMode === 'edit' ? { id: 'existing-record' } : {},
               params: {},
               path: pageRecord.route,
               fullPath: pageRecord.route,
@@ -258,6 +391,7 @@
 
       window.__runtimeFormDesignerSaveSmoke = {
         pageRecord,
+        runtimeMode,
         saveCalls,
         snapshot() {
           return renderer.value?.getSnapshot?.() ?? null;

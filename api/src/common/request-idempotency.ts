@@ -196,8 +196,26 @@ function trimEntries(now = Date.now()) {
   }
 }
 
+const MES_COMMAND_METHODS = new Set([
+  'releaseWorkOrder',
+  'startOperation',
+  'pauseOperation',
+  'resumeOperation',
+  'reportProduction',
+  'issueMaterial',
+  'returnMaterial',
+  'completeOperation',
+  'reverseProduction',
+  'reverseProductionReport',
+  'undoProductionReport',
+  'reverseMaterial',
+  'reverseMaterialTransaction',
+  'reverseTransaction'
+]);
+
 export function isIdempotentServiceWrite(serviceMethod: string, postData: Record<string, unknown>) {
   if (['createItem', 'updateItem', 'deleteItem', 'saveItem'].includes(serviceMethod)) return true;
+  if (MES_COMMAND_METHODS.has(serviceMethod)) return true;
   if (serviceMethod !== 'runAction') return false;
   return postData.idempotent === true || postData.idempotencyEnabled === true;
 }

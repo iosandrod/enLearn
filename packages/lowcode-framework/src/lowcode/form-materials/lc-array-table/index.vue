@@ -325,6 +325,7 @@ const tableRef = ref<{
   setTreeExpand?: (row: Record<string, unknown>, expanded: boolean) => Promise<unknown> | void;
 }>();
 const systemSettings = useSystemSettings();
+let generatedRowKeySeed = 0;
 
 const fieldProps = computed(() => props.field.props ?? {});
 const valueMode = computed<ArrayTableValueMode>(() =>
@@ -802,10 +803,15 @@ function ensureRowKey(row: Record<string, unknown>, index: number) {
 function assignRowKey(row: Record<string, unknown>, index: number) {
   const key = rowKey.value;
   const prefix = key.startsWith('__') ? 'row' : key;
-  let seed = Math.max(index + 1, flattenRows(rows.value).length + 1);
+  let seed = Math.max(
+    index + 1,
+    flattenRows(rows.value).length + 1,
+    generatedRowKeySeed + 1,
+  );
 
   do {
     row[key] = `${prefix}_${seed}`;
+    generatedRowKeySeed = seed;
     seed += 1;
   } while (flattenRows(rows.value).some((item) => item !== row && item[key] === row[key]));
 }

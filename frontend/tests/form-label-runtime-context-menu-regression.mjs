@@ -10,6 +10,10 @@ const [
   fieldEditorSource,
   designerSource,
   migrationSource,
+  optionSourceMigrationSource,
+  modeDisabledMigrationSource,
+  componentTypeMigrationSource,
+  baseInfoMigrationSource,
   converterHelpersSource,
   rendererSource,
 ] = await Promise.all([
@@ -23,6 +27,10 @@ const [
     'utf8',
   ),
   readFile(new URL('../../../supabase/migrations/20260811160000_runtime_form_field_editor.sql', frameworkRoot), 'utf8'),
+  readFile(new URL('../../../supabase/migrations/20260812100000_runtime_form_field_editor_option_source_select.sql', frameworkRoot), 'utf8'),
+  readFile(new URL('../../../supabase/migrations/20260812113000_runtime_form_field_mode_disabled.sql', frameworkRoot), 'utf8'),
+  readFile(new URL('../../../supabase/migrations/20260812130000_runtime_form_field_component_type.sql', frameworkRoot), 'utf8'),
+  readFile(new URL('../../../supabase/migrations/20260812143000_runtime_form_field_base_info.sql', frameworkRoot), 'utf8'),
   readFile(new URL('lowcode/visual-converters/helpers.ts', frameworkRoot), 'utf8'),
   readFile(new URL('components/LowCodePageRenderer.vue', frameworkRoot), 'utf8'),
 ]);
@@ -55,6 +63,11 @@ for (const source of [formBlockSource, searchFormBlockSource]) {
     /openRuntimeFormDesigner\(props\.block, '(edit|search)', runtimeBlockEditor\)[\s\S]*?openRuntimeFormFieldEditor\(props\.block, field, runtimeBlockEditor\)/,
     'Runtime forms must keep full-form design and field-property editing separate.',
   );
+  assert.match(
+    source,
+    /:mode="formMode"[\s\S]*?pageRuntime\?\.state\.status\.formMode/,
+    'Runtime forms on edit pages must receive the reactive page mode.',
+  );
 }
 
 assert.match(
@@ -74,13 +87,72 @@ assert.match(
 );
 assert.match(
   fieldEditorSource,
+  /preloadEditorOptionSources[\s\S]*?lowCodeOptionSourceRegistry\.refresh[\s\S]*?await preloadEditorOptionSources\(definition\.schema, serviceApi\)[\s\S]*?openGlobalDialog<FieldEditorModel>/,
+  'The field editor must preload select option sources through its page-owned service API.',
+);
+assert.match(
+  fieldEditorSource,
   /schema: \{[\s\S]*?fields,[\s\S]*?initialValues: createUpdatedInitialValues/,
   'The field editor must persist only the selected field schema and its initial value.',
 );
 assert.match(
+  fieldEditorSource,
+  /component: field\.component[\s\S]*?createDisabled: field\.createDisabled === true[\s\S]*?editDisabled: field\.editDisabled === true[\s\S]*?component = readString\(values\.component\)[\s\S]*?component,[\s\S]*?values\.createDisabled === true[\s\S]*?values\.editDisabled === true/,
+  'The field editor must round-trip component and create/edit disabled settings.',
+);
+assert.match(
   migrationSource,
-  /'runtime-form-field-editor'[\s\S]*?"field": "required"[\s\S]*?"field": "defaultValueType"[\s\S]*?"field": "optionsCode"[\s\S]*?"field": "updateScript"[\s\S]*?"field": "validationScript"/,
+  /'runtime-form-field-editor'[\s\S]*?"field": "label"[\s\S]*?"field": "component"[\s\S]*?"optionsCode": "form_field_component_type"[\s\S]*?"field": "required"[\s\S]*?"field": "createDisabled"[\s\S]*?"field": "editDisabled"[\s\S]*?"field": "defaultValueType"[\s\S]*?"field": "optionsCode"[\s\S]*?"field": "updateScript"[\s\S]*?"field": "validationScript"/,
   'The database form schema must expose all requested field properties.',
+);
+assert.match(
+  migrationSource,
+  /"field": "optionsCode"[\s\S]*?"component": "vxe-select"[\s\S]*?"optionsCode": "option_source_code"[\s\S]*?"filterable": true[\s\S]*?"allowCreate": true/,
+  'The option-source code property must be a searchable select that can add a typed entry.',
+);
+assert.match(
+  optionSourceMigrationSource,
+  /create or replace view public\.system_option_source_code_options[\s\S]*?sources\.code::text as value[\s\S]*?sources\.name \|\| ' \(' \|\| sources\.code \|\| '\)'/,
+  'The option-source Code select must list active source names and codes.',
+);
+assert.match(
+  optionSourceMigrationSource,
+  /'option_source_code'[\s\S]*?'view'[\s\S]*?'public\.system_option_source_code_options'[\s\S]*?update public\.lowcode_form_definitions/,
+  'Existing databases must receive the option source and updated field-editor definition.',
+);
+for (const field of ['createDisabled', 'editDisabled']) {
+  assert.match(
+    modeDisabledMigrationSource,
+    new RegExp(
+      `jsonb_insert\\([\\s\\S]*?"field": "${field}"[\\s\\S]*?where definitions\\.code = 'runtime-form-field-editor'[\\s\\S]*?not coalesce\\(definitions\\.schema -> 'fields'[\\s\\S]*?@> '\\[\\{"field":"${field}"\\}\\]'::jsonb`,
+    ),
+    `Existing databases must conditionally receive the ${field} switch.`,
+  );
+}
+assert.match(
+  modeDisabledMigrationSource,
+  /notify pgrst, 'reload schema'/,
+  'The mode-disabled migration must refresh the PostgREST schema cache.',
+);
+assert.match(
+  componentTypeMigrationSource,
+  /'form_field_component_type'[\s\S]*?'vxe-input'[\s\S]*?'vxe-select'[\s\S]*?'lc-number-input'[\s\S]*?'base-info'[\s\S]*?'lc-sub-form'/,
+  'The component selector must be backed by the supported runtime form materials.',
+);
+assert.match(
+  baseInfoMigrationSource,
+  /'base-info'[\s\S]*?"field": "relateInfoConfig"[\s\S]*?"component": "lc-sub-form"[\s\S]*?"field": "fieldMappings"[\s\S]*?"component": "lc-array-table"/,
+  'Existing databases must receive the base-info option and relation sub-form.',
+);
+assert.match(
+  componentTypeMigrationSource,
+  /update public\.lowcode_form_definitions[\s\S]*?'field', 'component'[\s\S]*?'component', 'vxe-select'[\s\S]*?'optionsCode', 'form_field_component_type'/,
+  'Existing databases must receive the component-type select in the runtime field editor.',
+);
+assert.match(
+  componentTypeMigrationSource,
+  /existing_field->>'field' = 'required'[\s\S]*?limit 1/,
+  'The component selector must be inserted immediately before the required switch.',
 );
 assert.doesNotMatch(
   fieldEditorSource,
@@ -109,8 +181,23 @@ assert.match(
 );
 assert.match(
   runtimeDesignerSource,
-  /'defaultValueType',[\s\S]*?'defaultValueScript',[\s\S]*?'updateScript',[\s\S]*?'validationScript',[\s\S]*?'validationMessage',[\s\S]*?original\[key\]/,
+  /const props = cloneValue\(field\.props \?\? \{\}\)[\s\S]*?propsJson[\s\S]*?originalProps[\s\S]*?cloneValue\(designed\.props/,
+  'Full-form design must preserve base-info relateInfoConfig in field props.',
+);
+assert.match(
+  runtimeDesignerSource,
+  /'defaultValueType',[\s\S]*?'defaultValueScript',[\s\S]*?'updateScript',[\s\S]*?'validationScript',[\s\S]*?'validationMessage',[\s\S]*?original\[key\][\s\S]*?\['createDisabled', 'editDisabled'\][\s\S]*?original\[key\]/,
   'Full-form design must preserve field scripts configured by the lightweight editor.',
+);
+assert.match(
+  formSource,
+  /:disabled="isFieldDisabled\(field\)"[\s\S]*?props\.mode === 'edit'[\s\S]*?field\.editDisabled[\s\S]*?props\.mode === 'create' \|\| props\.mode === 'copy'[\s\S]*?field\.createDisabled/,
+  'LowCodeForm must enforce field disabled settings for the active edit-page mode.',
+);
+assert.match(
+  formSource,
+  /formRules = computed[\s\S]*?isFieldDisabled\(field\)[\s\S]*?return rules/,
+  'Disabled fields must not run required or script validation.',
 );
 
 assert.match(

@@ -230,10 +230,10 @@
                     :style="fixedCellStyle(column, item.key)"
                   >
                     <button
-                      v-for="action in rowActions"
+                      v-for="action in visibleRowActions(item.row)"
                       :key="action.code"
                       :class="['row-action', { 'is-danger': action.status === 'danger' }]"
-                      :disabled="action.disabled"
+                      :disabled="isRowActionDisabled(action, item.row)"
                       @click.stop="publishRowAction(action, item.row)"
                     >
                       <span class="row-action-text">{{ action.label }}</span>
@@ -333,6 +333,10 @@ import type {
   MobileRuntimeEvent,
   SharedLowCodeAction,
 } from '../types';
+import {
+  isLowCodeRowActionDisabled,
+  visibleLowCodeRowActions,
+} from '../../../../packages/lowcode-framework/src/runtime/row-action-state';
 import {
   createLayoutWidthScheduler,
   getWebLayoutFrameDriver,
@@ -510,6 +514,14 @@ const rowActions = computed<SharedLowCodeAction[]>(() => {
   });
   return actions;
 });
+
+function visibleRowActions(row: Record<string, unknown>) {
+  return visibleLowCodeRowActions(rowActions.value, row);
+}
+
+function isRowActionDisabled(action: SharedLowCodeAction, row: Record<string, unknown>) {
+  return isLowCodeRowActionDisabled(action, row);
+}
 
 const rawColumns = computed<RawGridColumn[]>(() => (
   Array.isArray(gridConfig.value.columns)
@@ -1311,7 +1323,7 @@ function handleCurrentRowClick(row: Record<string, unknown>, rowIndex: number) {
 }
 
 function publishRowAction(action: SharedLowCodeAction, row: Record<string, unknown>) {
-  if (action.disabled) return;
+  if (isRowActionDisabled(action, row)) return;
 
   emit('runtimeEvent', {
     name: action.eventName ?? 'grid.rowAction',

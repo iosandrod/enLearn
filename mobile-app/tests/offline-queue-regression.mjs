@@ -95,4 +95,74 @@ assert.equal(queue.mobileOfflineQueue.conflicts, 1);
 assert.equal(await queue.discardConflictedOfflineRequests('account-a', 'user-a'), 1);
 assert.equal(queue.mobileOfflineQueue.conflicts, 0);
 
+const mesRequest = await queue.enrichMobileMesCommandRequest({
+  serviceName: 'mes',
+  serviceMethod: 'pauseOperation',
+  postData: { operationId: 'operation-1', expectedVersion: 3, reasonCode: 'breakdown' },
+  requestId: 'mobile-mes-command-1',
+}, 'account-a', 'user-a');
+const secondMesRequest = await queue.enrichMobileMesCommandRequest({
+  serviceName: 'mes',
+  serviceMethod: 'resumeOperation',
+  postData: { operationId: 'operation-1', expectedVersion: 4 },
+  requestId: 'mobile-mes-command-2',
+}, 'account-a', 'user-a');
+assert.match(mesRequest.postData.deviceId, /^mes-mobile-/);
+assert.equal(mesRequest.postData.commandId, mesRequest.requestId);
+assert.equal(secondMesRequest.postData.deviceId, mesRequest.postData.deviceId);
+assert.equal(secondMesRequest.postData.commandId, secondMesRequest.requestId);
+assert.equal(secondMesRequest.postData.localSequence, mesRequest.postData.localSequence + 1);
+const concurrentMesRequests = await Promise.all(
+  Array.from({ length: 12 }, (_, index) => queue.enrichMobileMesCommandRequest({
+    serviceName: 'mes',
+    serviceMethod: 'reportProduction',
+    postData: { operationId: 'operation-1', expectedVersion: index + 5, goodQuantity: 1 },
+    requestId: `mobile-mes-concurrent-${index}`,
+  }, 'account-a', 'user-concurrent')),
+);
+assert.equal(
+  new Set(concurrentMesRequests.map((value) => value.postData.localSequence)).size,
+  concurrentMesRequests.length,
+  'parallel MES commands must reserve unique local sequence numbers',
+);
+const explicitSequenceRequest = await queue.enrichMobileMesCommandRequest({
+  serviceName: 'mes',
+  serviceMethod: 'resumeOperation',
+  postData: { operationId: 'operation-1', deviceId: 'scanner-1', localSequence: 0 },
+  requestId: 'mobile-mes-explicit-sequence',
+}, 'account-a', 'user-a');
+assert.equal(explicitSequenceRequest.postData.localSequence, 0);
+assert.equal(explicitSequenceRequest.postData.commandId, explicitSequenceRequest.requestId);
+await assert.rejects(
+  () => queue.enrichMobileMesCommandRequest({
+    serviceName: 'mes',
+    serviceMethod: 'pauseOperation',
+    postData: { deviceId: 'scanner-1', localSequence: 99, commandId: 'different-command' },
+    requestId: 'mobile-mes-command-mismatch',
+  }, 'account-a', 'user-a'),
+  /commandId must match/,
+);
+const stableMesRequest = await queue.enrichMobileMesCommandRequest(
+  mesRequest,
+  'account-a',
+  'user-a',
+);
+assert.deepEqual(stableMesRequest, mesRequest, 'replay metadata must remain stable');
+
+const mesReplayRequests = [];
+await queue.enqueueOfflineRequest({
+  accountId: 'account-a',
+  userId: 'user-a',
+  pageId: 'mes-execution',
+  sourceKey: 'operations',
+  request: mesRequest,
+});
+await queue.flushOfflineQueue({
+  replay: async (value) => mesReplayRequests.push(value),
+}, 'account-a', 'user-a', true);
+assert.equal(mesReplayRequests[0].requestId, mesRequest.requestId);
+assert.equal(mesReplayRequests[0].postData.commandId, mesRequest.requestId);
+assert.equal(mesReplayRequests[0].postData.deviceId, mesRequest.postData.deviceId);
+assert.equal(mesReplayRequests[0].postData.localSequence, mesRequest.postData.localSequence);
+
 console.log('mobile offline queue regression checks passed');

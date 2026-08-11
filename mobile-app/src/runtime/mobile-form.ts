@@ -76,8 +76,15 @@ export function readFormNumber(value: unknown, fallback?: number) {
 }
 
 export function readInputEventValue(event: unknown) {
-  if (event && typeof event === 'object' && 'value' in event) {
-    return String((event as { value?: unknown }).value ?? '');
+  if (event && typeof event === 'object') {
+    if ('value' in event) {
+      return String((event as { value?: unknown }).value ?? '');
+    }
+    const target = (event as { target?: unknown; currentTarget?: unknown }).target
+      ?? (event as { currentTarget?: unknown }).currentTarget;
+    if (target && typeof target === 'object' && 'value' in target) {
+      return String((target as { value?: unknown }).value ?? '');
+    }
   }
   return '';
 }

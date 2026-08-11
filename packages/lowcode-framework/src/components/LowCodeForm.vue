@@ -26,11 +26,14 @@
             :field="field"
             :model-value="readFieldValue(field)"
             :options="resolveOptions(field)"
+            :form-values="formData"
             :show-label="false"
-            :disabled="isFormDisabled"
+            :disabled="isFieldDisabled(field)"
             :readonly="isFormReadonly"
             @update:model-value="(value) => setFieldValue(field, value)"
             @change="handleFieldChange"
+            @patch-model="(payload) => patchFieldValues(payload)"
+            @relate-select="(payload) => handleRelateSelect(field, payload)"
           />
         </vxe-form-item>
       </template>
@@ -51,11 +54,14 @@
             :field="field"
             :model-value="readFieldValue(field)"
             :options="resolveOptions(field)"
+            :form-values="formData"
             :show-label="false"
-            :disabled="isFormDisabled"
+            :disabled="isFieldDisabled(field)"
             :readonly="isFormReadonly"
             @update:model-value="(value) => setFieldValue(field, value)"
             @change="handleFieldChange"
+            @patch-model="(payload) => patchFieldValues(payload)"
+            @relate-select="(payload) => handleRelateSelect(field, payload)"
           />
         </vxe-form-item>
       </div>
@@ -106,6 +112,10 @@ import LowCodeFormField from './LowCodeFormField.vue';
 import LowCodeFormLayout from './LowCodeFormLayout.vue';
 import { useLowCodeHost } from '../core/host';
 import { lowCodeOptionSourceRegistry } from '../runtime/option-source-registry';
+import type {
+  LowCodeFormMaterialPatchPayload,
+  LowCodeFormMaterialSelectPayload,
+} from '../lowcode/form-materials';
 
 defineOptions({
   inheritAttrs: false,
@@ -159,6 +169,7 @@ const props = defineProps({
   className: String,
   readonly: Boolean,
   disabled: Boolean,
+  mode: String as PropType<'create' | 'copy' | 'edit'>,
   rules: Object as PropType<Record<string, VxeLowCodeFormRule[]>>,
   fieldValidator: Function as PropType<(
     field: LowCodeField,
@@ -186,6 +197,14 @@ const emit = defineEmits<{
     },
   ];
   labelContextMenu: [event: MouseEvent, field: LowCodeField];
+  relateSelect: [
+    payload: {
+      field: LowCodeField;
+      row: Record<string, unknown>;
+      values: Record<string, unknown>;
+      formValues: Record<string, unknown>;
+    },
+  ];
 }>();
 
 const attrs = useAttrs();
@@ -224,6 +243,8 @@ const defaultVxeSpan = computed(() =>
 );
 const formRules = computed<VxeLowCodeFormRules>(() => {
   return fields.value.reduce<VxeLowCodeFormRules>((rules, field) => {
+    if (isFieldDisabled(field)) return rules;
+
     const schemaRules = (field.rules ?? []).map((rule) => createVxeRule(rule));
     const scriptRules = field.validationScript && props.fieldValidator
       ? [createFieldValidationRule(field)]
@@ -270,6 +291,12 @@ const formGridStyle = computed(() => ({
   '--lc-form-columns': String(formColumnCount.value),
   gridTemplateRows: createLastRowFillTemplate(formGridRowCount.value),
 }));
+const formValidConfig = computed(() => ({
+  showErrorMessage: false,
+  showErrorIcon: true,
+  theme: 'beautify' as const,
+  ...props.validConfig,
+}));
 const vxeFormProps = computed(() => ({
   size: props.size,
   collapseStatus: props.collapseStatus,
@@ -290,7 +317,7 @@ const vxeFormProps = computed(() => ({
   readonly: props.readonly,
   disabled: props.disabled,
   preventSubmit: props.preventSubmit !== false,
-  validConfig: props.validConfig,
+  validConfig: formValidConfig.value,
   tooltipConfig: props.tooltipConfig,
   collapseConfig: props.collapseConfig,
   params: props.params,
@@ -318,6 +345,22 @@ const mergedFormProps = computed(() => ({
 }));
 const isFormDisabled = computed(() => props.disabled === true);
 const isFormReadonly = computed(() => props.readonly === true);
+
+function isFieldDisabled(field: LowCodeField) {
+  if (isFormDisabled.value || field.props?.disabled === true) return true;
+  if (props.mode === 'edit') return field.editDisabled === true;
+  if (props.mode === 'create' || props.mode === 'copy') {
+    return field.createDisabled === true;
+  }
+  return false;
+}
+
+watch(
+  [() => props.mode, () => props.disabled],
+  () => {
+    void clearValidation();
+  }
+);
 
 watch(
   () => props.modelValue,
@@ -650,6 +693,52 @@ function readExternalRules(field: string) {
   return Array.isArray(rules) ? rules : [];
 }
 
+function isSafeFormFieldName(field: string) {
+  return Boolean(field) && !['__proto__', 'prototype', 'constructor'].includes(field);
+}
+
+function patchFieldValues(payload: LowCodeFormMaterialPatchPayload) {
+  if (!isRecord(payload?.values)) return;
+
+  const changes = Object.entries(payload.values).filter(([field]) =>
+    isSafeFormFieldName(field)
+  );
+  if (!changes.length) return;
+
+  const previousValues = Object.fromEntries(
+    changes.map(([field]) => [field, formData[field]])
+  );
+  changes.forEach(([field, value]) => {
+    formData[field] = value;
+  });
+  emit('update:modelValue', { ...formData });
+
+  changes.forEach(([fieldName, value]) => {
+    vxeFormRef.value?.updateStatus({ field: fieldName }, value);
+    const field = fieldsByKey.value[fieldName];
+    if (!field || Object.is(previousValues[fieldName], value)) return;
+    emit('fieldChange', {
+      field,
+      value,
+      previousValue: previousValues[fieldName],
+      values: { ...formData },
+    });
+  });
+}
+
+function handleRelateSelect(
+  field: LowCodeField,
+  payload: LowCodeFormMaterialSelectPayload,
+) {
+  if (!isRecord(payload?.row) || !isRecord(payload?.values)) return;
+  emit('relateSelect', {
+    field,
+    row: payload.row,
+    values: payload.values,
+    formValues: { ...formData },
+  });
+}
+
 function isValidResult(value: unknown) {
   if (
     !isRecord(value) ||
@@ -877,6 +966,16 @@ defineExpose({
 .lc-form .lc-form-item__content {
   min-width: 0;
   max-width: 100%;
+}
+
+.lc-form .vxe-form-item--valid-error-icon-wrapper:hover
+  .vxe-form-item--valid-error-icon-msg-tip,
+.lc-form .vxe-form-item--valid-error-icon-wrapper.is--show
+  .vxe-form-item--valid-error-icon-msg-tip {
+  width: max-content;
+  max-width: min(24em, 60vw);
+  padding: 0.4em;
+  overflow: visible;
 }
 
 .lc-field {

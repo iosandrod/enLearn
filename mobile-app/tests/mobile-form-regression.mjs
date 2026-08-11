@@ -28,12 +28,20 @@ const {
   formControlKind,
   normalizeArrayFormColumns,
   normalizeArrayFormRows,
+  readInputEventValue,
   readStoredOptionValue,
   resolveFormOptions,
   resolveResponsiveFormColumns,
   serializeArrayFormRows,
   validateMobileFormValues,
 } = mobileForm;
+
+assert.equal(readInputEventValue({ value: 'native' }), 'native');
+assert.equal(
+  readInputEventValue({ target: { value: 'web' } }),
+  'web',
+  'Web input events should preserve the DOM target value',
+);
 
 assert.equal(
   formControlKind('lc-checkbox'),

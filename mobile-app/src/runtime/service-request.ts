@@ -4,6 +4,27 @@ export type MobileServiceRequest = {
   postData: Record<string, unknown>;
 };
 
+export const mobileMesCommandMethods = new Set([
+  'releaseWorkOrder',
+  'startOperation',
+  'pauseOperation',
+  'resumeOperation',
+  'reportProduction',
+  'issueMaterial',
+  'returnMaterial',
+  'completeOperation',
+  'reverseProduction',
+  'reverseProductionReport',
+  'undoProductionReport',
+  'reverseMaterial',
+  'reverseMaterialTransaction',
+  'reverseTransaction',
+]);
+
+export function isMobileMesCommand(serviceName: string, serviceMethod: string) {
+  return serviceName.trim() === 'mes' && mobileMesCommandMethods.has(serviceMethod.trim());
+}
+
 const legacyAdminListMethodTables: Record<string, string> = {
   listUsers: 'users',
   listRoles: 'admin_roles',

@@ -14,6 +14,7 @@ assert.deepEqual(
   ['sources', 'forms', 'searches', 'grids', 'status'],
   'A page runtime must own all page-level business state.'
 );
+assert.equal(runtime.state.status.formMode, 'edit');
 
 runtime.replaceForm('edit-form', { name: 'Initial' });
 runtime.patchForm('edit-form', { status: 'enabled' });
@@ -245,6 +246,11 @@ assert.match(
   rendererSource,
   /restoreGridInteractionState\(gridInteractionState\)/,
   'A page refresh must restore Grid interaction state by row key.'
+);
+assert.match(
+  rendererSource,
+  /const builtinPageFunctionMode = computed<BuiltinLowCodePageFunctionMode>[\s\S]*?runtime\.state\.status\.formMode/,
+  'The edit-page mode must be reactive so form controls update when page functions switch mode.',
 );
 
 for (const [name, source] of [

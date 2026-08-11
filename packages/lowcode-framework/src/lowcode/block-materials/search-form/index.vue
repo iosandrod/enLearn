@@ -7,12 +7,14 @@
       :schema="block.schema"
       :option-sources="resolvedData"
       :loading="isLoading"
+      :mode="formMode"
       :field-validator="validateFieldScript"
       :label-context-menu="Boolean(runtimeBlockEditor)"
       @update:model-value="updateFormModel"
       @submit="handleSubmit"
       @action="handleAction"
       @field-change="handleFieldChange"
+      @relate-select="handleRelateSelect"
       @label-context-menu="openFormContextMenu"
     />
   </article>
@@ -50,6 +52,11 @@ const formModel = computed(
 );
 const isLoading = computed(
   () => (pageRuntime?.state.status.loadingBlockId ?? props.loadingBlockId) === props.block.id
+);
+const formMode = computed(() =>
+  runtimeBlockEditor?.getPageRecord?.().page_type === 'edit'
+    ? pageRuntime?.state.status.formMode
+    : undefined
 );
 
 onMounted(() => {
@@ -133,6 +140,19 @@ function handleFieldChange(payload: {
     fieldConfig: payload.field,
     directives: payload.field.events?.change ?? payload.field.events?.onChange ?? [],
     script: payload.field.updateScript ?? '',
+  });
+}
+
+function handleRelateSelect(payload: {
+  field: LowCodeField;
+  row: Record<string, unknown>;
+  values: Record<string, unknown>;
+  formValues: Record<string, unknown>;
+}) {
+  emitRuntimeEvent('searchForm.relateSelect', {
+    ...payload,
+    field: payload.field.field,
+    fieldConfig: payload.field,
   });
 }
 

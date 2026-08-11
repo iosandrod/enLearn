@@ -12,6 +12,8 @@ const QUEUE_PREFIX = 'enlearn_mobile_offline_queue';
 const MAX_QUEUE_ITEMS = 100;
 const MAX_ATTEMPTS = 8;
 const QUEUE_TTL_MS = 7 * 24 * 60 * 60_000;
+const DEVICE_ID_KEY = 'enlearn_mobile_mes_device_id';
+const LOCAL_SEQUENCE_PREFIX = 'enlearn_mobile_mes_local_sequence';
 
 export type MobileOfflineQueueItem = {
   version: number;
@@ -45,9 +47,90 @@ export const mobileOfflineQueue = reactive<{
 });
 
 let flushRequest: Promise<{ completed: number; failed: number; pending: number }> | null = null;
+const sequenceReservations = new Map<string, Promise<number>>();
 
 function queueKey(accountId: string, userId: string) {
   return `${QUEUE_PREFIX}:${accountId.trim()}:${userId.trim()}`;
+}
+
+function createStableId(prefix: string) {
+  const value = typeof globalThis.crypto?.randomUUID === 'function'
+    ? globalThis.crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `${prefix}-${value}`;
+}
+
+export async function getMobileMesDeviceId() {
+  const existing = (await readMobileStorageValue(DEVICE_ID_KEY)).trim();
+  if (existing) return existing;
+  const deviceId = createStableId('mes-mobile');
+  await writeMobileStorageValue(DEVICE_ID_KEY, deviceId);
+  return deviceId;
+}
+
+export async function nextMobileMesLocalSequence(accountId: string, userId: string) {
+  const key = `${LOCAL_SEQUENCE_PREFIX}:${accountId.trim()}:${userId.trim()}`;
+  const previous = sequenceReservations.get(key) ?? Promise.resolve(0);
+  const reservation = previous.catch(() => 0).then(async () => {
+    const current = Number(await readMobileStorageValue(key));
+    const next = Number.isSafeInteger(current) && current >= 0 ? current + 1 : 1;
+    await writeMobileStorageValue(key, String(next));
+    return next;
+  });
+  sequenceReservations.set(key, reservation);
+  try {
+    return await reservation;
+  } finally {
+    if (sequenceReservations.get(key) === reservation) sequenceReservations.delete(key);
+  }
+}
+
+export async function enrichMobileMesCommandRequest(
+  request: MobileServiceRequest,
+  accountId: string,
+  userId: string,
+) {
+  const deviceId = typeof request.postData.deviceId === 'string'
+    ? request.postData.deviceId.trim()
+    : '';
+  const rawLocalSequence = request.postData.localSequence;
+  const localSequence = rawLocalSequence === undefined
+    || rawLocalSequence === null
+    || rawLocalSequence === ''
+    ? Number.NaN
+    : Number(rawLocalSequence);
+  const suppliedCommandId = typeof request.postData.commandId === 'string'
+    ? request.postData.commandId.trim()
+    : '';
+  if (
+    suppliedCommandId
+    && suppliedCommandId !== request.requestId
+  ) {
+    throw new Error('MES commandId must match the stable mobile request id.');
+  }
+  if (deviceId && Number.isSafeInteger(localSequence) && localSequence >= 0) {
+    return suppliedCommandId
+      ? request
+      : {
+          ...request,
+          postData: { ...request.postData, commandId: request.requestId },
+        };
+  }
+
+  const resolvedDeviceId = deviceId || await getMobileMesDeviceId();
+  const resolvedLocalSequence = Number.isSafeInteger(localSequence) && localSequence >= 0
+    ? localSequence
+    : await nextMobileMesLocalSequence(accountId, userId);
+
+  return {
+    ...request,
+    postData: {
+      ...request.postData,
+      commandId: request.requestId,
+      deviceId: resolvedDeviceId,
+      localSequence: resolvedLocalSequence,
+    },
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

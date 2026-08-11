@@ -36,6 +36,10 @@ assert.equal(
 const allServices = parseIndependentServiceNames('all');
 assert.deepEqual([...allServices], [...DOMAIN_SERVICE_NAMES]);
 assert.equal(resolveServiceExecutePattern('chat', allServices), 'service.chat.execute');
+assert.equal(
+  resolveServiceExecutePattern('mes', parseIndependentServiceNames('mes')),
+  'service.mes.execute'
+);
 
 assert.throws(
   () => parseIndependentServiceNames('account,missing'),

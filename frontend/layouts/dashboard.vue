@@ -658,7 +658,7 @@ const MenuItem = defineComponent({
 
 function normalizeNodes(nodes: AdminRouteNode[]): AdminRouteNode[] {
   const normalized = nodes
-    .filter((node) => node.visible !== false && node.status !== 'inactive' && canViewRoute(node))
+    .filter((node) => node.visible !== false && node.status !== 'inactive')
     .map((node) => ({
       ...node,
       children: sortRouteNodes(normalizeNodes(node.children ?? []))
@@ -741,11 +741,6 @@ function buildSidebarMenu(nodes: AdminRouteNode[]) {
   return sortRouteNodes(collectNavigationRoots(nodes, 'sidebar'));
 }
 
-function canViewRoute(node: AdminRouteNode) {
-  if (!node.permission_code) return true;
-  return auth.permissions.value.includes(node.permission_code);
-}
-
 function flattenNodes(nodes: AdminRouteNode[]): AdminRouteNode[] {
   return nodes.flatMap((node) => [node, ...flattenNodes(node.children ?? [])]);
 }
@@ -797,15 +792,11 @@ function reloadRoutes() {
     routeError.value = '';
 
     try {
-      const data = await serviceApi.listItems<AdminRouteNode[]>('admin', {
-        tableName: 'admin_routes',
-        clientMode: 'admin',
-        sorts: [
-          { field: 'sort_order', direction: 'asc' },
-          { field: 'created_at', direction: 'asc' },
-        ],
-        limit: 1000,
-      });
+      const data = await serviceApi.invoke<AdminRouteNode[]>(
+        'admin',
+        'listNavigationRoutes',
+        {},
+      );
       routes.value = Array.isArray(data) ? buildRouteTree(data) : [];
     } catch (error) {
       routes.value = [];

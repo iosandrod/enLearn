@@ -95,13 +95,16 @@ import MobilePageReference from './materials/mobile-page-reference.vue';
 import { invokeMobileNativeCapability } from './native-capabilities';
 import { uploadMesMobileAsset } from './mobile-files';
 import { registerMobileBackHandler } from './mobile-back';
+import { validateMobileFormValues } from './mobile-form';
 import { getRuntimeConfig } from '../config';
 import { readPageDataCache, writePageDataCache } from './runtime-cache';
 import {
+  enrichMobileMesCommandRequest,
   enqueueOfflineRequest,
   flushOfflineQueue,
   isTransientMobileWriteError,
 } from './offline-queue';
+import { isMobileMesCommand } from './service-request';
 import { mobileNetwork } from './network-status';
 import {
   allMobilePageBlocks,
@@ -656,14 +659,13 @@ async function openGlobalDialog(directive: SharedLowCodeDirective, event: Mobile
           content: String(rawConfig.content ?? rawConfig.message ?? ''),
         }],
     confirmDirectives: [{
-      type: 'emitEvent',
+      type: 'confirmGlobalDialog',
+      blockId: id,
+      formId: resultFormId,
+      formSchema,
       event: resultEvent,
-      payload: {
-        action: 'confirm',
-        values: `{{ forms.${resultFormId} }}`,
-        directives: normalizeDirectiveList(directive.confirmDirectives),
-      },
-    }, { type: 'closeBlock', blockId: id }],
+      directives: normalizeDirectiveList(directive.confirmDirectives),
+    }],
     cancelDirectives: [{
       type: 'emitEvent',
       event: resultEvent,
@@ -717,15 +719,85 @@ async function executeDirective(directive: SharedLowCodeDirective, event: Mobile
       break;
     case 'invokeService': {
       if (!directive.serviceName || !directive.serviceMethod) return;
-      const result = await props.serviceApi.invoke(
-        directive.serviceName,
-        directive.serviceMethod,
-        resolveRuntimeValue(directive.postData ?? {}, scope) as Record<string, unknown>
-      );
+      const postData = resolveRuntimeValue(
+        directive.postData ?? {},
+        scope,
+      ) as Record<string, unknown>;
+      const mesCommand = isMobileMesCommand(directive.serviceName, directive.serviceMethod);
+      let result: unknown;
+      if (mesCommand) {
+        const config = getRuntimeConfig();
+        const request = await enrichMobileMesCommandRequest(
+          props.serviceApi.prepareRequest(
+            directive.serviceName,
+            directive.serviceMethod,
+            postData,
+          ),
+          config.accountId,
+          config.userId,
+        );
+        if (mobileNetwork.status === 'offline') {
+          await enqueueOfflineRequest({
+            accountId: config.accountId,
+            userId: config.userId,
+            pageId: props.page.id,
+            sourceKey: directive.sourceKey ?? '',
+            request,
+          });
+          showMessage('操作已保存到离线队列，联网后自动同步', 'warning');
+          return;
+        }
+        try {
+          result = await props.serviceApi.replay(request);
+        } catch (error) {
+          if (!isTransientMobileWriteError(error)) throw error;
+          await enqueueOfflineRequest({
+            accountId: config.accountId,
+            userId: config.userId,
+            pageId: props.page.id,
+            sourceKey: directive.sourceKey ?? '',
+            request,
+          });
+          showMessage('网络中断，操作已进入离线队列', 'warning');
+          return;
+        }
+      } else {
+        result = await props.serviceApi.invoke(
+          directive.serviceName,
+          directive.serviceMethod,
+          postData,
+        );
+      }
       if (directive.assignTo) resolvedData[directive.assignTo] = result;
       if (directive.refreshSourceKeys?.length) {
         await loadDataSources(directive.refreshSourceKeys, true);
       }
+      break;
+    }
+    case 'confirmGlobalDialog': {
+      const blockId = String(resolveRuntimeValue(directive.blockId ?? '', scope));
+      const formId = String(resolveRuntimeValue(directive.formId ?? '', scope));
+      const formSchema = isRecord(directive.formSchema) ? directive.formSchema : {};
+      const values = formId ? formModels[formId] ?? {} : {};
+      const errors = validateMobileFormValues(formSchema as any, values);
+      const firstError = Object.values(errors)[0];
+      if (firstError) {
+        showMessage(firstError, 'error');
+        break;
+      }
+
+      const eventName = String(resolveRuntimeValue(directive.event ?? 'dialog.result', scope));
+      const followUps = normalizeDirectiveList(directive.directives);
+      for (const followUp of followUps) {
+        await executeDirective(followUp, {
+          name: eventName,
+          blockId: event.blockId,
+          blockKind: event.blockKind,
+          timestamp: Date.now(),
+          payload: { actionCode: 'confirm', values },
+        });
+      }
+      if (blockId) setBlockOpen(blockId, false);
       break;
     }
     case 'invokePageApi':

@@ -13,6 +13,10 @@ const pages = readFileSync(
   resolve(repoRoot, 'supabase/migrations/20260811190000_mes_lowcode_pages.sql'),
   'utf8'
 );
+const actionGuards = readFileSync(
+  resolve(repoRoot, 'supabase/migrations/20260812110000_mes_runtime_action_guards.sql'),
+  'utf8'
+);
 
 for (const command of [
   'mes_pause_operation',
@@ -79,5 +83,21 @@ assert.match(pages, /from public\.admin_routes business_root\s+where business_ro
 assert.match(pages, /parent_id = excluded\.parent_id/);
 assert.match(pages, /"permissionCode": "mes\.execution\.manage"/);
 assert.doesNotMatch(pages, /"serviceMethod": "(?:createItem|updateItem|deleteItem|saveItem)"/);
+assert.match(actionGuards, /page\.code = 'mes_execution_console'/);
+assert.match(actionGuards, /work_order\.status not in \('closed', 'canceled'\)\) as reversible/);
+assert.match(actionGuards, /"field":"available_to_return","operator":"gt","value":0/);
+const executionGuardSection = actionGuards.split('with ledger_guards')[0];
+assert.equal(
+  (executionGuardSection.match(/rowActions,actions,\d+,visible/g) ?? []).length,
+  9,
+  'The execution console must keep all nine guarded row actions.'
+);
+assert.equal(
+  (actionGuards.match(/mes_(?:production|material)_ledger/g) ?? []).length,
+  2,
+  'Both standalone ledgers must keep their reversal guard.'
+);
+assert.match(actionGuards, /available_to_return,[\s\S]*?work_order\.status as work_order_status/);
+assert.match(actionGuards, /as reversible,[\s\S]*?work_order\.status as work_order_status/);
 
 console.log('MES compensation and low-code migration contract tests passed');

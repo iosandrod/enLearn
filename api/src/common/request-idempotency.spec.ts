@@ -29,6 +29,25 @@ async function main() {
   assert.equal(isIdempotentServiceWrite('runAction', { idempotent: true }), true);
   assert.equal(isIdempotentServiceWrite('runAction', {}), false);
   assert.equal(isIdempotentServiceWrite('listItems', {}), false);
+  for (const command of [
+    'releaseWorkOrder',
+    'startOperation',
+    'pauseOperation',
+    'resumeOperation',
+    'reportProduction',
+    'issueMaterial',
+    'returnMaterial',
+    'completeOperation',
+    'reverseProduction',
+    'reverseMaterial',
+    'reverseTransaction'
+  ]) {
+    assert.equal(
+      isIdempotentServiceWrite(command, {}),
+      true,
+      `${command} must retain the same request id through the gateway and MES command log`
+    );
+  }
 
   clearServiceIdempotencyCache();
   const scope = {

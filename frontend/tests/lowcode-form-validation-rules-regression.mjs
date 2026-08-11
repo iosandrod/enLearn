@@ -50,6 +50,16 @@ assert.match(
   'Required asterisks must be enabled by default and remain explicitly configurable.',
 );
 assert.match(
+  formSource,
+  /const formValidConfig = computed\(\(\) => \(\{[\s\S]*?showErrorMessage: false,[\s\S]*?showErrorIcon: true,[\s\S]*?\.\.\.props\.validConfig,[\s\S]*?validConfig: formValidConfig\.value/,
+  'Validation errors must default to a tooltip icon without reserving message space.',
+);
+assert.match(
+  formSource,
+  /valid-error-icon-wrapper:hover[\s\S]*?valid-error-icon-wrapper\.is--show[\s\S]*?width: max-content/,
+  'The validation tooltip must open on hover as well as click.',
+);
+assert.match(
   helpersSource,
   /rules: \[\{ required: true, message: `\$\{label\}不能为空` \}\]/,
   'Designer-generated required messages must use the localized form wording.',

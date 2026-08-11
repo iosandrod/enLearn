@@ -6,6 +6,16 @@
   height: 100%;
 }
 
+.runtime-form-field-editor-dialog .vxe-modal--body {
+  min-height: 0;
+  overflow: auto;
+}
+
+.runtime-form-field-editor-dialog .lc-global-dialog__body {
+  height: auto;
+  min-height: 100%;
+}
+
 .lc-global-dialog__lowcode {
   height: 100%;
   min-width: 0;
@@ -88,6 +98,16 @@
   color: #475569;
   font-size: 12px;
   font-weight: 600;
+}
+
+.lc-global-dialog__error {
+  border: 1px solid #f2b8b5;
+  border-radius: 6px;
+  background: #fff4f3;
+  color: #a61b1b;
+  font-size: 13px;
+  line-height: 20px;
+  padding: 8px 10px;
 }
 
 .lowcode-design-dialog .vxe-modal--body {

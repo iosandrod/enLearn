@@ -247,6 +247,16 @@ function asRows(value: unknown): Record<string, unknown>[] {
 
 @Injectable()
 export class AdminService extends BaseService {
+  protected async resolveNavigationAuthorization(context: ServiceContext) {
+    const activeAccount = await requireActiveAccount(context);
+    const { client, user } = await getCurrentUser(activeAccount.context);
+    const authorization = await getUserAuthorization(client, user.id, {
+      accountId: activeAccount.context.accountId,
+      refresh: true
+    });
+    return { activeAccount, authorization };
+  }
+
   protected override async listItems(
     postData: Record<string, unknown>,
     context: ServiceContext
@@ -792,11 +802,7 @@ export class AdminService extends BaseService {
   }
 
   private async listNavigationRoutes(context: ServiceContext) {
-    const activeAccount = await requireActiveAccount(context);
-    const { client, user } = await getCurrentUser(activeAccount.context);
-    const authorization = await getUserAuthorization(client, user.id, {
-      accountId: activeAccount.context.accountId
-    });
+    const { activeAccount, authorization } = await this.resolveNavigationAuthorization(context);
     const adminClient = createSupabaseClient('admin', activeAccount.context);
     const { data, error } = await adminClient
       .from('admin_routes')

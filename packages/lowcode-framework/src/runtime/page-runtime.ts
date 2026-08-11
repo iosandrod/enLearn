@@ -27,6 +27,7 @@ export type LowCodePageRuntimeStatus = {
   loadingBlockId: string;
   loadingGridId: string;
   dataLoading: boolean;
+  formMode: 'create' | 'copy' | 'edit';
   message: string;
   messageClass: string;
 };
@@ -202,6 +203,7 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
       loadingBlockId: '',
       loadingGridId: '',
       dataLoading: false,
+      formMode: 'edit',
       message: '',
       messageClass: 'lc-help',
     },
@@ -363,6 +365,7 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
     state.status.loadingBlockId = '';
     state.status.loadingGridId = '';
     state.status.dataLoading = false;
+    state.status.formMode = 'edit';
     state.status.message = '';
     state.status.messageClass = 'lc-help';
   }

@@ -6,6 +6,7 @@ import type {
   LowCodePageDataSource,
   LowCodePageRecord,
   LowCodePageSchema,
+  LowCodeGridRowAction,
   LowCodeRuntimeDirective,
   LowCodeRuntimeEvent,
 } from '../../../packages/lowcode-framework/src/types/lowcode';
@@ -14,7 +15,8 @@ export type SharedLowCodePageSchema = LowCodePageSchema;
 export type SharedLowCodePageDataSource = LowCodePageDataSource;
 export type SharedLowCodeFormSchema = LowCodeFormSchema;
 export type SharedLowCodeField = LowCodeField;
-export type SharedLowCodeAction = LowCodeAction;
+export type SharedLowCodeAction = Omit<LowCodeAction, 'disabled'> &
+  Pick<LowCodeGridRowAction, 'visible' | 'when' | 'disabled'>;
 export type SharedLowCodeButtonAction = LowCodeButtonGroupAction;
 export type SharedLowCodeDirective = LowCodeRuntimeDirective;
 export type SharedLowCodeEvent = LowCodeRuntimeEvent;

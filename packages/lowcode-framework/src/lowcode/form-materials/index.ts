@@ -56,4 +56,10 @@ export function getLowCodeFormMaterials() {
 }
 
 export { materialMap as lowCodeFormMaterialMap };
-export type { LowCodeFormMaterial, LowCodeFormMaterialProps, LowCodeResolvedOption } from './types';
+export type {
+  LowCodeFormMaterial,
+  LowCodeFormMaterialPatchPayload,
+  LowCodeFormMaterialProps,
+  LowCodeFormMaterialSelectPayload,
+  LowCodeResolvedOption,
+} from './types';

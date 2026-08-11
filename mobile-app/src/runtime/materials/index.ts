@@ -10,6 +10,7 @@ import MobileText from './mobile-text.vue';
 import MobileModal from './mobile-modal.vue';
 import MobileDrawer from './mobile-drawer.vue';
 import MobileTree from './mobile-tree.vue';
+import MobilePlanningVisual from './mobile-planning-visual.vue';
 import { registerMobileMaterial } from '../material-registry';
 
 let registered = false;
@@ -33,6 +34,9 @@ export function registerDefaultMobileMaterials() {
     { type: 'modal', component: MobileModal },
     { type: 'drawer', component: MobileDrawer },
     { type: 'tree', component: MobileTree },
+    { type: 'planningFlow', component: MobilePlanningVisual },
+    { type: 'planningGantt', component: MobilePlanningVisual },
+    { type: 'planningBom', component: MobilePlanningVisual },
   ].forEach((material) => {
     registerMobileMaterial({
       ...material,

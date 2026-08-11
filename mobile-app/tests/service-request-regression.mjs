@@ -89,5 +89,14 @@ assert.equal(
   requests.shouldReturnEmptyMobileList(new Error('Forbidden'), 'listUsers'),
   false,
 );
+for (const command of [
+  'releaseWorkOrder', 'startOperation', 'pauseOperation', 'resumeOperation',
+  'reportProduction', 'issueMaterial', 'returnMaterial', 'completeOperation',
+  'reverseProduction', 'reverseMaterial', 'reverseTransaction',
+]) {
+  assert.equal(requests.isMobileMesCommand('mes', command), true);
+}
+assert.equal(requests.isMobileMesCommand('planning', 'releaseWorkOrder'), false);
+assert.equal(requests.isMobileMesCommand('mes', 'listItems'), false);
 
 console.log('mobile service request regression checks passed');

@@ -2228,3 +2228,12 @@ a {
   min-height: 0;
   overflow: hidden;
 }
+
+.vxe-cell--wrapper .vxe-input{
+  height:30px;
+}
+
+.vxe-cell--wrapper .vxe-number-input{
+  height:30px;
+  line-height:30px;
+}

@@ -3,6 +3,7 @@ import type {
   LowCodeField,
   LowCodeFormLayoutNode,
   LowCodeGridColumn,
+  LowCodeGridRowAction,
   LowCodePageBlock,
   LowCodePageDataSource,
   LowCodePageOverlayBlock,
@@ -262,6 +263,7 @@ function createFormDesignerFieldBlock(
     'vxe-switch': 'switch',
     'vxe-radio-group': 'radio',
     'vxe-checkbox-group': 'checkbox',
+    'base-info': 'input',
     'lc-array-table': 'array-table',
     'lc-sub-form': 'sub-form',
   };
@@ -308,6 +310,7 @@ function createFormDesignerFieldBlock(
       'vxe-switch',
       'vxe-radio-group',
       'vxe-checkbox-group',
+      'base-info',
       'lc-array-table',
       'lc-sub-form',
     ].includes(field.component)
@@ -323,6 +326,7 @@ function createFormDesignerFieldBlock(
     }
   }
   if (field.component === 'lc-array-table') Object.assign(block.props, cloneJson(props));
+  if (field.component === 'base-info') Object.assign(block.props, cloneJson(props));
   if (field.component === 'lc-sub-form') {
     Object.assign(block.props, cloneJson(props));
     block.props.__lowcodeComponent = 'lc-sub-form';
@@ -476,7 +480,9 @@ function runtimeFieldToVisualField(field: LowCodeField) {
     ? field.rules.some((rule) => rule?.required)
     : false;
   const editableProps =
-    field.component === 'lc-sub-form' || field.component === 'lc-array-table'
+    field.component === 'lc-sub-form' ||
+    field.component === 'lc-array-table' ||
+    field.component === 'base-info'
         ? cloneJson(props)
         : undefined;
   const optionProps = isPlainRecord(field.optionProps) ? field.optionProps : {};
@@ -536,6 +542,23 @@ function runtimeActionToVisualButton(action: LowCodeButtonGroupAction): Record<s
   };
 }
 
+function runtimeGridRowActionToVisualRow(action: LowCodeGridRowAction) {
+  return {
+    code: action.code,
+    label: action.label,
+    status: action.status ?? '',
+    eventName: action.eventName ?? '',
+    script: action.script ?? '',
+    icon: action.icon ?? '',
+    text: action.text ?? false,
+    plain: action.plain ?? false,
+    disabled: typeof action.disabled === 'boolean' ? action.disabled : false,
+    visibleJson: stringifyJson(action.visible),
+    disabledJson: typeof action.disabled === 'object' ? stringifyJson(action.disabled) : '',
+    directivesJson: stringifyJson(action.directives),
+  };
+}
+
 function isActionColumn(column: LowCodeGridColumn) {
   return isPlainRecord(column.slots) && column.slots.default === 'actions';
 }
@@ -573,7 +596,7 @@ function runtimeGridRowActionsToVisualRows(schema: Record<string, unknown>) {
   const rowActions = isPlainRecord(schema.rowActions) ? schema.rowActions : {};
   return Array.isArray(rowActions.actions)
     ? rowActions.actions.map((action) =>
-        runtimeActionToVisualButton(action as LowCodeButtonGroupAction),
+        runtimeGridRowActionToVisualRow(action as LowCodeGridRowAction),
       )
     : [];
 }

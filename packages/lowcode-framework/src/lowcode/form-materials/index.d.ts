@@ -4,5 +4,5 @@ export declare function registerLowCodeFormMaterial(material: LowCodeFormMateria
 export declare function getLowCodeFormMaterial(type?: string): LowCodeFormMaterial;
 export declare function getLowCodeFormMaterials(): LowCodeFormMaterial[];
 export { materialMap as lowCodeFormMaterialMap };
-export type { LowCodeFormMaterial, LowCodeFormMaterialProps, LowCodeResolvedOption } from './types';
+export type { LowCodeFormMaterial, LowCodeFormMaterialPatchPayload, LowCodeFormMaterialProps, LowCodeFormMaterialSelectPayload, LowCodeResolvedOption } from './types';
 //# sourceMappingURL=index.d.ts.map
