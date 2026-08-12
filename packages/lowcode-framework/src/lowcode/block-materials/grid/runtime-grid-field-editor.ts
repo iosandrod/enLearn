@@ -9,6 +9,7 @@ import type {
 import { openRuntimeFormFieldEditor } from '../runtime-form-field-editor';
 
 const GRID_FIELD_METADATA_KEY = 'lowcodeField';
+const GRID_RENDERER_NAME_KEY = 'gridRendererName';
 
 const rendererToFieldComponent: Record<string, LowCodeField['component']> = {
   VxeInput: 'vxe-input',
@@ -16,7 +17,9 @@ const rendererToFieldComponent: Record<string, LowCodeField['component']> = {
   VxeSelect: 'vxe-select',
   VxeSwitch: 'vxe-switch',
   VxeNumberInput: 'lc-number-input',
-  VxeDatePicker: 'vxe-date-picker',
+  // The shared form-field component source does not expose a date-picker option.
+  // Present it as an input in the editor and preserve the grid renderer separately.
+  VxeDatePicker: 'vxe-input',
   VxeTreeSelect: 'vxe-tree-select',
 };
 
@@ -81,7 +84,9 @@ function resolveFieldComponent(
   editRender: Record<string, unknown>,
 ) {
   const configured = readString(metadata.component);
-  if (configured) return configured;
+  if (configured) {
+    return configured === 'vxe-date-picker' ? 'vxe-input' : configured;
+  }
 
   const rendererName = readString(editRender.name);
   return rendererToFieldComponent[rendererName] ?? 'vxe-input';
@@ -125,6 +130,17 @@ function createFormField(
     ...(mergedRules.length ? { rules: mergedRules } : {}),
   } as LowCodeField;
 
+  const rendererName = readString(editRender.name);
+  const preservedRendererName = readString(metadata[GRID_RENDERER_NAME_KEY]) || (
+    rendererName && fieldComponentToRenderer[formField.component] !== rendererName
+      ? rendererName
+      : ''
+  );
+  if (preservedRendererName) {
+    (formField as LowCodeField & Record<string, unknown>)[GRID_RENDERER_NAME_KEY] =
+      preservedRendererName;
+  }
+
   if (!Object.keys(formField.props ?? {}).length) delete formField.props;
   return formField;
 }
@@ -142,7 +158,15 @@ function createFormBlock(
     kind: 'form',
     title: block.title ?? block.schema.title ?? '表格',
     schema: {
-      fields: [field],
+      fields: block.schema.grid.columns
+        .map((candidate) => {
+          const candidateField = readString(candidate.field);
+          if (!candidateField) return undefined;
+          return candidateField === field.field
+            ? field
+            : createFormField(block, candidate);
+        })
+        .filter((candidate): candidate is LowCodeField => Boolean(candidate)),
       actions: [],
     },
     initialValues: hasDefaultValue
@@ -151,8 +175,17 @@ function createFormBlock(
   };
 }
 
-function resolveRendererName(component: LowCodeField['component']) {
-  const name = readString(component);
+function resolveRendererName(field: LowCodeField) {
+  const name = readString(field.component);
+  const preservedRendererName = readString(
+    (field as LowCodeField & Record<string, unknown>)[GRID_RENDERER_NAME_KEY],
+  );
+  if (
+    preservedRendererName &&
+    rendererToFieldComponent[preservedRendererName] === name
+  ) {
+    return preservedRendererName;
+  }
   if (fieldComponentToRenderer[name]) return fieldComponentToRenderer[name];
   if (/^Vxe[A-Z]/.test(name)) return name;
   return 'VxeInput';
@@ -162,6 +195,7 @@ function createStoredMetadata(field: LowCodeField) {
   const metadata = cloneValue(field) as Record<string, unknown>;
   const props = isRecord(metadata.props) ? metadata.props : {};
   const relateInfoConfig = props.relateInfoConfig;
+  const preservedRendererName = readString(metadata[GRID_RENDERER_NAME_KEY]);
 
   delete metadata.field;
   delete metadata.label;
@@ -172,6 +206,12 @@ function createStoredMetadata(field: LowCodeField) {
     if (!(metadata.rules as unknown[]).length) delete metadata.rules;
   }
   delete metadata.options;
+  if (
+    !preservedRendererName ||
+    rendererToFieldComponent[preservedRendererName] !== readString(metadata.component)
+  ) {
+    delete metadata[GRID_RENDERER_NAME_KEY];
+  }
   metadata.props = isRecord(relateInfoConfig)
     ? { relateInfoConfig: cloneValue(relateInfoConfig) }
     : {};
@@ -193,7 +233,7 @@ function createUpdatedColumn(
   const fieldProps = cloneValue(field.props ?? {});
   delete fieldProps.relateInfoConfig;
 
-  editRender.name = resolveRendererName(field.component);
+  editRender.name = resolveRendererName(field);
   if (Object.keys(fieldProps).length) editRender.props = fieldProps;
   else delete editRender.props;
   if (Array.isArray(field.options) && field.options.length) {
@@ -263,7 +303,9 @@ function createGridEditorProxy(
     updateBlock: async (update) => {
       const schema = isRecord(update.changes.schema) ? update.changes.schema : {};
       const fields = Array.isArray(schema.fields) ? schema.fields.filter(isRecord) : [];
-      const field = fields[0] as LowCodeField | undefined;
+      const field = fields.find((candidate) => candidate.field === readString(
+        block.schema.grid.columns[columnIndex]?.field,
+      )) as LowCodeField | undefined;
       if (!field) throw new Error('字段设计结果中未找到当前字段。');
 
       const initialValues = isRecord(update.changes.initialValues)
@@ -302,7 +344,7 @@ export async function openRuntimeGridFieldEditor(
   runtimeBlockEditor: LowCodeRuntimeBlockEditor,
 ) {
   const fieldName = readString(column.field);
-  if (!fieldName) throw new Error('当前列没有字段编码，无法设计字段。');
+  if (!fieldName) return undefined;
 
   const field = createFormField(block, column);
   const formBlock = createFormBlock(block, field, column);

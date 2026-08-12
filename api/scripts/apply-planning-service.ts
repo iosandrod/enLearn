@@ -18,7 +18,9 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260810180000_planning_version_lifecycle_forward_fix.sql',
   'supabase/migrations/20260810181000_planning_console_script_context_forward_fix.sql',
   'supabase/migrations/20260810210000_planning_master_categories.sql',
-  'supabase/migrations/20260811120000_planning_structure_pages.sql'
+  'supabase/migrations/20260811120000_planning_structure_pages.sql',
+  'supabase/migrations/20260813090000_planning_item_display_name.sql',
+  'supabase/migrations/20260813091000_mes_item_display_name.sql'
 ];
 
 function directProjectConnectionString(value: string) {

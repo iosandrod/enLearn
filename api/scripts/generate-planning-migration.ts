@@ -268,7 +268,7 @@ function choiceLabel(field: PlanningFieldDefinition, value: string) {
 function relationLabelField(field: PlanningFieldDefinition) {
   if (field.relationLabelField) return field.relationLabelField;
   const target = field.relation ? PLANNING_MODEL_BY_KEY.get(field.relation) : undefined;
-  return target?.businessKey ?? 'id';
+  return target?.labelField ?? target?.businessKey ?? 'id';
 }
 
 function relationSourceKey(field: PlanningFieldDefinition) {
@@ -455,7 +455,7 @@ export function buildPlanningListSchema(model: PlanningModelDefinition) {
   const route = `/dashboard/planning/${model.sourceTable.replace(/_/g, '-')}`;
   const sourceKey = `${model.key}Rows`;
   const searchable = model.fields.filter((field) =>
-    ['name', 'reference', 'description', 'category', 'status', 'type'].includes(field.name)
+    ['name', 'display_name', 'reference', 'description', 'category', 'status', 'type'].includes(field.name)
   ).slice(0, 4);
   const visibleFields = [
     ...model.fields.filter((field) => field.required || field.name === model.businessKey),

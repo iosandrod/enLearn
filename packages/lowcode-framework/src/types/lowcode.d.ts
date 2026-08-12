@@ -1,4 +1,5 @@
 import type { VxeButtonProps } from 'vxe-pc-ui';
+import type { LowCodeRowActionPredicate } from '../runtime/row-action-state';
 export type LowCodeOption = {
     label: string;
     value: string | number;
@@ -32,7 +33,7 @@ export type LowCodeRelateInfoConfig = {
     postData?: Record<string, unknown>;
     resultPath?: string;
     valueField?: string;
-    displayField?: string;
+    displayField?: string | string[];
     displayValueField?: string;
     fieldMappings?: LowCodeRelateInfoFieldMapping[];
     mappings?: LowCodeRelateInfoFieldMapping[] | Record<string, string>;
@@ -156,6 +157,7 @@ export type LowCodeGridColumn = {
     params?: Record<string, unknown>;
     slots?: {
         default?: string;
+        edit?: string;
     };
     [key: string]: unknown;
 };
@@ -285,9 +287,9 @@ export type LowCodeGridAction = {
     directives?: LowCodeRuntimeDirective[];
 };
 export type LowCodeGridRowAction = LowCodeGridAction & {
-    visible?: import('../runtime/row-action-state').LowCodeRowActionPredicate;
-    when?: import('../runtime/row-action-state').LowCodeRowActionPredicate;
-    disabled?: import('../runtime/row-action-state').LowCodeRowActionPredicate;
+    visible?: LowCodeRowActionPredicate;
+    when?: LowCodeRowActionPredicate;
+    disabled?: LowCodeRowActionPredicate;
     plain?: boolean;
     text?: boolean;
 };
@@ -498,8 +500,8 @@ export type LowCodePageGridBlock = LowCodeMaterialVersionedBlock & {
     viewName?: string;
     editorBlockId?: string;
     editRoute?: string;
-    sourceKey?: string;
     deleteSourceKey?: string;
+    sourceKey?: string;
     rows?: Record<string, unknown>[];
     gridDesignerUpdatedAt?: number;
 };

@@ -35,6 +35,7 @@ type ItemDefinition = {
   code: string;
   cost: number;
   description: string;
+  displayName: string;
   type?: 'make to order' | 'make to stock';
   uom: string;
 };
@@ -74,106 +75,127 @@ const ROUTE_OUTPUTS: Record<string, { item: string; step: string }> = {
 const ITEM_DEFINITIONS: ItemDefinition[] = [
   {
     code: 'FG-CTRL-100',
+    displayName: '工业智能控制器 EC100',
     description: '支持以太网、RS485 与数字量 IO 的工业智能控制器成品。',
     category: '成品', cost: 980, uom: '台'
   },
   {
     code: 'SA-PCBA-100',
+    displayName: '控制主板 PCBA',
     description: '完成贴片、焊接、烧录与功能测试的控制主板 PCBA。',
     category: '半成品', cost: 420, uom: '块'
   },
   {
     code: 'SA-PWR-100',
+    displayName: '24V 工业控制器电源模块',
     description: '24V 工业控制器电源模块。',
     category: '半成品', cost: 120, uom: '件'
   },
   {
     code: 'SA-CASE-100',
+    displayName: '控制器机壳组件',
     description: '包含上下壳、散热片和紧固件的机壳组件。',
     category: '半成品', cost: 95, uom: '套'
   },
   {
     code: 'RM-PCB-CTRL-100',
+    displayName: '六层控制板裸板',
     description: '六层控制板裸板。',
     category: '电子原料', cost: 48, uom: '块'
   },
   {
     code: 'RM-PCB-PWR-100',
+    displayName: '双层电源板裸板',
     description: '双层电源板裸板。',
     category: '电子原料', cost: 18, uom: '块'
   },
   {
     code: 'RM-MCU-STM32',
+    displayName: '工业级主控 MCU',
     description: '工业级主控 MCU。',
     category: '半导体', cost: 85, uom: '只'
   },
   {
     code: 'RM-FLASH-16M',
+    displayName: '16Mbit SPI Flash',
     description: '16Mbit SPI Flash。',
     category: '半导体', cost: 12, uom: '只'
   },
   {
     code: 'RM-ETH-PHY',
+    displayName: '工业以太网 PHY',
     description: '工业以太网 PHY；演示数据故意只保留有限库存且不设置采购源。',
     category: '半导体', cost: 32, uom: '只'
   },
   {
     code: 'RM-PWR-IC',
+    displayName: '宽压输入电源管理 IC',
     description: '宽压输入电源管理 IC。',
     category: '半导体', cost: 16, uom: '只'
   },
   {
     code: 'RM-PASSIVE-KIT',
+    displayName: '贴片无源器件套料',
     description: '电阻、电容、电感等贴片无源器件套料。',
     category: '电子原料', cost: 28, uom: '套'
   },
   {
     code: 'RM-CONNECTOR-KIT',
+    displayName: '通信接口连接器套料',
     description: '端子、排针和通信接口连接器套料。',
     category: '电子原料', cost: 38, uom: '套'
   },
   {
     code: 'RM-TRANSFORMER-24V',
+    displayName: '24V 隔离变压器',
     description: '24V 隔离变压器。',
     category: '电子原料', cost: 42, uom: '只'
   },
   {
     code: 'RM-SOLDER-PASTE',
+    displayName: '无铅锡膏',
     description: '无铅锡膏。',
     category: '辅料', cost: 360, uom: 'kg'
   },
   {
     code: 'RM-CASE-TOP',
+    displayName: '压铸铝上机壳',
     description: '压铸铝上机壳。',
     category: '结构件', cost: 32, uom: '件'
   },
   {
     code: 'RM-CASE-BOTTOM',
+    displayName: '压铸铝下机壳',
     description: '压铸铝下机壳。',
     category: '结构件', cost: 35, uom: '件'
   },
   {
     code: 'RM-HEATSINK',
+    displayName: '控制器散热片',
     description: '控制器散热片。',
     category: '结构件', cost: 18, uom: '件'
   },
   {
     code: 'RM-SCREW-M3',
+    displayName: 'M3 不锈钢紧固螺钉',
     description: 'M3 不锈钢紧固螺钉。',
     category: '标准件', cost: 0.12, uom: '颗'
   },
   {
     code: 'PK-BOX-100',
+    displayName: '控制器运输包装盒',
     description: '控制器运输包装盒。',
     category: '包装材料', cost: 6, uom: '只'
   },
   {
     code: 'PK-MANUAL-100',
+    displayName: '安装与安全说明书',
     description: '安装与安全说明书。',
     category: '包装材料', cost: 1.2, uom: '本'
   },
   {
     code: 'PK-LABEL-100',
+    displayName: '产品铭牌及合格证标签',
     description: '产品铭牌及合格证标签。',
     category: '包装材料', cost: 0.8, uom: '套'
   }
@@ -454,7 +476,8 @@ async function seedElectronicsPlanningDemoOnce(
       const id = demoId(`item:${item.code}`);
       itemIds[item.code] = id;
       await upsert(client, 'planning_item', {
-        id, account_id: accountId, name: item.code, description: item.description,
+        id, account_id: accountId, name: item.code, display_name: item.displayName,
+        description: item.description,
         category: item.category, subcategory: '工业控制器 EC100', cost: item.cost,
         type: item.type ?? 'make to stock', uom: item.uom, source: ELECTRONICS_DEMO_SOURCE
       });

@@ -65,6 +65,7 @@ const lowCodeFormProps = computed<LowCodeFormProps>(() => {
     ...(forwardedProps as Partial<LowCodeFormProps>),
     schema: configuredSchema.value ?? unconfiguredSchema,
     modelValue: objectValue.value,
+    optionSources: props.optionSources ?? {},
     readonly: forwardedProps.readonly === true,
     disabled: forwardedProps.disabled === true,
   };

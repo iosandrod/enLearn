@@ -5,6 +5,10 @@ import type {
   LowCodePageRecord,
   LowCodePageSchema,
 } from '../../types/lowcode';
+import {
+  metadataColumnsToOptions,
+  splitQualifiedTableName,
+} from '../../lowcode/metadata-options';
 
 const visualGridComponentKeys = new Set(['lowcode-grid', 'grid', 'table', 'vxe-grid']);
 
@@ -330,20 +334,12 @@ function resolveMainTableSource(pageData: unknown): MainTableSource {
   };
 }
 
-function splitTableName(value: string) {
-  const parts = value.split('.').filter(Boolean);
-  return {
-    schemaName: parts.length > 1 ? parts[parts.length - 2] : 'public',
-    tableName: parts[parts.length - 1] ?? '',
-  };
-}
-
 function tableMatchesSource(table: Record<string, unknown>, source: MainTableSource) {
   const tableCode = readString(table.code);
   const tableName = readString(table.table_name ?? table.tableName);
   const schemaName = readString(table.schema_name ?? table.schemaName, 'public');
   const fullName = readString(table.full_name ?? table.fullName) || `${schemaName}.${tableName}`;
-  const target = splitTableName(source.tableName);
+  const target = splitQualifiedTableName(source.tableName);
 
   return Boolean(
     (source.entityCode && (tableCode === source.entityCode || tableName === source.entityCode)) ||
@@ -352,23 +348,6 @@ function tableMatchesSource(table: Record<string, unknown>, source: MainTableSou
           tableName === source.tableName ||
           (tableName === target.tableName && schemaName === target.schemaName))),
   );
-}
-
-function metadataColumnsToOptions(value: unknown): LowCodeOption[] {
-  return readColumns(value)
-    .filter((column) => readString(column.storage_kind, 'physical') !== 'virtual')
-    .map((column) => {
-      const field = readString(column.column_name ?? column.name);
-      const title =
-        readString(column.label ?? column.title ?? column.comment) || field;
-      return field
-        ? {
-            label: title === field ? field : `${title} (${field})`,
-            value: field,
-          }
-        : null;
-    })
-    .filter((option): option is { label: string; value: string } => Boolean(option));
 }
 
 async function loadMainTableMetadataOptions(
@@ -439,7 +418,7 @@ async function loadMainTableMetadataOptions(
 
   if (!resolvedTableName) return [];
 
-  const target = splitTableName(resolvedTableName);
+  const target = splitQualifiedTableName(resolvedTableName);
   try {
     const views = await serviceApi.invoke<unknown[]>('entityDesign', 'listViews', {
       schema_name: target.schemaName,

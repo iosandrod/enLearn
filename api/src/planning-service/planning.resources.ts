@@ -15,7 +15,7 @@ export function planningResources(): ResourceConfigMap {
       const writableFields = planningWritableFields(model);
       const requiredFields = planningRequiredFields(model);
       const defaults = planningDefaults(model);
-      const searchFields = ['name', 'reference', 'description', 'category', 'subcategory']
+      const searchFields = ['name', 'display_name', 'reference', 'description', 'category', 'subcategory']
         .filter((field) => model.fields.some((candidate) => candidate.name === field));
       const defaultSortField = model.businessKey ??
         (model.fields.some((field) => field.name === 'priority')

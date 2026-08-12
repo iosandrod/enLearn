@@ -690,4 +690,12 @@ onBeforeUnmount(disposeEditor);
 .lc-monaco-editor-dialog .lc-field {
   min-height: 0;
 }
+/* .lc-form-item__content{
+  display: flex;
+  flex-direction: column;
+} */
+/* .lc-form-item__content>:last-child{
+  flex: 1;
+  min-height: 0;
+} */
 </style>

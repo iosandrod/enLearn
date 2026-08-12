@@ -53,12 +53,21 @@ export class LowCodeService extends BaseService {
     if (resource !== 'lowcode_pages') return postData;
 
     const data = this.isRecord(postData.data) ? postData.data : postData;
-    if (!Object.prototype.hasOwnProperty.call(data, 'schema')) return postData;
+    const normalizedTableName = this.normalizePageTableName(data.table_name);
+    const normalizedData = normalizedTableName === data.table_name
+      ? data
+      : { ...data, table_name: normalizedTableName };
+    if (!Object.prototype.hasOwnProperty.call(normalizedData, 'schema')) {
+      if (normalizedData === data) return postData;
+      return data === postData
+        ? normalizedData
+        : { ...postData, data: normalizedData };
+    }
 
     let schema;
     try {
-      this.assertRuntimeBlockArrays(data.schema);
-      schema = prepareLowCodePageSchema(data.schema);
+      this.assertRuntimeBlockArrays(normalizedData.schema);
+      schema = prepareLowCodePageSchema(normalizedData.schema);
     } catch (error) {
       if (error instanceof LowCodeSchemaValidationError) {
         throw new BadRequestException({
@@ -72,8 +81,13 @@ export class LowCodeService extends BaseService {
       throw error;
     }
 
-    if (data === postData) return { ...postData, schema };
-    return { ...postData, data: { ...data, schema } };
+    if (data === postData) return { ...normalizedData, schema };
+    return { ...postData, data: { ...normalizedData, schema } };
+  }
+
+  private normalizePageTableName(value: unknown) {
+    if (typeof value !== 'string') return value;
+    return value.trim().replace(/^public\./i, '');
   }
 
   private assertRuntimeBlockArrays(value: unknown) {
@@ -435,7 +449,8 @@ export class LowCodeService extends BaseService {
     const client = await this.getDefaultValueProcedureClient(context, true);
     const { data, error } = await client.rpc('read_lowcode_default_value_procedure', {
       p_action: 'list',
-      p_procedure: null
+      p_procedure: null,
+      p_context: {}
     });
     if (error) throw new BadRequestException(error.message);
     return Array.isArray(data) ? data : [];
@@ -451,9 +466,17 @@ export class LowCodeService extends BaseService {
     if (!procedure) throw new BadRequestException('procedure is required.');
 
     const client = await this.getDefaultValueProcedureClient(context, false);
+    const procedureContext = {
+      accountId: context.accountId,
+      accountCode: context.accountCode,
+      blockId: readString(postData.blockId ?? postData.block_id),
+      field: readString(postData.field),
+      values: this.isRecord(postData.values) ? postData.values : {}
+    };
     const { data, error } = await client.rpc('read_lowcode_default_value_procedure', {
       p_action: 'execute',
-      p_procedure: procedure
+      p_procedure: procedure,
+      p_context: procedureContext
     });
     if (error) {
       if (error.code === '42501') throw new ForbiddenException(error.message);

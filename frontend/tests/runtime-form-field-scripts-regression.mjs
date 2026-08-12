@@ -24,6 +24,11 @@ assert.match(
 );
 assert.match(
   rendererSource,
+  /hasPersistedFormRecord[\s\S]*?skipAllocatingDefaults[\s\S]*?async function deriveNewFormModel[\s\S]*?field\.defaultValueType === 'function' \|\| field\.defaultValueType === 'procedure'[\s\S]*?delete values\[field\.field\][\s\S]*?return resolveFormDynamicDefaults\(block, values\)[\s\S]*?async function resetBuiltinForms[\s\S]*?await deriveNewFormModel\(block, mode, current\)[\s\S]*?runtime\.replaceForm\(block\.id, values\)/,
+  'Create and copy must replace each form with the same fully resolved default object used at initialization.',
+);
+assert.match(
+  rendererSource,
   /case 'form\.patch':[\s\S]*?runtime\.patchForm[\s\S]*?getFormController\(blockId\)\?\.setValues/,
   'Update scripts that patch a form must refresh mounted field controls immediately.',
 );

@@ -16,7 +16,7 @@ const row = {
 };
 const config = {
   valueField: 'id',
-  displayField: 'name',
+  displayField: ['name', 'uom'],
   fieldMappings: [
     { sourceField: 'id', targetField: 'item_id' },
     { sourceField: 'name', targetField: 'item_name' },
@@ -32,7 +32,7 @@ assert.deepEqual(mapRelateInfoRow(row, config, 'item_id'), {
   item_name: 'RM-MCU-STM32',
   uom: 'PCS',
   item_code: 'MCU',
-  item_id_label: 'RM-MCU-STM32',
+  item_id_label: 'RM-MCU-STM32 PCS',
 });
 assert.deepEqual(
   normalizeRelateInfoMappings({ mappings: { item_id: 'id', constructor: 'name' } }, 'item_id'),

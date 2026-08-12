@@ -99,6 +99,20 @@ const rawItem = (semiOperation.children as Record<string, unknown>[])[0];
 assert.equal(rawItem.title, '原料 C');
 assert.equal(rawItem.quantity, 3);
 
+const namedBom = buildPlanningBomTree(
+  [{
+    id: 'named-item',
+    name: 'ITEM-001',
+    display_name: '独立物料名称',
+    description: '独立描述'
+  }],
+  [{ id: 'named-operation', name: '制造工序', item_id: 'named-item' }],
+  [],
+  'named-item'
+);
+assert.equal(namedBom[0].title, '独立物料名称');
+assert.equal(namedBom[0].subtitle, 'ITEM-001 · 独立描述');
+
 const routingBom = buildPlanningBomTree(
   [
     { id: 'routed-finished', name: '路线成品' },

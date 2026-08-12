@@ -176,7 +176,7 @@ export class PlanningService extends BaseService {
       const optionType = this.readOptionalString(postData.optionType ?? postData.option_type);
       const optionResources = {
         scenario: { table: 'planning_scenario', labelField: 'name' },
-        item: { table: 'planning_item', labelField: 'name' },
+        item: { table: 'planning_item', labelField: 'display_name' },
         resource: { table: 'planning_resource', labelField: 'name' },
         operation: { table: 'planning_operation', labelField: 'name' }
       } as const;
@@ -462,6 +462,7 @@ export class PlanningService extends BaseService {
     const fieldsByTarget = new Map<string, typeof relationFields>();
     for (const field of relationFields) {
       const labelField = field.relationLabelField ??
+        PLANNING_MODEL_BY_KEY.get(field.relation!)?.labelField ??
         PLANNING_MODEL_BY_KEY.get(field.relation!)?.businessKey ??
         'id';
       const targetKey = `${field.relation!}:${labelField}`;
@@ -482,7 +483,8 @@ export class PlanningService extends BaseService {
       )];
       if (!ids.length) return;
 
-      const labelField = fields[0]?.relationLabelField ?? target.businessKey ?? 'id';
+      const labelField = fields[0]?.relationLabelField ??
+        target.labelField ?? target.businessKey ?? 'id';
       const { data, error } = await client
         .from(target.key)
         .select('*')
@@ -502,6 +504,7 @@ export class PlanningService extends BaseService {
       for (const field of relationFields) {
         const id = this.readOptionalString(row[field.name]);
         const labelField = field.relationLabelField ??
+          PLANNING_MODEL_BY_KEY.get(field.relation!)?.labelField ??
           PLANNING_MODEL_BY_KEY.get(field.relation!)?.businessKey ??
           'id';
         const mapKey = `${field.relation!}:${labelField}`;

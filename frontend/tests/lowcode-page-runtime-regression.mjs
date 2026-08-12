@@ -7,11 +7,14 @@ import {
   useLowCodePageRuntime,
 } from '../../packages/lowcode-framework/src/runtime/page-runtime.ts';
 import {
-  isLowCodeEditPageActionDisabled,
   isLowCodeEditPageFieldDisabled,
   isLowCodeEditPageReadonly,
   resolveLowCodeEditPageMode,
 } from '../../packages/lowcode-framework/src/runtime/edit-page-mode.ts';
+import {
+  buttonDisabledFunctions,
+  isLowCodeButtonDisabled,
+} from '../../packages/lowcode-framework/src/runtime/button-disabled/index.ts';
 
 const runtime = createLowCodePageRuntime();
 
@@ -41,18 +44,37 @@ assert.equal(
   true,
   'Scan mode must keep each configured input component visible but disabled.',
 );
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'save' }, 'scan'), true);
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'submit' }, 'scan'), true);
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'addDetail' }, 'scan'), true);
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'detailDelete' }, 'scan'), true);
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'saveReport' }, 'scan'), false);
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'addDetailTax' }, 'scan'), false);
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'modify' }, 'scan'), false);
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'modify' }, 'edit'), true);
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'create' }, 'scan'), false);
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'create' }, 'add'), true);
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'copy' }, 'edit'), false);
-assert.equal(isLowCodeEditPageActionDisabled({ code: 'copy' }, 'add'), true);
+const isButtonDisabled = (code, mode, disabled = false) => {
+  runtime.state.status.formMode = mode;
+  return isLowCodeButtonDisabled({ code, disabled }, runtime);
+};
+
+assert.equal(isButtonDisabled('save', 'scan'), true);
+assert.equal(isButtonDisabled('submit', 'scan'), true);
+assert.equal(isButtonDisabled('addDetail', 'scan'), true);
+assert.equal(isButtonDisabled('detailDelete', 'scan'), true);
+assert.equal(isButtonDisabled('saveReport', 'scan'), false);
+assert.equal(isButtonDisabled('addDetailTax', 'scan'), false);
+assert.equal(isButtonDisabled('modify', 'scan'), false);
+assert.equal(isButtonDisabled('modify', 'edit'), true);
+assert.equal(isButtonDisabled('create', 'scan'), false);
+assert.equal(isButtonDisabled('create', 'add'), false);
+assert.equal(isButtonDisabled('copy', 'edit'), false);
+assert.equal(isButtonDisabled('copy', 'add'), true);
+assert.equal(isButtonDisabled('refresh', 'edit', true), true);
+assert.equal(typeof buttonDisabledFunctions.save, 'function');
+assert.equal(typeof buttonDisabledFunctions.addDetail, 'function');
+for (const [code, disabledFunction] of Object.entries(buttonDisabledFunctions)) {
+  assert.equal(
+    typeof disabledFunction(runtime),
+    'boolean',
+    `The ${code} disabled function must accept runtime context and return a boolean.`,
+  );
+}
+runtime.state.status.mesCommandExecuting = true;
+assert.equal(isButtonDisabled('refresh', 'edit'), true);
+runtime.state.status.mesCommandExecuting = false;
+runtime.state.status.formMode = 'scan';
 
 runtime.replaceForm('edit-form', { name: 'Initial' });
 runtime.patchForm('edit-form', { status: 'enabled' });
@@ -311,6 +333,11 @@ assert.match(
   rendererSource,
   /if \(!preserveGrids\) \{[\s\S]*?resolveLowCodeEditPageMode/,
   'Refreshing an existing edit page must preserve its current scan/edit/add mode.',
+);
+assert.match(
+  rendererSource,
+  /async function resetBuiltinForms[\s\S]*?formRecords\[block\.id\] = cloneRuntimeValue\(values\)[\s\S]*?return formRecords[\s\S]*?async function clearBuiltinDetailGrids\(\)[\s\S]*?block\.tableType !== 'detail'[\s\S]*?sourceRequestVersions\.delete\(block\.sourceKey\)[\s\S]*?runtime\.setSource\([\s\S]*?rows: \[\][\s\S]*?runtime\.setGridRows\(block\.id, \[\][\s\S]*?if \(mode === 'create'\) await clearBuiltinDetailGrids\(\)/,
+  'Creating a record from an edit page must clear every source-backed and local detail Grid.',
 );
 assert.match(
   rendererSource,

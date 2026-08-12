@@ -21,6 +21,11 @@ const [
   applyScriptSource,
   operationMaterialMigrationSource,
   operationMaterialApplyScriptSource,
+  relationOptionsSource,
+  arrayTableSource,
+  subFormSource,
+  relationSelectMigrationSource,
+  relationSelectApplyScriptSource,
 ] = await Promise.all([
   readFile(new URL('lowcode/form-materials/base-info/index.vue', frameworkRoot), 'utf8'),
   readFile(new URL('lowcode/form-materials/base-info/relate-info.ts', frameworkRoot), 'utf8'),
@@ -40,6 +45,11 @@ const [
   readFile(new URL('../../../api/scripts/apply-runtime-form-field-base-info.ts', frameworkRoot), 'utf8'),
   readFile(new URL('../../../supabase/migrations/20260812150000_planning_operationmaterial_base_info.sql', frameworkRoot), 'utf8'),
   readFile(new URL('../../../api/scripts/apply-planning-operationmaterial-base-info.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('lowcode/block-materials/runtime-form-relation-options.ts', frameworkRoot), 'utf8'),
+  readFile(new URL('lowcode/form-materials/lc-array-table/index.vue', frameworkRoot), 'utf8'),
+  readFile(new URL('lowcode/form-materials/lc-sub-form/index.vue', frameworkRoot), 'utf8'),
+  readFile(new URL('../../../supabase/migrations/20260812230000_runtime_form_relation_selects.sql', frameworkRoot), 'utf8'),
+  readFile(new URL('../../../api/scripts/apply-runtime-form-relation-selects.ts', frameworkRoot), 'utf8'),
 ]);
 
 assert.match(materialSource, /type: 'base-info'[^]*?label: '关联资料'/);
@@ -52,6 +62,11 @@ assert.match(
   componentSource,
   /getLowCodePage[^]*?findRelateInfoGrid[^]*?page\.schema\.dataSources[^]*?loadEntityMetadata[^]*?resolveEntityRequest/,
   'Base-info must resolve low-code page and entity metadata sources.',
+);
+assert.match(
+  componentSource,
+  /const resource = readRelateInfoString\(current\.resource\)[^]*?resourceEntityCode[^]*?resolveEntityRequest\(\{[^]*?entityCode[^]*?tableName/,
+  'A business resource must be sufficient to derive the hidden entity and table request metadata.',
 );
 assert.match(
   componentSource,
@@ -99,6 +114,36 @@ assert.match(
   'The runtime field editor must round-trip relateInfoConfig in field.props.',
 );
 assert.match(
+  fieldEditorSource,
+  /createRuntimeRelationEditorOptionSources[^]*?optionSources: relationOptions\.sources[^]*?onFieldChange[^]*?relationOptions\.handleFieldChange/,
+  'The field editor must inject and refresh relation metadata option sources.',
+);
+assert.match(
+  relationOptionsSource,
+  /listDesign[^]*?listTablePageOptions[^]*?listViews[^]*?listTableColumns[^]*?listViewColumns/,
+  'Relation selectors must reuse entity, table, and view metadata services.',
+);
+assert.match(
+  relationOptionsSource,
+  /configureSelect\(fields\.get\('resource'\)[^]*?RELATION_SOURCE_FIELD_OPTIONS[^]*?multiple: true[^]*?RELATION_TARGET_FIELD_OPTIONS[^]*?visibleFields[^]*?column\.component = 'vxe-select'/,
+  'The compact relation editor must keep one resource selector, multi-display fields, and dependent mapping selects.',
+);
+assert.match(
+  relationOptionsSource,
+  /clearInvalidSourceSelections[^]*?valueField[^]*?displayField[^]*?searchField[^]*?sourceField[^]*?clearInvalidTargetSelections[^]*?displayValueField[^]*?targetField/,
+  'Changing relation metadata must clear stale source and target selections.',
+);
+assert.match(
+  subFormSource,
+  /optionSources: props\.optionSources \?\? \{\}/,
+  'Nested relation forms must receive the editor option sources.',
+);
+assert.match(
+  arrayTableSource,
+  /optionsSourceKey[^]*?props\.optionSources\?\.\[column\.optionsSourceKey\]/,
+  'Mapping-table select columns must resolve dependent parent option sources.',
+);
+assert.match(
   runtimeDesignerSource,
   /originalProps[^]*?cloneValue\(designed\.props[^]*?designerModel: isDesignerModelCurrent\(block\)[^]*?block\.formDesignerModel[^]*?: null/,
   'Full-form design must rebuild stale models and retain arbitrary field props.',
@@ -143,6 +188,16 @@ assert.match(
   operationMaterialApplyScriptSource,
   /20260812150000_planning_operationmaterial_base_info\.sql[^]*?field\?\.component !== 'base-info'[^]*?targetField !== 'item_id'/,
   'The operation-material database runner must verify the installed base-info field.',
+);
+assert.match(
+  relationSelectMigrationSource,
+  /'resource'[^]*?'valueField'[^]*?'displayField'[^]*?'displayValueField'[^]*?'searchField'[^]*?'multiple'[^]*?'sourceField', 'targetField'[^]*?'sourceType'[^]*?'serviceMethod'/,
+  'Existing database definitions must store the compact relation selector schema.',
+);
+assert.match(
+  relationSelectApplyScriptSource,
+  /20260812230000_runtime_form_relation_selects\.sql[^]*?selectableFieldCount/,
+  'The relation-select apply script must verify the installed field schema.',
 );
 
 console.log('Base-info form material regression test passed.');

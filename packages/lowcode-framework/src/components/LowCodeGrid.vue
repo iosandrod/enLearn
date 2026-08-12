@@ -45,6 +45,18 @@
         @form-reset="(payload) => handleGenericGridEvent('formReset', payload)"
         @zoom="(payload) => handleGenericGridEvent('zoom', payload)"
       >
+        <template #baseInfoEdit="{ row, column }">
+          <LowCodeFormField
+            v-if="baseInfoField(column)"
+            :field="baseInfoField(column)!"
+            :model-value="row[String(column.field ?? '')]"
+            :form-values="row"
+            :show-label="false"
+            :disabled="readonly || executing"
+            @update:model-value="(value) => updateBaseInfoCell(row, column, value)"
+            @patch-model="(payload) => patchBaseInfoRow(row, column, payload)"
+          />
+        </template>
         <template #actions="{ row }">
           <template v-if="hasCustomRowActions">
             <vxe-button
@@ -87,6 +99,7 @@
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import type { VxeGridInstance } from 'vxe-table';
 import { useLowCodeHost } from '../core/host';
+import LowCodeFormField from './LowCodeFormField.vue';
 import {
   mergeSystemTableOptions,
   resolveSystemTableConfig,
@@ -99,11 +112,13 @@ import {
   visibleLowCodeRowActions,
 } from '../runtime/row-action-state';
 import type {
+  LowCodeField,
   LowCodeGridColumn,
   LowCodeGridAction,
   LowCodeGridRowAction,
   LowCodeGridSchema,
 } from '../types/lowcode';
+import type { LowCodeFormMaterialPatchPayload } from '../lowcode/form-materials';
 
 const props = defineProps<{
   schema: LowCodeGridSchema;
@@ -260,10 +275,22 @@ function hydrateRuntimeGridColumn(column: LowCodeGridColumn) {
   const updated = { ...column };
   const params = isRecord(updated.params) ? updated.params : {};
   const metadata = isRecord(params.lowcodeField) ? params.lowcodeField : {};
+  const component = typeof metadata.component === 'string'
+    ? metadata.component.trim()
+    : '';
   const optionsCode = typeof metadata.optionsCode === 'string'
     ? metadata.optionsCode.trim()
     : '';
   const editRender = isRecord(updated.editRender) ? { ...updated.editRender } : undefined;
+
+  if (component === 'base-info') {
+    updated.editRender = editRender ?? { name: 'VxeInput' };
+    updated.slots = {
+      ...(isRecord(updated.slots) ? updated.slots : {}),
+      edit: 'baseInfoEdit',
+    };
+    return updated;
+  }
 
   if (editRender && optionsCode && !Array.isArray(editRender.options)) {
     const options = codeOptionSources[optionsCode] ??
@@ -272,6 +299,65 @@ function hydrateRuntimeGridColumn(column: LowCodeGridColumn) {
   }
   if (editRender) updated.editRender = editRender;
   return updated;
+}
+
+function baseInfoField(column: Record<string, unknown>) {
+  const field = typeof column.field === 'string' ? column.field.trim() : '';
+  if (!field) return undefined;
+  const sourceColumn = props.schema.grid.columns?.find(
+    (candidate) => candidate.field === field,
+  );
+  if (!sourceColumn) return undefined;
+  const params = isRecord(sourceColumn.params) ? sourceColumn.params : {};
+  const metadata = isRecord(params.lowcodeField) ? params.lowcodeField : {};
+  if (metadata.component !== 'base-info') return undefined;
+
+  return {
+    ...metadata,
+    field,
+    label: typeof sourceColumn.title === 'string' ? sourceColumn.title : field,
+    component: 'base-info',
+    props: isRecord(metadata.props) ? metadata.props : {},
+  } as LowCodeField;
+}
+
+function updateBaseInfoCell(
+  row: Record<string, unknown>,
+  column: Record<string, unknown>,
+  value: unknown,
+) {
+  const field = typeof column.field === 'string' ? column.field.trim() : '';
+  if (!field || props.readonly || props.executing) return;
+  row[field] = value;
+  void updateBaseInfoValidation(row, field, value);
+}
+
+function patchBaseInfoRow(
+  row: Record<string, unknown>,
+  column: Record<string, unknown>,
+  payload: LowCodeFormMaterialPatchPayload,
+) {
+  if (props.readonly || props.executing || !isRecord(payload?.values)) return;
+  Object.entries(payload.values).forEach(([field, value]) => {
+    if (!isSafeFieldName(field)) return;
+    row[field] = value;
+  });
+  const field = typeof column.field === 'string' ? column.field.trim() : '';
+  if (field) void updateBaseInfoValidation(row, field, row[field]);
+}
+
+function isSafeFieldName(field: string) {
+  return Boolean(field) && !['__proto__', 'prototype', 'constructor'].includes(field);
+}
+
+async function updateBaseInfoValidation(
+  row: Record<string, unknown>,
+  field: string,
+  value: unknown,
+) {
+  const grid = vxeGridRef.value;
+  const column = grid?.getColumnByField(field);
+  if (grid && column) await grid.updateStatus({ row, column }, value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

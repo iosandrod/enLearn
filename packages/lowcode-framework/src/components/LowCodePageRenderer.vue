@@ -127,10 +127,12 @@ import {
 } from '../runtime/mes-command';
 import {
   isLowCodeEditPageReadonly,
-  isLowCodeEditPageModifyAction,
-  isLowCodeEditPageSaveAction,
   resolveLowCodeEditPageMode,
 } from '../runtime/edit-page-mode';
+import {
+  isLowCodeEditPageModifyAction,
+  isLowCodeEditPageSaveAction,
+} from '../runtime/button-disabled';
 import { lowCodeScriptContextProviderKey } from '../runtime/script-context-provider';
 import type { LowCodeContextSource } from '../runtime/lowcode-context';
 import {
@@ -1433,9 +1435,16 @@ function deriveStaticFormModel(
   return mergeFormModelValues(block.initialValues ?? {}, row ?? {});
 }
 
+function hasPersistedFormRecord(row?: Record<string, unknown>) {
+  if (!row) return false;
+  const recordId = row.id;
+  return recordId !== undefined && recordId !== null && String(recordId).trim() !== '';
+}
+
 async function resolveFormDynamicDefaults(
   block: LowCodePageFormBlock | LowCodePageSearchFormBlock,
   model: Record<string, unknown>,
+  options: { skipAllocatingDefaults?: boolean } = {},
 ) {
   const nextModel = cloneRuntimeValue(model);
   for (const field of block.schema.fields) {
@@ -1444,6 +1453,11 @@ async function resolveFormDynamicDefaults(
     const defaultValueType = readString(field.defaultValueType);
     const defaultValueScript = readString(field.defaultValueScript);
     const defaultValueProcedure = readString(field.defaultValueProcedure);
+    if (
+      options.skipAllocatingDefaults &&
+      defaultValueType === 'procedure' &&
+      defaultValueProcedure === 'public.generate_document_number'
+    ) continue;
     if (
       (defaultValueType !== 'function' || !defaultValueScript) &&
       (defaultValueType !== 'procedure' || !defaultValueProcedure)
@@ -1480,7 +1494,44 @@ async function deriveFormModel(
   block: LowCodePageFormBlock | LowCodePageSearchFormBlock,
   row?: Record<string, unknown>,
 ) {
-  return resolveFormDynamicDefaults(block, deriveStaticFormModel(block, row));
+  return resolveFormDynamicDefaults(
+    block,
+    deriveStaticFormModel(block, row),
+    {
+      skipAllocatingDefaults:
+        hasPersistedFormRecord(row) ||
+        (props.page.page_type === 'edit' && builtinPageFunctionMode.value !== 'add'),
+    },
+  );
+}
+
+async function deriveNewFormModel(
+  block: LowCodePageFormBlock,
+  mode: 'create' | 'copy',
+  current: Record<string, unknown>,
+) {
+  const primaryKeys = new Set(['id', 'created_at', 'created_by', 'updated_at', 'updated_by']);
+  const stateFields: Record<string, unknown> = {
+    status: 'draft',
+  };
+  const values = mode === 'copy'
+    ? cloneRuntimeValue(current)
+    : cloneRuntimeValue(block.initialValues ?? {});
+
+  primaryKeys.forEach((field) => {
+    if (field === 'id') values[field] = '';
+    else delete values[field];
+  });
+  Object.entries(stateFields).forEach(([field, value]) => {
+    if (field in values || field in current) values[field] = value;
+  });
+  for (const field of block.schema.fields) {
+    if (field.defaultValueType === 'function' || field.defaultValueType === 'procedure') {
+      delete values[field.field];
+    }
+  }
+
+  return resolveFormDynamicDefaults(block, values);
 }
 
 async function resolveGridDynamicDefaults(block: LowCodePageGridBlock) {
@@ -2555,32 +2606,45 @@ async function updateBuiltinRecords(
   }));
 }
 
-function resetBuiltinForms(mode: 'create' | 'copy') {
-  const primaryKeys = new Set(['id', 'created_at', 'created_by', 'updated_at', 'updated_by']);
-  const stateFields: Record<string, unknown> = {
-    status: 'draft',
-  };
+async function resetBuiltinForms(mode: 'create' | 'copy') {
+  const formRecords: Record<string, Record<string, unknown>> = {};
 
   for (const block of flattenPageBlocks(props.page.schema)) {
     if (block.kind !== 'form') continue;
     const current = formModels.value[block.id] ?? {};
-    const values = mode === 'copy'
-      ? cloneRuntimeValue(current)
-      : cloneRuntimeValue(block.initialValues ?? {});
-    primaryKeys.forEach((field) => {
-      if (field === 'id') {
-        values[field] = '';
-      } else {
-        delete values[field];
-      }
-    });
-    Object.entries(stateFields).forEach(([field, value]) => {
-      if (field in values || field in current) values[field] = value;
-    });
+    const values = await deriveNewFormModel(block, mode, current);
     runtime.replaceForm(block.id, values);
+    formRecords[block.id] = cloneRuntimeValue(values);
   }
 
-  return cloneRuntimeValue(formModels.value);
+  return formRecords;
+}
+
+async function clearBuiltinDetailGrids() {
+  const clearedSourceKeys = new Set<string>();
+
+  for (const block of flattenPageBlocks(props.page.schema)) {
+    if (block.kind !== 'grid' || block.tableType !== 'detail') continue;
+
+    if (block.sourceKey) {
+      if (!clearedSourceKeys.has(block.sourceKey)) {
+        clearedSourceKeys.add(block.sourceKey);
+        sourceRequestVersions.delete(block.sourceKey);
+        runtime.setSourceLoading(block.sourceKey, false);
+        const sourceValue = resolvedData.value[block.sourceKey];
+        runtime.setSource(
+          block.sourceKey,
+          isRecord(sourceValue) && Array.isArray(sourceValue.rows)
+            ? { ...sourceValue, rows: [] }
+            : [],
+        );
+      }
+    } else {
+      runtime.setGridRows(block.id, [], { rowKey: getGridRowKey(block) });
+    }
+    if (loadingGridId.value === block.id) loadingGridId.value = '';
+    await runtime.getGridController(block.id)?.clearValidation();
+  }
 }
 
 function patchBuiltinForms(values: Record<string, unknown>) {
@@ -2653,7 +2717,9 @@ function createBuiltinPageFunctionContext(
       host.getServiceApi().invoke(serviceName, serviceMethod, postData),
     prepareForms: async (mode) => {
       builtinPageFunctionMode.value = 'add';
-      return resetBuiltinForms(mode);
+      if (mode === 'create') await clearBuiltinDetailGrids();
+      const result = await resetBuiltinForms(mode);
+      return result;
     },
     patchForms: async (values) => patchBuiltinForms(values),
     getMode: () => builtinPageFunctionMode.value,

@@ -41,6 +41,20 @@ async function waitForUrl(url, timeoutMs = 20_000) {
   throw lastError ?? new Error(`Timed out waiting for ${url}`);
 }
 
+async function waitForSmokeReady(page) {
+  await page.waitForFunction(() => {
+    const resultElement = document.querySelector('#result');
+    const smoke = window.__runtimeFormDesignerSaveSmoke;
+    if (!resultElement || resultElement.textContent === 'pending') return false;
+    if (!smoke || typeof smoke.snapshot !== 'function') return false;
+    try {
+      return JSON.parse(resultElement.textContent ?? '{}').ok === true && Boolean(smoke.snapshot());
+    } catch {
+      return false;
+    }
+  }, undefined, { timeout: 30_000 });
+}
+
 const port = await freePort();
 const server = spawn(
   process.execPath,
@@ -281,18 +295,106 @@ async function editBaseInfoField({ page, expectedSaveCount }) {
   const relationControl = (label) => relationPanel.locator('.vxe-form--item').filter({
     has: page.locator('.vxe-form--item-title', { hasText: label }),
   }).first();
-  assert.equal(await relationControl('实体编码').locator('input').inputValue(), 'planning_item');
-  await relationControl('显示字段').locator('input').fill('description');
+  const optionMatches = (text, label) => {
+    const normalized = text.replace(/\s+/g, ' ').trim();
+    return normalized === label ||
+      normalized.startsWith(`${label} (`) ||
+      normalized.endsWith(`(${label})`);
+  };
+  const selectOption = async (control, label) => {
+    const nestedSelect = control.locator('.vxe-select');
+    const select = await nestedSelect.count() ? nestedSelect.first() : control;
+    const deadline = Date.now() + 15_000;
+    while (Date.now() < deadline) {
+      await select.click({ force: true });
+      const panel = page.locator('.vxe-select--panel:visible').last();
+      if (await panel.isVisible().catch(() => false)) {
+        const options = panel.locator('.vxe-select-option');
+        const count = await options.count();
+        for (let index = 0; index < count; index += 1) {
+          const option = options.nth(index);
+          const text = await option.innerText().catch(() => '');
+          if (!optionMatches(text, label)) continue;
+          try {
+            await option.click({ force: true, timeout: 1_000 });
+            await select.evaluate((element) => {
+              const instance = element.__vueParentComponent;
+              return instance?.exposed?.hidePanel?.() ?? instance?.proxy?.hidePanel?.();
+            });
+            await panel.waitFor({ state: 'hidden', timeout: 3_000 });
+            return;
+          } catch {
+            // The option list can be replaced while dependent metadata settles.
+          }
+        }
+      }
+      await page.waitForTimeout(100);
+    }
+    throw new Error(`Select option did not become visible: ${label}`);
+  };
+  for (const label of [
+    '业务资源',
+    '值字段',
+    '显示字段',
+    '显示值目标字段',
+    '搜索字段',
+  ]) {
+    assert.equal(
+      await relationControl(label).locator('.vxe-select').count(),
+      1,
+      `${label} must use a select control.`,
+    );
+  }
+  for (const removedLabel of [
+    '来源类型',
+    '实体编码',
+    '表名/视图名',
+    '页面编码',
+    '页面数据源',
+    '服务名称',
+    '服务方法',
+  ]) {
+    assert.equal(await relationControl(removedLabel).count(), 0);
+  }
+  await selectOption(relationControl('显示字段'), '说明');
 
   const mappingRows = relationControl('字段映射').locator('.lc-array-table .vxe-body--row');
   assert.equal(await mappingRows.count(), 2);
+  assert.equal(await mappingRows.first().locator('.vxe-select').count(), 2);
   await relationControl('字段映射').locator('.lc-array-table__toolbar .vxe-button', {
     hasText: '新增映射',
   }).click();
   assert.equal(await mappingRows.count(), 3);
-  const newInputs = mappingRows.nth(2).locator('input');
-  await newInputs.nth(0).fill('uom');
-  await newInputs.nth(1).fill('relatedItemUom');
+  const newSelects = mappingRows.nth(2).locator('.vxe-select');
+  await selectOption(newSelects.nth(0), '单位');
+  await selectOption(newSelects.nth(1), 'relatedItemUom');
+
+  await selectOption(relationControl('业务资源'), '客户');
+  await page.waitForFunction(() => {
+    const relation = document.querySelector(
+      '.runtime-form-field-editor-dialog .vxe-tabs-pane--item.is--visible .lc-sub-form',
+    );
+    const controls = [...(relation?.querySelectorAll('.vxe-form--item') ?? [])];
+    const display = controls.find((item) => item.textContent?.includes('显示字段'));
+    return display?.querySelector('input')?.value === '';
+  });
+  assert.equal(await relationControl('显示字段').locator('input').inputValue(), '');
+  assert.equal(await mappingRows.nth(2).locator('input').first().inputValue(), '');
+
+  await selectOption(relationControl('业务资源'), '物料');
+  await page.waitForFunction(() => {
+    const relation = document.querySelector(
+      '.runtime-form-field-editor-dialog .vxe-tabs-pane--item.is--visible .lc-sub-form',
+    );
+    const controls = [...(relation?.querySelectorAll('.vxe-form--item') ?? [])];
+    const display = controls.find((item) => item.textContent?.includes('显示字段'));
+    const select = display?.querySelector('.vxe-select');
+    return Boolean(select && !select.classList.contains('is--disabled'));
+  });
+  await selectOption(relationControl('显示字段'), '名称');
+  await selectOption(relationControl('显示字段'), '说明');
+  await selectOption(mappingRows.nth(2).locator('.vxe-select').nth(0), '单位');
+  await selectOption(mappingRows.nth(2).locator('.vxe-select').nth(1), 'relatedItemUom');
 
   await dialog.locator('.lc-global-dialog__footer .vxe-button', { hasText: '保存' }).click();
   await dialog.waitFor({ state: 'hidden' });
@@ -379,12 +481,51 @@ async function enterRequestedMode(page, runtimeMode) {
 }
 
 async function verifyFieldScriptBehavior(page) {
-  await page.waitForFunction(() => (
-    window.__runtimeFormDesignerSaveSmoke
+  await page.waitForFunction(() => {
+    const model = window.__runtimeFormDesignerSaveSmoke
+      ?.snapshot?.()
+      ?.formModels?.['runtime-edit-form'];
+    return model?.generatedCode?.startsWith('AUTO-form-generatedCode-') &&
+      Boolean(model?.procedureCode);
+  });
+  const initialDefaults = await page.evaluate(() => {
+    const model = window.__runtimeFormDesignerSaveSmoke
       .snapshot()
-      ?.formModels?.['runtime-edit-form']
-      ?.generatedCode === 'AUTO-form-generatedCode'
-  ));
+      ?.formModels?.['runtime-edit-form'];
+    return {
+      generatedCode: model?.generatedCode,
+      procedureCode: model?.procedureCode,
+    };
+  });
+
+  await page.locator('.lc-node-button-group .vxe-button').filter({ hasText: '新增' }).first().click();
+  await page.waitForFunction((previous) => {
+    const model = window.__runtimeFormDesignerSaveSmoke
+      .snapshot()
+      ?.formModels?.['runtime-edit-form'];
+    return model?.generatedCode?.startsWith('AUTO-form-generatedCode-') &&
+      model.generatedCode !== previous.generatedCode &&
+      Boolean(model?.procedureCode);
+  }, initialDefaults);
+  const createdDefaults = await page.evaluate(() => {
+    const model = window.__runtimeFormDesignerSaveSmoke
+      .snapshot()
+      ?.formModels?.['runtime-edit-form'];
+    return {
+      generatedCode: model?.generatedCode,
+      procedureCode: model?.procedureCode,
+    };
+  });
+  assert.notEqual(
+    createdDefaults.generatedCode,
+    initialDefaults.generatedCode,
+    'Clicking create must resolve a fresh function default in the complete form object.',
+  );
+  assert.match(
+    createdDefaults.procedureCode,
+    /^PROC-procedureCode-\d+$/,
+    'Clicking create must resolve the procedure default in the complete form object.',
+  );
 
   const updateSource = runtimeField(page, '更新源').locator('.lc-field input').first();
   await updateSource.fill('VALUE-42');
@@ -433,11 +574,7 @@ async function verifyFieldScriptBehavior(page) {
 async function runScenario(pageMode, runtimeMode) {
   const url = `http://127.0.0.1:${port}/tests/runtime-form-designer-save-browser.html?page=${pageMode}&mode=${runtimeMode}`;
   await activePage.goto(url, { waitUntil: 'domcontentloaded' });
-  await activePage.waitForFunction(
-    () => document.querySelector('#result')?.textContent !== 'pending',
-    undefined,
-    { timeout: 25_000 },
-  );
+  await waitForSmokeReady(activePage);
   const bootResult = JSON.parse(await activePage.locator('#result').textContent());
   assert.equal(bootResult.ok, true, pageErrors.join('\n'));
   await enterRequestedMode(activePage, runtimeMode);
@@ -579,7 +716,7 @@ async function runScenario(pageMode, runtimeMode) {
   );
   assert.equal(relatedItem.component, 'base-info');
   assert.equal(relatedItem.props.relateInfoConfig.entityCode, 'planning_item');
-  assert.equal(relatedItem.props.relateInfoConfig.displayField, 'description');
+  assert.deepEqual(relatedItem.props.relateInfoConfig.displayField, ['name', 'description']);
   assert.deepEqual(relatedItem.props.relateInfoConfig.fieldMappings, [
     { sourceField: 'id', targetField: 'relatedItem' },
     { sourceField: 'name', targetField: 'relatedItemName' },
@@ -590,11 +727,7 @@ async function runScenario(pageMode, runtimeMode) {
 async function runScanScenario() {
   const url = `http://127.0.0.1:${port}/tests/runtime-form-designer-save-browser.html?page=scan&mode=scan`;
   await activePage.goto(url, { waitUntil: 'domcontentloaded' });
-  await activePage.waitForFunction(
-    () => document.querySelector('#result')?.textContent !== 'pending',
-    undefined,
-    { timeout: 25_000 },
-  );
+  await waitForSmokeReady(activePage);
   await enterRequestedMode(activePage, 'scan');
   await verifyModeDisabledBehavior(activePage, 'scan');
 }
@@ -628,6 +761,7 @@ try {
         smoke: window.__runtimeFormDesignerSaveSmoke,
         dialogs: document.querySelectorAll('.form-designer-dialog').length,
         menus: document.querySelectorAll('.enlearn-context-menu').length,
+        relationDialogHtml: document.querySelector('.runtime-form-field-editor-dialog')?.innerHTML.slice(0, 30000),
         text: document.body.innerText.slice(0, 5000),
       })).catch(() => null)
     : null;

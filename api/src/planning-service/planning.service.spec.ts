@@ -61,6 +61,13 @@ assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'plannin
 assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_plan_version').length, 1);
 assert.equal(PLANNING_MODEL_DEFINITIONS.filter((model) => model.key === 'planning_demand_sync_state').length, 1);
 
+const itemModel = PLANNING_MODEL_DEFINITIONS.find((model) => model.key === 'planning_item');
+assert.equal(itemModel?.businessKey, 'name');
+assert.equal(itemModel?.labelField, 'display_name');
+assert.ok(resources.planning_item.create?.allowedFields?.includes('display_name'));
+assert.ok(resources.planning_item.create?.requiredFields?.includes('display_name'));
+assert.ok(resources.planning_item.list?.searchFields?.includes('display_name'));
+
 assert.equal(typeof service.executeAction, 'function');
 
 async function testPlanningPayloadNormalization() {

@@ -954,9 +954,15 @@ a {
 }
 
 .lc-form-layout {
-  display: grid;
+  /* display: grid; */
+  display: flex !important;
+  flex-direction: column;
   gap: 10px;
   min-width: 0;
+}
+.lc-form-layout>:last-child{
+  flex: 1;
+  min-height: 0;
 }
 
 .lc-form-row {
@@ -2236,4 +2242,39 @@ a {
 .vxe-cell--wrapper .vxe-number-input{
   height:30px;
   line-height:30px;
+}
+
+.lc-form-tabs{
+  display: flex;
+  flex-direction: column;
+}
+
+.lc-form-tabs >:last-child{
+  flex: 1;
+  overflow: hidden;
+}
+.vxe-tabs-pane--item.is--visible{
+  display: flex;
+  flex-direction: column;
+}
+
+.vxe-tabs-pane--item.is--visible > :last-child{
+  flex: 1;
+}
+.lc-form-tab-pane.lc-form-tab-pane--single{
+  display: flex;
+  flex-direction: column;
+}
+.lc-form-tab-pane.lc-form-tab-pane--single > :last-child{
+  flex: 1;
+  overflow: hidden;
+}
+.vxe-modal--footer{
+  padding-top: 2px;
+  padding-bottom: 3px;
+}
+
+.lc-node-container>:last-child{
+  flex: 1;
+  overflow: hidden;
 }

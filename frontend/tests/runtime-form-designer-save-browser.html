@@ -87,6 +87,16 @@
                   label: '保存',
                   status: 'primary',
                 },
+                {
+                  code: 'create',
+                  label: '新增',
+                  status: 'primary',
+                  script: `
+                    async function main() {
+                      return this.executeFunction({ name: "create", args: {} });
+                    }
+                  `,
+                },
               ],
             },
             {
@@ -132,9 +142,16 @@
                     defaultValueScript: `
                       async function loadGeneratedCode(event) {
                         await Promise.resolve();
-                        return "AUTO-" + event.blockKind + "-" + event.field;
+                        return "AUTO-" + event.blockKind + "-" + event.field + "-" + event.timestamp;
                       }
                     `,
+                  },
+                  {
+                    field: 'procedureCode',
+                    label: '存储过程默认编码',
+                    component: 'vxe-input',
+                    defaultValueType: 'procedure',
+                    defaultValueProcedure: 'public.test_order_default',
                   },
                   {
                     field: 'updateSource',
@@ -173,12 +190,7 @@
                     props: {
                       clearable: true,
                       relateInfoConfig: {
-                        sourceType: 'entity',
-                        entityCode: 'planning_item',
-                        tableName: 'planning_item',
                         resource: 'planning_item',
-                        serviceName: 'planning',
-                        serviceMethod: 'listItems',
                         valueField: 'id',
                         displayField: 'name',
                         displayValueField: 'relatedItem_label',
@@ -188,6 +200,16 @@
                         ],
                       },
                     },
+                  },
+                  {
+                    field: 'relatedItemName',
+                    label: '关联物料名称',
+                    component: 'vxe-input',
+                  },
+                  {
+                    field: 'relatedItemUom',
+                    label: '关联物料单位',
+                    component: 'vxe-input',
                   },
                 ],
                 actions: [
@@ -227,6 +249,7 @@
         updated_at: '',
       };
       const pageRecord = useReactivePage ? reactive(initialPageRecord) : initialPageRecord;
+      let procedureDefaultSequence = 0;
       const serviceApi = {
         async invoke(serviceName, serviceMethod, payload = {}) {
           if (serviceName === 'lowcode' && serviceMethod === 'listItems') {
@@ -266,26 +289,11 @@
                           schema: {
                             columns: 2,
                             fields: [
-                              {
-                                field: 'sourceType',
-                                label: '来源类型',
-                                component: 'vxe-select',
-                                options: [
-                                  { label: '实体/表/视图', value: 'entity' },
-                                  { label: '低代码页面', value: 'lowcode_page' },
-                                ],
-                              },
-                              { field: 'entityCode', label: '实体编码', component: 'vxe-input' },
-                              { field: 'tableName', label: '表名/视图名', component: 'vxe-input' },
-                              { field: 'resource', label: '业务资源', component: 'vxe-input' },
-                              { field: 'pageCode', label: '页面编码', component: 'vxe-input' },
-                              { field: 'sourceKey', label: '页面数据源', component: 'vxe-input' },
-                              { field: 'serviceName', label: '服务名称', component: 'vxe-input' },
-                              { field: 'serviceMethod', label: '服务方法', component: 'vxe-input' },
-                              { field: 'valueField', label: '值字段', component: 'vxe-input' },
-                              { field: 'displayField', label: '显示字段', component: 'vxe-input' },
-                              { field: 'displayValueField', label: '显示值目标字段', component: 'vxe-input' },
-                              { field: 'searchField', label: '搜索字段', component: 'vxe-input' },
+                              { field: 'resource', label: '业务资源', component: 'vxe-select' },
+                              { field: 'valueField', label: '值字段', component: 'vxe-select' },
+                              { field: 'displayField', label: '显示字段', component: 'vxe-select', props: { multiple: true } },
+                              { field: 'displayValueField', label: '显示值目标字段', component: 'vxe-select' },
+                              { field: 'searchField', label: '搜索字段', component: 'vxe-select' },
                               {
                                 field: 'fieldMappings',
                                 label: '字段映射',
@@ -293,8 +301,8 @@
                                 span: 2,
                                 props: {
                                   columns: [
-                                    { field: 'sourceField', title: '来源字段', minWidth: 180 },
-                                    { field: 'targetField', title: '目标表单字段', minWidth: 180 },
+                                    { field: 'sourceField', title: '来源字段', component: 'vxe-select', minWidth: 180 },
+                                    { field: 'targetField', title: '目标表单字段', component: 'vxe-select', minWidth: 180 },
                                   ],
                                   defaultRow: { sourceField: '', targetField: '' },
                                   toolbarButtons: [
@@ -424,7 +432,36 @@
             return [];
           }
           if (serviceName === 'lowcode' && serviceMethod === 'listTablePageOptions') {
-            return [];
+            return [
+              {
+                label: '物料 (public.planning_item)',
+                value: 'public.planning_item',
+                tableName: 'public.planning_item',
+                entityCode: 'planning_item',
+                title: '物料',
+              },
+              {
+                label: '客户 (public.planning_customer)',
+                value: 'public.planning_customer',
+                tableName: 'public.planning_customer',
+                entityCode: 'planning_customer',
+                title: '客户',
+              },
+            ];
+          }
+          if (serviceName === 'lowcode' && serviceMethod === 'listTableColumns') {
+            if (String(payload.tableName).endsWith('planning_customer')) {
+              return [
+                { name: 'id', comment: '主键' },
+                { name: 'customer_name', comment: '客户名称' },
+              ];
+            }
+            return [
+              { name: 'id', comment: '主键' },
+              { name: 'name', comment: '名称' },
+              { name: 'description', comment: '说明' },
+              { name: 'uom', comment: '单位' },
+            ];
           }
           if (serviceName === 'lowcode' && serviceMethod === 'listDefaultValueProcedures') {
             return [
@@ -432,7 +469,8 @@
             ];
           }
           if (serviceName === 'lowcode' && serviceMethod === 'executeDefaultValueProcedure') {
-            return `PROC-${payload.field}`;
+            procedureDefaultSequence += 1;
+            return `PROC-${payload.field}-${procedureDefaultSequence}`;
           }
           if (serviceName === 'admin' && serviceMethod === 'resolveOptionItemsBatch') {
             return Object.fromEntries((payload.sourceCodes ?? []).map((code) => [
@@ -456,7 +494,42 @@
             ]));
           }
           if (serviceName === 'entityDesign' && serviceMethod === 'listDesign') {
-            return { tables: [] };
+            return {
+              tables: [
+                {
+                  id: 'planning-item',
+                  code: 'planning_item',
+                  title: '物料',
+                  schema_name: 'public',
+                  table_name: 'planning_item',
+                  full_name: 'public.planning_item',
+                  columns: [
+                    { column_name: 'id', label: '主键' },
+                    { column_name: 'name', label: '名称' },
+                    { column_name: 'description', label: '说明' },
+                    { column_name: 'uom', label: '单位' },
+                  ],
+                },
+                {
+                  id: 'planning-customer',
+                  code: 'planning_customer',
+                  title: '客户',
+                  schema_name: 'public',
+                  table_name: 'planning_customer',
+                  full_name: 'public.planning_customer',
+                  columns: [
+                    { column_name: 'id', label: '主键' },
+                    { column_name: 'customer_name', label: '客户名称' },
+                  ],
+                },
+              ],
+            };
+          }
+          if (serviceName === 'entityDesign' && serviceMethod === 'listViews') {
+            return [];
+          }
+          if (serviceName === 'entityDesign' && serviceMethod === 'listViewColumns') {
+            return [];
           }
           if (serviceName !== 'lowcode' || serviceMethod !== 'saveItem') {
             throw new Error(`Unexpected service call: ${serviceName}.${serviceMethod}`);
@@ -497,6 +570,7 @@
         pageRecord,
         runtimeMode,
         saveCalls,
+        procedureDefaultSequence: () => procedureDefaultSequence,
         snapshot() {
           return renderer.value?.getSnapshot?.() ?? null;
         },

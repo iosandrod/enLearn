@@ -67,7 +67,7 @@ export function compileTriggerWorkflow(model: TriggerWorkflowModel): TriggerWork
 
   const entry = model.nodes.find((node) => node.type === 'start' || node.type === 'schedule' || node.type === 'webhook');
   if (!entry) {
-    throw new Error('Trigger workflow requires an entry node.');
+    throw new Error('触发器工作流必须包含入口节点。');
   }
 
   const operations = model.nodes.map((node) => {

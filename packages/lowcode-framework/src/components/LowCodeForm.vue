@@ -26,6 +26,7 @@
             :field="field"
             :model-value="readFieldValue(field)"
             :options="resolveOptions(field)"
+            :option-sources="optionSources"
             :form-values="formData"
             :show-label="false"
             :disabled="isFieldDisabled(field)"
@@ -54,6 +55,7 @@
             :field="field"
             :model-value="readFieldValue(field)"
             :options="resolveOptions(field)"
+            :option-sources="optionSources"
             :form-values="formData"
             :show-label="false"
             :disabled="isFieldDisabled(field)"
@@ -1021,7 +1023,21 @@ defineExpose({
   min-width: 0;
   max-width: 100%;
 }
-
+.vxe-form--item-inner{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.vxe-form--item-inner >:last-child{
+  flex: 1;
+}
+.lc-array-table{
+  display: flex;
+  flex-direction: column;
+}
+.lc-array-table>:last-child{
+  flex: 1;
+}
 .lc-form .vxe-form-item--valid-error-icon-wrapper:hover
   .vxe-form-item--valid-error-icon-msg-tip,
 .lc-form .vxe-form-item--valid-error-icon-wrapper.is--show

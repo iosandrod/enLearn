@@ -31,7 +31,8 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260810140000_planning_console_grid_tables.sql',
   'supabase/migrations/20260810150000_lowcode_grid_table_associations.sql',
   CATEGORY_MIGRATION_FILE,
-  'supabase/migrations/20260811120000_planning_structure_pages.sql'
+  'supabase/migrations/20260811120000_planning_structure_pages.sql',
+  'supabase/migrations/20260813090000_planning_item_display_name.sql'
 ];
 
 function directProjectConnectionString(value: string) {

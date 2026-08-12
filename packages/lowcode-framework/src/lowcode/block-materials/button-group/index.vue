@@ -31,10 +31,10 @@ import {
   useLowCodePageRuntime,
 } from '../../../runtime/page-runtime';
 import {
-  isLowCodeEditPageActionDisabled,
+  isLowCodeButtonDisabled,
   isLowCodeEditPageSaveAction,
   normalizeLowCodeEditPageActionCode,
-} from '../../../runtime/edit-page-mode';
+} from '../../../runtime/button-disabled';
 import type {
   ButtonGroupDesignerButton,
   ButtonGroupDesignerResult,
@@ -59,6 +59,9 @@ const editPageMode = computed(() =>
 const isMesCommandExecuting = computed(() =>
   pageRuntime?.state.status.mesCommandExecuting === true
 );
+const buttonDisabledOptions = computed(() => ({
+  enabled: Boolean(editPageMode.value),
+}));
 const runtimeActions = computed<LowCodeButtonGroupAction[]>(() => {
   const actions = props.block.actions ?? [];
   if (
@@ -137,7 +140,7 @@ function resolveButtonProps(action: LowCodeButtonGroupAction): VxeButtonProps {
     suffixIcon: action.suffixIcon,
     round: action.round,
     circle: action.circle,
-    disabled: isActionDisabled(action),
+    disabled: isLowCodeButtonDisabled(action, pageRuntime, buttonDisabledOptions.value),
     loading: action.loading,
     trigger: action.trigger,
     align: action.align,
@@ -314,7 +317,7 @@ function openButtonGroupContextMenu(event: MouseEvent) {
 }
 
 function handleAction(action: LowCodeButtonGroupAction) {
-  if (isActionDisabled(action)) return;
+  if (isLowCodeButtonDisabled(action, pageRuntime, buttonDisabledOptions.value)) return;
 
   emit('runtimeEvent', {
     name: action.eventName ?? 'buttonGroup.click',
@@ -329,11 +332,6 @@ function handleAction(action: LowCodeButtonGroupAction) {
     },
   });
   emit('toolbarAction', { block: props.block, action });
-}
-
-function isActionDisabled(action: LowCodeButtonGroupAction) {
-  return isMesCommandExecuting.value
-    || isLowCodeEditPageActionDisabled(action, editPageMode.value);
 }
 </script>
 

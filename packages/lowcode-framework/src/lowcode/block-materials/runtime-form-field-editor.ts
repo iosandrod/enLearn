@@ -12,6 +12,10 @@ import type {
 } from '../../types/lowcode';
 import { lowCodeOptionSourceRegistry } from '../../runtime/option-source-registry';
 import { loadLowCodeFormDefinition } from '../form-definition-loader';
+import {
+  createRuntimeRelationEditorOptionSources,
+  hydrateRuntimeRelationEditorSchema,
+} from './runtime-form-relation-options';
 
 export const RUNTIME_FORM_FIELD_EDITOR_CODE = 'runtime-form-field-editor';
 
@@ -54,6 +58,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function normalizeRelateInfoConfig(value: unknown): LowCodeRelateInfoConfig {
   if (!isRecord(value)) return {};
   const config = cloneValue(value) as LowCodeRelateInfoConfig;
+  if (Object.prototype.hasOwnProperty.call(config, 'displayField')) {
+    const displayFields = Array.isArray(config.displayField)
+      ? config.displayField.map(readString).filter(Boolean)
+      : [readString(config.displayField)].filter(Boolean);
+    config.displayField = displayFields;
+  }
   const mappings = config.fieldMappings ?? config.mappings;
 
   if (Array.isArray(mappings)) {
@@ -82,7 +92,7 @@ function createDefaultRelateInfoConfig(fieldName: string) {
   return {
     sourceType: 'entity',
     valueField: 'id',
-    displayField: 'name',
+    displayField: ['name'],
     displayValueField: `${fieldName}_label`,
     searchable: true,
     pageSize: 100,
@@ -271,7 +281,7 @@ function formatLiteralDefaultValue(value: unknown) {
 }
 
 function hydrateEditorSchema(schema: LowCodeFormSchema) {
-  return cloneValue(schema);
+  return hydrateRuntimeRelationEditorSchema(schema);
 }
 
 function normalizeProcedureOptions(value: unknown) {
@@ -290,7 +300,7 @@ async function hydrateProcedureOptions(
   schema: LowCodeFormSchema,
   serviceApi: LowCodeHostServiceApi,
 ) {
-  const hydrated = hydrateEditorSchema(schema);
+  const hydrated = cloneValue(schema);
   const procedureField = hydrated.fields.find(
     (candidate) => candidate.field === 'defaultValueProcedure',
   );
@@ -331,8 +341,15 @@ export async function openRuntimeFormFieldEditor(
       RUNTIME_FORM_FIELD_EDITOR_CODE,
     );
     await preloadEditorOptionSources(definition.schema, serviceApi);
-    const editorSchema = await hydrateProcedureOptions(definition.schema, serviceApi);
+    const editorSchema = hydrateEditorSchema(
+      await hydrateProcedureOptions(definition.schema, serviceApi),
+    );
     const model = createEditorModel(block, field);
+    const relationOptions = await createRuntimeRelationEditorOptionSources(
+      serviceApi,
+      block.schema,
+    );
+    await relationOptions.initialize(model);
     const result = await openGlobalDialog<FieldEditorModel>({
       title: `${field.label || field.field} - 字段属性`,
       width: 'min(920px, calc(100vw - 32px))',
@@ -345,9 +362,13 @@ export async function openRuntimeFormFieldEditor(
       model,
       form: {
         schema: editorSchema,
+        optionSources: relationOptions.sources,
         props: {
           padding: false,
           titleWidth: 126,
+        },
+        onFieldChange: async (payload, context) => {
+          await relationOptions.handleFieldChange(payload, context.model);
         },
       },
       actions: [

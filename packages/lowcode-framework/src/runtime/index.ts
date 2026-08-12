@@ -24,6 +24,7 @@ export * from './lowcode-pages';
 export * from './block-editor';
 export * from './page-runtime';
 export * from './edit-page-mode';
+export * from './button-disabled';
 export * from './row-action-state';
 export * from '../core';
 export * from './directives';

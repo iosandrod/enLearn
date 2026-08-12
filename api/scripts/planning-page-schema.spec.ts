@@ -68,6 +68,7 @@ for (const model of PLANNING_MODEL_DEFINITIONS) {
     assert.equal(
       source?.postData?.labelField,
       relation.relationLabelField ??
+        PLANNING_MODEL_BY_KEY.get(relation.relation!)?.labelField ??
         PLANNING_MODEL_BY_KEY.get(relation.relation!)?.businessKey ??
         'id'
     );
@@ -106,6 +107,30 @@ assert.ok(planningRunEditFields.some(
   (field: any) => field.field === 'output' && field.props?.disabled === true
 ));
 assert.ok(planningRunList.blocks.some((block: any) => block.kind === 'grid'));
+
+const planningItem = PLANNING_MODEL_BY_KEY.get('planning_item')!;
+const planningItemList = buildPlanningListSchema(planningItem) as any;
+const planningItemEdit = buildPlanningEditSchema(planningItem) as any;
+const planningItemGrid = planningItemList.blocks.find((block: any) => block.kind === 'grid');
+const planningItemForm = planningItemEdit.blocks
+  .find((block: any) => block.kind === 'tabs')
+  ?.tabs?.[0]?.blocks?.find((block: any) => block.kind === 'form');
+const planningItemSave = planningItemEdit.blocks[0]?.actions
+  ?.find((action: any) => action.code === 'save')
+  ?.directives?.find((directive: any) => directive.type === 'invokeService');
+assert.equal(planningItem.fields.find((field) => field.name === 'name')?.label, '物料编码');
+assert.equal(planningItem.fields.find((field) => field.name === 'display_name')?.label, '物料名称');
+assert.equal(planningItem.fields.find((field) => field.name === 'display_name')?.required, true);
+assert.ok(planningItemGrid?.schema?.grid?.columns?.some(
+  (column: any) => column.field === 'display_name' && column.title === '物料名称'
+));
+assert.ok(planningItemForm?.schema?.fields?.some(
+  (field: any) => field.field === 'display_name' && field.rules?.[0]?.required === true
+));
+assert.equal(
+  planningItemSave?.postData?.data?.display_name,
+  '{{ forms.planning_item_edit_form.display_name }}'
+);
 
 for (const [modelKey, targetType] of [
   ['planning_item', 'item'],

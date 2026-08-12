@@ -20,50 +20,50 @@ export function validateTriggerWorkflow(model: TriggerWorkflowModel) {
   const edgeIds = new Set<string>();
 
   if (model.schemaVersion !== TRIGGER_WORKFLOW_SCHEMA_VERSION) {
-    push(issues, 'error', 'schemaVersion', `Unsupported schema version ${model.schemaVersion}.`);
+    push(issues, 'error', 'schemaVersion', `不支持架构版本 ${model.schemaVersion}。`);
   }
-  if (!model.code.trim()) push(issues, 'error', 'code', 'Workflow code is required.');
-  if (!model.name.trim()) push(issues, 'error', 'name', 'Workflow name is required.');
-  if (!model.nodes.length) push(issues, 'error', 'nodes', 'Workflow requires nodes.');
+  if (!model.code.trim()) push(issues, 'error', 'code', '工作流编码不能为空。');
+  if (!model.name.trim()) push(issues, 'error', 'name', '工作流名称不能为空。');
+  if (!model.nodes.length) push(issues, 'error', 'nodes', '工作流至少需要一个节点。');
 
   model.nodes.forEach((node, index) => {
     const path = `nodes.${index}`;
     if (!node.id.trim()) {
-      push(issues, 'error', `${path}.id`, 'Node ID is required.');
+      push(issues, 'error', `${path}.id`, '节点 ID 不能为空。');
     } else if (nodeIds.has(node.id)) {
-      push(issues, 'error', `${path}.id`, `Duplicate node ID "${node.id}".`);
+      push(issues, 'error', `${path}.id`, `节点 ID“${node.id}”重复。`);
     } else {
       nodeIds.add(node.id);
     }
     if (!isBuiltInTriggerNodeType(node.type)) {
-      push(issues, 'error', `${path}.type`, `Unsupported node type "${node.type}".`);
+      push(issues, 'error', `${path}.type`, `不支持节点类型“${node.type}”。`);
     }
-    if (!node.name.trim()) push(issues, 'error', `${path}.name`, 'Node name is required.');
+    if (!node.name.trim()) push(issues, 'error', `${path}.name`, '节点名称不能为空。');
     validateNodeConfig(node, issues, path);
   });
 
   const entryNodes = model.nodes.filter((node) => node.type === 'start' || node.type === 'schedule' || node.type === 'webhook');
   const endNodes = model.nodes.filter((node) => node.type === 'end');
-  if (entryNodes.length !== 1) push(issues, 'error', 'nodes', 'Workflow requires exactly one entry node.');
-  if (!endNodes.length) push(issues, 'error', 'nodes', 'Workflow requires at least one end node.');
+  if (entryNodes.length !== 1) push(issues, 'error', 'nodes', '工作流必须且只能有一个入口节点。');
+  if (!endNodes.length) push(issues, 'error', 'nodes', '工作流至少需要一个结束节点。');
 
   model.edges.forEach((edge, index) => {
     const path = `edges.${index}`;
     if (!edge.id.trim()) {
-      push(issues, 'error', `${path}.id`, 'Edge ID is required.');
+      push(issues, 'error', `${path}.id`, '连接 ID 不能为空。');
     } else if (edgeIds.has(edge.id)) {
-      push(issues, 'error', `${path}.id`, `Duplicate edge ID "${edge.id}".`);
+      push(issues, 'error', `${path}.id`, `连接 ID“${edge.id}”重复。`);
     } else {
       edgeIds.add(edge.id);
     }
-    if (!nodeIds.has(edge.source)) push(issues, 'error', `${path}.source`, `Source node "${edge.source}" does not exist.`);
-    if (!nodeIds.has(edge.target)) push(issues, 'error', `${path}.target`, `Target node "${edge.target}" does not exist.`);
-    if (edge.source === edge.target) push(issues, 'error', path, 'Self-loop edges are not supported.');
+    if (!nodeIds.has(edge.source)) push(issues, 'error', `${path}.source`, `起点“${edge.source}”不存在。`);
+    if (!nodeIds.has(edge.target)) push(issues, 'error', `${path}.target`, `终点“${edge.target}”不存在。`);
+    if (edge.source === edge.target) push(issues, 'error', path, '不支持节点连接自身。');
     if (edge.condition?.type === 'field' && !edge.condition.field.trim()) {
-      push(issues, 'error', `${path}.condition.field`, 'Field condition requires a field.');
+      push(issues, 'error', `${path}.condition.field`, '字段判断必须指定字段。');
     }
     if (edge.condition?.type === 'expression' && !edge.condition.expression.trim()) {
-      push(issues, 'error', `${path}.condition.expression`, 'Expression condition requires an expression.');
+      push(issues, 'error', `${path}.condition.expression`, '表达式判断必须填写表达式。');
     }
   });
 
@@ -72,19 +72,19 @@ export function validateTriggerWorkflow(model: TriggerWorkflowModel) {
   model.nodes.forEach((node, index) => {
     const path = `nodes.${index}`;
     const isEntry = node.type === 'start' || node.type === 'schedule' || node.type === 'webhook';
-    if (!isEntry && (incoming.get(node.id) ?? 0) === 0) push(issues, 'error', path, 'Node requires an incoming edge.');
-    if (node.type !== 'end' && (outgoing.get(node.id) ?? 0) === 0) push(issues, 'error', path, 'Node requires an outgoing edge.');
-    if (node.type === 'condition' && (outgoing.get(node.id) ?? 0) < 2) push(issues, 'error', path, 'Condition requires at least two branches.');
-    if (node.type === 'parallel' && (outgoing.get(node.id) ?? 0) < 2) push(issues, 'error', path, 'Parallel requires at least two branches.');
+    if (!isEntry && (incoming.get(node.id) ?? 0) === 0) push(issues, 'error', path, '节点缺少入线。');
+    if (node.type !== 'end' && (outgoing.get(node.id) ?? 0) === 0) push(issues, 'error', path, '节点缺少出线。');
+    if (node.type === 'condition' && (outgoing.get(node.id) ?? 0) < 2) push(issues, 'error', path, '条件节点至少需要两个分支。');
+    if (node.type === 'parallel' && (outgoing.get(node.id) ?? 0) < 2) push(issues, 'error', path, '并行节点至少需要两个分支。');
     if (!isEntry && node.type !== 'end' && node.type !== 'condition' && node.type !== 'parallel' && (outgoing.get(node.id) ?? 0) > 1) {
-      push(issues, 'error', path, `${node.type} supports one outgoing edge.`);
+      push(issues, 'error', path, `${node.type} 节点只能有一条出线。`);
     }
   });
 
   if (entryNodes.length === 1) {
     const reachable = collectReachable(model, entryNodes[0].id);
     model.nodes.forEach((node, index) => {
-      if (!reachable.has(node.id)) push(issues, 'error', `nodes.${index}`, `Node "${node.id}" is unreachable.`);
+      if (!reachable.has(node.id)) push(issues, 'error', `nodes.${index}`, `无法从入口到达节点“${node.id}”。`);
     });
   }
 
@@ -103,37 +103,37 @@ function validateNodeConfig(node: TriggerWorkflowNode, issues: TriggerWorkflowIs
   const task = config.task;
 
   if (['task', 'triggerAndWait', 'batchTrigger', 'tool'].includes(node.type) && !task?.id?.trim()) {
-    push(issues, 'error', `${path}.config.task.id`, `${node.type} requires a Trigger.dev task ID.`);
+    push(issues, 'error', `${path}.config.task.id`, `${node.type} 节点必须填写 Trigger.dev 任务 ID。`);
   }
   if (task?.timeoutSeconds !== undefined && (!Number.isInteger(task.timeoutSeconds) || task.timeoutSeconds < 1)) {
-    push(issues, 'error', `${path}.config.task.timeoutSeconds`, 'Task timeout must be a positive integer.');
+    push(issues, 'error', `${path}.config.task.timeoutSeconds`, '任务超时必须是正整数。');
   }
   if (task?.queue?.concurrencyLimit !== undefined && (!Number.isInteger(task.queue.concurrencyLimit) || task.queue.concurrencyLimit < 1)) {
-    push(issues, 'error', `${path}.config.task.queue.concurrencyLimit`, 'Queue concurrency must be a positive integer.');
+    push(issues, 'error', `${path}.config.task.queue.concurrencyLimit`, '队列并发数必须是正整数。');
   }
   if (node.type === 'schedule') {
-    if (!config.schedule?.cron?.trim()) push(issues, 'error', `${path}.config.schedule.cron`, 'Schedule requires a cron expression.');
-    if (!config.schedule?.timezone?.trim()) push(issues, 'warning', `${path}.config.schedule.timezone`, 'Schedule should define a timezone.');
+    if (!config.schedule?.cron?.trim()) push(issues, 'error', `${path}.config.schedule.cron`, '定时节点必须填写 Cron 表达式。');
+    if (!config.schedule?.timezone?.trim()) push(issues, 'warning', `${path}.config.schedule.timezone`, '建议为定时节点指定时区。');
   }
   if (node.type === 'manualApproval' || node.type === 'humanReview') {
-    if (!config.approval?.assigneeType) push(issues, 'error', `${path}.config.approval.assigneeType`, 'Human step requires an assignee type.');
+    if (!config.approval?.assigneeType) push(issues, 'error', `${path}.config.approval.assigneeType`, '人工节点必须指定处理人类型。');
   }
   if (node.type === 'wait') {
     const wait = config.wait;
-    if (!wait?.mode) push(issues, 'error', `${path}.config.wait.mode`, 'Wait node requires a mode.');
-    if (wait?.mode === 'duration' && !wait.duration?.trim()) push(issues, 'error', `${path}.config.wait.duration`, 'Duration wait requires an ISO duration.');
-    if (wait?.mode === 'until' && (!wait.until || Number.isNaN(new Date(wait.until).getTime()))) push(issues, 'error', `${path}.config.wait.until`, 'Until wait requires a valid datetime.');
-    if (wait?.mode === 'token' && !wait.tokenKey?.trim()) push(issues, 'error', `${path}.config.wait.tokenKey`, 'Token wait requires a token key.');
+    if (!wait?.mode) push(issues, 'error', `${path}.config.wait.mode`, '等待节点必须指定等待方式。');
+    if (wait?.mode === 'duration' && !wait.duration?.trim()) push(issues, 'error', `${path}.config.wait.duration`, '等待时长必须使用 ISO 时长格式。');
+    if (wait?.mode === 'until' && (!wait.until || Number.isNaN(new Date(wait.until).getTime()))) push(issues, 'error', `${path}.config.wait.until`, '请填写有效的结束时间。');
+    if (wait?.mode === 'token' && !wait.tokenKey?.trim()) push(issues, 'error', `${path}.config.wait.tokenKey`, '等待令牌时必须填写令牌键。');
   }
   if (['dataSource', 'dataSink'].includes(node.type) && !config.data?.connector?.trim()) {
-    push(issues, 'error', `${path}.config.data.connector`, `${node.type} requires a connector.`);
+    push(issues, 'error', `${path}.config.data.connector`, `${node.type} 节点必须指定连接器。`);
   }
   if (node.type === 'agent') {
-    if (!config.ai?.model?.trim()) push(issues, 'error', `${path}.config.ai.model`, 'Agent requires a model.');
-    if (!config.ai?.prompt?.trim()) push(issues, 'warning', `${path}.config.ai.prompt`, 'Agent should define a prompt.');
+    if (!config.ai?.model?.trim()) push(issues, 'error', `${path}.config.ai.model`, 'AI 智能体必须指定模型。');
+    if (!config.ai?.prompt?.trim()) push(issues, 'warning', `${path}.config.ai.prompt`, '建议为 AI 智能体填写系统提示词。');
   }
   if (node.type === 'transform' && !config.expression?.trim() && !isRecord(config.data?.mapping)) {
-    push(issues, 'warning', `${path}.config`, 'Transform should define an expression or mapping.');
+    push(issues, 'warning', `${path}.config`, '数据转换节点应填写表达式或字段映射。');
   }
 }
 

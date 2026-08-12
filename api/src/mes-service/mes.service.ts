@@ -217,7 +217,7 @@ export class MesService extends BaseService {
         .in('source_operationplan_id', planIds)
         .neq('status', 'canceled'),
       itemIds.length
-        ? client.from('planning_item').select('id, name, uom').eq('account_id', actor.accountId).in('id', itemIds)
+        ? client.from('planning_item').select('id, name, display_name, uom').eq('account_id', actor.accountId).in('id', itemIds)
         : Promise.resolve({ data: [], error: null }),
       locationIds.length
         ? client.from('planning_location').select('id, name').eq('account_id', actor.accountId).in('id', locationIds)
@@ -249,7 +249,7 @@ export class MesService extends BaseService {
       const version = versions.get(String(row.plan_version_id ?? ''));
       return [{
         ...row,
-        item_name: item?.name ?? null,
+        item_name: item?.display_name ?? item?.name ?? null,
         uom: item?.uom ?? null,
         location_name: location?.name ?? null,
         plan_version_code: version?.code ?? null,

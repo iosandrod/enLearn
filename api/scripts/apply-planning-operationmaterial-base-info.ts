@@ -76,7 +76,14 @@ async function main() {
     if (
       field?.component !== 'base-info' ||
       field?.props?.relateInfoConfig?.resource !== 'planning_item' ||
-      field?.props?.relateInfoConfig?.displayField !== 'name' ||
+      !(
+        field?.props?.relateInfoConfig?.displayField === 'name' ||
+        (
+          Array.isArray(field?.props?.relateInfoConfig?.displayField) &&
+          field.props.relateInfoConfig.displayField.includes('display_name') &&
+          field.props.relateInfoConfig.displayField.includes('name')
+        )
+      ) ||
       field?.props?.relateInfoConfig?.fieldMappings?.[0]?.targetField !== 'item_id' ||
       Object.prototype.hasOwnProperty.call(field ?? {}, 'optionsSourceKey')
     ) {

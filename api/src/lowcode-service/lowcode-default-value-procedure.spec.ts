@@ -41,19 +41,37 @@ async function main() {
   assert.equal(
     await service.execute(
       'executeDefaultValueProcedure',
-      { procedure: 'public.example' },
-      {},
+      {
+        procedure: 'public.example',
+        blockId: 'order-form',
+        field: 'doc_no',
+        values: { doc_type_code: 'STD-SO' },
+      },
+      {
+        accountId: '00000000-0000-4000-8000-000000000001',
+        accountCode: '001',
+      },
     ),
     'AUTO-001',
   );
   assert.deepEqual(calls, [
     {
       name: 'read_lowcode_default_value_procedure',
-      args: { p_action: 'list', p_procedure: null },
+      args: { p_action: 'list', p_procedure: null, p_context: {} },
     },
     {
       name: 'read_lowcode_default_value_procedure',
-      args: { p_action: 'execute', p_procedure: 'public.example' },
+      args: {
+        p_action: 'execute',
+        p_procedure: 'public.example',
+        p_context: {
+          accountId: '00000000-0000-4000-8000-000000000001',
+          accountCode: '001',
+          blockId: 'order-form',
+          field: 'doc_no',
+          values: { doc_type_code: 'STD-SO' },
+        },
+      },
     },
   ]);
 

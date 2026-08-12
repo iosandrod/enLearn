@@ -56,7 +56,7 @@ export type LowCodeRelateInfoConfig = {
   postData?: Record<string, unknown>;
   resultPath?: string;
   valueField?: string;
-  displayField?: string;
+  displayField?: string | string[];
   displayValueField?: string;
   fieldMappings?: LowCodeRelateInfoFieldMapping[];
   mappings?: LowCodeRelateInfoFieldMapping[] | Record<string, string>;
@@ -192,7 +192,7 @@ export type LowCodeGridColumn = {
   cellRender?: Record<string, unknown>;
   editRender?: Record<string, unknown>;
   params?: Record<string, unknown>;
-  slots?: { default?: string };
+  slots?: { default?: string; edit?: string };
   [key: string]: unknown;
 };
 

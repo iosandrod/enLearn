@@ -140,6 +140,21 @@ assert.match(
   'Clicking design current field must target the right-clicked table column.'
 );
 assert.match(
+  pageGridSource,
+  /const column = columnIndex >= 0 \? columns\[columnIndex\] : undefined;[\s\S]*typeof column\.field === 'string'[\s\S]*column\.field\.trim\(\)[\s\S]*openRuntimeGridFieldEditor/,
+  'Design current field must ignore sequence and action columns without a field code.'
+);
+assert.match(
+  pageGridSource,
+  /const field = menuColumn[\s\S]*return columns\.findIndex\(\(column\) => column\.field === field\)[\s\S]*typeof payload\.columnIndex === 'number'/,
+  'Column resolution must prefer the stable field code before a visible runtime index.'
+);
+assert.match(
+  runtimeGridFieldEditorSource,
+  /const fieldName = readString\(column\.field\);[\s\S]*if \(!fieldName\) return undefined;/,
+  'The grid field adapter must safely ignore columns without a usable field code.'
+);
+assert.match(
   runtimeGridFieldEditorSource,
   /openRuntimeFormFieldEditor\(formBlock, field, editorProxy\)/,
   'Table field design must reuse the existing form field editor and its database schema.'
@@ -148,6 +163,11 @@ assert.match(
   runtimeGridFieldEditorSource,
   /readGridEditRules[\s\S]*createFormField[\s\S]*createUpdatedColumn[\s\S]*createUpdatedEditRules[\s\S]*runtimeBlockEditor\.updateBlock/,
   'The table adapter must round-trip current column rendering and validation settings.'
+);
+assert.match(
+  runtimeGridFieldEditorSource,
+  /GRID_RENDERER_NAME_KEY = 'gridRendererName'[\s\S]*VxeDatePicker: 'vxe-input'[\s\S]*rendererToFieldComponent\[preservedRendererName\] === name[\s\S]*editRender\.name = resolveRendererName\(field\)/,
+  'Unsupported date-picker editor values must preserve their original grid renderer on save.'
 );
 assert.match(
   gridSource,

@@ -17,6 +17,7 @@ export type LowCodeFormMaterialProps = {
   field: LowCodeField;
   modelValue: any;
   options?: LowCodeResolvedOption[];
+  optionSources?: Record<string, unknown>;
   formValues?: Record<string, unknown>;
 };
 

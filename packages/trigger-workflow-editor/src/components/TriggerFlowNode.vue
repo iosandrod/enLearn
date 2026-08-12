@@ -17,14 +17,14 @@ const props = withDefaults(
 
 const node = computed<TriggerFlowNodeData>(() => ({
   workflowType: props.data?.workflowType ?? 'task',
-  label: props.data?.label ?? 'Task',
-  category: props.data?.category ?? 'task',
+  label: props.data?.label ?? '执行任务',
+  category: props.data?.category ?? '任务',
   description: props.data?.description ?? '',
-  icon: props.data?.icon ?? 'TASK',
+  icon: props.data?.icon ?? 'ri-flashlight-line',
   accent: props.data?.accent ?? '#4f46e5',
   accentSoft: props.data?.accentSoft ?? '#eef2ff',
   accentBorder: props.data?.accentBorder ?? '#c7d2fe',
-  summary: props.data?.summary ?? 'Not configured',
+  summary: props.data?.summary ?? '未配置',
   isEntry: props.data?.isEntry ?? false,
   isEnd: props.data?.isEnd ?? false
 }));
@@ -50,7 +50,7 @@ const node = computed<TriggerFlowNodeData>(() => ({
       :position="Position.Top"
       :connectable="connectable"
     />
-    <span class="trigger-flow-node__icon">{{ node.icon }}</span>
+    <span class="trigger-flow-node__icon"><i :class="node.icon" aria-hidden="true" /></span>
     <span class="trigger-flow-node__copy">
       <strong>{{ node.label }}</strong>
       <small>{{ node.summary }}</small>
@@ -70,15 +70,15 @@ const node = computed<TriggerFlowNodeData>(() => ({
 .trigger-flow-node {
   position: relative;
   display: grid;
-  width: 238px;
-  min-height: 82px;
+  width: 224px;
+  min-height: 76px;
   grid-template-columns: 42px minmax(0, 1fr);
   align-items: center;
   gap: 11px;
   border: 1px solid var(--node-border);
   border-radius: 8px;
-  background: linear-gradient(90deg, var(--node-soft), #fff 48%);
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.11);
+  background: #fff;
+  box-shadow: 0 5px 16px rgba(15, 23, 42, 0.09);
   color: #111827;
   padding: 12px 13px;
 }
@@ -93,8 +93,8 @@ const node = computed<TriggerFlowNodeData>(() => ({
 }
 
 .trigger-flow-node--event {
-  width: 208px;
-  min-height: 72px;
+  width: 196px;
+  min-height: 68px;
 }
 
 .trigger-flow-node--selected {
@@ -113,8 +113,7 @@ const node = computed<TriggerFlowNodeData>(() => ({
   border-radius: 7px;
   background: #fff;
   color: var(--node-accent);
-  font-size: 10px;
-  font-weight: 900;
+  font-size: 18px;
 }
 
 .trigger-flow-node__copy {
@@ -148,7 +147,7 @@ const node = computed<TriggerFlowNodeData>(() => ({
   color: #94a3b8;
   font-size: 9px;
   font-weight: 800;
-  text-transform: uppercase;
+  letter-spacing: 0;
 }
 
 .trigger-flow-node :deep(.vue-flow__handle) {

@@ -50,6 +50,7 @@ export type PlanningModelDefinition = {
   icon: string;
   businessKey?: 'name' | 'reference' | 'code';
   businessKeyUnique?: boolean;
+  labelField?: string;
   access?: 'manage' | 'view';
   fields: PlanningFieldDefinition[];
 };
@@ -208,9 +209,11 @@ export const PLANNING_MODEL_DEFINITIONS: PlanningModelDefinition[] = [
   },
   {
     key: 'planning_item', sourceTable: 'item', title: '物料', group: '基础数据',
-    icon: 'ri-box-3-line', businessKey: 'name', description: '原料、半成品和成品物料。',
+    icon: 'ri-box-3-line', businessKey: 'name', labelField: 'display_name',
+    description: '原料、半成品和成品物料。',
     fields: [
-      text('name', '名称', { required: true }), ...hierarchyFields('planning_item'), ...masterCategoryFields('item'),
+      text('name', '物料编码', { required: true }), text('display_name', '物料名称', { required: true }),
+      ...hierarchyFields('planning_item'), ...masterCategoryFields('item'),
       number('cost', '成本'), text('type', '计划类型', { options: choices('make to stock', 'make to order') }),
       number('weight', '重量'), number('volume', '体积'), integer('periodofcover', '覆盖周期'), text('uom', '单位'),
       integer('latedemandcount', '延期需求数', { readOnly: true }), number('latedemandquantity', '延期需求量', { readOnly: true }),

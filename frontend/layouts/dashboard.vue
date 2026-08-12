@@ -1529,7 +1529,7 @@ watch(
 <style>
 .dashboard-page-info-design-dialog .vxe-modal--body {
   min-height: 0;
-  padding: 10px 16px 14px;
+  padding: 3px 4px 4px;
 }
 
 .dashboard-page-info-design-dialog .lc-global-dialog__body,
@@ -1539,7 +1539,7 @@ watch(
 }
 
 .dashboard-page-info-design-form .lc-form-tab-pane {
-  padding-top: 14px;
+  padding-top: 3px;
 }
 
 @media (max-width: 720px) {

@@ -84,9 +84,9 @@ function readString(value: unknown, fallback = '') {
 }
 
 function defaultWorkflowName(kind: TriggerWorkflowKind) {
-  if (kind === 'approval') return 'Approval workflow';
-  if (kind === 'dataSync') return 'Data sync workflow';
-  if (kind === 'aiAgent') return 'AI agent workflow';
-  return 'Trigger workflow';
+  if (kind === 'approval') return '审批工作流';
+  if (kind === 'dataSync') return '数据同步工作流';
+  if (kind === 'aiAgent') return 'AI 智能体工作流';
+  return '触发器工作流';
 }
 

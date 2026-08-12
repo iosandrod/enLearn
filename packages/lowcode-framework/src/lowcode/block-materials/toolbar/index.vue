@@ -12,7 +12,7 @@
         v-for="action in runtimeActions"
         :key="action.code"
         :status="action.status"
-        :disabled="isActionDisabled(action)"
+        :disabled="isLowCodeButtonDisabled(action, pageRuntime, buttonDisabledOptions)"
         @click="handleAction(action)"
       >
         {{ action.label }}
@@ -31,10 +31,10 @@ import {
   useLowCodePageRuntime,
 } from '../../../runtime/page-runtime';
 import {
-  isLowCodeEditPageActionDisabled,
+  isLowCodeButtonDisabled,
   isLowCodeEditPageSaveAction,
   normalizeLowCodeEditPageActionCode,
-} from '../../../runtime/edit-page-mode';
+} from '../../../runtime/button-disabled';
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageToolbarBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
@@ -49,6 +49,9 @@ const editPageMode = computed(() =>
 const isMesCommandExecuting = computed(() =>
   pageRuntime?.state.status.mesCommandExecuting === true
 );
+const buttonDisabledOptions = computed(() => ({
+  enabled: Boolean(editPageMode.value),
+}));
 const runtimeActions = computed<LowCodeAction[]>(() => {
   const actions = props.block.actions ?? [];
   if (
@@ -78,7 +81,7 @@ function isSaveAction(action: LowCodeAction) {
 }
 
 function handleAction(action: LowCodeAction) {
-  if (isActionDisabled(action)) return;
+  if (isLowCodeButtonDisabled(action, pageRuntime, buttonDisabledOptions.value)) return;
   emit('runtimeEvent', {
     name: action.eventName ?? 'toolbar.click',
     blockId: props.block.id,
@@ -92,10 +95,5 @@ function handleAction(action: LowCodeAction) {
     },
   });
   emit('toolbarAction', { block: props.block, action });
-}
-
-function isActionDisabled(action: LowCodeAction) {
-  return isMesCommandExecuting.value
-    || isLowCodeEditPageActionDisabled(action, editPageMode.value);
 }
 </script>

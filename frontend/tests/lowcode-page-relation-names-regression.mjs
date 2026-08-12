@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const readSource = (path) => readFile(new URL(path, import.meta.url), 'utf8');
-const [migration, resources, apiTypes, frontendTypes, frameworkTypes] = await Promise.all([
+const [migration, normalizationMigration, resources, apiTypes, frontendTypes, frameworkTypes] = await Promise.all([
   readSource('../../supabase/migrations/20260809210000_lowcode_page_relation_names.sql'),
+  readSource('../../supabase/migrations/20260812220000_normalize_lowcode_page_table_names.sql'),
   readSource('../../api/src/lowcode-service/lowcode.resources.ts'),
   readSource('../../api/src/lowcode-service/lowcode.types.ts'),
   readSource('../types/database.ts'),
@@ -29,6 +30,21 @@ assert.match(
   migration,
   /'field', 'view_name'[\s\S]*'field', 'table_name'[\s\S]*lowcode-page-main-grid/,
   'The low-code page management grid must display both relation fields.',
+);
+assert.match(
+  normalizationMigration,
+  /update public\.lowcode_pages[\s\S]*set table_name = pg_catalog\.regexp_replace/,
+  'Existing low-code page table names must be normalized.',
+);
+assert.match(
+  normalizationMigration,
+  /add constraint lowcode_pages_table_name_without_public_check[\s\S]*btrim\(table_name\) !~\* '\^public\\\.'/,
+  'The database must reject future public-qualified table_name values.',
+);
+assert.match(
+  normalizationMigration,
+  /dynamic_crud_normalize_lowcode_page[\s\S]*jsonb_typeof\(payload->'table_name'\)[\s\S]*jsonb_set/,
+  'Dynamic CRUD writes must strip the public schema prefix.',
 );
 
 for (const source of [resources, apiTypes, frontendTypes, frameworkTypes]) {

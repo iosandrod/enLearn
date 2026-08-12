@@ -27,6 +27,11 @@
       "import": "./src/components/JsonDialogInput.vue",
       "default": "./src/components/JsonDialogInput.vue"
     },
+    "./components/low-code-form": {
+      "types": "./src/components/low-code-form.d.ts",
+      "import": "./src/components/LowCodeForm.vue",
+      "default": "./src/components/LowCodeForm.vue"
+    },
     "./runtime/global-dialog": "./src/runtime/global-dialog.ts",
     "./runtime/global-drawer": "./src/runtime/global-drawer.ts",
     "./runtime/page-reference-dialog": "./src/runtime/page-reference-dialog.tsx",

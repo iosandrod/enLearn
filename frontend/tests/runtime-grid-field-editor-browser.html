@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Runtime grid field editor smoke</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      #app {
+        padding: 24px;
+        box-sizing: border-box;
+      }
+
+      #result {
+        position: fixed;
+        z-index: -1;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick, reactive } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'remixicon/fonts/remixicon.css';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import '../assets/styles/app.css';
+      import LowCodePageRenderer from '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue';
+      import { lowCodeOptionSourceRegistry } from '../../packages/lowcode-framework/src/runtime/option-source-registry';
+
+      const saveCalls = [];
+      lowCodeOptionSourceRegistry.invalidate();
+      const pageRecord = reactive({
+        id: 'runtime-grid-field-editor-browser',
+        code: 'runtime-grid-field-editor-browser',
+        route: '/runtime-grid-field-editor-browser',
+        title: '运行时表格字段设计',
+        description: null,
+        layout: 'dashboard',
+        status: 'published',
+        keep_alive: false,
+        page_type: 'custom',
+        edit_page_id: null,
+        schema: {
+          schemaVersion: 3,
+          code: 'runtime-grid-field-editor-browser',
+          route: '/runtime-grid-field-editor-browser',
+          title: '运行时表格字段设计',
+          pageType: 'custom',
+          layout: 'dashboard',
+          status: 'published',
+          keepAlive: false,
+          dataSources: {},
+          blocks: [
+            {
+              id: 'runtime-detail-grid',
+              kind: 'grid',
+              title: '订单明细',
+              schema: {
+                grid: {
+                  border: true,
+                  height: 360,
+                  columns: [
+                    { type: 'seq', title: '序号', width: 72 },
+                    {
+                      field: 'itemCode',
+                      title: '物料编码',
+                      minWidth: 180,
+                      editRender: {
+                        name: 'VxeInput',
+                        props: { clearable: true },
+                      },
+                    },
+                    {
+                      field: 'needDate',
+                      title: '需求日期',
+                      minWidth: 180,
+                      editRender: {
+                        name: 'VxeDatePicker',
+                        props: { type: 'date', clearable: true },
+                      },
+                    },
+                    {
+                      title: '操作',
+                      width: 120,
+                      slots: { default: 'actions' },
+                    },
+                  ],
+                  data: [
+                    { id: 1, itemCode: 'MAT-001', needDate: '2026-08-12' },
+                  ],
+                  editConfig: { enabled: true, mode: 'cell', trigger: 'click' },
+                  editRules: {},
+                },
+                rowActions: { edit: false, delete: false },
+              },
+            },
+          ],
+          overlays: [],
+        },
+        version: 1,
+        published_at: null,
+        created_at: '',
+        updated_at: '',
+      });
+
+      const fieldEditorDefinition = {
+        code: 'runtime-form-field-editor',
+        name: '运行时字段属性编辑',
+        enabled: true,
+        schema: {
+          columns: 2,
+          fields: [
+            { field: 'field', label: '字段编码', component: 'vxe-input', props: { readonly: true } },
+            { field: 'label', label: '字段名称', component: 'vxe-input' },
+            {
+              field: 'component',
+              label: '组件类型',
+              component: 'vxe-select',
+              optionsCode: 'form_field_component_type',
+              props: { clearable: false, filterable: true },
+            },
+            { field: 'required', label: '必须录入', component: 'vxe-switch' },
+            { field: 'requiredMessage', label: '必录提示', component: 'vxe-input' },
+            { field: 'createDisabled', label: '新增禁用', component: 'vxe-switch' },
+            { field: 'editDisabled', label: '编辑禁用', component: 'vxe-switch' },
+            { field: 'relateInfoConfig', label: '关联资料配置', component: 'vxe-input' },
+            {
+              field: 'defaultValueType',
+              label: '默认值类型',
+              component: 'vxe-select',
+              options: [
+                { label: '无默认值', value: 'none' },
+                { label: '固定值', value: 'literal' },
+                { label: '函数', value: 'function' },
+                { label: '存储过程', value: 'procedure' },
+              ],
+            },
+            { field: 'defaultValue', label: '默认值', component: 'vxe-input' },
+            { field: 'defaultValueProcedure', label: '存储过程', component: 'vxe-select' },
+            { field: 'optionsCode', label: '关联下拉 Code', component: 'vxe-input' },
+            { field: 'defaultValueScript', label: '默认值函数', component: 'vxe-textarea', span: 2 },
+            { field: 'updateScript', label: '值更新事件', component: 'vxe-textarea', span: 2 },
+            { field: 'validationMessage', label: '校验提示', component: 'vxe-input' },
+            { field: 'validationScript', label: '校验函数', component: 'vxe-textarea', span: 2 },
+          ],
+          layout: [
+            {
+              kind: 'tabs',
+              defaultKey: 'basic',
+              tabs: [
+                {
+                  key: 'basic',
+                  label: '基础属性',
+                  blocks: [
+                    {
+                      kind: 'row',
+                      gutter: 16,
+                      columns: [
+                        { span: 12, blocks: [{ kind: 'field', field: 'field' }] },
+                        { span: 12, blocks: [{ kind: 'field', field: 'label' }] },
+                      ],
+                    },
+                    {
+                      kind: 'row',
+                      gutter: 16,
+                      columns: [
+                        { span: 12, blocks: [{ kind: 'field', field: 'component' }] },
+                        { span: 12, blocks: [{ kind: 'field', field: 'required' }] },
+                      ],
+                    },
+                    {
+                      kind: 'row',
+                      gutter: 16,
+                      columns: [
+                        { span: 12, blocks: [{ kind: 'field', field: 'requiredMessage' }] },
+                        { span: 6, blocks: [{ kind: 'field', field: 'createDisabled' }] },
+                        { span: 6, blocks: [{ kind: 'field', field: 'editDisabled' }] },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  key: 'relation',
+                  label: '关联资料',
+                  blocks: [{ kind: 'field', field: 'relateInfoConfig' }],
+                },
+                {
+                  key: 'default-options',
+                  label: '默认值与选项',
+                  blocks: [
+                    {
+                      kind: 'row',
+                      gutter: 16,
+                      columns: [
+                        { span: 12, blocks: [{ kind: 'field', field: 'defaultValueType' }] },
+                        { span: 12, blocks: [{ kind: 'field', field: 'defaultValue' }] },
+                      ],
+                    },
+                    { kind: 'field', field: 'optionsCode' },
+                    { kind: 'field', field: 'defaultValueProcedure' },
+                    { kind: 'field', field: 'defaultValueScript' },
+                  ],
+                },
+                {
+                  key: 'events-validation',
+                  label: '事件与校验',
+                  blocks: [
+                    { kind: 'field', field: 'updateScript' },
+                    { kind: 'field', field: 'validationMessage' },
+                    { kind: 'field', field: 'validationScript' },
+                  ],
+                },
+              ],
+            },
+          ],
+          actions: [],
+        },
+      };
+
+      const serviceApi = {
+        async invoke(serviceName, serviceMethod, payload = {}) {
+          if (serviceName === 'lowcode' && serviceMethod === 'listItems') {
+            const requestedCode = Array.isArray(payload.filters?.code)
+              ? payload.filters.code[0]
+              : payload.filters?.code;
+            if (
+              payload.resource === 'lowcode_form_definitions' &&
+              requestedCode === fieldEditorDefinition.code
+            ) {
+              return [fieldEditorDefinition];
+            }
+            return [];
+          }
+          if (serviceName === 'lowcode' && serviceMethod === 'listDefaultValueProcedures') {
+            return [];
+          }
+          if (serviceName === 'admin' && serviceMethod === 'resolveOptionItemsBatch') {
+            return Object.fromEntries((payload.sourceCodes ?? []).map((code) => [
+              code,
+              {
+                options: code === 'form_field_component_type'
+                  ? [
+                      { label: '输入框', value: 'vxe-input' },
+                      { label: '多行文本', value: 'vxe-textarea' },
+                      { label: '下拉选择', value: 'vxe-select' },
+                    ]
+                  : [],
+                cacheTtlSeconds: 0,
+              },
+            ]));
+          }
+          if (serviceName !== 'lowcode' || serviceMethod !== 'saveItem') {
+            throw new Error(`Unexpected service call: ${serviceName}.${serviceMethod}`);
+          }
+
+          saveCalls.push(structuredClone(payload));
+          return {
+            ...pageRecord,
+            ...payload.data,
+            schema: structuredClone(payload.data.schema),
+          };
+        },
+      };
+
+      const App = defineComponent({
+        setup() {
+          return () => h(LowCodePageRenderer, {
+            page: pageRecord,
+            serviceApi,
+            locale: 'zh-CN',
+            route: {
+              query: {},
+              params: {},
+              path: pageRecord.route,
+              fullPath: pageRecord.route,
+            },
+          });
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+
+      window.__runtimeGridFieldEditorSmoke = { pageRecord, saveCalls };
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

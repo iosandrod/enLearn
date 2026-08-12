@@ -32,6 +32,14 @@ export function readRelateInfoString(value: unknown, fallback = '') {
   return fallback;
 }
 
+export function readRelateInfoStringArray(value: unknown) {
+  if (Array.isArray(value)) {
+    return value.map((item) => readRelateInfoString(item)).filter(Boolean);
+  }
+  const item = readRelateInfoString(value);
+  return item ? [item] : [];
+}
+
 export function readRelateInfoPath(value: unknown, path: string): unknown {
   if (!path) return undefined;
 
@@ -101,7 +109,7 @@ export function normalizeRelateInfoMappings(
     normalized.unshift({
       sourceField: readRelateInfoString(
         config?.valueField,
-        readRelateInfoString(config?.displayField, 'id'),
+        readRelateInfoStringArray(config?.displayField)[0] ?? 'id',
       ),
       targetField: safeCurrentField,
     });
@@ -153,11 +161,16 @@ export function readRelateInfoDisplayValue(
   const currentMapping = normalizeRelateInfoMappings(config, currentField).find(
     (mapping) => mapping.targetField === currentField,
   );
-  const displayField = readRelateInfoString(
-    config?.displayField,
-    currentMapping?.sourceField || readRelateInfoString(config?.valueField, 'id'),
-  );
-  return readRelateInfoPath(row, displayField);
+  const displayFields = readRelateInfoStringArray(config?.displayField);
+  if (!displayFields.length) {
+    displayFields.push(
+      currentMapping?.sourceField || readRelateInfoString(config?.valueField, 'id'),
+    );
+  }
+  const values = displayFields
+    .map((field) => readRelateInfoPath(row, field))
+    .filter((value) => value !== null && typeof value !== 'undefined' && String(value) !== '');
+  return values.map(String).join(' ');
 }
 
 export function extractRelateInfoRows(

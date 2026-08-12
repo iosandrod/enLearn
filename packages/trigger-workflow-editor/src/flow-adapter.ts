@@ -4,7 +4,7 @@ import {
   Position,
   type Connection
 } from '@vue-flow/core';
-import { getTriggerNodeDefinition } from './schema/registry';
+import { getTriggerNodeCategoryLabel, getTriggerNodeDefinition } from './schema/registry';
 import type {
   TriggerNodeType,
   TriggerWorkflowEdge,
@@ -219,7 +219,7 @@ export function getTriggerNodePresentation(node: TriggerWorkflowNode): TriggerFl
   return {
     workflowType: node.type,
     label: node.name,
-    category: definition?.category ?? 'custom',
+    category: definition ? getTriggerNodeCategoryLabel(definition.category) : '自定义',
     description: node.description ?? definition?.description ?? '',
     icon: definition?.icon ?? 'TASK',
     accent: definition?.accent ?? '#334155',
@@ -233,16 +233,53 @@ export function getTriggerNodePresentation(node: TriggerWorkflowNode): TriggerFl
 
 function summarizeNode(node: TriggerWorkflowNode) {
   const config = node.config;
-  if (node.type === 'schedule') return `${config?.schedule?.cron ?? 'cron'} · ${config?.schedule?.timezone ?? 'UTC'}`;
+  if (node.type === 'schedule') return `${config?.schedule?.cron ?? '未配置 Cron'} · ${config?.schedule?.timezone ?? 'UTC'}`;
   if (node.type === 'webhook') return `${config?.webhook?.method ?? 'POST'} ${config?.webhook?.path ?? '/'}`;
-  if (node.type === 'manualApproval' || node.type === 'humanReview') return `${config?.approval?.assigneeType ?? 'assignee'} · ${config?.approval?.onTimeout ?? 'fail'}`;
-  if (node.type === 'wait') return `${config?.wait?.mode ?? 'duration'} · ${config?.wait?.duration ?? config?.wait?.tokenKey ?? ''}`;
-  if (node.type === 'agent') return `${config?.ai?.provider ?? 'AI'} · ${config?.ai?.model ?? 'model'}`;
-  if (node.type === 'dataSource' || node.type === 'dataSink') return `${config?.data?.connector ?? 'connector'} · ${config?.data?.operation ?? 'sync'}`;
-  if (node.type === 'condition') return 'Conditional routing';
-  if (node.type === 'parallel') return 'Parallel fan-out';
-  return config?.task?.id ?? node.description ?? 'Not configured';
+  if (node.type === 'manualApproval' || node.type === 'humanReview') {
+    return `${approvalAssigneeLabels[config?.approval?.assigneeType ?? ''] ?? '未指定处理人'} · ${approvalTimeoutLabels[config?.approval?.onTimeout ?? ''] ?? '标记失败'}`;
+  }
+  if (node.type === 'wait') {
+    const mode = config?.wait?.mode ?? 'duration';
+    const detail = config?.wait?.duration ?? config?.wait?.until ?? config?.wait?.tokenKey ?? '未配置';
+    return `${waitModeLabels[mode] ?? '等待'} · ${detail}`;
+  }
+  if (node.type === 'agent') return `${config?.ai?.provider ?? 'AI'} · ${config?.ai?.model ?? '未配置模型'}`;
+  if (node.type === 'dataSource' || node.type === 'dataSink') {
+    const operation = config?.data?.operation ?? 'sync';
+    return `${config?.data?.connector ?? '未配置连接器'} · ${dataOperationLabels[operation] ?? '同步'}`;
+  }
+  if (node.type === 'condition') return '按条件选择执行路径';
+  if (node.type === 'parallel') return '并行执行多个分支';
+  return config?.task?.id ?? node.description ?? '未配置';
 }
+
+const approvalAssigneeLabels: Record<string, string> = {
+  user: '用户',
+  role: '角色',
+  team: '团队',
+  expression: '表达式'
+};
+
+const approvalTimeoutLabels: Record<string, string> = {
+  fail: '标记失败',
+  autoApprove: '自动通过',
+  autoReject: '自动驳回',
+  continue: '继续执行'
+};
+
+const waitModeLabels: Record<string, string> = {
+  duration: '等待时长',
+  until: '指定时间',
+  token: '等待令牌'
+};
+
+const dataOperationLabels: Record<string, string> = {
+  extract: '提取',
+  load: '写入',
+  sync: '同步',
+  query: '查询',
+  upsert: '更新或插入'
+};
 
 function isEntryType(type: TriggerNodeType) {
   return type === 'start' || type === 'schedule' || type === 'webhook';

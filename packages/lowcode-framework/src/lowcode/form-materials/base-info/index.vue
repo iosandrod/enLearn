@@ -83,6 +83,7 @@ import {
   readRelateInfoDisplayValue,
   readRelateInfoPath,
   readRelateInfoString,
+  readRelateInfoStringArray,
   resolveRelateInfoColumns,
   type RelateInfoRow,
 } from './relate-info';
@@ -453,13 +454,15 @@ async function resolveConfiguredSource(): Promise<ResolvedSource> {
     };
   }
 
-  let entityCode = readRelateInfoString(current.entityCode);
+  const resource = readRelateInfoString(current.resource);
+  const resourceEntityCode = resource.split('.').at(-1) ?? resource;
+  let entityCode = readRelateInfoString(current.entityCode, resourceEntityCode);
   let tableName = readRelateInfoString(
     current.tableName ?? current.viewName,
-    entityCode ? tableNameFromEntityCode(entityCode) : '',
+    resource || (entityCode ? tableNameFromEntityCode(entityCode) : ''),
   );
   if (!tableName && !entityCode) {
-    throw new Error('请在 relateInfoConfig 中配置表名、实体或低代码页面。');
+    throw new Error('请在 relateInfoConfig 中配置业务资源或低代码页面。');
   }
 
   let entityMetadata: RelateInfoRow | undefined;
@@ -473,7 +476,11 @@ async function resolveConfiguredSource(): Promise<ResolvedSource> {
   } catch {
     // Explicit service and table configuration remains usable without metadata access.
   }
-  const request = resolveEntityRequest(current, entityMetadata);
+  const request = resolveEntityRequest({
+    ...current,
+    entityCode,
+    tableName,
+  }, entityMetadata);
 
   return {
     ...request,
@@ -490,8 +497,7 @@ function configuredSearchFields() {
   if (searchField) configured.unshift(searchField);
   if (configured.length) return [...new Set(configured)];
 
-  const displayField = readRelateInfoString(config.value.displayField);
-  return displayField ? [displayField] : [];
+  return readRelateInfoStringArray(config.value.displayField);
 }
 
 function createRequestPostData(source: ResolvedSource) {
@@ -549,7 +555,6 @@ async function loadSelectedDisplayValue() {
     }
 
     const valueField = readRelateInfoString(config.value.valueField, 'id');
-    const displayField = readRelateInfoString(config.value.displayField, valueField);
     let selectedRow: RelateInfoRow | undefined;
 
     if (source.localRows) {
@@ -579,7 +584,7 @@ async function loadSelectedDisplayValue() {
     ) {
       return;
     }
-    const label = readRelateInfoPath(selectedRow, displayField);
+    const label = readRelateInfoDisplayValue(selectedRow, config.value, props.field.field);
     if (label === null || typeof label === 'undefined') return;
     displayValue.value = label;
     const displayTarget = displayValueField.value;
@@ -745,8 +750,10 @@ function handleInput(value: unknown) {
   const currentMapping = normalizeRelateInfoMappings(config.value, props.field.field).find(
     (mapping) => mapping.targetField === props.field.field,
   );
-  const displayField = readRelateInfoString(config.value.displayField, currentMapping?.sourceField);
-  if (!displayField || displayField === currentMapping?.sourceField) {
+  const displayFields = readRelateInfoStringArray(config.value.displayField);
+  if (!displayFields.length || (
+    displayFields.length === 1 && displayFields[0] === currentMapping?.sourceField
+  )) {
     emit('update:modelValue', value);
   }
 }

@@ -618,7 +618,8 @@
 }
 
 .grid-designer-column-table-panel {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   position: relative;
   z-index: 0;
   min-width: 0;
@@ -629,7 +630,9 @@
   background: #fff;
   grid-template-rows: auto minmax(0, 1fr);
 }
-
+.grid-designer-column-table-panel>:last-child{
+  flex:1;
+}
 .grid-designer-column-table-panel > .lc-node-header {
   min-height: 44px;
   padding: 8px 12px;

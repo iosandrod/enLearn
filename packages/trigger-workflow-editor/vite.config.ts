@@ -15,6 +15,7 @@ export default defineConfig({
       external: [
         'vue',
         '@vue-flow/core',
+        '@enlearn/lowcode-framework/components/low-code-form',
         '@enlearn/lowcode-framework/components/json-dialog-input'
       ]
     }

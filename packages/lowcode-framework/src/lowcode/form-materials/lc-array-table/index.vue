@@ -26,6 +26,7 @@
       @row-dblclick="handleRowDblclick"
       @checkbox-change="commitRows"
       @checkbox-all="commitRows"
+      :height="'100%'"
     >
       <vxe-column v-if="showSeq" type="seq" width="42" />
       <template v-for="column in columns" :key="column.field">
@@ -257,6 +258,7 @@ type ArrayTableColumn = {
   props?: Record<string, unknown>;
   options?: LowCodeOption[];
   optionsCode?: string;
+  optionsSourceKey?: string;
   readonly?: boolean;
 };
 
@@ -585,6 +587,7 @@ function normalizeColumns(value: unknown): ArrayTableColumn[] {
           ...readJsonObject(column.propsJson),
         },
         optionsCode: readString(column.optionsCode) || undefined,
+        optionsSourceKey: readString(column.optionsSourceKey) || undefined,
         options: Array.isArray(column.options)
           ? cloneValue(column.options) as LowCodeOption[]
           : readJsonArray<LowCodeOption>(column.optionsJson) ?? [],
@@ -1045,6 +1048,11 @@ function resolveColumnOptions(column: ArrayTableColumn) {
     }
   }
 
+  if (column.optionsSourceKey) {
+    const source = props.optionSources?.[column.optionsSourceKey];
+    if (Array.isArray(source)) return source.map(normalizeOption);
+  }
+
   return column.options ?? [];
 }
 
@@ -1324,7 +1332,6 @@ function cloneValue(value: unknown) {
 .lc-array-table {
   display: flex;
   flex-direction: column;
-  height: 100%;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -1376,7 +1383,6 @@ function cloneValue(value: unknown) {
   overflow-y: hidden;
   height:100%;
 }
-
 .lc-array-table__grid {
   width: 100%;
   max-width: 100%;

@@ -43,6 +43,7 @@ const service = new LowCodeService() as unknown as RuntimeService;
 const validPageWrite = service.preparePageWrite({
   resource: 'lowcode_pages',
   data: {
+    table_name: 'public.runtime_save_rows',
     schema: {
       schemaVersion: 1,
       code: 'runtime-save-test',
@@ -66,6 +67,33 @@ assert.deepEqual(
     dataSources: {},
     blocks: [],
   },
+);
+assert.equal(
+  (validPageWrite.data as Record<string, unknown>).table_name,
+  'runtime_save_rows',
+  'Low-code page writes must omit the public schema from table_name.',
+);
+assert.deepEqual(
+  service.preparePageWrite({
+    resource: 'lowcode_pages',
+    data: { table_name: ' public.runtime_save_rows ' },
+  }),
+  {
+    resource: 'lowcode_pages',
+    data: { table_name: 'runtime_save_rows' },
+  },
+  'Relation-only page updates must normalize table_name without requiring a schema write.',
+);
+assert.deepEqual(
+  service.preparePageWrite({
+    resource: 'lowcode_pages',
+    data: { table_name: 'tenant.runtime_save_rows' },
+  }),
+  {
+    resource: 'lowcode_pages',
+    data: { table_name: 'tenant.runtime_save_rows' },
+  },
+  'Non-public schema qualifiers must be preserved.',
 );
 assert.throws(
   () => service.preparePageWrite({

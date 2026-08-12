@@ -128,6 +128,17 @@ function rowIndex(rows: PlanningRow[], labelField = 'name') {
   );
 }
 
+function itemLabelIndex(rows: PlanningRow[]) {
+  return new Map(
+    rows
+      .map((row) => [
+        readString(row.id),
+        readString(row.display_name) || readString(row.name) || readString(row.id)
+      ] as const)
+      .filter(([id]) => Boolean(id))
+  );
+}
+
 function applyVersionFilter(query: any, version?: PlanningConsoleVersion) {
   return version?.id
     ? query.eq('plan_version_id', version.id)
@@ -319,7 +330,7 @@ async function loadOperationPlans(
 
   const planIds = uniqueStrings(plans.map((row) => row.id));
   const [items, operations, locations, demands, assignments] = await Promise.all([
-    selectByIds(client, accountId, 'planning_item', uniqueStrings(plans.map((row) => row.item_id)), 'id,name,uom'),
+    selectByIds(client, accountId, 'planning_item', uniqueStrings(plans.map((row) => row.item_id)), 'id,name,display_name,uom'),
     selectByIds(client, accountId, 'planning_operation', uniqueStrings(plans.map((row) => row.operation_id)), 'id,name,type'),
     selectByIds(client, accountId, 'planning_location', uniqueStrings(plans.map((row) => row.location_id)), 'id,name'),
     selectByIds(client, accountId, 'planning_demand', uniqueStrings(plans.map((row) => row.demand_id)), 'id,name,due'),
@@ -338,7 +349,7 @@ async function loadOperationPlans(
     uniqueStrings(assignments.map((row) => row.resource_id)),
     'id,name'
   );
-  const itemNames = rowIndex(items);
+  const itemNames = itemLabelIndex(items);
   const operationNames = rowIndex(operations);
   const locationNames = rowIndex(locations);
   const demandNames = rowIndex(demands);
@@ -411,11 +422,11 @@ async function loadDemands(
       'id,demand_id,quantity,enddate,status',
       (base) => applyVersionFilter(base, version).in('demand_id', demandIds)
     ),
-    selectByIds(client, accountId, 'planning_item', uniqueStrings(demands.map((row) => row.item_id)), 'id,name,uom'),
+    selectByIds(client, accountId, 'planning_item', uniqueStrings(demands.map((row) => row.item_id)), 'id,name,display_name,uom'),
     selectByIds(client, accountId, 'planning_location', uniqueStrings(demands.map((row) => row.location_id)), 'id,name'),
     selectByIds(client, accountId, 'planning_customer', uniqueStrings(demands.map((row) => row.customer_id)), 'id,name')
   ]);
-  const itemNames = rowIndex(items);
+  const itemNames = itemLabelIndex(items);
   const locationNames = rowIndex(locations);
   const customerNames = rowIndex(customers);
   const plansByDemand = new Map<string, PlanningRow[]>();
@@ -483,11 +494,11 @@ async function loadMaterials(
     if (!selectedRows.length) return [];
   }
   const [items, locations, plans] = await Promise.all([
-    selectByIds(client, accountId, 'planning_item', uniqueStrings(selectedRows.map((row) => row.item_id)), 'id,name,uom'),
+    selectByIds(client, accountId, 'planning_item', uniqueStrings(selectedRows.map((row) => row.item_id)), 'id,name,display_name,uom'),
     selectByIds(client, accountId, 'planning_location', uniqueStrings(selectedRows.map((row) => row.location_id)), 'id,name'),
     selectByIds(client, accountId, 'planning_operationplan', uniqueStrings(selectedRows.map((row) => row.operationplan_id)), 'id,reference,operation_id')
   ]);
-  const itemNames = rowIndex(items);
+  const itemNames = itemLabelIndex(items);
   const itemUom = new Map(items.map((row) => [readString(row.id), readString(row.uom)]));
   const locationNames = rowIndex(locations);
   const planNames = rowIndex(plans, 'reference');
@@ -646,10 +657,10 @@ async function loadConstraints(
     }
   );
   const [items, demands] = await Promise.all([
-    selectByIds(client, accountId, 'planning_item', uniqueStrings(rows.map((row) => row.item_id)), 'id,name'),
+    selectByIds(client, accountId, 'planning_item', uniqueStrings(rows.map((row) => row.item_id)), 'id,name,display_name'),
     selectByIds(client, accountId, 'planning_demand', uniqueStrings(rows.map((row) => row.demand_id)), 'id,name')
   ]);
-  const itemNames = rowIndex(items);
+  const itemNames = itemLabelIndex(items);
   const demandNames = rowIndex(demands);
   return rows.map((row) => ({
     ...row,
@@ -859,7 +870,7 @@ async function loadFlow(
     selectRows(client, accountId, 'planning_suboperation', '*'),
     selectRows(client, accountId, 'planning_operationmaterial', '*'),
     selectRows(client, accountId, 'planning_operationresource', '*'),
-    selectRows(client, accountId, 'planning_item', 'id,name,uom'),
+    selectRows(client, accountId, 'planning_item', 'id,name,display_name,uom'),
     selectRows(client, accountId, 'planning_location', 'id,name')
   ]);
   const resourceRows = await selectByIds(
@@ -869,7 +880,7 @@ async function loadFlow(
     uniqueStrings(resources.map((row) => row.resource_id)),
     'id,name'
   );
-  const itemNames = rowIndex(items);
+  const itemNames = itemLabelIndex(items);
   const locationNames = rowIndex(locations);
   const resourceNames = rowIndex(resourceRows);
   const enrichedMaterials: PlanningRow[] = materials.map((row) => ({
@@ -992,8 +1003,10 @@ export function buildPlanningBomTree(
       id: `${nextPath.join('/')}:item`,
       entityId: itemId,
       entityType: 'item',
-      title: readString(item.name) || itemId,
-      subtitle: cycle ? '循环引用' : readString(item.description),
+      title: readString(item.display_name) || readString(item.name) || itemId,
+      subtitle: cycle
+        ? '循环引用'
+        : [readString(item.name), readString(item.description)].filter(Boolean).join(' · '),
       type: depth === 0 ? 'product' : 'item',
       quantity: typeof quantity === 'number' ? Math.abs(quantity) : undefined,
       uom: readString(item.uom),
@@ -1031,7 +1044,7 @@ async function loadBom(
   filters: PlanningConsoleFilters
 ) {
   const [items, operations, materials, suboperations] = await Promise.all([
-    selectRows(client, accountId, 'planning_item', 'id,name,description,uom'),
+    selectRows(client, accountId, 'planning_item', 'id,name,display_name,description,uom'),
     selectRows(client, accountId, 'planning_operation', 'id,name,type,item_id,owner_id,priority'),
     selectRows(client, accountId, 'planning_operationmaterial', 'id,operation_id,item_id,quantity,quantity_fixed,type'),
     selectRows(client, accountId, 'planning_suboperation', 'id,operation_id,suboperation_id,priority')

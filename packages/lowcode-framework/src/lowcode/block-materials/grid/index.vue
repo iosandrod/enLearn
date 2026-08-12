@@ -411,7 +411,11 @@ function handleGridEvent(payload: GridRuntimeEventPayload) {
     const columns = props.block.schema.grid.columns ?? [];
     const columnIndex = resolveMenuColumnIndex(payload, columns);
     const column = columnIndex >= 0 ? columns[columnIndex] : undefined;
-    if (column) {
+    if (
+      column &&
+      typeof column.field === 'string' &&
+      column.field.trim()
+    ) {
       void openRuntimeGridFieldEditor(
         props.block,
         column,
@@ -477,19 +481,23 @@ function resolveMenuColumnIndex(
   payload: GridRuntimeEventPayload,
   columns: LowCodeGridColumn[],
 ) {
+  const menuColumn = payload.column ?? (
+    isRecord(payload.rawEvent.column) ? payload.rawEvent.column : undefined
+  );
+  const field = menuColumn && typeof menuColumn.field === 'string'
+    ? menuColumn.field
+    : '';
+  if (field) {
+    return columns.findIndex((column) => column.field === field);
+  }
+
   if (
     typeof payload.columnIndex === 'number' &&
     payload.columnIndex >= 0 &&
     payload.columnIndex < columns.length
   ) return payload.columnIndex;
 
-  const menuColumn = payload.column ?? (
-    isRecord(payload.rawEvent.column) ? payload.rawEvent.column : undefined
-  );
   if (!menuColumn) return -1;
-
-  const field = typeof menuColumn.field === 'string' ? menuColumn.field : '';
-  if (field) return columns.findIndex((column) => column.field === field);
 
   const type = typeof menuColumn.type === 'string' ? menuColumn.type : '';
   const title = typeof menuColumn.title === 'string' ? menuColumn.title : '';

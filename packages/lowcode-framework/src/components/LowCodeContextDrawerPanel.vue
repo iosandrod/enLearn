@@ -616,7 +616,6 @@ function methodSignature(method: LowCodeContextNodeMethod) {
 
 .lc-context-drawer__field-name > span,
 .lc-context-drawer__field-source {
-  display: grid;
   min-width: 0;
   gap: 1px;
 }
