@@ -101,6 +101,8 @@ try {
   if (smokePage === 'button-script-runtime-browser.html') {
     assert.equal(result.result.value, 42);
     assert.equal(result.result.apiCalls, 2);
+    assert.equal(result.configuredFunctionResult.value, '1970-01-01T00:00:00.000Z');
+    assert.equal(result.configuredAsyncFunctionResult.value, 'ASYNC-DEFAULT');
     assert.equal(result.isolated.value.mutationBlocked, true);
     assert.equal(result.isolated.value.guestValue, 1);
     assert.equal(result.isolated.value.hasWindow, false);

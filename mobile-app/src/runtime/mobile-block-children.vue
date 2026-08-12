@@ -8,6 +8,7 @@
       :form-models="formModels"
       :active-action-codes="activeActionCodes"
       :executing-action-keys="executingActionKeys"
+      :edit-page-mode="editPageMode"
       :grid-states="gridStates"
       :service-api="serviceApi"
       @runtime-event="forwardRuntimeEvent"
@@ -32,6 +33,7 @@ defineProps<{
   formModels: MobileFormModels;
   activeActionCodes: Record<string, string>;
   executingActionKeys: Set<string>;
+  editPageMode?: import('../../../packages/lowcode-framework/src/types/lowcode').LowCodeEditPageMode;
   gridStates: MobileGridRuntimeStates;
   serviceApi: MobileServiceApi;
 }>();

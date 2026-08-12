@@ -15,6 +15,7 @@ const [
   componentTypeMigrationSource,
   baseInfoMigrationSource,
   tabLayoutMigrationSource,
+  procedureMigrationSource,
   converterHelpersSource,
   rendererSource,
 ] = await Promise.all([
@@ -33,6 +34,7 @@ const [
   readFile(new URL('../../../supabase/migrations/20260812130000_runtime_form_field_component_type.sql', frameworkRoot), 'utf8'),
   readFile(new URL('../../../supabase/migrations/20260812143000_runtime_form_field_base_info.sql', frameworkRoot), 'utf8'),
   readFile(new URL('../../../supabase/migrations/20260812160000_runtime_form_field_editor_tabs.sql', frameworkRoot), 'utf8'),
+  readFile(new URL('../../../supabase/migrations/20260812200000_runtime_form_default_value_procedure.sql', frameworkRoot), 'utf8'),
   readFile(new URL('lowcode/visual-converters/helpers.ts', frameworkRoot), 'utf8'),
   readFile(new URL('components/LowCodePageRenderer.vue', frameworkRoot), 'utf8'),
 ]);
@@ -65,12 +67,17 @@ for (const source of [formBlockSource, searchFormBlockSource]) {
     /openRuntimeFormDesigner\(props\.block, '(edit|search)', runtimeBlockEditor\)[\s\S]*?openRuntimeFormFieldEditor\(props\.block, field, runtimeBlockEditor\)/,
     'Runtime forms must keep full-form design and field-property editing separate.',
   );
-  assert.match(
-    source,
-    /:mode="formMode"[\s\S]*?pageRuntime\?\.state\.status\.formMode/,
-    'Runtime forms on edit pages must receive the reactive page mode.',
-  );
 }
+assert.match(
+  formBlockSource,
+  /:mode="formMode"[\s\S]*?pageRuntime\?\.state\.status\.formMode/,
+  'Edit-form blocks must receive the reactive edit-page mode.',
+);
+assert.doesNotMatch(
+  searchFormBlockSource,
+  /:mode="formMode"/,
+  'Search forms must remain interactive because they filter data rather than mutate the document.',
+);
 
 assert.match(
   runtimeDesignerSource,
@@ -101,6 +108,21 @@ assert.match(
   fieldEditorSource,
   /component: field\.component[\s\S]*?createDisabled: field\.createDisabled === true[\s\S]*?editDisabled: field\.editDisabled === true[\s\S]*?component = readString\(values\.component\)[\s\S]*?component,[\s\S]*?values\.createDisabled === true[\s\S]*?values\.editDisabled === true/,
   'The field editor must round-trip component and create/edit disabled settings.',
+);
+assert.match(
+  fieldEditorSource,
+  /defaultValueProcedure[\s\S]*?defaultValueType: 'procedure'[\s\S]*?listDefaultValueProcedures/,
+  'The field editor must load and persist a selected default-value procedure.',
+);
+assert.match(
+  procedureMigrationSource,
+  /read_lowcode_default_value_procedure[\s\S]*?pronargs = 0[\s\S]*?proretset = false[\s\S]*?has_function_privilege\(current_user[\s\S]*?'value', 'procedure'[\s\S]*?defaultValueProcedure/,
+  'The migration must expose executable scalar procedures and add the procedure selector.',
+);
+assert.doesNotMatch(
+  procedureMigrationSource,
+  /pg_catalog\.current_user/,
+  'PostgreSQL special values such as current_user must not be schema-qualified.',
 );
 assert.match(
   migrationSource,
@@ -203,13 +225,23 @@ assert.match(
 );
 assert.match(
   runtimeDesignerSource,
-  /'defaultValueType',[\s\S]*?'defaultValueScript',[\s\S]*?'updateScript',[\s\S]*?'validationScript',[\s\S]*?'validationMessage',[\s\S]*?original\[key\][\s\S]*?\['createDisabled', 'editDisabled'\][\s\S]*?original\[key\]/,
+  /'defaultValueType',[\s\S]*?'defaultValueScript',[\s\S]*?'defaultValueProcedure',[\s\S]*?'updateScript',[\s\S]*?'validationScript',[\s\S]*?'validationMessage',[\s\S]*?original\[key\][\s\S]*?\['createDisabled', 'editDisabled'\][\s\S]*?original\[key\]/,
   'Full-form design must preserve field scripts configured by the lightweight editor.',
 );
 assert.match(
   formSource,
-  /:disabled="isFieldDisabled\(field\)"[\s\S]*?props\.mode === 'edit'[\s\S]*?field\.editDisabled[\s\S]*?props\.mode === 'create' \|\| props\.mode === 'copy'[\s\S]*?field\.createDisabled/,
-  'LowCodeForm must enforce field disabled settings for the active edit-page mode.',
+  /:disabled="isFieldDisabled\(field\)"[\s\S]*?disabled: props\.disabled \|\| isLowCodeEditPageReadonly\(props\.mode\)[\s\S]*?isLowCodeEditPageFieldDisabled\(field, props\.mode\)/,
+  'LowCodeForm must keep input components rendered and disable them for scan or field-specific modes.',
+);
+assert.match(
+  formSource,
+  /function setFieldValue[\s\S]*?isFormInteractionBlocked\.value \|\| isFieldDisabled\(field\)[\s\S]*?function patchFieldValues[\s\S]*?isFieldDisabled\(sourceField\)/,
+  'Read-only and mode-disabled fields must reject updates emitted by custom form materials.',
+);
+assert.match(
+  formBlockSource,
+  /function isFormInteractionBlocked\(\)[\s\S]*?formMode\.value === 'scan'[\s\S]*?function updateFormModel[\s\S]*?isFormInteractionBlocked\(\)/,
+  'The form block boundary must reject custom-material updates while the page is in scan mode.',
 );
 assert.match(
   formSource,

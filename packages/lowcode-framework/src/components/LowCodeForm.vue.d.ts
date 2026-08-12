@@ -25,7 +25,7 @@ type LowCodeFormProps = {
     className?: VxeLowCodeFormProps['className'];
     readonly?: VxeLowCodeFormProps['readonly'];
     disabled?: VxeLowCodeFormProps['disabled'];
-    mode?: 'create' | 'copy' | 'edit';
+    mode?: import("../types/lowcode").LowCodeEditPageMode;
     rules?: VxeLowCodeFormProps['rules'];
     fieldValidator?: (field: LowCodeField, value: unknown, values: Record<string, unknown>) => Promise<true | string> | true | string;
     preventSubmit?: VxeLowCodeFormProps['preventSubmit'];

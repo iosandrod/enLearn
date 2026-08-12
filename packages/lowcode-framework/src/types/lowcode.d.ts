@@ -66,9 +66,10 @@ export type LowCodeField = {
     createDisabled?: boolean;
     /** Disable this field while the edit page is modifying an existing record. */
     editDisabled?: boolean;
-    /** Resolve the initial value by running defaultValueScript in the isolated runtime. */
-    defaultValueType?: 'function';
+    /** Resolve the initial value through an isolated script or a database procedure. */
+    defaultValueType?: 'function' | 'procedure';
     defaultValueScript?: string;
+    defaultValueProcedure?: string;
     /** Run after the field value changes. */
     updateScript?: string;
     /** Return true/null for success, false for validationMessage, or a string/Error-like message. */
@@ -238,6 +239,8 @@ export type LowCodeSubFormField = Omit<LowCodeField, 'component' | 'props'> & {
     props: LowCodeSubFormProps;
 };
 export type LowCodeFormModel = Record<string, unknown>;
+/** Runtime state shared by every edit page. */
+export type LowCodeEditPageMode = 'scan' | 'edit' | 'add';
 export type LowCodeFormProps = {
     schema: LowCodeFormSchema;
     modelValue: LowCodeFormModel;
@@ -261,7 +264,7 @@ export type LowCodeFormProps = {
     className?: string;
     readonly?: boolean;
     disabled?: boolean;
-    mode?: 'create' | 'copy' | 'edit';
+    mode?: LowCodeEditPageMode;
     rules?: Record<string, unknown[]>;
     preventSubmit?: boolean;
     validConfig?: Record<string, unknown>;
@@ -498,6 +501,7 @@ export type LowCodePageGridBlock = LowCodeMaterialVersionedBlock & {
     sourceKey?: string;
     deleteSourceKey?: string;
     rows?: Record<string, unknown>[];
+    gridDesignerUpdatedAt?: number;
 };
 export type LowCodeDetailField = {
     field: string;

@@ -25,16 +25,33 @@
             :form-models="formModels"
             :active-action-codes="activeActionCodes"
             :executing-action-keys="executingActionKeys"
+            :edit-page-mode="editPageMode"
             :grid-states="gridStates"
             :service-api="serviceApi!"
             @runtime-event="(event) => emit('runtimeEvent', event)"
           />
         </div>
         <div v-if="block.showFooter === true" class="overlay-footer">
-          <button class="overlay-footer-action" :disabled="isExecuting" @click="publishAction('cancel')">
+          <button
+            :aria-label="block.cancelLabel || '取消'"
+            :aria-busy="isExecuting"
+            :aria-disabled="isExecuting"
+            :style="{ opacity: isExecuting ? 0.55 : 1 }"
+            :class="['overlay-footer-action', { 'is-executing': isExecuting }]"
+            :disabled="isExecuting"
+            @click="publishAction('cancel')"
+          >
             <span class="overlay-footer-action-text">{{ block.cancelLabel || '取消' }}</span>
           </button>
-          <button class="overlay-footer-action is-primary" :disabled="isExecuting" @click="publishAction('confirm')">
+          <button
+            :aria-label="block.confirmLabel || '确定'"
+            :aria-busy="isExecuting"
+            :aria-disabled="isExecuting"
+            :style="{ opacity: isExecuting ? 0.55 : 1 }"
+            :class="['overlay-footer-action', 'is-primary', { 'is-executing': isExecuting }]"
+            :disabled="isExecuting"
+            @click="publishAction('confirm')"
+          >
             <span class="overlay-footer-action-text is-primary">{{ block.confirmLabel || '确定' }}</span>
           </button>
         </div>
@@ -58,13 +75,15 @@ const panelStyle = computed<CSSProperties>(() => {
   if (!configuredWidth) return {};
   return { maxWidth: `${Math.min(920, Math.max(280, configuredWidth))}px` };
 });
-const isExecuting = computed(() => props.executingActionKeys.has(`${props.block.id}:confirm`));
+const isExecuting = computed(() => props.executingActionKeys.size > 0);
 
 function requestClose() {
   publishAction('close');
 }
 
 function publishAction(action: 'confirm' | 'cancel' | 'close') {
+  if (isExecuting.value) return;
+
   const directives = action === 'confirm'
     ? props.block.confirmDirectives ?? []
     : action === 'cancel'
@@ -191,6 +210,10 @@ function publishAction(action: 'confirm' | 'cancel' | 'close') {
 
 .overlay-footer-action.is-primary {
   background-color: #176ea8;
+}
+
+.overlay-footer-action.is-executing {
+  opacity: 0.55;
 }
 
 .overlay-footer-action-text {

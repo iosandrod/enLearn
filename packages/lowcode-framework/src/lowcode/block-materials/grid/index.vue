@@ -1,11 +1,14 @@
 <template>
   <article class="content-panel">
     <LowCodeGrid
+      :key="block.gridDesignerUpdatedAt ?? 0"
       ref="gridRef"
       :schema="pageGridSchema"
       :rows="rows"
       :loading="isLoading"
       :fill="block.layout?.fillRemaining === true"
+      :readonly="isReadonly"
+      :executing="isMesCommandExecuting"
       @edit="handleEdit"
       @delete="handleDelete"
       @row-action="handleRowAction"
@@ -23,11 +26,20 @@ import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import LowCodeGrid from '../../../components/LowCodeGrid.vue';
 import { useLowCodeHost } from '../../../core/host';
 import { resolveGridRows } from '../helpers';
-import type { LowCodeGridRowAction, LowCodePageGridBlock } from '../../../types/lowcode';
+import type {
+  LowCodeGridColumn,
+  LowCodeGridRowAction,
+  LowCodePageGridBlock,
+} from '../../../types/lowcode';
 import { lowCodeRuntimeBlockEditorKey } from '../../../runtime/block-editor';
-import { useLowCodePageRuntime } from '../../../runtime/page-runtime';
+import {
+  lowCodeEditPageModeScopeKey,
+  useLowCodePageRuntime,
+} from '../../../runtime/page-runtime';
+import { isLowCodeEditPageReadonly } from '../../../runtime/edit-page-mode';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 import { createPageGridMenuConfig } from './page-grid-menu';
+import { openRuntimeGridFieldEditor } from './runtime-grid-field-editor';
 import { openRuntimeGridDesigner } from './runtime-grid-designer';
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageGridBlock>>();
@@ -35,6 +47,7 @@ const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
 const host = useLowCodeHost();
 const pageRuntime = useLowCodePageRuntime(false);
+const editPageModeScope = inject(lowCodeEditPageModeScopeKey, false);
 const gridRef = ref<InstanceType<typeof LowCodeGrid>>();
 let unregisterGridController: (() => void) | undefined;
 const runtimeSources = computed(
@@ -59,6 +72,14 @@ const isLoading = computed(
       pageRuntime?.state.status.loadingSourceKeys.includes(props.block.sourceKey)
     )
 );
+const isReadonly = computed(() =>
+  editPageModeScope &&
+  runtimeBlockEditor?.getPageRecord?.().page_type === 'edit' &&
+  isLowCodeEditPageReadonly(pageRuntime?.state.status.formMode)
+);
+const isMesCommandExecuting = computed(() =>
+  pageRuntime?.state.status.mesCommandExecuting === true
+);
 const rowKey = computed(() => {
   const rowConfig = isRecord(props.block.schema.grid.rowConfig)
     ? props.block.schema.grid.rowConfig
@@ -71,6 +92,7 @@ const pageGridSchema = computed(() => ({
   ...props.block.schema,
   grid: {
     ...props.block.schema.grid,
+    editRules: createRuntimeGridEditRules(),
     menuConfig: createPageGridMenuConfig(props.block.schema.grid.menuConfig),
   },
 }));
@@ -89,12 +111,87 @@ onBeforeUnmount(() => unregisterGridController?.());
 type GridRuntimeEventPayload = {
   key: string;
   row?: Record<string, unknown> | null;
+  column?: Record<string, unknown> | null;
+  columnIndex?: number;
   actionCode?: string;
   rawEvent: Record<string, unknown>;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readColumnFieldMetadata(column: LowCodeGridColumn) {
+  const params = isRecord(column.params) ? column.params : {};
+  return isRecord(params.lowcodeField) ? params.lowcodeField : {};
+}
+
+function createRuntimeGridEditRules() {
+  const configuredRules = isRecord(props.block.schema.grid.editRules)
+    ? props.block.schema.grid.editRules
+    : {};
+  const rules = Object.fromEntries(
+    Object.entries(configuredRules).map(([field, value]) => [
+      field,
+      Array.isArray(value)
+        ? value.filter(
+            (rule) => !isRecord(rule) || rule.__lowcodeFieldValidation !== true,
+          )
+        : value,
+    ]),
+  );
+
+  for (const column of props.block.schema.grid.columns ?? []) {
+    if (!column.field) continue;
+    const metadata = readColumnFieldMetadata(column);
+    const validationScript = typeof metadata.validationScript === 'string'
+      ? metadata.validationScript.trim()
+      : '';
+    if (!validationScript || !runtimeBlockEditor?.executeFieldScript) continue;
+
+    const fieldRules = Array.isArray(rules[column.field])
+      ? rules[column.field] as Record<string, unknown>[]
+      : [];
+    rules[column.field] = [
+      ...fieldRules,
+      {
+        __lowcodeFieldValidation: true,
+        validator: async ({ cellValue, row }: {
+          cellValue: unknown;
+          row: Record<string, unknown>;
+        }) => {
+          const result = await runtimeBlockEditor.executeFieldScript?.(
+            validationScript,
+            {
+              name: 'grid.fieldValidate',
+              blockId: props.block.id,
+              blockKind: props.block.kind,
+              timestamp: Date.now(),
+              payload: {
+                field: column.field,
+                value: cellValue,
+                row,
+                values: row,
+              },
+            },
+          );
+          if (result === true || result === null || typeof result === 'undefined') return;
+          const message = typeof result === 'string'
+            ? result.trim()
+            : isRecord(result) && typeof result.message === 'string'
+              ? result.message.trim()
+              : '';
+          throw new Error(
+            message ||
+            (typeof metadata.validationMessage === 'string'
+              ? metadata.validationMessage
+              : `${column.title}校验不通过`),
+          );
+        },
+      },
+    ];
+  }
+  return rules;
 }
 
 function syncGridRows() {
@@ -169,6 +266,7 @@ function shouldPublishDesignedGridEvent(key: string) {
 }
 
 function handleToolbar(code: string) {
+  if (isReadonly.value || isMesCommandExecuting.value) return;
   const action = props.block.schema.toolbar?.find((item) => item.code === code);
 
   emitRuntimeEvent(action?.eventName ?? 'grid.toolbarClick', {
@@ -180,6 +278,7 @@ function handleToolbar(code: string) {
 }
 
 function handleEdit(row: Record<string, unknown>) {
+  if (isReadonly.value || isMesCommandExecuting.value) return;
   emitRuntimeEvent(getGridEventName('editClick', 'grid.editClick'), {
     row,
     actionCode: 'edit',
@@ -189,6 +288,7 @@ function handleEdit(row: Record<string, unknown>) {
 }
 
 function handleDelete(row: Record<string, unknown>) {
+  if (isReadonly.value || isMesCommandExecuting.value) return;
   emitRuntimeEvent(getGridEventName('deleteClick', 'grid.deleteClick'), {
     row,
     actionCode: 'delete',
@@ -201,6 +301,7 @@ function handleRowAction(payload: {
   action: LowCodeGridRowAction;
   row: Record<string, unknown>;
 }) {
+  if (isReadonly.value || isMesCommandExecuting.value) return;
   emitRuntimeEvent(payload.action.eventName ?? 'grid.rowAction', {
     row: payload.row,
     action: payload.action,
@@ -253,8 +354,31 @@ function handleCellDblclick(payload: {
 }
 
 function handleGridEvent(payload: GridRuntimeEventPayload) {
-  syncGridEvent(payload);
-  if (shouldPublishDesignedGridEvent(payload.key)) {
+  const internalFieldEvent = payload.key === 'editClosed';
+  const selectionEvent = [
+    'rowCurrentChange',
+    'radioChange',
+    'checkboxChange',
+    'checkboxAll',
+    'cellClick',
+    'cellDblclick',
+    'cellMenu',
+  ].includes(payload.key);
+  if (!isMesCommandExecuting.value && (!isReadonly.value || selectionEvent)) {
+    syncGridEvent(payload);
+  }
+  const mutationEventBlocked = (
+    isReadonly.value || isMesCommandExecuting.value
+  ) && (
+    payload.key === 'toolbarButtonClick' ||
+    payload.key === 'toolbarToolClick' ||
+    payload.key === 'bodyMenuClick'
+  );
+  if (
+    !internalFieldEvent &&
+    !mutationEventBlocked &&
+    shouldPublishDesignedGridEvent(payload.key)
+  ) {
     emitRuntimeEvent(getGridEventName(payload.key, `grid.${payload.key}`), {
       ...payload,
       directives: getGridEventDirectives(payload.key),
@@ -275,12 +399,100 @@ function handleGridEvent(payload: GridRuntimeEventPayload) {
     void openRuntimeGridDesigner(props.block, runtimeBlockEditor, serviceApi);
   }
 
+  if (payload.key === 'editClosed') {
+    void executeGridFieldUpdateScript(payload);
+  }
+
+  if (
+    payload.key === 'headerMenuClick' &&
+    payload.actionCode === 'designCurrentField' &&
+    runtimeBlockEditor
+  ) {
+    const columns = props.block.schema.grid.columns ?? [];
+    const columnIndex = resolveMenuColumnIndex(payload, columns);
+    const column = columnIndex >= 0 ? columns[columnIndex] : undefined;
+    if (column) {
+      void openRuntimeGridFieldEditor(
+        props.block,
+        column,
+        columnIndex,
+        runtimeBlockEditor,
+      );
+    }
+  }
+
   if (
     payload.key === 'bodyMenuClick' &&
     payload.actionCode === 'editCurrentRow' &&
-    payload.row
+    payload.row &&
+    !isReadonly.value &&
+    !isMesCommandExecuting.value
   ) {
     emit('gridEdit', { block: props.block, row: payload.row });
   }
+}
+
+async function executeGridFieldUpdateScript(payload: GridRuntimeEventPayload) {
+  if (!runtimeBlockEditor?.executeFieldScript || !payload.row) return;
+  const field = resolveMenuColumnField(payload);
+  if (!field) return;
+  const column = (props.block.schema.grid.columns ?? []).find(
+    (candidate) => candidate.field === field,
+  );
+  if (!column) return;
+  const metadata = readColumnFieldMetadata(column);
+  const updateScript = typeof metadata.updateScript === 'string'
+    ? metadata.updateScript.trim()
+    : '';
+  if (!updateScript) return;
+
+  try {
+    await runtimeBlockEditor.executeFieldScript(updateScript, {
+      name: 'grid.fieldChange',
+      blockId: props.block.id,
+      blockKind: props.block.kind,
+      timestamp: Date.now(),
+      payload: {
+        field,
+        value: payload.row[field],
+        row: payload.row,
+        values: payload.row,
+      },
+    });
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+  }
+}
+
+function resolveMenuColumnField(payload: GridRuntimeEventPayload) {
+  const menuColumn = payload.column ?? (
+    isRecord(payload.rawEvent.column) ? payload.rawEvent.column : undefined
+  );
+  return menuColumn && typeof menuColumn.field === 'string'
+    ? menuColumn.field
+    : '';
+}
+
+function resolveMenuColumnIndex(
+  payload: GridRuntimeEventPayload,
+  columns: LowCodeGridColumn[],
+) {
+  if (
+    typeof payload.columnIndex === 'number' &&
+    payload.columnIndex >= 0 &&
+    payload.columnIndex < columns.length
+  ) return payload.columnIndex;
+
+  const menuColumn = payload.column ?? (
+    isRecord(payload.rawEvent.column) ? payload.rawEvent.column : undefined
+  );
+  if (!menuColumn) return -1;
+
+  const field = typeof menuColumn.field === 'string' ? menuColumn.field : '';
+  if (field) return columns.findIndex((column) => column.field === field);
+
+  const type = typeof menuColumn.type === 'string' ? menuColumn.type : '';
+  const title = typeof menuColumn.title === 'string' ? menuColumn.title : '';
+  return columns.findIndex((column) => column.type === type && column.title === title);
 }
 </script>

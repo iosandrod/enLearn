@@ -4,6 +4,7 @@ import {
   isRef,
   onBeforeUnmount,
   onMounted,
+  provide,
   resolveDynamicComponent,
   unref,
   type VNodeChild,
@@ -33,6 +34,7 @@ import {
 } from '../runtime/global-dialog-core';
 import { globalDrawerInstances } from '../runtime/global-drawer-core';
 import type { LowCodePageBlock, LowCodeRuntimeEvent } from '../types/lowcode';
+import { lowCodeEditPageModeScopeKey } from '../runtime/page-runtime';
 import '../styles/global-dialog.scss';
 
 type ContentNodeMeta = {
@@ -187,7 +189,7 @@ async function handleDialogAction<TValues extends Record<string, unknown>>(
   instance: GlobalDialogInstance<TValues>,
   action: GlobalDialogActionConfig<TValues>,
 ) {
-  if (readValue(action.disabled, false)) return;
+  if (instance.busyAction || readValue(action.disabled, false)) return;
 
   instance.busyAction = action.code;
   instance.errorMessage = '';
@@ -242,7 +244,7 @@ function renderAction<TValues extends Record<string, unknown>>(
   const VxeButtonComponent = VxeButton as any;
   const buttonProps = {
     status: action.status,
-    disabled: readValue(action.disabled, false),
+    disabled: Boolean(instance.busyAction) || readValue(action.disabled, false),
     loading: readValue(action.loading, false) || instance.busyAction === action.code,
     ...(action.props ?? {}),
     onClick: () => handleDialogAction(instance, action),
@@ -290,6 +292,7 @@ function renderForm<TValues extends Record<string, unknown>>(
       if (form.model) {
         assignRecord(formModel, value, true);
         updateMaybeRef(form.model, formModel);
+        if (formModel !== instance.model) context.setModel(value);
       } else {
         context.setModel(value);
       }
@@ -628,6 +631,8 @@ function hasFooter<TValues extends Record<string, unknown>>(
 export default defineComponent({
   name: 'GlobalDialogHost',
   setup() {
+    // Dialogs are auxiliary/design surfaces and must not inherit the host page's scan mode.
+    provide(lowCodeEditPageModeScopeKey, false);
     const VxeModalComponent = VxeModal as any;
     const host = registerGlobalDialogHost();
 

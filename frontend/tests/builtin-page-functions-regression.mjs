@@ -94,20 +94,63 @@ const editCalls = [];
 const editContext = {
   ...baseContext,
   pageType: 'edit',
+  getMode: () => 'edit',
   getFormRecords: () => [{ id: 'row-1', status: 'open' }],
   patchForms: async (values) => editCalls.push(['patchForms', values]),
-  submitForms: async () => {
-    editCalls.push(['submitForms']);
+  submitForms: async (options) => {
+    editCalls.push(options ? ['submitForms', options] : ['submitForms']);
     return true;
   },
+  setMode: async (mode) => editCalls.push(['setMode', mode]),
   notify: (message, status) => editCalls.push(['notify', message, status]),
 };
 await resolveBuiltinLowCodePageFunction('edit', 'close').execute(editContext);
 assert.deepEqual(editCalls, [
   ['patchForms', { status: 'closed' }],
-  ['submitForms'],
+  ['submitForms', { allowScan: true }],
   ['notify', '关闭成功。', 'success'],
 ]);
+
+editCalls.length = 0;
+await resolveBuiltinLowCodePageFunction('edit', 'copy').execute({
+  ...editContext,
+  prepareForms: async (mode) => editCalls.push(['prepareForms', mode]),
+  setMode: async (mode) => editCalls.push(['setMode', mode]),
+});
+assert.deepEqual(editCalls.slice(0, 2), [
+  ['prepareForms', 'copy'],
+  ['setMode', 'add'],
+]);
+
+editCalls.length = 0;
+await resolveBuiltinLowCodePageFunction('edit', 'create').execute({
+  ...editContext,
+  prepareForms: async (mode) => editCalls.push(['prepareForms', mode]),
+  setMode: async (mode) => editCalls.push(['setMode', mode]),
+});
+assert.deepEqual(editCalls.slice(0, 2), [
+  ['prepareForms', 'create'],
+  ['setMode', 'add'],
+]);
+
+editCalls.length = 0;
+await resolveBuiltinLowCodePageFunction('edit', 'modify').execute({
+  ...editContext,
+  getMode: () => 'scan',
+  setMode: async (mode) => editCalls.push(['setMode', mode]),
+});
+assert.deepEqual(editCalls[0], ['setMode', 'edit']);
+
+editCalls.length = 0;
+await resolveBuiltinLowCodePageFunction('edit', 'save').execute(editContext);
+assert.deepEqual(editCalls, [['submitForms']]);
+
+editCalls.length = 0;
+assert.equal(await resolveBuiltinLowCodePageFunction('edit', 'save').execute({
+  ...editContext,
+  getMode: () => 'scan',
+}), false);
+assert.deepEqual(editCalls, []);
 
 const rendererSource = await readFile(
   new URL('../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue', import.meta.url),

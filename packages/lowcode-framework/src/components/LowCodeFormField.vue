@@ -58,6 +58,7 @@ const renderField = computed<LowCodeField>(() => {
   const fieldProps = {
     ...(props.field.props ?? {}),
   };
+  delete fieldProps.visibleWhen;
 
   if (props.disabled) {
     fieldProps.disabled = true;

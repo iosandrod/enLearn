@@ -68,9 +68,13 @@ export type LowCodeScriptExecutionLimits = {
   maxPayloadBytes?: number;
 };
 
+export type LowCodeScriptExecutionMode = 'script' | 'function';
+
 export type LowCodeScriptExecutionRequest = {
   script: string;
   context: LowCodeScriptContextSnapshot;
+  /** Evaluate the source as a function value, invoke it, and await its result. */
+  executionMode?: LowCodeScriptExecutionMode;
   limits?: LowCodeScriptExecutionLimits;
 };
 

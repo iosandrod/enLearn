@@ -4,6 +4,7 @@ import {
   reactive,
   type InjectionKey,
 } from 'vue';
+import type { LowCodeEditPageMode } from '../types/lowcode';
 
 export type LowCodeRuntimeRecord = Record<string, unknown>;
 
@@ -27,7 +28,9 @@ export type LowCodePageRuntimeStatus = {
   loadingBlockId: string;
   loadingGridId: string;
   dataLoading: boolean;
-  formMode: 'create' | 'copy' | 'edit';
+  mesCommandExecuting: boolean;
+  mesCommandActionKey: string;
+  formMode: LowCodeEditPageMode;
   message: string;
   messageClass: string;
 };
@@ -110,6 +113,10 @@ export type LowCodePageRuntimeContext = {
 
 export const lowCodePageRuntimeKey: InjectionKey<LowCodePageRuntimeContext> =
   Symbol('lowCodePageRuntime');
+
+/** Edit-page mode only governs controls rendered inside the business page surface. */
+export const lowCodeEditPageModeScopeKey: InjectionKey<boolean> =
+  Symbol('lowCodeEditPageModeScope');
 
 function isRecord(value: unknown): value is LowCodeRuntimeRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -203,7 +210,9 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
       loadingBlockId: '',
       loadingGridId: '',
       dataLoading: false,
-      formMode: 'edit',
+      mesCommandExecuting: false,
+      mesCommandActionKey: '',
+      formMode: 'scan',
       message: '',
       messageClass: 'lc-help',
     },
@@ -365,7 +374,9 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
     state.status.loadingBlockId = '';
     state.status.loadingGridId = '';
     state.status.dataLoading = false;
-    state.status.formMode = 'edit';
+    state.status.mesCommandExecuting = false;
+    state.status.mesCommandActionKey = '';
+    state.status.formMode = 'scan';
     state.status.message = '';
     state.status.messageClass = 'lc-help';
   }

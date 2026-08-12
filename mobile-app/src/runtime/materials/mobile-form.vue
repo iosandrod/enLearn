@@ -25,6 +25,7 @@
         :option-sources="resolvedData"
         :disabled="formDisabled"
         :readonly="formReadonly"
+        :edit-page-mode="editPageMode"
         :compact="effectiveColumns === 1"
         @field-update="updateField"
       />
@@ -47,7 +48,7 @@
             :model-value="model[cell.field.field]"
             :option-sources="resolvedData"
             :error="errors[cell.field.field]"
-            :disabled="formDisabled"
+            :disabled="isFieldDisabled(cell.field)"
             :readonly="formReadonly"
             @update:model-value="(value) => updateField(cell.field, value)"
           />
@@ -66,7 +67,7 @@
         v-for="action in schema.actions"
         :key="action.code"
         :class="['form-action', `is-${action.status ?? 'default'}`]"
-        :disabled="action.disabled"
+        :disabled="isActionDisabled(action)"
         @click="handleAction(action)"
       >
         <span class="form-action-text">{{ action.label }}</span>
@@ -101,6 +102,11 @@ import type {
   SharedLowCodeField,
   SharedLowCodeFormSchema,
 } from '../types';
+import {
+  isLowCodeEditPageActionDisabled,
+  isLowCodeEditPageFieldDisabled,
+  isLowCodeEditPageReadonly,
+} from '../../../../packages/lowcode-framework/src/runtime/edit-page-mode';
 
 const props = defineProps<MobileMaterialProps>();
 const emit = defineEmits<MobileMaterialEmits>();
@@ -150,10 +156,17 @@ const formRows = computed(() => buildMobileFormRows(
 ));
 const formDisabled = computed(() => readFormBoolean(
   props.block.disabled ?? props.block.schema?.disabled,
+) || (
+  props.block.kind === 'form' &&
+  isLowCodeEditPageReadonly(props.editPageMode)
 ));
 const formReadonly = computed(() => readFormBoolean(
   props.block.readonly ?? props.block.schema?.readonly,
 ));
+const formInteractionBlocked = computed(() =>
+  formDisabled.value ||
+  formReadonly.value
+);
 const eventPrefix = computed(() => props.block.kind === 'searchForm' ? 'searchForm' : 'form');
 const blockStyle = computed(() => resolveMobileBlockStyle(props.block.style));
 
@@ -163,6 +176,14 @@ function cellStyle(span: number): CSSProperties {
     width,
     flexBasis: width,
   };
+}
+
+function isFieldDisabled(field: SharedLowCodeField) {
+  return formDisabled.value
+    || (
+      props.block.kind === 'form' &&
+      isLowCodeEditPageFieldDisabled(field, props.editPageMode)
+    );
 }
 
 function handleLayout(event: HippyLayoutEvent) {
@@ -187,6 +208,13 @@ function publishFieldChange(field: SharedLowCodeField, value: unknown, previousV
 }
 
 function updateField(field: SharedLowCodeField, value: unknown) {
+  if (
+    formInteractionBlocked.value ||
+    (
+      props.block.kind === 'form' &&
+      isLowCodeEditPageFieldDisabled(field, props.editPageMode)
+    )
+  ) return;
   const previousValue = cloneFormValue(model.value[field.field]);
   model.value[field.field] = cloneFormValue(value);
   delete errors[field.field];
@@ -194,6 +222,7 @@ function updateField(field: SharedLowCodeField, value: unknown) {
 }
 
 function validate() {
+  if (formInteractionBlocked.value) return true;
   const nextErrors = validateMobileFormValues(schema.value, model.value);
   Object.keys(errors).forEach((key) => delete errors[key]);
   Object.assign(errors, nextErrors);
@@ -201,6 +230,7 @@ function validate() {
 }
 
 function resetModel() {
+  if (formInteractionBlocked.value) return;
   Object.keys(model.value).forEach((key) => delete model.value[key]);
   Object.assign(model.value, cloneFormValue(props.block.initialValues ?? {}));
   Object.keys(errors).forEach((key) => delete errors[key]);
@@ -212,7 +242,7 @@ function actionDirectives(action: SharedLowCodeAction) {
 }
 
 function handleAction(action: SharedLowCodeAction) {
-  if (action.disabled || actionDispatching.has(action.code)) return;
+  if (isActionDisabled(action) || actionDispatching.has(action.code)) return;
   actionDispatching.add(action.code);
 
   try {
@@ -240,6 +270,12 @@ function handleAction(action: SharedLowCodeAction) {
   } finally {
     setTimeout(() => actionDispatching.delete(action.code), 0);
   }
+}
+
+function isActionDisabled(action: SharedLowCodeAction) {
+  return props.block.kind === 'form'
+    ? isLowCodeEditPageActionDisabled(action, props.editPageMode)
+    : action.disabled === true;
 }
 
 watch(

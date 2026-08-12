@@ -25,7 +25,10 @@ import { computed, inject, onBeforeUnmount, onMounted, ref } from 'vue';
 import LowCodeForm from '../../../components/LowCodeForm.vue';
 import type { LowCodeAction, LowCodeField, LowCodePageFormBlock } from '../../../types/lowcode';
 import { lowCodeRuntimeBlockEditorKey } from '../../../runtime/block-editor';
-import { useLowCodePageRuntime } from '../../../runtime/page-runtime';
+import {
+  lowCodeEditPageModeScopeKey,
+  useLowCodePageRuntime,
+} from '../../../runtime/page-runtime';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
 import {
   openRuntimeFormContextMenu,
@@ -37,6 +40,7 @@ const props = defineProps<LowCodeBlockMaterialProps<LowCodePageFormBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
 const pageRuntime = useLowCodePageRuntime(false);
+const editPageModeScope = inject(lowCodeEditPageModeScopeKey, false);
 const formRef = ref<InstanceType<typeof LowCodeForm>>();
 let unregisterFormController: (() => void) | undefined;
 const hasOwnedFormModel = computed(() =>
@@ -54,10 +58,14 @@ const isLoading = computed(
   () => (pageRuntime?.state.status.loadingBlockId ?? props.loadingBlockId) === props.block.id
 );
 const formMode = computed(() =>
-  runtimeBlockEditor?.getPageRecord?.().page_type === 'edit'
+  editPageModeScope && runtimeBlockEditor?.getPageRecord?.().page_type === 'edit'
     ? pageRuntime?.state.status.formMode
     : undefined
 );
+
+function isFormInteractionBlocked() {
+  return formMode.value === 'scan';
+}
 
 onMounted(() => {
   if (!pageRuntime || !formRef.value) return;
@@ -71,6 +79,7 @@ onMounted(() => {
 onBeforeUnmount(() => unregisterFormController?.());
 
 function updateFormModel(values: Record<string, unknown>) {
+  if (isFormInteractionBlocked()) return;
   if (hasOwnedFormModel.value || !pageRuntime) {
     props.formModels[props.block.id] = values;
     return;
@@ -104,6 +113,7 @@ function emitRuntimeEvent(name: string, payload: Record<string, unknown>) {
 }
 
 function handleSubmit(values: Record<string, unknown>) {
+  if (isFormInteractionBlocked()) return;
   const action = props.block.schema.actions.find(
     (item) => item.type === 'submit' || item.code === 'submit'
   );
@@ -118,6 +128,7 @@ function handleSubmit(values: Record<string, unknown>) {
 }
 
 function handleAction(action: LowCodeAction, values: Record<string, unknown>) {
+  if (isFormInteractionBlocked()) return;
   emitRuntimeEvent(action.eventName ?? 'form.action', {
     action,
     actionCode: action.code,
@@ -134,6 +145,7 @@ function handleFieldChange(payload: {
   previousValue: unknown;
   values: Record<string, unknown>;
 }) {
+  if (isFormInteractionBlocked()) return;
   emitRuntimeEvent('form.fieldChange', {
     ...payload,
     field: payload.field.field,
@@ -149,6 +161,7 @@ function handleRelateSelect(payload: {
   values: Record<string, unknown>;
   formValues: Record<string, unknown>;
 }) {
+  if (isFormInteractionBlocked()) return;
   emitRuntimeEvent('form.relateSelect', {
     ...payload,
     field: payload.field.field,

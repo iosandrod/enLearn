@@ -54,7 +54,7 @@
               <vxe-switch
                 v-if="column.component === 'vxe-switch'"
                 :model-value="Boolean(scope.row[column.field])"
-                :disabled="column.readonly || Boolean(column.props?.disabled)"
+                :disabled="isReadonly || column.readonly || Boolean(column.props?.disabled)"
                 @update:model-value="(value) => setCell(scope.row, column.field, value)"
               />
               <vxe-select
@@ -63,7 +63,7 @@
                 v-bind="column.props"
                 transfer
                 clearable
-                :disabled="column.readonly || Boolean(column.props?.disabled)"
+                :disabled="isReadonly || column.readonly || Boolean(column.props?.disabled)"
                 @update:model-value="(value) => setCell(scope.row, column.field, readSelectValue(column, value))"
               >
                 <vxe-option
@@ -93,7 +93,7 @@
                   />
                   <button
                     type="button"
-                    :disabled="column.readonly"
+                    :disabled="isReadonly || column.readonly"
                     @click="openObjectEditor(scope.row, column)"
                   >
                     编辑
@@ -112,7 +112,7 @@
                 :model-value="readString(scope.row[column.field])"
                 :placeholder="column.placeholder"
                 v-bind="column.props"
-                :readonly="column.readonly || Boolean(column.props?.readonly)"
+                :readonly="isReadonly || column.readonly || Boolean(column.props?.readonly)"
                 @update:model-value="(value) => setCell(scope.row, column.field, value)"
               />
               <vxe-password-input
@@ -121,7 +121,7 @@
                 :placeholder="column.placeholder"
                 v-bind="column.props"
                 clearable
-                :readonly="column.readonly || Boolean(column.props?.readonly)"
+                :readonly="isReadonly || column.readonly || Boolean(column.props?.readonly)"
                 @update:model-value="(value) => setCell(scope.row, column.field, value)"
               />
               <vxe-number-input
@@ -129,7 +129,7 @@
                 :model-value="toNumber(scope.row[column.field])"
                 :placeholder="column.placeholder"
                 v-bind="column.props"
-                :readonly="column.readonly || Boolean(column.props?.readonly)"
+                :readonly="isReadonly || column.readonly || Boolean(column.props?.readonly)"
                 @update:model-value="(value) => setCell(scope.row, column.field, value)"
               />
               <LcJsonEditor
@@ -150,7 +150,7 @@
                 :placeholder="column.placeholder"
                 v-bind="column.props"
                 clearable
-                :readonly="column.readonly || Boolean(column.props?.readonly)"
+                :readonly="isReadonly || column.readonly || Boolean(column.props?.readonly)"
                 @update:model-value="(value) => setCell(scope.row, column.field, value)"
               />
             </template>
@@ -169,7 +169,7 @@
                 action.status ? `is-${action.status}` : '',
               ]"
               :title="rowActionTitle(action, scope.row)"
-              :disabled="isRowActionDisabled(action, scope.row)"
+              :disabled="isReadonly || isRowActionDisabled(action, scope.row)"
               @click="handleRowAction(action, scope.row)"
             >
               <i v-if="action.icon" :class="action.icon" />
@@ -180,6 +180,7 @@
               type="button"
               :title="addChildText"
               :aria-label="addChildText"
+              :disabled="isReadonly"
               @click="addChildRow(scope.row)"
             >
               子
@@ -187,7 +188,7 @@
             <button
               v-if="movable"
               type="button"
-              :disabled="getSiblingIndex(scope.row) <= 0"
+              :disabled="isReadonly || getSiblingIndex(scope.row) <= 0"
               @click="moveRow(scope.row, -1)"
             >
               上
@@ -195,19 +196,19 @@
             <button
               v-if="movable"
               type="button"
-              :disabled="getSiblingIndex(scope.row) >= getSiblingRows(scope.row).length - 1"
+              :disabled="isReadonly || getSiblingIndex(scope.row) >= getSiblingRows(scope.row).length - 1"
               @click="moveRow(scope.row, 1)"
             >
               下
             </button>
-            <button v-if="copyable" type="button" @click="copyRow(scope.row)">
+            <button v-if="copyable" type="button" :disabled="isReadonly" @click="copyRow(scope.row)">
               复
             </button>
             <button
               v-if="removable"
               type="button"
               class="is-danger"
-              :disabled="!canRemoveRow(scope.row)"
+              :disabled="isReadonly || !canRemoveRow(scope.row)"
               @click="removeRow(scope.row)"
             >
               删
@@ -328,6 +329,9 @@ const systemSettings = useSystemSettings();
 let generatedRowKeySeed = 0;
 
 const fieldProps = computed(() => props.field.props ?? {});
+const isReadonly = computed(() =>
+  fieldProps.value.readonly === true || fieldProps.value.disabled === true
+);
 const valueMode = computed<ArrayTableValueMode>(() =>
   fieldProps.value.valueMode === 'primitive' ? 'primitive' : 'object'
 );
@@ -465,6 +469,7 @@ const toolbarButtonOptions = computed<VxeButtonProps[]>(() =>
       ...buttonProps,
       name: code,
       content: buttonProps.content ?? label,
+      disabled: isReadonly.value || buttonProps.disabled === true,
     })
   )
 );
@@ -638,6 +643,7 @@ function createDefaultRow(toolbarRow?: Record<string, unknown>) {
 }
 
 function addRow(toolbarRow?: Record<string, unknown>) {
+  if (isReadonly.value) return {};
   const row = createDefaultRow(toolbarRow);
   rows.value.push(row);
   ensureChildRowKeys(row);
@@ -649,7 +655,7 @@ function addRow(toolbarRow?: Record<string, unknown>) {
 async function handleToolbarButtonClick(payload: ArrayTableToolbarClickParams) {
   const clickedCode = payload.option?.name ?? payload.name;
   const button = toolbarButtons.value.find((item) => item.code === clickedCode);
-  if (!button || button.disabled) return;
+  if (isReadonly.value || !button || button.disabled) return;
 
   const actionPayload = {
     action: button,
@@ -680,6 +686,7 @@ function ensureChildRowKeys(row: Record<string, unknown>) {
 }
 
 function addChildRow(parent: Record<string, unknown>) {
+  if (isReadonly.value) return;
   const children = getChildRows(parent, true);
   const child = createDefaultRow();
   children.push(child);
@@ -692,12 +699,13 @@ function addChildRow(parent: Record<string, unknown>) {
 }
 
 function setCell(row: Record<string, unknown>, field: string, value: unknown) {
+  if (isReadonly.value) return;
   row[field] = value;
   commitRows();
 }
 
 async function openObjectEditor(row: Record<string, unknown>, column: ArrayTableColumn) {
-  if (column.readonly) return;
+  if (isReadonly.value || column.readonly) return;
 
   const value = createObjectEditorValue(row[column.field], column);
   const schema = resolveObjectEditorSchema(column, value);
@@ -731,6 +739,7 @@ async function openObjectEditor(row: Record<string, unknown>, column: ArrayTable
 }
 
 function removeRow(row: Record<string, unknown>) {
+  if (isReadonly.value) return;
   const location = findRowLocation(row);
   if (!location || !canRemoveRow(row)) return;
 
@@ -739,6 +748,7 @@ function removeRow(row: Record<string, unknown>) {
 }
 
 function copyRow(row: Record<string, unknown>) {
+  if (isReadonly.value) return;
   const location = findRowLocation(row);
   if (!location) return;
 
@@ -750,6 +760,7 @@ function copyRow(row: Record<string, unknown>) {
 }
 
 function moveRow(row: Record<string, unknown>, offset: number) {
+  if (isReadonly.value) return;
   const location = findRowLocation(row);
   if (!location) return;
 
@@ -780,6 +791,7 @@ function canRemoveRow(row: Record<string, unknown>) {
 }
 
 function commitRows() {
+  if (isReadonly.value) return;
   const key = rowKey.value;
   const value =
     valueMode.value === 'primitive'
@@ -985,7 +997,7 @@ function visibleRowActions(row: Record<string, unknown>) {
 }
 
 function isRowActionDisabled(action: ArrayTableRowAction, row: Record<string, unknown>) {
-  return resolveRowPredicate(action.disabled, row, false);
+  return isReadonly.value || resolveRowPredicate(action.disabled, row, false);
 }
 
 function resolveRowActionText(value: RowActionText | undefined, row: Record<string, unknown>) {
@@ -1002,6 +1014,7 @@ function rowActionTitle(action: ArrayTableRowAction, row: Record<string, unknown
 }
 
 function handleRowAction(action: ArrayTableRowAction, row: Record<string, unknown>) {
+  if (isRowActionDisabled(action, row)) return;
   emitConfiguredEvent('onRowAction', {
     ...rowEventPayload(row),
     action,
@@ -1064,6 +1077,7 @@ function createCellField(column: ArrayTableColumn): LowCodeField {
       rows: 4,
       placeholder: column.placeholder,
       ...(column.props ?? {}),
+      ...(isReadonly.value ? { readonly: true, disabled: true } : {}),
     },
   };
 }
@@ -1308,7 +1322,9 @@ function cloneValue(value: unknown) {
 
 <style scoped>
 .lc-array-table {
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   width: 100%;
   max-width: 100%;
   min-width: 0;
@@ -1350,13 +1366,15 @@ function cloneValue(value: unknown) {
 }
 
 .lc-array-table__viewport {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 100%;
   min-width: 0;
   min-height: 0;
   overflow-x: auto;
   overflow-y: hidden;
+  height:100%;
 }
 
 .lc-array-table__grid {

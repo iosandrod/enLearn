@@ -12,6 +12,11 @@ function createPageGridHeaderMenuOptions() {
         name: '表格信息设计',
         prefixIcon: 'ri-table-line',
       },
+      {
+        code: 'designCurrentField',
+        name: '设计当前字段',
+        prefixIcon: 'ri-edit-box-line',
+      },
     ],
     [
       {

@@ -10,6 +10,7 @@
       :form-models="formModels"
       :active-action-codes="activeActionCodes"
       :executing-action-keys="executingActionKeys"
+      :edit-page-mode="editPageMode"
       :grid-states="gridStates"
       :service-api="serviceApi!"
       @runtime-event="(event) => emit('runtimeEvent', event)"

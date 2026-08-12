@@ -8,12 +8,17 @@
       <button
         v-for="action in actions"
         :key="action.code"
+        :aria-label="action.label ?? action.content ?? action.title"
+        :aria-busy="isActionExecuting(action)"
+        :aria-disabled="isActionDisabled(action) || isActionExecuting(action)"
+        :style="{ opacity: isActionExecuting(action) ? 0.55 : 1 }"
         :class="[
           'action-button',
           `is-${action.status ?? 'default'}`,
           { 'is-active': activeCode === action.code },
+          { 'is-executing': isActionExecuting(action) },
         ]"
-        :disabled="action.disabled === true || isActionExecuting(action)"
+        :disabled="isActionDisabled(action) || isActionExecuting(action)"
         @click="publishAction(action)"
       >
         <span class="action-button-text">{{ action.label ?? action.content ?? action.title }}</span>
@@ -27,6 +32,11 @@ import { computed } from '@vue/runtime-core';
 import { resolveMobileBlockStyle } from '../block-style';
 import { hasMobilePermission } from '../session';
 import type { MobileMaterialEmits, MobileMaterialProps, SharedLowCodeAction } from '../types';
+import {
+  isLowCodeEditPageActionDisabled,
+  isLowCodeEditPageSaveAction,
+  normalizeLowCodeEditPageActionCode,
+} from '../../../../packages/lowcode-framework/src/runtime/edit-page-mode';
 
 const props = defineProps<MobileMaterialProps>();
 const emit = defineEmits<MobileMaterialEmits>();
@@ -34,11 +44,31 @@ const activeCode = computed(() => props.activeActionCodes[props.block.id]
   || props.block.actions?.find((action: SharedLowCodeAction) => action.status === 'primary')?.code
   || '');
 const blockStyle = computed(() => resolveMobileBlockStyle(props.block.style));
-const actions = computed(() => (props.block.actions ?? []).filter(
-  (action: SharedLowCodeAction & { permissionCode?: string }) => hasMobilePermission(action.permissionCode),
-));
+const actions = computed(() => {
+  const configured = (props.block.actions ?? []).filter(
+    (action: SharedLowCodeAction & { permissionCode?: string }) => hasMobilePermission(action.permissionCode),
+  );
+  if (
+    !props.editPageMode ||
+    !configured.some((action: SharedLowCodeAction) => isLowCodeEditPageSaveAction(action)) ||
+    configured.some((action: SharedLowCodeAction) =>
+      normalizeLowCodeEditPageActionCode(action.code) === 'modify'
+    )
+  ) return configured;
+
+  const saveIndex = configured.findIndex(
+    (action: SharedLowCodeAction) => isLowCodeEditPageSaveAction(action),
+  );
+  return [
+    ...configured.slice(0, saveIndex),
+    { code: 'modify', label: '修改', type: 'button' } as SharedLowCodeAction,
+    ...configured.slice(saveIndex),
+  ];
+});
 
 function publishAction(action: SharedLowCodeAction) {
+  if (isActionDisabled(action) || isActionExecuting(action)) return;
+
   const defaultEvent = props.block.kind === 'buttonGroup'
     ? 'buttonGroup.click'
     : 'toolbar.click';
@@ -55,8 +85,12 @@ function publishAction(action: SharedLowCodeAction) {
   });
 }
 
-function isActionExecuting(action: SharedLowCodeAction) {
-  return props.executingActionKeys.has(`${props.block.id}:${action.code}`);
+function isActionDisabled(action: SharedLowCodeAction) {
+  return isLowCodeEditPageActionDisabled(action, props.editPageMode);
+}
+
+function isActionExecuting(_action: SharedLowCodeAction) {
+  return props.executingActionKeys.size > 0;
 }
 </script>
 
@@ -129,6 +163,10 @@ function isActionExecuting(action: SharedLowCodeAction) {
 
 .action-button.is-danger {
   background-color: #b63b36;
+}
+
+.action-button.is-executing {
+  opacity: 0.55;
 }
 
 .action-button-text {

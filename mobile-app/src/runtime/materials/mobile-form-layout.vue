@@ -16,6 +16,7 @@
             :option-sources="optionSources"
             :disabled="disabled"
             :readonly="readonly"
+            :edit-page-mode="editPageMode"
             :compact="compact"
             @field-update="forwardFieldUpdate"
           />
@@ -31,6 +32,7 @@
         :option-sources="optionSources"
         :disabled="disabled"
         :readonly="readonly"
+        :edit-page-mode="editPageMode"
         :compact="compact"
         @field-update="forwardFieldUpdate"
       />
@@ -55,6 +57,7 @@
           :option-sources="optionSources"
           :disabled="disabled"
           :readonly="readonly"
+          :edit-page-mode="editPageMode"
           :compact="compact"
           @field-update="forwardFieldUpdate"
         />
@@ -66,7 +69,7 @@
           :model-value="model[node.field]"
           :error="errors[node.field]"
           :option-sources="optionSources"
-          :disabled="disabled"
+          :disabled="isFieldDisabled(fieldsByKey[node.field])"
           :readonly="readonly"
           @update:model-value="(value) => forwardFieldUpdate(fieldsByKey[node.field], value)"
         />
@@ -82,6 +85,8 @@ import type { CSSProperties } from 'vue';
 import MobileFormField from './mobile-form-field.vue';
 import type { SharedLowCodeField } from '../types';
 import type { LowCodeFormLayoutNode } from '../../../../packages/lowcode-framework/src/types/lowcode';
+import type { LowCodeEditPageMode } from '../../../../packages/lowcode-framework/src/types/lowcode';
+import { isLowCodeEditPageFieldDisabled } from '../../../../packages/lowcode-framework/src/runtime/edit-page-mode';
 import { readFormNumber } from '../mobile-form';
 
 defineOptions({
@@ -96,6 +101,7 @@ const props = withDefaults(defineProps<{
   optionSources: Record<string, unknown>;
   disabled?: boolean;
   readonly?: boolean;
+  editPageMode?: LowCodeEditPageMode;
   compact?: boolean;
 }>(), {
   disabled: false,
@@ -144,6 +150,11 @@ function columnStyle(span: number | string | undefined): CSSProperties {
 
 function forwardFieldUpdate(field: SharedLowCodeField, value: unknown) {
   emit('fieldUpdate', field, value);
+}
+
+function isFieldDisabled(field: SharedLowCodeField) {
+  return props.disabled
+    || isLowCodeEditPageFieldDisabled(field, props.editPageMode);
 }
 </script>
 

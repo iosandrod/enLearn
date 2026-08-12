@@ -124,7 +124,8 @@ insert into public.lowcode_form_definitions (
         "options": [
           { "label": "无默认值", "value": "none" },
           { "label": "固定值", "value": "literal" },
-          { "label": "函数", "value": "function" }
+          { "label": "函数", "value": "function" },
+          { "label": "存储过程", "value": "procedure" }
         ]
       },
       {
@@ -132,6 +133,18 @@ insert into public.lowcode_form_definitions (
         "label": "默认值",
         "component": "vxe-input",
         "props": { "clearable": true, "placeholder": "文本或 JSON，例如 draft、0、false、{}" }
+      },
+      {
+        "field": "defaultValueProcedure",
+        "label": "存储过程",
+        "component": "vxe-select",
+        "span": 2,
+        "props": {
+          "clearable": true,
+          "filterable": true,
+          "placeholder": "请选择存储过程",
+          "visibleWhen": { "field": "defaultValueType", "equals": "procedure" }
+        }
       },
       {
         "field": "optionsCode",
@@ -163,7 +176,8 @@ insert into public.lowcode_form_definitions (
           "scriptThisType": "LowCodeButtonScriptThis",
           "contextDrawer": true,
           "contextDrawerTitle": "当前页面上下文",
-          "placeholder": "async function main() { return new Date().toISOString(); }"
+          "placeholder": "async function main() { return new Date().toISOString(); }",
+          "visibleWhen": { "field": "defaultValueType", "equals": "function" }
         }
       },
       {
@@ -251,6 +265,7 @@ insert into public.lowcode_form_definitions (
                 ]
               },
               { "kind": "field", "field": "optionsCode" },
+              { "kind": "field", "field": "defaultValueProcedure" },
               { "kind": "field", "field": "defaultValueScript" }
             ]
           },

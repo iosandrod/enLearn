@@ -65,10 +65,13 @@ const lowCodeFormProps = computed<LowCodeFormProps>(() => {
     ...(forwardedProps as Partial<LowCodeFormProps>),
     schema: configuredSchema.value ?? unconfiguredSchema,
     modelValue: objectValue.value,
+    readonly: forwardedProps.readonly === true,
+    disabled: forwardedProps.disabled === true,
   };
 });
 
 function handleUpdate(value: Record<string, unknown>) {
+  if (lowCodeFormProps.value.readonly || lowCodeFormProps.value.disabled) return;
   emit('update:modelValue', isRecord(value) ? value : {});
 }
 

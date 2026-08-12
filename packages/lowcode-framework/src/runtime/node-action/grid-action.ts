@@ -11,6 +11,7 @@ import type {
   LowCodeNodeActionMethodDefinition,
   LowCodeNodeTypeDefinition,
 } from './index';
+import { isLowCodeEditPageReadonly } from '../edit-page-mode';
 
 type RuntimeRecord = Record<string, unknown>;
 
@@ -275,6 +276,11 @@ function assertGridBlock(
   return context.block;
 }
 
+function assertGridWritable(context: LowCodeNodeActionRuntimeContext) {
+  if (!isLowCodeEditPageReadonly(context.editPageMode)) return;
+  throw new Error('当前页面为只读状态，请先点击修改。');
+}
+
 function readGridRows(
   context: LowCodeNodeActionRuntimeContext,
   block: LowCodePageGridBlock,
@@ -416,6 +422,7 @@ export async function executeGridAddRowNodeAction(
   context: LowCodeNodeActionRuntimeContext,
 ) {
   const block = assertGridBlock(context, '新增行');
+  assertGridWritable(context);
   const input = context.options.data;
   if (typeof input !== 'undefined' && !isRecord(input)) {
     throw new Error('Grid addRow 的 data 必须是对象。');
@@ -436,6 +443,7 @@ export async function executeGridDeleteCurrentRowNodeAction(
   context: LowCodeNodeActionRuntimeContext,
 ) {
   const block = assertGridBlock(context, '删除当前行');
+  assertGridWritable(context);
   const grid = context.grids[block.id];
   const currentRow = currentGridRow(grid);
   if (!currentRow) return null;

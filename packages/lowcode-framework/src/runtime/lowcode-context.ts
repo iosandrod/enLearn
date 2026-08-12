@@ -1,4 +1,5 @@
 import type {
+  LowCodeEditPageMode,
   LowCodeField,
   LowCodePageBlock,
   LowCodePageRecord,
@@ -77,6 +78,7 @@ export type LowCodeContextNodeMethod = {
 export type LowCodeContextSource = {
   page?: Pick<LowCodePageRecord, 'id' | 'code' | 'route' | 'title' | 'schema'> & {
     page_type?: LowCodePageRecord['page_type'];
+    mode?: LowCodeEditPageMode;
   };
   data?: Record<string, unknown>;
   forms?: Record<string, Record<string, unknown>>;

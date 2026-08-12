@@ -40,6 +40,7 @@
       const pageType = new URLSearchParams(location.search).get('pageType') === 'edit'
         ? 'edit'
         : 'list';
+      const recordId = new URLSearchParams(location.search).get('recordId') || '';
       const saveCalls = [];
       const routerPushes = [];
       const pageRecord = reactive({
@@ -125,7 +126,7 @@
             router,
             locale: 'zh-CN',
             route: {
-              query: {},
+              query: recordId ? { id: recordId } : {},
               params: {},
               path: pageRecord.route,
               fullPath: pageRecord.route,

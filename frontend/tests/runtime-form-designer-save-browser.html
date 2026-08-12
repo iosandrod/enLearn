@@ -44,9 +44,12 @@
       import { lowCodeOptionSourceRegistry } from '../../packages/lowcode-framework/src/runtime/option-source-registry';
 
       const useReactivePage = new URLSearchParams(location.search).get('page') === 'reactive';
-      const runtimeMode = new URLSearchParams(location.search).get('mode') === 'edit'
+      const requestedMode = new URLSearchParams(location.search).get('mode');
+      const runtimeMode = requestedMode === 'edit'
         ? 'edit'
-        : 'create';
+        : requestedMode === 'scan'
+          ? 'scan'
+          : 'add';
       const renderer = ref(null);
       const saveCalls = [];
       lowCodeOptionSourceRegistry.invalidate();
@@ -75,6 +78,17 @@
           },
           dataSources: {},
           blocks: [
+            {
+              id: 'runtime-edit-actions',
+              kind: 'buttonGroup',
+              actions: [
+                {
+                  code: 'save',
+                  label: '保存',
+                  status: 'primary',
+                },
+              ],
+            },
             {
               id: 'runtime-edit-form',
               kind: 'form',
@@ -116,7 +130,8 @@
                     component: 'vxe-input',
                     defaultValueType: 'function',
                     defaultValueScript: `
-                      async function main(event) {
+                      async function loadGeneratedCode(event) {
+                        await Promise.resolve();
                         return "AUTO-" + event.blockKind + "-" + event.field;
                       }
                     `,
@@ -300,9 +315,20 @@
                           { label: '无默认值', value: 'none' },
                           { label: '固定值', value: 'literal' },
                           { label: '函数', value: 'function' },
+                          { label: '存储过程', value: 'procedure' },
                         ],
                       },
                       { field: 'defaultValue', label: '默认值', component: 'vxe-input' },
+                      {
+                        field: 'defaultValueProcedure',
+                        label: '存储过程',
+                        component: 'vxe-select',
+                        span: 2,
+                        props: {
+                          filterable: true,
+                          visibleWhen: { field: 'defaultValueType', equals: 'procedure' },
+                        },
+                      },
                       {
                         field: 'optionsCode',
                         label: '关联下拉 Code',
@@ -374,6 +400,7 @@
                                 ],
                               },
                               { kind: 'field', field: 'optionsCode' },
+                              { kind: 'field', field: 'defaultValueProcedure' },
                               { kind: 'field', field: 'defaultValueScript' },
                             ],
                           },
@@ -398,6 +425,14 @@
           }
           if (serviceName === 'lowcode' && serviceMethod === 'listTablePageOptions') {
             return [];
+          }
+          if (serviceName === 'lowcode' && serviceMethod === 'listDefaultValueProcedures') {
+            return [
+              { label: '订单默认号 (text)', value: 'public.test_order_default' },
+            ];
+          }
+          if (serviceName === 'lowcode' && serviceMethod === 'executeDefaultValueProcedure') {
+            return `PROC-${payload.field}`;
           }
           if (serviceName === 'admin' && serviceMethod === 'resolveOptionItemsBatch') {
             return Object.fromEntries((payload.sourceCodes ?? []).map((code) => [
@@ -444,7 +479,7 @@
             serviceApi,
             locale: 'zh-CN',
             route: {
-              query: runtimeMode === 'edit' ? { id: 'existing-record' } : {},
+              query: runtimeMode === 'add' ? {} : { id: 'existing-record' },
               params: {},
               path: pageRecord.route,
               fullPath: pageRecord.route,

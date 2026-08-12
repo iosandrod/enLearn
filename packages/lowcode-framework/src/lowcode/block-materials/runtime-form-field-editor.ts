@@ -25,9 +25,10 @@ type FieldEditorModel = Record<string, unknown> & {
   createDisabled: boolean;
   editDisabled: boolean;
   relateInfoConfig: LowCodeRelateInfoConfig;
-  defaultValueType: 'none' | 'literal' | 'function';
+  defaultValueType: 'none' | 'literal' | 'function' | 'procedure';
   defaultValue?: unknown;
   defaultValueScript: string;
+  defaultValueProcedure: string;
   optionsCode: string;
   updateScript: string;
   validationScript: string;
@@ -118,8 +119,9 @@ function createEditorModel(block: RuntimeFormBlock, field: LowCodeField): FieldE
     block.initialValues ?? {},
     field.field,
   );
-  const defaultValueType = field.defaultValueType === 'function'
-    ? 'function'
+  const defaultValueType = field.defaultValueType === 'function' ||
+    field.defaultValueType === 'procedure'
+    ? field.defaultValueType
     : hasLiteralDefault
       ? 'literal'
       : 'none';
@@ -138,6 +140,7 @@ function createEditorModel(block: RuntimeFormBlock, field: LowCodeField): FieldE
       ? formatLiteralDefaultValue(block.initialValues?.[field.field])
       : undefined,
     defaultValueScript: field.defaultValueScript ?? '',
+    defaultValueProcedure: field.defaultValueProcedure ?? '',
     optionsCode: field.optionsCode ?? '',
     updateScript: field.updateScript ?? '',
     validationScript: field.validationScript ?? '',
@@ -182,6 +185,12 @@ function createUpdatedField(field: LowCodeField, values: FieldEditorModel) {
           defaultValueScript: readString(values.defaultValueScript),
         }
       : {}),
+    ...(values.defaultValueType === 'procedure'
+      ? {
+          defaultValueType: 'procedure',
+          defaultValueProcedure: readString(values.defaultValueProcedure),
+        }
+      : {}),
     ...(readString(values.updateScript)
       ? { updateScript: readString(values.updateScript) }
       : {}),
@@ -210,9 +219,10 @@ function createUpdatedField(field: LowCodeField, values: FieldEditorModel) {
   if (!readString(values.optionsCode)) delete updated.optionsCode;
   if (values.createDisabled !== true) delete updated.createDisabled;
   if (values.editDisabled !== true) delete updated.editDisabled;
-  if (values.defaultValueType !== 'function') {
+  if (values.defaultValueType !== 'function') delete updated.defaultValueScript;
+  if (values.defaultValueType !== 'procedure') delete updated.defaultValueProcedure;
+  if (!['function', 'procedure'].includes(values.defaultValueType)) {
     delete updated.defaultValueType;
-    delete updated.defaultValueScript;
   }
   if (!readString(values.updateScript)) delete updated.updateScript;
   if (!readString(values.validationScript)) {
@@ -264,6 +274,34 @@ function hydrateEditorSchema(schema: LowCodeFormSchema) {
   return cloneValue(schema);
 }
 
+function normalizeProcedureOptions(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter(isRecord)
+    .map((procedure) => {
+      const name = readString(procedure.value ?? procedure.name);
+      const label = readString(procedure.label) || name;
+      return name ? { label, value: name } : undefined;
+    })
+    .filter((option): option is { label: string; value: string } => Boolean(option));
+}
+
+async function hydrateProcedureOptions(
+  schema: LowCodeFormSchema,
+  serviceApi: LowCodeHostServiceApi,
+) {
+  const hydrated = hydrateEditorSchema(schema);
+  const procedureField = hydrated.fields.find(
+    (candidate) => candidate.field === 'defaultValueProcedure',
+  );
+  if (!procedureField) return hydrated;
+
+  procedureField.options = normalizeProcedureOptions(
+    await serviceApi.invoke('lowcode', 'listDefaultValueProcedures', {}),
+  );
+  return hydrated;
+}
+
 async function preloadEditorOptionSources(
   schema: LowCodeFormSchema,
   serviceApi: LowCodeHostServiceApi,
@@ -293,6 +331,7 @@ export async function openRuntimeFormFieldEditor(
       RUNTIME_FORM_FIELD_EDITOR_CODE,
     );
     await preloadEditorOptionSources(definition.schema, serviceApi);
+    const editorSchema = await hydrateProcedureOptions(definition.schema, serviceApi);
     const model = createEditorModel(block, field);
     const result = await openGlobalDialog<FieldEditorModel>({
       title: `${field.label || field.field} - 字段属性`,
@@ -305,7 +344,7 @@ export async function openRuntimeFormFieldEditor(
       },
       model,
       form: {
-        schema: hydrateEditorSchema(definition.schema),
+        schema: editorSchema,
         props: {
           padding: false,
           titleWidth: 126,
@@ -324,6 +363,13 @@ export async function openRuntimeFormFieldEditor(
         const values = context.model;
         if (values.defaultValueType === 'function' && !readString(values.defaultValueScript)) {
           notifyError('默认值类型为函数时，默认值函数不能为空。');
+          return { close: false };
+        }
+        if (
+          values.defaultValueType === 'procedure' &&
+          !readString(values.defaultValueProcedure)
+        ) {
+          notifyError('默认值类型为存储过程时，必须选择存储过程。');
           return { close: false };
         }
 

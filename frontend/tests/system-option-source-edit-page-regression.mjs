@@ -8,8 +8,22 @@ const migrationSource = await readFile(
   ),
   'utf8'
 );
+const repairMigrationSource = await readFile(
+  new URL(
+    '../../supabase/migrations/20260812190000_restore_option_source_detail_grid.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
 const adminServiceSource = await readFile(
   new URL('../../api/src/admin-service/admin.service.ts', import.meta.url),
+  'utf8'
+);
+const visualDesignerSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue',
+    import.meta.url
+  ),
   'utf8'
 );
 const schemaMatch = migrationSource.match(/\$json\$\s*([\s\S]*?)\s*\$json\$::jsonb/);
@@ -76,6 +90,26 @@ assert.match(
   migrationSource,
   /"key": "items"[\s\S]*"id": "option-source-items-grid"[\s\S]*"sourceKey": "optionItems"/,
   'The edit page must include the related dictionary item view.'
+);
+assert.match(
+  repairMigrationSource,
+  /jsonb_path_exists\([\s\S]*\.blocks\[\*\][\s\S]*option-source-items-grid[\s\S]*jsonb_build_array\(v_detail_grid\)/,
+  'The repair migration must restore the missing detail Grid idempotently.'
+);
+assert.match(
+  repairMigrationSource,
+  /\{dataSources,optionSource,autoLoad\}[\s\S]*\{dataSources,optionItems,loadAfterSourceKeys\}[\s\S]*\["optionSource"\]/,
+  'The detail source must wait until the edited option source has loaded.'
+);
+assert.match(
+  visualDesignerSource,
+  /function preserveDataSourceRuntimeSettings[\s\S]*previousSource\.autoLoad/,
+  'Visual saves must preserve data-source auto-loading that is not exposed by the designer.'
+);
+assert.match(
+  visualDesignerSource,
+  /function preserveDataSourceRuntimeSettings[\s\S]*previousSource\.loadAfterSourceKeys[\s\S]*preserveDataSourceRuntimeSettings\(/,
+  'Visual saves must preserve data-source loading order that is not exposed by the designer.'
 );
 assert.match(
   migrationSource,

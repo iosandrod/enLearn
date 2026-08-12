@@ -56,6 +56,11 @@ assert.match(
 );
 assert.match(
   workerSource,
+  /createConfiguredFunctionSource[\s\S]*?__configuredFunction\.call\(this, this\.event\)[\s\S]*?executionMode === 'function'[\s\S]*?createConfiguredFunctionSource/,
+  'Function-mode scripts must invoke the configured function and await its return value.',
+);
+assert.match(
+  workerSource,
   /const hostCall = globalThis\.__lowCodeHostCall;[\s\S]*?const hostLog = globalThis\.__lowCodeHostLog;[\s\S]*?delete globalThis\.__lowCodeHostCall;[\s\S]*?delete globalThis\.__lowCodeHostLog;[\s\S]*?new AsyncFunction\("console"[\s\S]*?userScript\.call\(scriptThis, scriptConsole\)/,
   'User code must run in a separate function scope after raw host bridges are removed.',
 );

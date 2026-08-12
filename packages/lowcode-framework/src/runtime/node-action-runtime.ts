@@ -1,4 +1,5 @@
 import type {
+  LowCodeEditPageMode,
   LowCodePageBlock,
   LowCodePageDataSource,
 } from '../types/lowcode';
@@ -16,6 +17,7 @@ export type LowCodeNodeActionRuntimeContext = {
   blocks: LowCodePageBlock[];
   searchFilters: Record<string, Record<string, unknown>>;
   grids: Record<string, LowCodePageRuntimeGridState>;
+  editPageMode?: LowCodeEditPageMode;
   getDataSource(sourceKey?: string): LowCodePageDataSource | undefined;
   resolveDataSourceRequest(
     sourceKey: string,

@@ -157,6 +157,7 @@ function mergeField(
   for (const key of [
     'defaultValueType',
     'defaultValueScript',
+    'defaultValueProcedure',
     'updateScript',
     'validationScript',
     'validationMessage',

@@ -110,6 +110,31 @@
             throw new Error(`Unexpected main capability: ${request.name}`);
           },
         );
+        const configuredFunctionResult = await executor(
+          {
+            script: `function fn() { return new Date(0); }`,
+            context,
+            executionMode: 'function',
+          },
+          () => {
+            throw new Error('Synchronous configured function must not call host capabilities.');
+          },
+        );
+        const configuredAsyncFunctionResult = await executor(
+          {
+            script: `
+              async function loadDefaultValue() {
+                await Promise.resolve();
+                return "ASYNC-DEFAULT";
+              }
+            `,
+            context,
+            executionMode: 'function',
+          },
+          () => {
+            throw new Error('Asynchronous configured function must not call host capabilities.');
+          },
+        );
         const isolated = await executor(
           {
             script: `
@@ -183,6 +208,8 @@
           ok:
             result.value === 42 &&
             mainResult.value === 1 &&
+            configuredFunctionResult.value === '1970-01-01T00:00:00.000Z' &&
+            configuredAsyncFunctionResult.value === 'ASYNC-DEFAULT' &&
             mainCalls.map((call) => call.name).join(',') === 'action.execute,http.execute,pageFunction.execute' &&
             isolated.value.mutationBlocked === true &&
             isolated.value.guestValue === 1 &&
@@ -205,6 +232,8 @@
             apiLimitMessage.includes('调用次数超过限制'),
           result,
           mainResult,
+          configuredFunctionResult,
+          configuredAsyncFunctionResult,
           isolated,
           scriptLogs,
           timeoutMessage,

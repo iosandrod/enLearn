@@ -9,6 +9,8 @@ type LowCodeGridProps = {
   rows: GridRow[];
   loading?: boolean;
   fill?: boolean;
+  readonly?: boolean;
+  executing?: boolean;
 };
 
 declare function validate(): Promise<boolean>;
@@ -30,6 +32,8 @@ declare const __VLS_export: import('vue').DefineComponent<LowCodeGridProps, {
   gridEvent: (payload: {
     key: string;
     row?: GridRow;
+    column?: GridRow;
+    columnIndex?: number;
     actionCode?: string;
     rawEvent: GridRow;
   }) => any;
@@ -44,6 +48,8 @@ declare const __VLS_export: import('vue').DefineComponent<LowCodeGridProps, {
   onGridEvent?: (payload: {
     key: string;
     row?: GridRow;
+    column?: GridRow;
+    columnIndex?: number;
     actionCode?: string;
     rawEvent: GridRow;
   }) => any;

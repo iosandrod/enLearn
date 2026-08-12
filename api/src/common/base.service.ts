@@ -734,12 +734,23 @@ export abstract class BaseService implements ServiceExecutor {
 
   protected async performList(ctx: CrudContext) {
     if (!this.hasRequiredListFilters(ctx.input)) {
-      return [];
+      return this.emptyListItemsResult(ctx.input);
     }
 
+    const withCount = this.readBoolean(
+      ctx.input.withCount ?? ctx.input.with_count,
+      false
+    );
+    const responseMode = this.readOptionalString(
+      ctx.input.responseMode ?? ctx.input.response_mode
+    );
+    const paged = withCount || responseMode === 'page';
     let query = ctx.client
       .from(ctx.resource.tableName)
-      .select(ctx.resource.select ?? '*');
+      .select(
+        ctx.resource.select ?? '*',
+        paged ? { count: 'exact' as const } : undefined
+      );
 
     if (ctx.resource.ownerField && ctx.user) {
       query = query.eq(ctx.resource.ownerField, ctx.user.id);
@@ -770,9 +781,22 @@ export abstract class BaseService implements ServiceExecutor {
     const offset = this.readCrudOffset(ctx.input, limit);
     query = query.range(offset, offset + limit - 1);
 
-    const { data, error } = await query;
+    const { data, error, count } = await query;
     if (error) throw new BadRequestException(error.message);
-    return data ?? [];
+    const rows = data ?? [];
+    if (paged) {
+      const page = Math.min(
+        Math.max(Math.trunc(this.readNumber(ctx.input.page, 1)), 1),
+        100000
+      );
+      return {
+        rows,
+        total: count ?? rows.length,
+        page,
+        pageSize: limit
+      };
+    }
+    return rows;
   }
 
   protected async performCreate(ctx: CrudContext) {

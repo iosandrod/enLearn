@@ -293,6 +293,9 @@ const converter: VisualToLowCodeConverter = {
       sourceType: association.sourceType,
       tableName: association.tableName,
       viewName: association.viewName,
+      ...(typeof props.gridDesignerUpdatedAt === 'number'
+        ? { gridDesignerUpdatedAt: props.gridDesignerUpdatedAt }
+        : {}),
       schema: {
         title: readString(props.title, 'Records'),
         grid: {

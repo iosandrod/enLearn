@@ -17,6 +17,7 @@
           :form-models="formModels"
           :active-action-codes="activeActionCodes"
           :executing-action-keys="executingActions"
+          :edit-page-mode="editPageMode"
           :grid-states="gridStates"
           :service-api="serviceApi"
           @runtime-event="handleRuntimeEvent"
@@ -35,6 +36,7 @@
       :form-models="formModels"
       :active-action-codes="activeActionCodes"
       :executing-action-keys="executingActions"
+      :edit-page-mode="editPageMode"
       :grid-states="gridStates"
       :service-api="serviceApi"
       @runtime-event="handleRuntimeEvent"
@@ -79,6 +81,7 @@
       :form-models="formModels"
       :active-action-codes="activeActionCodes"
       :executing-action-keys="executingActions"
+      :edit-page-mode="editPageMode"
       :grid-states="gridStates"
       :service-api="serviceApi"
       @runtime-event="handleRuntimeEvent"
@@ -99,6 +102,13 @@ import { invokeMobileNativeCapability } from './native-capabilities';
 import { uploadMesMobileAsset } from './mobile-files';
 import { registerMobileBackHandler } from './mobile-back';
 import { validateMobileFormValues } from './mobile-form';
+import {
+  isLowCodeEditPageActionDisabled,
+  isLowCodeEditPageModifyAction,
+  isLowCodeEditPageReadonly,
+  isLowCodeEditPageSaveAction,
+  resolveLowCodeEditPageMode,
+} from '../../../packages/lowcode-framework/src/runtime/edit-page-mode';
 import { getRuntimeConfig } from '../config';
 import { readPageDataCache, writePageDataCache } from './runtime-cache';
 import {
@@ -129,6 +139,7 @@ import type {
   MobileGridRuntimeStates,
   SharedLowCodeDirective,
 } from './types';
+import type { LowCodeEditPageMode } from '../../../packages/lowcode-framework/src/types/lowcode';
 
 registerDefaultMobileMaterials();
 const route = useRoute();
@@ -150,7 +161,7 @@ const searchFilters = reactive<Record<string, Record<string, unknown>>>({});
 const activeActionCodes = reactive<Record<string, string>>({});
 const gridStates = reactive<MobileGridRuntimeStates>({});
 const loadingSources = ref(false);
-const executingActions = new Set<string>();
+const executingActions = reactive(new Set<string>());
 const message = ref('');
 const messageTone = ref<'success' | 'error' | 'info' | 'warning'>('info');
 let messageTimer: ReturnType<typeof setTimeout> | undefined;
@@ -168,6 +179,11 @@ const routeScope = computed(() => ({
   path: route.path,
   fullPath: route.fullPath,
 }));
+const editPageMode = ref<LowCodeEditPageMode | undefined>(
+  props.page.page_type === 'edit'
+    ? resolveLowCodeEditPageMode(route.query.id)
+    : undefined,
+);
 
 const layoutBlocks = computed(() => mobileLayoutBlocks(props.page));
 const overlayBlocks = computed(() => mobileOverlayBlocks(props.page));
@@ -403,6 +419,7 @@ function linkedEditRoute(block: MobileRuntimeBlock, row: Record<string, unknown>
 }
 
 async function handleFormSubmit(event: MobileRuntimeEvent) {
+  if (isLowCodeEditPageReadonly(editPageMode.value)) return;
   if (!event.blockId) return;
   const block = allPageBlocks().find(
     (item) => item.id === event.blockId && item.kind === 'form'
@@ -431,6 +448,7 @@ async function handleFormSubmit(event: MobileRuntimeEvent) {
       request,
     });
     showMessage('已保存到离线队列，联网后自动同步', 'warning');
+    editPageMode.value = 'scan';
     return;
   }
 
@@ -446,10 +464,12 @@ async function handleFormSubmit(event: MobileRuntimeEvent) {
       request,
     });
     showMessage('网络中断，操作已进入离线队列', 'warning');
+    editPageMode.value = 'scan';
     return;
   }
   showMessage('保存成功', 'success');
   await loadDataSources(undefined, true);
+  editPageMode.value = 'scan';
   await handleRuntimeEvent({
     name: 'form.saved',
     blockId: block.id,
@@ -463,6 +483,7 @@ async function handleFormSubmit(event: MobileRuntimeEvent) {
 }
 
 async function handleGridRowAction(event: MobileRuntimeEvent) {
+  if (isLowCodeEditPageReadonly(editPageMode.value)) return;
   if (!event.blockId || !event.payload?.actionCode || !event.payload.row) return;
   const block = allPageBlocks().find(
     (item) => item.id === event.blockId && item.kind === 'grid'
@@ -510,34 +531,67 @@ async function handleGridRowAction(event: MobileRuntimeEvent) {
   }
 }
 
-async function loadDataSources(sourceKeys?: string[], force = false) {
+type DataSourceLoadOptions = {
+  ordered?: boolean;
+  strict?: boolean;
+};
+
+const MES_EXECUTION_REFRESH_SOURCE_KEYS = [
+  'workOrders',
+  'operations',
+  'components',
+  'productionTransactions',
+  'materialTransactions',
+] as const;
+
+async function loadDataSources(
+  sourceKeys?: string[],
+  force = false,
+  options: DataSourceLoadOptions = {},
+) {
   const sources = props.page.schema.dataSources ?? {};
+  const requestedOrder = new Map((sourceKeys ?? []).map((key, index) => [key, index]));
   const entries = Object.entries(sources).filter(([key, source]) =>
     (!sourceKeys || sourceKeys.includes(key)) && (force || source.autoLoad !== false)
   );
 
+  if (options.ordered && sourceKeys) {
+    entries.sort(([left], [right]) => (
+      (requestedOrder.get(left) ?? Number.MAX_SAFE_INTEGER)
+        - (requestedOrder.get(right) ?? Number.MAX_SAFE_INTEGER)
+    ));
+  }
+
   if (!entries.length) return;
+
+  const loadedKeys = new Set<string>();
+  const loadEntry = async ([key, source]: (typeof entries)[number]) => {
+    const resolvedPostData = resolveRuntimeValue(source.postData ?? {}, {
+      data: resolvedData,
+      forms: formModels,
+      route: routeScope.value,
+    }) as Record<string, unknown>;
+    const configuredFilters = resolvedPostData.filters;
+    const filters = {
+      ...(configuredFilters && typeof configuredFilters === 'object' && !Array.isArray(configuredFilters)
+        ? configuredFilters
+        : {}),
+      ...(searchFilters[key] ?? {}),
+    };
+    resolvedData[key] = await props.serviceApi.loadDataSource(
+      { ...source, postData: resolvedPostData },
+      Object.keys(filters).length ? { filters } : {}
+    );
+    loadedKeys.add(key);
+  };
 
   loadingSources.value = true;
   try {
-    await Promise.all(entries.map(async ([key, source]) => {
-      const resolvedPostData = resolveRuntimeValue(source.postData ?? {}, {
-        data: resolvedData,
-        forms: formModels,
-        route: routeScope.value,
-      }) as Record<string, unknown>;
-      const configuredFilters = resolvedPostData.filters;
-      const filters = {
-        ...(configuredFilters && typeof configuredFilters === 'object' && !Array.isArray(configuredFilters)
-          ? configuredFilters
-          : {}),
-        ...(searchFilters[key] ?? {}),
-      };
-      resolvedData[key] = await props.serviceApi.loadDataSource(
-        { ...source, postData: resolvedPostData },
-        Object.keys(filters).length ? { filters } : {}
-      );
-    }));
+    if (options.ordered) {
+      for (const entry of entries) await loadEntry(entry);
+    } else {
+      await Promise.all(entries.map(loadEntry));
+    }
     synchronizeFormsFromDataSources();
     await writePageDataCache(
       getRuntimeConfig().accountId,
@@ -558,6 +612,7 @@ async function loadDataSources(sourceKeys?: string[], force = false) {
     const cachedValues = cached?.data ?? {};
     const restoredKeys = entries
       .map(([key]) => key)
+      .filter((key) => !loadedKeys.has(key))
       .filter((key) => Object.prototype.hasOwnProperty.call(cachedValues, key));
     restoredKeys.forEach((key) => {
       resolvedData[key] = cachedValues[key];
@@ -571,6 +626,7 @@ async function loadDataSources(sourceKeys?: string[], force = false) {
         'error'
       );
     }
+    if (options.strict) throw error;
   } finally {
     loadingSources.value = false;
   }
@@ -609,6 +665,10 @@ function runtimeActionKey(event: MobileRuntimeEvent) {
   return `${event.blockId}:${actionCode}`;
 }
 
+type DirectiveExecutionContext = {
+  mesCommandState?: 'queued' | 'completed' | 'refreshed';
+};
+
 function openPageReference(directive: SharedLowCodeDirective, event: MobileRuntimeEvent) {
   const config = resolveRuntimeValue(
     directive.config ?? directive.value ?? {},
@@ -641,6 +701,13 @@ async function openGlobalDialog(directive: SharedLowCodeDirective, event: Mobile
     eventScope(event),
   );
   const resultFormId = `${id}-form`;
+  const actions = Array.isArray(rawConfig.actions)
+    ? rawConfig.actions.filter(isRecord)
+    : [];
+  const actionLabel = (role: 'confirm' | 'cancel', fallback: string) => {
+    const action = actions.find((item) => item.role === role);
+    return String(action?.label ?? fallback);
+  };
   formModels[resultFormId] = isRecord(resolvedModel) ? { ...resolvedModel } : {};
   const resultEvent = String(directive.resultEvent ?? directive.event ?? 'dialog.result');
 
@@ -652,8 +719,8 @@ async function openGlobalDialog(directive: SharedLowCodeDirective, event: Mobile
     width: rawConfig.width,
     open: true,
     showFooter: true,
-    confirmLabel: String(rawConfig.confirmLabel ?? '确定'),
-    cancelLabel: String(rawConfig.cancelLabel ?? '取消'),
+    confirmLabel: String(rawConfig.confirmLabel ?? actionLabel('confirm', '确定')),
+    cancelLabel: String(rawConfig.cancelLabel ?? actionLabel('cancel', '取消')),
     blocks: fields.length
       ? [{
           id: resultFormId,
@@ -688,8 +755,19 @@ async function openGlobalDialog(directive: SharedLowCodeDirective, event: Mobile
   };
 }
 
-async function executeDirective(directive: SharedLowCodeDirective, event: MobileRuntimeEvent) {
+async function executeDirective(
+  directive: SharedLowCodeDirective,
+  event: MobileRuntimeEvent,
+  executionContext: DirectiveExecutionContext,
+) {
   if (directive.disabled) return;
+
+  if (
+    executionContext.mesCommandState === 'queued'
+    && ['refreshDataSource', 'refreshDataSources', 'showMessage'].includes(directive.type)
+  ) {
+    return;
+  }
 
   const scope = eventScope(event);
   if (directive.when !== undefined && !isTruthyRuntimeValue(resolveRuntimeValue(directive.when, scope))) {
@@ -721,12 +799,19 @@ async function executeDirective(directive: SharedLowCodeDirective, event: Mobile
       openPageReference(directive, event);
       break;
     case 'refreshDataSource':
-    case 'refreshDataSources':
+    case 'refreshDataSources': {
+      const followsMesCommand = executionContext.mesCommandState === 'completed';
       await loadDataSources(
         directive.sourceKeys ?? (directive.sourceKey ? [directive.sourceKey] : undefined),
-        true
+        true,
+        {
+          ordered: followsMesCommand,
+          strict: followsMesCommand,
+        },
       );
+      if (followsMesCommand) executionContext.mesCommandState = 'refreshed';
       break;
+    }
     case 'invokeService': {
       if (!directive.serviceName || !directive.serviceMethod) return;
       const postData = resolveRuntimeValue(
@@ -754,6 +839,7 @@ async function executeDirective(directive: SharedLowCodeDirective, event: Mobile
             sourceKey: directive.sourceKey ?? '',
             request,
           });
+          executionContext.mesCommandState = 'queued';
           showMessage('操作已保存到离线队列，联网后自动同步', 'warning');
           return;
         }
@@ -768,9 +854,11 @@ async function executeDirective(directive: SharedLowCodeDirective, event: Mobile
             sourceKey: directive.sourceKey ?? '',
             request,
           });
+          executionContext.mesCommandState = 'queued';
           showMessage('网络中断，操作已进入离线队列', 'warning');
           return;
         }
+        executionContext.mesCommandState = 'completed';
       } else {
         result = await props.serviceApi.invoke(
           directive.serviceName,
@@ -798,14 +886,15 @@ async function executeDirective(directive: SharedLowCodeDirective, event: Mobile
 
       const eventName = String(resolveRuntimeValue(directive.event ?? 'dialog.result', scope));
       const followUps = normalizeDirectiveList(directive.directives);
+      const followUpEvent: MobileRuntimeEvent = {
+        name: eventName,
+        blockId: event.blockId,
+        blockKind: event.blockKind,
+        timestamp: Date.now(),
+        payload: { actionCode: 'confirm', values },
+      };
       for (const followUp of followUps) {
-        await executeDirective(followUp, {
-          name: eventName,
-          blockId: event.blockId,
-          blockKind: event.blockKind,
-          timestamp: Date.now(),
-          payload: { actionCode: 'confirm', values },
-        });
+        await executeDirective(followUp, followUpEvent, executionContext);
       }
       if (blockId) setBlockOpen(blockId, false);
       break;
@@ -1013,9 +1102,27 @@ function matchesHandler(event: MobileRuntimeEvent, handler: NonNullable<MobilePa
 }
 
 async function handleRuntimeEvent(event: MobileRuntimeEvent) {
+  const modeAction = isRecord(event.payload?.action)
+    ? event.payload.action
+    : { code: event.payload?.actionCode };
+  if (isLowCodeEditPageActionDisabled(modeAction, editPageMode.value)) return;
+  const actionCode = String(event.payload?.actionCode ?? '').trim().toLowerCase();
+  if (
+    props.page.page_type === 'edit' &&
+    isLowCodeEditPageModifyAction(modeAction)
+  ) {
+    editPageMode.value = 'edit';
+  }
   const actionKey = runtimeActionKey(event);
-  if (actionKey && executingActions.has(actionKey)) return;
-  if (actionKey) executingActions.add(actionKey);
+  const nestedConfirmation = event.name === 'dialog.result'
+    && String(event.payload?.actionCode ?? '') === 'confirm';
+  if (actionKey && executingActions.size > 0 && !nestedConfirmation) {
+    showMessage('当前操作仍在处理中，请稍候。', 'info');
+    return;
+  }
+  if (actionKey && !nestedConfirmation) executingActions.add(actionKey);
+  const executionContext: DirectiveExecutionContext = {};
+  let eventSucceeded = true;
 
   try {
   if (event.payload?.actionCode && event.blockId) {
@@ -1055,6 +1162,7 @@ async function handleRuntimeEvent(event: MobileRuntimeEvent) {
     try {
       await handleFormSubmit(event);
     } catch (error) {
+      eventSucceeded = false;
       if (isMobileAuthenticationError(error)) emit('authenticationRequired');
       else showMessage(error instanceof Error ? error.message : '保存失败', 'error');
     }
@@ -1064,6 +1172,7 @@ async function handleRuntimeEvent(event: MobileRuntimeEvent) {
     try {
       await handleGridRowAction(event);
     } catch (error) {
+      eventSucceeded = false;
       if (isMobileAuthenticationError(error)) emit('authenticationRequired');
       else showMessage(error instanceof Error ? error.message : '操作失败', 'error');
     }
@@ -1102,8 +1211,9 @@ async function handleRuntimeEvent(event: MobileRuntimeEvent) {
 
   for (const directive of [...inlineDirectives, ...configuredDirectives]) {
     try {
-      await executeDirective(directive, event);
+      await executeDirective(directive, event, executionContext);
     } catch (error) {
+      eventSucceeded = false;
       if (isMobileAuthenticationError(error)) {
         emit('authenticationRequired');
         break;
@@ -1112,12 +1222,23 @@ async function handleRuntimeEvent(event: MobileRuntimeEvent) {
       break;
     }
   }
+  if (
+    eventSucceeded &&
+    props.page.page_type === 'edit' &&
+    isLowCodeEditPageSaveAction(modeAction) &&
+    (inlineDirectives.length > 0 || configuredDirectives.length > 0)
+  ) {
+    editPageMode.value = 'scan';
+  }
   } finally {
-    if (actionKey) executingActions.delete(actionKey);
+    if (actionKey && !nestedConfirmation) executingActions.delete(actionKey);
   }
 }
 
 async function initializePage() {
+  editPageMode.value = props.page.page_type === 'edit'
+    ? resolveLowCodeEditPageMode(route.query.id)
+    : undefined;
   emit('pageTitleChange', props.page.title || props.page.schema.title || '业务页面');
   initializeResolvedData();
   await loadDataSources();
@@ -1135,7 +1256,15 @@ async function synchronizePendingWrites() {
     );
     if (result.completed > 0) {
       showMessage(`已同步 ${result.completed} 条离线操作`, 'success');
-      await loadDataSources(undefined, true);
+      const configuredSourceKeys = new Set(Object.keys(props.page.schema.dataSources ?? {}));
+      const mesRefreshKeys = MES_EXECUTION_REFRESH_SOURCE_KEYS.filter((key) => (
+        configuredSourceKeys.has(key)
+      ));
+      await loadDataSources(
+        mesRefreshKeys.length ? [...mesRefreshKeys] : undefined,
+        true,
+        mesRefreshKeys.length ? { ordered: true, strict: true } : {},
+      );
     }
   } catch (error) {
     if (isMobileAuthenticationError(error)) emit('authenticationRequired');

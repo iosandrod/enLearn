@@ -17,7 +17,7 @@ import {
  */
 export const BUILTIN_LOW_CODE_EDIT_PAGE_FUNCTIONS: readonly BuiltinLowCodePageFunction[] = [
   {
-    // 复制当前表单，清理主键及流程状态，并将页面切换到 copy 模式。
+    // 复制当前表单，清理主键及流程状态，并将页面切换到 add 模式。
     id: 'edit.copy',
     name: 'copy',
     label: '复制',
@@ -26,7 +26,7 @@ export const BUILTIN_LOW_CODE_EDIT_PAGE_FUNCTIONS: readonly BuiltinLowCodePageFu
     insertText: createPageFunctionInsertText('copy'),
     execute: async (context) => {
       const result = await context.prepareForms('copy');
-      await context.setMode('copy');
+      await context.setMode('add');
       context.notify(
         readPageFunctionString(context.args.message) || '复制数据已准备，请修改后保存。',
         'info',
@@ -35,7 +35,7 @@ export const BUILTIN_LOW_CODE_EDIT_PAGE_FUNCTIONS: readonly BuiltinLowCodePageFu
     },
   },
   {
-    // 使用表单初始值准备新记录，并将页面切换到 create 模式。
+    // 使用表单初始值准备新记录，并将页面切换到 add 模式。
     id: 'edit.create',
     name: 'create',
     label: '新增',
@@ -44,7 +44,7 @@ export const BUILTIN_LOW_CODE_EDIT_PAGE_FUNCTIONS: readonly BuiltinLowCodePageFu
     insertText: createPageFunctionInsertText('create'),
     execute: async (context) => {
       const result = await context.prepareForms('create');
-      await context.setMode('create');
+      await context.setMode('add');
       context.notify(
         readPageFunctionString(context.args.message) || '已进入新增状态。',
         'info',
@@ -61,6 +61,7 @@ export const BUILTIN_LOW_CODE_EDIT_PAGE_FUNCTIONS: readonly BuiltinLowCodePageFu
     pageType: 'edit',
     insertText: createPageFunctionInsertText('modify'),
     execute: async (context) => {
+      if (context.getMode() !== 'scan') return context.getFormRecords();
       await context.setMode('edit');
       context.notify(
         readPageFunctionString(context.args.message) || '已进入修改状态。',
@@ -78,9 +79,10 @@ export const BUILTIN_LOW_CODE_EDIT_PAGE_FUNCTIONS: readonly BuiltinLowCodePageFu
     pageType: 'edit',
     insertText: createPageFunctionInsertText('save'),
     execute: async (context) => {
-      // const saved = await context.submitForms();
-      // if (!saved) throw new Error('保存失败。');
-      // return true;
+      if (context.getMode() === 'scan') return false;
+      const saved = await context.submitForms();
+      if (!saved) throw new Error('保存失败。');
+      return true;
     },
   },
   {

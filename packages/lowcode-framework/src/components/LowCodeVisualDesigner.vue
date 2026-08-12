@@ -305,6 +305,38 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function preserveDataSourceRuntimeSettings(
+  previousSources: unknown,
+  convertedSources: LowCodePageSchema['dataSources'],
+) {
+  const previous = isPlainRecord(previousSources) ? previousSources : {};
+
+  return Object.fromEntries(
+    Object.entries(convertedSources ?? {}).map(([key, source]) => {
+      const previousSource = isPlainRecord(previous[key]) ? previous[key] : {};
+      const loadAfterSourceKeys = Array.isArray(previousSource.loadAfterSourceKeys)
+        ? previousSource.loadAfterSourceKeys.filter(
+            (dependency): dependency is string =>
+              typeof dependency === 'string' && dependency.trim().length > 0,
+          )
+        : undefined;
+
+      return [
+        key,
+        {
+          ...source,
+          ...(typeof previousSource.autoLoad === 'boolean'
+            ? { autoLoad: previousSource.autoLoad }
+            : {}),
+          ...(loadAfterSourceKeys
+            ? { loadAfterSourceKeys: [...new Set(loadAfterSourceKeys)] }
+            : {}),
+        },
+      ];
+    }),
+  );
+}
+
 function normalizeSchema(schema: LowCodePageSchema | null | undefined) {
   if (!schema) return fallbackVisualModel.value;
   const converted = convertLowCodePageSchemaToVisualEditor(schema);
@@ -492,7 +524,10 @@ function buildSchema(payload: {
     config: payload.currentPage.config,
     visualEditor: payload.model,
     dataSources: hasRuntimeContent
-      ? converted.dataSources
+      ? preserveDataSourceRuntimeSettings(
+          previousSchema.dataSources,
+          converted.dataSources,
+        )
       : isPlainRecord(previousSchema.dataSources)
         ? previousSchema.dataSources
         : {},

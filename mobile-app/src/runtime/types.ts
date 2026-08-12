@@ -1,6 +1,7 @@
 import type {
   LowCodeAction,
   LowCodeButtonGroupAction,
+  LowCodeEditPageMode,
   LowCodeField,
   LowCodeFormSchema,
   LowCodePageDataSource,
@@ -72,6 +73,7 @@ export type MobileMaterialProps = {
   formModels: MobileFormModels;
   activeActionCodes: Record<string, string>;
   executingActionKeys: Set<string>;
+  editPageMode?: LowCodeEditPageMode;
   gridStates: MobileGridRuntimeStates;
   serviceApi?: import('./service-api').MobileServiceApi;
 };

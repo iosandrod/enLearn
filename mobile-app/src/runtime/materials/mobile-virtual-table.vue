@@ -232,7 +232,17 @@
                     <button
                       v-for="action in visibleRowActions(item.row)"
                       :key="action.code"
-                      :class="['row-action', { 'is-danger': action.status === 'danger' }]"
+                      :aria-label="action.label"
+                      :aria-busy="isRowActionExecuting(action)"
+                      :aria-disabled="isRowActionDisabled(action, item.row) || isRowActionExecuting(action)"
+                      :style="{ opacity: isRowActionExecuting(action) ? 0.55 : 1 }"
+                      :class="[
+                        'row-action',
+                        {
+                          'is-danger': action.status === 'danger',
+                          'is-executing': isRowActionExecuting(action),
+                        },
+                      ]"
                       :disabled="isRowActionDisabled(action, item.row) || isRowActionExecuting(action)"
                       @click.stop="publishRowAction(action, item.row)"
                     >
@@ -337,6 +347,7 @@ import {
   isLowCodeRowActionDisabled,
   visibleLowCodeRowActions,
 } from '../../../../packages/lowcode-framework/src/runtime/row-action-state';
+import { isLowCodeEditPageReadonly } from '../../../../packages/lowcode-framework/src/runtime/edit-page-mode';
 import {
   createLayoutWidthScheduler,
   getWebLayoutFrameDriver,
@@ -520,11 +531,12 @@ function visibleRowActions(row: Record<string, unknown>) {
 }
 
 function isRowActionDisabled(action: SharedLowCodeAction, row: Record<string, unknown>) {
-  return isLowCodeRowActionDisabled(action, row);
+  return isLowCodeEditPageReadonly(props.editPageMode)
+    || isLowCodeRowActionDisabled(action, row);
 }
 
-function isRowActionExecuting(action: SharedLowCodeAction) {
-  return props.executingActionKeys.has(`${props.block.id}:${action.code}`);
+function isRowActionExecuting(_action: SharedLowCodeAction) {
+  return props.executingActionKeys.size > 0;
 }
 
 const rawColumns = computed<RawGridColumn[]>(() => (
@@ -1327,7 +1339,7 @@ function handleCurrentRowClick(row: Record<string, unknown>, rowIndex: number) {
 }
 
 function publishRowAction(action: SharedLowCodeAction, row: Record<string, unknown>) {
-  if (isRowActionDisabled(action, row)) return;
+  if (isRowActionDisabled(action, row) || isRowActionExecuting(action)) return;
 
   emit('runtimeEvent', {
     name: action.eventName ?? 'grid.rowAction',
@@ -1639,6 +1651,10 @@ onBeforeUnmount(() => {
 
 .row-action.is-danger {
   background-color: #fde6e3;
+}
+
+.row-action.is-executing {
+  opacity: 0.55;
 }
 
 .row-action-text {

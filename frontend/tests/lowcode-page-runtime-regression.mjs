@@ -6,6 +6,12 @@ import {
   provideLowCodePageRuntime,
   useLowCodePageRuntime,
 } from '../../packages/lowcode-framework/src/runtime/page-runtime.ts';
+import {
+  isLowCodeEditPageActionDisabled,
+  isLowCodeEditPageFieldDisabled,
+  isLowCodeEditPageReadonly,
+  resolveLowCodeEditPageMode,
+} from '../../packages/lowcode-framework/src/runtime/edit-page-mode.ts';
 
 const runtime = createLowCodePageRuntime();
 
@@ -14,7 +20,39 @@ assert.deepEqual(
   ['sources', 'forms', 'searches', 'grids', 'status'],
   'A page runtime must own all page-level business state.'
 );
-assert.equal(runtime.state.status.formMode, 'edit');
+assert.equal(runtime.state.status.formMode, 'scan');
+assert.equal(resolveLowCodeEditPageMode('record-1'), 'scan');
+assert.equal(resolveLowCodeEditPageMode(''), 'add');
+assert.equal(resolveLowCodeEditPageMode(undefined), 'add');
+assert.equal(isLowCodeEditPageReadonly('scan'), true);
+assert.equal(isLowCodeEditPageReadonly('edit'), false);
+assert.equal(
+  isLowCodeEditPageFieldDisabled({ createDisabled: true }, 'add'),
+  true,
+  'Add mode must use createDisabled.',
+);
+assert.equal(
+  isLowCodeEditPageFieldDisabled({ editDisabled: true }, 'edit'),
+  true,
+  'Edit mode must use editDisabled.',
+);
+assert.equal(
+  isLowCodeEditPageFieldDisabled({}, 'scan'),
+  true,
+  'Scan mode must keep each configured input component visible but disabled.',
+);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'save' }, 'scan'), true);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'submit' }, 'scan'), true);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'addDetail' }, 'scan'), true);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'detailDelete' }, 'scan'), true);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'saveReport' }, 'scan'), false);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'addDetailTax' }, 'scan'), false);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'modify' }, 'scan'), false);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'modify' }, 'edit'), true);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'create' }, 'scan'), false);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'create' }, 'add'), true);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'copy' }, 'edit'), false);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'copy' }, 'add'), true);
 
 runtime.replaceForm('edit-form', { name: 'Initial' });
 runtime.patchForm('edit-form', { status: 'enabled' });
@@ -195,7 +233,12 @@ const rendererSource = await readFile(
   ),
   'utf8'
 );
-const [gridMaterialSource, formMaterialSource, searchMaterialSource] = await Promise.all([
+const [
+  gridMaterialSource,
+  formMaterialSource,
+  searchMaterialSource,
+  buttonGroupMaterialSource,
+] = await Promise.all([
   readFile(
     new URL(
       '../../packages/lowcode-framework/src/lowcode/block-materials/grid/index.vue',
@@ -213,6 +256,13 @@ const [gridMaterialSource, formMaterialSource, searchMaterialSource] = await Pro
   readFile(
     new URL(
       '../../packages/lowcode-framework/src/lowcode/block-materials/search-form/index.vue',
+      import.meta.url
+    ),
+    'utf8'
+  ),
+  readFile(
+    new URL(
+      '../../packages/lowcode-framework/src/lowcode/block-materials/button-group/index.vue',
       import.meta.url
     ),
     'utf8'
@@ -251,6 +301,31 @@ assert.match(
   rendererSource,
   /const builtinPageFunctionMode = computed<BuiltinLowCodePageFunctionMode>[\s\S]*?runtime\.state\.status\.formMode/,
   'The edit-page mode must be reactive so form controls update when page functions switch mode.',
+);
+assert.match(
+  rendererSource,
+  /resolveLowCodeEditPageMode\(host\.getRoute\(\)\.query\?\.id\)/,
+  'An edit page must initialize records in scan mode and empty routes in add mode.',
+);
+assert.match(
+  rendererSource,
+  /if \(!preserveGrids\) \{[\s\S]*?resolveLowCodeEditPageMode/,
+  'Refreshing an existing edit page must preserve its current scan/edit/add mode.',
+);
+assert.match(
+  rendererSource,
+  /isSuccessfulEditPageSaveEvent[\s\S]*?enterScanModeAfterSave/,
+  'A successful configured save action must return the edit page to scan mode.',
+);
+assert.match(
+  rendererSource,
+  /form: new Set\(\['setData', 'resetData'\]\)[\s\S]*?grid: new Set\(\['addRow', 'deleteCurrentRow'\]\)/,
+  'Scan mode must block document mutation without blocking search-form or grid hydration actions.',
+);
+assert.match(
+  buttonGroupMaterialSource,
+  /const runtimeActions = computed[\s\S]*?code: 'modify'[\s\S]*?emit\('runtimeEvent'/,
+  'Existing edit-page button groups with Save must receive a runtime Modify entry and publish it through the page state machine.',
 );
 
 for (const [name, source] of [

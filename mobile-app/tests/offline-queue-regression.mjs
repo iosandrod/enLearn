@@ -116,6 +116,29 @@ assert.equal(queue.mobileOfflineQueue.conflicts, 1);
 assert.equal(await queue.discardConflictedOfflineRequests('account-a', 'user-a'), 1);
 assert.equal(queue.mobileOfflineQueue.conflicts, 0);
 
+await queue.enqueueOfflineRequest({
+  accountId: 'account-a',
+  userId: 'user-a',
+  pageId: 'work-orders',
+  sourceKey: 'orders',
+  request: { ...request, requestId: 'mobile-operation-retry' },
+});
+for (let attempt = 1; attempt <= 8; attempt += 1) {
+  const failedResult = await queue.flushOfflineQueue({
+    replay: async () => {
+      throw new Error('Failed to fetch');
+    },
+  }, 'account-a', 'user-a', true);
+  assert.equal(failedResult.completed, 0);
+}
+assert.equal(queue.mobileOfflineQueue.failed, 1, 'a repeatedly failing write must enter failed state');
+await queue.retryFailedOfflineRequests('account-a', 'user-a');
+assert.equal(queue.mobileOfflineQueue.pending, 1, 'manual retry must return failed writes to pending');
+const retriedResult = await queue.flushOfflineQueue({
+  replay: async () => undefined,
+}, 'account-a', 'user-a', true);
+assert.deepEqual(retriedResult, { completed: 1, failed: 0, pending: 0, conflicts: 0 });
+
 const mesRequest = await queue.enrichMobileMesCommandRequest({
   serviceName: 'mes',
   serviceMethod: 'pauseOperation',

@@ -1,11 +1,12 @@
 <template>
   <section
     class="content-panel lc-node-button-group"
+    :aria-busy="isMesCommandExecuting"
     @contextmenu.stop.prevent="openButtonGroupContextMenu"
   >
     <div class="lc-button-group" :style="groupStyle">
       <vxe-button
-        v-for="action in block.actions"
+        v-for="action in runtimeActions"
         :key="action.code"
         v-bind="resolveButtonProps(action)"
         @click="() => handleRootClick(action)"
@@ -25,6 +26,15 @@ import type {
   LowCodeRuntimeDirective,
 } from '../../../types/lowcode';
 import { lowCodeRuntimeBlockEditorKey } from '../../../runtime/block-editor';
+import {
+  lowCodeEditPageModeScopeKey,
+  useLowCodePageRuntime,
+} from '../../../runtime/page-runtime';
+import {
+  isLowCodeEditPageActionDisabled,
+  isLowCodeEditPageSaveAction,
+  normalizeLowCodeEditPageActionCode,
+} from '../../../runtime/edit-page-mode';
 import type {
   ButtonGroupDesignerButton,
   ButtonGroupDesignerResult,
@@ -39,6 +49,37 @@ type RuntimeDesignerButton = Omit<LowCodeButtonGroupAction, 'children'> & {
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageButtonGroupBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
+const pageRuntime = useLowCodePageRuntime(false);
+const editPageModeScope = inject(lowCodeEditPageModeScopeKey, false);
+const editPageMode = computed(() =>
+  editPageModeScope && runtimeBlockEditor?.getPageRecord?.().page_type === 'edit'
+    ? pageRuntime?.state.status.formMode
+    : undefined
+);
+const isMesCommandExecuting = computed(() =>
+  pageRuntime?.state.status.mesCommandExecuting === true
+);
+const runtimeActions = computed<LowCodeButtonGroupAction[]>(() => {
+  const actions = props.block.actions ?? [];
+  if (
+    !editPageMode.value ||
+    !actions.some((action) => isSaveAction(action)) ||
+    actions.some((action) => normalizeActionCode(action.code) === 'modify')
+  ) return actions;
+
+  const saveIndex = actions.findIndex((action) => isSaveAction(action));
+  return [
+    ...actions.slice(0, saveIndex),
+    {
+      code: 'modify',
+      label: '修改',
+      type: 'button',
+      mode: 'button',
+      icon: 'ri-edit-line',
+    },
+    ...actions.slice(saveIndex),
+  ];
+});
 
 const justifyContentMap: Record<string, string> = {
   left: 'flex-start',
@@ -96,7 +137,7 @@ function resolveButtonProps(action: LowCodeButtonGroupAction): VxeButtonProps {
     suffixIcon: action.suffixIcon,
     round: action.round,
     circle: action.circle,
-    disabled: action.disabled,
+    disabled: isActionDisabled(action),
     loading: action.loading,
     trigger: action.trigger,
     align: action.align,
@@ -124,6 +165,14 @@ function handleRootClick(action: LowCodeButtonGroupAction) {
 function handleDropdownClick(params: { option?: Record<string, unknown> }) {
   const action = (params.option as { action?: LowCodeButtonGroupAction } | undefined)?.action;
   if (action) handleAction(action);
+}
+
+function normalizeActionCode(value: unknown) {
+  return normalizeLowCodeEditPageActionCode(value);
+}
+
+function isSaveAction(action: LowCodeButtonGroupAction) {
+  return isLowCodeEditPageSaveAction(action);
 }
 
 function toDesignerButton(action: LowCodeButtonGroupAction): RuntimeDesignerButton {
@@ -265,7 +314,7 @@ function openButtonGroupContextMenu(event: MouseEvent) {
 }
 
 function handleAction(action: LowCodeButtonGroupAction) {
-  if (action.disabled) return;
+  if (isActionDisabled(action)) return;
 
   emit('runtimeEvent', {
     name: action.eventName ?? 'buttonGroup.click',
@@ -280,6 +329,11 @@ function handleAction(action: LowCodeButtonGroupAction) {
     },
   });
   emit('toolbarAction', { block: props.block, action });
+}
+
+function isActionDisabled(action: LowCodeButtonGroupAction) {
+  return isMesCommandExecuting.value
+    || isLowCodeEditPageActionDisabled(action, editPageMode.value);
 }
 </script>
 

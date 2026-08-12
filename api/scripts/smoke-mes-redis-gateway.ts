@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { request as httpRequest } from 'node:http';
 import type { Client } from 'pg';
 
 import {
@@ -11,6 +12,7 @@ import {
 type JsonRecord = Record<string, unknown>;
 
 const API_URL = (process.env.MES_GATEWAY_URL ?? 'http://127.0.0.1:3150').replace(/\/$/, '');
+const EXPECTED_PATTERN = process.env.MES_EXPECTED_SERVICE_PATTERN ?? 'service.mes.execute';
 
 function isRecord(value: unknown): value is JsonRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -96,6 +98,38 @@ async function invoke(
   return { data: responseData(payload), payload, response };
 }
 
+async function invokeAndDropResponse(
+  fixture: MesE2eFixture,
+  token: string,
+  serviceMethod: string,
+  postData: JsonRecord,
+  requestId: string
+) {
+  const target = new URL(`${API_URL}/api/service`);
+  assert.equal(target.protocol, 'http:', 'the response-loss smoke helper requires an HTTP gateway');
+  const body = JSON.stringify({ serviceName: 'mes', serviceMethod, postData });
+
+  return new Promise<number>((resolveRequest, rejectRequest) => {
+    const request = httpRequest(target, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${token}`,
+        'content-length': Buffer.byteLength(body),
+        'content-type': 'application/json',
+        'x-account-id': fixture.accountId,
+        'x-request-id': requestId
+      }
+    }, (response) => {
+      const status = response.statusCode ?? 0;
+      response.destroy();
+      if (status >= 200 && status < 300) resolveRequest(status);
+      else rejectRequest(new Error(`Dropped-response request returned HTTP ${status}.`));
+    });
+    request.on('error', rejectRequest);
+    request.end(body);
+  });
+}
+
 async function expectError(
   operation: () => Promise<{ payload: unknown; response: Response }>,
   status: number,
@@ -115,6 +149,64 @@ function numberField(value: unknown, label: string) {
   const parsed = Number(value);
   assert.ok(Number.isFinite(parsed), `${label} must be numeric.`);
   return parsed;
+}
+
+async function readFactCounts(
+  database: Client,
+  fixture: MesE2eFixture,
+  workOrderId: string,
+  deviceId: string
+) {
+  const result = await database.query<{
+    command_count: string;
+    event_count: string;
+    material_transaction_count: string;
+    production_transaction_count: string;
+  }>(`
+    select
+      (select count(*)::text
+       from public.mes_command_log
+       where account_id = $1 and device_id = $3) as command_count,
+      (select count(*)::text
+       from public.mes_outbox_event
+       where account_id = $1 and payload->>'workOrderId' = $2) as event_count,
+      (select count(*)::text
+       from public.mes_production_transaction
+       where account_id = $1 and work_order_id = $2::uuid) as production_transaction_count,
+      (select count(*)::text
+       from public.mes_material_transaction
+       where account_id = $1 and work_order_id = $2::uuid) as material_transaction_count
+  `, [fixture.accountId, workOrderId, deviceId]);
+  return result.rows[0];
+}
+
+async function withWorkOrderStatus(
+  database: Client,
+  fixture: MesE2eFixture,
+  workOrderId: string,
+  status: 'closed' | 'canceled',
+  operation: () => Promise<void>
+) {
+  const current = await database.query<{ status: string }>(`
+    select status
+    from public.mes_work_order
+    where account_id = $1 and id = $2::uuid
+  `, [fixture.accountId, workOrderId]);
+  assert.ok(current.rows[0], 'the terminal-state guard fixture work order must exist');
+  await database.query(`
+    update public.mes_work_order
+    set status = $3, updated_at = timezone('utc'::text, now())
+    where account_id = $1 and id = $2::uuid
+  `, [fixture.accountId, workOrderId, status]);
+  try {
+    await operation();
+  } finally {
+    await database.query(`
+      update public.mes_work_order
+      set status = $3, updated_at = timezone('utc'::text, now())
+      where account_id = $1 and id = $2::uuid
+    `, [fixture.accountId, workOrderId, current.rows[0].status]);
+  }
 }
 
 async function verifyFacts(
@@ -248,6 +340,25 @@ async function main() {
       deviceId,
       localSequence: ++sequence
     };
+    const droppedReleaseStatus = await invokeAndDropResponse(
+      fixture,
+      token,
+      'releaseWorkOrder',
+      releasePostData,
+      releaseRequestId
+    );
+    assert.equal(droppedReleaseStatus, 200);
+    const persistedRelease = await database.query<{ status: string }>(`
+      select status
+      from public.mes_command_log
+      where account_id = $1 and command_id = $2::uuid
+    `, [fixture.accountId, releaseRequestId]);
+    assert.equal(
+      persistedRelease.rows[0]?.status,
+      'completed',
+      'the release command must commit before its response is discarded'
+    );
+
     const releaseResult = await invoke(
       fixture,
       token,
@@ -297,6 +408,30 @@ async function main() {
     assert.equal(startResult.response.status, 200, JSON.stringify(startResult.payload));
     let operation = record(record(startResult.data, 'start result').operation, 'started operation');
     assert.equal(operation.status, 'in_progress');
+
+    const beforeStaleConflict = await readFactCounts(database, fixture, workOrderId, deviceId);
+    const staleConflictStartedAt = performance.now();
+    await expectError(
+      () => command('reportProduction', {
+        operationId,
+        expectedVersion: numberField(firstOperation.row_version, 'stale operation version'),
+        goodQuantity: 1,
+        scrapQuantity: 0
+      }),
+      409,
+      /version conflict/i
+    );
+    const staleVersionConflictMs = Math.round(performance.now() - staleConflictStartedAt);
+    assert.ok(
+      staleVersionConflictMs < 5_000,
+      `a stale MES version must fail quickly, received 409 after ${staleVersionConflictMs}ms`
+    );
+    const afterStaleConflict = await readFactCounts(database, fixture, workOrderId, deviceId);
+    assert.deepEqual(
+      afterStaleConflict,
+      beforeStaleConflict,
+      'a stale-version conflict must not append commands, outbox events, or ledger facts'
+    );
 
     const pauseRequestId = randomUUID();
     const pausePostData = {
@@ -401,6 +536,24 @@ async function main() {
     assert.equal(operation.status, 'completed');
     assert.equal(record(complete.nextOperation, 'next operation').status, 'ready');
 
+    const beforeClosedReversal = await readFactCounts(database, fixture, workOrderId, deviceId);
+    await withWorkOrderStatus(database, fixture, workOrderId, 'closed', async () => {
+      await expectError(
+        () => command('reverseProduction', {
+          transactionId: reportTransactionId,
+          expectedOperationVersion: numberField(operation.row_version, 'closed operation version'),
+          reasonCode: 'closed-work-order-guard'
+        }),
+        400,
+        /closed or canceled work order/i
+      );
+    });
+    assert.deepEqual(
+      await readFactCounts(database, fixture, workOrderId, deviceId),
+      beforeClosedReversal,
+      'a closed work order must reject production reversal without appending facts'
+    );
+
     const reverseReportResult = await command('reverseProduction', {
       transactionId: reportTransactionId,
       expectedOperationVersion: numberField(operation.row_version, 'completed operation version'),
@@ -416,6 +569,24 @@ async function main() {
       'operation after production reversal'
     );
     assert.equal(operation.status, 'ready');
+
+    const beforeCanceledReversal = await readFactCounts(database, fixture, workOrderId, deviceId);
+    await withWorkOrderStatus(database, fixture, workOrderId, 'canceled', async () => {
+      await expectError(
+        () => command('reverseMaterial', {
+          transactionId: returnTransactionId,
+          expectedOperationVersion: numberField(operation.row_version, 'canceled operation version'),
+          reasonCode: 'canceled-work-order-guard'
+        }),
+        400,
+        /closed or canceled work order/i
+      );
+    });
+    assert.deepEqual(
+      await readFactCounts(database, fixture, workOrderId, deviceId),
+      beforeCanceledReversal,
+      'a canceled work order must reject material reversal without appending facts'
+    );
 
     await expectError(
       () => command('reverseMaterial', {
@@ -468,14 +639,18 @@ async function main() {
     );
 
     console.log(JSON.stringify({
-      pattern: 'service.mes.execute',
+      pattern: EXPECTED_PATTERN,
       gatewayUrl: API_URL,
       workOrderId,
       commandCount: 11,
       outboxEventCount: 11,
       compensationOrderVerified: true,
       idempotentReplayVerified: true,
+      responseLossReplayVerified: true,
       requestConflictVerified: true,
+      staleVersionConflictMs,
+      staleConflictFactsUnchanged: true,
+      terminalCompensationGuardsVerified: true,
       mesGatewayWriteVerified: true,
       isolation: 'dedicated persistent MES E2E account'
     }));

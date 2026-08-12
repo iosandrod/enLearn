@@ -198,7 +198,7 @@ try {
   }).click();
   await designer.waitFor({ state: 'hidden' });
 
-  await page.goto(`${url}?pageType=edit`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${url}?pageType=edit&recordId=order-1`, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(
     () => document.querySelector('#result')?.textContent !== 'pending',
     undefined,
@@ -215,6 +215,15 @@ try {
   await editDesignMenuItem.click();
   const editDesigner = page.locator('.button-group-designer-dialog').last();
   await editDesigner.waitFor({ state: 'visible' });
+  const designerToolbarButtons = editDesigner.locator('.lc-array-table__toolbar .vxe-button');
+  assert.equal(await designerToolbarButtons.count(), 3);
+  for (let index = 0; index < 3; index += 1) {
+    assert.equal(
+      await designerToolbarButtons.nth(index).isDisabled(),
+      false,
+      'Business-page scan mode must not disable button-designer tools.',
+    );
+  }
   await editDesigner.locator('.lc-array-table__toolbar .vxe-button', {
     hasText: '选择默认按钮',
   }).click();

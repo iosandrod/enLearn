@@ -32,7 +32,7 @@
             :readonly="isFormReadonly"
             @update:model-value="(value) => setFieldValue(field, value)"
             @change="handleFieldChange"
-            @patch-model="(payload) => patchFieldValues(payload)"
+            @patch-model="(payload) => patchFieldValues(field, payload)"
             @relate-select="(payload) => handleRelateSelect(field, payload)"
           />
         </vxe-form-item>
@@ -60,7 +60,7 @@
             :readonly="isFormReadonly"
             @update:model-value="(value) => setFieldValue(field, value)"
             @change="handleFieldChange"
-            @patch-model="(payload) => patchFieldValues(payload)"
+            @patch-model="(payload) => patchFieldValues(field, payload)"
             @relate-select="(payload) => handleRelateSelect(field, payload)"
           />
         </vxe-form-item>
@@ -102,6 +102,7 @@ import type {
 } from 'vxe-pc-ui';
 import type {
   LowCodeAction,
+  LowCodeEditPageMode,
   LowCodeField,
   LowCodeFormModel,
   LowCodeFormLayoutNode,
@@ -112,6 +113,10 @@ import LowCodeFormField from './LowCodeFormField.vue';
 import LowCodeFormLayout from './LowCodeFormLayout.vue';
 import { useLowCodeHost } from '../core/host';
 import { lowCodeOptionSourceRegistry } from '../runtime/option-source-registry';
+import {
+  isLowCodeEditPageFieldDisabled,
+  isLowCodeEditPageReadonly,
+} from '../runtime/edit-page-mode';
 import type {
   LowCodeFormMaterialPatchPayload,
   LowCodeFormMaterialSelectPayload,
@@ -124,6 +129,12 @@ defineOptions({
 type VxeLowCodeFormProps = VxeFormProps<LowCodeFormModel>;
 type VxeLowCodeFormRules = NonNullable<VxeLowCodeFormProps['rules']>;
 type VxeLowCodeFormRule = VxeFormDefines.FormRule<LowCodeFormModel>;
+type FieldVisibilityCondition = {
+  field: string;
+  equals?: unknown;
+  notEquals?: unknown;
+  includes?: unknown[];
+};
 
 const props = defineProps({
   schema: {
@@ -169,7 +180,7 @@ const props = defineProps({
   className: String,
   readonly: Boolean,
   disabled: Boolean,
-  mode: String as PropType<'create' | 'copy' | 'edit'>,
+  mode: String as PropType<LowCodeEditPageMode>,
   rules: Object as PropType<Record<string, VxeLowCodeFormRule[]>>,
   fieldValidator: Function as PropType<(
     field: LowCodeField,
@@ -269,6 +280,9 @@ const formItemPropsByField = computed(() =>
       showTitle: field.showTitle,
       span,
       rules: formRules.value[field.field],
+      ...(readFieldVisibilityCondition(field)
+        ? { visibleMethod: ({ data }) => isFieldVisible(field, data) }
+        : {}),
       className: 'lc-form-item',
       contentClassName: 'lc-form-item__content',
       titleClassName: 'lc-form-item__title',
@@ -315,7 +329,7 @@ const vxeFormProps = computed(() => ({
   padding: props.padding ?? false,
   className: props.className,
   readonly: props.readonly,
-  disabled: props.disabled,
+  disabled: props.disabled || isLowCodeEditPageReadonly(props.mode),
   preventSubmit: props.preventSubmit !== false,
   validConfig: formValidConfig.value,
   tooltipConfig: props.tooltipConfig,
@@ -343,16 +357,20 @@ const mergedFormProps = computed(() => ({
   ...forwardedFormAttrs.value,
   ...vxeFormProps.value,
 }));
-const isFormDisabled = computed(() => props.disabled === true);
+const isFormDisabled = computed(() =>
+  props.disabled === true || isLowCodeEditPageReadonly(props.mode)
+);
 const isFormReadonly = computed(() => props.readonly === true);
+const isFormInteractionBlocked = computed(() =>
+  isFormDisabled.value || isFormReadonly.value
+);
 
 function isFieldDisabled(field: LowCodeField) {
-  if (isFormDisabled.value || field.props?.disabled === true) return true;
-  if (props.mode === 'edit') return field.editDisabled === true;
-  if (props.mode === 'create' || props.mode === 'copy') {
-    return field.createDisabled === true;
-  }
-  return false;
+  if (
+    isFormDisabled.value ||
+    field.props?.disabled === true
+  ) return true;
+  return isLowCodeEditPageFieldDisabled(field, props.mode);
 }
 
 watch(
@@ -450,6 +468,25 @@ onBeforeUnmount(() => {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readFieldVisibilityCondition(field: LowCodeField) {
+  const condition = field.props?.visibleWhen;
+  if (!isRecord(condition) || typeof condition.field !== 'string') return undefined;
+  const sourceField = condition.field.trim();
+  if (!sourceField) return undefined;
+  return { ...condition, field: sourceField } as FieldVisibilityCondition;
+}
+
+function isFieldVisible(field: LowCodeField, values: Record<string, unknown>) {
+  const condition = readFieldVisibilityCondition(field);
+  if (!condition) return true;
+  const value = values[condition.field];
+  if (Array.isArray(condition.includes)) return condition.includes.includes(value);
+  if (Object.prototype.hasOwnProperty.call(condition, 'notEquals')) {
+    return value !== condition.notEquals;
+  }
+  return value === condition.equals;
 }
 
 function createLastRowFillTemplate(rowCount: number, allowLastRowToShrink = false) {
@@ -632,6 +669,7 @@ function formValuesEqual(left: unknown, right: unknown): boolean {
 }
 
 function setFieldValue(field: LowCodeField, value: unknown) {
+  if (isFormInteractionBlocked.value || isFieldDisabled(field)) return;
   formData[field.field] = value;
   emit('update:modelValue', { ...formData });
   vxeFormRef.value?.updateStatus({ field: field.field }, value);
@@ -642,6 +680,7 @@ function handleFieldChange(payload: {
   value: unknown;
   previousValue: unknown;
 }) {
+  if (isFormInteractionBlocked.value || isFieldDisabled(payload.field)) return;
   emit('fieldChange', {
     ...payload,
     values: { ...formData },
@@ -697,8 +736,15 @@ function isSafeFormFieldName(field: string) {
   return Boolean(field) && !['__proto__', 'prototype', 'constructor'].includes(field);
 }
 
-function patchFieldValues(payload: LowCodeFormMaterialPatchPayload) {
-  if (!isRecord(payload?.values)) return;
+function patchFieldValues(
+  sourceField: LowCodeField,
+  payload: LowCodeFormMaterialPatchPayload,
+) {
+  if (
+    isFormInteractionBlocked.value ||
+    isFieldDisabled(sourceField) ||
+    !isRecord(payload?.values)
+  ) return;
 
   const changes = Object.entries(payload.values).filter(([field]) =>
     isSafeFormFieldName(field)
@@ -730,7 +776,12 @@ function handleRelateSelect(
   field: LowCodeField,
   payload: LowCodeFormMaterialSelectPayload,
 ) {
-  if (!isRecord(payload?.row) || !isRecord(payload?.values)) return;
+  if (
+    isFormInteractionBlocked.value ||
+    isFieldDisabled(field) ||
+    !isRecord(payload?.row) ||
+    !isRecord(payload?.values)
+  ) return;
   emit('relateSelect', {
     field,
     row: payload.row,
@@ -751,6 +802,7 @@ function isValidResult(value: unknown) {
 }
 
 async function validate() {
+  if (isFormInteractionBlocked.value) return true;
   try {
     const result = await vxeFormRef.value?.validate();
     return isValidResult(result);
@@ -770,6 +822,7 @@ function snapshot() {
 }
 
 async function handleSubmit() {
+  if (isFormInteractionBlocked.value) return false;
   if (!(await validate())) return false;
   emit('submit', snapshot());
   return true;
@@ -806,6 +859,7 @@ function setValues(values: Record<string, unknown>) {
 }
 
 async function handleAction(action: LowCodeAction) {
+  if (isFormInteractionBlocked.value || action.disabled) return;
   if (action.type === 'submit') {
     await handleSubmit();
     return;

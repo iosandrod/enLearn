@@ -23,9 +23,26 @@ const debugScreenshot = process.env.ENLEARN_MOBILE_E2E_SCREENSHOT ?? '';
 const runCommandChain = ['1', 'true', 'yes'].includes(
   String(process.env.ENLEARN_MOBILE_E2E_COMMAND_CHAIN ?? '').trim().toLowerCase(),
 );
+const runOfflineReplay = ['1', 'true', 'yes'].includes(
+  String(process.env.ENLEARN_MOBILE_E2E_OFFLINE_REPLAY ?? '').trim().toLowerCase(),
+);
+const simulateResponseLoss = ['1', 'true', 'yes'].includes(
+  String(process.env.ENLEARN_MOBILE_E2E_RESPONSE_LOSS ?? '').trim().toLowerCase(),
+);
+assert.ok(
+  !(runOfflineReplay && simulateResponseLoss),
+  'offline replay and response-loss replay modes are mutually exclusive',
+);
 const sensitiveDiagnosticKeys = new Set([
   'accessToken', 'access_token', 'authorization', 'password', 'refreshToken', 'refresh_token',
 ]);
+const executionRefreshResources = [
+  'mes_work_order_runtime_view',
+  'mes_work_order_operation_runtime_view',
+  'mes_work_order_component_runtime_view',
+  'mes_production_transaction_runtime_view',
+  'mes_material_transaction_runtime_view',
+];
 
 assert.ok(
   loginPassword,
@@ -61,6 +78,41 @@ function commandDiagnostic(request) {
     requestId: request.headers()['x-request-id'] ?? null,
     postData: sanitizeDiagnosticValue(payload?.postData ?? {}),
   };
+}
+
+function assertPageOpen(page, lifecycleEvents, stage) {
+  assert.equal(
+    page.isClosed(),
+    false,
+    `${stage}: the mobile page must remain open; lifecycle=${lifecycleEvents.join(',') || 'active'}`,
+  );
+}
+
+function forwardedServiceHeaders(request) {
+  const excludedHeaders = new Set([
+    'accept-encoding',
+    'connection',
+    'content-length',
+    'host',
+    'transfer-encoding',
+  ]);
+  return Object.fromEntries(
+    Object.entries(request.headers()).filter(([name]) => !excludedHeaders.has(name.toLowerCase())),
+  );
+}
+
+async function readOfflineQueue(page) {
+  return await page.evaluate(() => {
+    const storage = window.__localStorage ?? window.localStorage;
+    const queueKey = Array.from({ length: storage.length }, (_, index) => storage.key(index))
+      .find((key) => key?.startsWith('enlearn_mobile_offline_queue:'));
+    if (!queueKey) return [];
+    try {
+      return JSON.parse(storage.getItem(queueKey) ?? '[]');
+    } catch {
+      return [];
+    }
+  });
 }
 
 async function clickText(page, label, last = false) {
@@ -128,10 +180,54 @@ async function selectWorkOrder(page, workOrder) {
   );
 }
 
-async function waitForMesCommand(page, method, action) {
+async function waitForActionControl(page, label, last = false) {
+  const textNodes = page.getByText(label, { exact: true });
+  const textNode = last ? textNodes.last() : textNodes.first();
+  await textNode.waitFor({ state: 'visible', timeout: 60_000 });
+  const control = textNode.locator('..');
+  await control.waitFor({ state: 'visible', timeout: 60_000 });
+  const deadline = Date.now() + 60_000;
+  while (await control.evaluate((node) => Number.parseFloat(getComputedStyle(node).opacity) < 0.99)) {
+    assert.ok(Date.now() < deadline, `the "${label}" action should become enabled`);
+    await page.waitForTimeout(50);
+  }
+  return control;
+}
+
+function mesListResource(response) {
+  const payload = serviceRequestPayload(response.request());
+  if (payload?.serviceName !== 'mes' || payload?.serviceMethod !== 'listItems') return '';
+  return String(payload?.postData?.resource ?? '');
+}
+
+async function waitForMesRefreshes(page, resources) {
+  const responses = await Promise.all(resources.map((resource) => (
+    page.waitForResponse(
+      (response) => mesListResource(response) === resource,
+      { timeout: 60_000 },
+    )
+  )));
+  const entries = await Promise.all(responses.map(async (response, index) => {
+    const resource = resources[index];
+    const body = await response.text();
+    assert.ok(response.ok(), `${resource} refresh failed: ${response.status()} ${body}`);
+    let payload;
+    try {
+      payload = body ? JSON.parse(body) : null;
+    } catch {
+      payload = null;
+    }
+    const rows = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
+    return [resource, rows];
+  }));
+  return new Map(entries);
+}
+
+async function waitForMesCommand(page, method, refreshResources, action) {
   const responsePromise = page.waitForResponse((response) => (
     isServiceRequest(response.request(), 'mes', method)
   ), { timeout: 60_000 });
+  const refreshPromise = waitForMesRefreshes(page, refreshResources);
   await action();
   const response = await responsePromise;
   const body = await response.text();
@@ -139,6 +235,7 @@ async function waitForMesCommand(page, method, action) {
     response.ok(),
     `${method} failed: ${response.status()} ${body}; request=${JSON.stringify(commandDiagnostic(response.request()))}`,
   );
+  return await refreshPromise;
 }
 
 async function waitForDialogCommand(page, method) {
@@ -149,14 +246,222 @@ async function waitForDialogCommand(page, method) {
   throw new Error(`${method} did not dispatch; dialog text: ${await page.locator('body').innerText()}`);
 }
 
-async function clickMesCommand(page, label, method) {
-  await page.getByText(label, { exact: true }).first().waitFor({ state: 'visible' });
-  await waitForMesCommand(page, method, () => (
-    page.getByText(label, { exact: true }).first().click()
-  ));
+async function clickMesCommand(page, label, method, refreshResources = executionRefreshResources) {
+  const control = await waitForActionControl(page, label);
+  return await waitForMesCommand(page, method, refreshResources, () => control.click());
 }
 
-async function confirmMesDialog(page, inputValues, confirmLabel, method) {
+async function doubleClickMesCommand(page, label, method, refreshResources = executionRefreshResources) {
+  const control = await waitForActionControl(page, label);
+  let requestCount = 0;
+  const capture = (request) => {
+    if (isServiceRequest(request, 'mes', method)) requestCount += 1;
+  };
+  page.on('request', capture);
+  try {
+    const refreshes = await waitForMesCommand(page, method, refreshResources, () => (
+      control.evaluate((element) => {
+        element.click();
+        element.click();
+      })
+    ));
+    await page.waitForTimeout(250);
+    assert.equal(requestCount, 1, `rapid double-clicking ${label} must dispatch one ${method} request`);
+    return refreshes;
+  } finally {
+    page.off('request', capture);
+  }
+}
+
+async function queueOfflineMesCommand(page, label, method) {
+  const control = await waitForActionControl(page, label);
+  let requestCount = 0;
+  const capture = (request) => {
+    if (isServiceRequest(request, 'mes', method)) requestCount += 1;
+  };
+  page.on('request', capture);
+  try {
+    await page.context().setOffline(true);
+    await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+    await page.getByText(/当前.*离线/).first().waitFor({ state: 'visible', timeout: 10_000 });
+    await control.evaluate((element) => {
+      element.click();
+      element.click();
+    });
+    await page.waitForFunction(() => {
+      const storage = window.__localStorage ?? window.localStorage;
+      const queueKey = Array.from({ length: storage.length }, (_, index) => storage.key(index))
+        .find((key) => key?.startsWith('enlearn_mobile_offline_queue:'));
+      if (!queueKey) return false;
+      try {
+        return JSON.parse(storage.getItem(queueKey) ?? '[]').length === 1;
+      } catch {
+        return false;
+      }
+    }, undefined, { timeout: 10_000 });
+    await page.waitForTimeout(250);
+    assert.equal(requestCount, 0, `offline ${method} must be queued without a server request`);
+    const queued = await page.evaluate(() => {
+      const storage = window.__localStorage ?? window.localStorage;
+      const queueKey = Array.from({ length: storage.length }, (_, index) => storage.key(index))
+        .find((key) => key?.startsWith('enlearn_mobile_offline_queue:'));
+      if (!queueKey) return [];
+      try {
+        return JSON.parse(storage.getItem(queueKey) ?? '[]');
+      } catch {
+        return [];
+      }
+    });
+    assert.equal(queued.length, 1, 'rapid duplicate offline clicks must create one queue item');
+    assert.equal(queued[0]?.request?.serviceMethod, method);
+    assert.equal(queued[0]?.request?.postData?.commandId, queued[0]?.request?.requestId);
+    return queued[0]?.request;
+  } finally {
+    page.off('request', capture);
+  }
+}
+
+async function restoreOnlineAndWaitForReplay(page, queuedRequest, method) {
+  const responsePromise = page.waitForResponse((response) => {
+    if (!isServiceRequest(response.request(), 'mes', method)) return false;
+    return response.request().headers()['x-request-id'] === queuedRequest.requestId;
+  }, { timeout: 60_000 });
+  const refreshPromise = waitForMesRefreshes(page, executionRefreshResources);
+  await page.context().setOffline(false);
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  const response = await responsePromise;
+  const body = await response.text();
+  assert.ok(response.ok(), `${method} offline replay failed: ${response.status()} ${body}`);
+  await refreshPromise;
+  await page.waitForFunction(() => {
+    const storage = window.__localStorage ?? window.localStorage;
+    return !Array.from({ length: storage.length }, (_, index) => storage.key(index))
+      .some((key) => key?.startsWith('enlearn_mobile_offline_queue:'));
+  }, undefined, { timeout: 15_000 });
+}
+
+async function invokeWithLostResponse(page, label, method, lifecycleEvents) {
+  const control = await waitForActionControl(page, label);
+  let responseDiscarded = false;
+  let resolveCommittedRequest;
+  let rejectCommittedRequest;
+  const committedRequest = new Promise((resolve, reject) => {
+    resolveCommittedRequest = resolve;
+    rejectCommittedRequest = reject;
+  });
+  await page.route('**/api/service', async (route) => {
+    if (responseDiscarded || !isServiceRequest(route.request(), 'mes', method)) {
+      await route.continue();
+      return;
+    }
+    responseDiscarded = true;
+    const request = route.request();
+    const capturedRequest = {
+      requestId: request.headers()['x-request-id'],
+      payload: serviceRequestPayload(request),
+      rawBody: request.postData() ?? '',
+    };
+    try {
+      const committed = await fetch(request.url(), {
+        method: request.method(),
+        headers: forwardedServiceHeaders(request),
+        body: capturedRequest.rawBody,
+        redirect: 'manual',
+      });
+      await committed.arrayBuffer();
+      assert.ok(
+        committed.ok,
+        `${method} must commit before its response is discarded; status=${committed.status}`,
+      );
+      await route.abort('connectionreset');
+      resolveCommittedRequest(capturedRequest);
+    } catch (error) {
+      await route.abort('failed').catch(() => undefined);
+      rejectCommittedRequest(error);
+    }
+  });
+  try {
+    await control.click();
+    const capturedRequest = await committedRequest;
+    await page.waitForFunction(() => {
+      const storage = window.__localStorage ?? window.localStorage;
+      const queueKey = Array.from({ length: storage.length }, (_, index) => storage.key(index))
+        .find((key) => key?.startsWith('enlearn_mobile_offline_queue:'));
+      if (!queueKey) return false;
+      try {
+        return JSON.parse(storage.getItem(queueKey) ?? '[]').length === 1;
+      } catch {
+        return false;
+      }
+    }, undefined, { timeout: 15_000 });
+    assert.ok(capturedRequest?.requestId, `${method} lost-response request must be captured`);
+    const queued = await readOfflineQueue(page);
+    assert.equal(queued.length, 1, 'the lost-response command must create one offline queue item');
+    assert.equal(queued[0]?.request?.requestId, capturedRequest.requestId);
+    assert.equal(queued[0]?.request?.serviceName, 'mes');
+    assert.equal(queued[0]?.request?.serviceMethod, method);
+    assert.deepEqual(
+      queued[0]?.request?.postData,
+      capturedRequest.payload?.postData,
+      'the queued command must preserve the body submitted before response loss',
+    );
+    assert.equal(queued[0]?.request?.postData?.commandId, capturedRequest.requestId);
+    assert.equal(typeof queued[0]?.request?.postData?.deviceId, 'string');
+    assert.ok(Number.isSafeInteger(Number(queued[0]?.request?.postData?.localSequence)));
+    assertPageOpen(page, lifecycleEvents, `${method} response-loss capture`);
+    return capturedRequest;
+  } finally {
+    await page.unroute('**/api/service');
+  }
+}
+
+async function retryLostResponse(page, capturedRequest, method, lifecycleEvents) {
+  assertPageOpen(page, lifecycleEvents, `${method} response-loss replay entry`);
+  const pendingBanner = page.getByText(/1 条(?:离线)?操作等待同步/).first();
+  await pendingBanner.waitFor({ state: 'visible', timeout: 15_000 });
+  const replayPromise = page.waitForResponse((response) => (
+    isServiceRequest(response.request(), 'mes', method)
+      && response.request().headers()['x-request-id'] === capturedRequest.requestId
+  ), { timeout: 60_000 });
+  const refreshPromise = waitForMesRefreshes(page, executionRefreshResources);
+  await page.context().setOffline(true);
+  await page.evaluate(() => window.dispatchEvent(new Event('offline')));
+  await page.context().setOffline(false);
+  await page.evaluate(() => window.dispatchEvent(new Event('online')));
+  const replay = await replayPromise;
+  assert.ok(replay.ok(), `${method} lost-response replay failed with ${replay.status()}`);
+  const replayPayload = serviceRequestPayload(replay.request());
+  assert.deepEqual(
+    replayPayload?.postData,
+    capturedRequest.payload?.postData,
+    'lost-response replay must preserve the original command body',
+  );
+  assert.equal(
+    replay.request().postData(),
+    capturedRequest.rawBody,
+    'lost-response replay must preserve the exact serialized command envelope',
+  );
+  await refreshPromise;
+  await page.waitForFunction(() => {
+    const storage = window.__localStorage ?? window.localStorage;
+    return !Array.from({ length: storage.length }, (_, index) => storage.key(index))
+      .some((key) => key?.startsWith('enlearn_mobile_offline_queue:'));
+  }, undefined, { timeout: 15_000 });
+  assertPageOpen(page, lifecycleEvents, `${method} response-loss replay complete`);
+}
+
+async function openMesDialog(page, label) {
+  const control = await waitForActionControl(page, label);
+  await control.click();
+}
+
+async function confirmMesDialog(
+  page,
+  inputValues,
+  confirmLabel,
+  method,
+  refreshResources = executionRefreshResources,
+) {
   const entries = Object.entries(inputValues);
   for (const [label, value] of entries) {
     const fieldLabel = page.getByText(label, { exact: true }).last();
@@ -170,9 +475,10 @@ async function confirmMesDialog(page, inputValues, confirmLabel, method) {
     await field.press('Tab');
     await page.waitForTimeout(50);
   }
-  const confirmText = page.getByText(confirmLabel, { exact: true }).last();
+  const confirmControl = await waitForActionControl(page, confirmLabel, true);
   const requestPromise = waitForDialogCommand(page, method);
-  await confirmText.click();
+  const refreshPromise = waitForMesRefreshes(page, refreshResources);
+  await confirmControl.click();
   const request = await requestPromise;
   const response = await request.response();
   assert.ok(response, `${method} should return a response`);
@@ -181,6 +487,7 @@ async function confirmMesDialog(page, inputValues, confirmLabel, method) {
     response.ok(),
     `${method} failed: ${response.status()} ${body}; request=${JSON.stringify(commandDiagnostic(request))}`,
   );
+  return await refreshPromise;
 }
 
 async function activateTab(page, label) {
@@ -206,6 +513,7 @@ try {
   const commandRequests = [];
   const mesListResponses = [];
   const serviceRequests = [];
+  const lifecycleEvents = [];
   let navigationDiagnostics = null;
   const commandMethods = new Set([
     'releaseWorkOrder',
@@ -220,7 +528,14 @@ try {
     'reverseMaterial',
   ]);
 
-  page.on('pageerror', (error) => runtimeErrors.push(error.message));
+  page.on('close', () => lifecycleEvents.push('page:close'));
+  page.on('crash', () => lifecycleEvents.push('page:crash'));
+  context.on('close', () => lifecycleEvents.push('context:close'));
+  browser.on('disconnected', () => lifecycleEvents.push('browser:disconnected'));
+  page.on('pageerror', (error) => {
+    lifecycleEvents.push('page:error');
+    runtimeErrors.push(error.message);
+  });
   page.on('console', (message) => {
     if (message.type() === 'error') runtimeErrors.push(message.text());
   });
@@ -388,37 +703,56 @@ try {
   );
 
   if (runCommandChain) {
-    await clickMesCommand(page, '开工', 'startOperation');
+    if (runOfflineReplay) {
+      const queuedStart = await queueOfflineMesCommand(page, '开工', 'startOperation');
+      await restoreOnlineAndWaitForReplay(page, queuedStart, 'startOperation');
+    } else if (simulateResponseLoss) {
+      const lostStart = await invokeWithLostResponse(page, '开工', 'startOperation', lifecycleEvents);
+      await retryLostResponse(page, lostStart, 'startOperation', lifecycleEvents);
+    } else {
+      await doubleClickMesCommand(page, '开工', 'startOperation');
+    }
 
-    await page.getByText('暂停', { exact: true }).first().click();
-    await confirmMesDialog(page, { 暂停原因: 'E2E 暂停验证' }, '确定', 'pauseOperation');
-    await clickMesCommand(page, '恢复', 'resumeOperation');
+    await openMesDialog(page, '暂停');
+    await confirmMesDialog(page, { 暂停原因: 'E2E 暂停验证' }, '确认暂停', 'pauseOperation');
+    const resumeRefreshes = await clickMesCommand(page, '恢复', 'resumeOperation');
 
     await activateTab(page, '投退料');
-    await page.getByText('投料', { exact: true }).first().click();
-    await confirmMesDialog(page, { 投料数量: '2' }, '确定', 'issueMaterial');
-    await page.getByText('退料', { exact: true }).first().click();
+    const refreshedOperations = resumeRefreshes.get('mes_work_order_operation_runtime_view') ?? [];
+    const refreshedComponents = resumeRefreshes.get('mes_work_order_component_runtime_view') ?? [];
+    const component = refreshedComponents.find((row) => row.requirement_type === 'consume');
+    const operation = refreshedOperations.find((row) => row.id === component?.operation_id);
+    assert.ok(component && operation, 'the refreshed consume component must resolve to its operation');
+    assert.equal(
+      String(component.operation_row_version),
+      String(operation.row_version),
+      'the component projection must carry the current operation version before issue',
+    );
+    assert.equal(operation.status, 'in_progress', 'the resumed operation must be in progress before issue');
+    await openMesDialog(page, '投料');
+    await confirmMesDialog(page, { 投料数量: '2' }, '确认投料', 'issueMaterial');
+    await openMesDialog(page, '退料');
     await confirmMesDialog(
       page,
       { 退料数量: '1', 退料原因: 'E2E 退料验证' },
-      '确定',
+      '确认退料',
       'returnMaterial',
     );
 
     await activateTab(page, '工序执行');
-    await page.getByText('报工', { exact: true }).first().click();
-    await confirmMesDialog(page, { 良品数量: '10', 报废数量: '0' }, '确定', 'reportProduction');
+    await openMesDialog(page, '报工');
+    await confirmMesDialog(page, { 良品数量: '10', 报废数量: '0' }, '确认报工', 'reportProduction');
     await clickMesCommand(page, '完工', 'completeOperation');
 
     await activateTab(page, '生产事务');
-    await page.getByText('撤销报工', { exact: true }).first().click();
-    await confirmMesDialog(page, { 撤销原因: 'E2E 撤销报工验证' }, '确定', 'reverseProduction');
+    await openMesDialog(page, '撤销报工');
+    await confirmMesDialog(page, { 撤销原因: 'E2E 撤销报工验证' }, '确认撤销', 'reverseProduction');
 
     await activateTab(page, '物料事务');
-    await page.getByText('反向事务', { exact: true }).first().click();
-    await confirmMesDialog(page, { 反向原因: 'E2E 反向退料验证' }, '确定', 'reverseMaterial');
-    await page.getByText('反向事务', { exact: true }).first().click();
-    await confirmMesDialog(page, { 反向原因: 'E2E 反向投料验证' }, '确定', 'reverseMaterial');
+    await openMesDialog(page, '反向事务');
+    await confirmMesDialog(page, { 反向原因: 'E2E 反向退料验证' }, '确认反向', 'reverseMaterial');
+    await openMesDialog(page, '反向事务');
+    await confirmMesDialog(page, { 反向原因: 'E2E 反向投料验证' }, '确认反向', 'reverseMaterial');
   }
 
   const significantErrors = runtimeErrors.filter((message) => (
@@ -454,6 +788,9 @@ try {
     visibleCommands: [...visibleCommands],
     capturedCommandEnvelopes: commandRequests.length,
     commandChainVerified: runCommandChain,
+    duplicateClickVerified: runCommandChain,
+    offlineReplayVerified: runCommandChain && runOfflineReplay,
+    responseLossReplayVerified: runCommandChain && simulateResponseLoss,
     mobileMesE2e: true,
   }));
 } finally {

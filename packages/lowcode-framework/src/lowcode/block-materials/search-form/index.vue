@@ -7,7 +7,6 @@
       :schema="block.schema"
       :option-sources="resolvedData"
       :loading="isLoading"
-      :mode="formMode"
       :field-validator="validateFieldScript"
       :label-context-menu="Boolean(runtimeBlockEditor)"
       @update:model-value="updateFormModel"
@@ -53,12 +52,6 @@ const formModel = computed(
 const isLoading = computed(
   () => (pageRuntime?.state.status.loadingBlockId ?? props.loadingBlockId) === props.block.id
 );
-const formMode = computed(() =>
-  runtimeBlockEditor?.getPageRecord?.().page_type === 'edit'
-    ? pageRuntime?.state.status.formMode
-    : undefined
-);
-
 onMounted(() => {
   if (!pageRuntime || !formRef.value) return;
   unregisterFormController = pageRuntime.registerFormController(props.block.id, {

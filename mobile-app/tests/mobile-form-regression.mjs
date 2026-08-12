@@ -206,6 +206,40 @@ assert.doesNotMatch(
   /@touchend="handleAction/,
   'form actions should rely on one click path after the Web View bridge is installed',
 );
+assert.match(
+  componentSource,
+  /props\.block\.kind === 'form'[\s\S]*?isLowCodeEditPageReadonly\(props\.editPageMode\)[\s\S]*?formInteractionBlocked/,
+  'mobile edit forms must block interaction while search forms remain usable in scan mode',
+);
+assert.match(
+  componentSource,
+  /:disabled="isFieldDisabled\(cell\.field\)"[\s\S]*?isLowCodeEditPageFieldDisabled\(field, props\.editPageMode\)/,
+  'mobile edit forms must render their controls and disable them in scan or field-specific modes',
+);
+
+const rendererSource = await readFile(
+  path.resolve(testDirectory, '../src/runtime/mobile-page-renderer.vue'),
+  'utf8',
+);
+assert.match(
+  rendererSource,
+  /resolveLowCodeEditPageMode\(route\.query\.id\)/,
+  'mobile edit pages must derive scan versus add mode from the route id',
+);
+assert.match(
+  rendererSource,
+  /isLowCodeEditPageModifyAction\(modeAction\)[\s\S]*?editPageMode\.value = 'edit'/,
+  'the mobile modify action must switch scan mode to edit mode',
+);
+const actionGroupSource = await readFile(
+  path.resolve(testDirectory, '../src/runtime/materials/mobile-action-group.vue'),
+  'utf8',
+);
+assert.match(
+  actionGroupSource,
+  /isLowCodeEditPageSaveAction[\s\S]*?code: 'modify', label: '修改'/,
+  'mobile edit-page action groups with Save must expose a Modify entry',
+);
 
 const webViewSource = await readFile(
   path.resolve(testDirectory, '../src/web/hippy-web-view.ts'),

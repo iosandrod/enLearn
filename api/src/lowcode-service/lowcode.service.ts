@@ -138,6 +138,10 @@ export class LowCodeService extends BaseService {
         return this.listTablePageOptions(context);
       case 'listTableColumns':
         return this.listTableColumns(postData, context);
+      case 'listDefaultValueProcedures':
+        return this.listDefaultValueProcedures(context);
+      case 'executeDefaultValueProcedure':
+        return this.executeDefaultValueProcedure(postData, context);
       case 'generateTableListPageSchema':
         return this.generateTableListPageSchema(postData, context);
       case 'saveGeneratedTableListPage':
@@ -425,6 +429,51 @@ export class LowCodeService extends BaseService {
       ? (data as { columns?: unknown }).columns
       : undefined;
     return normalizeDatabaseColumns(columns);
+  }
+
+  private async listDefaultValueProcedures(context: ServiceContext) {
+    const client = await this.getDefaultValueProcedureClient(context, true);
+    const { data, error } = await client.rpc('read_lowcode_default_value_procedure', {
+      p_action: 'list',
+      p_procedure: null
+    });
+    if (error) throw new BadRequestException(error.message);
+    return Array.isArray(data) ? data : [];
+  }
+
+  private async executeDefaultValueProcedure(
+    postData: Record<string, unknown>,
+    context: ServiceContext
+  ) {
+    const procedure = readString(
+      postData.procedure ?? postData.procedureName ?? postData.procedure_name
+    );
+    if (!procedure) throw new BadRequestException('procedure is required.');
+
+    const client = await this.getDefaultValueProcedureClient(context, false);
+    const { data, error } = await client.rpc('read_lowcode_default_value_procedure', {
+      p_action: 'execute',
+      p_procedure: procedure
+    });
+    if (error) {
+      if (error.code === '42501') throw new ForbiddenException(error.message);
+      if (error.code === 'P0002') throw new NotFoundException(error.message);
+      throw new BadRequestException(error.message);
+    }
+    return data;
+  }
+
+  protected async getDefaultValueProcedureClient(
+    context: ServiceContext,
+    manage: boolean
+  ) {
+    if (manage) {
+      return (await requireAdmin(
+        context,
+        ['lowcode.pages.manage', 'admin.entities.manage']
+      )).client;
+    }
+    return (await getCurrentUser(context)).client;
   }
 
   private async generateTableListPageSchema(

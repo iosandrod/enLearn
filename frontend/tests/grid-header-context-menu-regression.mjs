@@ -26,6 +26,27 @@ const runtimeGridDesignerSource = await readFile(
   ),
   'utf8'
 );
+const runtimeGridConverterSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/lowcode/visual-converters/lowcode-grid/index.ts',
+    import.meta.url
+  ),
+  'utf8'
+);
+const runtimeGridFieldEditorSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/lowcode/block-materials/grid/runtime-grid-field-editor.ts',
+    import.meta.url
+  ),
+  'utf8'
+);
+const runtimeFormFieldEditorSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/lowcode/block-materials/runtime-form-field-editor.ts',
+    import.meta.url
+  ),
+  'utf8'
+);
 const gridDesignerServiceSource = await readFile(
   new URL(
     '../../packages/lowcode-framework/src/visual-editor/components/grid-designer/grid-designer.service.tsx',
@@ -69,6 +90,7 @@ assert.match(
 
 for (const [code, label] of [
   ['tableInfoDesign', '表格信息设计'],
+  ['designCurrentField', '设计当前字段'],
   ['openSearch', '打开搜索框'],
   ['associateEntityField', '关联实体字段'],
   ['copyCellValue', '复制'],
@@ -106,6 +128,51 @@ assert.match(
   pageGridSource,
   /payload\.key === 'headerMenuClick'[\s\S]*payload\.actionCode === 'tableInfoDesign'[\s\S]*openRuntimeGridDesigner\(props\.block, runtimeBlockEditor, serviceApi\)/,
   'Clicking table information design must open the existing grid designer with the host service API.'
+);
+assert.match(
+  gridSource,
+  /const column = readColumn\(payload\);[\s\S]*const columnIndex = readColumnIndex\(payload\);[\s\S]*\{ column \}[\s\S]*\{ columnIndex \}/,
+  'Header menu clicks must preserve the VXE column and its runtime index.'
+);
+assert.match(
+  pageGridSource,
+  /payload\.key === 'headerMenuClick'[\s\S]*payload\.actionCode === 'designCurrentField'[\s\S]*resolveMenuColumnIndex\(payload, columns\)[\s\S]*openRuntimeGridFieldEditor/,
+  'Clicking design current field must target the right-clicked table column.'
+);
+assert.match(
+  runtimeGridFieldEditorSource,
+  /openRuntimeFormFieldEditor\(formBlock, field, editorProxy\)/,
+  'Table field design must reuse the existing form field editor and its database schema.'
+);
+assert.match(
+  runtimeGridFieldEditorSource,
+  /readGridEditRules[\s\S]*createFormField[\s\S]*createUpdatedColumn[\s\S]*createUpdatedEditRules[\s\S]*runtimeBlockEditor\.updateBlock/,
+  'The table adapter must round-trip current column rendering and validation settings.'
+);
+assert.match(
+  gridSource,
+  /gridFieldOptionsCodes[\s\S]*lowCodeOptionSourceRegistry\.subscribe[\s\S]*hydrateRuntimeGridColumn[\s\S]*codeOptionSources\[optionsCode\]/,
+  'Table fields must resolve the same optionsCode data used by form fields.'
+);
+assert.match(
+  pageGridSource,
+  /createRuntimeGridEditRules[\s\S]*validationScript[\s\S]*grid\.fieldValidate[\s\S]*payload\.key === 'editClosed'[\s\S]*executeGridFieldUpdateScript[\s\S]*grid\.fieldChange/,
+  'Table fields must execute the configured validation and update scripts.'
+);
+assert.match(
+  pageRendererSource,
+  /resolveGridDynamicDefaults[\s\S]*grid\.fieldDefaultValue[\s\S]*executeDefaultValueProcedure[\s\S]*executeIsolatedScript[\s\S]*block\.kind === 'grid'[\s\S]*await resolveGridDynamicDefaults\(block\)/,
+  'Table fields must resolve function and procedure defaults through the page runtime.'
+);
+assert.match(
+  runtimeGridConverterSource,
+  /gridDesignerUpdatedAt[\s\S]*props\.gridDesignerUpdatedAt/,
+  'Visual-to-runtime conversion must retain the grid remount revision after field design.'
+);
+assert.match(
+  runtimeFormFieldEditorSource,
+  /RUNTIME_FORM_FIELD_EDITOR_CODE = 'runtime-form-field-editor'/,
+  'The reused editor must continue loading the form-owned runtime field schema.'
 );
 assert.match(
   runtimeGridDesignerSource,

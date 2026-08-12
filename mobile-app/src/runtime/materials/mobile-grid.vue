@@ -6,6 +6,7 @@
     :form-models="formModels"
     :active-action-codes="activeActionCodes"
     :executing-action-keys="executingActionKeys"
+    :edit-page-mode="editPageMode"
     :grid-states="gridStates"
     @runtime-event="forwardRuntimeEvent"
   />
@@ -16,6 +17,7 @@
     :form-models="formModels"
     :active-action-codes="activeActionCodes"
     :executing-action-keys="executingActionKeys"
+    :edit-page-mode="editPageMode"
     :grid-states="gridStates"
     @runtime-event="forwardRuntimeEvent"
   />

@@ -122,8 +122,17 @@ function errorMessage(vm: QuickJSContext, handle: QuickJSHandle) {
   return String(dumped ?? '脚本执行失败。');
 }
 
-function createScriptSource(script: string, contextJson: string) {
-  const userScriptSource = `"use strict";\n${script}\n\nif (typeof main === "function") {\n  return await main.call(this, this.event);\n}\n`;
+function createConfiguredFunctionSource(script: string) {
+  const functionExpression = script.trim().replace(/;\s*$/, '');
+  const functionDefinition = `const __configuredFunction = (\n${functionExpression}\n);`;
+
+  return `"use strict";\n${functionDefinition}\n\nif (typeof __configuredFunction !== "function") {\n  throw new TypeError("Configured value must be a function.");\n}\nreturn await __configuredFunction.call(this, this.event);\n`;
+}
+
+function createScriptSource(request: LowCodeScriptExecutionRequest, contextJson: string) {
+  const userScriptSource = request.executionMode === 'function'
+    ? createConfiguredFunctionSource(request.script)
+    : `"use strict";\n${request.script}\n\nif (typeof main === "function") {\n  return await main.call(this, this.event);\n}\n`;
   return `
 (async function executeLowCodeButtonScript() {
   "use strict";
@@ -345,7 +354,7 @@ async function execute(message: ExecuteMessage) {
     hostLog.dispose();
 
     const evaluation = vm.evalCode(
-      createScriptSource(message.request.script, contextJson),
+      createScriptSource(message.request, contextJson),
       'lowcode-button-script.js',
       { type: 'global' },
     );

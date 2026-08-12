@@ -1,5 +1,11 @@
 <template>
-  <div class="lowcode-runtime-page" :class="themeClass" :style="themeStyle">
+  <div
+    class="lowcode-runtime-page"
+    :class="themeClass"
+    :style="themeStyle"
+    :aria-busy="runtime.state.status.mesCommandExecuting"
+    :data-mes-command-executing="runtime.state.status.mesCommandExecuting ? 'true' : 'false'"
+  >
     <div v-if="dataLoading" class="lc-page-loading-overlay" aria-live="polite">
       <span>{{ loadingText }}</span>
     </div>
@@ -97,6 +103,7 @@ import {
   preloadLowCodeScriptRuntime,
   type LowCodeScriptCapabilityRequest,
   type LowCodeScriptContextSnapshot,
+  type LowCodeScriptExecutionMode,
 } from '../runtime/scripts';
 import {
   hasBuiltinLowCodePageFunctions,
@@ -110,8 +117,20 @@ import {
 } from '../runtime/block-editor';
 import {
   createLowCodePageRuntime,
+  lowCodeEditPageModeScopeKey,
   lowCodePageRuntimeKey,
 } from '../runtime/page-runtime';
+import {
+  invokeDesktopMesCommand,
+  isDesktopMesCommand,
+  prepareDesktopMesCommandRequest,
+} from '../runtime/mes-command';
+import {
+  isLowCodeEditPageReadonly,
+  isLowCodeEditPageModifyAction,
+  isLowCodeEditPageSaveAction,
+  resolveLowCodeEditPageMode,
+} from '../runtime/edit-page-mode';
 import { lowCodeScriptContextProviderKey } from '../runtime/script-context-provider';
 import type { LowCodeContextSource } from '../runtime/lowcode-context';
 import {
@@ -154,10 +173,11 @@ const host = useLowCodeHost(() => ({
 }));
 const runtime = createLowCodePageRuntime();
 runtime.state.status.formMode =
-  props.page.page_type === 'edit' && !readString(host.getRoute().query?.id)
-    ? 'create'
-    : 'edit';
+  props.page.page_type === 'edit'
+    ? resolveLowCodeEditPageMode(host.getRoute().query?.id)
+    : 'scan';
 provide(lowCodePageRuntimeKey, runtime);
+provide(lowCodeEditPageModeScopeKey, true);
 
 const resolvedData = computed(() => runtime.state.sources);
 const formModels = computed(() => runtime.state.forms);
@@ -195,6 +215,12 @@ const dataLoading = computed({
 });
 const runtimeEventBus = createLowCodeEventBus();
 const pendingActionEvents = new WeakMap<object, Promise<void>>();
+type RuntimeDirectiveExecutionContext = {
+  mesCommandStarted: boolean;
+  mesCommandCompleted: boolean;
+  mesCommandRefreshCompleted: boolean;
+  mesCommandRefreshFailed: boolean;
+};
 const formBaselines: Record<string, Record<string, unknown>> = {};
 const runtimeBlockRenderRevision = ref(0);
 let runtimeBlockReloadSuppression: {
@@ -777,7 +803,15 @@ function invalidateSourceRequests() {
   sourceRequestVersions.clear();
 }
 
-async function refreshDataSources(sourceKeys: string[] = []) {
+type RefreshDataSourceOptions = {
+  ordered?: boolean;
+  strict?: boolean;
+};
+
+async function refreshDataSources(
+  sourceKeys: string[] = [],
+  options: RefreshDataSourceOptions = {},
+) {
   const allEntries = Object.entries(props.page.schema.dataSources ?? {});
   const uniqueSourceKeys = [...new Set(sourceKeys)];
   const entries = uniqueSourceKeys.length
@@ -789,35 +823,47 @@ async function refreshDataSources(sourceKeys: string[] = []) {
         .filter((entry): entry is readonly [string, LowCodePageDataSource] => Boolean(entry))
     : allEntries;
   const pageBlocks = flattenPageBlocks(props.page.schema);
-  const requests = entries.map(([key, source]) => {
+  const refreshEntry = async ([key, source]: readonly [string, LowCodePageDataSource]) => {
     const nodeAction = resolveLowCodeDataSourceNodeAction(pageBlocks, key);
     if (nodeAction) {
-      return executeScriptNodeAction({
-        node: nodeAction.block.id,
-        method: nodeAction.action.method,
-      })
-        .then(() => '')
-        .catch((error: unknown) =>
-          `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.refreshDataSource')}`
-        );
+      try {
+        await executeScriptNodeAction({
+          node: nodeAction.block.id,
+          method: nodeAction.action.method,
+        });
+        return '';
+      } catch (error) {
+        return `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.refreshDataSource')}`;
+      }
     }
 
     const version = beginSourceRequest(key);
     runtime.setSource(key, undefined);
 
-    return invokeDataSource(key, source, true)
-      .then(([resolvedKey, value]) => {
-        if (!isCurrentSourceRequest(key, version)) return '';
-        if (typeof value !== 'undefined') runtime.setSource(resolvedKey, value);
-        return '';
-      })
-      .catch((error: unknown) => {
-        if (!isCurrentSourceRequest(key, version)) return '';
-        return `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.refreshDataSource')}`;
-      })
-      .finally(() => finishSourceRequest(key, version));
-  });
-  const errors = (await Promise.all(requests)).filter(Boolean);
+    try {
+      const [resolvedKey, value] = await invokeDataSource(key, source, true);
+      if (!isCurrentSourceRequest(key, version)) return '';
+      if (typeof value !== 'undefined') runtime.setSource(resolvedKey, value);
+      return '';
+    } catch (error) {
+      if (!isCurrentSourceRequest(key, version)) return '';
+      return `${key}: ${error instanceof Error ? error.message : host.t('runtime.errors.refreshDataSource')}`;
+    } finally {
+      finishSourceRequest(key, version);
+    }
+  };
+  const errors: string[] = [];
+  if (options.ordered) {
+    for (const entry of entries) {
+      const error = await refreshEntry(entry);
+      if (error) {
+        errors.push(error);
+        if (options.strict) break;
+      }
+    }
+  } else {
+    errors.push(...(await Promise.all(entries.map(refreshEntry))).filter(Boolean));
+  }
 
   if (errors.length) {
     message.value = errors[0];
@@ -826,6 +872,7 @@ async function refreshDataSources(sourceKeys: string[] = []) {
 
   syncPageGridStates();
 
+  if (errors.length && options.strict) throw new Error(errors[0]);
   return errors;
 }
 
@@ -885,6 +932,9 @@ function createScriptContextSource(): LowCodeContextSource {
       route: props.page.route,
       title: props.page.title,
       page_type: props.page.page_type,
+      mode: props.page.page_type === 'edit'
+        ? builtinPageFunctionMode.value
+        : undefined,
       schema: props.page.schema,
     },
     data: resolvedData.value,
@@ -1051,7 +1101,7 @@ function searchTargetSourceKeys(block: LowCodePageSearchFormBlock) {
 }
 
 async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
-  const nextSchema = cloneRuntimeValue(props.page.schema);
+  const nextSchema = cloneRuntimeValueWithFunctions(props.page.schema);
   if (isRecord(props.page.schema.visualEditor)) {
     nextSchema.visualEditor = cloneRuntimeValueWithFunctions(props.page.schema.visualEditor);
   }
@@ -1346,6 +1396,7 @@ function runtimeFormFieldToVisualField(value: unknown): Record<string, unknown> 
     required: rules.some((rule) => rule.required === true),
     defaultValueType: readString(field.defaultValueType),
     defaultValueScript: readString(field.defaultValueScript),
+    defaultValueProcedure: readString(field.defaultValueProcedure),
     updateScript: readString(field.updateScript),
     validationScript: readString(field.validationScript),
     validationMessage: readString(field.validationMessage),
@@ -1382,19 +1433,21 @@ function deriveStaticFormModel(
   return mergeFormModelValues(block.initialValues ?? {}, row ?? {});
 }
 
-async function resolveFormFunctionDefaults(
+async function resolveFormDynamicDefaults(
   block: LowCodePageFormBlock | LowCodePageSearchFormBlock,
   model: Record<string, unknown>,
 ) {
   const nextModel = cloneRuntimeValue(model);
   for (const field of block.schema.fields) {
+    if (field.field in nextModel) continue;
+
+    const defaultValueType = readString(field.defaultValueType);
+    const defaultValueScript = readString(field.defaultValueScript);
+    const defaultValueProcedure = readString(field.defaultValueProcedure);
     if (
-      field.defaultValueType !== 'function' ||
-      !readString(field.defaultValueScript) ||
-      field.field in nextModel
-    ) {
-      continue;
-    }
+      (defaultValueType !== 'function' || !defaultValueScript) &&
+      (defaultValueType !== 'procedure' || !defaultValueProcedure)
+    ) continue;
 
     const event: LowCodeRuntimeEvent = {
       name: 'form.fieldDefaultValue',
@@ -1407,10 +1460,15 @@ async function resolveFormFunctionDefaults(
       },
     };
     try {
-      const result = await executeIsolatedScript(field.defaultValueScript, event);
-      if (typeof result.value !== 'undefined') {
-        nextModel[field.field] = cloneRuntimeValue(result.value);
-      }
+      const value = defaultValueType === 'procedure'
+        ? await host.getServiceApi().invoke('lowcode', 'executeDefaultValueProcedure', {
+            procedure: defaultValueProcedure,
+            blockId: block.id,
+            field: field.field,
+            values: cloneRuntimeValue(nextModel),
+          })
+        : (await executeIsolatedScript(defaultValueScript, event, 'function')).value;
+      if (typeof value !== 'undefined') nextModel[field.field] = cloneRuntimeValue(value);
     } catch (error) {
       reportRuntimeDirectiveError(error);
     }
@@ -1422,7 +1480,57 @@ async function deriveFormModel(
   block: LowCodePageFormBlock | LowCodePageSearchFormBlock,
   row?: Record<string, unknown>,
 ) {
-  return resolveFormFunctionDefaults(block, deriveStaticFormModel(block, row));
+  return resolveFormDynamicDefaults(block, deriveStaticFormModel(block, row));
+}
+
+async function resolveGridDynamicDefaults(block: LowCodePageGridBlock) {
+  const columns = block.schema.grid.columns ?? [];
+  const dynamicColumns = columns.filter((column) => {
+    const params = isRecord(column.params) ? column.params : {};
+    const field = isRecord(params.lowcodeField) ? params.lowcodeField : {};
+    const type = readString(field.defaultValueType);
+    return Boolean(
+      column.field &&
+      (type === 'function' || type === 'procedure') &&
+      (readString(field.defaultValueScript) || readString(field.defaultValueProcedure))
+    );
+  });
+  if (!dynamicColumns.length) return;
+
+  for (const column of dynamicColumns) {
+    const params = isRecord(column.params) ? column.params : {};
+    const field = isRecord(params.lowcodeField) ? params.lowcodeField : {};
+    const defaultValueType = readString(field.defaultValueType);
+    const defaultValueScript = readString(field.defaultValueScript);
+    const defaultValueProcedure = readString(field.defaultValueProcedure);
+    const event: LowCodeRuntimeEvent = {
+      name: 'grid.fieldDefaultValue',
+      blockId: block.id,
+      blockKind: block.kind,
+      timestamp: Date.now(),
+      payload: {
+        field: column.field,
+        values: {},
+      },
+    };
+
+    try {
+      const value = defaultValueType === 'procedure'
+        ? await host.getServiceApi().invoke('lowcode', 'executeDefaultValueProcedure', {
+            procedure: defaultValueProcedure,
+            blockId: block.id,
+            field: column.field,
+            values: {},
+          })
+        : (await executeIsolatedScript(defaultValueScript, event, 'function')).value;
+      const editRender = isRecord(column.editRender) ? column.editRender : {};
+      if (typeof value === 'undefined') delete editRender.defaultValue;
+      else editRender.defaultValue = cloneRuntimeValue(value);
+      column.editRender = editRender;
+    } catch (error) {
+      reportRuntimeDirectiveError(error);
+    }
+  }
 }
 
 function mergeFormModelValues(
@@ -1527,7 +1635,7 @@ function buildFormSubmissionValues(
   blocks: LowCodePageFormBlock[]
 ) {
   const isCreating =
-    props.page.page_type === 'edit' && builtinPageFunctionMode.value !== 'edit';
+    props.page.page_type === 'edit' && builtinPageFunctionMode.value === 'add';
   if (isCreating) {
     return blocks.reduce<Record<string, unknown>>((values, block) => ({
       ...values,
@@ -1772,10 +1880,10 @@ async function loadPageData(nextPage: LowCodePageRecord) {
   const preserveGrids = runtimePageId === nextPage.id;
   const gridInteractionState = preserveGrids ? captureGridInteractionState() : {};
 
-  if (!preserveGrids || props.page.page_type === 'edit') {
-    builtinPageFunctionMode.value = readString(host.getRoute().query?.id)
-      ? 'edit'
-      : 'create';
+  if (!preserveGrids) {
+    builtinPageFunctionMode.value = resolveLowCodeEditPageMode(
+      host.getRoute().query?.id,
+    );
   }
 
   invalidateSourceRequests();
@@ -1784,7 +1892,9 @@ async function loadPageData(nextPage: LowCodePageRecord) {
   initializePageGridStates(pageBlocks);
 
   for (const block of pageBlocks) {
-    if (block.kind === 'form') {
+    if (block.kind === 'grid') {
+      await resolveGridDynamicDefaults(block);
+    } else if (block.kind === 'form') {
       const sourceKey = block.sourceKey ?? block.submitSourceKey;
       runtime.replaceForm(block.id, await deriveFormModel(
         block,
@@ -1872,6 +1982,12 @@ onBeforeUnmount(unsubscribeRuntimeEvents);
 
 async function publishRuntimeEvent(event: LowCodeRuntimeEvent) {
   const action = isRecord(event.payload?.action) ? event.payload.action : undefined;
+  const actionEvent = Boolean(action || readString(event.payload?.actionCode));
+  if (actionEvent && runtime.state.status.mesCommandExecuting) {
+    message.value = '当前操作仍在处理中，请稍候。';
+    messageClass.value = 'lc-help';
+    return;
+  }
   const execution = publishRuntimeEventNow(event);
   if (action) pendingActionEvents.set(action, execution);
 
@@ -1900,26 +2016,106 @@ async function waitForActionEvent(action?: LowCodeAction | LowCodeButtonGroupAct
 }
 
 async function handlePublishedRuntimeEvent(event: LowCodeRuntimeEvent) {
-  const directives = resolveEventDirectives(event, props.page.schema.eventHandlers);
-  for (const directive of directives) {
-    try {
-      await executeRuntimeDirective(directive, event);
-    } catch (error) {
-      reportRuntimeDirectiveError(error);
-      if (event.payload?.action === 'confirm') throw error;
-      break;
+  if (isRuntimeEditPageModifyEvent(event)) {
+    const modeChanged = builtinPageFunctionMode.value !== 'edit';
+    builtinPageFunctionMode.value = 'edit';
+    if (modeChanged) {
+      await publishRuntimeEvent({
+        name: 'page.modeChange',
+        blockId: event.blockId,
+        blockKind: event.blockKind,
+        timestamp: Date.now(),
+        payload: { mode: 'edit' },
+      });
     }
+    return;
   }
 
-  const eventAction = isRecord(event.payload?.action) ? event.payload.action : undefined;
-  const actionScript = readString(event.payload?.script ?? eventAction?.script);
-  if (actionScript) {
-    try {
-      await executeButtonScript(actionScript, event);
-    } catch (error) {
-      reportRuntimeDirectiveError(error);
+  if (isBlockedEditPageSaveEvent(event)) return;
+
+  let eventSucceeded = true;
+  const directives = resolveEventDirectives(event, props.page.schema.eventHandlers);
+  const executionContext: RuntimeDirectiveExecutionContext = {
+    mesCommandStarted: false,
+    mesCommandCompleted: false,
+    mesCommandRefreshCompleted: false,
+    mesCommandRefreshFailed: false,
+  };
+
+  try {
+    for (const directive of directives) {
+      try {
+        await executeRuntimeDirective(directive, event, executionContext);
+      } catch (error) {
+        eventSucceeded = false;
+        reportRuntimeDirectiveError(error);
+        if (event.payload?.action === 'confirm') throw error;
+        break;
+      }
+    }
+
+    const eventAction = isRecord(event.payload?.action) ? event.payload.action : undefined;
+    const actionScript = readString(event.payload?.script ?? eventAction?.script);
+    if (actionScript) {
+      try {
+        const result = await executeButtonScript(actionScript, event);
+        if (result === false) eventSucceeded = false;
+      } catch (error) {
+        eventSucceeded = false;
+        reportRuntimeDirectiveError(error);
+      }
+    }
+
+    if (
+      eventSucceeded &&
+      (directives.length > 0 || Boolean(actionScript)) &&
+      isSuccessfulEditPageSaveEvent(event)
+    ) {
+      await enterScanModeAfterSave(event);
+    }
+  } finally {
+    if (executionContext.mesCommandStarted) {
+      runtime.state.status.mesCommandExecuting = false;
+      runtime.state.status.mesCommandActionKey = '';
     }
   }
+}
+
+function isBlockedEditPageSaveEvent(event: LowCodeRuntimeEvent) {
+  return props.page.page_type === 'edit' &&
+    isLowCodeEditPageReadonly(builtinPageFunctionMode.value) &&
+    isSuccessfulEditPageSaveEvent(event);
+}
+
+function isRuntimeEditPageModifyEvent(event: LowCodeRuntimeEvent) {
+  if (props.page.page_type !== 'edit') return false;
+  const action = isRecord(event.payload?.action) ? event.payload.action : {};
+  return isLowCodeEditPageModifyAction({
+    code: readString(event.payload?.actionCode ?? action.code),
+  });
+}
+
+function isSuccessfulEditPageSaveEvent(event: LowCodeRuntimeEvent) {
+  if (props.page.page_type !== 'edit') return false;
+  const action = isRecord(event.payload?.action) ? event.payload.action : {};
+  return isLowCodeEditPageSaveAction({
+    code: readString(event.payload?.actionCode ?? action.code),
+  });
+}
+
+async function enterScanModeAfterSave(event: LowCodeRuntimeEvent) {
+  const modeChanged = builtinPageFunctionMode.value !== 'scan';
+  builtinPageFunctionMode.value = 'scan';
+  captureFormBaselines();
+  if (!modeChanged) return;
+
+  await publishRuntimeEvent({
+    name: 'page.modeChange',
+    blockId: event.blockId,
+    blockKind: event.blockKind,
+    timestamp: Date.now(),
+    payload: { mode: 'scan' },
+  });
 }
 
 function readScriptStringArg(args: unknown[], index: number, label: string) {
@@ -2005,6 +2201,7 @@ async function executeScriptNodeAction(options: Record<string, unknown>) {
 
   const action = resolveLowCodeNodeAction(block.kind, method);
   if (!action) throw new Error(`节点 "${node}" 不支持动作 "${method}"。`);
+  assertEditPageNodeActionWritable(block.kind, method);
 
   if (action.execute) {
     return action.execute({
@@ -2013,6 +2210,9 @@ async function executeScriptNodeAction(options: Record<string, unknown>) {
       blocks: flattenPageBlocks(props.page.schema),
       searchFilters: searchFilters.value,
       grids: runtime.state.grids,
+      editPageMode: props.page.page_type === 'edit'
+        ? builtinPageFunctionMode.value
+        : undefined,
       getDataSource,
       resolveDataSourceRequest: (sourceKey, source, postData) =>
         resolveDataSourceRequest(sourceKey, source, postData, false),
@@ -2074,6 +2274,23 @@ async function executeScriptNodeAction(options: Record<string, unknown>) {
   }
 
   throw new Error(`节点动作执行器 "${action.executor}" 与节点 "${node}" 不匹配。`);
+}
+
+function assertEditPageNodeActionWritable(
+  kind: string,
+  method: string,
+) {
+  if (
+    props.page.page_type !== 'edit' ||
+    !isLowCodeEditPageReadonly(builtinPageFunctionMode.value)
+  ) return;
+
+  const writeMethods: Record<string, Set<string>> = {
+    form: new Set(['setData', 'resetData']),
+    grid: new Set(['addRow', 'deleteCurrentRow']),
+  };
+  if (!writeMethods[kind]?.has(method)) return;
+  throw new Error('当前页面为只读状态，请先点击修改。');
 }
 
 function resolveScriptPageApi(options: Record<string, unknown>) {
@@ -2179,6 +2396,9 @@ function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSn
       route: props.page.route,
       title: props.page.title,
       pageType: props.page.page_type,
+      mode: props.page.page_type === 'edit'
+        ? builtinPageFunctionMode.value
+        : undefined,
       version: props.page.version,
     },
     route: {
@@ -2432,20 +2652,35 @@ function createBuiltinPageFunctionContext(
     invokeService: (serviceName, serviceMethod, postData) =>
       host.getServiceApi().invoke(serviceName, serviceMethod, postData),
     prepareForms: async (mode) => {
-      builtinPageFunctionMode.value = mode;
+      builtinPageFunctionMode.value = 'add';
       return resetBuiltinForms(mode);
     },
     patchForms: async (values) => patchBuiltinForms(values),
-    submitForms: async () => {
-      const navigateAfterCreate = builtinPageFunctionMode.value !== 'edit';
+    getMode: () => builtinPageFunctionMode.value,
+    submitForms: async (options = {}) => {
+      if (
+        isLowCodeEditPageReadonly(builtinPageFunctionMode.value) &&
+        options.allowScan !== true
+      ) return false;
+      const navigateAfterCreate = builtinPageFunctionMode.value === 'add';
       const groups = collectFormSubmissionGroups();
       if (!groups.size) throw new Error('当前编辑页没有配置可保存的表单数据源。');
-      const saved = await submitForms({ reload: !navigateAfterCreate });
-      if (!saved || !navigateAfterCreate) return saved;
+      const preserveMode = options.allowScan === true;
+      const saved = await submitForms({ reload: preserveMode || !navigateAfterCreate });
+      if (!saved) return false;
+
+      if (preserveMode) return true;
+
+      if (!navigateAfterCreate) {
+        builtinPageFunctionMode.value = 'scan';
+        captureFormBaselines();
+        return true;
+      }
 
       const savedId = readSavedRecordId(lastSavedFormRecord, groups);
+      builtinPageFunctionMode.value = 'scan';
+      captureFormBaselines();
       if (!savedId) return saved;
-      builtinPageFunctionMode.value = 'edit';
       await host.getRouter().push(appendRouteQuery(props.page.route, {
         ...readRouteQueryWithoutRecordId(),
         id: savedId,
@@ -2563,6 +2798,7 @@ async function handleScriptCapability(
       return cloneScriptValue(resolvedData.value, {});
     }
     case 'source.set': {
+      assertEditPageCapabilityWritable('source.set');
       const sourceKey = readScriptStringArg(args, 0, 'sourceKey');
       if (!getDataSource(sourceKey)) throw new Error(`数据源 "${sourceKey}" 不存在。`);
       runtime.setSource(sourceKey, cloneRuntimeValue(args[1]));
@@ -2575,6 +2811,7 @@ async function handleScriptCapability(
       if (!block || (block.kind !== 'form' && block.kind !== 'searchForm')) {
         throw new Error(`表单 "${blockId}" 不存在。`);
       }
+      if (block.kind === 'form') assertEditPageCapabilityWritable('form.patch');
       runtime.patchForm(blockId, readScriptRecordArg(args, 1));
       await runtime.getFormController(blockId)?.setValues?.(
         runtime.state.forms[blockId] ?? {},
@@ -2587,6 +2824,7 @@ async function handleScriptCapability(
       if (!block || (block.kind !== 'form' && block.kind !== 'searchForm')) {
         throw new Error(`表单 "${blockId}" 不存在。`);
       }
+      if (block.kind === 'form') assertEditPageCapabilityWritable('form.replace');
       runtime.replaceForm(blockId, readScriptRecordArg(args, 1));
       await runtime.getFormController(blockId)?.setValues?.(
         runtime.state.forms[blockId] ?? {},
@@ -2663,16 +2901,34 @@ async function handleScriptCapability(
   }
 }
 
-async function executeIsolatedScript(script: string, event: LowCodeRuntimeEvent) {
+function assertEditPageCapabilityWritable(capability: string) {
+  if (
+    props.page.page_type !== 'edit' ||
+    !isLowCodeEditPageReadonly(builtinPageFunctionMode.value)
+  ) return;
+  throw new Error(`当前页面为只读状态，不能执行 ${capability}。`);
+}
+
+async function executeIsolatedScript(
+  script: string,
+  event: LowCodeRuntimeEvent,
+  executionMode: LowCodeScriptExecutionMode = 'script',
+) {
   const context = createScriptContext(event);
   return executeLowCodeScript(
-    { script, context, limits: props.page.schema.scriptPolicy?.limits },
+    {
+      script,
+      context,
+      executionMode,
+      limits: props.page.schema.scriptPolicy?.limits,
+    },
     (request) => handleScriptCapability(request, context, event),
   );
 }
 
 async function executeButtonScript(script: string, event: LowCodeRuntimeEvent) {
-  await executeIsolatedScript(script, event);
+  const result = await executeIsolatedScript(script, event);
+  return result.value;
 }
 
 function reportRuntimeDirectiveError(error: unknown) {
@@ -2944,7 +3200,8 @@ function setRuntimeMessage(
 
 async function invokeServiceDirective(
   directive: LowCodeRuntimeDirective,
-  event: LowCodeRuntimeEvent
+  event: LowCodeRuntimeEvent,
+  executionContext: RuntimeDirectiveExecutionContext,
 ) {
   const sourceKey = resolveDirectiveString(directive.sourceKey, event);
   const source = getDataSource(sourceKey);
@@ -2970,13 +3227,40 @@ async function invokeServiceDirective(
     request.postData
   );
 
-  const result = await host
-    .getServiceApi()
-    .invoke(
-      normalizedRequest.serviceName,
-      normalizedRequest.serviceMethod,
-      normalizedRequest.postData
-    );
+  const mesCommand = isDesktopMesCommand(
+    normalizedRequest.serviceName,
+    normalizedRequest.serviceMethod,
+  );
+  let result: unknown;
+  if (mesCommand) {
+    if (runtime.state.status.mesCommandExecuting) {
+      throw new Error('当前操作仍在处理中，请稍候。');
+    }
+    executionContext.mesCommandStarted = true;
+    runtime.state.status.mesCommandExecuting = true;
+    runtime.state.status.mesCommandActionKey = [
+      event.blockId ?? '',
+      readString(event.payload?.actionCode, normalizedRequest.serviceMethod),
+    ].join(':');
+    const commandRequest = await prepareDesktopMesCommandRequest(normalizedRequest.postData);
+    result = await invokeDesktopMesCommand(() => host
+      .getServiceApi()
+      .invoke(
+        normalizedRequest.serviceName,
+        normalizedRequest.serviceMethod,
+        commandRequest.postData,
+        { requestId: commandRequest.requestId },
+      ));
+    executionContext.mesCommandCompleted = true;
+  } else {
+    result = await host
+      .getServiceApi()
+      .invoke(
+        normalizedRequest.serviceName,
+        normalizedRequest.serviceMethod,
+        normalizedRequest.postData
+      );
+  }
   const assignTo = resolveDirectiveString(directive.assignTo, event);
 
   if (assignTo) {
@@ -2990,11 +3274,19 @@ async function invokeServiceDirective(
   }
 
   if (directive.refreshSourceKeys?.length) {
-    await refreshDataSources(
-      directive.refreshSourceKeys
-        .map((key) => resolveDirectiveString(key, event))
-        .filter(Boolean)
-    );
+    const sourceKeys = directive.refreshSourceKeys
+      .map((key) => resolveDirectiveString(key, event))
+      .filter(Boolean);
+    try {
+      await refreshDataSources(sourceKeys, {
+        ordered: mesCommand,
+        strict: mesCommand,
+      });
+      if (mesCommand) executionContext.mesCommandRefreshCompleted = true;
+    } catch (error) {
+      if (mesCommand) executionContext.mesCommandRefreshFailed = true;
+      throw error;
+    }
   }
 }
 
@@ -3197,8 +3489,12 @@ function toggleBlockOpen(blockId: string) {
 
 async function executeRuntimeDirective(
   directive: LowCodeRuntimeDirective,
-  event: LowCodeRuntimeEvent
+  event: LowCodeRuntimeEvent,
+  executionContext: RuntimeDirectiveExecutionContext,
 ) {
+  const refreshAfterMesCommand = executionContext.mesCommandCompleted
+    && !executionContext.mesCommandRefreshCompleted
+    && !executionContext.mesCommandRefreshFailed;
   const directiveContext: LowCodeRuntimeDirectiveContext = {
     shouldExecuteDirective,
     resolveDirectiveString,
@@ -3209,9 +3505,24 @@ async function executeRuntimeDirective(
     applyFormValuesDirective,
     applyFormFieldDirective,
     applySearchFiltersDirective,
-    refreshDataSources,
+    refreshDataSources: async (sourceKeys) => {
+      try {
+        const errors = await refreshDataSources(sourceKeys, {
+          ordered: refreshAfterMesCommand,
+          strict: refreshAfterMesCommand,
+        });
+        if (refreshAfterMesCommand) {
+          executionContext.mesCommandRefreshCompleted = true;
+        }
+        return errors;
+      } catch (error) {
+        if (refreshAfterMesCommand) executionContext.mesCommandRefreshFailed = true;
+        throw error;
+      }
+    },
     refreshPage: () => loadPageData(props.page).then(() => undefined),
-    invokeServiceDirective,
+    invokeServiceDirective: (nextDirective, nextEvent) =>
+      invokeServiceDirective(nextDirective, nextEvent, executionContext),
     navigate: (route) => (route ? host.getRouter().push(route) : undefined),
     setRuntimeMessage,
     emitRuntimeEvent: publishRuntimeEvent,
@@ -3231,6 +3542,10 @@ async function handleFormSubmit(
 ) {
   await waitForActionEvent(action);
   if (block.kind !== 'form') return;
+  if (
+    props.page.page_type === 'edit' &&
+    isLowCodeEditPageReadonly(builtinPageFunctionMode.value)
+  ) return;
   const source = getDataSource(block.submitSourceKey ?? block.sourceKey);
 
   if (!source) {
@@ -3337,6 +3652,10 @@ async function handleGridEdit(
   block: LowCodePageGridBlock,
   row: Record<string, unknown>
 ) {
+  if (
+    props.page.page_type === 'edit' &&
+    isLowCodeEditPageReadonly(builtinPageFunctionMode.value)
+  ) return;
   const linkedEditRoute = await resolveLinkedEditPageRoute(block, row);
 
   if (linkedEditRoute) {
@@ -3365,6 +3684,10 @@ async function handleGridDelete(
   block: LowCodePageGridBlock,
   row: Record<string, unknown>
 ) {
+  if (
+    props.page.page_type === 'edit' &&
+    isLowCodeEditPageReadonly(builtinPageFunctionMode.value)
+  ) return;
   const source = getDataSource(block.deleteSourceKey ?? block.sourceKey);
 
   if (!source) {

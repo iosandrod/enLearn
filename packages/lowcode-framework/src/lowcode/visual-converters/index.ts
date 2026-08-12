@@ -496,6 +496,9 @@ function runtimeFieldToVisualField(field: LowCodeField) {
     required,
     ...(field.defaultValueType ? { defaultValueType: field.defaultValueType } : {}),
     ...(field.defaultValueScript ? { defaultValueScript: field.defaultValueScript } : {}),
+    ...(field.defaultValueProcedure
+      ? { defaultValueProcedure: field.defaultValueProcedure }
+      : {}),
     ...(field.updateScript ? { updateScript: field.updateScript } : {}),
     ...(field.validationScript ? { validationScript: field.validationScript } : {}),
     ...(field.validationMessage ? { validationMessage: field.validationMessage } : {}),
@@ -679,6 +682,7 @@ function convertRuntimeBlockToVisual(
         ...runtimeGridOptionsToVisualOptions(grid),
         columns: runtimeColumnsToVisualColumns(columns),
         gridEvents: runtimeGridEventsToVisualRows(schema.events, schema.eventNames),
+        gridDesignerUpdatedAt: block.gridDesignerUpdatedAt,
       },
     });
   }

@@ -243,6 +243,7 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
   const required = readBoolean(row.required, false);
   const defaultValueType = readString(row.defaultValueType);
   const defaultValueScript = readString(row.defaultValueScript);
+  const defaultValueProcedure = readString(row.defaultValueProcedure);
   const updateScript = readString(row.updateScript);
   const validationScript = readString(row.validationScript);
   const validationMessage = readString(row.validationMessage);
@@ -293,6 +294,9 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
       : {}),
     ...(defaultValueType === 'function' && defaultValueScript
       ? { defaultValueType: 'function', defaultValueScript }
+      : {}),
+    ...(defaultValueType === 'procedure' && defaultValueProcedure
+      ? { defaultValueType: 'procedure', defaultValueProcedure }
       : {}),
     ...(updateScript ? { updateScript } : {}),
     ...(validationScript ? { validationScript } : {}),

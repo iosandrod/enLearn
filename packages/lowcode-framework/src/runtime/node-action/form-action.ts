@@ -3,6 +3,7 @@ import type {
   LowCodeNodeActionMethodDefinition,
   LowCodeNodeTypeDefinition,
 } from './index';
+import { isLowCodeEditPageReadonly } from '../edit-page-mode';
 
 type RuntimeRecord = Record<string, unknown>;
 
@@ -30,6 +31,12 @@ function assertFormBlock(context: LowCodeNodeActionRuntimeContext) {
   return block;
 }
 
+function assertFormWritable(context: LowCodeNodeActionRuntimeContext) {
+  if (context.block.kind === 'searchForm') return;
+  if (!isLowCodeEditPageReadonly(context.editPageMode)) return;
+  throw new Error('当前页面为只读状态，请先点击修改。');
+}
+
 function readStringList(value: unknown) {
   return Array.isArray(value)
     ? [...new Set(value
@@ -50,6 +57,7 @@ export function executeFormSetDataNodeAction(
   context: LowCodeNodeActionRuntimeContext,
 ) {
   const block = assertFormBlock(context);
+  assertFormWritable(context);
   if (!isRecord(context.options.data)) {
     throw new Error('表单 setData 的 data 必须是对象。');
   }
@@ -96,6 +104,7 @@ export async function executeFormResetDataNodeAction(
   context: LowCodeNodeActionRuntimeContext,
 ) {
   const block = assertFormBlock(context);
+  assertFormWritable(context);
   context.replaceFormValues(block.id, cloneValue(context.getFormBaseline(block.id)));
   await context.clearFormValidation(block.id);
   return cloneValue(context.getFormValues(block.id));

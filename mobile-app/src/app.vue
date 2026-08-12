@@ -401,8 +401,8 @@ async function retryOfflineWrites() {
   const config = getRuntimeConfig();
   if (!config.accountId || !config.userId || offlineQueue.syncing) return;
   await retryFailedOfflineRequests(config.accountId, config.userId);
-  await flushOfflineQueue(serviceApi, config.accountId, config.userId, true);
-  refreshPage();
+  const result = await flushOfflineQueue(serviceApi, config.accountId, config.userId, true);
+  if (result.completed > 0) refreshPage();
 }
 
 async function discardConflicts() {

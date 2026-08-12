@@ -62,6 +62,7 @@ set description = U&'\4F7F\7528\9875\7B7E\7EC4\7EC7\5355\4E2A\8FD0\884C\65F6\886
                   ]
                 },
                 { "kind": "field", "field": "optionsCode" },
+                { "kind": "field", "field": "defaultValueProcedure" },
                 { "kind": "field", "field": "defaultValueScript" }
               ]
             },

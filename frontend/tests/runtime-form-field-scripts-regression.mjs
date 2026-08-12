@@ -14,13 +14,13 @@ const [rendererSource, formSource, editBlockSource, searchBlockSource, typesSour
 
 assert.match(
   typesSource,
-  /defaultValueType\?: 'function'[\s\S]*?defaultValueScript\?: string[\s\S]*?updateScript\?: string[\s\S]*?validationScript\?: string/,
+  /defaultValueType\?: 'function' \| 'procedure'[\s\S]*?defaultValueScript\?: string[\s\S]*?defaultValueProcedure\?: string[\s\S]*?updateScript\?: string[\s\S]*?validationScript\?: string/,
   'Field script metadata must be represented by JSON-safe source strings.',
 );
 assert.match(
   rendererSource,
-  /resolveFormFunctionDefaults[\s\S]*?executeIsolatedScript\(field\.defaultValueScript, event\)[\s\S]*?nextModel\[field\.field\] = cloneRuntimeValue\(result\.value\)/,
-  'Function defaults must execute through the isolated runtime before form initialization.',
+  /resolveFormDynamicDefaults[\s\S]*?executeDefaultValueProcedure[\s\S]*?executeIsolatedScript\(defaultValueScript, event, 'function'\)[\s\S]*?nextModel\[field\.field\] = cloneRuntimeValue\(value\)/,
+  'Function and procedure defaults must resolve before form initialization.',
 );
 assert.match(
   rendererSource,

@@ -1,10 +1,15 @@
 <template>
-  <section class="lc-grid">
+  <section
+    class="lc-grid"
+    :class="{ 'lc-grid--executing': executing }"
+    :aria-busy="executing"
+  >
     <div v-if="schema.toolbar?.length" class="lc-grid-toolbar">
       <vxe-button
         v-for="action in schema.toolbar ?? []"
         :key="action.code"
         :status="action.status"
+        :disabled="readonly || executing || action.disabled"
         @click="handleToolbar(action)"
       >
         {{ action.label }}
@@ -20,6 +25,7 @@
         :loading="loading"
         @current-row-change="handleCurrentChange"
         @cell-click="(payload) => handleGenericGridEvent('cellClick', payload)"
+        @edit-closed="(payload) => handleGenericGridEvent('editClosed', payload)"
         @cell-menu="(payload) => handleGenericGridEvent('cellMenu', payload)"
         @cell-dblclick="handleCellDblclick"
         @row-dblclick="handleRowDblclick"
@@ -46,7 +52,7 @@
               :key="action.code"
               size="mini"
               :status="action.status"
-              :disabled="isRowActionDisabled(action, row)"
+              :disabled="readonly || executing || isRowActionDisabled(action, row)"
               @click="emitRowAction(action, row)"
             >
               <i v-if="action.icon" :class="action.icon" aria-hidden="true" />
@@ -57,6 +63,7 @@
             v-if="!hasCustomRowActions && schema.rowActions?.edit !== false"
             size="mini"
             status="primary"
+            :disabled="readonly || executing"
             @click="$emit('edit', row)"
           >
             {{ schema.rowActions?.editLabel ?? 'Edit' }}
@@ -65,6 +72,7 @@
             v-if="!hasCustomRowActions && schema.rowActions?.delete !== false"
             size="mini"
             status="danger"
+            :disabled="readonly || executing"
             @click="$emit('delete', row)"
           >
             {{ schema.rowActions?.deleteLabel ?? 'Delete' }}
@@ -76,19 +84,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import type { VxeGridInstance } from 'vxe-table';
+import { useLowCodeHost } from '../core/host';
 import {
   mergeSystemTableOptions,
   resolveSystemTableConfig,
   useSystemSettings,
 } from '../core/system-settings';
 import { normalizeLowCodeGridColumns } from '../utils/lowcode';
+import { lowCodeOptionSourceRegistry } from '../runtime/option-source-registry';
 import {
   isLowCodeRowActionDisabled,
   visibleLowCodeRowActions,
 } from '../runtime/row-action-state';
 import type {
+  LowCodeGridColumn,
   LowCodeGridAction,
   LowCodeGridRowAction,
   LowCodeGridSchema,
@@ -99,6 +110,8 @@ const props = defineProps<{
   rows: Record<string, unknown>[];
   loading?: boolean;
   fill?: boolean;
+  readonly?: boolean;
+  executing?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -111,18 +124,68 @@ const emit = defineEmits<{
   cellDblclick: [payload: { row: Record<string, unknown>; rawEvent: Record<string, unknown> }];
   gridEvent: [payload: LowCodeGridEventPayload];
 }>();
+const host = useLowCodeHost();
 const systemSettings = useSystemSettings();
 const vxeGridRef = ref<VxeGridInstance<Record<string, unknown>>>();
+const codeOptionSources = reactive<Record<string, unknown[]>>({});
 
 type LowCodeGridEventPayload = {
   key: string;
   row?: Record<string, unknown>;
+  column?: Record<string, unknown>;
+  columnIndex?: number;
   actionCode?: string;
   rawEvent: Record<string, unknown>;
 };
 
 const customRowActions = computed(() => props.schema.rowActions?.actions ?? []);
 const hasCustomRowActions = computed(() => customRowActions.value.length > 0);
+const gridFieldOptionsCodes = computed(() => [
+  ...new Set(
+    (props.schema.grid.columns ?? [])
+      .map((column) => {
+        const params = isRecord(column.params) ? column.params : {};
+        const metadata = isRecord(params.lowcodeField) ? params.lowcodeField : {};
+        return typeof metadata.optionsCode === 'string'
+          ? metadata.optionsCode.trim()
+          : '';
+      })
+      .filter(Boolean),
+  ),
+]);
+const gridFieldOptionsCodeKey = computed(() => gridFieldOptionsCodes.value.join('\u0000'));
+
+let unsubscribeOptionSources: (() => void) | undefined;
+
+watch(
+  gridFieldOptionsCodeKey,
+  () => {
+    unsubscribeOptionSources?.();
+    const codes = gridFieldOptionsCodes.value;
+    const activeCodes = new Set(codes);
+    Object.keys(codeOptionSources).forEach((code) => {
+      if (!activeCodes.has(code)) delete codeOptionSources[code];
+    });
+    if (!codes.length) return;
+
+    unsubscribeOptionSources = lowCodeOptionSourceRegistry.subscribe(
+      codes,
+      (code, options) => {
+        codeOptionSources[code] = options;
+      },
+      () => {
+        try {
+          return host.getServiceApi();
+        } catch {
+          return undefined;
+        }
+      },
+    );
+  },
+  { immediate: true },
+);
+
+onBeforeUnmount(() => unsubscribeOptionSources?.());
 
 function visibleRowActions(row: Record<string, unknown>) {
   return visibleLowCodeRowActions(customRowActions.value, row);
@@ -160,7 +223,9 @@ const gridConfig = computed(() => {
   const nextConfig: Record<string, unknown> = columns?.length
     ? {
         ...resolvedGrid,
-        columns: normalizeLowCodeGridColumns(columns) as unknown[]
+        columns: normalizeLowCodeGridColumns(
+          columns.map(hydrateRuntimeGridColumn),
+        ) as unknown[]
       }
     : { ...resolvedGrid };
 
@@ -178,8 +243,36 @@ const gridConfig = computed(() => {
     nextConfig.height = '100%';
   }
 
+  if (props.readonly) {
+    if (isRecord(nextConfig.editConfig)) {
+      nextConfig.editConfig = {
+        ...nextConfig.editConfig,
+        enabled: false,
+      };
+    }
+    nextConfig.editRules = {};
+  }
+
   return nextConfig;
 });
+
+function hydrateRuntimeGridColumn(column: LowCodeGridColumn) {
+  const updated = { ...column };
+  const params = isRecord(updated.params) ? updated.params : {};
+  const metadata = isRecord(params.lowcodeField) ? params.lowcodeField : {};
+  const optionsCode = typeof metadata.optionsCode === 'string'
+    ? metadata.optionsCode.trim()
+    : '';
+  const editRender = isRecord(updated.editRender) ? { ...updated.editRender } : undefined;
+
+  if (editRender && optionsCode && !Array.isArray(editRender.options)) {
+    const options = codeOptionSources[optionsCode] ??
+      lowCodeOptionSourceRegistry.peek(optionsCode);
+    if (Array.isArray(options)) editRender.options = options;
+  }
+  if (editRender) updated.editRender = editRender;
+  return updated;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -188,6 +281,19 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function readRow(payload: unknown) {
   if (!isRecord(payload)) return undefined;
   return isRecord(payload.row) ? payload.row : undefined;
+}
+
+function readColumn(payload: unknown) {
+  if (!isRecord(payload)) return undefined;
+  return isRecord(payload.column) ? payload.column : undefined;
+}
+
+function readColumnIndex(payload: unknown) {
+  if (!isRecord(payload)) return undefined;
+  const value = payload.columnIndex;
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0
+    ? value
+    : undefined;
 }
 
 function readChangedRow(payload: unknown) {
@@ -218,11 +324,12 @@ function readActionCode(payload: unknown) {
 }
 
 function handleToolbar(action: LowCodeGridAction) {
+  if (props.readonly || props.executing || action.disabled) return;
   emit('toolbar', action.code);
 }
 
 function emitRowAction(action: LowCodeGridRowAction, row: Record<string, unknown>) {
-  if (isRowActionDisabled(action, row)) return;
+  if (props.readonly || props.executing || isRowActionDisabled(action, row)) return;
   emit('rowAction', { action, row });
 }
 
@@ -245,6 +352,7 @@ function handleGenericGridEvent(key: string, payload: unknown) {
 }
 
 function handleToolbarGridEvent(key: string, payload: unknown) {
+  if (props.readonly || props.executing) return;
   const rawEvent = isRecord(payload) ? payload : {};
   const actionCode = readActionCode(payload);
 
@@ -259,6 +367,8 @@ function handleMenuClick(payload: unknown) {
   const rawEvent = isRecord(payload) ? payload : {};
   const menu = isRecord(rawEvent.menu) ? rawEvent.menu : {};
   const row = readRow(payload);
+  const column = readColumn(payload);
+  const columnIndex = readColumnIndex(payload);
   const actionCode = typeof menu.code === 'string' ? menu.code.trim() : '';
   const menuType = typeof rawEvent.type === 'string' ? rawEvent.type : '';
   const key =
@@ -270,9 +380,17 @@ function handleMenuClick(payload: unknown) {
           ? 'footerMenuClick'
           : 'menuClick';
 
+  if (
+    (props.readonly || props.executing) &&
+    menuType === 'body' &&
+    actionCode !== ''
+  ) return;
+
   emit('gridEvent', {
     key,
     ...(row ? { row } : {}),
+    ...(column ? { column } : {}),
+    ...(typeof columnIndex === 'number' ? { columnIndex } : {}),
     ...(actionCode ? { actionCode } : {}),
     rawEvent,
   });
@@ -298,6 +416,7 @@ function handleCellDblclick(payload: unknown) {
 }
 
 async function validate() {
+  if (props.readonly) return true;
   const grid = vxeGridRef.value;
   if (!grid) return false;
 

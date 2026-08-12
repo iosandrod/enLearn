@@ -1,11 +1,18 @@
-import type { LowCodePageType } from '../../types/lowcode';
+import type {
+  LowCodeEditPageMode,
+  LowCodePageType,
+} from '../../types/lowcode';
 
 export type BuiltinLowCodePageFunctionPageType = Extract<
   LowCodePageType,
   'list' | 'edit'
 >;
 
-export type BuiltinLowCodePageFunctionMode = 'create' | 'copy' | 'edit';
+export type BuiltinLowCodePageFunctionMode = LowCodeEditPageMode;
+export type BuiltinLowCodePageFunctionPrepareMode = 'create' | 'copy';
+export type BuiltinLowCodePageFunctionSubmitOptions = {
+  allowScan?: boolean;
+};
 
 /**
  * 内置页面函数能够访问的受信任运行时能力。
@@ -26,11 +33,10 @@ export type BuiltinLowCodePageFunctionContext = {
     serviceMethod: string,
     postData: Record<string, unknown>,
   ): Promise<unknown>;
-  prepareForms(
-    mode: Extract<BuiltinLowCodePageFunctionMode, 'create' | 'copy'>,
-  ): Promise<unknown>;
+  prepareForms(mode: BuiltinLowCodePageFunctionPrepareMode): Promise<unknown>;
   patchForms(values: Record<string, unknown>): Promise<unknown>;
-  submitForms(): Promise<boolean>;
+  submitForms(options?: BuiltinLowCodePageFunctionSubmitOptions): Promise<boolean>;
+  getMode(): BuiltinLowCodePageFunctionMode;
   setMode(mode: BuiltinLowCodePageFunctionMode): Promise<void>;
   refresh(): Promise<unknown>;
   print(): Promise<unknown>;
@@ -216,7 +222,7 @@ export async function executeEditPageTransition(
     throw new Error(`${operation}未找到状态字段，请通过 args.values 或 args.field/args.value 指定。`);
   }
   await context.patchForms(values);
-  const saved = await context.submitForms();
+  const saved = await context.submitForms({ allowScan: true });
   if (!saved) throw new Error(`${operation}保存失败。`);
   context.notify(
     readPageFunctionString(context.args.message) || `${operation}成功。`,

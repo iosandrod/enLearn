@@ -143,6 +143,8 @@ async function editRuntimeField({
   nextLabel = currentLabel,
   requiredMessage = `${nextLabel}不能为空`,
   defaultValueScript = 'async function main() { return "AUTO-001"; }',
+  defaultValueType = 'function',
+  defaultValueProcedure = 'public.test_order_default',
   optionsCode = 'order_code',
   updateScript = 'async function main(event) { return event.value; }',
   validationMessage = `${nextLabel}格式不正确`,
@@ -210,8 +212,18 @@ async function editRuntimeField({
   }
   await tab('默认值与选项');
   await fieldControl('默认值类型').locator('.vxe-select').click({ force: true });
-  await page.locator('.vxe-select-option', { hasText: '函数' }).last().click();
-  await fieldControl('默认值函数').locator('textarea').fill(defaultValueScript);
+  await page.locator('.vxe-select-option', {
+    hasText: defaultValueType === 'procedure' ? '存储过程' : '函数',
+  }).last().click();
+  if (defaultValueType === 'procedure') {
+    const procedureControl = fieldControl('存储过程');
+    await procedureControl.locator('.vxe-select').click({ force: true });
+    await page.locator('.vxe-select--panel:visible .vxe-select-option', {
+      hasText: '订单默认号',
+    }).last().click();
+  } else {
+    await fieldControl('默认值函数').locator('textarea').fill(defaultValueScript);
+  }
   const optionsCodeControl = fieldControl('关联下拉 Code');
   await optionsCodeControl.locator('.vxe-select').click({ force: true });
   const option = page.locator('.vxe-select--panel:visible .vxe-select-option', {
@@ -317,10 +329,53 @@ function runtimeField(page, label) {
 }
 
 async function verifyModeDisabledBehavior(page, runtimeMode) {
-  const createLockedInput = runtimeField(page, '新增禁用示例').locator('.lc-field input').first();
-  const editLockedInput = runtimeField(page, '编辑禁用示例').locator('.lc-field input').first();
-  assert.equal(await createLockedInput.isDisabled(), runtimeMode === 'create');
+  const regularField = runtimeField(page, '姓名');
+  const createLockedField = runtimeField(page, '新增禁用示例');
+  const editLockedField = runtimeField(page, '编辑禁用示例');
+  if (runtimeMode === 'scan') {
+    for (const field of [regularField, createLockedField, editLockedField]) {
+      const input = field.locator('.lc-field input').first();
+      assert.equal(await input.count(), 1, 'Scan mode must keep the configured input component.');
+      assert.equal(await input.isDisabled(), true, 'Scan mode must disable every input component.');
+      assert.equal(
+        await field.locator('.vxe-input--readonly').count(),
+        0,
+        'Scan mode must not replace an input with a readonly text renderer.',
+      );
+    }
+    return;
+  }
+  const createLockedInput = createLockedField.locator('.lc-field input').first();
+  const editLockedInput = editLockedField.locator('.lc-field input').first();
+  assert.equal(await createLockedInput.isDisabled(), runtimeMode === 'add');
   assert.equal(await editLockedInput.isDisabled(), runtimeMode === 'edit');
+}
+
+async function enterRequestedMode(page, runtimeMode) {
+  if (runtimeMode === 'scan') {
+    await page.waitForFunction(
+      () => window.__runtimeFormDesignerSaveSmoke.snapshot().runtime.status.formMode === 'scan',
+    );
+    return;
+  }
+
+  if (runtimeMode === 'edit') {
+    await page.waitForFunction(
+      () => window.__runtimeFormDesignerSaveSmoke.snapshot().runtime.status.formMode === 'scan',
+    );
+    const regularField = runtimeField(page, '姓名');
+    const modifyButton = page.locator('.lc-node-button-group .vxe-button').filter({ hasText: '修改' }).first();
+    const regularInput = regularField.locator('.lc-field input').first();
+    assert.equal(await regularInput.count(), 1);
+    assert.equal(await regularInput.isDisabled(), true);
+    assert.equal(await modifyButton.isDisabled(), false);
+    await modifyButton.click();
+  }
+
+  await page.waitForFunction(
+    (mode) => window.__runtimeFormDesignerSaveSmoke.snapshot().runtime.status.formMode === mode,
+    runtimeMode,
+  );
 }
 
 async function verifyFieldScriptBehavior(page) {
@@ -385,6 +440,7 @@ async function runScenario(pageMode, runtimeMode) {
   );
   const bootResult = JSON.parse(await activePage.locator('#result').textContent());
   assert.equal(bootResult.ok, true, pageErrors.join('\n'));
+  await enterRequestedMode(activePage, runtimeMode);
   await verifyModeDisabledBehavior(activePage, runtimeMode);
   await verifyFieldScriptBehavior(activePage);
 
@@ -395,6 +451,9 @@ async function runScenario(pageMode, runtimeMode) {
     enteredValue: `保留姓名-${pageMode}`,
     expectedSaveCount: 1,
   });
+  if (runtimeMode === 'edit') {
+    await activePage.locator('.lc-node-button-group .vxe-button').filter({ hasText: '修改' }).first().waitFor();
+  }
   await editRuntimeField({
     page: activePage,
     currentLabel: '编码',
@@ -413,7 +472,8 @@ async function runScenario(pageMode, runtimeMode) {
     expectedSaveCount: 3,
     nextLabel: `关键字已更新-${pageMode}`,
     optionsCode: 'search_keyword',
-    defaultValueScript: 'async function main() { return "SEARCH-AUTO"; }',
+    defaultValueType: 'procedure',
+    defaultValueProcedure: 'public.test_order_default',
     updateScript: 'async function main(event) { return event.value; }',
     validationMessage: '关键字格式不正确',
     validationScript:
@@ -430,6 +490,12 @@ async function runScenario(pageMode, runtimeMode) {
       snapshot: smoke.snapshot(),
     };
   });
+  const editFormBlock = result.pageRecord.schema.blocks.find(
+    (block) => block.id === 'runtime-edit-form',
+  );
+  const searchFormBlock = result.pageRecord.schema.blocks.find(
+    (block) => block.id === 'runtime-search-form',
+  );
   assert.equal(result.saveCalls.length, 5);
   assert.equal(result.saveCalls[0].resource, 'lowcode_pages');
   assert.equal(result.saveCalls[0].id, result.pageRecord.id);
@@ -440,59 +506,63 @@ async function runScenario(pageMode, runtimeMode) {
   assert.equal(result.saveCalls[4].data.version, 6);
   assert.equal(result.pageRecord.version, 6);
   assert.equal(
-    result.pageRecord.schema.blocks[0].schema.fields[0].label,
+    editFormBlock.schema.fields[0].label,
     `姓名已更新-${pageMode}`,
   );
   assert.equal(
-    result.pageRecord.schema.blocks[0].schema.fields[1].optionsCode,
+    editFormBlock.schema.fields[1].optionsCode,
     'order_code',
   );
-  assert.equal(result.pageRecord.schema.blocks[0].schema.fields[1].component, 'vxe-textarea');
-  assert.equal(result.pageRecord.schema.blocks[0].schema.fields[1].createDisabled, true);
-  assert.equal(result.pageRecord.schema.blocks[0].schema.fields[1].editDisabled, true);
-  assert.equal(result.pageRecord.schema.blocks[0].schema.fields[1].defaultValueType, 'function');
-  assert.match(result.pageRecord.schema.blocks[0].schema.fields[1].defaultValueScript, /AUTO-001/);
-  assert.match(result.pageRecord.schema.blocks[0].schema.fields[1].updateScript, /event\.value/);
-  assert.match(result.pageRecord.schema.blocks[0].schema.fields[1].validationScript, /startsWith/);
+  assert.equal(editFormBlock.schema.fields[1].component, 'vxe-textarea');
+  assert.equal(editFormBlock.schema.fields[1].createDisabled, true);
+  assert.equal(editFormBlock.schema.fields[1].editDisabled, true);
+  assert.equal(editFormBlock.schema.fields[1].defaultValueType, 'function');
+  assert.match(editFormBlock.schema.fields[1].defaultValueScript, /AUTO-001/);
+  assert.match(editFormBlock.schema.fields[1].updateScript, /event\.value/);
+  assert.match(editFormBlock.schema.fields[1].validationScript, /startsWith/);
   assert.equal(
-    result.pageRecord.schema.blocks[0].schema.fields[1].rules.some((rule) => rule.required),
+    editFormBlock.schema.fields[1].rules.some((rule) => rule.required),
     true,
   );
   assert.equal(
-    Object.prototype.hasOwnProperty.call(result.pageRecord.schema.blocks[0].initialValues, 'code'),
+    Object.prototype.hasOwnProperty.call(editFormBlock.initialValues, 'code'),
     false,
     'Function defaults must replace the previous literal initial value.',
   );
   assert.deepEqual(
-    result.pageRecord.schema.blocks[0].schema.actions,
+    editFormBlock.schema.actions,
     [{ code: 'validate', label: '执行校验', type: 'submit' }],
   );
-  assert.equal(result.pageRecord.schema.blocks[0].schema.fields[0].field, 'name');
+  assert.equal(editFormBlock.schema.fields[0].field, 'name');
   assert.equal(
-    result.pageRecord.schema.blocks[1].schema.fields[0].label,
+    searchFormBlock.schema.fields[0].label,
     `关键字已更新-${pageMode}`,
   );
   assert.equal(
-    result.pageRecord.schema.blocks[1].schema.fields[0].optionsCode,
+    searchFormBlock.schema.fields[0].optionsCode,
     'search_keyword',
   );
-  assert.equal(result.pageRecord.schema.blocks[1].schema.fields[0].createDisabled, true);
-  assert.equal(result.pageRecord.schema.blocks[1].schema.fields[0].editDisabled, true);
+  assert.equal(searchFormBlock.schema.fields[0].createDisabled, true);
+  assert.equal(searchFormBlock.schema.fields[0].editDisabled, true);
   assert.equal(
-    result.pageRecord.schema.blocks[1].schema.fields[0].defaultValueType,
-    'function',
+    searchFormBlock.schema.fields[0].defaultValueType,
+    'procedure',
+  );
+  assert.equal(
+    searchFormBlock.schema.fields[0].defaultValueProcedure,
+    'public.test_order_default',
   );
   assert.match(
-    result.pageRecord.schema.blocks[1].schema.fields[0].validationScript,
+    searchFormBlock.schema.fields[0].validationScript,
     /startsWith/,
   );
   assert.equal(
-    result.pageRecord.schema.blocks[1].schema.fields[0].rules.some((rule) => rule.required),
+    searchFormBlock.schema.fields[0].rules.some((rule) => rule.required),
     true,
   );
   assert.equal(
     Object.prototype.hasOwnProperty.call(
-      result.pageRecord.schema.blocks[1].initialValues,
+      searchFormBlock.initialValues,
       'keyword',
     ),
     false,
@@ -504,7 +574,7 @@ async function runScenario(pageMode, runtimeMode) {
     result.snapshot.formModels['runtime-search-form'].keyword,
     `保留关键字-${pageMode}`,
   );
-  const relatedItem = result.pageRecord.schema.blocks[0].schema.fields.find(
+  const relatedItem = editFormBlock.schema.fields.find(
     (field) => field.field === 'relatedItem',
   );
   assert.equal(relatedItem.component, 'base-info');
@@ -515,6 +585,18 @@ async function runScenario(pageMode, runtimeMode) {
     { sourceField: 'name', targetField: 'relatedItemName' },
     { sourceField: 'uom', targetField: 'relatedItemUom' },
   ]);
+}
+
+async function runScanScenario() {
+  const url = `http://127.0.0.1:${port}/tests/runtime-form-designer-save-browser.html?page=scan&mode=scan`;
+  await activePage.goto(url, { waitUntil: 'domcontentloaded' });
+  await activePage.waitForFunction(
+    () => document.querySelector('#result')?.textContent !== 'pending',
+    undefined,
+    { timeout: 25_000 },
+  );
+  await enterRequestedMode(activePage, 'scan');
+  await verifyModeDisabledBehavior(activePage, 'scan');
 }
 
 try {
@@ -533,7 +615,8 @@ try {
     }
   });
 
-  await runScenario('plain', 'create');
+  await runScanScenario();
+  await runScenario('plain', 'add');
   await runScenario('reactive', 'edit');
 
   assert.deepEqual(pageErrors, []);

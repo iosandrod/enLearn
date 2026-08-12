@@ -258,6 +258,7 @@ type FileTreeNode = {
 type UploadPhase = 'idle' | 'preparing' | 'uploading' | 'confirming' | 'finishing' | 'success' | 'failed';
 
 const filesApi = useFilesApi();
+const auth = useAuth();
 const fileInput = ref<HTMLInputElement | null>(null);
 const files = ref<FileObject[]>([]);
 const folders = ref<FileFolder[]>([]);
@@ -806,9 +807,18 @@ async function remove(file: FileObject) {
   }
 }
 
-onMounted(() => {
-  void loadAll();
+onMounted(async () => {
+  await auth.init();
+  await loadAll();
 });
+
+watch(
+  () => auth.user.value?.id ?? '',
+  (userId, previousUserId) => {
+    if (!userId || !previousUserId || userId === previousUserId) return;
+    void loadAll();
+  }
+);
 
 watch(filteredFiles, () => {
   void loadThumbnails();
