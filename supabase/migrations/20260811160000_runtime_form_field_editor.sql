@@ -197,6 +197,75 @@ insert into public.lowcode_form_definitions (
         }
       }
     ],
+    "layout": [
+      {
+        "kind": "tabs",
+        "defaultKey": "basic",
+        "tabs": [
+          {
+            "key": "basic",
+            "label": "基础属性",
+            "blocks": [
+              {
+                "kind": "row",
+                "gutter": 16,
+                "columns": [
+                  { "span": 12, "blocks": [{ "kind": "field", "field": "field" }] },
+                  { "span": 12, "blocks": [{ "kind": "field", "field": "label" }] }
+                ]
+              },
+              {
+                "kind": "row",
+                "gutter": 16,
+                "columns": [
+                  { "span": 12, "blocks": [{ "kind": "field", "field": "component" }] },
+                  { "span": 12, "blocks": [{ "kind": "field", "field": "required" }] }
+                ]
+              },
+              {
+                "kind": "row",
+                "gutter": 16,
+                "columns": [
+                  { "span": 12, "blocks": [{ "kind": "field", "field": "requiredMessage" }] },
+                  { "span": 6, "blocks": [{ "kind": "field", "field": "createDisabled" }] },
+                  { "span": 6, "blocks": [{ "kind": "field", "field": "editDisabled" }] }
+                ]
+              }
+            ]
+          },
+          {
+            "key": "relation",
+            "label": "关联资料",
+            "blocks": [{ "kind": "field", "field": "relateInfoConfig" }]
+          },
+          {
+            "key": "default-options",
+            "label": "默认值与选项",
+            "blocks": [
+              {
+                "kind": "row",
+                "gutter": 16,
+                "columns": [
+                  { "span": 12, "blocks": [{ "kind": "field", "field": "defaultValueType" }] },
+                  { "span": 12, "blocks": [{ "kind": "field", "field": "defaultValue" }] }
+                ]
+              },
+              { "kind": "field", "field": "optionsCode" },
+              { "kind": "field", "field": "defaultValueScript" }
+            ]
+          },
+          {
+            "key": "events-validation",
+            "label": "事件与校验",
+            "blocks": [
+              { "kind": "field", "field": "updateScript" },
+              { "kind": "field", "field": "validationMessage" },
+              { "kind": "field", "field": "validationScript" }
+            ]
+          }
+        ]
+      }
+    ],
     "actions": []
   }
   $schema$::jsonb,

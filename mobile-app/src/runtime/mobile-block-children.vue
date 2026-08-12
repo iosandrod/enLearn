@@ -7,6 +7,7 @@
       :resolved-data="resolvedData"
       :form-models="formModels"
       :active-action-codes="activeActionCodes"
+      :executing-action-keys="executingActionKeys"
       :grid-states="gridStates"
       :service-api="serviceApi"
       @runtime-event="forwardRuntimeEvent"
@@ -30,6 +31,7 @@ defineProps<{
   resolvedData: Record<string, unknown>;
   formModels: MobileFormModels;
   activeActionCodes: Record<string, string>;
+  executingActionKeys: Set<string>;
   gridStates: MobileGridRuntimeStates;
   serviceApi: MobileServiceApi;
 }>();

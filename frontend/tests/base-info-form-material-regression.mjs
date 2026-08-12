@@ -55,8 +55,13 @@ assert.match(
 );
 assert.match(
   componentSource,
-  /extractRelateInfoRows\(result[^]*?resolveRelateInfoColumns[^]*?emit\('patchModel', \{ values, row \}\)[^]*?emit\('select', \{ row, values \}\)[^]*?hidePanel/,
+  /extractRelateInfoRows\(result[^]*?resolveRelateInfoColumns[^]*?handleRowDblclick[^]*?closePanel\(pulldown\)[^]*?emit\('patchModel', \{ values, row \}\)[^]*?emit\('select', \{ row, values \}\)/,
   'A selected row must patch mapped values, return the complete row, and close the panel.',
+);
+assert.match(
+  componentSource,
+  /DEFAULT_POPUP_WIDTH = 880[^]*?DEFAULT_GRID_HEIGHT = 320[^]*?trigger: 'default'[^]*?width: popupWidth\.value[^]*?config\.value\.popupHeight \?\? DEFAULT_GRID_HEIGHT/,
+  'The relation panel must close on outside interaction and use fixed overridable dimensions.',
 );
 assert.match(
   componentSource,

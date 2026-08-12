@@ -14,6 +14,7 @@ const [
   modeDisabledMigrationSource,
   componentTypeMigrationSource,
   baseInfoMigrationSource,
+  tabLayoutMigrationSource,
   converterHelpersSource,
   rendererSource,
 ] = await Promise.all([
@@ -31,6 +32,7 @@ const [
   readFile(new URL('../../../supabase/migrations/20260812113000_runtime_form_field_mode_disabled.sql', frameworkRoot), 'utf8'),
   readFile(new URL('../../../supabase/migrations/20260812130000_runtime_form_field_component_type.sql', frameworkRoot), 'utf8'),
   readFile(new URL('../../../supabase/migrations/20260812143000_runtime_form_field_base_info.sql', frameworkRoot), 'utf8'),
+  readFile(new URL('../../../supabase/migrations/20260812160000_runtime_form_field_editor_tabs.sql', frameworkRoot), 'utf8'),
   readFile(new URL('lowcode/visual-converters/helpers.ts', frameworkRoot), 'utf8'),
   readFile(new URL('components/LowCodePageRenderer.vue', frameworkRoot), 'utf8'),
 ]);
@@ -143,6 +145,21 @@ assert.match(
   baseInfoMigrationSource,
   /'base-info'[\s\S]*?"field": "relateInfoConfig"[\s\S]*?"component": "lc-sub-form"[\s\S]*?"field": "fieldMappings"[\s\S]*?"component": "lc-array-table"/,
   'Existing databases must receive the base-info option and relation sub-form.',
+);
+assert.match(
+  migrationSource,
+  /"layout": \[[\s\S]*?"kind": "tabs"[\s\S]*?"key": "basic"[\s\S]*?"key": "relation"[\s\S]*?"field": "relateInfoConfig"[\s\S]*?"key": "default-options"[\s\S]*?"key": "events-validation"/,
+  'Fresh databases must seed the runtime field editor with a tabbed schema layout.',
+);
+assert.match(
+  tabLayoutMigrationSource,
+  /jsonb_set\([\s\S]*?'\{layout\}'[\s\S]*?"kind": "tabs"[\s\S]*?"key": "basic"[\s\S]*?"key": "relation"[\s\S]*?"key": "default-options"[\s\S]*?"key": "events-validation"/,
+  'Existing databases must receive the runtime field editor tab layout.',
+);
+assert.match(
+  tabLayoutMigrationSource,
+  /with recursive layout_nodes[\s\S]*?v_layout_fields <> v_schema_fields/,
+  'The tab-layout migration must verify that every editor field remains reachable.',
 );
 assert.match(
   componentTypeMigrationSource,

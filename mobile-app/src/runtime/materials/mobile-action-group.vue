@@ -13,7 +13,7 @@
           `is-${action.status ?? 'default'}`,
           { 'is-active': activeCode === action.code },
         ]"
-        :disabled="action.disabled === true"
+        :disabled="action.disabled === true || isActionExecuting(action)"
         @click="publishAction(action)"
       >
         <span class="action-button-text">{{ action.label ?? action.content ?? action.title }}</span>
@@ -53,6 +53,10 @@ function publishAction(action: SharedLowCodeAction) {
       directives: action.directives ?? (action.route ? [{ type: 'navigate', route: action.route }] : []),
     },
   });
+}
+
+function isActionExecuting(action: SharedLowCodeAction) {
+  return props.executingActionKeys.has(`${props.block.id}:${action.code}`);
 }
 </script>
 

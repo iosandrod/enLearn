@@ -38,6 +38,11 @@ assert.match(
   'Mobile dialogs must validate and finish every command before closing.',
 );
 assert.match(
+  renderer,
+  /const executingActions = new Set<string>\(\)[\s\S]*?executingActions\.has\(actionKey\)[\s\S]*?executingActions\.delete\(actionKey\)/,
+  'Mobile action dispatch must suppress duplicate taps until the directive chain settles.',
+);
+assert.match(
   queue,
   /commandId: request\.requestId[\s\S]*?deviceId: resolvedDeviceId[\s\S]*?localSequence: resolvedLocalSequence/,
   'Queued MES commands must carry stable command, device, and sequence identifiers.',

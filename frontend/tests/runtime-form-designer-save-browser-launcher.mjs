@@ -175,17 +175,19 @@ async function editRuntimeField({
     0,
     'Designing one field must not open the full form designer.',
   );
-  const dialogBody = dialog.locator('.vxe-modal--body');
-  const reveal = async (control) => {
-    await dialogBody.evaluate((element) => {
-      element.scrollTop = element.scrollHeight;
-    });
-    await control.scrollIntoViewIfNeeded();
+  const tab = async (label) => {
+    const tabItem = dialog.locator('.vxe-tabs-header--item', { hasText: label });
+    await tabItem.click();
+    await page.waitForTimeout(40);
   };
 
-  const fieldControl = (label) => dialog.locator('.vxe-form--item').filter({
+  const activePane = () => dialog.locator('.vxe-tabs-pane--item.is--visible');
+  const fieldControl = (label) => activePane().locator('.vxe-form--item').filter({
     has: page.locator('.vxe-form--item-title', { hasText: label }),
   }).first();
+  assert.equal(await dialog.locator('.vxe-tabs-header--item').count(), 4);
+  assert.equal(await fieldControl('字段名称').count(), 1);
+  assert.equal(await activePane().locator('.lc-sub-form').count(), 0);
   await fieldControl('字段名称').locator('input').fill(nextLabel);
   const componentControl = fieldControl('组件类型');
   assert.ok(
@@ -206,24 +208,20 @@ async function editRuntimeField({
   if (editDisabled) {
     await fieldControl('编辑禁用').locator('button, input').first().click();
   }
-  await reveal(fieldControl('默认值类型'));
+  await tab('默认值与选项');
   await fieldControl('默认值类型').locator('.vxe-select').click({ force: true });
   await page.locator('.vxe-select-option', { hasText: '函数' }).last().click();
-  await reveal(fieldControl('默认值函数'));
   await fieldControl('默认值函数').locator('textarea').fill(defaultValueScript);
   const optionsCodeControl = fieldControl('关联下拉 Code');
-  await reveal(optionsCodeControl);
   await optionsCodeControl.locator('.vxe-select').click({ force: true });
   const option = page.locator('.vxe-select--panel:visible .vxe-select-option', {
     hasText: optionsCode,
   }).first();
   await option.waitFor({ state: 'visible' });
   await option.click();
-  await reveal(fieldControl('值更新事件'));
+  await tab('事件与校验');
   await fieldControl('值更新事件').locator('textarea').fill(updateScript);
-  await reveal(fieldControl('校验提示'));
   await fieldControl('校验提示').locator('input').fill(validationMessage);
-  await reveal(fieldControl('校验函数'));
   await fieldControl('校验函数').locator('textarea').fill(validationScript);
 
   await dialog.locator('.lc-global-dialog__footer .vxe-button', { hasText: '保存' }).click();
@@ -258,12 +256,13 @@ async function editBaseInfoField({ page, expectedSaveCount }) {
 
   const dialog = page.locator('.runtime-form-field-editor-dialog').last();
   await dialog.waitFor({ state: 'visible' });
-  const fieldControl = (label) => dialog.locator('.vxe-form--item').filter({
+  assert.equal(await dialog.locator('.vxe-tabs-header--item').count(), 4);
+  await dialog.locator('.vxe-tabs-header--item', { hasText: '关联资料' }).click();
+  const fieldControl = (label) => dialog.locator(
+    '.vxe-tabs-pane--item.is--visible .vxe-form--item',
+  ).filter({
     has: page.locator('.vxe-form--item-title', { hasText: label }),
   }).first();
-  assert.ok(
-    ['关联资料', 'base-info'].includes(await fieldControl('组件类型').locator('input').inputValue()),
-  );
 
   const relationPanel = fieldControl('关联资料配置').locator('.lc-sub-form');
   await relationPanel.waitFor({ state: 'visible' });

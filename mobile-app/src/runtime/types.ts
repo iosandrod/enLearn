@@ -71,6 +71,7 @@ export type MobileMaterialProps = {
   resolvedData: Record<string, unknown>;
   formModels: MobileFormModels;
   activeActionCodes: Record<string, string>;
+  executingActionKeys: Set<string>;
   gridStates: MobileGridRuntimeStates;
   serviceApi?: import('./service-api').MobileServiceApi;
 };

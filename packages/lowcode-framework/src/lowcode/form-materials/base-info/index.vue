@@ -103,6 +103,9 @@ type ResolvedSource = {
   entityMetadata?: RelateInfoRow;
 };
 
+const DEFAULT_POPUP_WIDTH = 880;
+const DEFAULT_GRID_HEIGHT = 320;
+
 const props = defineProps<LowCodeFormMaterialProps>();
 const emit = defineEmits<{
   'update:modelValue': [value: unknown];
@@ -156,17 +159,19 @@ const rowConfig = computed(() => ({
   keyField: readRelateInfoString(config.value.rowKey, 'id'),
   isCurrent: true,
 }));
+const popupWidth = computed(() => config.value.popupWidth ?? DEFAULT_POPUP_WIDTH);
 const popupConfig = computed(() => ({
-  trigger: 'manual' as const,
+  trigger: 'default' as const,
   transfer: true,
-  width: config.value.popupWidth ?? 'min(760px, calc(100vw - 32px))',
+  width: popupWidth.value,
   className: 'lc-base-info-pulldown',
 }));
 const panelStyle = computed(() => ({
-  width: '100%',
-  maxWidth: 'calc(100vw - 32px)',
+  width: typeof popupWidth.value === 'number'
+    ? `${popupWidth.value}px`
+    : popupWidth.value,
 }));
-const gridHeight = computed(() => config.value.popupHeight ?? 320);
+const gridHeight = computed(() => config.value.popupHeight ?? DEFAULT_GRID_HEIGHT);
 const gridColumns = computed(() => normalizeLowCodeGridColumns(columns.value));
 const displayValueField = computed(() =>
   getRelateInfoDisplayValueTarget(config.value, props.field.field)
@@ -683,6 +688,10 @@ async function openPanel() {
   }
 }
 
+function closePanel(instance = pulldownRef.value) {
+  return instance?.hidePanel() ?? Promise.resolve();
+}
+
 function handleVisibleChange({ visible }: { visible: boolean }) {
   panelVisible.value = visible;
   if (!visible) {
@@ -745,12 +754,14 @@ function handleInput(value: unknown) {
 async function handleRowDblclick(payload: unknown) {
   if (disabled.value || readonly.value) return;
   if (!isRelateInfoRecord(payload) || !isRelateInfoRecord(payload.row)) return;
+  const pulldown = pulldownRef.value;
   const row = payload.row;
   const values = mapRelateInfoRow(row, config.value, props.field.field);
   displayValue.value = readRelateInfoDisplayValue(row, config.value, props.field.field) ?? '';
+  const closePromise = closePanel(pulldown);
   emit('patchModel', { values, row });
   emit('select', { row, values });
-  await pulldownRef.value?.hidePanel();
+  await closePromise;
 }
 </script>
 
@@ -764,8 +775,6 @@ async function handleRowDblclick(payload: unknown) {
 
 .lc-base-info-panel {
   display: grid;
-  min-width: min(560px, calc(100vw - 32px));
-  max-width: calc(100vw - 32px);
   padding: 8px;
   gap: 8px;
   box-sizing: border-box;
@@ -793,12 +802,5 @@ async function handleRowDblclick(payload: unknown) {
 .lc-base-info-panel__grid {
   width: 100%;
   min-width: 0;
-}
-
-@media (max-width: 720px) {
-  .lc-base-info-panel {
-    min-width: calc(100vw - 24px);
-    max-width: calc(100vw - 24px);
-  }
 }
 </style>

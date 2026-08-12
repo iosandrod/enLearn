@@ -199,7 +199,9 @@ function retryDelay(attempts: number) {
 }
 
 function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : '同步请求失败';
+  return error instanceof Error
+    ? `${error.name} ${error.message}`.trim()
+    : '同步请求失败';
 }
 
 export function isTransientMobileWriteError(error: unknown) {
@@ -212,6 +214,16 @@ export function isTransientMobileWriteError(error: unknown) {
     || status === 429
     || status >= 500
     || message.includes('failed to fetch')
+    || message.includes('fetch failed')
+    || message.includes('upstream request timeout')
+    || message.includes('timed out after')
+    || message.includes('timed out acquiring connection')
+    || message.includes('aborterror')
+    || message.includes('operation was aborted')
+    || message.includes('schema cache')
+    || message.includes('econnreset')
+    || message.includes('etimedout')
+    || message.includes('socket hang up')
     || message.includes('network')
     || message.includes('timeout')
     || message.includes('already in progress');

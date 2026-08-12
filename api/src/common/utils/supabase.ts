@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { getEnv } from './env';
 import type { ServiceContext } from '../interfaces/service-executor';
+import { createSupabaseFetch } from './supabase-fetch';
 
 type ClientMode = 'public' | 'user' | 'admin';
 type CurrentUserResult = {
@@ -28,6 +29,12 @@ const USER_AUTHORIZATION_CACHE_TTL_MS = 60_000;
 const AUTH_CACHE_MAX_ENTRIES = 200;
 const currentUserCache = new Map<string, CacheEntry<CurrentUserResult>>();
 const userAuthorizationCache = new Map<string, CacheEntry<UserAuthorization>>();
+const supabaseFetch = createSupabaseFetch(fetch, {
+  onRequest: ({ method, url }) => {
+    if (process.env.ENLEARN_DEBUG_SUPABASE_FETCH !== '1') return;
+    console.log(`[supabase] ${method} ${url}`);
+  }
+});
 
 export type AccountRole = 'owner' | 'member';
 
@@ -326,7 +333,10 @@ export function createSupabaseClient(
       autoRefreshToken: false,
       persistSession: false
     },
-    global: Object.keys(headers).length ? { headers } : undefined
+    global: {
+      fetch: supabaseFetch,
+      ...(Object.keys(headers).length ? { headers } : {})
+    }
   });
 }
 

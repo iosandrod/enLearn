@@ -88,6 +88,24 @@ async function openRelationPanel(label) {
   return { input, panel };
 }
 
+async function assertRelationPanelClosed(label, panel) {
+  await formField(label).locator('.lc-base-info:not(.is--visible)').waitFor();
+  await panel.waitFor({ state: 'hidden' });
+}
+
+async function assertPanelSize(panel, width, gridHeight) {
+  await page.waitForTimeout(400);
+  const size = await panel.locator('.lc-base-info-panel').evaluate((element) => {
+    const grid = element.querySelector('.lc-base-info-panel__grid');
+    return {
+      panelWidth: element.getBoundingClientRect().width,
+      gridHeight: grid?.getBoundingClientRect().height,
+    };
+  });
+  assert.equal(Math.round(size.panelWidth), width);
+  assert.equal(Math.round(size.gridHeight), gridHeight);
+}
+
 try {
   await waitForUrl(`http://127.0.0.1:${port}`);
   const playwrightModule = await import(pathToFileURL(playwrightPath).href);
@@ -122,12 +140,18 @@ try {
     'RM-MCU-STM32',
   );
 
-  const entity = await openRelationPanel('实体物料');
+  let entity = await openRelationPanel('实体物料');
+  await assertPanelSize(entity.panel, 880, 320);
+
+  await page.locator('#app').click({ position: { x: 8, y: 8 } });
+  await assertRelationPanelClosed('实体物料', entity.panel);
+
+  entity = await openRelationPanel('实体物料');
   const entityRow = entity.panel.locator('.vxe-body--row').filter({
     hasText: 'RM-MCU-STM32',
   }).first();
   await entityRow.dblclick();
-  await formField('实体物料').locator('.lc-base-info:not(.is--visible)').waitFor();
+  await assertRelationPanelClosed('实体物料', entity.panel);
   assert.equal(await entity.input.inputValue(), 'RM-MCU-STM32');
   assert.equal(
     (await formField('物料名称').locator('.vxe-input--readonly').textContent())?.trim(),
@@ -164,7 +188,7 @@ try {
     hasText: 'RM-OTHER-001',
   }).first();
   await secondEntityRow.dblclick();
-  await formField('实体物料').locator('.lc-base-info:not(.is--visible)').waitFor();
+  await assertRelationPanelClosed('实体物料', reopenedEntity.panel);
   assert.equal(await reopenedEntity.input.inputValue(), 'RM-OTHER-001');
   snapshot = await page.evaluate(() => window.__baseInfoSmoke.snapshot());
   assert.equal(snapshot.formModels['relation-form'].item_id, 'item-2');
@@ -173,6 +197,7 @@ try {
   assert.equal(snapshot.formModels['relation-form'].uom, 'EA');
 
   const pageSource = await openRelationPanel('页面物料');
+  await assertPanelSize(pageSource.panel, 720, 260);
   assert.match(await pageSource.panel.locator('.vxe-table--header').innerText(), /物料编码/);
   assert.match(await pageSource.panel.locator('.vxe-table--header').innerText(), /单位/);
   const searchInput = pageSource.panel.locator('.lc-base-info-panel__search input').first();
@@ -189,7 +214,7 @@ try {
   assert.equal(await visibleRows.count(), 1);
   assert.match(await visibleRows.first().innerText(), /RM-OTHER-001/);
   await visibleRows.first().dblclick();
-  await formField('页面物料').locator('.lc-base-info:not(.is--visible)').waitFor();
+  await assertRelationPanelClosed('页面物料', pageSource.panel);
   assert.equal(await pageSource.input.inputValue(), 'RM-OTHER-001');
   assert.equal(
     (await formField('页面物料名称').locator('.vxe-input--readonly').textContent())?.trim(),
@@ -211,7 +236,7 @@ try {
   await reopenedPageSource.panel.locator('.vxe-body--row').filter({
     hasText: 'RM-MCU-STM32',
   }).first().dblclick();
-  await formField('页面物料').locator('.lc-base-info:not(.is--visible)').waitFor();
+  await assertRelationPanelClosed('页面物料', reopenedPageSource.panel);
   assert.equal(await reopenedPageSource.input.inputValue(), 'RM-MCU-STM32');
 
   const result = await page.evaluate(() => ({

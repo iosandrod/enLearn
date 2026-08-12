@@ -4,7 +4,8 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
-  NotFoundException
+  NotFoundException,
+  ServiceUnavailableException
 } from '@nestjs/common';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
@@ -814,8 +815,29 @@ export class MesService extends BaseService {
 
   private throwDatabaseError(error: { code?: string; message?: string; details?: string | null }): never {
     const message = error.message || 'MES database operation failed.';
+    const diagnostic = [error.message, error.details]
+      .filter((value): value is string => typeof value === 'string')
+      .join(' ')
+      .toLowerCase();
+    if (
+      diagnostic.includes('fetch failed')
+      || diagnostic.includes('failed to fetch')
+      || diagnostic.includes('upstream request timeout')
+      || diagnostic.includes('timeout expired')
+      || diagnostic.includes('timeouterror')
+      || diagnostic.includes('timed out after')
+      || diagnostic.includes('timed out acquiring connection')
+      || diagnostic.includes('aborterror')
+      || diagnostic.includes('operation was aborted')
+      || diagnostic.includes('schema cache')
+      || diagnostic.includes('econnreset')
+      || diagnostic.includes('etimedout')
+      || diagnostic.includes('socket hang up')
+    ) {
+      throw new ServiceUnavailableException(message);
+    }
     if (error.code === 'P0002') throw new NotFoundException(message);
-    if (['23505', '40001', '55P03'].includes(error.code ?? '')) {
+    if (['23505', '40001', '55P03', 'PT409'].includes(error.code ?? '')) {
       throw new ConflictException(message);
     }
     if (error.code === '42501') throw new ForbiddenException(message);

@@ -6,6 +6,7 @@
     :resolved-data="resolvedData"
     :form-models="formModels"
     :active-action-codes="activeActionCodes"
+    :executing-action-keys="executingActionKeys"
     :grid-states="gridStates"
     :service-api="serviceApi"
     @runtime-event="forwardRuntimeEvent"

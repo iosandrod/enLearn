@@ -25,6 +25,7 @@
           :resolved-data="loginFormData"
           :form-models="formModels"
           :active-action-codes="activeActionCodes"
+          :executing-action-keys="executingActionKeys"
           :grid-states="gridStates"
           @runtime-event="handleFormEvent"
         />
@@ -85,6 +86,7 @@ const formModels = reactive<MobileFormModels>({
   },
 });
 const activeActionCodes = reactive<Record<string, string>>({});
+const executingActionKeys = new Set<string>();
 const gridStates = reactive<MobileGridRuntimeStates>({});
 const loginModel = computed(() => formModels[LOGIN_FORM_ID]);
 const loginAccount = computed(() => String(loginModel.value.email ?? '').trim());

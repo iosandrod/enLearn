@@ -5,6 +5,7 @@
     :resolved-data="resolvedData"
     :form-models="formModels"
     :active-action-codes="activeActionCodes"
+    :executing-action-keys="executingActionKeys"
     :grid-states="gridStates"
     @runtime-event="forwardRuntimeEvent"
   />
@@ -14,6 +15,7 @@
     :resolved-data="resolvedData"
     :form-models="formModels"
     :active-action-codes="activeActionCodes"
+    :executing-action-keys="executingActionKeys"
     :grid-states="gridStates"
     @runtime-event="forwardRuntimeEvent"
   />

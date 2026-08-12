@@ -74,6 +74,27 @@ assert.equal(
 );
 
 assert.equal(queue.isTransientMobileWriteError(new Error('Failed to fetch')), true);
+assert.equal(
+  queue.isTransientMobileWriteError(Object.assign(new Error('TypeError: fetch failed'), { status: 400 })),
+  true,
+  'Supabase fetch failures wrapped by an older API must remain retryable',
+);
+assert.equal(
+  queue.isTransientMobileWriteError(Object.assign(new Error('upstream request timeout'), { status: 400 })),
+  true,
+);
+assert.equal(
+  queue.isTransientMobileWriteError(Object.assign(new Error('Timed out acquiring connection from connection pool.'), { status: 400 })),
+  true,
+);
+assert.equal(
+  queue.isTransientMobileWriteError(Object.assign(new Error('Supabase request timed out after 30000 ms.'), { name: 'TimeoutError', status: 400 })),
+  true,
+);
+assert.equal(
+  queue.isTransientMobileWriteError(Object.assign(new Error('This operation was aborted'), { name: 'AbortError', status: 400 })),
+  true,
+);
 assert.equal(queue.isTransientMobileWriteError(Object.assign(new Error('Forbidden'), { status: 403 })), false);
 assert.equal(queue.isMobileWriteConflict(Object.assign(new Error('Conflict'), { status: 409 })), true);
 assert.equal(queue.isMobileWriteConflict(Object.assign(new Error('Precondition failed'), { status: 412 })), true);

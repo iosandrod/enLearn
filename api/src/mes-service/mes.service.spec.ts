@@ -3,7 +3,8 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
-  NotFoundException
+  NotFoundException,
+  ServiceUnavailableException
 } from '@nestjs/common';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { ServiceContext } from '../common/interfaces/service-executor';
@@ -14,7 +15,7 @@ import {
 } from './mes.resources';
 import { MesService } from './mes.service';
 
-type RpcError = { code?: string; message: string };
+type RpcError = { code?: string; message: string; details?: string | null };
 type RpcResult = { data: unknown; error: RpcError | null };
 type Actor = { accountId: string; client: SupabaseClient; userId: string };
 
@@ -311,7 +312,7 @@ async function testValidation() {
 
 async function testDatabaseErrorMapping() {
   const { service } = createHarness();
-  for (const code of ['23505', '40001', '55P03']) {
+  for (const code of ['23505', '40001', '55P03', 'PT409']) {
     assert.throws(
       () => service.throwDatabaseError({ code, message: 'conflict' }),
       ConflictException
@@ -329,6 +330,54 @@ async function testDatabaseErrorMapping() {
     () => service.throwDatabaseError({ code: '23514', message: 'invalid' }),
     BadRequestException
   );
+  for (const message of [
+    'TypeError: fetch failed',
+    'upstream request timeout',
+    'timeout expired',
+    'TimeoutError: Supabase request timed out after 30000 ms.',
+    'AbortError: This operation was aborted',
+    'Timed out acquiring connection from connection pool.',
+    'Could not query the database for the schema cache. Retrying.',
+    'read ECONNRESET'
+  ]) {
+    assert.throws(
+      () => service.throwDatabaseError({ message }),
+      ServiceUnavailableException,
+      `${message} must be reported as a transient service outage`
+    );
+  }
+  assert.throws(
+    () => service.throwDatabaseError({ message: 'database request failed', details: 'connect ETIMEDOUT' }),
+    ServiceUnavailableException
+  );
+}
+
+async function testCommandErrorMapping() {
+  const conflict = createHarness({
+    data: null,
+    error: { code: 'PT409', message: 'MES operation version conflict.' }
+  });
+  await assert.rejects(
+    () => conflict.service.execute('issueMaterial', {
+      componentId: COMPONENT_ID,
+      expectedOperationVersion: 2,
+      quantity: 1
+    }, context('issue-conflict')),
+    ConflictException
+  );
+
+  const unavailable = createHarness({
+    data: null,
+    error: { message: 'TimeoutError: Supabase request timed out after 30000 ms.' }
+  });
+  await assert.rejects(
+    () => unavailable.service.execute('issueMaterial', {
+      componentId: COMPONENT_ID,
+      expectedOperationVersion: 2,
+      quantity: 1
+    }, context('issue-timeout')),
+    ServiceUnavailableException
+  );
 }
 
 async function main() {
@@ -337,6 +386,7 @@ async function main() {
   await testCommandMappings();
   await testValidation();
   await testDatabaseErrorMapping();
+  await testCommandErrorMapping();
   console.log('MES service tests passed');
 }
 

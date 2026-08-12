@@ -23,6 +23,9 @@ const debugScreenshot = process.env.ENLEARN_MOBILE_E2E_SCREENSHOT ?? '';
 const runCommandChain = ['1', 'true', 'yes'].includes(
   String(process.env.ENLEARN_MOBILE_E2E_COMMAND_CHAIN ?? '').trim().toLowerCase(),
 );
+const sensitiveDiagnosticKeys = new Set([
+  'accessToken', 'access_token', 'authorization', 'password', 'refreshToken', 'refresh_token',
+]);
 
 assert.ok(
   loginPassword,
@@ -41,6 +44,23 @@ function serviceRequestPayload(request) {
 function isServiceRequest(request, serviceName, serviceMethod) {
   const payload = serviceRequestPayload(request);
   return payload?.serviceName === serviceName && payload?.serviceMethod === serviceMethod;
+}
+
+function sanitizeDiagnosticValue(value) {
+  if (Array.isArray(value)) return value.map(sanitizeDiagnosticValue);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [
+    key,
+    sensitiveDiagnosticKeys.has(key) ? '<redacted>' : sanitizeDiagnosticValue(item),
+  ]));
+}
+
+function commandDiagnostic(request) {
+  const payload = serviceRequestPayload(request);
+  return {
+    requestId: request.headers()['x-request-id'] ?? null,
+    postData: sanitizeDiagnosticValue(payload?.postData ?? {}),
+  };
 }
 
 async function clickText(page, label, last = false) {
@@ -115,7 +135,10 @@ async function waitForMesCommand(page, method, action) {
   await action();
   const response = await responsePromise;
   const body = await response.text();
-  assert.ok(response.ok(), `${method} failed: ${response.status()} ${body}`);
+  assert.ok(
+    response.ok(),
+    `${method} failed: ${response.status()} ${body}; request=${JSON.stringify(commandDiagnostic(response.request()))}`,
+  );
 }
 
 async function waitForDialogCommand(page, method) {
@@ -154,7 +177,10 @@ async function confirmMesDialog(page, inputValues, confirmLabel, method) {
   const response = await request.response();
   assert.ok(response, `${method} should return a response`);
   const body = await response.text();
-  assert.ok(response.ok(), `${method} failed: ${response.status()} ${body}`);
+  assert.ok(
+    response.ok(),
+    `${method} failed: ${response.status()} ${body}; request=${JSON.stringify(commandDiagnostic(request))}`,
+  );
 }
 
 async function activateTab(page, label) {
@@ -289,11 +315,16 @@ try {
   await page.reload({ waitUntil: 'networkidle' });
 
   const accountResponse = page.waitForResponse((response) => (
-    response.url().includes('/api/auth/account-options') && response.status() === 200
+    response.url().includes('/api/auth/account-options')
   ), { timeout: 45_000 });
   await page.locator('input[type="text"]').first().fill(loginAccount);
   await page.locator('input[type="text"]').first().blur();
-  await accountResponse;
+  const accountOptionsResponse = await accountResponse;
+  const accountOptionsBody = await accountOptionsResponse.text();
+  assert.ok(
+    accountOptionsResponse.ok(),
+    `account-options failed: ${accountOptionsResponse.status()} ${accountOptionsBody}`,
+  );
   await page.locator('input[type="password"]').fill(loginPassword);
 
   const signInResponse = page.waitForResponse((response) => (

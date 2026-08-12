@@ -16,6 +16,7 @@
           :resolved-data="resolvedData"
           :form-models="formModels"
           :active-action-codes="activeActionCodes"
+          :executing-action-keys="executingActions"
           :grid-states="gridStates"
           :service-api="serviceApi"
           @runtime-event="handleRuntimeEvent"
@@ -33,6 +34,7 @@
       :resolved-data="resolvedData"
       :form-models="formModels"
       :active-action-codes="activeActionCodes"
+      :executing-action-keys="executingActions"
       :grid-states="gridStates"
       :service-api="serviceApi"
       @runtime-event="handleRuntimeEvent"
@@ -76,6 +78,7 @@
       :resolved-data="resolvedData"
       :form-models="formModels"
       :active-action-codes="activeActionCodes"
+      :executing-action-keys="executingActions"
       :grid-states="gridStates"
       :service-api="serviceApi"
       @runtime-event="handleRuntimeEvent"
@@ -147,6 +150,7 @@ const searchFilters = reactive<Record<string, Record<string, unknown>>>({});
 const activeActionCodes = reactive<Record<string, string>>({});
 const gridStates = reactive<MobileGridRuntimeStates>({});
 const loadingSources = ref(false);
+const executingActions = new Set<string>();
 const message = ref('');
 const messageTone = ref<'success' | 'error' | 'info' | 'warning'>('info');
 let messageTimer: ReturnType<typeof setTimeout> | undefined;
@@ -599,6 +603,12 @@ function eventScope(event: MobileRuntimeEvent) {
   };
 }
 
+function runtimeActionKey(event: MobileRuntimeEvent) {
+  const actionCode = String(event.payload?.actionCode ?? '').trim();
+  if (!event.blockId || !actionCode) return '';
+  return `${event.blockId}:${actionCode}`;
+}
+
 function openPageReference(directive: SharedLowCodeDirective, event: MobileRuntimeEvent) {
   const config = resolveRuntimeValue(
     directive.config ?? directive.value ?? {},
@@ -1003,6 +1013,11 @@ function matchesHandler(event: MobileRuntimeEvent, handler: NonNullable<MobilePa
 }
 
 async function handleRuntimeEvent(event: MobileRuntimeEvent) {
+  const actionKey = runtimeActionKey(event);
+  if (actionKey && executingActions.has(actionKey)) return;
+  if (actionKey) executingActions.add(actionKey);
+
+  try {
   if (event.payload?.actionCode && event.blockId) {
     activeActionCodes[event.blockId] = event.payload.actionCode;
   }
@@ -1096,6 +1111,9 @@ async function handleRuntimeEvent(event: MobileRuntimeEvent) {
       showMessage(error instanceof Error ? error.message : '操作失败', 'error');
       break;
     }
+  }
+  } finally {
+    if (actionKey) executingActions.delete(actionKey);
   }
 }
 

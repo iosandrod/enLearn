@@ -29,7 +29,7 @@
           v-for="action in visibleRowActions(row)"
           :key="action.code"
           class="row-action"
-          :disabled="isRowActionDisabled(action, row)"
+          :disabled="isRowActionDisabled(action, row) || isRowActionExecuting(action)"
           @click.stop="publishRowAction(action, row)"
         >
           <span class="row-action-text">{{ action.label }}</span>
@@ -101,6 +101,10 @@ function visibleRowActions(row: Record<string, unknown>) {
 
 function isRowActionDisabled(action: SharedLowCodeAction, row: Record<string, unknown>) {
   return isLowCodeRowActionDisabled(action, row);
+}
+
+function isRowActionExecuting(action: SharedLowCodeAction) {
+  return props.executingActionKeys.has(`${props.block.id}:${action.code}`);
 }
 
 function rowKey(row: Record<string, unknown>) {
