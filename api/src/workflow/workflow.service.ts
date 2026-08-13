@@ -43,7 +43,9 @@ import type {
 import type { RuntimeActor } from './runtime/runtime.types';
 import { RuntimeService } from './runtime/runtime.service';
 import { TriggerRuntimeStatusService } from './trigger/trigger-runtime-status.service';
+import { TaskConsoleService } from './runtime/task-console.service';
 import { workflowResources } from './workflow.resources';
+import { FrontendCommandService } from '../frontend-command/frontend-command.service';
 
 type PostData = Record<string, unknown>;
 
@@ -223,7 +225,11 @@ export class WorkflowService extends BaseService {
     @Inject(JobService)
     private readonly jobService: JobService,
     @Inject(TriggerRuntimeStatusService)
-    private readonly triggerRuntimeStatus: TriggerRuntimeStatusService
+    private readonly triggerRuntimeStatus: TriggerRuntimeStatusService,
+    @Inject(TaskConsoleService)
+    private readonly taskConsoleService: TaskConsoleService,
+    @Inject(FrontendCommandService)
+    private readonly frontendCommandService: FrontendCommandService
   ) {
     super();
   }
@@ -338,6 +344,23 @@ export class WorkflowService extends BaseService {
       case 'getRuntimeStatus':
         await this.assertRuntimeManagementAccess(context);
         return this.triggerRuntimeStatus.getStatus(this.resolveActor(context).tenantId);
+      case 'getTaskConsole':
+        await this.assertRuntimeManagementAccess(context);
+        return this.taskConsoleService.getConsole(
+          this.resolveActor(context).tenantId,
+          postData.forceRefresh === true
+        );
+      case 'getTaskConsoleDetail':
+        await this.assertRuntimeManagementAccess(context);
+        return postData.forceRefresh === true
+          ? this.taskConsoleService.refreshDetail(
+              this.resolveActor(context).tenantId,
+              readString(postData.taskId, 'taskId')
+            )
+          : this.taskConsoleService.getDetail(
+              this.resolveActor(context).tenantId,
+              readString(postData.taskId, 'taskId')
+            );
       case 'getApprovalConsole':
         await this.assertRuntimeManagementAccess(context);
         return this.approvalConsoleService.listInstances(
@@ -385,18 +408,32 @@ export class WorkflowService extends BaseService {
         return this.getJobByCrud(readString(postData.jobId ?? postData.id, 'jobId'), context);
       case 'updateJobStatus':
         await this.assertRuntimeManagementAccess(context);
-        return this.jobService.updateJobStatus(
+        const updateJobActor = this.resolveActor(context);
+        const updatedJob = await this.jobService.updateJobStatus(
           readString(postData.jobId, 'jobId'),
           readString(postData.status, 'status') as WorkflowJobRecord['status'],
-          this.resolveActor(context)
+          updateJobActor
         );
+        this.taskConsoleService.invalidate(updateJobActor.tenantId);
+        return updatedJob;
       case 'runJob':
         await this.assertRuntimeManagementAccess(context);
-        return this.jobService.runJob(
+        const runJobActor = this.resolveActor(context);
+        const jobRun = await this.jobService.runJob(
           readString(postData.jobId, 'jobId'),
           this.readRunJobDto(postData),
-          this.resolveActor(context)
+          runJobActor
         );
+        this.taskConsoleService.invalidate(runJobActor.tenantId);
+        return jobRun;
+      case 'startFrontendCommandLoop':
+        await this.assertRuntimeManagementAccess(context);
+        await this.assertFrontendCommandTarget(postData, context);
+        const frontendCommandActor = this.resolveActor(context);
+        return this.frontendCommandService.startMessageLoop(postData, {
+          accountId: frontendCommandActor.tenantId,
+          userId: readString(frontendCommandActor.userId, 'authenticated user')
+        });
       case 'getTask':
         return this.runtimeService.getTask(
           readString(postData.taskId, 'taskId'),
@@ -699,6 +736,19 @@ export class WorkflowService extends BaseService {
     );
   }
 
+  protected async assertFrontendCommandTarget(
+    postData: PostData,
+    context: ServiceContext
+  ) {
+    const targetUserId = readOptionalString(postData.userId);
+    if (!targetUserId || targetUserId === context.userId) return;
+    await assertAccountUsers(
+      context,
+      [targetUserId],
+      'The frontend command target user must belong to the active account set.'
+    );
+  }
+
   private async assertRuntimeManagementAccess(context: ServiceContext) {
     await this.assertWorkflowPermission(context, 'workflow.runtime.manage');
   }
@@ -707,7 +757,7 @@ export class WorkflowService extends BaseService {
     await this.assertWorkflowPermission(context, 'workflow.definitions.manage');
   }
 
-  private async assertWorkflowPermission(context: ServiceContext, permission: string) {
+  protected async assertWorkflowPermission(context: ServiceContext, permission: string) {
     const { client, user } = await getCurrentUser(context);
     const authorization = await getUserAuthorization(client, user.id, {
       accountId: context.accountId,

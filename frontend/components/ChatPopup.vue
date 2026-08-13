@@ -12,9 +12,5 @@ import { ChatPopupWidget } from '@enlearn/chat-widget';
 const auth = useAuth();
 const chatApi = useChatApi();
 const chatSocket = useChatSocket();
-
-onBeforeUnmount(() => {
-  chatSocket.reset();
-});
 </script>
 

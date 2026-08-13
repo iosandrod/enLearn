@@ -153,7 +153,7 @@ assert.match(
 );
 assert.match(
   gridActionSource,
-  /executeGridLoadDataNodeAction[\s\S]*?executeGridReloadDataNodeAction[\s\S]*?executeGridValidateNodeAction[\s\S]*?executeGridAddRowNodeAction[\s\S]*?executeGridDeleteCurrentRowNodeAction[\s\S]*?execute: executeGridLoadDataNodeAction[\s\S]*?execute: executeGridReloadDataNodeAction[\s\S]*?execute: executeGridValidateNodeAction[\s\S]*?execute: executeGridAddRowNodeAction[\s\S]*?execute: executeGridDeleteCurrentRowNodeAction/,
+  /executeGridLoadDataNodeAction[\s\S]*?executeGridReloadDataNodeAction[\s\S]*?executeGridGetChangesNodeAction[\s\S]*?executeGridValidateNodeAction[\s\S]*?executeGridAddRowNodeAction[\s\S]*?executeGridDeleteCurrentRowNodeAction[\s\S]*?execute: executeGridLoadDataNodeAction[\s\S]*?execute: executeGridReloadDataNodeAction[\s\S]*?execute: executeGridGetChangesNodeAction[\s\S]*?execute: executeGridValidateNodeAction[\s\S]*?execute: executeGridAddRowNodeAction[\s\S]*?execute: executeGridDeleteCurrentRowNodeAction/,
   'Grid execution must be owned by the grid node action module.',
 );
 assert.match(

@@ -76,6 +76,7 @@ export type ChatWidgetSocket = {
   lastError: Ref<ChatWidgetError | null>;
   messages: Ref<ChatWidgetMessage[]>;
   connect(): Promise<unknown>;
+  release?(): void;
   disconnect?(): void;
   joinConversation(conversationId: string, tenantId?: string): Promise<void>;
   leaveConversation(conversationId: string): Promise<void>;

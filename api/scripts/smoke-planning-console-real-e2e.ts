@@ -375,8 +375,10 @@ async function main() {
       values ($1, $2) returning id
     `, [accountId, `真实验收供应商-${suffix}`]);
     const item = await query<{ id: string }>(postgres, `
-      insert into public.planning_item (account_id, name, type, cost, uom)
-      values ($1, $2, 'make to stock', 2.5, '件') returning id
+      insert into public.planning_item (
+        account_id, name, display_name, type, cost, uom
+      )
+      values ($1, $2, $2, 'make to stock', 2.5, '件') returning id
     `, [accountId, `真实验收物料-${suffix}`]);
     await query(postgres, `
       insert into public.planning_itemsupplier (

@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 import {
   PLANNING_MODEL_BY_KEY,
@@ -130,6 +132,24 @@ assert.ok(planningItemForm?.schema?.fields?.some(
 assert.equal(
   planningItemSave?.postData?.data?.display_name,
   '{{ forms.planning_item_edit_form.display_name }}'
+);
+
+const repoRoot = process.cwd().toLowerCase().endsWith('api')
+  ? resolve(process.cwd(), '..')
+  : process.cwd();
+const itemDisplayNameMigration = readFileSync(
+  resolve(repoRoot, 'supabase/migrations/20260813090000_planning_item_display_name.sql'),
+  'utf8'
+);
+assert.match(itemDisplayNameMigration, /add column if not exists display_name text/);
+assert.match(itemDisplayNameMigration, /alter column display_name set not null/);
+assert.match(itemDisplayNameMigration, /line\.item_code = item\.name/);
+assert.match(itemDisplayNameMigration, /next_config := next_config - 'config_hash'/);
+assert.match(itemDisplayNameMigration, /'\{config_hash\}'[\s\S]*?to_jsonb\(next_hash\)/);
+assert.doesNotMatch(
+  itemDisplayNameMigration,
+  /allowed_fields[^;]*\|\| '\["display_name"\]'/,
+  'The registry migration must not append duplicate display_name fields on rerun.'
 );
 
 for (const [modelKey, targetType] of [

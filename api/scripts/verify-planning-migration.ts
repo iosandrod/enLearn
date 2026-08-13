@@ -96,11 +96,29 @@ async function seedLegacyCategoryFixture(client: Client): Promise<LegacyCategory
   const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   const rootName = `Legacy root ${suffix}`;
   const leafName = `Legacy leaf ${suffix}`;
-  const legacy = await client.query<{ id: string }>(`
-    insert into public.planning_item (account_id, name, category, subcategory)
-    values ($1, $2, $3, $4)
-    returning id
-  `, [accountId, `Category verify legacy ${suffix}`, rootName, leafName]);
+  const itemName = `Category verify legacy ${suffix}`;
+  const displayNameColumn = await client.query<{ exists: boolean }>(`
+    select exists (
+      select 1
+      from information_schema.columns
+      where table_schema = 'public'
+        and table_name = 'planning_item'
+        and column_name = 'display_name'
+    ) as exists
+  `);
+  const legacy = displayNameColumn.rows[0]?.exists
+    ? await client.query<{ id: string }>(`
+        insert into public.planning_item (
+          account_id, name, display_name, category, subcategory
+        )
+        values ($1, $2, $2, $3, $4)
+        returning id
+      `, [accountId, itemName, rootName, leafName])
+    : await client.query<{ id: string }>(`
+        insert into public.planning_item (account_id, name, category, subcategory)
+        values ($1, $2, $3, $4)
+        returning id
+      `, [accountId, itemName, rootName, leafName]);
   return {
     accountId,
     itemId: legacy.rows[0]!.id,
@@ -244,8 +262,8 @@ async function verifyPlanningCategories(
     category: string;
     subcategory: string;
   }>(`
-    insert into public.planning_item (account_id, name, category_id)
-    values ($1, $2, $3)
+    insert into public.planning_item (account_id, name, display_name, category_id)
+    values ($1, $2, $2, $3)
     returning id, category, subcategory
   `, [accountId, `Category verify assigned ${suffix}`, category.item_leaf]);
   assert.equal(assigned.rows[0]?.category, `Verify root ${suffix}`);
@@ -290,8 +308,8 @@ async function verifyPlanningCategories(
   await assertCategoryMutationRejected(
     client,
     () => client.query(`
-      insert into public.planning_item (account_id, name, category_id)
-      values ($1, $2, $3)
+      insert into public.planning_item (account_id, name, display_name, category_id)
+      values ($1, $2, $2, $3)
     `, [accountId, `Category verify inactive assignment ${suffix}`, category.inactive_item]),
     /Inactive categories cannot be newly assigned/,
     'Inactive category assignment must be rejected.'
@@ -299,8 +317,8 @@ async function verifyPlanningCategories(
   await assertCategoryMutationRejected(
     client,
     () => client.query(`
-      insert into public.planning_item (account_id, name, category_id)
-      values ($1, $2, $3)
+      insert into public.planning_item (account_id, name, display_name, category_id)
+      values ($1, $2, $2, $3)
     `, [accountId, `Category verify wrong type ${suffix}`, category.customer_root]),
     /cannot be assigned to item/,
     'Cross-type category assignment must be rejected.'
@@ -476,6 +494,56 @@ async function main() {
       throw new Error(`Planning migration verification failed: ${JSON.stringify({ installed, expected })}`);
     }
 
+    const itemDisplayNameShape = await client.query<{
+      display_name_required: boolean;
+      duplicate_registry_fields: number;
+      registry_hash_synced: boolean;
+    }>(`
+      with registry_fields as (
+        select field_path, field_value
+        from public.dynamic_crud_resource_registry registry
+        cross join lateral (values
+          ('create.allowed_fields', registry.config#>'{resources,planning_item,create,allowed_fields}'),
+          ('create.input_allowed_fields', registry.config#>'{resources,planning_item,create,input_allowed_fields}'),
+          ('create.required_fields', registry.config#>'{resources,planning_item,create,required_fields}'),
+          ('update.allowed_fields', registry.config#>'{resources,planning_item,update,allowed_fields}'),
+          ('update.input_allowed_fields', registry.config#>'{resources,planning_item,update,input_allowed_fields}')
+        ) paths(field_path, fields)
+        cross join lateral jsonb_array_elements_text(coalesce(paths.fields, '[]'::jsonb)) field_value
+        where registry.resource_name = 'planning_item'
+      )
+      select
+        (select is_nullable = 'NO'
+         from information_schema.columns
+         where table_schema = 'public'
+           and table_name = 'planning_item'
+           and column_name = 'display_name') as display_name_required,
+        (select count(*)::integer
+         from (
+           select expected.field_path
+           from (values
+             ('create.allowed_fields'),
+             ('create.input_allowed_fields'),
+             ('create.required_fields'),
+             ('update.allowed_fields'),
+             ('update.input_allowed_fields')
+           ) expected(field_path)
+           left join registry_fields fields
+             on fields.field_path = expected.field_path
+            and fields.field_value = 'display_name'
+           group by expected.field_path
+           having count(fields.field_value) <> 1
+         ) invalid_fields) as duplicate_registry_fields,
+        (select registry.config->>'config_hash' = registry.config_hash
+         from public.dynamic_crud_resource_registry registry
+         where registry.resource_name = 'planning_item') as registry_hash_synced
+    `);
+    assert.deepEqual(itemDisplayNameShape.rows[0], {
+      display_name_required: true,
+      duplicate_registry_fields: 0,
+      registry_hash_synced: true
+    });
+
     const consoleGridTables = await client.query<{
       grid_id: string;
       table_name: string;
@@ -605,6 +673,7 @@ async function main() {
       preexisting_lowcode_page_version_mismatches: baselineVersionMismatches,
       physical_table_options: gridTableAudit.optionCount,
       planning_categories: categoryVerification,
+      planning_item_display_name: itemDisplayNameShape.rows[0],
       operationplan_reference_scope: 'baseline/version',
       transaction: 'verified rollback'
     }));

@@ -171,7 +171,11 @@ async function refreshStoredSession() {
   return refreshSessionPromise;
 }
 
-async function fetchBackend<T>(url: string, options: FetchOptions = {}, didRetryAuth = false) {
+export async function authenticatedFetchResponse(
+  url: string,
+  options: FetchOptions = {},
+  didRetryAuth = false
+): Promise<Response> {
   const apiPath = normalizeApiPath(withQuery(url, options.query));
   const { query: _query, body, ...requestOptions } = options;
   const headers = new Headers(options.headers);
@@ -205,15 +209,14 @@ async function fetchBackend<T>(url: string, options: FetchOptions = {}, didRetry
         : JSON.stringify(body),
   });
 
-  const payload = parseResponsePayload(await response.text());
-
   if (!response.ok) {
+    const payload = parseResponsePayload(await response.clone().text());
     const statusMessage = readPayloadMessage(payload, response.statusText);
 
     if (!didRetryAuth && isAuthFailure(response.status, statusMessage) && canRefreshForPath(apiPath)) {
       const refreshed = await refreshStoredSession();
       if (refreshed) {
-        return fetchBackend<T>(url, options, true);
+        return authenticatedFetchResponse(url, options, true);
       }
     }
 
@@ -226,6 +229,14 @@ async function fetchBackend<T>(url: string, options: FetchOptions = {}, didRetry
       statusMessage,
     });
   }
+
+  return response;
+}
+
+async function fetchBackend<T>(url: string, options: FetchOptions = {}) {
+  const apiPath = normalizeApiPath(withQuery(url, options.query));
+  const response = await authenticatedFetchResponse(url, options);
+  const payload = parseResponsePayload(await response.text());
 
   if (apiPath.startsWith('/auth/signin') || apiPath.startsWith('/auth/signup') || apiPath.startsWith('/auth/session')) {
     persistAuthSession(payload);

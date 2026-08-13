@@ -2,7 +2,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 3000",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0 --port 3000",
     "test:keep-alive": "node tests/keep-alive-regression.mjs",
@@ -43,6 +43,8 @@
     "test:builtin-page-functions": "node --experimental-strip-types tests/builtin-page-functions-regression.mjs",
     "test:approval-progress": "node tests/approval-progress-page-regression.mjs",
     "test:approval-console": "node tests/approval-console-regression.mjs",
+    "test:task-console": "node tests/task-console-regression.mjs",
+    "test:task-console-browser": "node tests/task-console-browser-launcher.mjs",
     "test:lowcode-form-layout": "node tests/lowcode-form-layout-span-regression.mjs",
     "test:lowcode-page-runtime": "node --experimental-strip-types tests/lowcode-page-runtime-regression.mjs",
     "test:invalid-lowcode-block-runtime": "node tests/invalid-lowcode-block-runtime-regression.mjs",
@@ -65,7 +67,12 @@
     "test:entity-design-load-tables": "node tests/entity-design-load-tables-dialog-regression.mjs",
     "test:view-management": "node tests/view-management-regression.mjs",
     "test:view-management-browser": "node tests/view-management-create-browser-launcher.mjs",
-    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+    "test:trigger-workflow-inspector-schema": "node tests/trigger-workflow-inspector-schema-regression.mjs",
+    "test:trigger-workflow-canvas-browser": "node tests/trigger-workflow-canvas-browser-launcher.mjs",
+    "test:frontend-command": "node --experimental-strip-types tests/frontend-command-runtime-regression.mjs && node tests/frontend-command-socket-regression.mjs",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "test:ai": "node tests/ai-assistant-regression.mjs",
+    "test:ai:browser": "node tests/ai-assistant-browser-launcher.mjs"
   },
   "dependencies": {
     "@enlearn/approval-workflow": "workspace:^",

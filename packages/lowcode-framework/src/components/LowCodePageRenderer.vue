@@ -845,7 +845,9 @@ async function refreshDataSources(
     try {
       const [resolvedKey, value] = await invokeDataSource(key, source, true);
       if (!isCurrentSourceRequest(key, version)) return '';
-      if (typeof value !== 'undefined') runtime.setSource(resolvedKey, value);
+      if (typeof value !== 'undefined') {
+        runtime.setSource(resolvedKey, value, { resetGridBaseline: true });
+      }
       return '';
     } catch (error) {
       if (!isCurrentSourceRequest(key, version)) return '';
@@ -927,6 +929,7 @@ function cloneScriptValue<T>(value: T, fallback: T): T {
 }
 
 function createScriptContextSource(): LowCodeContextSource {
+  refreshGridChangeSets();
   return cloneScriptValue({
     page: {
       id: props.page.id,
@@ -1042,6 +1045,12 @@ function syncPageGridStates(schema: LowCodePageRecord['schema'] = props.page.sch
         rowKey: getGridRowKey(block),
       }
     );
+  });
+}
+
+function refreshGridChangeSets() {
+  Object.keys(runtime.state.grids).forEach((blockId) => {
+    runtime.getGridChanges(blockId);
   });
 }
 
@@ -1886,7 +1895,9 @@ async function loadDataSourceEntry(
   return invokeDataSource(key, source)
     .then(([resolvedKey, value]) => {
       if (!isCurrentSourceRequest(key, version)) return '';
-      if (typeof value !== 'undefined') runtime.setSource(resolvedKey, value);
+      if (typeof value !== 'undefined') {
+        runtime.setSource(resolvedKey, value, { resetGridBaseline: true });
+      }
       return '';
     })
     .catch((error: unknown) => {
@@ -2283,7 +2294,8 @@ async function executeScriptNodeAction(options: Record<string, unknown>) {
         }
       },
       getSourceValue: (sourceKey) => runtime.state.sources[sourceKey],
-      setSource: (sourceKey, value) => runtime.setSource(sourceKey, value),
+      setSource: (sourceKey, value, sourceOptions) =>
+        runtime.setSource(sourceKey, value, sourceOptions),
       syncGridStates: () => syncPageGridStates(),
       beginSourceRequest,
       isCurrentSourceRequest,
@@ -2307,6 +2319,7 @@ async function executeScriptNodeAction(options: Record<string, unknown>) {
         refreshFormNodeOptions(blockId, refreshOptions),
       setGridRows: (blockId, rows, actionOptions) =>
         runtime.setGridRows(blockId, rows, actionOptions),
+      getGridChanges: (blockId) => runtime.getGridChanges(blockId),
       setGridCurrentRow: async (blockId, row) => {
         runtime.setGridCurrentRow(blockId, row);
         await runtime.getGridController(blockId)?.setCurrentRow(
@@ -2425,6 +2438,7 @@ function sanitizeScriptEventPayload(value: unknown) {
 }
 
 function createScriptContext(event: LowCodeRuntimeEvent): LowCodeScriptContextSnapshot {
+  refreshGridChangeSets();
   const route = host.getRoute();
   const eventPayload = cloneScriptValue(event.payload ?? {}, {});
   const safeAction = sanitizeScriptAction(eventPayload.action);

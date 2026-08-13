@@ -9,12 +9,15 @@ import {
   TriggerRuntimeStatusService
 } from '../trigger/trigger-runtime-status.service';
 import { ApprovalConsoleService } from './approval-console.service';
+import { TASK_CONSOLE_JOB_SERVICE, TaskConsoleService } from './task-console.service';
+import { JobModule } from '../job/job.module';
+import { JobService } from '../job/job.service';
 import { WORKFLOW_RUNTIME_STORE } from './runtime.engine.types';
 import { SupabaseWorkflowRuntimeStore } from './runtime.supabase-store';
 import { RuntimeService } from './runtime.service';
 
 @Module({
-  imports: [DefinitionModule],
+  imports: [DefinitionModule, JobModule],
   providers: [
     TriggerDevClient,
     {
@@ -26,6 +29,11 @@ import { RuntimeService } from './runtime.service';
     RuntimeService,
     ApprovalConsoleService,
     {
+      provide: TASK_CONSOLE_JOB_SERVICE,
+      useExisting: JobService
+    },
+    TaskConsoleService,
+    {
       provide: TRIGGER_RUNTIME_STATUS_RUNTIME_SERVICE,
       useExisting: RuntimeService
     },
@@ -35,6 +43,6 @@ import { RuntimeService } from './runtime.service';
     },
     TriggerRuntimeStatusService
   ],
-  exports: [RuntimeService, ApprovalConsoleService, TriggerRuntimeStatusService]
+  exports: [RuntimeService, ApprovalConsoleService, TaskConsoleService, TriggerRuntimeStatusService]
 })
 export class RuntimeModule {}

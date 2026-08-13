@@ -14,7 +14,8 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260808150000_planning_diagnostic_tables.sql',
   'supabase/migrations/20260808160000_planning_extended_models.sql',
   'supabase/migrations/20260808170000_planning_execution_runtime.sql',
-  'supabase/migrations/20260810110000_unify_sales_order_status.sql'
+  'supabase/migrations/20260810110000_unify_sales_order_status.sql',
+  'supabase/migrations/20260813090000_planning_item_display_name.sql'
 ];
 
 function directProjectConnectionString(value: string) {
@@ -86,8 +87,8 @@ async function main() {
     assert.equal(defaults.rows[0]?.baseline, '1');
 
     const item = await client.query<{ id: string }>(`
-      insert into public.planning_item (account_id, name)
-      values ($1, $2) returning id
+      insert into public.planning_item (account_id, name, display_name)
+      values ($1, $2, $2) returning id
     `, [accountId, `sync-item-${suffix}`]);
     const customer = await client.query<{ id: string }>(`
       insert into public.planning_customer (account_id, name)

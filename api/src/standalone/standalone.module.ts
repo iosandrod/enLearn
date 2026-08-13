@@ -18,6 +18,7 @@ import { PlanningModule } from '../planning-service/planning.module';
 import { UserModule } from '../user-service/user.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { StandaloneServiceRouter } from './standalone-service-router.service';
+import { AiModule } from '../ai/ai.module';
 
 @Module({
   imports: [
@@ -34,7 +35,8 @@ import { StandaloneServiceRouter } from './standalone-service-router.service';
     ChatModule,
     PlanningModule,
     MesModule,
-    WorkflowModule
+    WorkflowModule,
+    AiModule.forGateway('standalone')
   ],
   controllers: [ServiceGatewayController],
   providers: [

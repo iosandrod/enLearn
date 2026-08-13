@@ -146,7 +146,8 @@ async function testConsoleOptionBoundary() {
   let capturedLimit = 0;
   const rows = Array.from({ length: 1005 }, (_, index) => ({
     id: `item-${index}`,
-    name: `Item ${String(index).padStart(4, '0')}`
+    name: `ITEM-${String(index).padStart(4, '0')}`,
+    display_name: `Item ${String(index).padStart(4, '0')}`
   }));
   const query = {
     select() { return query; },
@@ -172,6 +173,7 @@ async function testConsoleOptionBoundary() {
   assert.equal(capturedLimit, 1000);
   assert.ok(Array.isArray(options));
   assert.equal(options.length, 1000, 'Planning console options must cap results at 1000 rows.');
+  assert.deepEqual(options[0], { id: 'item-0', label: 'Item 0000' });
 }
 
 async function testCategoryRelationOptions() {
@@ -216,6 +218,30 @@ async function testCategoryRelationOptions() {
     label: '原材料',
     children: [{ id: 'child', label: 'PCB 电路板' }]
   }]);
+
+  const itemRows = [
+    { id: 'item-1', name: 'ITEM-001', display_name: '独立物料名称', parent_id: null },
+    { id: 'item-2', name: 'ITEM-002', display_name: null, parent_id: null }
+  ];
+  const itemQuery = {
+    select() { return itemQuery; },
+    eq() { return itemQuery; },
+    neq() { return itemQuery; },
+    order() { return itemQuery; },
+    limit() { return Promise.resolve({ data: itemRows, error: null }); }
+  };
+  optionService.createCrudContext = async () => ({
+    client: { from: () => itemQuery },
+    config: resources.planning_item,
+    name: 'planning_item'
+  });
+  const itemOptions = await optionService.executeAction('listRelationOptions', {
+    resource: 'planning_item'
+  }, { accountId: 'account-1' });
+  assert.deepEqual(itemOptions, [
+    { id: 'item-1', label: '独立物料名称' },
+    { id: 'item-2', label: 'ITEM-002' }
+  ]);
 }
 
 void Promise.all([

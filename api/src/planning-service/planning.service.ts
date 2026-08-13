@@ -175,23 +175,23 @@ export class PlanningService extends BaseService {
       const accountId = this.accountValue(context, 'account_id');
       const optionType = this.readOptionalString(postData.optionType ?? postData.option_type);
       const optionResources = {
-        scenario: { table: 'planning_scenario', labelField: 'name' },
-        item: { table: 'planning_item', labelField: 'display_name' },
-        resource: { table: 'planning_resource', labelField: 'name' },
-        operation: { table: 'planning_operation', labelField: 'name' }
+        scenario: { table: 'planning_scenario', labelField: 'name', fallbackField: 'id' },
+        item: { table: 'planning_item', labelField: 'display_name', fallbackField: 'name' },
+        resource: { table: 'planning_resource', labelField: 'name', fallbackField: 'id' },
+        operation: { table: 'planning_operation', labelField: 'name', fallbackField: 'id' }
       } as const;
       const option = optionResources[optionType as keyof typeof optionResources];
       if (!option) throw new BadRequestException(`Unsupported planning console option type: ${optionType || '(empty)'}.`);
       const { data, error } = await client
         .from(option.table)
-        .select(`id,${option.labelField}`)
+        .select(`id,${option.labelField},${option.fallbackField}`)
         .eq('account_id', accountId)
         .order(option.labelField, { ascending: true })
         .limit(1000);
       if (error) throw new BadRequestException(error.message);
       return ((data ?? []) as unknown as Record<string, unknown>[]).map((row) => ({
         id: row.id,
-        label: String(row[option.labelField] ?? row.id ?? '')
+        label: String(row[option.labelField] ?? row[option.fallbackField] ?? row.id ?? '')
       }));
     }
 
@@ -345,8 +345,12 @@ export class PlanningService extends BaseService {
       const client = ctx.client;
 
       const businessField = this.readOptionalString(postData.labelField ?? postData.label_field);
-      const labelField = businessField || 'id';
+      const relationModel = PLANNING_MODEL_BY_KEY.get(relation.name);
+      const labelField = businessField || relationModel?.labelField ||
+        relationModel?.businessKey || 'id';
+      const fallbackField = relationModel?.businessKey || 'id';
       this.assertIdentifier(labelField, 'labelField');
+      this.assertIdentifier(fallbackField, 'fallbackField');
       const filters = this.readRecord(postData.filters);
       const excludeId = this.readOptionalString(postData.excludeId ?? postData.exclude_id);
       let query = client
@@ -367,7 +371,7 @@ export class PlanningService extends BaseService {
       if (error) throw new BadRequestException(error.message);
       const options = ((data ?? []) as unknown as Record<string, unknown>[]).map((row) => ({
           id: row.id,
-          label: String(row[labelField] ?? row.id ?? ''),
+          label: String(row[labelField] ?? row[fallbackField] ?? row.id ?? ''),
           parentId: row.parent_id ?? null
         }));
       return this.readBoolean(postData.tree, false)
@@ -495,7 +499,7 @@ export class PlanningService extends BaseService {
       labelsByTarget.set(mapKey, new Map(
         ((data ?? []) as unknown as Record<string, unknown>[]).map((row) => [
           String(row.id ?? ''),
-          String(row[labelField] ?? row.id ?? '')
+          String(row[labelField] ?? row[target.businessKey ?? 'id'] ?? row.id ?? '')
         ])
       ));
     }));

@@ -45,9 +45,32 @@ export type TriggerWorkflowQueueConfig = {
   concurrencyLimit?: number;
 };
 
+export type TriggerWorkflowTaskType =
+  | 'frontendCommand'
+  | 'backendCommand'
+  | 'storedProcedure'
+  | 'registeredTask';
+
+export type TriggerWorkflowTaskFailureStrategy =
+  | 'failWorkflow'
+  | 'continue'
+  | 'useDefaultOutput';
+
 export type TriggerWorkflowTaskRef = {
-  id: string;
+  type?: TriggerWorkflowTaskType;
+  id?: string;
   importPath?: string;
+  frontendFunction?: string;
+  backendFunction?: string;
+  procedureName?: string;
+  procedureSchema?: string;
+  input?: Record<string, unknown>;
+  outputPath?: string;
+  outputMapping?: Record<string, string>;
+  failureStrategy?: TriggerWorkflowTaskFailureStrategy;
+  defaultOutput?: unknown;
+  priority?: number;
+  tags?: string[];
   queue?: TriggerWorkflowQueueConfig;
   retry?: TriggerWorkflowRetryConfig;
   timeoutSeconds?: number;

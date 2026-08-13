@@ -62,6 +62,13 @@ function compressBody(
 }
 
 export function responseCompressionMiddleware(req: any, res: any, next: () => void) {
+  const requestPath = String(req.originalUrl ?? req.url ?? '');
+  const acceptsEventStream = readAcceptEncoding(req.headers?.accept).includes('text/event-stream');
+  if (requestPath.startsWith('/api/ai/') || acceptsEventStream) {
+    next();
+    return;
+  }
+
   const encoding = selectCompressionEncoding(req.headers?.['accept-encoding']);
 
   if (!encoding || req.method === 'HEAD') {

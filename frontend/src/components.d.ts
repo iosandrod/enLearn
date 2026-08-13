@@ -12,6 +12,16 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AiApprovalDialog: typeof import('./../components/ai/AiApprovalDialog.vue')['default']
+    AiAssistantButton: typeof import('./../components/ai/AiAssistantButton.vue')['default']
+    AiAssistantDrawer: typeof import('./../components/ai/AiAssistantDrawer.vue')['default']
+    AiContextBar: typeof import('./../components/ai/AiContextBar.vue')['default']
+    AiConversationList: typeof import('./../components/ai/AiConversationList.vue')['default']
+    AiMessageList: typeof import('./../components/ai/AiMessageList.vue')['default']
+    AiPromptComposer: typeof import('./../components/ai/AiPromptComposer.vue')['default']
+    AiProposalCard: typeof import('./../components/ai/AiProposalCard.vue')['default']
+    AiProposalDiff: typeof import('./../components/ai/AiProposalDiff.vue')['default']
+    AiToolTrace: typeof import('./../components/ai/AiToolTrace.vue')['default']
     ChatPopup: typeof import('./../components/ChatPopup.vue')['default']
     ContentRenderer: typeof import('./../components/ContentRenderer.vue')['default']
     DocsScreen: typeof import('./../components/DocsScreen.vue')['default']
@@ -39,6 +49,16 @@ declare module 'vue' {
 
 // For TSX support
 declare global {
+  const AiApprovalDialog: typeof import('./../components/ai/AiApprovalDialog.vue')['default']
+  const AiAssistantButton: typeof import('./../components/ai/AiAssistantButton.vue')['default']
+  const AiAssistantDrawer: typeof import('./../components/ai/AiAssistantDrawer.vue')['default']
+  const AiContextBar: typeof import('./../components/ai/AiContextBar.vue')['default']
+  const AiConversationList: typeof import('./../components/ai/AiConversationList.vue')['default']
+  const AiMessageList: typeof import('./../components/ai/AiMessageList.vue')['default']
+  const AiPromptComposer: typeof import('./../components/ai/AiPromptComposer.vue')['default']
+  const AiProposalCard: typeof import('./../components/ai/AiProposalCard.vue')['default']
+  const AiProposalDiff: typeof import('./../components/ai/AiProposalDiff.vue')['default']
+  const AiToolTrace: typeof import('./../components/ai/AiToolTrace.vue')['default']
   const ChatPopup: typeof import('./../components/ChatPopup.vue')['default']
   const ContentRenderer: typeof import('./../components/ContentRenderer.vue')['default']
   const DocsScreen: typeof import('./../components/DocsScreen.vue')['default']

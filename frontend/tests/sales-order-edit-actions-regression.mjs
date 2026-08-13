@@ -3,14 +3,21 @@ import { readFile } from 'node:fs/promises';
 
 const migration = await readFile(
   new URL(
+    '../../supabase/migrations/20260813121000_sales_order_incremental_detail_save.sql',
+    import.meta.url,
+  ),
+  'utf8',
+);
+const originalMigration = await readFile(
+  new URL(
     '../../supabase/migrations/20260812120000_sales_order_edit_save_details.sql',
     import.meta.url,
   ),
   'utf8',
 );
 
-function extractScript(variableName) {
-  const match = migration.match(
+function extractScript(variableName, source = migration) {
+  const match = source.match(
     new RegExp(`${variableName}\\s+text\\s*:=\\s*\\$script\\$([\\s\\S]*?)\\$script\\$;`),
   );
   assert.ok(match, `Migration must define ${variableName}.`);
@@ -55,6 +62,26 @@ function createSaveContext({ formValid = true, detailValid = true, creating = fa
       unexpected_detail: 'must-not-leak',
     },
   ];
+  const changes = {
+    created: [{
+      id: 'new-local-1',
+      _X_ROW_KEY: 'vxe-created-row',
+      __rowStatus: 'created',
+      line_no: '2',
+      item_code: 'ITEM-NEW',
+      item_name: 'New item',
+      ordered_qty: '1',
+      unit_price: '5',
+      metadata: {},
+    }],
+    updated: [{
+      ...rows[0],
+      _X_ROW_KEY: 'vxe-updated-row',
+      __rowState: 'updated',
+      item_name: 'Updated item',
+    }],
+    deleted: [{ id: 'line-deleted', item_code: 'OLD' }],
+  };
 
   const context = {
     page: { route: '/dashboard/sales/orders/edit' },
@@ -77,6 +104,9 @@ function createSaveContext({ formValid = true, detailValid = true, creating = fa
       }
       if (options.node === 'sales-order-edit-form' && options.method === 'getData') {
         return structuredClone(form);
+      }
+      if (options.node === 'sales-order-lines-grid' && options.method === 'getChanges') {
+        return structuredClone(changes);
       }
       if (options.node === 'sales-order-lines-grid' && options.method === 'loadData') {
         return rows;
@@ -111,8 +141,8 @@ function createSaveContext({ formValid = true, detailValid = true, creating = fa
 }
 
 const saveScript = extractScript('v_save_script');
-const addDetailScript = extractScript('v_add_detail_script');
-const deleteDetailScript = extractScript('v_delete_detail_script');
+const addDetailScript = extractScript('v_add_detail_script', originalMigration);
+const deleteDetailScript = extractScript('v_delete_detail_script', originalMigration);
 
 {
   const { context, calls } = createSaveContext();
@@ -127,6 +157,7 @@ const deleteDetailScript = extractScript('v_delete_detail_script');
       'action:sales-order-edit-form.validate',
       'action:sales-order-lines-grid.validate',
       'action:sales-order-edit-form.getData',
+      'action:sales-order-lines-grid.getChanges',
       'http',
       'message.success',
       'source.refresh',
@@ -154,31 +185,51 @@ const deleteDetailScript = extractScript('v_delete_detail_script');
   assert.equal(request.body.data.business_date, null);
   assert.deepEqual(request.body.data.__details[0], {
     resource: 'sales_order_lines',
-    mode: 'replace',
+    mode: 'changes',
     foreignKey: 'order_id',
     inheritFields: ['account_id'],
-    rows: [{
+    created: [{
+      line_no: 2,
+      item_code: 'ITEM-NEW',
+      item_name: 'New item',
+      ordered_qty: 1,
+      unit_price: 5,
+      metadata: {},
+    }],
+    updated: [{
+      id: 'line-1',
       line_no: 1,
       item_code: 'ITEM-001',
-      item_name: 'Test item',
+      item_name: 'Updated item',
       ordered_qty: 2,
       unit_price: 10.5,
       need_date: null,
       metadata: {},
     }],
+    deleted: ['line-deleted'],
   });
 }
 
 {
   const { context, calls } = createSaveContext();
-  context.grids['sales-order-lines-grid'] = {};
+  context.executeAction = async (options) => {
+    calls.push({ type: 'action', options: structuredClone(options) });
+    if (options.node === 'sales-order-edit-form' && options.method === 'validate') return true;
+    if (options.node === 'sales-order-lines-grid' && options.method === 'validate') return true;
+    if (options.node === 'sales-order-edit-form' && options.method === 'getData') {
+      return { id: 'order-1', doc_no: 'SO-001' };
+    }
+    if (options.node === 'sales-order-lines-grid' && options.method === 'getChanges') {
+      return { created: [], updated: [], deleted: [] };
+    }
+    if (options.node === 'sales-order-lines-grid' && options.method === 'loadData') return [];
+    throw new Error(`Unexpected action ${options.node}.${options.method}`);
+  };
   await executeScript(saveScript, context);
   const request = calls.find((call) => call.type === 'http').options;
-  assert.equal(
-    request.body.data.__details[0].rows.length,
-    1,
-    'Save must fall back to source rows while the grid runtime snapshot is unavailable.',
-  );
+  assert.deepEqual(request.body.data.__details[0].created, []);
+  assert.deepEqual(request.body.data.__details[0].updated, []);
+  assert.deepEqual(request.body.data.__details[0].deleted, []);
 }
 
 {
@@ -203,6 +254,7 @@ const deleteDetailScript = extractScript('v_delete_detail_script');
 
 {
   const { context, calls } = createSaveContext({ creating: true });
+  context.grids['sales-order-lines-grid'] = {};
   const result = await executeScript(saveScript, context);
   assert.equal(result.id, 'order-created');
   assert.deepEqual(
@@ -214,6 +266,21 @@ const deleteDetailScript = extractScript('v_delete_detail_script');
     'A newly created order must switch the editor to its persisted id.',
   );
   assert.equal(calls.some((call) => call.type === 'source.refresh'), false);
+  const request = calls.find((call) => call.type === 'http').options;
+  assert.deepEqual(request.body.data.__details[0], {
+    resource: 'sales_order_lines',
+    foreignKey: 'order_id',
+    inheritFields: ['account_id'],
+    rows: [{
+      line_no: 1,
+      item_code: 'ITEM-001',
+      item_name: 'Test item',
+      ordered_qty: 2,
+      unit_price: 10.5,
+      need_date: null,
+      metadata: {},
+    }],
+  });
 }
 
 {
@@ -278,19 +345,27 @@ const deleteDetailScript = extractScript('v_delete_detail_script');
   );
 }
 
-assert.match(migration, /'serviceMethod', 'saveItem'/);
-assert.match(migration, /'resource', 'sales_orders'/);
+assert.match(originalMigration, /'serviceMethod', 'saveItem'/);
+assert.match(originalMigration, /'resource', 'sales_orders'/);
 assert.match(
-  migration,
+  originalMigration,
   /'\{dataSources,salesOrder,autoLoad\}'[\s\S]*?'true'::jsonb/,
   'The edit page must load the existing header before validation and save.',
 );
-assert.match(migration, /'keepSource', true/);
-assert.match(migration, /'editConfig'[\s\S]*?'mode', 'row'[\s\S]*?'trigger', 'click'/);
-assert.match(migration, /'editRules'[\s\S]*?'item_code'[\s\S]*?'item_name'[\s\S]*?'ordered_qty'/);
-assert.match(migration, /'name', 'VxeNumberInput'/);
-assert.match(migration, /'name', 'VxeDatePicker'/);
-assert.match(migration, /where entry\.action ->> 'code' = 'addDetail'/);
-assert.match(migration, /where entry\.action ->> 'code' = 'deleteDetail'/);
+assert.match(originalMigration, /'keepSource', true/);
+assert.match(originalMigration, /'editConfig'[\s\S]*?'mode', 'row'[\s\S]*?'trigger', 'click'/);
+assert.match(originalMigration, /'editRules'[\s\S]*?'item_code'[\s\S]*?'item_name'[\s\S]*?'ordered_qty'/);
+assert.match(originalMigration, /'name', 'VxeNumberInput'/);
+assert.match(originalMigration, /'name', 'VxeDatePicker'/);
+assert.match(originalMigration, /where entry\.action ->> 'code' = 'addDetail'/);
+assert.match(originalMigration, /where entry\.action ->> 'code' = 'deleteDetail'/);
+assert.match(migration, /where entry\.action ->> 'code' = 'save'/);
+assert.match(migration, /jsonb_build_object\('script', v_save_script\)/);
+assert.match(migration, /mode: "changes"/);
+assert.doesNotMatch(
+  originalMigration,
+  /method: "getChanges"/,
+  'The already-shipped migration must remain immutable; incremental save is a forward migration.',
+);
 
 console.log('Sales-order edit save/detail action regression tests passed.');

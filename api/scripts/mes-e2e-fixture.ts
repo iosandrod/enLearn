@@ -149,10 +149,10 @@ async function insertPlanningFixture(
     values ($1, $2, $3)
   `, [locationId, accountId, `MES E2E Location ${runId}`]);
   await database.query(`
-    insert into public.planning_item (id, account_id, name, uom)
+    insert into public.planning_item (id, account_id, name, display_name, uom)
     values
-      ($1, $2, $3, 'EA'),
-      ($4, $2, $5, 'EA')
+      ($1, $2, $3, $3, 'EA'),
+      ($4, $2, $5, $5, 'EA')
   `, [
     outputItemId,
     accountId,

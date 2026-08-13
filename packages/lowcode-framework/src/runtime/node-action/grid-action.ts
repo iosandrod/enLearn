@@ -374,7 +374,7 @@ export async function executeGridLoadDataNodeAction(
         requestVersion &&
         !runtimeContext.isCurrentSourceRequest(sourceKey, requestVersion)
       ) return;
-      runtimeContext.setSource(sourceKey, value);
+      runtimeContext.setSource(sourceKey, value, { resetGridBaseline: true });
       runtimeContext.syncGridStates();
     },
     setLoading: (loading) => {
@@ -409,6 +409,13 @@ export function executeGridReloadDataNodeAction(
     replaceGridRows(context, block, rows);
   }
   return rows;
+}
+
+export function executeGridGetChangesNodeAction(
+  context: LowCodeNodeActionRuntimeContext,
+) {
+  const block = assertGridBlock(context, '读取变更');
+  return context.getGridChanges(block.id);
 }
 
 export function executeGridValidateNodeAction(
@@ -474,6 +481,10 @@ function createValidateInsertText(nodeId: string) {
   return `const valid = await this.executeAction({\n  node: ${JSON.stringify(nodeId)},\n  method: "validate",\n});`;
 }
 
+function createGetChangesInsertText(nodeId: string) {
+  return `const changes = await this.executeAction({\n  node: ${JSON.stringify(nodeId)},\n  method: "getChanges",\n});`;
+}
+
 function createAddRowInsertText(nodeId: string) {
   return `const row = await this.executeAction({\n  node: ${JSON.stringify(nodeId)},\n  method: "addRow",\n  data: {},\n});`;
 }
@@ -533,6 +544,17 @@ export const gridReloadDataNodeAction: LowCodeNodeActionMethodDefinition = {
   execute: executeGridReloadDataNodeAction,
 };
 
+export const gridGetChangesNodeAction: LowCodeNodeActionMethodDefinition = {
+  method: 'getChanges',
+  label: '获取表格变更',
+  description: '按行主键比较加载基线与当前数据，返回新增、更新和删除的行。',
+  executor: 'grid.getChanges',
+  parameters: [],
+  returns: '返回 { created, updated, deleted } 变更集。',
+  createInsertText: createGetChangesInsertText,
+  execute: executeGridGetChangesNodeAction,
+};
+
 export const gridValidateNodeAction: LowCodeNodeActionMethodDefinition = {
   method: 'validate',
   label: '校验表格数据',
@@ -579,6 +601,7 @@ export const gridNodeActionDefinition = {
   methods: {
     loadData: gridLoadDataNodeAction,
     reloadData: gridReloadDataNodeAction,
+    getChanges: gridGetChangesNodeAction,
     validate: gridValidateNodeAction,
     addRow: gridAddRowNodeAction,
     deleteCurrentRow: gridDeleteCurrentRowNodeAction,

@@ -44,9 +44,11 @@ import {
 } from '../templates';
 import {
   createTriggerEdgeFormModel,
-  createTriggerEdgeFormSchema,
   createTriggerNodeFormModel,
-  createTriggerNodeFormSchema,
+  resolveTriggerEdgeFormSchema,
+  resolveTriggerNodeFormSchema,
+  type TriggerInspectorFormSchema,
+  type TriggerNodeFormSchemaOverrides,
   updateTriggerEdgeFromFormField,
   updateTriggerNodeFromFormField
 } from '../inspector-form';
@@ -58,12 +60,16 @@ const props = withDefaults(
     height?: string;
     busy?: boolean;
     canRun?: boolean;
+    nodeFormSchemas?: TriggerNodeFormSchemaOverrides;
+    edgeFormSchema?: TriggerInspectorFormSchema;
+    inspectorSchemasLoading?: boolean;
   }>(),
   {
     readonly: false,
     height: '760px',
     busy: false,
-    canRun: false
+    canRun: false,
+    inspectorSchemasLoading: false
   }
 );
 
@@ -89,15 +95,22 @@ const kindOptions: Array<{ value: TriggerWorkflowKind; label: string }> = [
 ];
 
 const flowId = `trigger-workflow-editor-${Math.random().toString(36).slice(2)}`;
-const { fitView, screenToFlowCoordinate } = useVueFlow(flowId);
+const { fitView, screenToFlowCoordinate, setEdges, setNodes, zoomIn, zoomOut } = useVueFlow(flowId);
 const fallbackModel = createApprovalTriggerWorkflow();
-const currentModel = ref(normalizeTriggerWorkflow(props.modelValue ?? fallbackModel));
+const currentModel = ref(prepareEditorModel(props.modelValue ?? fallbackModel));
 const flowNodes = ref<TriggerCanvasNode[]>(triggerWorkflowToFlowNodes(currentModel.value));
 const flowEdges = ref<TriggerFlowEdge[]>(triggerWorkflowToFlowEdges(currentModel.value));
 const selectedNodeId = ref<string | null>(null);
 const selectedEdgeId = ref<string | null>(null);
 const activeInspectorTab = ref<'config' | 'compiled'>('config');
 const syncing = ref(false);
+const undoStack = ref<TriggerWorkflowModel[]>([]);
+const redoStack = ref<TriggerWorkflowModel[]>([]);
+const historyLimit = 50;
+const historyDebounceMs = 500;
+let dragStartSnapshot: TriggerWorkflowModel | undefined;
+const pendingHistorySnapshot = ref<TriggerWorkflowModel>();
+let pendingHistoryTimer: ReturnType<typeof setTimeout> | undefined;
 let sequence = 0;
 
 const palette = computed(() => getTriggerNodeDefinitionsForKind(currentModel.value.kind));
@@ -123,13 +136,17 @@ const selectedCategoryLabel = computed(() =>
   selectedDefinition.value ? getTriggerNodeCategoryLabel(selectedDefinition.value.category) : '自定义节点'
 );
 const selectedNodeFormSchema = computed(() =>
-  selectedNode.value ? createTriggerNodeFormSchema(selectedNode.value) : undefined
+  selectedNode.value
+    ? resolveTriggerNodeFormSchema(selectedNode.value, props.nodeFormSchemas)
+    : undefined
 );
 const selectedNodeFormModel = computed(() =>
   selectedNode.value ? createTriggerNodeFormModel(selectedNode.value) : {}
 );
 const selectedEdgeFormSchema = computed(() =>
-  selectedEdge.value ? createTriggerEdgeFormSchema(selectedEdge.value) : undefined
+  selectedEdge.value
+    ? resolveTriggerEdgeFormSchema(selectedEdge.value, props.edgeFormSchema)
+    : undefined
 );
 const selectedEdgeFormModel = computed(() =>
   selectedEdge.value ? createTriggerEdgeFormModel(selectedEdge.value) : {}
@@ -140,16 +157,41 @@ const selectedEdgeSummary = computed(() => {
   const target = currentModel.value.nodes.find((node) => node.id === selectedEdge.value?.target)?.name;
   return `${source ?? selectedEdge.value.source} → ${target ?? selectedEdge.value.target}`;
 });
+const canUndo = computed(
+  () => !props.readonly && Boolean(undoStack.value.length || pendingHistorySnapshot.value)
+);
+const canRedo = computed(() => !props.readonly && redoStack.value.length > 0);
+const canClearCanvas = computed(
+  () => {
+    if (props.readonly) return false;
+    const startCount = currentModel.value.nodes.filter((node) => node.type === 'start').length;
+    const endCount = currentModel.value.nodes.filter((node) => node.type === 'end').length;
+    const hasWorkflowNodes = currentModel.value.nodes.some((node) => !isRequiredCanvasNode(node));
+    return Boolean(currentModel.value.edges.length || hasWorkflowNodes || startCount !== 1 || endCount !== 1);
+  }
+);
 const rootStyle = computed(() => ({ '--trigger-editor-height': props.height }));
 if (currentModel.value.nodes.length) {
   selectedNodeId.value = currentModel.value.nodes[0].id;
+}
+if (props.modelValue && !modelsMatch(normalizeTriggerWorkflow(props.modelValue), currentModel.value)) {
+  emitModel(currentModel.value);
 }
 
 watch(
   () => props.modelValue,
   (value) => {
     if (!value) return;
-    syncFromModel(value);
+    const normalized = normalizeTriggerWorkflow(value);
+    const next = prepareEditorModel(normalized);
+    const repairedRequiredNodes = !modelsMatch(normalized, next);
+    if (modelsMatch(next, currentModel.value)) {
+      if (repairedRequiredNodes) emitModel(next);
+      return;
+    }
+    resetHistory();
+    syncFromModel(next);
+    if (repairedRequiredNodes) emitModel(currentModel.value);
   },
   { deep: true }
 );
@@ -159,6 +201,7 @@ watch(
   () => {
     if (syncing.value) return;
     const next = flowToTriggerWorkflow(currentModel.value, flowNodes.value, flowEdges.value);
+    if (modelsMatch(next, currentModel.value)) return;
     currentModel.value = next;
     emitModel(next);
   },
@@ -173,7 +216,7 @@ function emitModel(model: TriggerWorkflowModel) {
 
 function syncFromModel(model: TriggerWorkflowModel) {
   syncing.value = true;
-  currentModel.value = normalizeTriggerWorkflow(model);
+  currentModel.value = prepareEditorModel(model);
   if (!currentModel.value.edges.some((edge) => edge.id === selectedEdgeId.value)) {
     selectedEdgeId.value = null;
   }
@@ -183,23 +226,35 @@ function syncFromModel(model: TriggerWorkflowModel) {
   if (!selectedNodeId.value && !selectedEdgeId.value) {
     selectedNodeId.value = currentModel.value.nodes[0]?.id ?? null;
   }
-  flowNodes.value = triggerWorkflowToFlowNodes(currentModel.value);
-  flowEdges.value = triggerWorkflowToFlowEdges(currentModel.value);
+  const nextFlowNodes = triggerWorkflowToFlowNodes(currentModel.value);
+  const nextFlowEdges = triggerWorkflowToFlowEdges(currentModel.value);
+  flowNodes.value = nextFlowNodes;
+  flowEdges.value = nextFlowEdges;
+  setNodes(nextFlowNodes);
+  setEdges(nextFlowEdges);
   void nextTick(() => {
     syncing.value = false;
   });
 }
 
-function replaceModel(model: TriggerWorkflowModel) {
-  syncFromModel(model);
+function replaceModel(
+  model: TriggerWorkflowModel,
+  options: { recordHistory?: boolean; fitCanvas?: boolean; mergeHistory?: boolean } = {}
+) {
+  const next = prepareEditorModel(model);
+  if (modelsMatch(next, currentModel.value)) return;
+  if (options.recordHistory !== false) {
+    if (options.mergeHistory) rememberMergedSnapshot(currentModel.value);
+    else rememberSnapshot(currentModel.value);
+  }
+  syncFromModel(next);
   emitModel(currentModel.value);
-  void nextTick(() => fitView({ padding: 0.18, duration: 180 }));
+  if (options.fitCanvas !== false) fitCanvas();
 }
 
 function setKind(kind: TriggerWorkflowKind) {
   if (props.readonly) return;
-  currentModel.value = { ...currentModel.value, kind };
-  emitModel(currentModel.value);
+  replaceModel({ ...currentModel.value, kind }, { fitCanvas: false });
 }
 
 function loadTemplate(kind: Exclude<TriggerWorkflowKind, 'custom'>) {
@@ -231,6 +286,31 @@ function onEdgeClick(event: EdgeMouseEvent) {
 
 function onPaneClick() {
   closeNodeContextMenu();
+}
+
+function onNodeDragStart(event: NodeMouseEvent) {
+  if (props.readonly) return;
+  const draggedNode = currentModel.value.nodes.find((node) => node.id === event.node.id);
+  if (!draggedNode) return;
+  dragStartSnapshot = cloneTriggerWorkflow({
+    ...currentModel.value,
+    nodes: currentModel.value.nodes.map((node) =>
+      node.id === draggedNode.id
+        ? { ...node, position: { ...event.node.position } }
+        : node
+    )
+  });
+}
+
+function onNodeDragStop() {
+  if (!dragStartSnapshot) return;
+  const next = flowToTriggerWorkflow(currentModel.value, flowNodes.value, flowEdges.value);
+  if (!modelsMatch(dragStartSnapshot, next)) {
+    commitSnapshot(dragStartSnapshot);
+    currentModel.value = next;
+    emitModel(next);
+  }
+  dragStartSnapshot = undefined;
 }
 
 function onNodeContextMenu(event: NodeMouseEvent) {
@@ -371,10 +451,14 @@ function onCanvasDrop(event: DragEvent) {
 function onConnect(connection: Connection) {
   if (props.readonly || !connection.source || !connection.target) return;
   if (flowEdges.value.some((edge) => edge.source === connection.source && edge.target === connection.target)) return;
-  flowEdges.value = [
+  const nextFlowEdges = [
     ...flowEdges.value,
     connectionToTriggerFlowEdge(connection, createEdgeId(connection.source, connection.target))
   ];
+  replaceModel(
+    flowToTriggerWorkflow(currentModel.value, flowNodes.value, nextFlowEdges),
+    { fitCanvas: false }
+  );
 }
 
 function deleteSelection() {
@@ -450,8 +534,10 @@ function canDeleteNode(node: TriggerWorkflowNode) {
 function updateWorkflowField(field: 'code' | 'name', event: Event) {
   if (props.readonly) return;
   const value = (event.target as HTMLInputElement).value;
-  currentModel.value = { ...currentModel.value, [field]: value };
-  emitModel(currentModel.value);
+  replaceModel(
+    { ...currentModel.value, [field]: value },
+    { fitCanvas: false, mergeHistory: true }
+  );
 }
 
 function updateSelectedNodeFromLowCodeForm(payload: {
@@ -460,7 +546,9 @@ function updateSelectedNodeFromLowCodeForm(payload: {
 }) {
   const node = selectedNode.value;
   if (!node || props.readonly) return;
-  replaceNode(updateTriggerNodeFromFormField(node, payload.field.field, payload.value));
+  let next = updateTriggerNodeFromFormField(node, payload.field.field, payload.value);
+  if (payload.field.field === 'taskType') next = applyTaskTypeDefaults(next);
+  replaceNode(next);
 }
 
 function updateSelectedEdgeFromLowCodeForm(payload: {
@@ -487,8 +575,132 @@ function replaceEdge(edge: TriggerWorkflowModel['edges'][number]) {
 }
 
 function layout() {
-  flowNodes.value = autoLayoutTriggerFlowNodes(flowNodes.value, flowEdges.value);
-  void nextTick(() => fitView({ padding: 0.18, duration: 220 }));
+  if (props.readonly || !flowNodes.value.length) return;
+  const layoutNodes = autoLayoutTriggerFlowNodes(flowNodes.value, flowEdges.value);
+  replaceModel(flowToTriggerWorkflow(currentModel.value, layoutNodes, flowEdges.value));
+}
+
+function fitCanvas() {
+  void nextTick(() => fitView({ padding: 0.18, duration: 180 }));
+}
+
+function zoomInCanvas() {
+  void zoomIn({ duration: 140 });
+}
+
+function zoomOutCanvas() {
+  void zoomOut({ duration: 140 });
+}
+
+function undoCanvasChange() {
+  flushPendingHistory();
+  if (!canUndo.value) return;
+  const previous = undoStack.value.at(-1);
+  if (!previous) return;
+  undoStack.value = undoStack.value.slice(0, -1);
+  redoStack.value = appendSnapshot(redoStack.value, currentModel.value);
+  applyHistorySnapshot(previous);
+}
+
+function redoCanvasChange() {
+  if (!canRedo.value) return;
+  const next = redoStack.value.at(-1);
+  if (!next) return;
+  redoStack.value = redoStack.value.slice(0, -1);
+  undoStack.value = appendSnapshot(undoStack.value, currentModel.value);
+  applyHistorySnapshot(next);
+}
+
+async function clearCanvas() {
+  if (!canClearCanvas.value) return;
+  const retainedNodes = createRequiredCanvasNodes();
+  const nodeCount = currentModel.value.nodes.length - currentModel.value.nodes.filter(isRequiredCanvasNode).length;
+  const edgeCount = currentModel.value.edges.length;
+  const confirmResult = await VxeUI.modal.confirm({
+    title: '清空画布',
+    content: `确定清除画布中的 ${nodeCount} 个流程节点和 ${edgeCount} 条连接吗？开始节点和结束节点将保留或自动恢复，清空后可通过撤销恢复。`,
+    confirmButtonText: '清空'
+  });
+  if (confirmResult !== 'confirm') return;
+
+  selectedNodeId.value = retainedNodes.find((node) => node.type === 'start')?.id ?? retainedNodes[0]?.id ?? null;
+  selectedEdgeId.value = null;
+  activeInspectorTab.value = 'config';
+  replaceModel(
+    {
+      ...currentModel.value,
+      nodes: retainedNodes,
+      edges: []
+    },
+    { fitCanvas: false }
+  );
+  fitCanvas();
+  void VxeUI.modal.message({ content: '画布已清空，开始节点和结束节点已保留。', status: 'success' });
+}
+
+function createRequiredCanvasNodes() {
+  const existingStart = currentModel.value.nodes.find((node) => node.type === 'start');
+  const existingEnd = currentModel.value.nodes.find((node) => node.type === 'end');
+  const start = existingStart ?? createConfiguredNode(
+    'start',
+    createNodeId('start'),
+    getTriggerNodeDefinition('start')?.label ?? '开始',
+    { x: 380, y: 40 }
+  );
+  const end = existingEnd ?? createConfiguredNode(
+    'end',
+    createNodeId('end'),
+    getTriggerNodeDefinition('end')?.label ?? '结束',
+    { x: 380, y: 360 }
+  );
+  return [start, end];
+}
+
+function isRequiredCanvasNode(node: TriggerWorkflowNode) {
+  return node.type === 'start' || node.type === 'end';
+}
+
+function prepareEditorModel(value: unknown) {
+  const model = normalizeTriggerWorkflow(value);
+  const hasEntryNode = model.nodes.some(isEntryCanvasNode);
+  const hasEndNode = model.nodes.some((node) => node.type === 'end');
+  if (hasEntryNode && hasEndNode) return model;
+
+  const nodes = [...model.nodes];
+  if (!hasEntryNode) {
+    nodes.unshift({
+      id: createAvailableNodeId(nodes, 'start'),
+      type: 'start',
+      name: getTriggerNodeDefinition('start')?.label ?? '开始',
+      position: { x: 380, y: 40 }
+    });
+  }
+  if (!hasEndNode) {
+    const lastNodeY = Math.max(200, ...nodes.map((node) => node.position?.y ?? 40));
+    nodes.push({
+      id: createAvailableNodeId(nodes, 'end'),
+      type: 'end',
+      name: getTriggerNodeDefinition('end')?.label ?? '结束',
+      position: { x: 380, y: lastNodeY + 160 }
+    });
+  }
+
+  return {
+    ...model,
+    nodes
+  };
+}
+
+function isEntryCanvasNode(node: TriggerWorkflowNode) {
+  return node.type === 'start' || node.type === 'schedule' || node.type === 'webhook';
+}
+
+function createAvailableNodeId(nodes: TriggerWorkflowNode[], preferredId: string) {
+  const ids = new Set(nodes.map((node) => node.id));
+  if (!ids.has(preferredId)) return preferredId;
+  let suffix = 2;
+  while (ids.has(`${preferredId}_${suffix}`)) suffix += 1;
+  return `${preferredId}_${suffix}`;
 }
 
 function compile() {
@@ -501,6 +713,57 @@ function exportModel() {
   emit('export', cloneTriggerWorkflow(currentModel.value));
 }
 
+function rememberSnapshot(model: TriggerWorkflowModel) {
+  flushPendingHistory();
+  commitSnapshot(model);
+}
+
+function commitSnapshot(model: TriggerWorkflowModel) {
+  undoStack.value = appendSnapshot(undoStack.value, model);
+  redoStack.value = [];
+}
+
+function rememberMergedSnapshot(model: TriggerWorkflowModel) {
+  if (!pendingHistorySnapshot.value) pendingHistorySnapshot.value = cloneTriggerWorkflow(model);
+  if (pendingHistoryTimer) clearTimeout(pendingHistoryTimer);
+  pendingHistoryTimer = setTimeout(flushPendingHistory, historyDebounceMs);
+  redoStack.value = [];
+}
+
+function flushPendingHistory() {
+  if (pendingHistoryTimer) clearTimeout(pendingHistoryTimer);
+  pendingHistoryTimer = undefined;
+  if (!pendingHistorySnapshot.value) return;
+  commitSnapshot(pendingHistorySnapshot.value);
+  pendingHistorySnapshot.value = undefined;
+}
+
+function appendSnapshot(stack: TriggerWorkflowModel[], model: TriggerWorkflowModel) {
+  const snapshot = cloneTriggerWorkflow(model);
+  const latest = stack.at(-1);
+  if (latest && modelsMatch(latest, snapshot)) return stack;
+  return [...stack, snapshot].slice(-historyLimit);
+}
+
+function applyHistorySnapshot(model: TriggerWorkflowModel) {
+  syncFromModel(model);
+  emitModel(currentModel.value);
+  fitCanvas();
+}
+
+function resetHistory() {
+  if (pendingHistoryTimer) clearTimeout(pendingHistoryTimer);
+  undoStack.value = [];
+  redoStack.value = [];
+  dragStartSnapshot = undefined;
+  pendingHistorySnapshot.value = undefined;
+  pendingHistoryTimer = undefined;
+}
+
+function modelsMatch(left: TriggerWorkflowModel, right: TriggerWorkflowModel) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
 function createConfiguredNode(
   type: TriggerNodeType,
   id: string,
@@ -510,24 +773,66 @@ function createConfiguredNode(
   const taskId = `${currentModel.value.code}.${id}`;
   const base = { id, type, name, position };
   if (type === 'task' || type === 'triggerAndWait' || type === 'batchTrigger' || type === 'tool') {
-    return { ...base, config: { task: { id: taskId, retry: { maxAttempts: 3 } } } };
+    return {
+      ...base,
+      config: {
+        task: {
+          type: 'registeredTask',
+          id: taskId,
+          failureStrategy: 'failWorkflow',
+          retry: { maxAttempts: 3 }
+        }
+      }
+    };
   }
   if (type === 'manualApproval' || type === 'humanReview') {
     return {
       ...base,
       config: {
-        task: { id: taskId },
+        task: { type: 'registeredTask', id: taskId, failureStrategy: 'failWorkflow' },
         approval: { assigneeType: 'role', assigneeIds: [], timeoutSeconds: 86400, onTimeout: 'fail' }
       }
     };
   }
   if (type === 'wait') return { ...base, config: { wait: { mode: 'duration', duration: 'PT1H' } } };
-  if (type === 'dataSource' || type === 'dataSink') return { ...base, config: { task: { id: taskId }, data: { connector: 'http', operation: 'sync' } } };
-  if (type === 'transform' || type === 'memory') return { ...base, config: { task: { id: taskId }, expression: '' } };
-  if (type === 'agent') return { ...base, config: { task: { id: taskId }, ai: { provider: 'openai', model: 'gpt-4.1', prompt: '', maxTurns: 6 } } };
+  if (type === 'dataSource' || type === 'dataSink') return { ...base, config: { task: { type: 'registeredTask', id: taskId }, data: { connector: 'http', operation: 'sync' } } };
+  if (type === 'transform' || type === 'memory') return { ...base, config: { task: { type: 'registeredTask', id: taskId }, expression: '' } };
+  if (type === 'agent') return { ...base, config: { task: { type: 'registeredTask', id: taskId }, ai: { provider: 'openai', model: 'gpt-4.1', prompt: '', maxTurns: 6 } } };
   if (type === 'schedule') return { ...base, config: { schedule: { cron: '0 8 * * *', timezone: 'Asia/Shanghai' } } };
   if (type === 'webhook') return { ...base, config: { webhook: { path: '/', method: 'POST' } } };
   return base;
+}
+
+function applyTaskTypeDefaults(node: TriggerWorkflowNode): TriggerWorkflowNode {
+  const task = node.config?.task;
+  if (!task?.type) return node;
+  const nextTask = { ...task };
+
+  if (task.type === 'frontendCommand' && !task.frontendFunction?.trim()) {
+    nextTask.frontendFunction = `async ({ payload, variables, previousOutput, context }) => {
+  return {
+    code: 'message.show',
+    params: { message: '执行成功', type: 'success' }
+  };
+}`;
+  }
+  if (task.type === 'backendCommand' && !task.backendFunction?.trim()) {
+    nextTask.backendFunction = `async ({ payload, variables, previousOutput, context }) => {
+  // context.http, context.supabase and context.baseService are available.
+  return await context.http.get('/api/example');
+}`;
+  }
+  if (task.type === 'storedProcedure' && !task.procedureSchema?.trim()) {
+    nextTask.procedureSchema = 'public';
+  }
+
+  return {
+    ...node,
+    config: {
+      ...node.config,
+      task: nextTask
+    }
+  };
 }
 
 function createEdgeId(source: string, target: string) {
@@ -537,6 +842,11 @@ function createEdgeId(source: string, target: string) {
 
 function cloneTriggerWorkflowNode(node: TriggerWorkflowNode) {
   return JSON.parse(JSON.stringify(node)) as TriggerWorkflowNode;
+}
+
+function createNodeId(type: TriggerNodeType) {
+  sequence += 1;
+  return `${type}_${Date.now().toString(36)}_${sequence}`;
 }
 
 function readDragOffset(value: string | undefined) {
@@ -603,8 +913,6 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
         <button type="button" title="恢复草稿" aria-label="恢复草稿" @click="emit('restore')"><i class="ri-history-line" /></button>
         <button type="button" title="复制工作流 JSON" aria-label="复制工作流 JSON" @click="emit('copy')"><i class="ri-file-copy-line" /></button>
         <span class="trigger-editor__action-divider" />
-        <button type="button" title="自动整理节点" aria-label="自动整理节点" @click="layout"><i class="ri-layout-masonry-line" /></button>
-        <button type="button" title="适应画布" aria-label="适应画布" @click="fitView({ padding: 0.18, duration: 180 })"><i class="ri-focus-3-line" /></button>
         <button type="button" title="导出工作流" aria-label="导出工作流" @click="exportModel"><i class="ri-download-line" /></button>
         <button type="button" class="trigger-editor__primary" :disabled="Boolean(errorCount)" @click="compile">
           <i class="ri-code-s-slash-line" />编译
@@ -658,10 +966,51 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
       </aside>
 
       <main class="trigger-editor__canvas" @dragover="onCanvasDragOver" @drop="onCanvasDrop">
-        <div class="trigger-editor__canvas-status">
-          <span :class="{ 'trigger-editor__status-dot--error': errorCount }" class="trigger-editor__status-dot" />
-          <strong>{{ errorCount ? `${errorCount} 个错误` : '校验通过' }}</strong>
-          <span>{{ currentModel.nodes.length }} 个节点 · {{ currentModel.edges.length }} 条连接</span>
+        <div class="trigger-editor__canvas-topbar">
+          <div class="trigger-editor__canvas-status">
+            <span :class="{ 'trigger-editor__status-dot--error': errorCount }" class="trigger-editor__status-dot" />
+            <strong>{{ errorCount ? `${errorCount} 个错误` : '校验通过' }}</strong>
+            <span>{{ currentModel.nodes.length }} 个节点 · {{ currentModel.edges.length }} 条连接</span>
+          </div>
+
+          <div class="trigger-editor__canvas-tools" role="toolbar" aria-label="画布工具">
+            <div class="trigger-editor__canvas-tool-group">
+              <button type="button" :disabled="!canUndo" title="撤销" aria-label="撤销" @click="undoCanvasChange">
+                <i class="ri-arrow-go-back-line" aria-hidden="true" />
+              </button>
+              <button type="button" :disabled="!canRedo" title="重做" aria-label="重做" @click="redoCanvasChange">
+                <i class="ri-arrow-go-forward-line" aria-hidden="true" />
+              </button>
+            </div>
+            <span class="trigger-editor__canvas-tool-divider" />
+            <div class="trigger-editor__canvas-tool-group">
+              <button type="button" title="缩小" aria-label="缩小" @click="zoomOutCanvas">
+                <i class="ri-zoom-out-line" aria-hidden="true" />
+              </button>
+              <button type="button" title="放大" aria-label="放大" @click="zoomInCanvas">
+                <i class="ri-zoom-in-line" aria-hidden="true" />
+              </button>
+              <button type="button" :disabled="!currentModel.nodes.length" title="适应画布" aria-label="适应画布" @click="fitCanvas">
+                <i class="ri-focus-3-line" aria-hidden="true" />
+              </button>
+            </div>
+            <span class="trigger-editor__canvas-tool-divider" />
+            <div class="trigger-editor__canvas-tool-group">
+              <button type="button" :disabled="readonly || !currentModel.nodes.length" title="自动整理节点" aria-label="自动整理节点" @click="layout">
+                <i class="ri-layout-masonry-line" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                class="trigger-editor__canvas-tool--danger"
+                :disabled="!canClearCanvas"
+                title="清空画布"
+                aria-label="清空画布"
+                @click="clearCanvas"
+              >
+                <i class="ri-delete-bin-line" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
         </div>
 
         <VueFlow
@@ -676,6 +1025,8 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
           fit-view-on-init
           @connect="onConnect"
           @node-click="onNodeClick"
+          @node-drag-start="onNodeDragStart"
+          @node-drag-stop="onNodeDragStop"
           @node-context-menu="onNodeContextMenu"
           @edge-click="onEdgeClick"
           @pane-click="onPaneClick"
@@ -740,6 +1091,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
             class="trigger-editor__low-code-form"
             :schema="selectedNodeFormSchema"
             :model-value="selectedNodeFormModel"
+            :loading="inspectorSchemasLoading"
             :readonly="readonly"
             vertical
             size="mini"
@@ -762,6 +1114,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
             class="trigger-editor__low-code-form"
             :schema="selectedEdgeFormSchema"
             :model-value="selectedEdgeFormModel"
+            :loading="inspectorSchemasLoading"
             :readonly="readonly"
             vertical
             size="mini"
@@ -1083,12 +1436,18 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
   background-size: 20px 20px;
 }
 
-.trigger-editor__canvas-status {
+.trigger-editor__canvas-topbar {
   position: absolute;
   top: 10px;
   left: 12px;
+  right: 12px;
   z-index: 5;
+  pointer-events: none;
+}
+
+.trigger-editor__canvas-status {
   display: flex;
+  min-height: 34px;
   align-items: center;
   gap: 7px;
   border: 1px solid #d8dee8;
@@ -1098,6 +1457,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
   color: #64748b;
   font-size: 11px;
   padding: 6px 8px;
+  pointer-events: auto;
 }
 
 .trigger-editor__canvas-status strong {
@@ -1113,6 +1473,76 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
 
 .trigger-editor__status-dot--error {
   background: #dc2626;
+}
+
+.trigger-editor__canvas-tools,
+.trigger-editor__canvas-tool-group {
+  display: inline-flex;
+  align-items: center;
+}
+
+.trigger-editor__canvas-tools {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  min-height: 34px;
+  gap: 3px;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.07);
+  padding: 2px 3px;
+  pointer-events: auto;
+}
+
+.trigger-editor__canvas-tool-group {
+  gap: 2px;
+}
+
+.trigger-editor__canvas-tools button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 0;
+}
+
+.trigger-editor__canvas-tools button:hover:not(:disabled) {
+  background: #eef2f7;
+  color: #0f172a;
+}
+
+.trigger-editor__canvas-tools button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.trigger-editor__canvas-tools button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.trigger-editor__canvas-tools .trigger-editor__canvas-tool--danger {
+  color: #b91c1c;
+}
+
+.trigger-editor__canvas-tools .trigger-editor__canvas-tool--danger:hover:not(:disabled) {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.trigger-editor__canvas-tool-divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 2px;
+  background: #dfe5ec;
 }
 
 .trigger-editor__flow {
@@ -1270,6 +1700,12 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
     flex: 1 1 100%;
     justify-content: flex-start;
     margin-left: 0;
+  }
+
+  .trigger-editor__canvas-tools {
+    right: 0;
+    left: auto;
+    transform: none;
   }
 }
 

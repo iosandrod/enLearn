@@ -13,13 +13,14 @@ if (!rawConnectionString) {
   throw new Error('DIRECT_URL or DATABASE_URL is required.');
 }
 
-const migrationPath = resolve(
+const repoRoot = resolve(
   process.cwd(),
-  process.cwd().toLowerCase().endsWith('api') ? '..' : '.',
-  'supabase',
-  'migrations',
-  '20260806120000_dynamic_crud_rpc.sql'
+  process.cwd().toLowerCase().endsWith('api') ? '..' : '.'
 );
+const migrationPaths = [
+  '20260806120000_dynamic_crud_rpc.sql',
+  '20260813120000_dynamic_crud_incremental_details.sql'
+].map((name) => resolve(repoRoot, 'supabase', 'migrations', name));
 
 function directProjectConnectionString(value: string) {
   try {
@@ -90,7 +91,9 @@ async function applyMigration(connectionString: string, sql: string) {
 }
 
 async function main() {
-  const sql = await readFile(migrationPath, 'utf8');
+  const sql = (await Promise.all(
+    migrationPaths.map((migrationPath) => readFile(migrationPath, 'utf8'))
+  )).join('\n\n');
   const connections = [
     directProjectConnectionString(rawConnectionString),
     sessionPoolerConnectionString(rawConnectionString),

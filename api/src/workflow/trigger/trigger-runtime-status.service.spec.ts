@@ -24,6 +24,7 @@ async function testStatusAggregationAndTenantFiltering() {
 
   assert.equal(status.partial, false);
   assert.equal(status.summary.queueCount, 2);
+  assert.equal(status.summary.scheduleCount, 0);
   assert.equal(status.summary.queuedRuns, 3);
   assert.equal(status.summary.runningRuns, 1);
   assert.equal(status.summary.runningWorkflowInstances, 1);
@@ -136,6 +137,7 @@ function createOperations(): TriggerRuntimeStatusOperations {
       { id: 'queue-1', name: 'workflow.instance.run', type: 'task', running: 1, queued: 2, paused: false, concurrencyLimit: 5 },
       { id: 'queue-2', name: 'notification.dispatch', type: 'task', running: 0, queued: 1, paused: false, concurrencyLimit: 5 }
     ],
+    listSchedules: async () => [],
     listWaitpoints: async () => [
       waitpoint('wait-1', ['tenant:tenant-1', 'workflow-instance:instance-1']),
       waitpoint('wait-2', ['tenant:tenant-2'])

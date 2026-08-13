@@ -2,6 +2,19 @@
 
 begin;
 
+do $requirements$
+begin
+  if to_regclass('public.planning_item') is null
+    or to_regclass('public.mes_work_order') is null
+    or to_regclass('public.mes_work_order_operation') is null
+    or to_regclass('public.mes_work_order_component') is null
+    or to_regclass('public.mes_material_transaction') is null
+  then
+    raise exception 'MES item-name migration requires the planning and MES core tables.';
+  end if;
+end
+$requirements$;
+
 create or replace view public.mes_work_order_runtime_view
 with (security_invoker = true)
 as

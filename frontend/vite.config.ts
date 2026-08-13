@@ -228,7 +228,8 @@ export default defineConfig({
     include: ['vue', 'vue-router'],
   },
   server: {
-    port: 3000,
+    port: Number(env.VITE_PORT ?? 3000),
+    host: env.VITE_HOST ?? '127.0.0.1',
     proxy: {
       '/api': {
         target: env.VITE_API_BASE_URL ?? env.NUXT_API_BASE_URL ?? env.API_BASE_URL ?? `http://localhost:${env.API_PORT ?? '3002'}/api`,

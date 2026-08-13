@@ -14,6 +14,10 @@ type ChatSocketError = {
 };
 
 let chatSocket: Socket | null = null;
+let connectionPromise: Promise<Socket> | null = null;
+let connectionAccountId = '';
+let referenceCount = 0;
+let connectionGeneration = 0;
 
 export function useChatSocket() {
   const auth = useAuth();
@@ -24,6 +28,7 @@ export function useChatSocket() {
     'chat-socket-typing-users',
     () => ({})
   );
+  let retainedGeneration: number | null = null;
 
   async function connect() {
     if (import.meta.server) return null;
@@ -31,39 +36,90 @@ export function useChatSocket() {
     if (!accountId) {
       throw createError({ statusCode: 400, statusMessage: '请先选择账套。' });
     }
-    if (chatSocket?.connected && chatSocket.auth &&
-      (chatSocket.auth as Record<string, unknown>).accountId === accountId) return chatSocket;
-    if (chatSocket) disconnect();
+    const socketAccountId = chatSocket?.auth &&
+      (chatSocket.auth as Record<string, unknown>).accountId;
+    if (chatSocket && socketAccountId === accountId) {
+      retainLease(connectionGeneration);
+      if (!chatSocket.connected) {
+        status.value = 'connecting';
+        chatSocket.connect();
+      }
+      return chatSocket;
+    }
+    if (connectionPromise && connectionAccountId === accountId) {
+      return waitForConnection(connectionPromise, connectionGeneration);
+    }
+    if (chatSocket || connectionPromise) closeSocket();
 
     status.value = 'connecting';
-    const { token, socketBaseUrl } = await $fetch<SocketTokenResponse>('/api/auth/socket-token');
+    connectionAccountId = accountId;
+    const generation = ++connectionGeneration;
+    connectionPromise = $fetch<SocketTokenResponse>('/api/auth/socket-token')
+      .then(({ token, socketBaseUrl }) => {
+        const socket = io(`${socketBaseUrl}/chat`, {
+          auth: { token, accountId },
+          transports: ['websocket', 'polling'],
+          withCredentials: true
+        });
+        if (generation !== connectionGeneration) {
+          socket.disconnect();
+          throw new Error('Chat socket connection was superseded.');
+        }
+        chatSocket = socket;
+        bindSocketEvents(socket);
+        return socket;
+      })
+      .catch((error) => {
+        if (generation === connectionGeneration) closeSocket();
+        throw error;
+      })
+      .finally(() => {
+        if (generation === connectionGeneration) {
+          connectionPromise = null;
+          connectionAccountId = '';
+        }
+      });
 
-    chatSocket = io(`${socketBaseUrl}/chat`, {
-      auth: { token, accountId },
-      transports: ['websocket', 'polling'],
-      withCredentials: true
-    });
+    return waitForConnection(connectionPromise, generation);
+  }
 
-    chatSocket.on('connect', () => {
+  async function waitForConnection(promise: Promise<Socket>, generation: number) {
+    retainLease(generation);
+    try {
+      return await promise;
+    } catch (error) {
+      releaseLease(generation);
+      throw error;
+    }
+  }
+
+  function retainLease(generation: number) {
+    if (retainedGeneration === generation) return;
+    retainedGeneration = generation;
+    referenceCount += 1;
+  }
+
+  function bindSocketEvents(socket: Socket) {
+    socket.on('connect', () => {
       status.value = 'connected';
       lastError.value = null;
     });
 
-    chatSocket.on('disconnect', () => {
+    socket.on('disconnect', () => {
       status.value = 'disconnected';
     });
 
-    chatSocket.on('connect_error', (error) => {
+    socket.on('connect_error', (error) => {
       status.value = 'error';
       lastError.value = { message: error.message };
     });
 
-    chatSocket.on('chat:error', (error: ChatSocketError) => {
+    socket.on('chat:error', (error: ChatSocketError) => {
       status.value = 'error';
       lastError.value = error;
     });
 
-    chatSocket.on('chat:messageCreated', (message: ChatMessage) => {
+    socket.on('chat:messageCreated', (message: ChatMessage) => {
       const requestId = typeof message.metadata?.requestId === 'string'
         ? message.metadata.requestId
         : '';
@@ -78,7 +134,7 @@ export function useChatSocket() {
       }
     });
 
-    chatSocket.on('chat:typingUpdated', (event: {
+    socket.on('chat:typingUpdated', (event: {
       conversationId: string;
       userId: string;
       isTyping: boolean;
@@ -91,18 +147,41 @@ export function useChatSocket() {
         }
       };
     });
-
-    return chatSocket;
   }
 
-  function disconnect() {
+  function closeSocket() {
+    connectionGeneration += 1;
     chatSocket?.disconnect();
     chatSocket = null;
+    connectionPromise = null;
+    connectionAccountId = '';
+    referenceCount = 0;
     status.value = 'idle';
   }
 
+  function disconnect() {
+    release();
+  }
+
+  function release() {
+    releaseLease(retainedGeneration);
+  }
+
+  function releaseLease(generation: number | null) {
+    if (generation === null || retainedGeneration !== generation) return;
+    retainedGeneration = null;
+    if (generation !== connectionGeneration) return;
+    referenceCount = Math.max(0, referenceCount - 1);
+    if (referenceCount === 0) closeSocket();
+  }
+
+  function getSocket() {
+    return chatSocket;
+  }
+
   function reset() {
-    disconnect();
+    retainedGeneration = null;
+    closeSocket();
     messages.value = [];
     typingUsers.value = {};
     lastError.value = null;
@@ -178,6 +257,8 @@ export function useChatSocket() {
     connect,
     disconnect,
     reset,
+    release,
+    getSocket,
     joinConversation,
     leaveConversation,
     sendMessage,

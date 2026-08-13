@@ -381,6 +381,7 @@ a {
   font-size: 12px;
 }
 
+.admin-task-console-button,
 .admin-approval-console-button,
 .admin-system-settings-button {
   display: inline-flex;
@@ -400,6 +401,9 @@ a {
   cursor: pointer;
 }
 
+.admin-task-console-button:hover,
+.admin-task-console-button:focus-visible,
+.admin-task-console-button.is-active,
 .admin-approval-console-button:hover,
 .admin-approval-console-button:focus-visible,
 .admin-approval-console-button.is-active,
@@ -410,6 +414,7 @@ a {
   outline: none;
 }
 
+.admin-task-console-button.is-active,
 .admin-approval-console-button.is-active {
   background: rgb(16 78 132 / 32%);
 }
@@ -2041,7 +2046,12 @@ a {
     height: auto;
     min-height: 36px;
     flex-wrap: wrap;
+    justify-content: flex-start;
     padding: 6px 10px;
+  }
+
+  .admin-brand {
+    max-width: calc(100% - 150px);
   }
 
   .admin-tool-launcher {
@@ -2074,7 +2084,7 @@ a {
   .admin-account-switcher {
     order: 2;
     width: min(100%, 360px);
-    margin: 2px 0 0 auto;
+    margin: 2px 0 0;
   }
 
   .admin-account-switcher__trigger {

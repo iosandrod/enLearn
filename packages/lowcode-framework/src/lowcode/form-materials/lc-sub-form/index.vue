@@ -96,6 +96,7 @@ function handleAction(action: LowCodeAction, value: Record<string, unknown>) {
 
 function handleFieldChange(payload: SubFormFieldChangePayload) {
   emit('fieldChange', payload);
+  props.onFieldChange?.(payload);
   const handler = fieldProps.value.onFieldChange;
 
   if (typeof handler === 'function') {

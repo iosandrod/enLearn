@@ -141,6 +141,16 @@
 
       <div class="admin-top-actions">
         <RouterLink
+          v-if="canOpenTaskConsole"
+          class="admin-task-console-button"
+          :class="{ 'is-active': route.path === TASK_CONSOLE_PATH }"
+          :to="TASK_CONSOLE_PATH"
+          title="进入后台任务总控制台"
+        >
+          <i class="ri-task-line" aria-hidden="true" />
+          <span>任务总控</span>
+        </RouterLink>
+        <RouterLink
           v-if="canOpenApprovalConsole"
           class="admin-approval-console-button"
           :class="{ 'is-active': route.path === APPROVAL_CONSOLE_PATH }"
@@ -165,6 +175,7 @@
           <span>系统设置</span>
         </button>
         <ChatPopup />
+        <AiAssistantButton />
         <NotificationBell />
         <div v-if="showApprovalTestSwitcher" class="admin-user-switcher" @click.stop>
           <button
@@ -254,7 +265,7 @@
           刷新菜单
         </div>
         </vxe-button>
-        <vxe-button size="mini" mode="text" @click="auth.signOut">退出</vxe-button>
+        <vxe-button size="mini" mode="text" @click="signOut">退出</vxe-button>
       </div>
     </header>
 
@@ -292,7 +303,7 @@
             v-for="tab in visitedTabs"
             :key="tab.path"
             class="admin-tab"
-            :to="tab.path"
+            :to="tab.fullPath"
             aria-haspopup="menu"
             @contextmenu.prevent.stop="openTabContextMenu($event, tab)"
             @keydown="handleTabContextKeydown($event, tab)"
@@ -308,6 +319,7 @@
     </div>
 
     <GlobalDialogHost />
+    <AiAssistantDrawer />
   </div>
 </template>
 
@@ -383,6 +395,7 @@ type NavigationPlacement = 'sidebar' | 'top-tool' | 'container' | 'hidden';
 type VisitedTab = {
   title: string;
   path: string;
+  fullPath: string;
   pageType?: LowCodePageRecord['page_type'];
   pageCode?: string;
 };
@@ -391,8 +404,11 @@ const SYSTEM_SETTINGS_DIALOG_ID = 'system-settings-editor-dialog';
 const PAGE_INFO_DESIGN_DIALOG_ID = 'dashboard-page-info-design-dialog';
 const VISUAL_DESIGN_DIALOG_ID = 'dashboard-visual-design-dialog';
 const APPROVAL_CONSOLE_PATH = '/dashboard/approval/console';
+const TASK_CONSOLE_PATH = '/dashboard/task/console';
 
 const auth = useAuth();
+const aiAssistant = useAiAssistant();
+const frontendCommandSocket = useFrontendCommandSocket();
 const serviceApi = useServiceApi();
 const routeCache = useRouteCache();
 const route = useRoute();
@@ -407,6 +423,7 @@ const showApprovalTestSwitcher = computed(
 const canOpenApprovalConsole = computed(() =>
   auth.permissions.value.includes('workflow.runtime.manage')
 );
+const canOpenTaskConsole = canOpenApprovalConsole;
 const displayUserLabel = computed(() => {
   const profile = auth.profile.value ?? {};
   const name = readDisplayString(profile.full_name ?? profile.nickname ?? profile.name)
@@ -475,6 +492,7 @@ async function switchAccount(accountId: string) {
   accountSwitching.value = true;
   accountSwitchError.value = '';
   try {
+    await aiAssistant.cancel();
     await auth.selectAccount(accountId);
     routes.value = [];
     visitedTabs.value = [];
@@ -543,6 +561,7 @@ async function selectDevTestUser(userId: string) {
   devUserSwitching.value = true;
   devUsersError.value = '';
   try {
+    await aiAssistant.cancel();
     await auth.switchDevTestUser(userId);
     testUserMenuOpen.value = false;
     testUserSearch.value = '';
@@ -553,6 +572,11 @@ async function selectDevTestUser(userId: string) {
   } finally {
     devUserSwitching.value = false;
   }
+}
+
+async function signOut() {
+  await aiAssistant.cancel();
+  await auth.signOut();
 }
 
 function getLowCodeDesignerLoadPageBus() {
@@ -1114,7 +1138,7 @@ async function openLowCodePageInfoDesignerByCode(pageCode: string, tab: VisitedT
 async function reloadVisitedTab(tab: VisitedTab) {
   routeCache.invalidate(tab.path);
   await nextTick();
-  if (route.path !== tab.path) await router.push(tab.path);
+  if (route.fullPath !== tab.fullPath) await router.push(tab.fullPath);
 }
 
 async function closeVisitedTabs(tab: VisitedTab, scope: DashboardTabCloseScope) {
@@ -1129,7 +1153,7 @@ async function closeVisitedTabs(tab: VisitedTab, scope: DashboardTabCloseScope) 
     const adjacentTab = scope === 'current'
       ? remainingTabs[Math.min(targetIndex, remainingTabs.length - 1)]
       : tab;
-    await router.push(adjacentTab?.path ?? '/dashboard');
+    await router.push(adjacentTab?.fullPath ?? '/dashboard');
     if (!visitedTabs.value.length) rememberTab();
   }
 }
@@ -1404,11 +1428,9 @@ function upsertVisitedTab(current: VisitedTab) {
   );
 
   if (existingIndex >= 0) {
-    if (visitedTabs.value[existingIndex]?.title !== current.title) {
-      visitedTabs.value = visitedTabs.value.map((tab, index) =>
-        index === existingIndex ? current : tab
-      );
-    }
+    visitedTabs.value = visitedTabs.value.map((tab, index) =>
+      index === existingIndex ? current : tab
+    );
     return;
   }
 
@@ -1426,9 +1448,11 @@ async function refreshLowCodeTabTitle(path: string, title: string) {
       includeData: false
     });
 
-    if (!visitedTabs.value.some((tab) => tab.path === path)) return;
+    const existingTab = visitedTabs.value.find((tab) => tab.path === path);
+    if (!existingTab) return;
 
     upsertVisitedTab({
+      ...existingTab,
       path,
       title: formatDashboardTabTitle(title, page.page_type),
       pageType: page.page_type,
@@ -1445,6 +1469,7 @@ function rememberTab() {
   const current = {
     title: formatDashboardTabTitle(activeTitle.value, existingTab?.pageType),
     path: route.path,
+    fullPath: route.fullPath,
     ...(existingTab?.pageType ? { pageType: existingTab.pageType } : {}),
     ...(pageCode ? { pageCode } : {}),
   };
@@ -1458,6 +1483,17 @@ function rememberTab() {
 
 function handleAdminRoutesUpdated() {
   reloadRoutes();
+}
+
+function reconnectFrontendCommandSocket() {
+  frontendCommandSocket.disconnect();
+  void frontendCommandSocket.connect().catch((error) => {
+    console.warn('Frontend command socket connection failed.', error);
+  });
+}
+
+function handleAuthUserChanged() {
+  reconnectFrontendCommandSocket();
 }
 
 function handleMenuContextKeydown(event: KeyboardEvent) {
@@ -1478,6 +1514,7 @@ function closeFloatingPanels() {
 
 onMounted(async () => {
   await auth.init();
+  reconnectFrontendCommandSocket();
   if (showApprovalTestSwitcher.value) {
     await loadDevTestUsers();
     ensureDevTestUserSelected();
@@ -1485,19 +1522,22 @@ onMounted(async () => {
   await reloadRoutes();
   rememberTab();
   window.addEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
+  window.addEventListener('enlearn:auth-user-changed', handleAuthUserChanged);
   window.addEventListener('click', closeFloatingPanels);
   window.addEventListener('keydown', handleMenuContextKeydown);
 });
 
 onBeforeUnmount(() => {
+  frontendCommandSocket.disconnect();
   window.removeEventListener('enlearn:admin-routes-updated', handleAdminRoutesUpdated);
+  window.removeEventListener('enlearn:auth-user-changed', handleAuthUserChanged);
   window.removeEventListener('click', closeFloatingPanels);
   window.removeEventListener('keydown', handleMenuContextKeydown);
 });
 
 watch(
-  () => route.path,
-  (path, previousPath) => {
+  [() => route.path, () => route.fullPath],
+  ([path], [previousPath]) => {
     closeMenuContext();
     openTopToolCode.value = '';
     rememberTab();
@@ -1514,6 +1554,10 @@ watch(
 watch(
   () => auth.activeAccount.value?.account_id,
   (accountId, previousAccountId) => {
+    if (accountId && accountId !== previousAccountId) {
+      aiAssistant.resetForIdentityChange();
+      reconnectFrontendCommandSocket();
+    }
     if (
       accountId &&
       accountId !== previousAccountId &&

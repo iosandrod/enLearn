@@ -67,7 +67,7 @@ export function triggerWorkflowToFlowNodes(model: TriggerWorkflowModel): Trigger
     position: node.position ?? { x: 380, y: 40 + index * 150 },
     type: TRIGGER_FLOW_NODE_RENDER_TYPE,
     data: getTriggerNodePresentation(node),
-    draggable: !isEntryType(node.type) && node.type !== 'end',
+    draggable: !isEntryType(node.type) || node.type === 'start' || node.type === 'schedule',
     deletable: !isEntryType(node.type) && node.type !== 'end',
     selectable: true,
     connectable: true,
@@ -250,6 +250,13 @@ function summarizeNode(node: TriggerWorkflowNode) {
   }
   if (node.type === 'condition') return '按条件选择执行路径';
   if (node.type === 'parallel') return '并行执行多个分支';
+  if (config?.task?.type === 'frontendCommand') return '发送前端指令 · 自定义函数';
+  if (config?.task?.type === 'backendCommand') return '执行后端指令 · 自定义函数';
+  if (config?.task?.type === 'storedProcedure') {
+    const procedure = config.task.procedureName ?? '未配置存储过程';
+    const schema = config.task.procedureSchema;
+    return `执行存储过程 · ${schema && !procedure.includes('.') ? `${schema}.${procedure}` : procedure}`;
+  }
   return config?.task?.id ?? node.description ?? '未配置';
 }
 

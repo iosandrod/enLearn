@@ -7,6 +7,7 @@ export type LowCodeNodeActionExecutor =
   | 'overlay.open'
   | 'grid.loadData'
   | 'grid.reloadData'
+  | 'grid.getChanges'
   | 'grid.validate'
   | 'grid.addRow'
   | 'grid.deleteCurrentRow'

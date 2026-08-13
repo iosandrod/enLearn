@@ -165,8 +165,8 @@ async function main() {
       values ($1, $2) returning id
     `, [accountId, `api-real-supplier-${suffix}`]);
     const item = await postgres.query<{ id: string }>(`
-      insert into public.planning_item (account_id, name, type, cost)
-      values ($1, $2, 'make to stock', 2.5) returning id
+      insert into public.planning_item (account_id, name, display_name, type, cost)
+      values ($1, $2, $2, 'make to stock', 2.5) returning id
     `, [accountId, `api-real-item-${suffix}`]);
     await postgres.query(`
       insert into public.planning_itemsupplier (

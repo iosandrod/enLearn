@@ -10,10 +10,14 @@ if (!rawConnectionString) throw new Error('DIRECT_URL or DATABASE_URL is require
 const repoRoot = process.cwd().toLowerCase().endsWith('api')
   ? resolve(process.cwd(), '..')
   : process.cwd();
-const migrationPaths = [
-  'supabase/migrations/20260813090000_planning_item_display_name.sql',
+const planningMigrationPath = resolve(
+  repoRoot,
+  'supabase/migrations/20260813090000_planning_item_display_name.sql'
+);
+const mesMigrationPath = resolve(
+  repoRoot,
   'supabase/migrations/20260813091000_mes_item_display_name.sql'
-].map((path) => resolve(repoRoot, path));
+);
 
 async function main() {
   const client = new Client({
@@ -26,8 +30,20 @@ async function main() {
 
   await client.connect();
   try {
-    for (const migrationPath of migrationPaths) {
-      await client.query(await readFile(migrationPath, 'utf8'));
+    await client.query(await readFile(planningMigrationPath, 'utf8'));
+
+    const mesShape = await client.query<{ installed: boolean }>(`
+      select bool_and(to_regclass('public.' || table_name) is not null) as installed
+      from unnest(array[
+        'mes_work_order',
+        'mes_work_order_operation',
+        'mes_work_order_component',
+        'mes_material_transaction'
+      ]) table_name
+    `);
+    const mesMigrationApplied = mesShape.rows[0]?.installed === true;
+    if (mesMigrationApplied) {
+      await client.query(await readFile(mesMigrationPath, 'utf8'));
     }
 
     const { rows } = await client.query<{
@@ -36,6 +52,7 @@ async function main() {
       edit_field: unknown;
       list_column: unknown;
       registry_required: boolean;
+      registry_hash_synced: boolean;
     }>(`
       select
         (select is_nullable = 'NO'
@@ -65,7 +82,10 @@ async function main() {
         (select config#>'{resources,planning_item,create,required_fields}'
           @> '["display_name"]'::jsonb
          from public.dynamic_crud_resource_registry
-         where resource_name = 'planning_item') as registry_required
+         where resource_name = 'planning_item') as registry_required,
+        (select config->>'config_hash' = config_hash
+         from public.dynamic_crud_resource_registry
+         where resource_name = 'planning_item') as registry_hash_synced
     `);
     const installed = rows[0];
     if (
@@ -73,11 +93,12 @@ async function main() {
       installed.empty_names !== 0 ||
       !installed.edit_field ||
       !installed.list_column ||
-      installed.registry_required !== true
+      installed.registry_required !== true ||
+      installed.registry_hash_synced !== true
     ) {
       throw new Error(`Planning item display-name verification failed: ${JSON.stringify(installed)}`);
     }
-    console.log(JSON.stringify({ ...installed, applied: true }));
+    console.log(JSON.stringify({ ...installed, applied: true, mesMigrationApplied }));
   } finally {
     await client.end();
   }

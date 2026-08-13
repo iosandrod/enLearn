@@ -41,8 +41,10 @@ async function waitForUrl(url, timeoutMs = 20_000) {
   throw lastError ?? new Error(`Timed out waiting for ${url}`);
 }
 
-const port = await freePort();
-const server = spawn(
+const configuredServerUrl = process.env.BASE_INFO_TEST_SERVER_URL?.replace(/\/$/, '');
+const port = configuredServerUrl ? Number(new URL(configuredServerUrl).port) : await freePort();
+const baseUrl = configuredServerUrl ?? `http://127.0.0.1:${port}`;
+const server = configuredServerUrl ? null : spawn(
   process.execPath,
   [
     process.platform === 'win32'
@@ -64,8 +66,8 @@ const server = spawn(
   },
 );
 let serverOutput = '';
-server.stdout.on('data', (chunk) => { serverOutput += chunk; });
-server.stderr.on('data', (chunk) => { serverOutput += chunk; });
+server?.stdout.on('data', (chunk) => { serverOutput += chunk; });
+server?.stderr.on('data', (chunk) => { serverOutput += chunk; });
 
 let browser;
 let context;
@@ -107,7 +109,7 @@ async function assertPanelSize(panel, width, gridHeight) {
 }
 
 try {
-  await waitForUrl(`http://127.0.0.1:${port}`);
+  await waitForUrl(baseUrl);
   const playwrightModule = await import(pathToFileURL(playwrightPath).href);
   browser = await playwrightModule.default.chromium.launch({
     executablePath: browserExecutable,
@@ -123,7 +125,7 @@ try {
   });
 
   await page.goto(
-    `http://127.0.0.1:${port}/tests/base-info-browser.html`,
+    `${baseUrl}/tests/base-info-browser.html`,
     { waitUntil: 'domcontentloaded' },
   );
   await page.waitForFunction(
@@ -187,6 +189,7 @@ try {
   const secondEntityRow = reopenedEntity.panel.locator('.vxe-body--row').filter({
     hasText: 'RM-OTHER-001',
   }).first();
+  await secondEntityRow.waitFor({ state: 'visible' });
   await secondEntityRow.dblclick();
   await assertRelationPanelClosed('实体物料', reopenedEntity.panel);
   assert.equal(await reopenedEntity.input.inputValue(), 'RM-OTHER-001');
@@ -291,14 +294,14 @@ try {
 } finally {
   await context?.close().catch(() => undefined);
   await browser?.close().catch(() => undefined);
-  if (process.platform === 'win32' && server.pid) {
+  if (process.platform === 'win32' && server?.pid) {
     const killer = spawn(
       process.env.ComSpec || 'cmd.exe',
       ['/d', '/s', '/c', `taskkill /pid ${server.pid} /t /f >nul 2>nul`],
       { windowsHide: true, stdio: 'ignore' },
     );
     await new Promise((resolve) => killer.once('exit', resolve));
-  } else if (server.pid) {
+  } else if (server?.pid) {
     process.kill(-server.pid, 'SIGTERM');
   }
 }

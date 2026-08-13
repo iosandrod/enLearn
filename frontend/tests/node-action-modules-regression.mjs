@@ -22,6 +22,7 @@ const {
   executeFormValidateNodeAction,
   executeGridAddRowNodeAction,
   executeGridDeleteCurrentRowNodeAction,
+  executeGridGetChangesNodeAction,
   executeGridReloadDataNodeAction,
   executeGridValidateNodeAction,
   formNodeActionDefinition,
@@ -36,6 +37,7 @@ assert.deepEqual(Object.keys(searchFormNodeActionDefinition.methods), formMethod
 assert.deepEqual(Object.keys(gridNodeActionDefinition.methods), [
   'loadData',
   'reloadData',
+  'getChanges',
   'validate',
   'addRow',
   'deleteCurrentRow',
@@ -136,6 +138,7 @@ const normalizedSourceRows = executeGridReloadDataNodeAction({
   getSourceValue: () => undefined,
   setSource: (sourceKey, rows) => sourceRows.push({ sourceKey, rows }),
   setGridRows: () => assert.fail('A source-backed grid must update its source.'),
+  getGridChanges: () => ({ created: [], updated: [], deleted: [] }),
   syncGridStates: () => {
     syncedSourceGrid = true;
   },
@@ -204,6 +207,7 @@ const actionGrid = {
   contextRow: null,
   currentCell: null,
 };
+const emptyChanges = () => ({ created: [], updated: [], deleted: [] });
 const createGridContext = (options = {}) => ({
   block: {
     id: 'record-grid',
@@ -218,6 +222,7 @@ const createGridContext = (options = {}) => ({
     actionGrid.rows = Array.isArray(rows) ? rows : rows.rows;
   },
   setGridRows: () => assert.fail('A source-backed grid must update its source.'),
+  getGridChanges: emptyChanges,
   syncGridStates: () => undefined,
   setGridCurrentRow: (_blockId, row) => {
     actionGrid.currentRow = row;
@@ -226,6 +231,11 @@ const createGridContext = (options = {}) => ({
 });
 
 assert.equal(await executeGridValidateNodeAction(createGridContext()), true);
+assert.deepEqual(executeGridGetChangesNodeAction(createGridContext()), {
+  created: [],
+  updated: [],
+  deleted: [],
+});
 await assert.rejects(
   executeGridValidateNodeAction({
     ...createGridContext(),
@@ -292,6 +302,7 @@ await executeGridDeleteCurrentRowNodeAction({
     localRowsUpdate = rows;
     localGrid.rows = rows;
   },
+  getGridChanges: emptyChanges,
   syncGridStates: () => undefined,
   setGridCurrentRow: (_blockId, row) => {
     localGrid.currentRow = row;

@@ -44,6 +44,7 @@ export function isRecord(value: unknown): value is Record<string, any> {
 
 function normalizeNode(node: Record<string, any>, index: number): TriggerWorkflowNode {
   const type = readString(node.type, 'task');
+  const config = isRecord(node.config) ? normalizeNodeConfig(node.config) : undefined;
   return {
     id: readString(node.id, `${type}_${index + 1}`),
     type,
@@ -59,7 +60,29 @@ function normalizeNode(node: Record<string, any>, index: number): TriggerWorkflo
           }
         }
       : {}),
-    ...(isRecord(node.config) ? { config: node.config } : {})
+    ...(config ? { config } : {})
+  };
+}
+
+function normalizeNodeConfig(config: Record<string, any>) {
+  if (!isRecord(config.task) || readString(config.task.type)) return config;
+
+  const inferredType = readString(config.task.frontendFunction)
+    ? 'frontendCommand'
+    : readString(config.task.backendFunction)
+      ? 'backendCommand'
+      : readString(config.task.procedureName)
+        ? 'storedProcedure'
+        : readString(config.task.id)
+          ? 'registeredTask'
+          : '';
+  if (!inferredType) return config;
+  return {
+    ...config,
+    task: {
+      ...config.task,
+      type: inferredType
+    }
   };
 }
 

@@ -30,7 +30,11 @@ export type LowCodeNodeActionRuntimeContext = {
     source: LowCodePageDataSource,
   ): Promise<unknown>;
   getSourceValue(sourceKey: string): unknown;
-  setSource(sourceKey: string, value: unknown): void;
+  setSource(
+    sourceKey: string,
+    value: unknown,
+    options?: { resetGridBaseline?: boolean },
+  ): void;
   syncGridStates(): void;
   beginSourceRequest(sourceKey: string): number;
   isCurrentSourceRequest(sourceKey: string, version: number): boolean;
@@ -51,6 +55,11 @@ export type LowCodeNodeActionRuntimeContext = {
     rows: Record<string, unknown>[],
     options?: { sourceKey?: string; rowKey?: string },
   ): void;
+  getGridChanges(blockId: string): {
+    created: Record<string, unknown>[];
+    updated: Record<string, unknown>[];
+    deleted: Record<string, unknown>[];
+  };
   setGridCurrentRow(
     blockId: string,
     row: Record<string, unknown> | null,

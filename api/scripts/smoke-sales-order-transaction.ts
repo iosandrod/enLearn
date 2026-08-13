@@ -154,7 +154,13 @@ function buildFrontendRequest(
   };
 }
 
-function buildUpdateRequest(orderId: string, failThirdLine: boolean): JsonRecord {
+function buildUpdateRequest(
+  orderId: string,
+  lines: JsonRecord[],
+  failUpdatedLine: boolean
+): JsonRecord {
+  const firstLine = lines[0] ?? {};
+  const deletedLine = lines[2] ?? {};
   return {
     serviceName: 'admin',
     serviceMethod: 'updateItem',
@@ -163,16 +169,27 @@ function buildUpdateRequest(orderId: string, failThirdLine: boolean): JsonRecord
       id: orderId,
       data: {
         total_qty: 6,
-        remark: failThirdLine
+        remark: failUpdatedLine
           ? 'This parent update must be rolled back.'
-          : 'Parent and three replacement details committed.',
+          : 'Parent and detail changes committed.',
         __details: [
           {
             resource: 'sales_order_lines',
-            mode: 'replace',
+            mode: 'changes',
             foreignKey: 'order_id',
             inheritFields: ['account_id'],
-            rows: buildLines(failThirdLine, 'UPDATED-ITEM')
+            created: failUpdatedLine ? [] : [{
+              ...buildLines(false, 'CREATED-ITEM')[0],
+              line_no: 4
+            }],
+            updated: [{
+              id: firstLine.id,
+              line_no: failUpdatedLine ? 0 : 1,
+              item_code: 'UPDATED-ITEM-001',
+              item_name: 'English Starter Pack',
+              ordered_qty: 2
+            }],
+            deleted: failUpdatedLine ? [] : [deletedLine.id]
           }
         ]
       }
@@ -287,7 +304,11 @@ async function main() {
     console.log('[commit verified]', JSON.stringify(successCounts));
 
     const initialState = await readOrderState(successDocNo);
-    const failedUpdateRequest = buildUpdateRequest(initialState.id, true);
+    const failedUpdateRequest = buildUpdateRequest(
+      initialState.id,
+      initialState.lines,
+      true
+    );
     console.log('\n[frontend update request: expected rollback]');
     console.log(JSON.stringify(failedUpdateRequest, null, 2));
 
@@ -300,7 +321,7 @@ async function main() {
     assert.equal(
       failedUpdateResponse.response.ok,
       false,
-      'The invalid replacement detail request must fail.'
+      'The invalid incremental detail request must fail.'
     );
     assert.match(
       readMessage(failedUpdateResponse.payload),
@@ -317,7 +338,11 @@ async function main() {
       })
     );
 
-    const successfulUpdateRequest = buildUpdateRequest(initialState.id, false);
+    const successfulUpdateRequest = buildUpdateRequest(
+      initialState.id,
+      initialState.lines,
+      false
+    );
     console.log('\n[frontend update request: expected commit]');
     console.log(JSON.stringify(successfulUpdateRequest, null, 2));
 
@@ -333,13 +358,18 @@ async function main() {
       );
     }
     const updatedState = await readOrderState(successDocNo);
-    assert.equal(updatedState.remark, 'Parent and three replacement details committed.');
+    assert.equal(updatedState.remark, 'Parent and detail changes committed.');
     assert.equal(updatedState.totalQty, 6);
     assert.deepEqual(
       updatedState.lines.map((line) => line.item_code),
-      ['UPDATED-ITEM-001', 'UPDATED-ITEM-002', 'UPDATED-ITEM-003']
+      ['UPDATED-ITEM-001', 'ITEM-002', 'CREATED-ITEM-001']
     );
     assert.equal(updatedState.lines.length, 3);
+    assert.equal(
+      updatedState.lines[1].id,
+      initialState.lines[1].id,
+      'An unchanged detail row must keep its database identity.'
+    );
     console.log(
       '[update commit verified]',
       JSON.stringify({

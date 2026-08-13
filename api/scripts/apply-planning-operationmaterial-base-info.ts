@@ -19,6 +19,7 @@ const migrationPaths = [
   'supabase/migrations/20260812130000_runtime_form_field_component_type.sql',
   'supabase/migrations/20260812143000_runtime_form_field_base_info.sql',
   'supabase/migrations/20260812150000_planning_operationmaterial_base_info.sql',
+  'supabase/migrations/20260813090000_planning_item_display_name.sql',
 ].map((path) => resolve(repoRoot, path));
 
 function connectionString(value: string) {
@@ -77,12 +78,9 @@ async function main() {
       field?.component !== 'base-info' ||
       field?.props?.relateInfoConfig?.resource !== 'planning_item' ||
       !(
-        field?.props?.relateInfoConfig?.displayField === 'name' ||
-        (
-          Array.isArray(field?.props?.relateInfoConfig?.displayField) &&
-          field.props.relateInfoConfig.displayField.includes('display_name') &&
-          field.props.relateInfoConfig.displayField.includes('name')
-        )
+        Array.isArray(field?.props?.relateInfoConfig?.displayField) &&
+        field.props.relateInfoConfig.displayField[0] === 'display_name' &&
+        field.props.relateInfoConfig.displayField[1] === 'name'
       ) ||
       field?.props?.relateInfoConfig?.fieldMappings?.[0]?.targetField !== 'item_id' ||
       Object.prototype.hasOwnProperty.call(field ?? {}, 'optionsSourceKey')

@@ -1,5 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { compileTriggerWorkflow, type TriggerWorkflowOperationType } from '../src/compiler/trigger';
+import { normalizeTriggerWorkflow } from '../src/schema/normalize';
 import { assertValidTriggerWorkflow } from '../src/schema/validate';
 import type { TriggerWorkflowModel } from '../src/schema/types';
 import {
@@ -68,5 +69,94 @@ assert.deepEqual(
 );
 assert.ok(agentPlan.taskIds.includes('agent.support.triage'));
 assert.ok(agentPlan.taskIds.includes('support.sendReply'));
+
+const taskKindsWorkflow: TriggerWorkflowModel = {
+  schemaVersion: 1,
+  code: 'task_kinds',
+  name: 'Task kinds',
+  kind: 'custom',
+  nodes: [
+    { id: 'start', type: 'start', name: 'Start' },
+    {
+      id: 'frontend',
+      type: 'task',
+      name: 'Frontend',
+      config: {
+        task: {
+          type: 'frontendCommand',
+          frontendFunction: 'async () => ({ code: "message.show" })'
+        }
+      }
+    },
+    {
+      id: 'backend',
+      type: 'task',
+      name: 'Backend',
+      config: {
+        task: {
+          type: 'backendCommand',
+          backendFunction: 'async ({ context }) => context.http.get("/health")'
+        }
+      }
+    },
+    {
+      id: 'procedure',
+      type: 'task',
+      name: 'Procedure',
+      config: {
+        task: {
+          type: 'storedProcedure',
+          procedureSchema: 'public',
+          procedureName: 'publish_plan'
+        }
+      }
+    },
+    {
+      id: 'registered',
+      type: 'task',
+      name: 'Registered',
+      config: { task: { type: 'registeredTask', id: 'custom.registered' } }
+    },
+    { id: 'end', type: 'end', name: 'End' }
+  ],
+  edges: [
+    { id: 'e1', source: 'start', target: 'frontend' },
+    { id: 'e2', source: 'frontend', target: 'backend' },
+    { id: 'e3', source: 'backend', target: 'procedure' },
+    { id: 'e4', source: 'procedure', target: 'registered' },
+    { id: 'e5', source: 'registered', target: 'end' }
+  ]
+};
+const taskKindsPlan = compileTriggerWorkflow(taskKindsWorkflow);
+assert.deepEqual(taskKindsPlan.taskIds, ['custom.registered']);
+assert.equal(
+  taskKindsPlan.operations.find((operation) => operation.nodeId === 'procedure')?.task?.procedureName,
+  'publish_plan'
+);
+
+const invalidFrontendWorkflow = structuredClone(taskKindsWorkflow);
+const invalidFrontend = invalidFrontendWorkflow.nodes.find((node) => node.id === 'frontend');
+assert.ok(invalidFrontend?.config?.task);
+delete invalidFrontend.config.task.frontendFunction;
+assert.throws(() => assertValidTriggerWorkflow(invalidFrontendWorkflow), /前端指令函数/);
+
+const missingTaskTypeWorkflow = structuredClone(taskKindsWorkflow);
+const registeredWithoutType = missingTaskTypeWorkflow.nodes.find((node) => node.id === 'registered');
+assert.ok(registeredWithoutType?.config?.task);
+delete registeredWithoutType.config.task.type;
+assert.throws(() => assertValidTriggerWorkflow(missingTaskTypeWorkflow), /任务类型/);
+
+const normalizedLegacyWorkflow = normalizeTriggerWorkflow({
+  ...taskKindsWorkflow,
+  nodes: taskKindsWorkflow.nodes.map((node) =>
+    node.id === 'registered'
+      ? { ...node, config: { task: { id: 'legacy.registered' } } }
+      : node
+  )
+});
+assert.equal(
+  normalizedLegacyWorkflow.nodes.find((node) => node.id === 'registered')?.config?.task?.type,
+  'registeredTask'
+);
 
 console.log('trigger-workflow-editor template/compiler tests passed');

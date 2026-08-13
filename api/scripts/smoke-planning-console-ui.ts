@@ -350,15 +350,17 @@ async function seedFixture(client: Client, accountId: string, suffix: string): P
   `, [accountId, `华东客户-${suffix}`]);
   const customerId = customer.rows[0].id;
 
-  const itemRows = await client.query<{ id: string; name: string }>(`
-    insert into public.planning_item (account_id, name, description, type, cost, uom)
+  const itemRows = await client.query<{ display_name: string; id: string; name: string }>(`
+    insert into public.planning_item (
+      account_id, name, display_name, description, type, cost, uom
+    )
     values
-      ($1, $2, '原材料卷料', 'make to stock', 6, 'kg'),
-      ($1, $3, '切割组件', 'make to stock', 12, '件'),
-      ($1, $4, '装配半成品', 'make to stock', 35, '件'),
-      ($1, $5, '包装辅料', 'make to stock', 2, '套'),
-      ($1, $6, '控制台验收产成品', 'make to stock', 88, '台')
-    returning id, name
+      ($1, $2, $2, '原材料卷料', 'make to stock', 6, 'kg'),
+      ($1, $3, $3, '切割组件', 'make to stock', 12, '件'),
+      ($1, $4, $4, '装配半成品', 'make to stock', 35, '件'),
+      ($1, $5, $5, '包装辅料', 'make to stock', 2, '套'),
+      ($1, $6, $6, '控制台验收产成品', 'make to stock', 88, '台')
+    returning id, name, display_name
   `, [
     accountId,
     `原料钢卷-${suffix}`,
@@ -656,7 +658,7 @@ async function seedFixture(client: Client, accountId: string, suffix: string): P
   return {
     completedRunId: completedRun.rows[0].id,
     finishedItemId: finishedItem.id,
-    finishedItemName: finishedItem.name,
+    finishedItemName: finishedItem.display_name,
     queuedRunId: queuedRun.rows[0].id,
     queuedRunName: queuedRun.rows[0].name,
     scenarioId: scenario.rows[0].id,

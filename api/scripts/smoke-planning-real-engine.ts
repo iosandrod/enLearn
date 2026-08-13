@@ -18,7 +18,8 @@ const MIGRATION_FILES = [
   'supabase/migrations/20260808150000_planning_diagnostic_tables.sql',
   'supabase/migrations/20260808160000_planning_extended_models.sql',
   'supabase/migrations/20260808170000_planning_execution_runtime.sql',
-  'supabase/migrations/20260810110000_unify_sales_order_status.sql'
+  'supabase/migrations/20260810110000_unify_sales_order_status.sql',
+  'supabase/migrations/20260813090000_planning_item_display_name.sql'
 ];
 
 function directProjectConnectionString(value: string) {
@@ -111,8 +112,8 @@ async function main() {
       values ($1, $2) returning id
     `, [accountId, `real-engine-supplier-${suffix}`]);
     const item = await pool.query<{ id: string }>(`
-      insert into public.planning_item (account_id, name, type, cost)
-      values ($1, $2, 'make to stock', 2.5) returning id
+      insert into public.planning_item (account_id, name, display_name, type, cost)
+      values ($1, $2, $2, 'make to stock', 2.5) returning id
     `, [accountId, `real-engine-item-${suffix}`]);
     await pool.query(`
       insert into public.planning_itemsupplier (

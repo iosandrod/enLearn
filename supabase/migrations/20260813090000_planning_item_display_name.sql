@@ -6,26 +6,24 @@ begin;
 alter table public.planning_item
   add column if not exists display_name text;
 
+alter table public.planning_item
+  alter column display_name drop default;
+
 do $backfill$
 begin
   if to_regclass('public.sales_order_lines') is not null then
     execute $sql$
       update public.planning_item item
-      set display_name = source.item_name
-      from (
-        select distinct on (line.account_id, line.item_code)
-          line.account_id,
-          line.item_code,
-          nullif(btrim(line.item_name), '') as item_name
+      set display_name = coalesce((
+        select nullif(btrim(line.item_name), '')
         from public.sales_order_lines line
-        where nullif(btrim(line.item_name), '') is not null
-        order by line.account_id, line.item_code,
-          line.updated_at desc nulls last, line.id
-      ) source
+        where line.account_id = item.account_id
+          and line.item_code = item.name
+          and nullif(btrim(line.item_name), '') is not null
+        order by line.updated_at desc nulls last, line.id
+        limit 1
+      ), item.display_name)
       where nullif(btrim(item.display_name), '') is null
-        and source.account_id = item.account_id
-        and source.item_code = item.name
-        and source.item_name is not null
     $sql$;
   end if;
 end
@@ -46,49 +44,52 @@ comment on column public.planning_item.display_name is
 do $registry$
 declare
   next_config jsonb;
+  next_fields jsonb;
+  next_hash text;
+  config_path text[];
 begin
-  select jsonb_set(
-    jsonb_set(
-      jsonb_set(
-        jsonb_set(
-          registry.config,
-          '{resources,planning_item,create,allowed_fields}',
-          coalesce(registry.config#>'{resources,planning_item,create,allowed_fields}', '[]'::jsonb)
-            || '["display_name"]'::jsonb,
-          true
-        ),
-        '{resources,planning_item,create,input_allowed_fields}',
-        coalesce(registry.config#>'{resources,planning_item,create,input_allowed_fields}', '[]'::jsonb)
-          || '["display_name"]'::jsonb,
-        true
-      ),
-      '{resources,planning_item,create,required_fields}',
-      coalesce(registry.config#>'{resources,planning_item,create,required_fields}', '[]'::jsonb)
-        || '["display_name"]'::jsonb,
-      true
-    ),
-    '{resources,planning_item,update,allowed_fields}',
-    coalesce(registry.config#>'{resources,planning_item,update,allowed_fields}', '[]'::jsonb)
-      || '["display_name"]'::jsonb,
-    true
-  )
+  select registry.config
   into next_config
   from public.dynamic_crud_resource_registry registry
   where registry.resource_name = 'planning_item'
     and registry.table_name = 'planning_item';
 
   if next_config is not null then
+    foreach config_path slice 1 in array array[
+      array['resources', 'planning_item', 'create', 'allowed_fields'],
+      array['resources', 'planning_item', 'create', 'input_allowed_fields'],
+      array['resources', 'planning_item', 'create', 'required_fields'],
+      array['resources', 'planning_item', 'update', 'allowed_fields'],
+      array['resources', 'planning_item', 'update', 'input_allowed_fields']
+    ]
+    loop
+      select coalesce(
+        jsonb_agg(field_value order by ordinal)
+          filter (where field_value <> to_jsonb('display_name'::text)),
+        '[]'::jsonb
+      ) || jsonb_build_array('display_name')
+      into next_fields
+      from jsonb_array_elements(coalesce(next_config #> config_path, '[]'::jsonb))
+        with ordinality fields(field_value, ordinal);
+
+      next_config := jsonb_set(next_config, config_path, next_fields, true);
+    end loop;
+
+    next_config := next_config - 'config_hash';
+    next_hash := encode(
+      digest(convert_to(next_config::text, 'UTF8'), 'sha256'),
+      'hex'
+    );
     next_config := jsonb_set(
       next_config,
-      '{resources,planning_item,update,input_allowed_fields}',
-      coalesce(next_config#>'{resources,planning_item,update,input_allowed_fields}', '[]'::jsonb)
-        || '["display_name"]'::jsonb,
+      '{config_hash}',
+      to_jsonb(next_hash),
       true
     );
 
     update public.dynamic_crud_resource_registry
     set config = next_config,
-        config_hash = encode(digest(convert_to(next_config::text, 'UTF8'), 'sha256'), 'hex'),
+        config_hash = next_hash,
         updated_at = timezone('utc'::text, now())
     where resource_name = 'planning_item'
       and table_name = 'planning_item';
@@ -101,6 +102,7 @@ declare
   page_record record;
   next_schema jsonb;
   block_index integer;
+  tab_index integer;
   field_index integer;
   search_index integer;
   columns_path text[];
@@ -209,19 +211,22 @@ begin
         end if;
       end if;
     else
-      select root_ordinal - 1, form_ordinal - 1
-      into block_index, field_index
+      select root_ordinal - 1, tab_ordinal - 1, form_ordinal - 1
+      into block_index, tab_index, field_index
       from jsonb_array_elements(coalesce(next_schema->'blocks', '[]'::jsonb))
         with ordinality root_blocks(root_block, root_ordinal)
-      cross join lateral jsonb_array_elements(coalesce(root_block->'tabs', '[]'::jsonb)) tab_item
+      cross join lateral jsonb_array_elements(coalesce(root_block->'tabs', '[]'::jsonb))
+        with ordinality tabs(tab_item, tab_ordinal)
       cross join lateral jsonb_array_elements(coalesce(tab_item->'blocks', '[]'::jsonb))
         with ordinality form_blocks(form_block, form_ordinal)
       where form_block->>'id' = 'planning_item_edit_form'
       limit 1;
 
       if block_index is not null then
-        fields_path := array['blocks', block_index::text, 'tabs', '0', 'blocks', field_index::text, 'schema', 'fields'];
-        initial_values_path := array['blocks', block_index::text, 'tabs', '0', 'blocks', field_index::text, 'initialValues'];
+        fields_path := array['blocks', block_index::text, 'tabs', tab_index::text,
+          'blocks', field_index::text, 'schema', 'fields'];
+        initial_values_path := array['blocks', block_index::text, 'tabs', tab_index::text,
+          'blocks', field_index::text, 'initialValues'];
 
         next_schema := jsonb_set(
           next_schema,
@@ -328,21 +333,48 @@ begin
 end
 $pages$;
 
-update public.admin_entities
-set schema = jsonb_set(
-      schema,
+with normalized_entity as (
+  select
+    entity.id,
+    jsonb_set(
+      entity.schema,
       '{fields}',
-      coalesce(schema->'fields', '[]'::jsonb)
-        || '[{"name":"display_name","label":"物料名称","kind":"text","required":true}]'::jsonb,
+      (
+        select coalesce(jsonb_agg(
+          case
+            when field_item->>'name' = 'name' then
+              field_item || jsonb_build_object(
+                'label', '物料编码', 'kind', 'text', 'required', true
+              )
+            when field_item->>'name' = 'display_name' then
+              field_item || jsonb_build_object(
+                'label', '物料名称', 'kind', 'text', 'required', true
+              )
+            else field_item
+          end
+          order by ordinal
+        ), '[]'::jsonb)
+        from jsonb_array_elements(coalesce(entity.schema->'fields', '[]'::jsonb))
+          with ordinality fields(field_item, ordinal)
+      ) || case
+        when exists (
+          select 1
+          from jsonb_array_elements(coalesce(entity.schema->'fields', '[]'::jsonb)) field_item
+          where field_item->>'name' = 'display_name'
+        ) then '[]'::jsonb
+        else '[{"name":"display_name","label":"物料名称","kind":"text","required":true}]'::jsonb
+      end,
       true
-    ),
+    ) as next_schema
+  from public.admin_entities entity
+  where entity.code = 'planning_item'
+)
+update public.admin_entities entity
+set schema = normalized_entity.next_schema,
     updated_at = timezone('utc'::text, now())
-where code = 'planning_item'
-  and not exists (
-    select 1
-    from jsonb_array_elements(coalesce(schema->'fields', '[]'::jsonb)) field_item
-    where field_item->>'name' = 'display_name'
-  );
+from normalized_entity
+where entity.id = normalized_entity.id
+  and entity.schema is distinct from normalized_entity.next_schema;
 
 do $base_info$
 declare

@@ -19,6 +19,12 @@ export type LowCodeFormMaterialProps = {
   options?: LowCodeResolvedOption[];
   optionSources?: Record<string, unknown>;
   formValues?: Record<string, unknown>;
+  onFieldChange?: (payload: {
+    field: LowCodeField;
+    value: unknown;
+    previousValue: unknown;
+    values: Record<string, unknown>;
+  }) => void;
 };
 
 export type LowCodeFormMaterial = {

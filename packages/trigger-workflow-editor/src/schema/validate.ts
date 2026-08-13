@@ -101,15 +101,63 @@ export function assertValidTriggerWorkflow(model: TriggerWorkflowModel) {
 function validateNodeConfig(node: TriggerWorkflowNode, issues: TriggerWorkflowIssue[], path: string) {
   const config = node.config ?? {};
   const task = config.task;
+  const taskType = task?.type;
 
-  if (['task', 'triggerAndWait', 'batchTrigger', 'tool'].includes(node.type) && !task?.id?.trim()) {
-    push(issues, 'error', `${path}.config.task.id`, `${node.type} 节点必须填写 Trigger.dev 任务 ID。`);
+  if (task && !taskType) {
+    push(issues, 'error', `${path}.config.task.type`, '任务配置必须选择任务类型。');
+  } else if (['task', 'triggerAndWait', 'batchTrigger', 'tool'].includes(node.type) && !taskType) {
+    push(issues, 'error', `${path}.config.task.type`, `${node.type} 节点必须选择任务类型。`);
+  }
+  if (taskType === 'registeredTask' && !task?.id?.trim()) {
+    push(issues, 'error', `${path}.config.task.id`, '已注册任务必须填写 Trigger.dev 任务 ID。');
+  }
+  if (taskType === 'frontendCommand' && !task?.frontendFunction?.trim()) {
+    push(issues, 'error', `${path}.config.task.frontendFunction`, '发送前端指令必须填写前端指令函数。');
+  }
+  if (taskType === 'backendCommand' && !task?.backendFunction?.trim()) {
+    push(issues, 'error', `${path}.config.task.backendFunction`, '执行后端指令必须填写后端指令函数。');
+  }
+  if (taskType === 'storedProcedure') {
+    if (!task?.procedureName?.trim()) {
+      push(issues, 'error', `${path}.config.task.procedureName`, '执行存储过程必须填写存储过程名称。');
+    } else if (!isQualifiedIdentifier(task.procedureName)) {
+      push(issues, 'error', `${path}.config.task.procedureName`, '存储过程名称只能包含字母、数字、下划线和单个架构分隔符。');
+    }
+    if (task?.procedureSchema && !isIdentifier(task.procedureSchema)) {
+      push(issues, 'error', `${path}.config.task.procedureSchema`, '存储过程架构名称无效。');
+    }
   }
   if (task?.timeoutSeconds !== undefined && (!Number.isInteger(task.timeoutSeconds) || task.timeoutSeconds < 1)) {
     push(issues, 'error', `${path}.config.task.timeoutSeconds`, '任务超时必须是正整数。');
   }
   if (task?.queue?.concurrencyLimit !== undefined && (!Number.isInteger(task.queue.concurrencyLimit) || task.queue.concurrencyLimit < 1)) {
     push(issues, 'error', `${path}.config.task.queue.concurrencyLimit`, '队列并发数必须是正整数。');
+  }
+  if (task?.priority !== undefined && (!Number.isInteger(task.priority) || task.priority < 0 || task.priority > 100)) {
+    push(issues, 'error', `${path}.config.task.priority`, '任务优先级必须是 0 到 100 之间的整数。');
+  }
+  if (
+    task?.retry?.maxAttempts !== undefined &&
+    (!Number.isInteger(task.retry.maxAttempts) || task.retry.maxAttempts < 0)
+  ) {
+    push(issues, 'error', `${path}.config.task.retry.maxAttempts`, '最大尝试次数必须是非负整数。');
+  }
+  if (task?.retry?.factor !== undefined && (!Number.isFinite(task.retry.factor) || task.retry.factor < 1)) {
+    push(issues, 'error', `${path}.config.task.retry.factor`, '重试退避倍数必须大于或等于 1。');
+  }
+  const minRetry = task?.retry?.minTimeoutMs;
+  const maxRetry = task?.retry?.maxTimeoutMs;
+  if (minRetry !== undefined && (!Number.isInteger(minRetry) || minRetry < 0)) {
+    push(issues, 'error', `${path}.config.task.retry.minTimeoutMs`, '最小重试间隔必须是非负整数。');
+  }
+  if (maxRetry !== undefined && (!Number.isInteger(maxRetry) || maxRetry < 0)) {
+    push(issues, 'error', `${path}.config.task.retry.maxTimeoutMs`, '最大重试间隔必须是非负整数。');
+  }
+  if (minRetry !== undefined && maxRetry !== undefined && minRetry > maxRetry) {
+    push(issues, 'error', `${path}.config.task.retry`, '最小重试间隔不能大于最大重试间隔。');
+  }
+  if (task?.failureStrategy === 'useDefaultOutput' && task.defaultOutput === undefined) {
+    push(issues, 'error', `${path}.config.task.defaultOutput`, '使用默认输出继续时必须配置默认输出。');
   }
   if (node.type === 'schedule') {
     if (!config.schedule?.cron?.trim()) push(issues, 'error', `${path}.config.schedule.cron`, '定时节点必须填写 Cron 表达式。');
@@ -135,6 +183,15 @@ function validateNodeConfig(node: TriggerWorkflowNode, issues: TriggerWorkflowIs
   if (node.type === 'transform' && !config.expression?.trim() && !isRecord(config.data?.mapping)) {
     push(issues, 'warning', `${path}.config`, '数据转换节点应填写表达式或字段映射。');
   }
+}
+
+function isIdentifier(value: string) {
+  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(value.trim());
+}
+
+function isQualifiedIdentifier(value: string) {
+  const parts = value.trim().split('.');
+  return parts.length <= 2 && parts.every(isIdentifier);
 }
 
 function push(issues: TriggerWorkflowIssue[], level: TriggerWorkflowIssue['level'], path: string, message: string) {

@@ -8,6 +8,7 @@
       :options="options"
       :option-sources="optionSources"
       :form-values="formValues"
+      :on-field-change="handleNestedFieldChange"
       @update:model-value="handleUpdate"
       @patch-model="handlePatchModel"
       @select="handleSelect"
@@ -117,5 +118,18 @@ function handlePatchModel(payload: LowCodeFormMaterialPatchPayload) {
 
 function handleSelect(payload: LowCodeFormMaterialSelectPayload) {
   emit('relateSelect', payload);
+}
+
+function handleNestedFieldChange(payload: {
+  field: LowCodeField;
+  value: unknown;
+  previousValue: unknown;
+  values: Record<string, unknown>;
+}) {
+  emit('change', {
+    field: props.field,
+    value: cloneValue(payload.values),
+    previousValue: cloneValue(valueBeforeChange),
+  });
 }
 </script>

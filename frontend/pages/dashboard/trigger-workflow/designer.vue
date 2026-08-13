@@ -5,37 +5,47 @@
       height="calc(100vh - 62px)"
       :busy="isJobBusy"
       :can-run="Boolean(demoJob)"
+      :node-form-schemas="nodeFormSchemas"
+      :edge-form-schema="edgeFormSchema"
+      :inspector-schemas-loading="inspectorSchemasLoading"
       @validation="issues = $event"
       @compile="compiledPlan = $event"
       @export="exportedModel = $event"
       @save="saveDraft"
       @restore="loadDraft"
       @copy="copyModel"
-      @enable="createAndEnableUsersLogJob"
-      @run="runUsersLogJobOnce"
-      @refresh="refreshUsersLogJob"
+      @enable="createFrontendCommandJob"
+      @run="runFrontendCommandJob"
+      @refresh="refreshFrontendCommandJob"
     />
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, shallowRef } from 'vue';
 import { VxeUI } from 'vxe-pc-ui';
 import {
+  TRIGGER_EDGE_FORM_SCHEMA_CODE,
   TriggerWorkflowEditor,
   TRIGGER_WORKFLOW_SCHEMA_VERSION,
+  assertTriggerInspectorFormSchema,
   createApprovalTriggerWorkflow,
+  triggerInspectorNodeTypes,
+  triggerNodeFormSchemaCodeByType,
+  type TriggerInspectorFormSchema,
+  type TriggerNodeFormSchemaMap,
   type TriggerWorkflowExecutionPlan,
   type TriggerWorkflowIssue,
   type TriggerWorkflowModel
 } from '@enlearn/trigger-workflow-editor';
+import { loadAvailableLowCodeFormDefinitions } from '../../../utils/lowCodeFormDefinitions';
 
 const auth = useAuth();
 const storageKey = computed(() =>
   `enlearn.trigger-workflow-editor.${auth.activeAccount.value?.account_id ?? 'unselected'}`
 );
-const demoJobCode = 'supabase_users_20s_logger';
-const demoTaskId = 'workflow.supabase.users.log';
+const demoJobCode = 'frontend_command_message_10s';
+const demoTaskId = 'frontend.command.message.loop';
 const serviceApi = useServiceApi();
 const model = ref<TriggerWorkflowModel>(createApprovalTriggerWorkflow());
 const issues = ref<TriggerWorkflowIssue[]>([]);
@@ -45,11 +55,72 @@ const demoJob = ref<WorkflowJobRecord | undefined>();
 const demoRuns = ref<WorkflowJobRunRecord[]>([]);
 const isJobBusy = ref(false);
 const jobMessage = ref('');
+const inspectorSchemasLoading = ref(false);
+const nodeFormSchemas = shallowRef<TriggerNodeFormSchemaMap>({});
+const edgeFormSchema = shallowRef<TriggerInspectorFormSchema>();
 
 onMounted(() => {
-  loadDraft();
-  void refreshUsersLogJob();
+  if (!loadDraft()) {
+    model.value = createFrontendCommandWorkflowModel();
+  }
+  void loadInspectorSchemas();
+  void refreshFrontendCommandJob();
 });
+
+async function loadInspectorSchemas() {
+  inspectorSchemasLoading.value = true;
+  const codes = [
+    ...triggerInspectorNodeTypes.map((type) => triggerNodeFormSchemaCodeByType[type]),
+    TRIGGER_EDGE_FORM_SCHEMA_CODE,
+  ] as const;
+
+  try {
+    const definitions = await loadAvailableLowCodeFormDefinitions(serviceApi, codes);
+    const invalidCodes: string[] = [];
+    nodeFormSchemas.value = Object.fromEntries(
+      triggerInspectorNodeTypes.flatMap((type) => {
+        const definition = definitions[triggerNodeFormSchemaCodeByType[type]];
+        if (!definition) return [];
+        try {
+          assertTriggerInspectorFormSchema(definition.schema);
+          return [[type, definition.schema]];
+        } catch {
+          invalidCodes.push(definition.code);
+          return [];
+        }
+      }),
+    ) as TriggerNodeFormSchemaMap;
+    const edgeDefinition = definitions[TRIGGER_EDGE_FORM_SCHEMA_CODE];
+    if (edgeDefinition) {
+      try {
+        assertTriggerInspectorFormSchema(edgeDefinition.schema);
+        edgeFormSchema.value = edgeDefinition.schema;
+      } catch {
+        invalidCodes.push(edgeDefinition.code);
+        edgeFormSchema.value = undefined;
+      }
+    } else {
+      edgeFormSchema.value = undefined;
+    }
+
+    const loadedCount = Object.keys(nodeFormSchemas.value).length;
+    if (loadedCount < triggerInspectorNodeTypes.length) {
+      notify(
+        `已加载 ${loadedCount}/${triggerInspectorNodeTypes.length} 个节点表单定义，其余使用内置配置${invalidCodes.length ? `；${invalidCodes.length} 个定义无效` : ''}。`,
+        'warning',
+      );
+    }
+  } catch (error) {
+    nodeFormSchemas.value = {};
+    edgeFormSchema.value = undefined;
+    notify(
+      `节点表单定义加载失败，已使用内置配置：${error instanceof Error ? error.message : String(error)}`,
+      'warning',
+    );
+  } finally {
+    inspectorSchemasLoading.value = false;
+  }
+}
 
 function saveDraft() {
   window.localStorage.setItem(storageKey.value, JSON.stringify(model.value, null, 2));
@@ -58,12 +129,14 @@ function saveDraft() {
 
 function loadDraft() {
   const saved = window.localStorage.getItem(storageKey.value);
-  if (!saved) return;
+  if (!saved) return false;
   try {
     model.value = JSON.parse(saved) as TriggerWorkflowModel;
     notify('已恢复本地草稿。', 'success');
+    return true;
   } catch {
     window.localStorage.removeItem(storageKey.value);
+    return false;
   }
 }
 
@@ -73,43 +146,43 @@ async function copyModel() {
   notify('工作流 JSON 已复制。', 'success');
 }
 
-async function createAndEnableUsersLogJob() {
+async function createFrontendCommandJob() {
   isJobBusy.value = true;
   try {
-    model.value = createUsersLogWorkflowModel();
+    model.value = createFrontendCommandWorkflowModel();
     saveDraft();
 
-    await refreshUsersLogJob();
+    await refreshFrontendCommandJob();
     let job = demoJob.value;
     if (!job) {
       job = await workflowApi<WorkflowJobRecord>('createJob', {
         code: demoJobCode,
-        name: 'Supabase 用户每分钟日志任务',
-        type: 'interval',
+        name: '前端指令每 10 秒消息任务',
+        type: 'manual',
         triggerTaskId: demoTaskId,
-        intervalSeconds: 60,
         timezone: 'Asia/Shanghai',
         payload: {
-          intervalSeconds: 60,
-          limit: 20,
-          source: 'public.users',
-          logMode: 'backend-console'
+          userId: auth.user.value?.id,
+          repeatCount: 6,
+          message: '接受指令成功',
+          messageType: 'success'
         },
-        retryPolicy: { maxAttempts: 1 },
+        retryPolicy: { maxAttempts: 3 },
+        timeoutSeconds: 120,
         concurrencyKey: demoJobCode
       });
     }
 
-    if (job.intervalSeconds !== 60) {
-      throw new Error('现有示例任务使用旧的 20 秒间隔，请归档后重新创建为每分钟任务。');
+    if (job.triggerTaskId !== demoTaskId || job.type !== 'manual') {
+      throw new Error('同名作业不是前端指令手动作业，请先归档该作业后重新创建。');
     }
 
     demoJob.value = await workflowApi<WorkflowJobRecord>('updateJobStatus', {
       jobId: job.id,
       status: 'enabled'
     });
-    await refreshUsersLogJob();
-    jobMessage.value = '示例任务已创建并启用。';
+    await refreshFrontendCommandJob();
+    jobMessage.value = '前端指令作业已创建并启用。';
     notify(jobMessage.value, 'success');
   } catch (error) {
     jobMessage.value = error instanceof Error ? error.message : String(error);
@@ -119,19 +192,23 @@ async function createAndEnableUsersLogJob() {
   }
 }
 
-async function runUsersLogJobOnce() {
+async function runFrontendCommandJob() {
   if (!demoJob.value) return;
   isJobBusy.value = true;
   try {
     await workflowApi<WorkflowJobRunRecord>('runJob', {
       jobId: demoJob.value.id,
       payload: {
-        manual: true,
+        userId: auth.user.value?.id,
+        intervalSeconds: 10,
+        repeatCount: 6,
+        message: '接受指令成功',
+        messageType: 'success',
         requestedAt: new Date().toISOString()
       }
     });
-    await refreshUsersLogJob();
-    jobMessage.value = '已手动触发一次。';
+    await refreshFrontendCommandJob();
+    jobMessage.value = '已启动任务，将每 10 秒发送一次消息，共 6 次。';
     notify(jobMessage.value, 'success');
   } catch (error) {
     jobMessage.value = error instanceof Error ? error.message : String(error);
@@ -141,11 +218,10 @@ async function runUsersLogJobOnce() {
   }
 }
 
-async function refreshUsersLogJob() {
+async function refreshFrontendCommandJob() {
   try {
     const jobs = await workflowApi<WorkflowJobRecord[]>('listItems', {
-      itemType: 'jobs',
-      type: 'interval'
+      itemType: 'jobs'
     });
     demoJob.value = jobs.find((job) => job.code === demoJobCode);
     demoRuns.value = demoJob.value
@@ -168,61 +244,65 @@ async function workflowApi<T>(serviceMethod: string, postData: Record<string, un
   });
 }
 
-function createUsersLogWorkflowModel(): TriggerWorkflowModel {
+function createFrontendCommandWorkflowModel(): TriggerWorkflowModel {
   return {
     schemaVersion: TRIGGER_WORKFLOW_SCHEMA_VERSION,
     code: demoJobCode,
-    name: 'Supabase 用户每分钟日志任务',
-    kind: 'dataSync',
+    name: '前端指令每 10 秒消息任务',
+    kind: 'custom',
     nodes: [
       {
-        id: 'schedule',
-        type: 'schedule',
-        name: '每分钟触发',
+        id: 'manual_start',
+        type: 'start',
+        name: '手动触发',
         position: { x: 380, y: 40 },
         config: {
-          schedule: {
-            cron: '*/1 * * * *',
-            timezone: 'Asia/Shanghai',
-            externalId: demoJobCode
-          },
-          metadata: { intervalSeconds: 60 }
+          metadata: { triggerMode: 'manual' }
         }
       },
       {
-        id: 'fetch_users',
+        id: 'send_frontend_command',
         type: 'task',
-        name: '读取 Supabase 用户',
+        name: '发送前端消息指令',
         position: { x: 380, y: 210 },
         config: {
           task: {
+            type: 'registeredTask',
             id: demoTaskId,
-            queue: { name: 'workflow-local-jobs', concurrencyLimit: 1 },
-            retry: { maxAttempts: 1 },
+            queue: { name: 'frontend-command-jobs', concurrencyLimit: 10 },
+            retry: {
+              maxAttempts: 3,
+              factor: 2,
+              minTimeoutMs: 1000,
+              maxTimeoutMs: 10000
+            },
+            timeoutSeconds: 120,
             idempotencyKey: '{{runId}}'
           },
           metadata: {
-            table: 'public.users',
-            limit: 20,
-            logTarget: 'workflow-api 控制台'
+            target: 'currentUser',
+            intervalSeconds: 10,
+            repeatCount: 6,
+            commandCode: 'message.show',
+            message: '接受指令成功'
           }
         }
       },
       {
         id: 'end',
         type: 'end',
-        name: '记录完成',
+        name: '发送完成',
         position: { x: 380, y: 380 }
       }
     ],
     edges: [
-      { id: 'edge_schedule_fetch_users', source: 'schedule', target: 'fetch_users' },
-      { id: 'edge_fetch_users_end', source: 'fetch_users', target: 'end' }
+      { id: 'edge_start_command', source: 'manual_start', target: 'send_frontend_command' },
+      { id: 'edge_command_end', source: 'send_frontend_command', target: 'end' }
     ]
   };
 }
 
-function notify(content: string, status: 'success' | 'error') {
+function notify(content: string, status: 'success' | 'error' | 'warning') {
   const modal = VxeUI.modal;
   if (modal?.message) void modal.message({ content, status });
 }
@@ -234,7 +314,6 @@ type WorkflowJobRecord = {
   type: string;
   status: string;
   triggerTaskId: string;
-  intervalSeconds?: number;
   payload: Record<string, unknown>;
 };
 

@@ -1,12 +1,16 @@
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
 import type { TriggerWorkflowIssue, TriggerWorkflowModel } from '../schema/types';
+import { type TriggerInspectorFormSchema, type TriggerNodeFormSchemaOverrides } from '../inspector-form';
 type __VLS_Props = {
     modelValue?: TriggerWorkflowModel;
     readonly?: boolean;
     height?: string;
     busy?: boolean;
     canRun?: boolean;
+    nodeFormSchemas?: TriggerNodeFormSchemaOverrides;
+    edgeFormSchema?: TriggerInspectorFormSchema;
+    inspectorSchemasLoading?: boolean;
 };
 declare const __VLS_export: import("vue").DefineComponent<__VLS_Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {
     "update:modelValue": (value: TriggerWorkflowModel) => any;
@@ -37,6 +41,7 @@ declare const __VLS_export: import("vue").DefineComponent<__VLS_Props, {}, {}, {
     height: string;
     busy: boolean;
     canRun: boolean;
+    inspectorSchemasLoading: boolean;
 }, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
 declare const _default: typeof __VLS_export;
 export default _default;

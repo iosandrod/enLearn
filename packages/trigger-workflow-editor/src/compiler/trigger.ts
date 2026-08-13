@@ -78,6 +78,7 @@ export function compileTriggerWorkflow(model: TriggerWorkflowModel): TriggerWork
   const taskIds = Array.from(
     new Set(
       operations
+        .filter((operation) => operation.task?.type === 'registeredTask')
         .map((operation) => operation.task?.id)
         .filter((taskId): taskId is string => Boolean(taskId))
     )

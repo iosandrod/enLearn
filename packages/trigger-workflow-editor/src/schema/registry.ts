@@ -58,7 +58,7 @@ export function isBuiltInTriggerNodeType(type: TriggerNodeType) {
 }
 
 export function getTriggerNodeDefinitionsForKind(kind: TriggerWorkflowKind) {
-  return triggerNodeDefinitions.filter((definition) => definition.allowedKinds.includes(kind) && definition.type !== 'start' && definition.type !== 'end');
+  return triggerNodeDefinitions.filter((definition) => definition.allowedKinds.includes(kind));
 }
 
 export function getTriggerNodeCategoryLabel(category: TriggerNodeDefinition['category']) {

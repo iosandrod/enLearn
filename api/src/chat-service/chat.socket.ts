@@ -5,6 +5,8 @@ import { createSupabaseClient } from '../common/utils/supabase';
 import { requireActiveAccount } from '../common/utils/account-context';
 import { ChatService } from './chat.service';
 import type { ChatSocketUser } from './chat.types';
+import { registerFrontendCommandSocket } from '../frontend-command/frontend-command.socket';
+import { frontendCommandUserRoom } from '../frontend-command/frontend-command.types';
 
 type ChatSocket = Socket & {
   data: {
@@ -92,7 +94,12 @@ export function registerChatSocket(app: INestApplication) {
       const selectedAccount = await requireActiveAccount({ authorization }, accountId);
       client.data.accountId = selectedAccount.account.account_id;
       await client.join(`user:${user.id}`);
-      client.emit('chat:connected', { userId: user.id });
+      await client.join(frontendCommandUserRoom(client.data.accountId, user.id));
+      client.emit('chat:connected', {
+        userId: user.id,
+        accountId: client.data.accountId,
+        socketId: client.id
+      });
     } catch (error) {
       client.emit('chat:error', toClientError(error));
       client.disconnect(true);
@@ -199,6 +206,8 @@ export function registerChatSocket(app: INestApplication) {
       }
     });
   });
+
+  registerFrontendCommandSocket(app, chatNamespace);
 
   return io;
 }

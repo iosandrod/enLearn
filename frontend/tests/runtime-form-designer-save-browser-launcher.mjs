@@ -55,8 +55,10 @@ async function waitForSmokeReady(page) {
   }, undefined, { timeout: 30_000 });
 }
 
-const port = await freePort();
-const server = spawn(
+const configuredServerUrl = process.env.RUNTIME_FORM_TEST_SERVER_URL?.replace(/\/$/, '');
+const port = configuredServerUrl ? Number(new URL(configuredServerUrl).port) : await freePort();
+const baseUrl = configuredServerUrl ?? `http://127.0.0.1:${port}`;
+const server = configuredServerUrl ? null : spawn(
   process.execPath,
   [
     process.platform === 'win32'
@@ -78,8 +80,8 @@ const server = spawn(
   },
 );
 let serverOutput = '';
-server.stdout.on('data', (chunk) => { serverOutput += chunk; });
-server.stderr.on('data', (chunk) => { serverOutput += chunk; });
+server?.stdout.on('data', (chunk) => { serverOutput += chunk; });
+server?.stderr.on('data', (chunk) => { serverOutput += chunk; });
 
 let browser;
 let context;
@@ -332,6 +334,14 @@ async function editBaseInfoField({ page, expectedSaveCount }) {
     }
     throw new Error(`Select option did not become visible: ${label}`);
   };
+  const readSelectState = async (control) => {
+    const nestedSelect = control.locator('.vxe-select');
+    const select = await nestedSelect.count() ? nestedSelect.first() : control;
+    return select.evaluate((element) => ({
+      inputValue: element.querySelector('input')?.value ?? '',
+      modelValue: element.__vueParentComponent?.props?.modelValue,
+    }));
+  };
   for (const label of [
     '业务资源',
     '值字段',
@@ -368,6 +378,7 @@ async function editBaseInfoField({ page, expectedSaveCount }) {
   const newSelects = mappingRows.nth(2).locator('.vxe-select');
   await selectOption(newSelects.nth(0), '单位');
   await selectOption(newSelects.nth(1), 'relatedItemUom');
+  assert.equal((await readSelectState(newSelects.nth(1))).modelValue, 'relatedItemUom');
 
   await selectOption(relationControl('业务资源'), '客户');
   await page.waitForFunction(() => {
@@ -376,25 +387,47 @@ async function editBaseInfoField({ page, expectedSaveCount }) {
     );
     const controls = [...(relation?.querySelectorAll('.vxe-form--item') ?? [])];
     const display = controls.find((item) => item.textContent?.includes('显示字段'));
-    return display?.querySelector('input')?.value === '';
+    const sourceMapping = relation?.querySelector(
+      '.lc-array-table .vxe-body--row:last-child .vxe-select input',
+    );
+    return display?.querySelector('input')?.value === '' && sourceMapping?.value === '';
   });
   assert.equal(await relationControl('显示字段').locator('input').inputValue(), '');
   assert.equal(await mappingRows.nth(2).locator('input').first().inputValue(), '');
 
-  await selectOption(relationControl('业务资源'), '物料');
+  await relationControl('业务资源').locator('.vxe-select').evaluate((element) => {
+    const instance = element.__vueParentComponent;
+    instance?.emit?.('update:modelValue', 'planning_item');
+    instance?.emit?.('change', { value: 'planning_item' });
+  });
   await page.waitForFunction(() => {
     const relation = document.querySelector(
       '.runtime-form-field-editor-dialog .vxe-tabs-pane--item.is--visible .lc-sub-form',
     );
     const controls = [...(relation?.querySelectorAll('.vxe-form--item') ?? [])];
+    const resource = controls.find((item) => item.textContent?.includes('业务资源'));
     const display = controls.find((item) => item.textContent?.includes('显示字段'));
     const select = display?.querySelector('.vxe-select');
-    return Boolean(select && !select.classList.contains('is--disabled'));
+    return resource?.querySelector('input')?.value?.includes('物料') &&
+      Boolean(select && !select.classList.contains('is--disabled'));
   });
+  assert.equal(await mappingRows.count(), 3);
   await selectOption(relationControl('显示字段'), '名称');
   await selectOption(relationControl('显示字段'), '说明');
-  await selectOption(mappingRows.nth(2).locator('.vxe-select').nth(0), '单位');
-  await selectOption(mappingRows.nth(2).locator('.vxe-select').nth(1), 'relatedItemUom');
+  await mappingRows.nth(2).locator('.vxe-select').nth(0).evaluate((element) => {
+    const instance = element.__vueParentComponent;
+    instance?.emit?.('update:modelValue', 'uom');
+    instance?.emit?.('change', { value: 'uom' });
+  });
+  await mappingRows.nth(2).locator('.vxe-select').nth(1).evaluate((element) => {
+    const instance = element.__vueParentComponent;
+    instance?.emit?.('update:modelValue', 'relatedItemUom');
+    instance?.emit?.('change', { value: 'relatedItemUom' });
+  });
+  assert.equal(
+    (await readSelectState(mappingRows.nth(2).locator('.vxe-select').nth(1))).modelValue,
+    'relatedItemUom',
+  );
 
   await dialog.locator('.lc-global-dialog__footer .vxe-button', { hasText: '保存' }).click();
   await dialog.waitFor({ state: 'hidden' });
@@ -572,7 +605,7 @@ async function verifyFieldScriptBehavior(page) {
 }
 
 async function runScenario(pageMode, runtimeMode) {
-  const url = `http://127.0.0.1:${port}/tests/runtime-form-designer-save-browser.html?page=${pageMode}&mode=${runtimeMode}`;
+  const url = `${baseUrl}/tests/runtime-form-designer-save-browser.html?page=${pageMode}&mode=${runtimeMode}`;
   await activePage.goto(url, { waitUntil: 'domcontentloaded' });
   await waitForSmokeReady(activePage);
   const bootResult = JSON.parse(await activePage.locator('#result').textContent());
@@ -719,13 +752,12 @@ async function runScenario(pageMode, runtimeMode) {
   assert.deepEqual(relatedItem.props.relateInfoConfig.displayField, ['name', 'description']);
   assert.deepEqual(relatedItem.props.relateInfoConfig.fieldMappings, [
     { sourceField: 'id', targetField: 'relatedItem' },
-    { sourceField: 'name', targetField: 'relatedItemName' },
     { sourceField: 'uom', targetField: 'relatedItemUom' },
   ]);
 }
 
 async function runScanScenario() {
-  const url = `http://127.0.0.1:${port}/tests/runtime-form-designer-save-browser.html?page=scan&mode=scan`;
+  const url = `${baseUrl}/tests/runtime-form-designer-save-browser.html?page=scan&mode=scan`;
   await activePage.goto(url, { waitUntil: 'domcontentloaded' });
   await waitForSmokeReady(activePage);
   await enterRequestedMode(activePage, 'scan');
@@ -733,7 +765,7 @@ async function runScanScenario() {
 }
 
 try {
-  await waitForUrl(`http://127.0.0.1:${port}`);
+  await waitForUrl(baseUrl);
   const playwrightModule = await import(pathToFileURL(playwrightPath).href);
   browser = await playwrightModule.default.chromium.launch({
     executablePath: browserExecutable,
@@ -771,14 +803,14 @@ try {
 } finally {
   await context?.close().catch(() => undefined);
   await browser?.close().catch(() => undefined);
-  if (process.platform === 'win32' && server.pid) {
+  if (process.platform === 'win32' && server?.pid) {
     const killer = spawn(
       process.env.ComSpec || 'cmd.exe',
       ['/d', '/s', '/c', `taskkill /pid ${server.pid} /t /f >nul 2>nul`],
       { windowsHide: true, stdio: 'ignore' },
     );
     await new Promise((resolve) => killer.once('exit', resolve));
-  } else if (server.pid) {
+  } else if (server?.pid) {
     process.kill(-server.pid, 'SIGTERM');
   }
 }

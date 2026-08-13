@@ -7,4 +7,5 @@ export * from './schema/normalize';
 export * from './schema/validate';
 export * from './compiler/trigger';
 export * from './templates';
+export * from './inspector-form';
 

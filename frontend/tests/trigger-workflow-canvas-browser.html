@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trigger workflow canvas tools smoke</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background: #eef2f7;
+        padding: 18px;
+        box-sizing: border-box;
+      }
+
+      #result {
+        position: fixed;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick, ref } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'remixicon/fonts/remixicon.css';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import '../assets/styles/app.css';
+      import {
+        TriggerWorkflowEditor,
+        createApprovalTriggerWorkflow,
+        createTriggerNodeFormSchema,
+      } from '@enlearn/trigger-workflow-editor';
+
+      const model = ref(createApprovalTriggerWorkflow());
+      const databaseWebhookSchema = createTriggerNodeFormSchema({
+        id: 'database-webhook',
+        type: 'webhook',
+        name: 'Webhook',
+      });
+      databaseWebhookSchema.fields.find((field) => field.field === 'webhookPath').label = '数据库请求路径';
+
+      const App = defineComponent({
+        setup() {
+          return () => h(TriggerWorkflowEditor, {
+            modelValue: model.value,
+            height: '820px',
+            nodeFormSchemas: { webhook: databaseWebhookSchema },
+            'onUpdate:modelValue': (value) => { model.value = value; },
+          });
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+
+      window.__triggerWorkflowCanvasSmoke = {
+        snapshot() {
+          return JSON.parse(JSON.stringify(model.value));
+        },
+        replace(value) {
+          model.value = JSON.parse(JSON.stringify(value));
+        },
+      };
+
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

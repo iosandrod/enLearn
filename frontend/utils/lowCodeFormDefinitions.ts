@@ -157,24 +157,42 @@ export async function loadLowCodeFormDefinition(
   return definitions[code];
 }
 
+export async function loadAvailableLowCodeFormDefinitions<TCode extends string>(
+  serviceApi: ServiceApi,
+  codes: readonly TCode[],
+) {
+  const requestedCodes = normalizeRequestedCodes(codes);
+  if (!requestedCodes.length) {
+    return {} as Partial<Record<TCode, LowCodeFormDefinitionRecord>>;
+  }
+
+  const rows = await queryLowCodeFormDefinitions(serviceApi, requestedCodes);
+  const requestedCodeSet = new Set<string>(requestedCodes);
+  const definitions: Partial<Record<TCode, LowCodeFormDefinitionRecord>> = {};
+
+  rows.forEach((definition) => {
+    if (!requestedCodeSet.has(definition.code)) return;
+    try {
+      assertLowCodeFormSchema(definition.schema);
+    } catch {
+      return;
+    }
+    definitions[definition.code as TCode] = cloneFormDefinition(definition);
+  });
+
+  return definitions;
+}
+
 export async function loadLowCodeFormDefinitions<TCode extends string>(
   serviceApi: ServiceApi,
   codes: readonly TCode[],
 ) {
-  const requestedCodes = [...new Set(codes.map((code) => code.trim()).filter(Boolean))] as TCode[];
+  const requestedCodes = normalizeRequestedCodes(codes);
   if (!requestedCodes.length) return {} as Record<TCode, LowCodeFormDefinitionRecord>;
 
-  const rows = await serviceApi.invoke<LowCodeFormDefinitionRecord[]>(
-    'lowcode',
-    'listItems',
-    {
-      resource: 'lowcode_form_definitions',
-      filters: { code: requestedCodes, enabled: true },
-      limit: requestedCodes.length,
-    },
-  );
+  const rows = await queryLowCodeFormDefinitions(serviceApi, requestedCodes);
   const definitions = Object.fromEntries(
-    (Array.isArray(rows) ? rows : []).map((definition) => {
+    rows.map((definition) => {
       try {
         assertLowCodeFormSchema(definition.schema);
       } catch (error) {
@@ -184,10 +202,7 @@ export async function loadLowCodeFormDefinitions<TCode extends string>(
 
       return [
         definition.code,
-        {
-          ...definition,
-          schema: structuredClone(definition.schema),
-        },
+        cloneFormDefinition(definition),
       ];
     }),
   ) as Record<string, LowCodeFormDefinitionRecord>;
@@ -198,4 +213,31 @@ export async function loadLowCodeFormDefinitions<TCode extends string>(
   }
 
   return definitions as Record<TCode, LowCodeFormDefinitionRecord>;
+}
+
+function normalizeRequestedCodes<TCode extends string>(codes: readonly TCode[]) {
+  return [...new Set(codes.map((code) => code.trim()).filter(Boolean))] as TCode[];
+}
+
+async function queryLowCodeFormDefinitions<TCode extends string>(
+  serviceApi: ServiceApi,
+  requestedCodes: readonly TCode[],
+) {
+  const rows = await serviceApi.invoke<LowCodeFormDefinitionRecord[]>(
+    'lowcode',
+    'listItems',
+    {
+      resource: 'lowcode_form_definitions',
+      filters: { code: requestedCodes, enabled: true },
+      limit: requestedCodes.length,
+    },
+  );
+  return Array.isArray(rows) ? rows : [];
+}
+
+function cloneFormDefinition(definition: LowCodeFormDefinitionRecord) {
+  return {
+    ...definition,
+    schema: structuredClone(definition.schema),
+  };
 }

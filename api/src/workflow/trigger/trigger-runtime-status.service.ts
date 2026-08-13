@@ -1,25 +1,22 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { queues, wait } from '@trigger.dev/sdk';
+import { queues, schedules, wait } from '@trigger.dev/sdk';
 import type { RuntimeService } from '../runtime/runtime.service';
 import type { ProcessInstanceRecord } from '../runtime/runtime.types';
 import { TriggerCredentialsService } from './trigger-credentials.service';
+import { TRIGGER_TASK_IDENTIFIERS } from './trigger-task-catalog';
 
-const WORKFLOW_TASK_IDENTIFIER_SET = new Set([
-  'workflow.instance.run',
-  'workflow.job.run',
-  'workflow.job.scheduled',
-  'notification.dispatch'
-]);
 const MAX_QUEUES = 500;
 const MAX_RUNS = 200;
+const MAX_SCHEDULES = 500;
 const MAX_WAITPOINTS = 200;
+const STATUS_SECTION_TIMEOUT_MS = 6_000;
 
 export const TRIGGER_RUNTIME_STATUS_RUNTIME_SERVICE = Symbol(
   'TRIGGER_RUNTIME_STATUS_RUNTIME_SERVICE'
 );
 export const TRIGGER_RUNTIME_STATUS_OPERATIONS = Symbol('TRIGGER_RUNTIME_STATUS_OPERATIONS');
 
-type TriggerQueue = {
+export type TriggerQueue = {
   id: string;
   name: string;
   type: 'task' | 'custom';
@@ -29,7 +26,7 @@ type TriggerQueue = {
   concurrencyLimit: number | null;
 };
 
-type TriggerRun = {
+export type TriggerRun = {
   id: string;
   status: string;
   taskIdentifier: string;
@@ -42,9 +39,11 @@ type TriggerRun = {
   startedAt?: string;
   finishedAt?: string;
   workflowInstanceId?: string;
+  workflowJobId?: string;
+  workflowJobRunId?: string;
 };
 
-type TriggerWaitpoint = {
+export type TriggerWaitpoint = {
   id: string;
   status: string;
   tags: string[];
@@ -54,10 +53,31 @@ type TriggerWaitpoint = {
   workflowTaskId?: string;
 };
 
+export type TriggerSchedule = {
+  id: string;
+  type: 'DECLARATIVE' | 'IMPERATIVE';
+  task: string;
+  active: boolean;
+  cron: string;
+  description: string;
+  timezone: string;
+  nextRunAt?: string;
+  externalId?: string;
+  deduplicationKey?: string;
+};
+
+export type TriggerRuntimeStatusScope = {
+  includeSchedules?: boolean;
+  scheduleIds?: string[];
+  scheduleExternalIds?: string[];
+  scheduleDeduplicationKeys?: string[];
+  taskIdentifiers?: string[];
+};
+
 export type TriggerRuntimeStatus = {
   generatedAt: string;
   partial: boolean;
-  errors: Partial<Record<'credentials' | 'queues' | 'runs' | 'waitpoints' | 'workers', string>>;
+  errors: Partial<Record<'credentials' | 'queues' | 'runs' | 'schedules' | 'waitpoints' | 'workers', string>>;
   engine: {
     configured: boolean;
     apiUrl: string;
@@ -70,6 +90,8 @@ export type TriggerRuntimeStatus = {
   };
   summary: {
     queueCount: number;
+    scheduleCount: number;
+    activeScheduleCount: number;
     queuedRuns: number;
     runningRuns: number;
     waitingRuns: number;
@@ -78,6 +100,7 @@ export type TriggerRuntimeStatus = {
   };
   queues: TriggerQueue[];
   runs: TriggerRun[];
+  schedules: TriggerSchedule[];
   waitpoints: TriggerWaitpoint[];
   workers: Array<{
     id: string;
@@ -91,6 +114,7 @@ export type TriggerRuntimeStatus = {
 
 export type TriggerRuntimeStatusOperations = {
   listQueues(): Promise<TriggerQueue[]>;
+  listSchedules(): Promise<TriggerSchedule[]>;
   listWaitpoints(): Promise<TriggerWaitpoint[]>;
   getDevPresence(apiUrl: string, projectRef: string, accessToken: string): Promise<boolean>;
 };
@@ -111,7 +135,10 @@ export class TriggerRuntimeStatusService {
     private readonly operations: TriggerRuntimeStatusOperations
   ) {}
 
-  async getStatus(tenantId: string): Promise<TriggerRuntimeStatus> {
+  async getStatus(
+    tenantId: string,
+    scope: TriggerRuntimeStatusScope = {}
+  ): Promise<TriggerRuntimeStatus> {
     const workflows = await this.runtimeService.listInstances({ tenantId, status: 'running' });
     const errors: TriggerRuntimeStatus['errors'] = {};
     let configured = false;
@@ -125,6 +152,7 @@ export class TriggerRuntimeStatusService {
     let workerRows: TriggerRuntimeStatus['workers'] = [];
     let queuesResult: TriggerQueue[] = [];
     let runsResult: TriggerRun[] = [];
+    let schedulesResult: TriggerSchedule[] = [];
     let waitpointResult: TriggerWaitpoint[] = [];
 
     try {
@@ -136,25 +164,34 @@ export class TriggerRuntimeStatusService {
       environmentId = credential.environmentId;
       await this.credentials.configureSdk();
 
-      const [queueSection, runSection, waitpointSection, workerSection, presenceSection] =
+      const taskIdentifiers = [...new Set([
+        ...TRIGGER_TASK_IDENTIFIERS,
+        ...(scope.taskIdentifiers ?? [])
+      ].filter(isNonEmptyString))];
+      const [queueSection, runSection, scheduleSection, waitpointSection, workerSection, presenceSection] =
         await Promise.allSettled([
-          this.operations.listQueues(),
-          this.credentials.listRecentRuns(
+          withTimeout(this.operations.listQueues(), 'queues'),
+          withTimeout(this.credentials.listRecentRuns(
             credential.environmentId,
-            [...WORKFLOW_TASK_IDENTIFIER_SET],
+            taskIdentifiers,
             MAX_RUNS
           ).then((runRows) => runRows.map((run) => ({
             ...run,
-            ...tagField(run.tags, 'workflow-instance', 'workflowInstanceId')
-          }))),
-          this.operations.listWaitpoints(),
-          this.credentials.getWorkerStatus(credential.environmentId),
+            ...tagField(run.tags, 'workflow-instance', 'workflowInstanceId'),
+            ...tagField(run.tags, 'workflow-job', 'workflowJobId'),
+            ...tagField(run.tags, 'workflow-job-run', 'workflowJobRunId')
+          }))), 'runs'),
+          scope.includeSchedules
+            ? withTimeout(this.operations.listSchedules(), 'schedules')
+            : Promise.resolve([]),
+          withTimeout(this.operations.listWaitpoints(), 'waitpoints'),
+          withTimeout(this.credentials.getWorkerStatus(credential.environmentId), 'workers'),
           credential.environment === 'dev' && credential.accessToken
-            ? this.operations.getDevPresence(
+            ? withTimeout(this.operations.getDevPresence(
                 credential.apiUrl,
                 credential.projectRef,
                 credential.accessToken
-              )
+              ), 'worker presence')
             : Promise.resolve(null)
         ]);
 
@@ -162,6 +199,8 @@ export class TriggerRuntimeStatusService {
       else errors.queues = errorMessage(queueSection.reason);
       if (runSection.status === 'fulfilled') runsResult = runSection.value;
       else errors.runs = errorMessage(runSection.reason);
+      if (scheduleSection.status === 'fulfilled') schedulesResult = scheduleSection.value;
+      else errors.schedules = errorMessage(scheduleSection.reason);
       if (waitpointSection.status === 'fulfilled') waitpointResult = waitpointSection.value;
       else errors.waitpoints = errorMessage(waitpointSection.reason);
       if (workerSection.status === 'fulfilled') {
@@ -189,6 +228,7 @@ export class TriggerRuntimeStatusService {
       (run) => run.tags.includes(tenantTag) || workflowRunIds.has(run.id)
     );
     waitpointResult = waitpointResult.filter((waitpoint) => waitpoint.tags.includes(tenantTag));
+    schedulesResult = filterSchedules(schedulesResult, scope);
 
     return {
       generatedAt: new Date().toISOString(),
@@ -206,6 +246,8 @@ export class TriggerRuntimeStatusService {
       },
       summary: {
         queueCount: queuesResult.length,
+        scheduleCount: schedulesResult.length,
+        activeScheduleCount: schedulesResult.filter((schedule) => schedule.active).length,
         queuedRuns: queuesResult.reduce((total, queue) => total + queue.queued, 0),
         runningRuns: queuesResult.reduce((total, queue) => total + queue.running, 0),
         waitingRuns: runsResult.filter((run) =>
@@ -216,6 +258,7 @@ export class TriggerRuntimeStatusService {
       },
       queues: queuesResult,
       runs: runsResult,
+      schedules: schedulesResult,
       waitpoints: waitpointResult,
       workers: workerRows,
       workflows
@@ -238,6 +281,27 @@ export function createTriggerRuntimeStatusOperations(): TriggerRuntimeStatusOper
           concurrencyLimit: queue.concurrency?.current ?? queue.concurrencyLimit
         });
         if (result.length >= MAX_QUEUES) break;
+      }
+      return result;
+    },
+    async listSchedules() {
+      const result: TriggerSchedule[] = [];
+      for await (const schedule of schedules.list({ perPage: 100 })) {
+        result.push({
+          id: schedule.id,
+          type: schedule.type,
+          task: schedule.task,
+          active: schedule.active,
+          cron: schedule.generator.expression,
+          description: schedule.generator.description,
+          timezone: schedule.timezone,
+          ...(schedule.nextRun ? { nextRunAt: schedule.nextRun.toISOString() } : {}),
+          ...(schedule.externalId ? { externalId: schedule.externalId } : {}),
+          ...(schedule.deduplicationKey
+            ? { deduplicationKey: schedule.deduplicationKey }
+            : {})
+        });
+        if (result.length >= MAX_SCHEDULES) break;
       }
       return result;
     },
@@ -271,6 +335,28 @@ export function createTriggerRuntimeStatusOperations(): TriggerRuntimeStatusOper
   };
 }
 
+function filterSchedules(
+  scheduleRows: TriggerSchedule[],
+  scope: TriggerRuntimeStatusScope
+) {
+  if (!scope.includeSchedules) return [];
+  const ids = new Set((scope.scheduleIds ?? []).filter(isNonEmptyString));
+  const externalIds = new Set((scope.scheduleExternalIds ?? []).filter(isNonEmptyString));
+  const deduplicationKeys = new Set(
+    (scope.scheduleDeduplicationKeys ?? []).filter(isNonEmptyString)
+  );
+  const taskIdentifiers = new Set((scope.taskIdentifiers ?? []).filter(isNonEmptyString));
+
+  return scheduleRows.filter((schedule) =>
+    ids.has(schedule.id) ||
+    (schedule.externalId ? externalIds.has(schedule.externalId) : false) ||
+    (schedule.deduplicationKey
+      ? deduplicationKeys.has(schedule.deduplicationKey)
+      : false) ||
+    (schedule.type === 'DECLARATIVE' && taskIdentifiers.has(schedule.task))
+  );
+}
+
 function tagField<Key extends string>(tags: string[], prefix: string, key: Key) {
   const value = tags.find((tag) => tag.startsWith(`${prefix}:`))?.slice(prefix.length + 1);
   return value ? ({ [key]: value } as Record<Key, string>) : {};
@@ -282,4 +368,23 @@ function isNonEmptyString(value: string | undefined): value is string {
 
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
+}
+
+function withTimeout<T>(promise: Promise<T>, section: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`Trigger.dev ${section} status timed out.`)),
+      STATUS_SECTION_TIMEOUT_MS
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
 }

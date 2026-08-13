@@ -1,0 +1,98 @@
+2026-08-13 21:09:38.074 CST [16804] LOG:  starting PostgreSQL 16.4, compiled by Visual C++ build 1940, 64-bit
+2026-08-13 21:09:38.075 CST [16804] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+2026-08-13 21:09:38.244 CST [6260] LOG:  database system was shut down at 2026-08-13 21:08:32 CST
+2026-08-13 21:09:38.333 CST [16804] LOG:  database system is ready to accept connections
+2026-08-13 21:09:39.474 CST [19892] FATAL:  role "Administrator" does not exist
+2026-08-13 21:11:08.984 CST [48548] ERROR:  Proposal content no longer matches the validated server candidate.
+2026-08-13 21:11:08.984 CST [48548] CONTEXT:  PL/pgSQL function apply_ai_page_proposal(uuid,text) line 32 at RAISE
+2026-08-13 21:11:08.984 CST [48548] STATEMENT:  select public.apply_ai_page_proposal($1, $2)
+2026-08-13 21:11:08.990 CST [48548] ERROR:  current transaction is aborted, commands ignored until end of transaction block
+2026-08-13 21:11:08.990 CST [48548] STATEMENT:  select public.apply_ai_page_proposal($1, $2) as result
+2026-08-13 21:11:54.034 CST [42488] ERROR:  Proposal content no longer matches the validated server candidate.
+2026-08-13 21:11:54.034 CST [42488] CONTEXT:  PL/pgSQL function apply_ai_page_proposal(uuid,text) line 32 at RAISE
+2026-08-13 21:11:54.034 CST [42488] STATEMENT:  select public.apply_ai_page_proposal($1, $2)
+2026-08-13 21:12:16.370 CST [16804] LOG:  received fast shutdown request
+2026-08-13 21:12:16.424 CST [16804] LOG:  aborting any active transactions
+2026-08-13 21:12:16.428 CST [16804] LOG:  background worker "logical replication launcher" (PID 23180) exited with exit code 1
+2026-08-13 21:12:16.428 CST [50656] LOG:  shutting down
+2026-08-13 21:12:16.458 CST [50656] LOG:  checkpoint starting: shutdown immediate
+2026-08-13 21:12:32.263 CST [50656] LOG:  checkpoint complete: wrote 231 buffers (1.4%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=15.529 s, total=15.835 s; sync files=202, longest=0.290 s, average=0.077 s; distance=1475 kB, estimate=1475 kB; lsn=0/16DE4E8, redo lsn=0/16DE4E8
+2026-08-13 21:12:32.283 CST [16804] LOG:  database system is shut down
+2026-08-13 21:14:44.745 CST [39992] LOG:  starting PostgreSQL 16.4, compiled by Visual C++ build 1940, 64-bit
+2026-08-13 21:14:44.745 CST [39992] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+2026-08-13 21:14:44.888 CST [41560] LOG:  database system was shut down at 2026-08-13 21:12:32 CST
+2026-08-13 21:14:44.985 CST [39992] LOG:  database system is ready to accept connections
+2026-08-13 21:14:46.827 CST [32328] ERROR:  Proposal content no longer matches the validated server candidate.
+2026-08-13 21:14:46.827 CST [32328] CONTEXT:  PL/pgSQL function apply_ai_page_proposal(uuid,text) line 32 at RAISE
+2026-08-13 21:14:46.827 CST [32328] STATEMENT:  select public.apply_ai_page_proposal($1, $2)
+2026-08-13 21:14:46.874 CST [39992] LOG:  received fast shutdown request
+2026-08-13 21:14:46.917 CST [39992] LOG:  aborting any active transactions
+2026-08-13 21:14:46.920 CST [39992] LOG:  background worker "logical replication launcher" (PID 48744) exited with exit code 1
+2026-08-13 21:14:46.920 CST [42316] LOG:  shutting down
+2026-08-13 21:14:46.937 CST [42316] LOG:  checkpoint starting: shutdown immediate
+2026-08-13 21:14:49.154 CST [42316] LOG:  checkpoint complete: wrote 135 buffers (0.8%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=2.094 s, total=2.235 s; sync files=124, longest=0.085 s, average=0.017 s; distance=795 kB, estimate=795 kB; lsn=0/17A5250, redo lsn=0/17A5250
+2026-08-13 21:14:49.159 CST [39992] LOG:  database system is shut down
+2026-08-13 21:15:59.552 CST [48968] LOG:  starting PostgreSQL 16.4, compiled by Visual C++ build 1940, 64-bit
+2026-08-13 21:15:59.552 CST [48968] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+2026-08-13 21:15:59.689 CST [46240] LOG:  database system was shut down at 2026-08-13 21:14:49 CST
+2026-08-13 21:15:59.795 CST [48968] LOG:  database system is ready to accept connections
+2026-08-13 21:16:01.834 CST [33088] ERROR:  Proposal content no longer matches the validated server candidate.
+2026-08-13 21:16:01.834 CST [33088] CONTEXT:  PL/pgSQL function apply_ai_page_proposal(uuid,text) line 32 at RAISE
+2026-08-13 21:16:01.834 CST [33088] STATEMENT:  select public.apply_ai_page_proposal($1, $2)
+2026-08-13 21:16:01.838 CST [33088] ERROR:  permission denied for schema auth at character 62
+2026-08-13 21:16:01.838 CST [33088] QUERY:  select $1 = '00000000-0000-4000-8000-000000000001'::uuid and auth.uid() in (
+	        '00000000-0000-4000-8000-000000000002'::uuid,
+	        '00000000-0000-4000-8000-000000000012'::uuid
+	      )
+2026-08-13 21:16:01.838 CST [33088] CONTEXT:  SQL function "is_active_account_member" during inlining
+2026-08-13 21:16:01.838 CST [33088] STATEMENT:  select id from public.ai_conversations
+2026-08-13 21:16:02.054 CST [48968] LOG:  received fast shutdown request
+2026-08-13 21:16:02.102 CST [48968] LOG:  aborting any active transactions
+2026-08-13 21:16:02.105 CST [48968] LOG:  background worker "logical replication launcher" (PID 34836) exited with exit code 1
+2026-08-13 21:16:02.105 CST [36860] LOG:  shutting down
+2026-08-13 21:16:02.135 CST [36860] LOG:  checkpoint starting: shutdown immediate
+2026-08-13 21:16:04.478 CST [36860] LOG:  checkpoint complete: wrote 122 buffers (0.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=2.216 s, total=2.373 s; sync files=122, longest=0.068 s, average=0.019 s; distance=729 kB, estimate=729 kB; lsn=0/185B948, redo lsn=0/185B948
+2026-08-13 21:16:04.483 CST [48968] LOG:  database system is shut down
+2026-08-13 21:17:25.437 CST [7476] LOG:  starting PostgreSQL 16.4, compiled by Visual C++ build 1940, 64-bit
+2026-08-13 21:17:25.437 CST [7476] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+2026-08-13 21:17:25.578 CST [42052] LOG:  database system was shut down at 2026-08-13 21:16:04 CST
+2026-08-13 21:17:25.679 CST [7476] LOG:  database system is ready to accept connections
+2026-08-13 21:17:27.764 CST [31804] ERROR:  Proposal content no longer matches the validated server candidate.
+2026-08-13 21:17:27.764 CST [31804] CONTEXT:  PL/pgSQL function apply_ai_page_proposal(uuid,text) line 32 at RAISE
+2026-08-13 21:17:27.764 CST [31804] STATEMENT:  select public.apply_ai_page_proposal($1, $2)
+2026-08-13 21:17:27.811 CST [7476] LOG:  received fast shutdown request
+2026-08-13 21:17:27.853 CST [7476] LOG:  aborting any active transactions
+2026-08-13 21:17:27.857 CST [7476] LOG:  background worker "logical replication launcher" (PID 27540) exited with exit code 1
+2026-08-13 21:17:27.867 CST [50672] LOG:  shutting down
+2026-08-13 21:17:27.898 CST [50672] LOG:  checkpoint starting: shutdown immediate
+2026-08-13 21:17:30.407 CST [50672] LOG:  checkpoint complete: wrote 124 buffers (0.8%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=2.383 s, total=2.541 s; sync files=123, longest=0.102 s, average=0.020 s; distance=782 kB, estimate=782 kB; lsn=0/191F2E8, redo lsn=0/191F2E8
+2026-08-13 21:17:30.413 CST [7476] LOG:  database system is shut down
+2026-08-13 21:30:09.463 CST [23380] LOG:  starting PostgreSQL 16.4, compiled by Visual C++ build 1940, 64-bit
+2026-08-13 21:30:09.463 CST [23380] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+2026-08-13 21:30:09.646 CST [23408] LOG:  database system was shut down at 2026-08-13 21:17:30 CST
+2026-08-13 21:30:09.851 CST [23380] LOG:  database system is ready to accept connections
+2026-08-13 21:30:09.941 CST [12656] FATAL:  role "Administrator" does not exist
+2026-08-13 21:30:20.785 CST [47596] ERROR:  Proposal content no longer matches the validated server candidate.
+2026-08-13 21:30:20.785 CST [47596] CONTEXT:  PL/pgSQL function apply_ai_page_proposal(uuid,text) line 32 at RAISE
+2026-08-13 21:30:20.785 CST [47596] STATEMENT:  select public.apply_ai_page_proposal($1, $2)
+2026-08-13 21:30:20.860 CST [23380] LOG:  received fast shutdown request
+2026-08-13 21:30:20.902 CST [23380] LOG:  aborting any active transactions
+2026-08-13 21:30:20.906 CST [23380] LOG:  background worker "logical replication launcher" (PID 14048) exited with exit code 1
+2026-08-13 21:30:20.906 CST [3812] LOG:  shutting down
+2026-08-13 21:30:20.926 CST [3812] LOG:  checkpoint starting: shutdown immediate
+2026-08-13 21:30:23.277 CST [3812] LOG:  checkpoint complete: wrote 137 buffers (0.8%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=2.217 s, total=2.372 s; sync files=124, longest=0.089 s, average=0.018 s; distance=806 kB, estimate=806 kB; lsn=0/19E8BD0, redo lsn=0/19E8BD0
+2026-08-13 21:30:23.283 CST [23380] LOG:  database system is shut down
+2026-08-13 22:14:33.917 CST [40012] LOG:  starting PostgreSQL 16.4, compiled by Visual C++ build 1940, 64-bit
+2026-08-13 22:14:33.918 CST [40012] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+2026-08-13 22:14:34.093 CST [32740] LOG:  database system was shut down at 2026-08-13 21:30:23 CST
+2026-08-13 22:14:34.306 CST [40012] LOG:  database system is ready to accept connections
+2026-08-13 22:14:38.092 CST [46596] ERROR:  Proposal content no longer matches the validated server candidate.
+2026-08-13 22:14:38.092 CST [46596] CONTEXT:  PL/pgSQL function apply_ai_page_proposal(uuid,text) line 32 at RAISE
+2026-08-13 22:14:38.092 CST [46596] STATEMENT:  select public.apply_ai_page_proposal($1, $2)
+2026-08-13 22:14:38.151 CST [40012] LOG:  received fast shutdown request
+2026-08-13 22:14:38.191 CST [40012] LOG:  aborting any active transactions
+2026-08-13 22:14:38.194 CST [40012] LOG:  background worker "logical replication launcher" (PID 31184) exited with exit code 1
+2026-08-13 22:14:38.195 CST [49300] LOG:  shutting down
+2026-08-13 22:14:38.224 CST [49300] LOG:  checkpoint starting: shutdown immediate
+2026-08-13 22:14:40.614 CST [49300] LOG:  checkpoint complete: wrote 145 buffers (0.9%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=2.266 s, total=2.420 s; sync files=124, longest=0.117 s, average=0.019 s; distance=825 kB, estimate=825 kB; lsn=0/1AB7308, redo lsn=0/1AB7308
+2026-08-13 22:14:40.620 CST [40012] LOG:  database system is shut down

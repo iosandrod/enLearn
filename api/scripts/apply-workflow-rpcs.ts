@@ -12,6 +12,7 @@ if (!rawConnectionString) {
 
 const migrationPaths = [
   '20260806120000_dynamic_crud_rpc.sql',
+  '20260813120000_dynamic_crud_incremental_details.sql',
   '20260806130000_workflow_publish_rpc.sql',
   '20260806140000_workflow_job_rpc.sql',
   '20260806150000_workflow_runtime_rpc.sql',

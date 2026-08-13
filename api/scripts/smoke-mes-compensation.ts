@@ -68,8 +68,8 @@ async function insertFixture(
     [locationId, actor.accountId, `MES Compensation Location ${suffix}`]
   );
   await client.query(
-    `insert into public.planning_item (id, account_id, name, uom)
-     values ($1, $2, $3, 'EA'), ($4, $2, $5, 'EA')`,
+    `insert into public.planning_item (id, account_id, name, display_name, uom)
+     values ($1, $2, $3, $3, 'EA'), ($4, $2, $5, $5, 'EA')`,
     [outputItemId, actor.accountId, `MES Compensation Output ${suffix}`,
       componentItemId, `MES Compensation Component ${suffix}`]
   );

@@ -90,6 +90,7 @@ import {
   computed,
   onBeforeUnmount,
   onMounted,
+  provide,
   reactive,
   ref,
   useAttrs,
@@ -226,6 +227,7 @@ const vxeFormRef = ref<VxeFormInstance<LowCodeFormModel>>();
 const formGridRef = ref<HTMLElement>();
 const formGridRowCount = ref(0);
 const formData = reactive<Record<string, unknown>>({ ...props.modelValue });
+provide('low-code-form-values', () => formData);
 const initialModel = ref<Record<string, unknown>>({ ...props.modelValue });
 const codeOptionSources = reactive<Record<string, unknown[]>>({});
 const fields = computed(() =>

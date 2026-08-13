@@ -121,36 +121,104 @@ runtime.ensureGrid('items-grid', { sourceKey: 'items', rowKey: 'id' });
 runtime.setSource('items', [
   { id: 1, name: 'Alpha' },
   { id: 2, name: 'Beta' },
-]);
+], { resetGridBaseline: true });
 
 const initialRows = runtime.state.grids['items-grid'].rows;
+runtime.setSource('items', [...initialRows, { id: 'new-1', name: 'Draft' }]);
+const draftRows = runtime.state.grids['items-grid'].rows;
+draftRows[2].name = 'Draft changed';
+assert.deepEqual(runtime.getGridChanges('items-grid'), {
+  created: [{ id: 'new-1', name: 'Draft changed' }],
+  updated: [],
+  deleted: [],
+}, 'Editing a newly added row must keep it exclusively in created.');
+runtime.setSource('items', draftRows.slice(0, 2));
+assert.deepEqual(runtime.getGridChanges('items-grid'), {
+  created: [],
+  updated: [],
+  deleted: [],
+}, 'Deleting a newly added row must remove it from the change set.');
+
+const persistedRows = runtime.state.grids['items-grid'].rows;
+persistedRows[0].name = 'Alpha changed';
+assert.deepEqual(runtime.getGridChanges('items-grid').updated, [
+  { id: 1, name: 'Alpha changed' },
+]);
+persistedRows[0].name = 'Alpha';
+assert.deepEqual(runtime.getGridChanges('items-grid'), {
+  created: [],
+  updated: [],
+  deleted: [],
+}, 'Restoring a persisted row to its baseline must clear its update state.');
+
+persistedRows[0].name = 'Alpha changed';
+runtime.setSource('items', [
+  persistedRows[0],
+  { id: 3, name: 'Gamma' },
+]);
+assert.deepEqual(runtime.getGridChanges('items-grid'), {
+  created: [{ id: 3, name: 'Gamma' }],
+  updated: [{ id: 1, name: 'Alpha changed' }],
+  deleted: [{ id: 2, name: 'Beta' }],
+});
+runtime.setGridRows('items-grid', [runtime.state.grids['items-grid'].rows[0]], {
+  sourceKey: 'items',
+  rowKey: 'id',
+});
+assert.deepEqual(runtime.getGridChanges('items-grid'), {
+  created: [{ id: 3, name: 'Gamma' }],
+  updated: [{ id: 1, name: 'Alpha changed' }],
+  deleted: [{ id: 2, name: 'Beta' }],
+}, 'Client-side grid filtering must not classify hidden source rows as deleted.');
+runtime.setSource('items', [
+  { id: 1, name: 'Alpha' },
+  { id: 2, name: 'Beta' },
+], { resetGridBaseline: true });
+assert.deepEqual(runtime.getGridChanges('items-grid'), {
+  created: [],
+  updated: [],
+  deleted: [],
+});
+runtime.ensureGrid('items-grid', { sourceKey: 'items', rowKey: 'code' });
+runtime.setSource('items', [{ code: 'A', name: 'Alpha by code' }]);
+assert.deepEqual(runtime.getGridChanges('items-grid'), {
+  created: [],
+  updated: [],
+  deleted: [],
+}, 'Changing the configured row key must establish a new baseline.');
+runtime.ensureGrid('items-grid', { sourceKey: 'items', rowKey: 'id' });
+runtime.setSource('items', [
+  { id: 1, name: 'Alpha' },
+  { id: 2, name: 'Beta' },
+], { resetGridBaseline: true });
+const resetRows = runtime.state.grids['items-grid'].rows;
 runtime.applyGridEvent('items-grid', {
   key: 'rowCurrentChange',
-  row: initialRows[0],
-  rawEvent: { newValue: initialRows[0] },
+  row: resetRows[0],
+  rawEvent: { newValue: resetRows[0] },
 });
 runtime.applyGridEvent('items-grid', {
   key: 'checkboxAll',
-  rawEvent: { records: () => [initialRows[0], initialRows[1]] },
+  rawEvent: { records: () => [resetRows[0], resetRows[1]] },
 });
 runtime.applyGridEvent('items-grid', {
   key: 'cellMenu',
-  row: initialRows[0],
+  row: resetRows[0],
   rawEvent: { column: { field: 'name' } },
 });
 
 const interactedGrid = runtime.state.grids['items-grid'];
 assert.equal(runtime.isGridInitialized('items-grid'), true);
-assert.equal(interactedGrid.currentRow, initialRows[0]);
-assert.deepEqual(interactedGrid.selectedRows, initialRows);
-assert.equal(interactedGrid.contextRow, initialRows[0]);
-assert.equal(interactedGrid.currentCell?.row, initialRows[0]);
+assert.equal(interactedGrid.currentRow, resetRows[0]);
+assert.deepEqual(interactedGrid.selectedRows, resetRows);
+assert.equal(interactedGrid.contextRow, resetRows[0]);
+assert.equal(interactedGrid.currentCell?.row, resetRows[0]);
 assert.equal(interactedGrid.currentCell?.field, 'name');
 
 runtime.setSource('items', [
   { id: 1, name: 'Alpha refreshed' },
   { id: 2, name: 'Beta refreshed' },
-]);
+], { resetGridBaseline: true });
 
 const refreshedGrid = runtime.state.grids['items-grid'];
 assert.equal(refreshedGrid.currentRow, refreshedGrid.rows[0]);
@@ -168,6 +236,22 @@ assert.equal(
   true,
   'A locally edited empty Grid must remain initialized across a same-page refresh.',
 );
+
+runtime.setSource('items', [
+  { id: 1, name: 'Alpha locally edited' },
+  { id: 2, name: 'Beta refreshed' },
+]);
+assert.equal(runtime.getGridChanges('items-grid').updated.length, 1);
+runtime.resetData({ preserveGrids: true, preserveLocalGridRows: false });
+runtime.setSource('items', [
+  { id: 1, name: 'Alpha reloaded' },
+  { id: 2, name: 'Beta reloaded' },
+], { resetGridBaseline: true });
+assert.deepEqual(runtime.getGridChanges('items-grid'), {
+  created: [],
+  updated: [],
+  deleted: [],
+}, 'Reloading a preserved Grid must discard the previous source baseline.');
 
 runtime.applyGridEvent('items-grid', {
   key: 'radioChange',
@@ -396,7 +480,7 @@ assert.match(
 
 assert.match(
   rendererSource,
-  /getSourceValue:[\s\S]*?setGridRows:[\s\S]*?setGridCurrentRow:[\s\S]*?validateGrid:/,
+  /getSourceValue:[\s\S]*?setGridRows:[\s\S]*?getGridChanges:[\s\S]*?setGridCurrentRow:[\s\S]*?validateGrid:/,
   'Grid node actions must receive source, row-selection, and validation adapters.',
 );
 

@@ -247,7 +247,7 @@ assert.deepEqual(
 );
 assert.deepEqual(
   catalog.nodes[1].children[1].methods.map((method) => method.method),
-  ['loadData', 'reloadData', 'validate', 'addRow', 'deleteCurrentRow'],
+  ['loadData', 'reloadData', 'getChanges', 'validate', 'addRow', 'deleteCurrentRow'],
 );
 assert.deepEqual(catalog.nodes[2].methods.map((method) => method.method), ['open']);
 assert.match(
@@ -257,6 +257,7 @@ assert.match(
 assert.equal(lowCodeNodeActionRegistry.grid.label, '表格');
 assert.equal(resolveLowCodeNodeAction('grid', 'loadData')?.executor, 'grid.loadData');
 assert.equal(resolveLowCodeNodeAction('grid', 'reloadData')?.executor, 'grid.reloadData');
+assert.equal(resolveLowCodeNodeAction('grid', 'getChanges')?.executor, 'grid.getChanges');
 assert.equal(resolveLowCodeNodeAction('grid', 'validate')?.executor, 'grid.validate');
 assert.equal(resolveLowCodeNodeAction('grid', 'addRow')?.executor, 'grid.addRow');
 assert.equal(
@@ -445,7 +446,7 @@ assert.match(
 );
 assert.match(
   gridActionSource,
-  /executeGridLoadDataNodeAction[^]*?executeGridReloadDataNodeAction[^]*?executeGridValidateNodeAction[^]*?executeGridAddRowNodeAction[^]*?executeGridDeleteCurrentRowNodeAction[^]*?gridNodeActionDefinition/,
+  /executeGridLoadDataNodeAction[^]*?executeGridReloadDataNodeAction[^]*?executeGridGetChangesNodeAction[^]*?executeGridValidateNodeAction[^]*?executeGridAddRowNodeAction[^]*?executeGridDeleteCurrentRowNodeAction[^]*?gridNodeActionDefinition/,
   'Grid methods must live in the grid node action module.',
 );
 assert.match(

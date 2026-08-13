@@ -17,6 +17,12 @@ type TestWorkflowService = {
   ) => Promise<unknown>>;
 };
 
+class WorkflowServiceProbe extends WorkflowService {
+  protected override async assertWorkflowPermission() {}
+
+  protected override async assertFrontendCommandTarget() {}
+}
+
 const delegatedCalls: Array<{ service: string; method: string; args: unknown[] }> = [];
 const delegate = (service: string, methods: string[]) => Object.fromEntries(
   methods.map((method) => [
@@ -27,7 +33,7 @@ const delegate = (service: string, methods: string[]) => Object.fromEntries(
     }
   ])
 );
-const service = new WorkflowService(
+const service = new WorkflowServiceProbe(
   delegate('definition', [
     'getModel',
     'saveModel',
@@ -51,7 +57,9 @@ const service = new WorkflowService(
   ]) as never,
   delegate('approvalConsole', ['listInstances', 'getInstanceDetail']) as never,
   delegate('job', ['createJob', 'getJob', 'updateJobStatus', 'runJob']) as never,
-  delegate('runtimeStatus', ['getStatus']) as never
+  delegate('runtimeStatus', ['getStatus']) as never,
+  delegate('taskConsole', ['getConsole', 'getDetail']) as never,
+  delegate('frontendCommand', ['startMessageLoop']) as never
 ) as unknown as TestWorkflowService;
 const resources = service.resources();
 const serviceContext = {
@@ -59,7 +67,7 @@ const serviceContext = {
   userId: '00000000-0000-4000-8000-000000000002'
 };
 
-class WorkflowCrudProbe extends WorkflowService {
+class WorkflowCrudProbe extends WorkflowServiceProbe {
   public calls: Array<{ method: string; postData: Record<string, unknown> }> = [];
   public existing: Record<string, unknown> | undefined;
 
@@ -92,7 +100,7 @@ assert.equal(typeof service.hooks().wf_task.afterAction, 'function');
 assert.equal(typeof service.listItemHandlers().nodeInstances, 'function');
 assert.equal(typeof service.listItemHandlers().tasks, 'function');
 
-class WorkflowJobRunProbe extends WorkflowService {
+class WorkflowJobRunProbe extends WorkflowServiceProbe {
   protected override async listItems(postData: Record<string, unknown>) {
     if (postData.resource === 'wf_job_run') {
       return [{
@@ -120,7 +128,9 @@ async function testJobRunReadModel() {
     delegate('runtimeJobRunProbe', []) as never,
     delegate('approvalJobRunProbe', []) as never,
     delegate('jobJobRunProbe', []) as never,
-    delegate('runtimeStatusJobRunProbe', []) as never
+    delegate('runtimeStatusJobRunProbe', []) as never,
+    delegate('taskConsoleJobRunProbe', []) as never,
+    delegate('frontendCommandJobRunProbe', []) as never
   ) as unknown as TestWorkflowService;
   const rows = await probe.listItemHandlers().jobRuns({}, serviceContext) as Array<Record<string, unknown>>;
   assert.deepEqual(rows[0], {
@@ -185,7 +195,9 @@ async function testDirectDelegation() {
     delegate('runtimeProbe', []) as never,
     delegate('approvalProbe', []) as never,
     delegate('jobProbe', []) as never,
-    delegate('runtimeStatusProbe', []) as never
+    delegate('runtimeStatusProbe', []) as never,
+    delegate('taskConsoleProbe', []) as never,
+    delegate('frontendCommandProbe', []) as never
   );
   crudProbe.existing = { id: 'model-1' };
   await crudProbe.execute('getModel', { modelId: 'model-1' }, serviceContext);
@@ -279,6 +291,20 @@ async function testDirectDelegation() {
     'task-1',
     { comment: 'Approved' }
   ]);
+
+  await service.execute('startFrontendCommandLoop', {
+    userId: 'target-user',
+    intervalSeconds: 10,
+    repeatCount: 6
+  }, serviceContext);
+  assert.deepEqual(delegatedCalls.pop(), {
+    service: 'frontendCommand',
+    method: 'startMessageLoop',
+    args: [
+      { userId: 'target-user', intervalSeconds: 10, repeatCount: 6 },
+      { accountId: serviceContext.accountId, userId: serviceContext.userId }
+    ]
+  });
 }
 
 void Promise.all([testDirectDelegation(), testJobRunReadModel()]).then(() => {

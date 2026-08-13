@@ -67,7 +67,7 @@
       </div>
 
       <slot
-        v-else-if="fieldsByKey[node.field]"
+        v-else-if="fieldsByKey[node.field] && isFieldVisible(fieldsByKey[node.field])"
         name="field"
         :field="fieldsByKey[node.field]"
       />
@@ -76,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { inject, reactive } from 'vue';
 import type {
   LowCodeField,
   LowCodeFormLayoutColumn,
@@ -92,11 +92,31 @@ defineProps<{
   fieldsByKey: Record<string, LowCodeField>;
 }>();
 
+const readInjectedFormValues = inject<() => Record<string, unknown>>(
+  'low-code-form-values',
+  () => ({})
+);
+
 defineSlots<{
   field(props: { field: LowCodeField }): unknown;
 }>();
 
 const activeTabKeys = reactive<Record<string, string>>({});
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isFieldVisible(field: LowCodeField) {
+  const condition = field.props?.visibleWhen;
+  if (!isRecord(condition) || typeof condition.field !== 'string') return true;
+  const value = readInjectedFormValues()[condition.field.trim()];
+  if (Array.isArray(condition.includes)) return condition.includes.includes(value);
+  if (Object.prototype.hasOwnProperty.call(condition, 'notEquals')) {
+    return value !== condition.notEquals;
+  }
+  return value === condition.equals;
+}
 
 function nodeKey(node: LowCodeFormLayoutNode, index: number) {
   return node.kind === 'field' ? `${node.field}-${index}` : `${node.kind}-${index}`;

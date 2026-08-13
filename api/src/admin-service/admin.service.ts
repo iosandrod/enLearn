@@ -579,7 +579,7 @@ export class AdminService extends BaseService {
             foreignKey: 'order_id',
             parentKey: 'id',
             inheritFields: ['account_id'],
-            updateMode: 'replace'
+            updateMode: 'changes'
           }
         },
         defaults: {
@@ -620,6 +620,10 @@ export class AdminService extends BaseService {
             (field) => field !== 'account_id' && field !== 'order_id'
           ),
           userFields: { updatedBy: 'updated_by' }
+        },
+        delete: {
+          allowedFields: [],
+          timestamp: false
         }
       },
       system_config: {

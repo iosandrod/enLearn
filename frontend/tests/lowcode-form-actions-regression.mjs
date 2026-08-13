@@ -27,7 +27,7 @@ assert.doesNotMatch(
 );
 assert.match(
   pageRendererSource,
-  /const requests = entries\.map\(\(\[key, source\]\) => \{[\s\S]*runtime\.setSource\(key, undefined\)[\s\S]*invokeDataSource\(key, source, true\)/,
+  /const refreshEntry = async \(\[key, source\][\s\S]*runtime\.setSource\(key, undefined\)[\s\S]*invokeDataSource\(key, source, true\)[\s\S]*Promise\.all\(entries\.map\(refreshEntry\)\)/,
   'Data-source refreshes must publish a distinct value transition before applying replacement rows.',
 );
 assert.match(

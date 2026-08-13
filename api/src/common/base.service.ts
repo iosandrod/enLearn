@@ -135,7 +135,7 @@ export type ResourceDetailRelation = {
   foreignKey: string;
   parentKey?: string;
   inheritFields?: string[];
-  updateMode?: 'replace';
+  updateMode?: 'replace' | 'changes';
 };
 
 export type ResourceAfterSaveRelation = {
@@ -1022,10 +1022,14 @@ export abstract class BaseService implements ServiceExecutor {
     type PreparedDetail = {
       resourceName: string;
       resource: ResourceConfig;
+      mode: 'replace' | 'changes';
+      primaryKey: string;
       foreignKey: string;
       parentKey: string;
       inheritFields: string[];
       payloads: Record<string, unknown>[];
+      updatePayloads: Array<{ id: string | number; data: Record<string, unknown> }>;
+      deleteIds: Array<string | number>;
     };
 
     type PreparedBatchItem = {
@@ -1050,9 +1054,9 @@ export abstract class BaseService implements ServiceExecutor {
         }
 
         const mode = this.readOptionalString(rawDetail.mode) || 'replace';
-        if (mode !== 'replace') {
+        if (mode !== 'replace' && mode !== 'changes') {
           throw new BadRequestException(
-            `Unsupported __details[${detailIndex}].mode: ${mode}. Only replace is supported.`
+            `Unsupported __details[${detailIndex}].mode: ${mode}.`
           );
         }
 
@@ -1076,8 +1080,8 @@ export abstract class BaseService implements ServiceExecutor {
         const resolved = this.tryResolveResource({
           resource: relation.resource ?? resourceName
         });
-        if (!resolved || !resolved.config.create) {
-          throw new BadRequestException(`Unsupported replace detail resource: ${resourceName}`);
+        if (!resolved) {
+          throw new BadRequestException(`Unsupported ${mode} detail resource: ${resourceName}`);
         }
         if (
           (resolved.config.clientMode ?? 'user') !==
@@ -1114,7 +1118,7 @@ export abstract class BaseService implements ServiceExecutor {
         const targetKey = `${resolved.name}:${foreignKey}:${parentKey}`;
         if (targets.has(targetKey)) {
           throw new BadRequestException(
-            `Duplicate replace target at __details[${detailIndex}]: ${resourceName}.${foreignKey}.`
+            `Duplicate detail target at __details[${detailIndex}]: ${resourceName}.${foreignKey}.`
           );
         }
         targets.add(targetKey);
@@ -1138,22 +1142,60 @@ export abstract class BaseService implements ServiceExecutor {
           this.assertIdentifier(field, `__details[${detailIndex}].inheritFields`)
         );
 
-        const allowedFields = resolved.config.create.allowedFields;
-        for (const managedField of [foreignKey, ...inheritFields]) {
-          if (allowedFields && !allowedFields.includes(managedField)) {
-            throw new BadRequestException(
-              `${managedField} is not writable on detail resource ${resourceName}.`
-            );
+        if (
+          mode === 'changes' &&
+          (rawDetail.inserts !== undefined ||
+            rawDetail.updates !== undefined ||
+            rawDetail.deletes !== undefined)
+        ) {
+          throw new BadRequestException(
+            `__details[${detailIndex}] must use created, updated, and deleted arrays.`
+          );
+        }
+        const rawCreates = mode === 'changes' ? rawDetail.created ?? [] : rawDetail.rows;
+        const rawUpdates = mode === 'changes' ? rawDetail.updated ?? [] : [];
+        const rawDeletes = mode === 'changes' ? rawDetail.deleted ?? [] : [];
+        const changeArrays: ReadonlyArray<readonly [string, unknown]> = mode === 'changes'
+          ? [
+              ['created', rawCreates],
+              ['updated', rawUpdates],
+              ['deleted', rawDeletes]
+            ]
+          : [['rows', rawCreates]];
+        for (const [name, value] of changeArrays) {
+          if (!Array.isArray(value)) {
+            throw new BadRequestException(`__details[${detailIndex}].${name} must be an array.`);
           }
         }
-
-        if (!Array.isArray(rawDetail.rows)) {
-          throw new BadRequestException(`__details[${detailIndex}].rows must be an array.`);
-        }
-        if (!rawDetail.rows.every((row) => this.isRecord(row))) {
+        if (!(rawCreates as unknown[]).every((row) => this.isRecord(row))) {
           throw new BadRequestException(
-            `Every item in __details[${detailIndex}].rows must be an object.`
+            `Every item in __details[${detailIndex}].${mode === 'changes' ? 'created' : 'rows'} must be an object.`
           );
+        }
+        if (!(rawUpdates as unknown[]).every((row) => this.isRecord(row))) {
+          throw new BadRequestException(
+            `Every item in __details[${detailIndex}].updated must be an object.`
+          );
+        }
+
+        if ((mode === 'replace' || (rawCreates as unknown[]).length > 0) && !resolved.config.create) {
+          throw new BadRequestException(`Detail resource ${resourceName} does not support create.`);
+        }
+        if (mode === 'changes' && (rawUpdates as unknown[]).length > 0 && !resolved.config.update) {
+          throw new BadRequestException(`Detail resource ${resourceName} does not support update.`);
+        }
+        if (mode === 'changes' && (rawDeletes as unknown[]).length > 0 && !resolved.config.delete) {
+          throw new BadRequestException(`Detail resource ${resourceName} does not support delete.`);
+        }
+        if (mode === 'replace' || (rawCreates as unknown[]).length > 0) {
+          const allowedFields = resolved.config.create?.allowedFields;
+          for (const managedField of [foreignKey, ...inheritFields]) {
+            if (allowedFields && !allowedFields.includes(managedField)) {
+              throw new BadRequestException(
+                `${managedField} is not writable on detail resource ${resourceName}.`
+              );
+            }
+          }
         }
 
         const detailContext: CrudContext = {
@@ -1169,27 +1211,105 @@ export abstract class BaseService implements ServiceExecutor {
           result: undefined,
           meta: {}
         };
-        await this.assertPermission(detailContext);
-        await this.assertPermission({ ...detailContext, action: 'delete' });
+        if (mode === 'replace' || (rawCreates as unknown[]).length > 0) {
+          await this.assertPermission(detailContext);
+        }
+        if (mode === 'replace' || (rawDeletes as unknown[]).length > 0) {
+          await this.assertPermission({ ...detailContext, action: 'delete' });
+        }
+        if (mode === 'changes' && (rawUpdates as unknown[]).length > 0) {
+          await this.assertPermission({ ...detailContext, action: 'update' });
+        }
 
+        const managedRelationFields = new Set([foreignKey, ...inheritFields]);
         const payloads = await Promise.all(
-          (rawDetail.rows as Record<string, unknown>[]).map(async (row, rowIndex) => {
+          (rawCreates as Record<string, unknown>[]).map(async (row, rowIndex) => {
             if (row.__details !== undefined) {
               throw new BadRequestException(
-                `Nested __details is not supported at __details[${detailIndex}].rows[${rowIndex}].`
+                `Nested __details is not supported at __details[${detailIndex}].created[${rowIndex}].`
               );
             }
-            return this.buildWritePayload(detailContext, 'create', row);
+            return this.buildWritePayload(
+              detailContext,
+              'create',
+              Object.fromEntries(
+                Object.entries(row).filter(([field]) => !managedRelationFields.has(field))
+              )
+            );
           })
         );
+        const detailPrimaryKey = this.primaryKey(resolved.config);
+        const updateIds = new Set<string>();
+        const updatePayloads = await Promise.all(
+          (rawUpdates as Record<string, unknown>[]).map(async (row, rowIndex) => {
+            if (row.__details !== undefined) {
+              throw new BadRequestException(
+                `Nested __details is not supported at __details[${detailIndex}].updated[${rowIndex}].`
+              );
+            }
+            const itemId = row[detailPrimaryKey] ?? row.id;
+            if (!this.isDetailRowIdentifier(itemId)) {
+              throw new BadRequestException(
+                `__details[${detailIndex}].updated[${rowIndex}].${detailPrimaryKey} is required.`
+              );
+            }
+            const identity = this.detailRowIdentity(itemId);
+            if (updateIds.has(identity)) {
+              throw new BadRequestException(
+                `Duplicate detail id at __details[${detailIndex}].updated[${rowIndex}]: ${String(itemId)}.`
+              );
+            }
+            updateIds.add(identity);
+            return {
+              id: itemId,
+              data: await this.buildWritePayload(
+                { ...detailContext, action: 'update' },
+                'update',
+                Object.fromEntries(
+                  Object.entries(row).filter(([field]) =>
+                    field !== detailPrimaryKey &&
+                    field !== 'id' &&
+                    !managedRelationFields.has(field)
+                  )
+                )
+              )
+            };
+          })
+        );
+        const seenDeleteIds = new Set<string>();
+        const deleteIds = (rawDeletes as unknown[]).map((item, rowIndex) => {
+          const itemId = this.isRecord(item) ? item[detailPrimaryKey] ?? item.id : item;
+          if (!this.isDetailRowIdentifier(itemId)) {
+            throw new BadRequestException(
+              `__details[${detailIndex}].deleted[${rowIndex}] must identify ${detailPrimaryKey}.`
+            );
+          }
+          const identity = this.detailRowIdentity(itemId);
+          if (seenDeleteIds.has(identity)) {
+            throw new BadRequestException(
+              `Duplicate detail id at __details[${detailIndex}].deleted[${rowIndex}]: ${String(itemId)}.`
+            );
+          }
+          if (updateIds.has(identity)) {
+            throw new BadRequestException(
+              `Detail id ${String(itemId)} cannot be both updated and deleted at __details[${detailIndex}].`
+            );
+          }
+          seenDeleteIds.add(identity);
+          return itemId;
+        });
 
         details.push({
           resourceName: resolved.name,
           resource: resolved.config,
+          mode,
+          primaryKey: detailPrimaryKey,
           foreignKey,
           parentKey,
           inheritFields,
-          payloads
+          payloads,
+          updatePayloads,
+          deleteIds
         });
       }
 
@@ -1230,7 +1350,7 @@ export abstract class BaseService implements ServiceExecutor {
       details = await prepareDetails(ctx.data);
       if (details.length && !id) {
         throw new BadRequestException(
-          'A single id is required when replacing detail rows.'
+          'A single id is required when saving detail rows.'
         );
       }
 
@@ -1249,11 +1369,18 @@ export abstract class BaseService implements ServiceExecutor {
     const serializeDetails = (items: PreparedDetail[]) =>
       items.map((detail) => ({
         resource: detail.resourceName,
-        mode: 'replace',
+        mode: detail.mode,
+        primary_key: detail.primaryKey,
         foreign_key: detail.foreignKey,
         parent_key: detail.parentKey,
         inherit_fields: detail.inheritFields,
-        rows: detail.payloads
+        ...(detail.mode === 'changes'
+          ? {
+              created: detail.payloads,
+              updated: detail.updatePayloads,
+              deleted: detail.deleteIds
+            }
+          : { rows: detail.payloads })
       }));
 
     return this.callDynamicCrudRpc(ctx, 'update', {
@@ -1930,6 +2057,17 @@ export abstract class BaseService implements ServiceExecutor {
 
   protected readOptionalString(value: unknown) {
     return typeof value === 'string' && value.trim() ? value.trim() : '';
+  }
+
+  protected isDetailRowIdentifier(value: unknown): value is string | number {
+    return (
+      (typeof value === 'string' && Boolean(value.trim())) ||
+      (typeof value === 'number' && Number.isFinite(value))
+    );
+  }
+
+  protected detailRowIdentity(value: string | number) {
+    return `${typeof value}:${String(value)}`;
   }
 
   protected readNumber(value: unknown, fallback = 0) {

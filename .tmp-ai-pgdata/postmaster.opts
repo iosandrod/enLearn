@@ -1,0 +1,1 @@
+C:/Program Files/PostgreSQL/16/bin/postgres.exe "-D" "E:/enLearn/.tmp-ai-pgdata" "-p" "55432" "-h" "127.0.0.1"

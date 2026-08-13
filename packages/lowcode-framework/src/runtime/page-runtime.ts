@@ -13,10 +13,27 @@ export type LowCodePageRuntimeGridCell = {
   field?: string;
 };
 
+export type LowCodeGridChangeSet = {
+  created: LowCodeRuntimeRecord[];
+  updated: LowCodeRuntimeRecord[];
+  deleted: LowCodeRuntimeRecord[];
+};
+
+export type LowCodeGridRowsOptions = {
+  sourceKey?: string;
+  rowKey?: string;
+  resetBaseline?: boolean;
+};
+
+export type LowCodeSourceValueOptions = {
+  resetGridBaseline?: boolean;
+};
+
 export type LowCodePageRuntimeGridState = {
   sourceKey?: string;
   rowKey: string;
   rows: LowCodeRuntimeRecord[];
+  changes: LowCodeGridChangeSet;
   currentRow: LowCodeRuntimeRecord | null;
   selectedRows: LowCodeRuntimeRecord[];
   contextRow: LowCodeRuntimeRecord | null;
@@ -88,7 +105,7 @@ export type LowCodePageRuntimeContext = {
   isGridInitialized(blockId: string): boolean;
   resetData(options?: LowCodePageRuntimeResetOptions): void;
   reset(): void;
-  setSource(key: string, value: unknown): void;
+  setSource(key: string, value: unknown, options?: LowCodeSourceValueOptions): void;
   replaceForm(blockId: string, values: LowCodeRuntimeRecord): void;
   patchForm(blockId: string, values: LowCodeRuntimeRecord): void;
   replaceSearch(sourceKey: string, values: LowCodeRuntimeRecord): void;
@@ -100,8 +117,9 @@ export type LowCodePageRuntimeContext = {
   setGridRows(
     blockId: string,
     rows: LowCodeRuntimeRecord[],
-    options?: { sourceKey?: string; rowKey?: string }
+    options?: LowCodeGridRowsOptions
   ): void;
+  getGridChanges(blockId: string): LowCodeGridChangeSet;
   setGridCurrentRow(blockId: string, row: LowCodeRuntimeRecord | null): void;
   setGridSelectedRows(blockId: string, rows: LowCodeRuntimeRecord[]): void;
   setGridContextRow(blockId: string, row: LowCodeRuntimeRecord | null): void;
@@ -131,6 +149,42 @@ function cloneRuntimeValue<T>(value: T): T {
     return JSON.parse(JSON.stringify(value)) as T;
   } catch {
     return value;
+  }
+}
+
+function emptyGridChanges(): LowCodeGridChangeSet {
+  return { created: [], updated: [], deleted: [] };
+}
+
+function gridRowIdentity(row: LowCodeRuntimeRecord, rowKey: string) {
+  const value = row[rowKey];
+  if (value === undefined || value === null || value === '') return '';
+  if (typeof value === 'object' || typeof value === 'function') return '';
+  return `${typeof value}:${String(value)}`;
+}
+
+function normalizeComparableValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(normalizeComparableValue);
+  if (!isRecord(value)) return value;
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => ![
+        '_X_ROW_KEY',
+        '__rowStatus',
+        '__rowState',
+      ].includes(key))
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, nested]) => [key, normalizeComparableValue(nested)]),
+  );
+}
+
+function gridRowsEqual(left: LowCodeRuntimeRecord, right: LowCodeRuntimeRecord) {
+  try {
+    return JSON.stringify(normalizeComparableValue(left)) ===
+      JSON.stringify(normalizeComparableValue(right));
+  } catch {
+    return false;
   }
 }
 
@@ -220,6 +274,66 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
   const formControllers = new Map<string, LowCodePageRuntimeFormController>();
   const gridControllers = new Map<string, LowCodePageRuntimeGridController>();
   const initializedGridIds = new Set<string>();
+  const gridBaselines = new Map<string, LowCodeRuntimeRecord[]>();
+
+  function calculateGridChanges(blockId: string) {
+    const grid = state.grids[blockId];
+    const baselineRows = gridBaselines.get(blockId);
+    if (!grid || !baselineRows) return emptyGridChanges();
+
+    const sourceValue = grid.sourceKey ? state.sources[grid.sourceKey] : undefined;
+    const currentRows = grid.sourceKey
+      ? Array.isArray(sourceValue)
+        ? sourceValue.filter(isRecord)
+        : isRecord(sourceValue) && Array.isArray(sourceValue.rows)
+          ? sourceValue.rows.filter(isRecord)
+          : grid.rows
+      : grid.rows;
+
+    const baselineByKey = new Map<string, LowCodeRuntimeRecord>();
+    for (const row of baselineRows) {
+      const identity = gridRowIdentity(row, grid.rowKey);
+      if (identity) baselineByKey.set(identity, row);
+    }
+
+    const currentKeys = new Set<string>();
+    const created: LowCodeRuntimeRecord[] = [];
+    const updated: LowCodeRuntimeRecord[] = [];
+    for (const row of currentRows) {
+      const identity = gridRowIdentity(row, grid.rowKey);
+      const baseline = identity ? baselineByKey.get(identity) : undefined;
+      if (!baseline) {
+        created.push(cloneRuntimeValue(row));
+        continue;
+      }
+      currentKeys.add(identity);
+      if (!gridRowsEqual(row, baseline)) updated.push(cloneRuntimeValue(row));
+    }
+
+    const deleted = baselineRows
+      .filter((row) => {
+        const identity = gridRowIdentity(row, grid.rowKey);
+        return Boolean(identity) && !currentKeys.has(identity);
+      })
+      .map((row) => cloneRuntimeValue(row));
+
+    return { created, updated, deleted };
+  }
+
+  function refreshGridChanges(blockId: string) {
+    const grid = state.grids[blockId];
+    if (!grid) return emptyGridChanges();
+    const changes = calculateGridChanges(blockId);
+    grid.changes.created = changes.created;
+    grid.changes.updated = changes.updated;
+    grid.changes.deleted = changes.deleted;
+    return changes;
+  }
+
+  function resetGridBaseline(blockId: string, rows: LowCodeRuntimeRecord[]) {
+    gridBaselines.set(blockId, cloneRuntimeValue(rows));
+    refreshGridChanges(blockId);
+  }
 
   function registerFormController(
     blockId: string,
@@ -251,18 +365,29 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
   ) {
     const existing = state.grids[blockId];
     if (existing) {
+      const previousSourceKey = existing.sourceKey;
+      const previousRowKey = existing.rowKey;
       if ('sourceKey' in options) {
         if (options.sourceKey) existing.sourceKey = options.sourceKey;
         else delete existing.sourceKey;
       }
       if (options.rowKey) existing.rowKey = options.rowKey;
+      if (
+        existing.sourceKey !== previousSourceKey ||
+        existing.rowKey !== previousRowKey
+      ) {
+        gridBaselines.delete(blockId);
+      }
       return existing;
     }
+
+    gridBaselines.delete(blockId);
 
     const grid = reactive<LowCodePageRuntimeGridState>({
       ...(options.sourceKey ? { sourceKey: options.sourceKey } : {}),
       rowKey: options.rowKey || 'id',
       rows: [],
+      changes: emptyGridChanges(),
       currentRow: null,
       selectedRows: [],
       contextRow: null,
@@ -279,6 +404,7 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
     if (sourceRows) {
       grid.rows = sourceRows.filter(isRecord);
       initializedGridIds.add(blockId);
+      resetGridBaseline(blockId, grid.rows);
     }
 
     return grid;
@@ -287,11 +413,16 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
   function setGridRows(
     blockId: string,
     rows: LowCodeRuntimeRecord[],
-    options: { sourceKey?: string; rowKey?: string } = {}
+    options: LowCodeGridRowsOptions = {}
   ) {
     const grid = ensureGrid(blockId, options);
     grid.rows = Array.isArray(rows) ? rows : [];
     initializedGridIds.add(blockId);
+    if (options.resetBaseline || !gridBaselines.has(blockId)) {
+      resetGridBaseline(blockId, grid.rows);
+    } else {
+      refreshGridChanges(blockId);
+    }
     reconcileGridRows(grid);
   }
 
@@ -354,6 +485,8 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
         row ? { row, ...(field ? { field } : {}) } : null
       );
     }
+
+    if (key === 'editClosed') refreshGridChanges(blockId);
   }
 
   function resetData(options: LowCodePageRuntimeResetOptions = {}) {
@@ -363,8 +496,18 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
     if (!options.preserveGrids) {
       clearRecord(state.grids);
       initializedGridIds.clear();
+      gridBaselines.clear();
     } else if (!options.preserveLocalGridRows) {
-      Object.keys(state.grids).forEach((blockId) => initializedGridIds.delete(blockId));
+      Object.keys(state.grids).forEach((blockId) => {
+        initializedGridIds.delete(blockId);
+        gridBaselines.delete(blockId);
+        const grid = state.grids[blockId];
+        if (grid) {
+          grid.changes.created = [];
+          grid.changes.updated = [];
+          grid.changes.deleted = [];
+        }
+      });
     }
     state.status.loadingSourceKeys = [];
   }
@@ -397,7 +540,7 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
     isGridInitialized: (blockId) => initializedGridIds.has(blockId),
     resetData,
     reset,
-    setSource(key, value) {
+    setSource(key, value, options = {}) {
       state.sources[key] = value;
 
       Object.entries(state.grids).forEach(([blockId, grid]) => {
@@ -410,7 +553,11 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
         setGridRows(
           blockId,
           rows.filter(isRecord),
-          { sourceKey: key, rowKey: grid.rowKey }
+          {
+            sourceKey: key,
+            rowKey: grid.rowKey,
+            resetBaseline: options.resetGridBaseline === true,
+          }
         );
       });
     },
@@ -435,6 +582,9 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
     },
     ensureGrid,
     setGridRows,
+    getGridChanges(blockId) {
+      return cloneRuntimeValue(refreshGridChanges(blockId));
+    },
     setGridCurrentRow,
     setGridSelectedRows,
     setGridContextRow,
@@ -442,6 +592,7 @@ export function createLowCodePageRuntime(): LowCodePageRuntimeContext {
     applyGridEvent,
     setSourceLoading,
     snapshot() {
+      Object.keys(state.grids).forEach(refreshGridChanges);
       return cloneRuntimeValue(state);
     },
   };

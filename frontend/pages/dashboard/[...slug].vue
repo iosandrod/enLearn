@@ -11,6 +11,7 @@
 
     <LowCodePageRenderer
       v-else-if="page"
+      ref="rendererRef"
       :page="page"
       :service-api="serviceApi"
       :router="router"
@@ -21,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import {
   getBuiltinLowCodePageByRoute,
   type LowCodeHostRoute,
@@ -32,6 +33,10 @@ import type {
 } from '@enlearn/lowcode-framework/types/lowcode';
 import { getLowCodePage } from '../../utils/lowCodePages';
 import { notifySystemSettingsChanged } from '../../composables/useSystemSettings';
+import {
+  clearAiPageContext,
+  setAiPageContext,
+} from '../../composables/useAiPageContext';
 
 const props = defineProps<{
   routePath: string;
@@ -46,6 +51,7 @@ const page = ref<LowCodePageRecord & { resolvedData?: Record<string, unknown> } 
 );
 const loading = ref(true);
 const errorMessage = ref('');
+const rendererRef = ref<{ getSnapshot?: () => unknown } | null>(null);
 
 function createPageRoute(): LowCodeHostRoute {
   return {
@@ -96,15 +102,22 @@ async function loadPage() {
       route: props.routePath,
       includeData: true
     });
+    await nextTick();
+    if (page.value) {
+      setAiPageContext(page.value, () => rendererRef.value?.getSnapshot?.());
+    }
   } catch (error) {
     const builtinPage = getBuiltinLowCodePageByRoute(props.routePath);
     if (builtinPage && isMissingLowCodePageError(error)) {
       page.value = builtinPage;
+      await nextTick();
+      setAiPageContext(page.value, () => rendererRef.value?.getSnapshot?.());
       loading.value = false;
       return;
     }
 
     page.value = null;
+    clearAiPageContext();
     errorMessage.value =
       error instanceof Error ? error.message : 'Could not load the page.';
   } finally {
@@ -124,4 +137,23 @@ watch(() => currentRoute.fullPath, () => {
 });
 
 onMounted(loadPage);
+
+function handleAiPageApplied(event: Event) {
+  const detail = (event as CustomEvent<Record<string, unknown> | undefined>).detail;
+  const appliedId = typeof detail?.id === 'string' ? detail.id : '';
+  const appliedRoute = typeof detail?.route === 'string' ? detail.route : '';
+  if (
+    (appliedId && appliedId === page.value?.id) ||
+    (appliedRoute && appliedRoute === props.routePath)
+  ) {
+    void loadPage();
+  }
+}
+
+onMounted(() => window.addEventListener('enlearn:ai-page-applied', handleAiPageApplied));
+
+onBeforeUnmount(() => {
+  window.removeEventListener('enlearn:ai-page-applied', handleAiPageApplied);
+  clearAiPageContext(page.value?.id);
+});
 </script>

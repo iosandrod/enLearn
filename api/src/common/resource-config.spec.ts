@@ -79,6 +79,14 @@ assert.deepEqual(createConfig.input_allowed_fields, roleResource.create?.allowed
 assert.ok((createConfig.allowed_fields as string[]).includes('created_at'));
 assert.ok((createConfig.allowed_fields as string[]).includes('created_by'));
 
+assert.equal(
+  adminResources.sales_orders.detailRelations?.sales_order_lines?.updateMode,
+  'changes'
+);
+assert.ok(adminResources.sales_order_lines.create);
+assert.ok(adminResources.sales_order_lines.update);
+assert.ok(adminResources.sales_order_lines.delete);
+
 const transactionalResources = [
   'admin_roles',
   'admin_routes',

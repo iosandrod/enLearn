@@ -31,10 +31,12 @@ async function bootstrap() {
 
   const env = getEnv();
   const port = Number(env.API_PORT ?? env.PORT ?? 3002);
+  const host = String(env.API_HOST ?? '').trim();
   registerChatSocket(app);
-  await app.listen(port);
+  if (host) await app.listen(port, host);
+  else await app.listen(port);
 
-  console.log(`Nest API listening on http://localhost:${port}/api/service`);
+  console.log(`Nest API listening on http://${host || 'localhost'}:${port}/api/service`);
 }
 
 void bootstrap();
