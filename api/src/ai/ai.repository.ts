@@ -36,6 +36,17 @@ function assertAiSchemaAvailable(error: { code?: string; message?: string } | nu
   );
 }
 
+function assertPersistedRow<T>(
+  data: T | null,
+  error: { code?: string; message?: string } | null,
+  missingMessage: string
+) {
+  assertAiSchemaAvailable(error);
+  if (error) throw new BadRequestException(error.message);
+  if (!data) throw new NotFoundException(missingMessage);
+  return data;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -152,12 +163,16 @@ export class AiRepository {
       metadata: options.metadata,
       createdAt: new Date().toISOString()
     };
-    const rows = this.messages.get(options.conversationId) ?? [];
-    rows.push(message);
-    this.messages.set(options.conversationId, rows.slice(-100));
-
     if (this.databaseAvailable) {
       const client = createSupabaseClient('admin', options.principal.context);
+      const { data: conversation, error: conversationError } = await client
+        .from('ai_conversations')
+        .select('id')
+        .eq('id', options.conversationId)
+        .eq('account_id', message.accountId)
+        .eq('created_by', options.principal.context.userId)
+        .maybeSingle();
+      assertPersistedRow(conversation, conversationError, 'AI conversation was not found.');
       const { error } = await client.from('ai_messages').insert({
         id: message.id,
         account_id: message.accountId,
@@ -168,9 +183,18 @@ export class AiRepository {
         metadata: message.metadata ?? {}
       });
       if (error && !this.fallback(error)) throw new BadRequestException(error.message);
-      await client.from('ai_conversations').update({ updated_at: message.createdAt })
-        .eq('id', options.conversationId).eq('account_id', message.accountId);
+      const { error: updateError } = await client
+        .from('ai_conversations')
+        .update({ updated_at: message.createdAt })
+        .eq('id', options.conversationId)
+        .eq('account_id', message.accountId)
+        .eq('created_by', options.principal.context.userId);
+      assertAiSchemaAvailable(updateError);
+      if (updateError) throw new BadRequestException(updateError.message);
     }
+    const rows = this.messages.get(options.conversationId) ?? [];
+    rows.push(message);
+    this.messages.set(options.conversationId, rows.slice(-100));
     return message;
   }
 
@@ -206,13 +230,18 @@ export class AiRepository {
   }) {
     if (!this.databaseAvailable) return;
     const client = createSupabaseClient('admin', options.principal.context);
-    const { error } = await client.from('ai_runs').update({
+    const { data, error } = await client.from('ai_runs').update({
       status: options.status,
       error_code: options.errorCode ?? null,
       error_message: options.errorMessage?.slice(0, 1000) ?? null,
       completed_at: new Date().toISOString()
-    }).eq('id', options.runId).eq('account_id', options.principal.context.accountId);
-    if (error && !this.fallback(error)) throw new BadRequestException(error.message);
+    })
+      .eq('id', options.runId)
+      .eq('account_id', options.principal.context.accountId)
+      .eq('created_by', options.principal.context.userId)
+      .select('id')
+      .maybeSingle();
+    assertPersistedRow(data, error, 'AI run was not found.');
   }
 
   async recordToolCall(options: {
@@ -261,7 +290,6 @@ export class AiRepository {
   }
 
   async saveProposal(principal: AiPrincipal, proposal: AiProposal) {
-    this.proposals.set(proposal.id, proposal);
     if (this.databaseAvailable) {
       const client = createSupabaseClient('admin', principal.context);
       const { error } = await client.from('ai_proposals').insert({
@@ -286,6 +314,7 @@ export class AiRepository {
       });
       if (error && !this.fallback(error)) throw new BadRequestException(error.message);
     }
+    this.proposals.set(proposal.id, proposal);
     return proposal;
   }
 
@@ -310,14 +339,23 @@ export class AiRepository {
   }
 
   async updateProposalStatus(principal: AiPrincipal, proposal: AiProposal, status: AiProposal['status']) {
-    const updated = this.rememberProposalStatus(proposal, status);
+    const updated: AiProposal = {
+      ...proposal,
+      status,
+      ...(status === 'applied' ? { appliedAt: new Date().toISOString() } : {})
+    };
     if (this.databaseAvailable) {
       const client = createSupabaseClient('admin', principal.context);
-      const { error } = await client.from('ai_proposals').update({
+      const { data, error } = await client.from('ai_proposals').update({
         status,
         applied_at: updated.appliedAt ?? null
-      }).eq('id', updated.id).eq('account_id', updated.accountId);
-      if (error && !this.fallback(error)) throw new BadRequestException(error.message);
+      })
+        .eq('id', updated.id)
+        .eq('account_id', updated.accountId)
+        .eq('created_by', principal.context.userId)
+        .select('id')
+        .maybeSingle();
+      assertPersistedRow(data, error, 'AI proposal was not found.');
       if (status === 'rejected') {
         const { error: auditError } = await client.from('ai_audit_events').insert({
           account_id: proposal.accountId,
@@ -331,6 +369,7 @@ export class AiRepository {
         }
       }
     }
+    this.proposals.set(updated.id, updated);
     return updated;
   }
 
@@ -407,5 +446,6 @@ export class AiRepository {
 export const aiRepositoryInternals = {
   isMissingAiSchema,
   resolveAiPersistenceMode,
-  assertAiSchemaAvailable
+  assertAiSchemaAvailable,
+  assertPersistedRow
 };

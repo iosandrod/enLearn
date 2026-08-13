@@ -42,6 +42,9 @@ function normalizeBaseUrl(value: string) {
   } catch {
     throw new ServiceUnavailableException('AI_BASE_URL must be a valid absolute URL.');
   }
+  if (url.username || url.password) {
+    throw new ServiceUnavailableException('AI_BASE_URL must not include embedded credentials.');
+  }
   const allowInsecure = String(getEnv().AI_ALLOW_INSECURE_BASE_URL ?? '').trim() === '1';
   const isLoopback = ['localhost', '127.0.0.1', '::1'].includes(url.hostname);
   if (url.protocol !== 'https:' && !(allowInsecure && isLoopback)) {
@@ -187,3 +190,9 @@ export class OpenAiCompatibleProvider implements AiProvider {
     return { content, toolCalls, usage };
   }
 }
+
+export const openAiCompatibleProviderInternals = {
+  normalizeBaseUrl,
+  providerErrorText,
+  readArguments
+};

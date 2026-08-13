@@ -55,6 +55,26 @@ function inferBuiltin(message: string) {
   return { key: 'page.refresh', label: '刷新' };
 }
 
+function inferButtonLabel(message: string, fallback: string) {
+  const named = message.match(
+    /(?:名为|叫做|名称(?:是|为)|名字(?:是|为))\s*[“"'「『]?([^“”"'「」『』，,。；;！？!?\r\n]{1,30}?)[”"'」』]?\s*(?:的)?按钮/u
+  );
+  const direct = message.match(
+    /(?:添加|新增|创建|增加)\s*(?:一个|个)?\s*[“"'「『]?([^“”"'「」『』，,。；;！？!?\r\n]{1,30}?)[”"'」』]?\s*按钮/u
+  );
+  const label = (named?.[1] ?? direct?.[1] ?? '')
+    .trim()
+    .replace(/^(?:名为|叫做)\s*/, '')
+    .replace(/\s*(?:的)?$/, '');
+  return label && !['一', '一个', '个'].includes(label) ? label : fallback;
+}
+
+function inferButtonCode(label: string, builtin: { key: string; label: string }) {
+  if (label === builtin.label) return undefined;
+  const slug = slugify(label, 'custom');
+  return `${slug}-${builtin.key.replace(/[^a-z0-9]+/gi, '-')}`.slice(0, 80);
+}
+
 function writeDelta(request: AiProviderRequest, content: string) {
   for (const chunk of content.match(/.{1,12}/gs) ?? []) request.onDelta(chunk);
 }
@@ -112,11 +132,14 @@ export class MockAiProvider implements AiProvider {
 
     if (request.mode === 'generate_button') {
       const builtin = inferBuiltin(userMessage);
+      const label = inferButtonLabel(userMessage, builtin.label);
+      const code = inferButtonCode(label, builtin);
       return toolCall('proposal.create_button', {
         blockId: undefined,
         builtinKey: builtin.key,
-        label: builtin.label,
-        summary: `新增“${builtin.label}”按钮`
+        ...(code ? { code } : {}),
+        label,
+        summary: `新增“${label}”按钮`
       });
     }
 
@@ -151,4 +174,3 @@ export class MockAiProvider implements AiProvider {
     return { content, toolCalls: [] };
   }
 }
-

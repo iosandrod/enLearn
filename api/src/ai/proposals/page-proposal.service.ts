@@ -152,6 +152,10 @@ function findOrCreateButtonGroup(schema: Record<string, unknown>, preferredBlock
   return block;
 }
 
+function resolveButtonGroupId(schema: Record<string, unknown>, preferredBlockId?: string) {
+  return readString(findOrCreateButtonGroup(schema, preferredBlockId).id);
+}
+
 function applyOperations(base: Record<string, unknown>, operations: AiProposalOperation[]) {
   const schema = clone(base);
   for (const operation of operations) {
@@ -378,8 +382,12 @@ export class PageProposalService {
     if (!preset) throw new BadRequestException('Unsupported built-in button action.');
     const page = await this.readCurrentPage(context);
     assertBuiltinForPage(preset, page.schema as Record<string, unknown>);
-    const blockId = readString(args.blockId ?? context.selection?.blockId);
-    assertTargetButtonGroup(page.schema as Record<string, unknown>, blockId || undefined);
+    const requestedBlockId = readString(args.blockId ?? context.selection?.blockId);
+    assertTargetButtonGroup(page.schema as Record<string, unknown>, requestedBlockId || undefined);
+    const blockId = resolveButtonGroupId(
+      page.schema as Record<string, unknown>,
+      requestedBlockId || undefined
+    );
     const action = {
       code: readString(args.code) || preset.code,
       label: readString(args.label) || preset.label,
@@ -390,7 +398,7 @@ export class PageProposalService {
     };
     return this.createForPage(context, page, 'create_button', [{
       type: 'upsertButtonAction',
-      ...(blockId ? { blockId } : {}),
+      blockId,
       action
     }], readString(args.summary) || `新增“${action.label}”按钮`);
   }
@@ -639,5 +647,6 @@ export const pageProposalInternals = {
   schemaHash,
   proposalContentHash,
   builtinScript,
-  buildDiff
+  buildDiff,
+  resolveButtonGroupId
 };

@@ -44,6 +44,18 @@ try {
 
   const toolbar = page.getByRole('toolbar', { name: '画布工具' });
   await toolbar.waitFor({ state: 'visible' });
+  const fileActions = page.getByRole('group', { name: '流程文件操作' });
+  await fileActions.waitFor({ state: 'visible' });
+  for (const label of ['新建流程', '保存流程', '加载流程']) {
+    await fileActions.getByRole('button', { name: label, exact: true }).waitFor({ state: 'visible' });
+  }
+  await fileActions.getByRole('button', { name: '新建流程', exact: true }).click();
+  await fileActions.getByRole('button', { name: '保存流程', exact: true }).click();
+  await fileActions.getByRole('button', { name: '加载流程', exact: true }).click();
+  assert.deepEqual(
+    await page.evaluate(() => window.__triggerWorkflowCanvasSmoke.emittedActions()),
+    ['new-workflow', 'save-workflow', 'load-workflow'],
+  );
   const toolbarBox = await toolbar.boundingBox();
   const canvasBox = await page.locator('.trigger-editor__canvas').boundingBox();
   assert.ok(toolbarBox && canvasBox);

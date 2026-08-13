@@ -79,6 +79,9 @@ const emit = defineEmits<{
   validation: [issues: TriggerWorkflowIssue[]];
   compile: [value: ReturnType<typeof compileTriggerWorkflow>];
   export: [value: TriggerWorkflowModel];
+  'new-workflow': [];
+  'save-workflow': [];
+  'load-workflow': [];
   save: [];
   restore: [];
   copy: [];
@@ -895,6 +898,18 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
         </div>
       </div>
 
+      <div class="trigger-editor__file-actions" role="group" aria-label="流程文件操作">
+        <button type="button" :disabled="busy || readonly" @click="emit('new-workflow')">
+          <i class="ri-file-add-line" aria-hidden="true" />新建流程
+        </button>
+        <button type="button" :disabled="busy || readonly" @click="emit('save-workflow')">
+          <i class="ri-save-3-line" aria-hidden="true" />保存流程
+        </button>
+        <button type="button" :disabled="busy" @click="emit('load-workflow')">
+          <i class="ri-folder-open-line" aria-hidden="true" />加载流程
+        </button>
+      </div>
+
       <div class="trigger-editor__kind" role="tablist" aria-label="工作流类型">
         <button
           v-for="option in kindOptions"
@@ -909,8 +924,8 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
       </div>
 
       <div class="trigger-editor__actions">
-        <button type="button" title="保存草稿" aria-label="保存草稿" @click="emit('save')"><i class="ri-save-3-line" /></button>
-        <button type="button" title="恢复草稿" aria-label="恢复草稿" @click="emit('restore')"><i class="ri-history-line" /></button>
+        <button type="button" title="保存本地草稿" aria-label="保存本地草稿" @click="emit('save')"><i class="ri-save-3-line" /></button>
+        <button type="button" title="恢复本地草稿" aria-label="恢复本地草稿" @click="emit('restore')"><i class="ri-history-line" /></button>
         <button type="button" title="复制工作流 JSON" aria-label="复制工作流 JSON" @click="emit('copy')"><i class="ri-file-copy-line" /></button>
         <span class="trigger-editor__action-divider" />
         <button type="button" title="导出工作流" aria-label="导出工作流" @click="exportModel"><i class="ri-download-line" /></button>
@@ -1236,11 +1251,16 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
   color: #111827 !important;
 }
 
+.trigger-editor__file-actions,
 .trigger-editor__actions,
 .trigger-editor__form-actions {
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+.trigger-editor__file-actions {
+  flex: 1 1 260px;
 }
 
 .trigger-editor__actions {
@@ -1250,6 +1270,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
   margin-left: auto;
 }
 
+.trigger-editor__file-actions button,
 .trigger-editor__actions button,
 .trigger-editor__form-actions button,
 .trigger-editor__templates button,
@@ -1265,6 +1286,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
   padding: 4px 8px;
 }
 
+.trigger-editor__file-actions button,
 .trigger-editor__actions button,
 .trigger-editor__danger {
   display: inline-flex;
@@ -1279,6 +1301,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
   padding: 4px;
 }
 
+.trigger-editor__file-actions button i,
 .trigger-editor__actions button i,
 .trigger-editor__danger i {
   font-size: 14px;
@@ -1291,6 +1314,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
   background: #dde3eb;
 }
 
+.trigger-editor__file-actions button:disabled,
 .trigger-editor__actions button:disabled,
 .trigger-editor button:disabled {
   cursor: not-allowed;
@@ -1719,6 +1743,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
   }
 
   .trigger-editor__identity,
+  .trigger-editor__file-actions,
   .trigger-editor__kind,
   .trigger-editor__actions {
     flex-basis: 100%;

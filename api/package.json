@@ -161,7 +161,7 @@
     "workflow:smoke:frontend-command-trigger": "tsx scripts/smoke-frontend-command-trigger.ts",
     "test:detail-changes": "tsx src/common/detail-changes.spec.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:ai": "tsx src/ai/ai-module.spec.ts && tsx src/ai/ai-repository.spec.ts && tsx src/ai/ai-context.spec.ts && tsx src/ai/ai-run-registry.spec.ts && tsx src/ai/ai-orchestrator.spec.ts && tsx src/ai/tools/ai-tool-registry.spec.ts && tsx src/ai/proposals/page-proposal.spec.ts && tsx scripts/ai-assistant-migration.spec.ts",
+    "test:ai": "tsx src/ai/ai-module.spec.ts && tsx src/ai/ai-repository.spec.ts && tsx src/ai/ai-context.spec.ts && tsx src/ai/ai-run-registry.spec.ts && tsx src/ai/ai-orchestrator.spec.ts && tsx src/ai/provider/mock.provider.spec.ts && tsx src/ai/provider/openai-compatible.provider.spec.ts && tsx src/ai/tools/ai-tool-registry.spec.ts && tsx src/ai/proposals/page-proposal.spec.ts && tsx scripts/ai-assistant-migration.spec.ts",
     "test:ai:db": "tsx scripts/ai-assistant-local-db-smoke.ts"
   },
   "dependencies": {

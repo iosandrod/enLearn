@@ -38,8 +38,64 @@ const runtimeAction = (synced.blocks as Array<Record<string, unknown>>)[0].actio
 assert.equal(runtimeAction[0].code, 'refresh');
 const visualPages = (synced.visualEditor as Record<string, any>).pages;
 assert.equal(visualPages['/'].blocks[0].props.buttons[0].code, 'refresh');
-
+assert.equal(
+  pageProposalInternals.resolveButtonGroupId(base),
+  'actions',
+  'button proposals must record their resolved target group explicitly'
+);
 const validator = new PageProposalValidator();
+const salesOrderSchema = {
+  ...base,
+  code: 'sales-orders',
+  route: '/dashboard/sales/orders',
+  title: '销售订单',
+  dataSources: {
+    salesOrders: {
+      key: 'salesOrders',
+      serviceName: 'admin',
+      serviceMethod: 'listItems',
+      tableName: 'sales_orders'
+    }
+  },
+  blocks: [
+    { id: 'sales-order-actions', kind: 'buttonGroup', actions: [] },
+    {
+      id: 'sales-order-grid',
+      kind: 'grid',
+      sourceKey: 'salesOrders',
+      schema: { grid: { columns: [{ field: 'id', title: 'ID' }] } }
+    }
+  ]
+};
+const salesOrderButtonOperation = {
+  type: 'upsertButtonAction' as const,
+  blockId: pageProposalInternals.resolveButtonGroupId(salesOrderSchema),
+  action: {
+    code: 'custom-record-edit',
+    label: '测试',
+    type: 'button',
+    prefixIcon: 'ri-edit-line',
+    eventName: 'buttonGroup.custom-record-edit',
+    script: pageProposalInternals.builtinScript('edit')
+  }
+};
+const salesOrderCandidate = pageProposalInternals.applyOperations(
+  salesOrderSchema,
+  [salesOrderButtonOperation]
+);
+const salesOrderGroup = (salesOrderCandidate.blocks as Array<Record<string, unknown>>)[0];
+const salesOrderAction = (salesOrderGroup.actions as Array<Record<string, unknown>>)[0];
+assert.equal(salesOrderButtonOperation.blockId, 'sales-order-actions');
+assert.equal(salesOrderAction.label, '测试');
+assert.match(String(salesOrderAction.script), /name: "edit"/);
+assert.equal(
+  validator.validate(salesOrderCandidate, 1, [], salesOrderSchema).issues.some(
+    (issue) => issue.level === 'error'
+  ),
+  false,
+  'the sales-order edit button candidate must pass deterministic validation'
+);
+
 const validResult = validator.validate(synced, 1, []);
 assert.equal(validResult.issues.some((issue) => issue.level === 'error'), false);
 

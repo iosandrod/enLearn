@@ -13,6 +13,8 @@
 /artifacts/.mes-*.mjs
 /artifacts/.mes-*.tmp
 /artifacts/mes-*.log
+/.tmp-ai-pgdata/
+/.tmp-ai-postgres.log
 # nuxt
 /nuxt-app/.nuxt/
 /nuxt-app/.output/
@@ -65,3 +67,7 @@ frontend/dist/index.html
 /api/.trigger/**
 api/.trigger/tmp/**/*
 /.codex-server-logs/**
+
+.tmp-ai-pgdata/**/*
+/.tmp-ai-pgdata
+**/.tmp-ai-pgdata

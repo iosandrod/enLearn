@@ -46,6 +46,7 @@
       } from '@enlearn/trigger-workflow-editor';
 
       const model = ref(createApprovalTriggerWorkflow());
+      const emittedActions = [];
       const databaseWebhookSchema = createTriggerNodeFormSchema({
         id: 'database-webhook',
         type: 'webhook',
@@ -60,6 +61,9 @@
             height: '820px',
             nodeFormSchemas: { webhook: databaseWebhookSchema },
             'onUpdate:modelValue': (value) => { model.value = value; },
+            onNewWorkflow: () => emittedActions.push('new-workflow'),
+            onSaveWorkflow: () => emittedActions.push('save-workflow'),
+            onLoadWorkflow: () => emittedActions.push('load-workflow'),
           });
         },
       });
@@ -75,6 +79,9 @@
         },
         replace(value) {
           model.value = JSON.parse(JSON.stringify(value));
+        },
+        emittedActions() {
+          return [...emittedActions];
         },
       };
 

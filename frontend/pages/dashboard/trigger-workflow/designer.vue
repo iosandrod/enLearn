@@ -11,7 +11,10 @@
       @validation="issues = $event"
       @compile="compiledPlan = $event"
       @export="exportedModel = $event"
-      @save="saveDraft"
+      @new-workflow="newWorkflow"
+      @save-workflow="saveWorkflow"
+      @load-workflow="loadWorkflow"
+      @save="saveLocalDraft"
       @restore="loadDraft"
       @copy="copyModel"
       @enable="createFrontendCommandJob"
@@ -24,12 +27,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, shallowRef } from 'vue';
 import { VxeUI } from 'vxe-pc-ui';
+import { confirmLowCodePage } from '@enlearn/lowcode-framework/runtime';
 import {
   TRIGGER_EDGE_FORM_SCHEMA_CODE,
   TriggerWorkflowEditor,
   TRIGGER_WORKFLOW_SCHEMA_VERSION,
   assertTriggerInspectorFormSchema,
   createApprovalTriggerWorkflow,
+  normalizeTriggerWorkflow,
   triggerInspectorNodeTypes,
   triggerNodeFormSchemaCodeByType,
   type TriggerInspectorFormSchema,
@@ -46,8 +51,13 @@ const storageKey = computed(() =>
 );
 const demoJobCode = 'frontend_command_message_10s';
 const demoTaskId = 'frontend.command.message.loop';
+const triggerWorkflowDocumentType = 'trigger-workflow';
+const workflowModelListPageCode = 'trigger-workflow-models';
 const serviceApi = useServiceApi();
+const route = useRoute();
+const router = useRouter();
 const model = ref<TriggerWorkflowModel>(createApprovalTriggerWorkflow());
+const savedModelId = ref('');
 const issues = ref<TriggerWorkflowIssue[]>([]);
 const compiledPlan = ref<TriggerWorkflowExecutionPlan | undefined>();
 const exportedModel = ref<TriggerWorkflowModel | undefined>();
@@ -122,9 +132,9 @@ async function loadInspectorSchemas() {
   }
 }
 
-function saveDraft() {
-  window.localStorage.setItem(storageKey.value, JSON.stringify(model.value, null, 2));
-  notify('草稿已保存。', 'success');
+function saveLocalDraft() {
+  persistLocalWorkflow(model.value);
+  notify('本地草稿已保存。', 'success');
 }
 
 function loadDraft() {
@@ -132,6 +142,7 @@ function loadDraft() {
   if (!saved) return false;
   try {
     model.value = JSON.parse(saved) as TriggerWorkflowModel;
+    savedModelId.value = readSavedModelId(model.value);
     notify('已恢复本地草稿。', 'success');
     return true;
   } catch {
@@ -146,11 +157,94 @@ async function copyModel() {
   notify('工作流 JSON 已复制。', 'success');
 }
 
+async function newWorkflow() {
+  const confirmed = await VxeUI.modal.confirm({
+    title: '新建流程',
+    content: '确定新建空白流程吗？当前未保存的修改将被清除。',
+    confirmButtonText: '新建'
+  });
+  if (confirmed !== 'confirm') return;
+
+  savedModelId.value = '';
+  model.value = createBlankWorkflowModel();
+  persistLocalWorkflow(model.value);
+  notify('已新建空白流程。', 'success');
+}
+
+async function saveWorkflow() {
+  if (isJobBusy.value) return;
+  isJobBusy.value = true;
+  try {
+    const saved = await workflowApi<WorkflowModelRecord>(
+      savedModelId.value ? 'updateModel' : 'saveModel',
+      {
+        ...(savedModelId.value ? { modelId: savedModelId.value } : {}),
+        code: model.value.code,
+        name: model.value.name,
+        documentType: triggerWorkflowDocumentType,
+        schema: model.value
+      }
+    );
+    savedModelId.value = saved.id;
+    model.value = { ...model.value, id: saved.id };
+    persistLocalWorkflow(model.value);
+    notify(`流程“${saved.name}”已保存。`, 'success');
+  } catch (error) {
+    notify(error instanceof Error ? error.message : '流程保存失败。', 'error');
+  } finally {
+    isJobBusy.value = false;
+  }
+}
+
+async function loadWorkflow() {
+  if (isJobBusy.value) return;
+  isJobBusy.value = true;
+  try {
+    const result = await confirmLowCodePage({
+      pageCode: workflowModelListPageCode,
+      includeData: true,
+      serviceApi: serviceApi as Parameters<typeof confirmLowCodePage>[0]['serviceApi'],
+      router: router as Parameters<typeof confirmLowCodePage>[0]['router'],
+      route: route as Parameters<typeof confirmLowCodePage>[0]['route'],
+      locale: 'zh-CN',
+      title: '加载流程',
+      confirmLabel: '加载',
+      cancelLabel: '取消',
+      requireSelection: true,
+      dialog: {
+        id: 'trigger-workflow-picker-dialog'
+      }
+    });
+    if (result.action === 'cancel' || result.action === 'close') return;
+
+    const selected = readSelectedWorkflow(result.payload);
+    if (!selected) {
+      notify('请先选择要加载的流程。', 'warning');
+      return;
+    }
+    const saved = await workflowApi<WorkflowModelRecord>('getModel', {
+      modelId: selected.id
+    });
+    if (saved.documentType !== triggerWorkflowDocumentType) {
+      throw new Error('所选记录不是触发器编排流程。');
+    }
+    model.value = { ...readWorkflowSchema(saved.draftSchema), id: saved.id };
+    savedModelId.value = saved.id;
+    persistLocalWorkflow(model.value);
+    notify(`已加载流程“${saved.name}”。`, 'success');
+  } catch (error) {
+    notify(error instanceof Error ? error.message : '流程加载失败。', 'error');
+  } finally {
+    isJobBusy.value = false;
+  }
+}
+
 async function createFrontendCommandJob() {
   isJobBusy.value = true;
   try {
+    savedModelId.value = '';
     model.value = createFrontendCommandWorkflowModel();
-    saveDraft();
+    saveLocalDraft();
 
     await refreshFrontendCommandJob();
     let job = demoJob.value;
@@ -302,6 +396,71 @@ function createFrontendCommandWorkflowModel(): TriggerWorkflowModel {
   };
 }
 
+function createBlankWorkflowModel(): TriggerWorkflowModel {
+  const suffix = Date.now().toString(36);
+  return {
+    schemaVersion: TRIGGER_WORKFLOW_SCHEMA_VERSION,
+    code: `trigger_workflow_${suffix}`,
+    name: '未命名流程',
+    kind: 'custom',
+    nodes: [
+      {
+        id: 'start',
+        type: 'start',
+        name: '开始',
+        position: { x: 380, y: 40 }
+      },
+      {
+        id: 'end',
+        type: 'end',
+        name: '结束',
+        position: { x: 380, y: 360 }
+      }
+    ],
+    edges: [
+      { id: 'edge_start_end', source: 'start', target: 'end' }
+    ]
+  };
+}
+
+function readSelectedWorkflow(payload: unknown): WorkflowModelListRow | null {
+  if (!isRecord(payload)) return null;
+  const row = [
+    payload.row,
+    payload.selectedRow,
+    payload.currentRow,
+    Array.isArray(payload.selectedRows) ? payload.selectedRows[0] : undefined,
+    Array.isArray(payload.rows) ? payload.rows[0] : undefined
+  ].find(isRecord);
+  if (!row || typeof row.id !== 'string' || !row.id.trim()) return null;
+  return row as WorkflowModelListRow;
+}
+
+function readWorkflowSchema(value: unknown): TriggerWorkflowModel {
+  if (isRecord(value) && Array.isArray(value.nodes) && Array.isArray(value.edges)) {
+    return normalizeTriggerWorkflow(value);
+  }
+  if (typeof value === 'string') {
+    const parsed = JSON.parse(value) as unknown;
+    if (isRecord(parsed) && Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)) {
+      return normalizeTriggerWorkflow(parsed);
+    }
+  }
+  throw new Error('所选记录不包含有效的流程结构。');
+}
+
+function readSavedModelId(value: TriggerWorkflowModel) {
+  return typeof value.id === 'string' ? value.id.trim() : '';
+}
+
+function persistLocalWorkflow(value: TriggerWorkflowModel) {
+  window.localStorage.setItem(storageKey.value, JSON.stringify(value, null, 2));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function notify(content: string, status: 'success' | 'error' | 'warning') {
   const modal = VxeUI.modal;
   if (modal?.message) void modal.message({ content, status });
@@ -322,6 +481,18 @@ type WorkflowJobRunRecord = {
   status: string;
   output?: Record<string, unknown>;
   createdAt: string;
+};
+
+type WorkflowModelListRow = {
+  id: string;
+  name?: string;
+};
+
+type WorkflowModelRecord = WorkflowModelListRow & {
+  code: string;
+  name: string;
+  documentType?: string;
+  draftSchema: Record<string, unknown> | string;
 };
 </script>
 
