@@ -3,7 +3,8 @@ import {
   type TriggerWorkflowEdge,
   type TriggerWorkflowKind,
   type TriggerWorkflowModel,
-  type TriggerWorkflowNode
+  type TriggerWorkflowNode,
+  type TriggerWorkflowTaskType
 } from './types';
 
 export function normalizeTriggerWorkflow(value: unknown): TriggerWorkflowModel {
@@ -65,8 +66,9 @@ function normalizeNode(node: Record<string, any>, index: number): TriggerWorkflo
 }
 
 function normalizeNodeConfig(config: Record<string, any>) {
-  if (!isRecord(config.task) || readString(config.task.type)) return config;
+  if (!isRecord(config.task)) return config;
 
+  const explicitType = readTaskType(config.task.type);
   const inferredType = readString(config.task.frontendFunction)
     ? 'frontendCommand'
     : readString(config.task.backendFunction)
@@ -76,14 +78,40 @@ function normalizeNodeConfig(config: Record<string, any>) {
         : readString(config.task.id)
           ? 'registeredTask'
           : '';
-  if (!inferredType) return config;
+  const type = explicitType || inferredType;
+  if (!type) return config;
   return {
     ...config,
-    task: {
-      ...config.task,
-      type: inferredType
-    }
+    task: normalizeTaskForType(config.task, type)
   };
+}
+
+function normalizeTaskForType(
+  task: Record<string, any>,
+  type: TriggerWorkflowTaskType
+) {
+  const normalized: Record<string, any> & { type: TriggerWorkflowTaskType } = {
+    ...task,
+    type
+  };
+  const deleteFields = (fields: string[]) => fields.forEach((field) => delete normalized[field]);
+
+  switch (type) {
+    case 'frontendCommand':
+      deleteFields(['id', 'importPath', 'backendFunction', 'procedureName', 'procedureSchema']);
+      break;
+    case 'backendCommand':
+      deleteFields(['id', 'importPath', 'frontendFunction', 'procedureName', 'procedureSchema']);
+      break;
+    case 'storedProcedure':
+      deleteFields(['id', 'importPath', 'frontendFunction', 'backendFunction']);
+      break;
+    case 'registeredTask':
+      deleteFields(['frontendFunction', 'backendFunction', 'procedureName', 'procedureSchema']);
+      break;
+  }
+
+  return normalized;
 }
 
 function normalizeEdge(edge: Record<string, any>, index: number): TriggerWorkflowEdge {
@@ -104,6 +132,15 @@ function readKind(value: unknown): TriggerWorkflowKind {
 
 function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+function readTaskType(value: unknown): TriggerWorkflowTaskType | '' {
+  return value === 'frontendCommand' ||
+    value === 'backendCommand' ||
+    value === 'storedProcedure' ||
+    value === 'registeredTask'
+    ? value
+    : '';
 }
 
 function defaultWorkflowName(kind: TriggerWorkflowKind) {

@@ -4,7 +4,7 @@
       v-model="model"
       height="calc(100vh - 62px)"
       :busy="isJobBusy"
-      :can-run="Boolean(demoJob)"
+      :can-run="canRunWorkflowJob"
       :node-form-schemas="nodeFormSchemas"
       :edge-form-schema="edgeFormSchema"
       :inspector-schemas-loading="inspectorSchemasLoading"
@@ -17,9 +17,9 @@
       @save="saveLocalDraft"
       @restore="loadDraft"
       @copy="copyModel"
-      @enable="createFrontendCommandJob"
-      @run="runFrontendCommandJob"
-      @refresh="refreshFrontendCommandJob"
+      @enable="enableWorkflowJob"
+      @run="runWorkflowJob"
+      @refresh="refreshWorkflowJob"
     />
   </section>
 </template>
@@ -33,7 +33,9 @@ import {
   TriggerWorkflowEditor,
   TRIGGER_WORKFLOW_SCHEMA_VERSION,
   assertTriggerInspectorFormSchema,
+  buildTriggerWorkflowJob,
   createApprovalTriggerWorkflow,
+  getTriggerWorkflowJobPlanSignature,
   normalizeTriggerWorkflow,
   triggerInspectorNodeTypes,
   triggerNodeFormSchemaCodeByType,
@@ -49,8 +51,6 @@ const auth = useAuth();
 const storageKey = computed(() =>
   `enlearn.trigger-workflow-editor.${auth.activeAccount.value?.account_id ?? 'unselected'}`
 );
-const demoJobCode = 'frontend_command_message_10s';
-const demoTaskId = 'frontend.command.message.loop';
 const triggerWorkflowDocumentType = 'trigger-workflow';
 const workflowModelListPageCode = 'trigger-workflow-models';
 const serviceApi = useServiceApi();
@@ -61,20 +61,30 @@ const savedModelId = ref('');
 const issues = ref<TriggerWorkflowIssue[]>([]);
 const compiledPlan = ref<TriggerWorkflowExecutionPlan | undefined>();
 const exportedModel = ref<TriggerWorkflowModel | undefined>();
-const demoJob = ref<WorkflowJobRecord | undefined>();
-const demoRuns = ref<WorkflowJobRunRecord[]>([]);
+const workflowJob = ref<WorkflowJobRecord | undefined>();
+const workflowRuns = ref<WorkflowJobRunRecord[]>([]);
 const isJobBusy = ref(false);
 const jobMessage = ref('');
 const inspectorSchemasLoading = ref(false);
 const nodeFormSchemas = shallowRef<TriggerNodeFormSchemaMap>({});
 const edgeFormSchema = shallowRef<TriggerInspectorFormSchema>();
+const currentPlanSignature = computed(() => {
+  try {
+    return getTriggerWorkflowJobPlanSignature(model.value);
+  } catch {
+    return '';
+  }
+});
+const canRunWorkflowJob = computed(() => Boolean(
+  workflowJob.value?.status === 'enabled' &&
+  workflowJob.value.code === model.value.code &&
+  readJobPlanSignature(workflowJob.value) === currentPlanSignature.value
+));
 
 onMounted(() => {
-  if (!loadDraft()) {
-    model.value = createFrontendCommandWorkflowModel();
-  }
+  loadDraft();
   void loadInspectorSchemas();
-  void refreshFrontendCommandJob();
+  void refreshWorkflowJob();
 });
 
 async function loadInspectorSchemas() {
@@ -231,6 +241,7 @@ async function loadWorkflow() {
     model.value = { ...readWorkflowSchema(saved.draftSchema), id: saved.id };
     savedModelId.value = saved.id;
     persistLocalWorkflow(model.value);
+    await refreshWorkflowJob();
     notify(`已加载流程“${saved.name}”。`, 'success');
   } catch (error) {
     notify(error instanceof Error ? error.message : '流程加载失败。', 'error');
@@ -239,44 +250,22 @@ async function loadWorkflow() {
   }
 }
 
-async function createFrontendCommandJob() {
+async function enableWorkflowJob() {
+  if (isJobBusy.value) return;
   isJobBusy.value = true;
   try {
-    savedModelId.value = '';
-    model.value = createFrontendCommandWorkflowModel();
-    saveLocalDraft();
-
-    await refreshFrontendCommandJob();
-    let job = demoJob.value;
-    if (!job) {
-      job = await workflowApi<WorkflowJobRecord>('createJob', {
-        code: demoJobCode,
-        name: '前端指令每 10 秒消息任务',
-        type: 'manual',
-        triggerTaskId: demoTaskId,
-        timezone: 'Asia/Shanghai',
-        payload: {
-          userId: auth.user.value?.id,
-          repeatCount: 6,
-          message: '接受指令成功',
-          messageType: 'success'
-        },
-        retryPolicy: { maxAttempts: 3 },
-        timeoutSeconds: 120,
-        concurrencyKey: demoJobCode
-      });
+    if (!savedModelId.value || model.value.id !== savedModelId.value) {
+      throw new Error('请先保存当前流程，再启用作业。');
     }
-
-    if (job.triggerTaskId !== demoTaskId || job.type !== 'manual') {
-      throw new Error('同名作业不是前端指令手动作业，请先归档该作业后重新创建。');
-    }
-
-    demoJob.value = await workflowApi<WorkflowJobRecord>('updateJobStatus', {
+    const definition = buildTriggerWorkflowJob(model.value);
+    let job = await workflowApi<WorkflowJobRecord>('upsertJob', definition);
+    job = await workflowApi<WorkflowJobRecord>('updateJobStatus', {
       jobId: job.id,
       status: 'enabled'
     });
-    await refreshFrontendCommandJob();
-    jobMessage.value = '前端指令作业已创建并启用。';
+    workflowJob.value = job;
+    await refreshWorkflowJob();
+    jobMessage.value = `流程“${model.value.name}”已编译为作业并启用。`;
     notify(jobMessage.value, 'success');
   } catch (error) {
     jobMessage.value = error instanceof Error ? error.message : String(error);
@@ -286,23 +275,23 @@ async function createFrontendCommandJob() {
   }
 }
 
-async function runFrontendCommandJob() {
-  if (!demoJob.value) return;
+async function runWorkflowJob() {
+  if (!workflowJob.value) return;
+  if (!canRunWorkflowJob.value) {
+    notify('当前流程配置已变化，请重新启用后再运行。', 'warning');
+    return;
+  }
   isJobBusy.value = true;
   try {
     await workflowApi<WorkflowJobRunRecord>('runJob', {
-      jobId: demoJob.value.id,
+      jobId: workflowJob.value.id,
       payload: {
         userId: auth.user.value?.id,
-        intervalSeconds: 10,
-        repeatCount: 6,
-        message: '接受指令成功',
-        messageType: 'success',
         requestedAt: new Date().toISOString()
       }
     });
-    await refreshFrontendCommandJob();
-    jobMessage.value = '已启动任务，将每 10 秒发送一次消息，共 6 次。';
+    await refreshWorkflowJob();
+    jobMessage.value = `流程“${model.value.name}”已开始运行。`;
     notify(jobMessage.value, 'success');
   } catch (error) {
     jobMessage.value = error instanceof Error ? error.message : String(error);
@@ -312,16 +301,16 @@ async function runFrontendCommandJob() {
   }
 }
 
-async function refreshFrontendCommandJob() {
+async function refreshWorkflowJob() {
   try {
     const jobs = await workflowApi<WorkflowJobRecord[]>('listItems', {
       itemType: 'jobs'
     });
-    demoJob.value = jobs.find((job) => job.code === demoJobCode);
-    demoRuns.value = demoJob.value
+    workflowJob.value = jobs.find((job) => job.code === model.value.code);
+    workflowRuns.value = workflowJob.value
       ? await workflowApi<WorkflowJobRunRecord[]>('listItems', {
           itemType: 'jobRuns',
-          jobId: demoJob.value.id,
+          jobId: workflowJob.value.id,
           limit: 20
         })
       : [];
@@ -336,64 +325,6 @@ async function workflowApi<T>(serviceMethod: string, postData: Record<string, un
     tenantId: auth.activeAccount.value?.account_id,
     ...postData
   });
-}
-
-function createFrontendCommandWorkflowModel(): TriggerWorkflowModel {
-  return {
-    schemaVersion: TRIGGER_WORKFLOW_SCHEMA_VERSION,
-    code: demoJobCode,
-    name: '前端指令每 10 秒消息任务',
-    kind: 'custom',
-    nodes: [
-      {
-        id: 'manual_start',
-        type: 'start',
-        name: '手动触发',
-        position: { x: 380, y: 40 },
-        config: {
-          metadata: { triggerMode: 'manual' }
-        }
-      },
-      {
-        id: 'send_frontend_command',
-        type: 'task',
-        name: '发送前端消息指令',
-        position: { x: 380, y: 210 },
-        config: {
-          task: {
-            type: 'registeredTask',
-            id: demoTaskId,
-            queue: { name: 'frontend-command-jobs', concurrencyLimit: 10 },
-            retry: {
-              maxAttempts: 3,
-              factor: 2,
-              minTimeoutMs: 1000,
-              maxTimeoutMs: 10000
-            },
-            timeoutSeconds: 120,
-            idempotencyKey: '{{runId}}'
-          },
-          metadata: {
-            target: 'currentUser',
-            intervalSeconds: 10,
-            repeatCount: 6,
-            commandCode: 'message.show',
-            message: '接受指令成功'
-          }
-        }
-      },
-      {
-        id: 'end',
-        type: 'end',
-        name: '发送完成',
-        position: { x: 380, y: 380 }
-      }
-    ],
-    edges: [
-      { id: 'edge_start_command', source: 'manual_start', target: 'send_frontend_command' },
-      { id: 'edge_command_end', source: 'send_frontend_command', target: 'end' }
-    ]
-  };
 }
 
 function createBlankWorkflowModel(): TriggerWorkflowModel {
@@ -455,6 +386,15 @@ function readSavedModelId(value: TriggerWorkflowModel) {
 
 function persistLocalWorkflow(value: TriggerWorkflowModel) {
   window.localStorage.setItem(storageKey.value, JSON.stringify(value, null, 2));
+}
+
+function readJobPlanSignature(job: WorkflowJobRecord) {
+  const definition = isRecord(job.payload.triggerWorkflow)
+    ? job.payload.triggerWorkflow
+    : undefined;
+  return typeof definition?.planSignature === 'string'
+    ? definition.planSignature
+    : '';
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -111,6 +111,7 @@ import {
   type BuiltinLowCodePageFunctionContext,
   type BuiltinLowCodePageFunctionMode,
 } from '../runtime/page-function';
+import { ensureLowCodeEditPage } from '../runtime/lowcode-pages';
 import {
   lowCodeRuntimeBlockEditorKey,
   type LowCodeRuntimeBlockUpdate,
@@ -715,6 +716,10 @@ function cloneRuntimeValueWithFunctions<T>(value: T): T {
 }
 
 async function resolveAssociatedEditPage() {
+  if (props.page.page_type === 'list') {
+    return ensureLowCodeEditPage(host.getServiceApi(), props.page);
+  }
+
   const editPageId = readString(props.page.edit_page_id);
   if (editPageId) return findLowCodePage({ id: editPageId });
   return findLowCodePage({ code: `${props.page.code}-edit` });

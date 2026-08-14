@@ -811,20 +811,6 @@ function applyTaskTypeDefaults(node: TriggerWorkflowNode): TriggerWorkflowNode {
   if (!task?.type) return node;
   const nextTask = { ...task };
 
-  if (task.type === 'frontendCommand' && !task.frontendFunction?.trim()) {
-    nextTask.frontendFunction = `async ({ payload, variables, previousOutput, context }) => {
-  return {
-    code: 'message.show',
-    params: { message: '执行成功', type: 'success' }
-  };
-}`;
-  }
-  if (task.type === 'backendCommand' && !task.backendFunction?.trim()) {
-    nextTask.backendFunction = `async ({ payload, variables, previousOutput, context }) => {
-  // context.http, context.supabase and context.baseService are available.
-  return await context.http.get('/api/example');
-}`;
-  }
   if (task.type === 'storedProcedure' && !task.procedureSchema?.trim()) {
     nextTask.procedureSchema = 'public';
   }
@@ -933,7 +919,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
           <i class="ri-code-s-slash-line" />编译
         </button>
         <span class="trigger-editor__action-divider" />
-        <button type="button" :disabled="busy" title="创建并启用示例任务" @click="emit('enable')"><i class="ri-rocket-line" />启用</button>
+        <button type="button" :disabled="busy || Boolean(errorCount)" title="编译当前流程并启用作业" @click="emit('enable')"><i class="ri-rocket-line" />启用</button>
         <button type="button" :disabled="busy || !canRun" title="手动触发一次" @click="emit('run')"><i class="ri-play-circle-line" />运行</button>
         <button type="button" :disabled="busy" title="刷新运行记录" aria-label="刷新运行记录" @click="emit('refresh')"><i :class="busy ? 'ri-loader-4-line trigger-editor__spin' : 'ri-refresh-line'" /></button>
       </div>
@@ -1112,11 +1098,6 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
             size="mini"
             @field-change="updateSelectedNodeFromLowCodeForm"
           />
-          <div class="trigger-editor__form-actions trigger-editor__form-actions--end">
-            <button type="button" class="trigger-editor__danger" :disabled="readonly || !canDeleteNode(selectedNode)" @click="deleteSelection">
-              <i class="ri-delete-bin-line" />删除节点
-            </button>
-          </div>
         </div>
 
         <div v-else-if="selectedEdge && selectedEdgeFormSchema" class="trigger-editor__form">
@@ -1335,7 +1316,7 @@ function getClientPoint(event: MouseEvent | TouchEvent) {
 .trigger-editor__workspace {
   display: grid;
   min-height: 0;
-  grid-template-columns: 196px minmax(480px, 1fr) 316px;
+  grid-template-columns: 196px minmax(480px, 1fr) 480px;
 }
 
 .trigger-editor__palette,

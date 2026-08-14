@@ -19,6 +19,7 @@ import { UserModule } from '../user-service/user.module';
 import { WorkflowModule } from '../workflow/workflow.module';
 import { StandaloneServiceRouter } from './standalone-service-router.service';
 import { AiModule } from '../ai/ai.module';
+import { InternalServiceController } from '../gateway/internal-service.controller';
 
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import { AiModule } from '../ai/ai.module';
     WorkflowModule,
     AiModule.forGateway('standalone')
   ],
-  controllers: [ServiceGatewayController],
+  controllers: [ServiceGatewayController, InternalServiceController],
   providers: [
     DomainServiceRouter,
     StandaloneServiceRouter,

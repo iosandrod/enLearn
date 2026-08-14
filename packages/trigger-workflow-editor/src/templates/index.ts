@@ -51,7 +51,7 @@ export function createDataSyncTriggerWorkflow(): TriggerWorkflowModel {
         schedule: { cron: '0 8 * * *', timezone: 'Asia/Shanghai', externalId: 'daily-crm-sync' }
       }),
       node('dataSource', 'extract_crm', '读取 CRM 记录', 380, 190, {
-        task: { type: 'registeredTask', id: 'crm.extract', queue: { name: 'crm-sync', concurrencyLimit: 2 } },
+        task: { type: 'registeredTask', id: 'crm.extract' },
         data: { connector: 'salesforce', operation: 'extract', source: 'accounts', batchSize: 500 }
       }),
       node('transform', 'normalize_records', '标准化数据', 380, 340, {
@@ -93,7 +93,7 @@ export function createAiAgentTriggerWorkflow(): TriggerWorkflowModel {
         ai: { memoryKey: '{{payload.customerId}}' }
       }),
       node('agent', 'triage_agent', '智能分诊', 380, 340, {
-        task: { type: 'registeredTask', id: 'agent.support.triage', queue: { name: 'ai-agent', concurrencyLimit: 4 } },
+        task: { type: 'registeredTask', id: 'agent.support.triage' },
         ai: {
           provider: 'openai',
           model: 'gpt-4.1',

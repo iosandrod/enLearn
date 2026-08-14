@@ -6,10 +6,12 @@ import 'animate.css/animate.min.css';
 import 'remixicon/fonts/remixicon.css';
 import 'vxe-pc-ui/lib/style.css';
 import 'vxe-table/lib/style.css';
+import 'vxe-table-plugin-advanced-filter/style.css';
 import 'vxe-table-plugin-search-panel/style.css';
 import '../assets/styles/app.css';
 import '../assets/styles/visual-editor-utilities.scss';
 
+import AdvancedFilterPlugin from 'vxe-table-plugin-advanced-filter';
 import TableSearchPanel from 'vxe-table-plugin-search-panel';
 
 import {
@@ -77,6 +79,12 @@ await cleanupDevServiceWorkers();
 
 VxeUI.use(TableSearchPanel, {
   defaultExpanded: true,
+});
+VxeUI.use(AdvancedFilterPlugin, {
+  autoEnable: true,
+  caseSensitive: false,
+  emptyLabel: '暂无',
+  maxVisibleOptions: 500,
 });
 
 const app = createApp(App);

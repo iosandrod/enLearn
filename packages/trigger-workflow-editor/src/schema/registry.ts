@@ -16,7 +16,7 @@ export type TriggerNodeDefinition = {
   allowOutgoing: boolean;
 };
 
-export const triggerNodeDefinitions: TriggerNodeDefinition[] = [
+const allTriggerNodeDefinitions: TriggerNodeDefinition[] = [
   defineNode('start', '开始', 'trigger', '手动触发工作流的入口。', 'ri-play-circle-line', '#16a34a', ['approval', 'dataSync', 'aiAgent', 'custom'], false, true, 1, 1),
   defineNode('schedule', '定时触发', 'trigger', '通过 Trigger.dev 定时计划启动工作流。', 'ri-calendar-event-line', '#0f766e', ['dataSync', 'aiAgent', 'custom'], false, true, 1, 1),
   defineNode('webhook', 'Webhook 触发', 'trigger', '接收外部系统 HTTP 事件。', 'ri-webhook-line', '#2563eb', ['approval', 'dataSync', 'aiAgent', 'custom'], false, true, 1, 1),
@@ -37,6 +37,24 @@ export const triggerNodeDefinitions: TriggerNodeDefinition[] = [
   defineNode('end', '结束', 'terminal', '工作流结束节点。', 'ri-checkbox-circle-line', '#475569', ['approval', 'dataSync', 'aiAgent', 'custom'], true, false, 0, 0)
 ];
 
+const hiddenPaletteNodeTypes = new Set<TriggerNodeType>([
+  'parallel',
+  'triggerAndWait',
+  'batchTrigger',
+  'dataSource',
+  'transform',
+  'dataSink',
+  'agent',
+  'tool',
+  'memory',
+  'humanReview'
+]);
+
+// Hidden nodes remain registered so existing workflows and templates still validate.
+export const triggerNodeDefinitions = allTriggerNodeDefinitions.filter(
+  (definition) => !hiddenPaletteNodeTypes.has(definition.type)
+);
+
 const categoryLabels: Record<TriggerNodeDefinition['category'], string> = {
   trigger: '触发器',
   control: '流程控制',
@@ -47,7 +65,7 @@ const categoryLabels: Record<TriggerNodeDefinition['category'], string> = {
   terminal: '结束节点'
 };
 
-export const triggerNodeDefinitionMap = new Map(triggerNodeDefinitions.map((definition) => [definition.type, definition]));
+export const triggerNodeDefinitionMap = new Map(allTriggerNodeDefinitions.map((definition) => [definition.type, definition]));
 
 export function getTriggerNodeDefinition(type: TriggerNodeType) {
   return triggerNodeDefinitionMap.get(type);

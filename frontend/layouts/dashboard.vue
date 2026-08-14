@@ -332,10 +332,10 @@ import { useRouteCache } from '../composables/useRouteCache';
 import { loadSystemSettings } from '../composables/useSystemSettings';
 import type {
   LowCodePageRecord,
-  LowCodePageSchema,
 } from '@enlearn/lowcode-framework/types/lowcode';
 import {
   confirmLowCodePage,
+  ensureLowCodeEditPage,
   findGlobalDialog,
   GlobalDialogHost,
   openGlobalDialog,
@@ -1257,70 +1257,6 @@ function resolveLowCodePageCode(item: AdminRouteNode) {
   return item.page_code ?? '';
 }
 
-function buildEmptyEditPageSchema(
-  page: LowCodePageRecord,
-  item: AdminRouteNode | null
-): LowCodePageSchema {
-  const routePath = page.route.replace(/\/+$/, '');
-  const editCode = `${page.code}-edit`;
-  const editRoute = `${routePath}/edit`;
-  const editTitle = `${page.title || item?.title || page.code}编辑`;
-
-  return {
-    schemaVersion: 1,
-    code: editCode,
-    route: editRoute,
-    title: editTitle,
-    pageType: 'edit',
-    description: '',
-    layout: 'dashboard',
-    status: 'published',
-    keepAlive: true,
-    blocks: [],
-    dataSources: {}
-  };
-}
-
-function isMissingLowCodePageError(error: unknown) {
-  return error instanceof Error && error.message.includes('Low-code page not found');
-}
-
-async function resolveExistingEditPage(page: LowCodePageRecord) {
-  if (page.edit_page_id) {
-    return getLowCodePage(serviceApi, {
-      id: page.edit_page_id,
-      includeData: false
-    });
-  }
-
-  try {
-    return await getLowCodePage(serviceApi, {
-      code: `${page.code}-edit`,
-      includeData: false
-    });
-  } catch (error) {
-    if (isMissingLowCodePageError(error)) return null;
-    throw error;
-  }
-}
-
-function buildPageSaveData(schema: LowCodePageSchema) {
-  return {
-    code: schema.code,
-    route: schema.route,
-    title: schema.title,
-    description: schema.description ?? null,
-    layout: schema.layout ?? 'dashboard',
-    status: schema.status ?? 'draft',
-    keep_alive: schema.keepAlive ?? true,
-    page_type: schema.pageType ?? 'custom',
-    schema,
-    version: 1,
-    published_at: schema.status === 'published' ? new Date().toISOString() : null,
-    edit_page_id: null
-  };
-}
-
 async function openLowCodeDesigner(item: AdminRouteNode) {
   await openLowCodeDesignerByCode(resolveLowCodePageCode(item));
 }
@@ -1362,57 +1298,7 @@ async function openLowCodeEditPage(item: AdminRouteNode) {
       code: pageCode,
       includeData: false
     });
-    let editPage = await resolveExistingEditPage(page);
-
-    if (!editPage) {
-      const schema = buildEmptyEditPageSchema(page, item);
-      const editPageData = buildPageSaveData(schema);
-
-      editPage = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
-        resource: 'lowcode_pages',
-        data: {
-          ...editPageData,
-          __details: [
-            {
-              resource: 'lowcode_page_versions',
-              mode: 'replace',
-              foreignKey: 'page_id',
-              parentKey: 'id',
-              rows: [
-                {
-                  version: editPageData.version,
-                  schema: editPageData.schema,
-                  published_at: editPageData.published_at
-                }
-              ]
-            }
-          ]
-        },
-        afterSave: [
-          {
-            action: 'update',
-            resource: 'lowcode_pages',
-            data: {
-              edit_page_id: { $ref: 'saved.id' }
-            },
-            where: { id: page.id },
-            expect: 1
-          }
-        ]
-      });
-
-      await router.push(editPage.route);
-      await reloadRoutes();
-      return;
-    }
-
-    if (page.edit_page_id !== editPage.id) {
-      await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
-        resource: 'lowcode_pages',
-        id: page.id,
-        data: { edit_page_id: editPage.id }
-      });
-    }
+    const editPage = await ensureLowCodeEditPage(serviceApi, page);
 
     await router.push(editPage.route);
     await reloadRoutes();

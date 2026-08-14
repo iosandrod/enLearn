@@ -159,4 +159,33 @@ assert.equal(
   'registeredTask'
 );
 
+const normalizedTypedWorkflow = normalizeTriggerWorkflow({
+  ...taskKindsWorkflow,
+  nodes: taskKindsWorkflow.nodes.map((node) =>
+    node.id === 'frontend'
+      ? {
+          ...node,
+          config: {
+            task: {
+              type: 'frontendCommand',
+              id: 'stale.registered.task',
+              importPath: './stale-task',
+              backendFunction: 'async () => null',
+              procedureName: 'stale_procedure',
+              frontendFunction: 'async () => ({ code: "message.show" })'
+            }
+          }
+        }
+      : node
+  )
+});
+const normalizedFrontendTask = normalizedTypedWorkflow.nodes.find(
+  (node) => node.id === 'frontend'
+)?.config?.task;
+assert.equal(normalizedFrontendTask?.id, undefined);
+assert.equal(normalizedFrontendTask?.importPath, undefined);
+assert.equal(normalizedFrontendTask?.backendFunction, undefined);
+assert.equal(normalizedFrontendTask?.procedureName, undefined);
+assert.match(normalizedFrontendTask?.frontendFunction ?? '', /message\.show/);
+
 console.log('trigger-workflow-editor template/compiler tests passed');

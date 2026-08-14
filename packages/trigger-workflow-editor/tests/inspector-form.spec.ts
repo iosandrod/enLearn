@@ -75,10 +75,16 @@ for (const field of [
   'failureStrategy',
   'defaultOutput',
   'priority',
-  'taskTags'
+  'taskTags',
+  'queueName'
 ]) {
   assert.ok(taskSchema.fields.some((item) => item.field === field), `task must expose ${field}.`);
 }
+const queueField = taskSchema.fields.find((field) => field.field === 'queueName');
+assert.equal(queueField?.component, 'vxe-select');
+assert.equal(queueField?.options?.[0]?.value, '');
+assert.ok(queueField?.options?.some((option) => option.value === 'trigger-workflow-jobs'));
+assert.equal(taskSchema.fields.some((field) => field.field === 'concurrencyLimit'), false);
 const taskTabs = taskSchema.layout?.find((node) => node.kind === 'tabs');
 assert.ok(taskTabs && taskTabs.kind === 'tabs');
 assert.ok(taskTabs.tabs.some((tab) => tab.key === 'execution' && tab.label === '执行策略'));

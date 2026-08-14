@@ -21,3 +21,9 @@ document.documentElement.style.setProperty(
   '--vxe-ui-input-height-medium',
   '30px'
 );
+
+//--vxe-table-search-panel-highlight-current-background
+document.documentElement.style.setProperty(
+  '--vxe-table-search-panel-highlight-current-background',
+  'yellow'
+);

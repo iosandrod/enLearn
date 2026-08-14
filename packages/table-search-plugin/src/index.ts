@@ -3,6 +3,7 @@ import './augmentations.js'
 import type { TableSearchPanelOptions, VxeUILike } from './types.js'
 
 export * from './types.js'
+export * from './search.js'
 
 const installedVxeUIs = new WeakSet<object>()
 

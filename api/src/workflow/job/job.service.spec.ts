@@ -13,6 +13,7 @@ const actor = {
 
 async function main() {
   await testCreateRejectsUnsupportedIntervalBeforeWriting();
+  await testUpsertPersistsTheCurrentTypedWorkflowDefinition();
   await testEnableCreatesScheduleAndPersistsItsId();
   await testCreateConflictRecoversExistingSchedule();
   await testAlreadyEnabledJobWithoutScheduleIsReconciled();
@@ -28,6 +29,47 @@ async function main() {
   await testTriggerFailureIsPreservedWhenFailureProjectionFails();
   await testTriggeredRunIsCanceledWhenRunIdProjectionFails();
   console.log('workflow-api Trigger.dev job Supabase RPC tests passed');
+}
+
+async function testUpsertPersistsTheCurrentTypedWorkflowDefinition() {
+  let command: { action: string; payload: Record<string, unknown> } | undefined;
+  const job = createJob({
+    type: 'manual',
+    code: 'typed-workflow',
+    triggerTaskId: 'workflow.trigger-workflow.run'
+  });
+  const service = createService(
+    async (action, payload) => {
+      command = { action, payload };
+      return { data: toRow(job), error: null };
+    },
+    createTriggerClient()
+  );
+
+  await service.upsertJob({
+    code: job.code,
+    name: job.name,
+    type: 'manual',
+    triggerTaskId: job.triggerTaskId,
+    payload: {
+      triggerWorkflow: {
+        version: 1,
+        modelId: 'model-1',
+        executionPlan: { operations: [{ adapter: { type: 'frontendCommand' } }] }
+      }
+    }
+  }, actor);
+
+  assert.equal(command?.action, 'upsert_job');
+  assert.equal(command?.payload.trigger_task_id, 'workflow.trigger-workflow.run');
+  assert.equal(command?.payload.model_id, 'model-1');
+  assert.deepEqual(command?.payload.payload, {
+    triggerWorkflow: {
+      version: 1,
+      modelId: 'model-1',
+      executionPlan: { operations: [{ adapter: { type: 'frontendCommand' } }] }
+    }
+  });
 }
 
 async function testCreateRejectsUnsupportedIntervalBeforeWriting() {

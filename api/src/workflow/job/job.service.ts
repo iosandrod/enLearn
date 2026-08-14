@@ -56,6 +56,44 @@ export class JobService {
     return mapJob(assertRecord(row, 'Workflow job RPC returned an invalid job.'));
   }
 
+  async upsertJob(dto: CreateJobDto, actor: WorkflowJobActor) {
+    const code = dto.code.trim();
+    const name = dto.name.trim();
+    if (!code || !name) {
+      throw new BadRequestException('Job code and name are required.');
+    }
+    if (dto.type === 'cron' && !dto.cronExpr?.trim()) {
+      throw new BadRequestException('Cron job requires cronExpr.');
+    }
+
+    const payload = normalizeJobPayload(dto);
+    if (dto.type === 'interval') {
+      intervalCron(readIntervalSeconds(payload) ?? 60);
+    }
+
+    const row = await this.command('upsert_job', {
+      account_id: actor.tenantId,
+      model_id: readTriggerWorkflowModelId(payload) ?? null,
+      code,
+      name,
+      type: dto.type,
+      trigger_task_id: dto.triggerTaskId?.trim() || defaultTriggerTaskId(dto.type),
+      cron_expr: dto.cronExpr?.trim() || null,
+      timezone: dto.timezone?.trim() || 'Asia/Shanghai',
+      payload,
+      retry_policy: dto.retryPolicy ?? { maxAttempts: 3 },
+      timeout_seconds: dto.timeoutSeconds ?? null,
+      concurrency_key: dto.concurrencyKey?.trim() || null,
+      created_by: actor.userId ?? null
+    });
+
+    const job = mapJob(assertRecord(row, 'Workflow job RPC returned an invalid job.'));
+    if ((!isScheduledJob(job) && job.scheduleId) || (isScheduledJob(job) && job.status === 'enabled')) {
+      return this.updateJobStatus(job.id, job.status, actor);
+    }
+    return job;
+  }
+
   async listJobs(query: JobQueryDto, actor: WorkflowJobActor) {
     const rows = await this.command('list_jobs', {
       account_id: actor.tenantId,
@@ -76,11 +114,18 @@ export class JobService {
 
   async updateJobStatus(jobId: string, status: WorkflowJobRecord['status'], actor: WorkflowJobActor) {
     const current = await this.getJob(jobId, actor);
-    if (!isScheduledJob(current) && current.status === status) return current;
+    if (!isScheduledJob(current) && current.status === status && !current.scheduleId) return current;
 
     let scheduleId = current.scheduleId;
     let compensation: (() => Promise<void>) | undefined;
-    if (status === 'enabled' && isScheduledJob(current)) {
+    if (!isScheduledJob(current) && scheduleId) {
+      try {
+        await this.triggerClient.deleteSchedule(scheduleId);
+      } catch (error) {
+        if (!isTriggerNotFoundError(error)) throw error;
+      }
+      scheduleId = undefined;
+    } else if (status === 'enabled' && isScheduledJob(current)) {
       let compensationMode: 'delete' | 'deactivate' | undefined;
       let schedule: { id: string };
       try {
@@ -398,6 +443,11 @@ function normalizeJobPayload(dto: CreateJobDto) {
     payload.intervalSeconds = dto.intervalSeconds ?? readIntervalSeconds(payload) ?? 60;
   }
   return payload;
+}
+
+function readTriggerWorkflowModelId(payload: Record<string, unknown>) {
+  const definition = isRecord(payload.triggerWorkflow) ? payload.triggerWorkflow : undefined;
+  return readOptionalString(definition?.modelId);
 }
 
 function readIntervalSeconds(payload: Record<string, unknown> | null | undefined) {

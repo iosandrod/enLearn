@@ -47,7 +47,7 @@
   "scripts": {
     "build": "vite build && vue-tsc --declaration --emitDeclarationOnly -p tsconfig.build.json",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json",
-    "test": "tsx tests/templates.spec.ts && tsx tests/inspector-form.spec.ts && tsx tests/canvas-tools.spec.ts",
+    "test": "tsx tests/templates.spec.ts && tsx tests/task-examples.spec.ts && tsx tests/job-adapters.spec.ts && tsx tests/inspector-form.spec.ts && tsx tests/canvas-tools.spec.ts",
     "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build"
   }
 }

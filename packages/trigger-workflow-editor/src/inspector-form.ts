@@ -5,6 +5,7 @@ import type {
   TriggerWorkflowTaskRef,
   TriggerWorkflowTaskType
 } from './schema/types';
+import { TRIGGER_WORKFLOW_REGISTERED_QUEUES } from './runtime-catalog';
 
 export const TRIGGER_NODE_FORM_SCHEMA_CODE_PREFIX = 'trigger-workflow.node.';
 export const TRIGGER_EDGE_FORM_SCHEMA_CODE = 'trigger-workflow.edge';
@@ -179,7 +180,6 @@ const nodeFieldPaths: Record<string, string[]> = {
 };
 
 const integerFields = new Set([
-  'concurrencyLimit',
   'maxAttempts',
   'retryMinTimeoutMs',
   'retryMaxTimeoutMs',
@@ -704,8 +704,13 @@ function createTaskSections(type: TriggerNodeType): FormSection[] {
         textField('idempotencyKey', '幂等键', { placeholder: '{{runId}} 或业务唯一键' }),
         numberField('priority', '优先级', 0, 1, 100),
         textField('taskTags', '运行标签', { placeholder: '多个标签使用逗号分隔' }),
-        textField('queueName', '队列名称', { placeholder: '例如：workflow-jobs' }),
-        numberField('concurrencyLimit', '并发上限', 1),
+        selectField('queueName', '执行队列', [
+          { label: '使用任务默认队列', value: '' },
+          ...TRIGGER_WORKFLOW_REGISTERED_QUEUES.map((queue) => ({
+            label: `${queue.label}（并发 ${queue.concurrencyLimit}）`,
+            value: queue.name
+          }))
+        ]),
         numberField('maxAttempts', '最大尝试次数', 0),
         numberField('retryFactor', '重试退避倍数', 1, 0.1),
         numberField('retryMinTimeoutMs', '最小重试间隔（毫秒）', 0),

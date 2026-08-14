@@ -118,6 +118,18 @@ if ([string]::IsNullOrWhiteSpace($accessToken)) {
 $env:TRIGGER_PROJECT_NAME = $projectName
 $env:TRIGGER_API_URL = $ApiUrl
 
+# Ignore a stale local proxy for the worker's outbound Supabase calls.
+$proxyValue = [Environment]::GetEnvironmentVariable('ALL_PROXY', 'Process')
+if ($proxyValue -and $proxyValue -match '^https?://(localhost|127\.0\.0\.1):(?<port>\d+)(?:/|$)') {
+  $proxyPort = [int]$Matches['port']
+  if (!(Get-NetTCPConnection -State Listen -LocalPort $proxyPort -ErrorAction SilentlyContinue)) {
+    Info "Ignoring unavailable local proxy on port $proxyPort."
+    foreach ($name in @('ALL_PROXY', 'HTTP_PROXY', 'HTTPS_PROXY')) {
+      [Environment]::SetEnvironmentVariable($name, $null, 'Process')
+    }
+  }
+}
+
 $workerEnvFile = Join-Path $apiDir ".trigger.worker.env"
 Write-WorkerEnv -SourceEnvFile $EnvFile -TargetEnvFile $workerEnvFile -ProjectRef $projectRef.Trim()
 $env:TRIGGER_ACCESS_TOKEN = $accessToken

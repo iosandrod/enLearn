@@ -20,6 +20,33 @@ export const TRIGGER_TASK_CATALOG: readonly TriggerTaskCatalogItem[] = [
     description: '执行作业定义中的通用后台任务。'
   },
   {
+    id: 'workflow.trigger-workflow.run',
+    name: '触发器编排执行器',
+    category: 'workflow',
+    description: '执行编辑器编译的流程计划，并按任务类型分派 Job 适配器。'
+  },
+  {
+    id: 'workflow.adapter.frontend-command',
+    name: '前端指令适配器',
+    category: 'frontend',
+    description: '在受限脚本运行时中构建并发布前端指令。',
+    queueNames: ['trigger-workflow-jobs']
+  },
+  {
+    id: 'workflow.adapter.backend-command',
+    name: '后端指令适配器',
+    category: 'workflow',
+    description: '在受限脚本运行时中执行已授权的后端能力。',
+    queueNames: ['trigger-workflow-jobs']
+  },
+  {
+    id: 'workflow.adapter.stored-procedure',
+    name: '存储过程适配器',
+    category: 'workflow',
+    description: '通过 Supabase RPC 执行流程节点配置的存储过程。',
+    queueNames: ['trigger-workflow-jobs']
+  },
+  {
     id: 'workflow.job.scheduled',
     name: '定时作业调度器',
     category: 'workflow',
@@ -75,12 +102,6 @@ export const TRIGGER_TASK_CATALOG: readonly TriggerTaskCatalogItem[] = [
     description: '归档已读消息并清理历史投递记录。'
   },
   {
-    id: 'frontend.command.message.loop',
-    name: '前端消息循环指令',
-    category: 'frontend',
-    description: '按设定间隔向指定用户或 Socket 连接发送前端指令。'
-  },
-  {
     id: 'simple-approval-demo',
     name: '审批等待示例',
     category: 'diagnostic',
@@ -95,4 +116,3 @@ export const TRIGGER_TASK_CATALOG: readonly TriggerTaskCatalogItem[] = [
 ] as const;
 
 export const TRIGGER_TASK_IDENTIFIERS = TRIGGER_TASK_CATALOG.map((task) => task.id);
-

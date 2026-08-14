@@ -26,7 +26,8 @@ async function main() {
     '../../../supabase/migrations/20260806180000_lowcode_table_metadata_rpc.sql',
     '../../../supabase/migrations/20260806190000_workflow_definition_command_rpc.sql',
     '../../../supabase/migrations/20260806200000_notification_api_rpc.sql',
-    '../../../supabase/migrations/20260806210000_lowcode_generated_page_rpc.sql'
+    '../../../supabase/migrations/20260806210000_lowcode_generated_page_rpc.sql',
+    '../../../supabase/migrations/20260814110000_workflow_job_upsert_forward_fix.sql'
   ].map((item) => resolve(__dirname, item));
   for (const [connectionIndex, connectionString] of connectionStrings.entries()) {
     const client = new Client({ connectionString });

@@ -34,6 +34,7 @@ const chatWidgetRoot = resolve(__dirname, '..', 'packages', 'chat-widget', 'src'
 const triggerWorkflowEditorRoot = resolve(__dirname, '..', 'packages', 'trigger-workflow-editor', 'src');
 const workflowSchemaRoot = resolve(__dirname, '..', 'packages', 'workflow-schema', 'src');
 const areaPluginRoot = resolve(__dirname, '..', 'packages', 'area-plugin');
+const tableAdvancedFilterPluginRoot = resolve(__dirname, '..', 'packages', 'table-advanced-filter-plugin');
 const tableSearchPluginRoot = resolve(__dirname, '..', 'packages', 'table-search-plugin');
 const ganttRoot = resolve(__dirname, '..', 'packages', 'gantt-main');
 const tldrawVueRoot = resolve(__dirname, '..', 'packages', 'tldraw-vue');
@@ -175,6 +176,14 @@ export default defineConfig({
       {
         find: /^vxe-table-plugin-extend-cell-area$/,
         replacement: resolve(areaPluginRoot, 'dist', 'index.js'),
+      },
+      {
+        find: /^vxe-table-plugin-advanced-filter\/style\.css$/,
+        replacement: resolve(tableAdvancedFilterPluginRoot, 'src', 'style', 'index.css'),
+      },
+      {
+        find: /^vxe-table-plugin-advanced-filter$/,
+        replacement: resolve(tableAdvancedFilterPluginRoot, 'src', 'index.ts'),
       },
       {
         find: /^vxe-table-plugin-search-panel\/style\.css$/,

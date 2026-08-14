@@ -55,7 +55,7 @@ try {
   await page.locator('.task-console-list-item').first().waitFor({ state: 'visible', timeout: 30_000 });
   await page.locator('.task-console-detail__body').waitFor({ state: 'visible', timeout: 30_000 });
   assert.match(await page.locator('body').innerText(), /Trigger\.dev 部分状态不可用/);
-  assert.match(await page.locator('body').innerText(), /前端指令每 10 秒消息任务/);
+  assert.match(await page.locator('body').innerText(), /workflow\.trigger-workflow\.run/);
   assert.equal(await page.locator('.task-console-metrics article').count(), 6);
 
   await page.screenshot({

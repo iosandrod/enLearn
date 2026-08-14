@@ -18,6 +18,7 @@ declare
   v_action text := lower(btrim(coalesce(p_action, '')));
   v_payload jsonb := coalesce(p_payload, '{}'::jsonb);
   v_account_id uuid;
+  v_model_id text;
   v_job_id uuid;
   v_run_id uuid;
   v_job public.wf_job%rowtype;
@@ -33,10 +34,48 @@ begin
     raise exception 'workflow_job_command payload must be an object.' using errcode = '22023';
   end if;
 
-  if v_action = 'create_job' then
+  if v_action in ('create_job', 'upsert_job') then
     v_account_id := nullif(v_payload->>'account_id', '')::uuid;
     if v_account_id is null then
       raise exception 'account_id is required.' using errcode = '22023';
+    end if;
+
+    v_model_id := nullif(btrim(v_payload->>'model_id'), '');
+    if v_action = 'upsert_job' and v_model_id is not null then
+      select jobs.*
+      into v_job
+      from public.wf_job jobs
+      where jobs.account_id = v_account_id
+        and jobs.payload #>> '{triggerWorkflow,modelId}' = v_model_id
+      order by jobs.updated_at desc
+      limit 1
+      for update;
+
+      if found then
+        update public.wf_job
+        set code = nullif(btrim(v_payload->>'code'), ''),
+            name = nullif(btrim(v_payload->>'name'), ''),
+            type = nullif(btrim(v_payload->>'type'), ''),
+            trigger_task_id = nullif(btrim(v_payload->>'trigger_task_id'), ''),
+            cron_expr = nullif(btrim(v_payload->>'cron_expr'), ''),
+            timezone = coalesce(nullif(btrim(v_payload->>'timezone'), ''), 'Asia/Shanghai'),
+            payload = case
+              when jsonb_typeof(v_payload->'payload') = 'object' then v_payload->'payload'
+              else '{}'::jsonb
+            end,
+            retry_policy = case
+              when jsonb_typeof(v_payload->'retry_policy') = 'object' then v_payload->'retry_policy'
+              else '{"maxAttempts":3}'::jsonb
+            end,
+            timeout_seconds = nullif(v_payload->>'timeout_seconds', '')::integer,
+            concurrency_key = nullif(btrim(v_payload->>'concurrency_key'), ''),
+            status = case when status = 'archived' then 'draft' else status end,
+            updated_at = v_now
+        where id = v_job.id
+        returning * into v_job;
+
+        return to_jsonb(v_job);
+      end if;
     end if;
 
     insert into public.wf_job (
@@ -74,7 +113,29 @@ begin
       nullif(btrim(v_payload->>'concurrency_key'), ''),
       nullif(v_payload->>'created_by', '')::uuid
     )
+    on conflict (account_id, code) do update set
+      name = excluded.name,
+      type = excluded.type,
+      trigger_task_id = excluded.trigger_task_id,
+      schedule_id = public.wf_job.schedule_id,
+      cron_expr = excluded.cron_expr,
+      timezone = excluded.timezone,
+      payload = excluded.payload,
+      retry_policy = excluded.retry_policy,
+      timeout_seconds = excluded.timeout_seconds,
+      concurrency_key = excluded.concurrency_key,
+      status = case
+        when public.wf_job.status = 'archived' then 'draft'
+        else public.wf_job.status
+      end,
+      updated_at = v_now
+    where v_action = 'upsert_job'
     returning * into v_job;
+
+    if not found then
+      raise exception 'Workflow job code already exists: %.', coalesce(v_payload->>'code', '')
+        using errcode = '23505';
+    end if;
 
     return to_jsonb(v_job);
   end if;
@@ -300,6 +361,7 @@ begin
     from public.wf_job
     where id = v_job_id
       and status = 'enabled'
+      and type in ('cron', 'interval')
     for update;
 
     if not found then

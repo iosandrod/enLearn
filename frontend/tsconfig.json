@@ -31,6 +31,8 @@
       "@svar-ui/gantt-store": ["../packages/gantt-main/store/src/index.ts"],
       "vxe-table-plugin-search-panel": ["../packages/table-search-plugin/src/index.ts"],
       "vxe-table-plugin-search-panel/style.css": ["../packages/table-search-plugin/src/style/index.css"],
+      "vxe-table-plugin-advanced-filter": ["../packages/table-advanced-filter-plugin/src/index.ts"],
+      "vxe-table-plugin-advanced-filter/style.css": ["../packages/table-advanced-filter-plugin/src/style/index.css"],
       "echarts": ["./node_modules/echarts"],
       "echarts/*": ["./node_modules/echarts/*"]
     }

@@ -17,7 +17,7 @@ const command = {
   code: 'message.show',
   params: {
     type: 'success',
-    message: '接受指令成功',
+    message: 'Workflow command executed',
     duration: 8000,
   },
   target: {
@@ -30,7 +30,7 @@ const command = {
 
 assert.equal(isFrontendCommand(command), true);
 assert.equal((await runtime.execute(command)).status, 'executed');
-assert.deepEqual(shown, [{ type: 'success', message: '接受指令成功', duration: 8000 }]);
+assert.deepEqual(shown, [{ type: 'success', message: 'Workflow command executed', duration: 8000 }]);
 assert.equal((await runtime.execute(command)).status, 'ignored', 'Duplicate commands must be ignored.');
 assert.equal(shown.length, 1);
 

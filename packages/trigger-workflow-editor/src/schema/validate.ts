@@ -1,6 +1,10 @@
 import { isBuiltInTriggerNodeType } from './registry';
 import { isRecord } from './normalize';
 import {
+  TRIGGER_WORKFLOW_REGISTERED_QUEUE_NAMES,
+  isRegisteredTriggerWorkflowQueue
+} from '../runtime-catalog';
+import {
   TRIGGER_WORKFLOW_SCHEMA_VERSION,
   type TriggerWorkflowIssue,
   type TriggerWorkflowModel,
@@ -130,8 +134,22 @@ function validateNodeConfig(node: TriggerWorkflowNode, issues: TriggerWorkflowIs
   if (task?.timeoutSeconds !== undefined && (!Number.isInteger(task.timeoutSeconds) || task.timeoutSeconds < 1)) {
     push(issues, 'error', `${path}.config.task.timeoutSeconds`, '任务超时必须是正整数。');
   }
-  if (task?.queue?.concurrencyLimit !== undefined && (!Number.isInteger(task.queue.concurrencyLimit) || task.queue.concurrencyLimit < 1)) {
-    push(issues, 'error', `${path}.config.task.queue.concurrencyLimit`, '队列并发数必须是正整数。');
+  const queueName = task?.queue?.name?.trim();
+  if (queueName && !isRegisteredTriggerWorkflowQueue(queueName)) {
+    push(
+      issues,
+      'error',
+      `${path}.config.task.queue.name`,
+      `队列“${queueName}”未随当前 worker 注册。可用队列：${TRIGGER_WORKFLOW_REGISTERED_QUEUE_NAMES.join('、')}。`
+    );
+  }
+  if (task?.queue?.concurrencyLimit !== undefined) {
+    push(
+      issues,
+      'error',
+      `${path}.config.task.queue.concurrencyLimit`,
+      '队列并发上限由 Trigger.dev worker 静态注册，不能在流程节点中修改。'
+    );
   }
   if (task?.priority !== undefined && (!Number.isInteger(task.priority) || task.priority < 0 || task.priority > 100)) {
     push(issues, 'error', `${path}.config.task.priority`, '任务优先级必须是 0 到 100 之间的整数。');

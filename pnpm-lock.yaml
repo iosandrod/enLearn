@@ -17,6 +17,12 @@ importers:
 
   api:
     dependencies:
+      '@enlearn/trigger-workflow-editor':
+        specifier: workspace:*
+        version: link:../packages/trigger-workflow-editor
+      '@jitl/quickjs-wasmfile-release-sync':
+        specifier: 0.32.0
+        version: 0.32.0
       '@nestjs/common':
         specifier: ^10.4.5
         version: 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -53,6 +59,9 @@ importers:
       pg:
         specifier: ^8.22.0
         version: 8.22.0
+      quickjs-emscripten-core:
+        specifier: 0.32.0
+        version: 0.32.0
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
@@ -60,6 +69,9 @@ importers:
         specifier: ^7.8.1
         version: 7.8.2
       socket.io:
+        specifier: ^4.8.3
+        version: 4.8.3
+      socket.io-client:
         specifier: ^4.8.3
         version: 4.8.3
       stripe:
@@ -159,6 +171,9 @@ importers:
       vxe-table:
         specifier: 4.20.9
         version: 4.20.9
+      vxe-table-plugin-advanced-filter:
+        specifier: workspace:*
+        version: link:../packages/table-advanced-filter-plugin
       vxe-table-plugin-search-panel:
         specifier: workspace:*
         version: link:../packages/table-search-plugin
@@ -596,6 +611,21 @@ importers:
       vue-tsc:
         specifier: ^3.3.7
         version: 3.3.8(typescript@5.9.3)
+
+  packages/table-advanced-filter-plugin:
+    devDependencies:
+      typescript:
+        specifier: ~5.9.3
+        version: 5.9.3
+      vue:
+        specifier: ^3.5.40
+        version: 3.5.40(typescript@5.9.3)
+      vxe-pc-ui:
+        specifier: ^4.16.24
+        version: 4.16.24(vue@3.5.40(typescript@5.9.3))
+      vxe-table:
+        specifier: ^4.20.9
+        version: 4.20.9
 
   packages/table-search-plugin:
     devDependencies:

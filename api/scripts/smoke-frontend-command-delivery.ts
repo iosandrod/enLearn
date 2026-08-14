@@ -23,19 +23,10 @@ type ChatConnected = {
   socketId: string;
 };
 
-type StartLoopResult = {
-  runId: string;
-  taskId: string;
-  requestId: string;
-};
-
-type TriggerMode = 'none' | 'optional' | 'required';
-
 const apiUrl = String(process.env.API_URL || 'http://127.0.0.1:3002').replace(/\/+$/, '');
 const socketUrl = String(process.env.SOCKET_URL || apiUrl).replace(/\/+$/, '');
 const accountId = process.env.ACCOUNT_ID || '00000000-0000-4000-8000-000000000001';
 const timeoutMs = Number(process.env.FRONTEND_COMMAND_SMOKE_TIMEOUT_MS || 15_000);
-const triggerMode = readTriggerMode(process.env.FRONTEND_COMMAND_SMOKE_TRIGGER);
 
 async function main() {
   const auth = await signIn();
@@ -67,34 +58,12 @@ async function main() {
       expiresAt: new Date(Date.now() + timeoutMs).toISOString(),
       source: { taskId: 'frontend.command.delivery.smoke' }
     };
-    let mode: 'publisher' | 'trigger' = 'publisher';
-    let startResult: StartLoopResult | null = null;
-    let triggerError = '';
     const commandPromise = waitForEvent<FrontendCommand>(socket, FRONTEND_COMMAND_EVENT, timeoutMs);
-    if (triggerMode !== 'none') {
-      try {
-        startResult = await startTriggerLoop(auth.session.access_token);
-        mode = 'trigger';
-      } catch (error) {
-        if (triggerMode === 'required') throw error;
-        triggerError = error instanceof Error ? error.message : String(error);
-      }
-    }
-    const publishResult = mode === 'publisher' ? await publishFrontendCommand(command) : null;
-    if (publishResult) {
-      assert.ok(publishResult.subscriberCount > 0, 'No frontend-command Redis subscriber is active.');
-    }
+    const publishResult = await publishFrontendCommand(command);
+    assert.ok(publishResult.subscriberCount > 0, 'No frontend-command Redis subscriber is active.');
 
     const received = await commandPromise;
-    if (mode === 'trigger') {
-      assert.equal(received.source?.taskId, 'frontend.command.message.loop');
-      assert.equal(received.target.accountId, accountId);
-      assert.ok('userId' in received.target);
-      assert.equal(received.target.userId, auth.user.id);
-      assert.equal(received.params.message, command.params.message);
-    } else {
-      assert.deepEqual(received, command);
-    }
+    assert.deepEqual(received, command);
     const ackWrite = waitForSocketWrite(socket.io.engine, timeoutMs);
     socket.emit(FRONTEND_COMMAND_ACK_EVENT, {
       commandId: received.id,
@@ -105,11 +74,8 @@ async function main() {
 
     console.log(JSON.stringify({
       ok: true,
-      mode,
       commandId: received.id,
-      ...(publishResult ? { subscriberCount: publishResult.subscriberCount } : {}),
-      ...(startResult ? { runId: startResult.runId, requestId: startResult.requestId } : {}),
-      ...(triggerError ? { triggerFallback: triggerError } : {}),
+      subscriberCount: publishResult.subscriberCount,
       socketId: connected.socketId,
       userId: connected.userId,
       accountId: connected.accountId
@@ -118,40 +84,6 @@ async function main() {
     socket.disconnect();
     await closeFrontendCommandPublisher();
   }
-}
-
-function readTriggerMode(value: string | undefined): TriggerMode {
-  if (value === '1' || value === 'required') return 'required';
-  if (value === 'optional') return 'optional';
-  return 'none';
-}
-
-async function startTriggerLoop(accessToken: string) {
-  const response = await fetch(`${apiUrl}/api/service`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-      'X-Account-Id': accountId
-    },
-    body: JSON.stringify({
-      serviceName: 'workflow',
-      serviceMethod: 'startFrontendCommandLoop',
-      postData: {
-        intervalSeconds: 1,
-        repeatCount: 1,
-        message: 'Frontend command smoke test',
-        messageType: 'success'
-      }
-    })
-  });
-  const text = await response.text();
-  if (!response.ok) throw new Error(`Trigger loop failed (${response.status}): ${text}`);
-  const payload = JSON.parse(text) as { data?: StartLoopResult } & StartLoopResult;
-  const result = payload.data ?? payload;
-  assert.equal(result.taskId, 'frontend.command.message.loop');
-  assert.ok(result.runId);
-  return result;
 }
 
 async function waitForSocketWrite(

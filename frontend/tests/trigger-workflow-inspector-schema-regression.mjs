@@ -23,12 +23,23 @@ const inspectorSource = await readFile(
   new URL('../../packages/trigger-workflow-editor/src/inspector-form.ts', import.meta.url),
   'utf8',
 );
-const compiledInspector = ts.transpileModule(inspectorSource, {
+const runtimeCatalogSource = await readFile(
+  new URL('../../packages/trigger-workflow-editor/src/runtime-catalog.ts', import.meta.url),
+  'utf8',
+);
+const compiledRuntimeCatalog = ts.transpileModule(runtimeCatalogSource, {
   compilerOptions: {
     module: ts.ModuleKind.ESNext,
     target: ts.ScriptTarget.ES2022,
   },
 }).outputText;
+const runtimeCatalogUrl = `data:text/javascript;base64,${Buffer.from(compiledRuntimeCatalog).toString('base64')}`;
+const compiledInspector = ts.transpileModule(inspectorSource, {
+  compilerOptions: {
+    module: ts.ModuleKind.ESNext,
+    target: ts.ScriptTarget.ES2022,
+  },
+}).outputText.replace("from './runtime-catalog'", `from '${runtimeCatalogUrl}'`);
 const inspectorUrl = `data:text/javascript;base64,${Buffer.from(compiledInspector).toString('base64')}`;
 const inspector = await import(inspectorUrl);
 const compiledFormDefinitions = ts.transpileModule(formDefinitionSource, {

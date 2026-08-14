@@ -18,6 +18,9 @@ declare const __VLS_export: import("vue").DefineComponent<__VLS_Props, {}, {}, {
     validation: (issues: TriggerWorkflowIssue[]) => any;
     compile: (value: import("../index.js").TriggerWorkflowExecutionPlan) => any;
     export: (value: TriggerWorkflowModel) => any;
+    "new-workflow": () => any;
+    "save-workflow": () => any;
+    "load-workflow": () => any;
     save: () => any;
     restore: () => any;
     copy: () => any;
@@ -30,6 +33,9 @@ declare const __VLS_export: import("vue").DefineComponent<__VLS_Props, {}, {}, {
     onValidation?: ((issues: TriggerWorkflowIssue[]) => any) | undefined;
     onCompile?: ((value: import("../index.js").TriggerWorkflowExecutionPlan) => any) | undefined;
     onExport?: ((value: TriggerWorkflowModel) => any) | undefined;
+    "onNew-workflow"?: (() => any) | undefined;
+    "onSave-workflow"?: (() => any) | undefined;
+    "onLoad-workflow"?: (() => any) | undefined;
     onSave?: (() => any) | undefined;
     onRestore?: (() => any) | undefined;
     onCopy?: (() => any) | undefined;

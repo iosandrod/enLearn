@@ -32,6 +32,8 @@ export type WorkflowApiEnv = {
   TRIGGER_PROJECT_REF?: string;
   TRIGGER_SECRET_KEY?: string;
   TRIGGER_API_URL?: string;
+  API_BASE_URL?: string;
+  WORKFLOW_INTERNAL_API_URL?: string;
   PORT?: string;
 };
 

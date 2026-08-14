@@ -19,8 +19,6 @@ type TestWorkflowService = {
 
 class WorkflowServiceProbe extends WorkflowService {
   protected override async assertWorkflowPermission() {}
-
-  protected override async assertFrontendCommandTarget() {}
 }
 
 const delegatedCalls: Array<{ service: string; method: string; args: unknown[] }> = [];
@@ -56,10 +54,9 @@ const service = new WorkflowServiceProbe(
     'addSignTask'
   ]) as never,
   delegate('approvalConsole', ['listInstances', 'getInstanceDetail']) as never,
-  delegate('job', ['createJob', 'getJob', 'updateJobStatus', 'runJob']) as never,
+  delegate('job', ['createJob', 'upsertJob', 'getJob', 'updateJobStatus', 'runJob']) as never,
   delegate('runtimeStatus', ['getStatus']) as never,
-  delegate('taskConsole', ['getConsole', 'getDetail']) as never,
-  delegate('frontendCommand', ['startMessageLoop']) as never
+  delegate('taskConsole', ['getConsole', 'getDetail']) as never
 ) as unknown as TestWorkflowService;
 const resources = service.resources();
 const serviceContext = {
@@ -129,8 +126,7 @@ async function testJobRunReadModel() {
     delegate('approvalJobRunProbe', []) as never,
     delegate('jobJobRunProbe', []) as never,
     delegate('runtimeStatusJobRunProbe', []) as never,
-    delegate('taskConsoleJobRunProbe', []) as never,
-    delegate('frontendCommandJobRunProbe', []) as never
+    delegate('taskConsoleJobRunProbe', []) as never
   ) as unknown as TestWorkflowService;
   const rows = await probe.listItemHandlers().jobRuns({}, serviceContext) as Array<Record<string, unknown>>;
   assert.deepEqual(rows[0], {
@@ -196,8 +192,7 @@ async function testDirectDelegation() {
     delegate('approvalProbe', []) as never,
     delegate('jobProbe', []) as never,
     delegate('runtimeStatusProbe', []) as never,
-    delegate('taskConsoleProbe', []) as never,
-    delegate('frontendCommandProbe', []) as never
+    delegate('taskConsoleProbe', []) as never
   );
   crudProbe.existing = { id: 'model-1' };
   await crudProbe.execute('getModel', { modelId: 'model-1' }, serviceContext);
@@ -292,19 +287,6 @@ async function testDirectDelegation() {
     { comment: 'Approved' }
   ]);
 
-  await service.execute('startFrontendCommandLoop', {
-    userId: 'target-user',
-    intervalSeconds: 10,
-    repeatCount: 6
-  }, serviceContext);
-  assert.deepEqual(delegatedCalls.pop(), {
-    service: 'frontendCommand',
-    method: 'startMessageLoop',
-    args: [
-      { userId: 'target-user', intervalSeconds: 10, repeatCount: 6 },
-      { accountId: serviceContext.accountId, userId: serviceContext.userId }
-    ]
-  });
 }
 
 void Promise.all([testDirectDelegation(), testJobRunReadModel()]).then(() => {

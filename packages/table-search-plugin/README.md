@@ -1,11 +1,14 @@
 # vxe-table-plugin-search-panel
 
-Injects a compact find/replace panel shell into every `vxe-table` and `vxe-grid`.
+Injects a compact find/replace panel into every `vxe-table` and `vxe-grid`.
 After a table has focus, press `Ctrl+F` (or `Cmd+F`) to open the panel in the
 table's upper-right corner.
 
-The current version provides the panel UI and lifecycle only. Matching,
-navigation, and replacement behavior can be added without changing host tables.
+The panel searches formatted values across visible data columns. Match case,
+whole-word, and regular-expression modes are supported. Use the filter button
+to keep only matching rows; matching text is highlighted in yellow. Turning the
+filter off or closing the panel restores the rows while preserving the table's
+existing column filters.
 
 ```ts
 import { VxeUI } from 'vxe-table'

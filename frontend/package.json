@@ -16,6 +16,8 @@
     "test:mes-runtime-safety": "node tests/mes-lowcode-runtime-safety-regression.mjs && node tests/mes-mobile-command-runtime-regression.mjs",
     "test:node-actions": "node tests/node-action-modules-regression.mjs",
     "test:grid-load-data-action-browser": "node tests/grid-load-data-action-browser-launcher.mjs",
+    "test:table-search-filter-browser": "node tests/table-search-filter-browser-launcher.mjs",
+    "test:table-advanced-filter-browser": "node tests/table-advanced-filter-browser-launcher.mjs",
     "test:signin-account": "node tests/signin-account-field-regression.mjs",
     "test:dev-user-login": "node tests/dev-user-login-regression.mjs",
     "test:files-auth-loading": "node tests/files-auth-loading-regression.mjs",
@@ -41,6 +43,7 @@
     "test:database-form-definitions-browser": "node tests/database-form-definitions-browser-launcher.mjs",
     "test:page-functions-runtime-browser": "node tests/page-functions-runtime-browser-launcher.mjs",
     "test:builtin-page-functions": "node --experimental-strip-types tests/builtin-page-functions-regression.mjs",
+    "test:lowcode-edit-page-ensure": "node tests/lowcode-edit-page-ensure-regression.mjs",
     "test:approval-progress": "node tests/approval-progress-page-regression.mjs",
     "test:approval-console": "node tests/approval-console-regression.mjs",
     "test:task-console": "node tests/task-console-regression.mjs",
@@ -69,6 +72,7 @@
     "test:view-management-browser": "node tests/view-management-create-browser-launcher.mjs",
     "test:trigger-workflow-inspector-schema": "node tests/trigger-workflow-inspector-schema-regression.mjs",
     "test:trigger-workflow-persistence": "node tests/trigger-workflow-persistence-regression.mjs",
+    "test:trigger-workflow-job-adapters": "node tests/trigger-workflow-job-adapters-regression.mjs",
     "test:trigger-workflow-persistence-browser": "node tests/trigger-workflow-persistence-browser-launcher.mjs",
     "test:trigger-workflow-canvas-browser": "node tests/trigger-workflow-canvas-browser-launcher.mjs",
     "test:frontend-command": "node --experimental-strip-types tests/frontend-command-runtime-regression.mjs && node tests/frontend-command-socket-regression.mjs",
@@ -103,6 +107,7 @@
     "vuedraggable": "^4.1.0",
     "vxe-pc-ui": "4.16.24",
     "vxe-table": "4.20.9",
+    "vxe-table-plugin-advanced-filter": "workspace:*",
     "vxe-table-plugin-search-panel": "workspace:*"
   },
   "devDependencies": {

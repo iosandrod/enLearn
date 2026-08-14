@@ -12,6 +12,10 @@ export interface TableSearchPanelText {
   previousMatch: string
   nextMatch: string
   searchOptions: string
+  filter: string
+  cancelFilter: string
+  resultCount: string
+  invalidPattern: string
   close: string
   replace: string
   replaceAll: string
