@@ -45,7 +45,11 @@ export function isRecord(value: unknown): value is Record<string, any> {
 
 function normalizeNode(node: Record<string, any>, index: number): TriggerWorkflowNode {
   const type = readString(node.type, 'task');
-  const config = isRecord(node.config) ? normalizeNodeConfig(node.config) : undefined;
+  const config = isRecord(node.config)
+    ? normalizeNodeConfig(node.config, type)
+    : type === 'webhook'
+      ? normalizeNodeConfig({}, type)
+      : undefined;
   return {
     id: readString(node.id, `${type}_${index + 1}`),
     type,
@@ -65,24 +69,50 @@ function normalizeNode(node: Record<string, any>, index: number): TriggerWorkflo
   };
 }
 
-function normalizeNodeConfig(config: Record<string, any>) {
-  if (!isRecord(config.task)) return config;
+function normalizeNodeConfig(config: Record<string, any>, nodeType: string) {
+  const normalizedConfig = nodeType === 'webhook'
+    ? { ...config, webhook: normalizeWebhookConfig(config.webhook) }
+    : config;
+  if (!isRecord(normalizedConfig.task)) return normalizedConfig;
 
-  const explicitType = readTaskType(config.task.type);
-  const inferredType = readString(config.task.frontendFunction)
+  const explicitType = readTaskType(normalizedConfig.task.type);
+  const inferredType = readString(normalizedConfig.task.frontendFunction)
     ? 'frontendCommand'
-    : readString(config.task.backendFunction)
+    : readString(normalizedConfig.task.backendFunction)
       ? 'backendCommand'
-      : readString(config.task.procedureName)
+      : readString(normalizedConfig.task.procedureName)
         ? 'storedProcedure'
-        : readString(config.task.id)
+        : readString(normalizedConfig.task.id)
           ? 'registeredTask'
           : '';
   const type = explicitType || inferredType;
-  if (!type) return config;
+  if (!type) return normalizedConfig;
   return {
-    ...config,
-    task: normalizeTaskForType(config.task, type)
+    ...normalizedConfig,
+    task: normalizeTaskForType(normalizedConfig.task, type)
+  };
+}
+
+function normalizeWebhookConfig(value: unknown) {
+  const webhook = isRecord(value) ? value : {};
+  const body = isRecord(webhook.body) ? webhook.body : {};
+  const {
+    path: _path,
+    method: _method,
+    secretHeader: _secretHeader,
+    body: _body,
+    ...rest
+  } = webhook;
+
+  return {
+    ...rest,
+    path: '/api/service',
+    method: 'POST' as const,
+    body: {
+      serviceName: readString(body.serviceName),
+      serviceMethod: readString(body.serviceMethod),
+      postData: isRecord(body.postData) ? body.postData : {}
+    }
   };
 }
 

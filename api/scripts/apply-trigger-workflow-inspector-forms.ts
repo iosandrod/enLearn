@@ -15,10 +15,11 @@ if (!rawConnectionStrings.length) {
 const repoRoot = process.cwd().toLowerCase().endsWith('api')
   ? resolve(process.cwd(), '..')
   : process.cwd();
-const migrationPath = resolve(
-  repoRoot,
-  'supabase/migrations/20260813130000_trigger_workflow_inspector_forms.sql'
-);
+const migrationPaths = [
+  resolve(repoRoot, 'supabase/migrations/20260813130000_trigger_workflow_inspector_forms.sql'),
+  resolve(repoRoot, 'supabase/migrations/20260815120000_trigger_workflow_schedule_sub_form.sql'),
+  resolve(repoRoot, 'supabase/migrations/20260815130000_trigger_workflow_webhook_service_form.sql')
+];
 
 function connectionString(value: string) {
   const url = new URL(normalizePostgresConnectionString(value));
@@ -52,8 +53,11 @@ async function connect() {
 async function main() {
   const client = await connect();
   try {
-    await client.query(await readFile(migrationPath, 'utf8'));
-    const { rows } = await client.query<{
+    for (const migrationPath of migrationPaths) {
+      await client.query(await readFile(migrationPath, 'utf8'));
+    }
+
+    const { rows: taskRows } = await client.query<{
       field_names: string[];
       tab_keys: string[];
     }>(`
@@ -70,7 +74,7 @@ async function main() {
       from public.lowcode_form_definitions
       where code = 'trigger-workflow.node.task'
     `);
-    const result = rows[0];
+    const taskResult = taskRows[0];
     const requiredFields = [
       'taskType',
       'frontendFunction',
@@ -82,17 +86,125 @@ async function main() {
       'priority',
       'taskTags'
     ];
+
+    const { rows: scheduleRows } = await client.query<{
+      found: boolean;
+      schedule_rule_component: string;
+      schedule_rule_fields: string[];
+      schedule_layout_has_rule: boolean;
+    }>(`
+      select
+        count(*) over () = 1 as found,
+        coalesce((
+          select field->>'component'
+          from jsonb_array_elements(schema->'fields') field
+          where field->>'field' = 'scheduleRule'
+          limit 1
+        ), '') as schedule_rule_component,
+        array(
+          select nested_field->>'field'
+          from jsonb_array_elements(coalesce((
+            select field->'props'->'schema'->'fields'
+            from jsonb_array_elements(schema->'fields') field
+            where field->>'field' = 'scheduleRule'
+            limit 1
+          ), '[]'::jsonb)) nested_field
+          order by nested_field->>'field'
+        ) as schedule_rule_fields,
+        coalesce(
+          (schema #> '{layout,0,tabs,0,blocks}')
+            @> '[{"kind":"field","field":"scheduleRule"}]'::jsonb,
+          false
+        ) as schedule_layout_has_rule
+      from public.lowcode_form_definitions
+      where code = 'trigger-workflow.node.schedule'
+      limit 1
+    `);
+    const scheduleResult = scheduleRows[0];
+    const requiredScheduleFields = [
+      'kind',
+      'time',
+      'weekday',
+      'dayOfMonth',
+      'intervalMinutes'
+    ];
+
+    const { rows: webhookRows } = await client.query<{
+      found: boolean;
+      webhook_body_component: string;
+      webhook_body_fields: string[];
+      webhook_layout_has_body: boolean;
+    }>(`
+      select
+        count(*) over () = 1 as found,
+        coalesce((
+          select field->>'component'
+          from jsonb_array_elements(schema->'fields') field
+          where field->>'field' = 'webhookBody'
+          limit 1
+        ), '') as webhook_body_component,
+        array(
+          select nested_field->>'field'
+          from jsonb_array_elements(coalesce((
+            select field->'props'->'schema'->'fields'
+            from jsonb_array_elements(schema->'fields') field
+            where field->>'field' = 'webhookBody'
+            limit 1
+          ), '[]'::jsonb)) nested_field
+          order by nested_field->>'field'
+        ) as webhook_body_fields,
+        coalesce(
+          (schema #> '{layout,0,tabs,1,blocks}')
+            @> '[{"kind":"field","field":"webhookBody"}]'::jsonb,
+          false
+        ) as webhook_layout_has_body
+      from public.lowcode_form_definitions
+      where code = 'trigger-workflow.node.webhook'
+      limit 1
+    `);
+    const webhookResult = webhookRows[0];
+    const requiredWebhookBodyFields = [
+      'serviceName',
+      'serviceMethod',
+      'postData'
+    ];
+
     if (
-      !result ||
-      !requiredFields.every((field) => result.field_names.includes(field)) ||
-      !result.tab_keys.includes('execution')
+      !taskResult ||
+      !requiredFields.every((field) => taskResult.field_names.includes(field)) ||
+      !taskResult.tab_keys.includes('execution') ||
+      !scheduleResult?.found ||
+      scheduleResult.schedule_rule_component !== 'lc-sub-form' ||
+      !requiredScheduleFields.every((field) =>
+        scheduleResult.schedule_rule_fields.includes(field)
+      ) ||
+      !scheduleResult.schedule_layout_has_rule ||
+      !webhookResult?.found ||
+      webhookResult.webhook_body_component !== 'lc-sub-form' ||
+      !requiredWebhookBodyFields.every((field) =>
+        webhookResult.webhook_body_fields.includes(field)
+      ) ||
+      !webhookResult.webhook_layout_has_body
     ) {
-      throw new Error(`Trigger task inspector verification failed: ${JSON.stringify(result)}`);
+      throw new Error(
+        `Trigger workflow inspector verification failed: ${JSON.stringify({
+          task: taskResult,
+          schedule: scheduleResult,
+          webhook: webhookResult
+        })}`
+      );
     }
     console.log(JSON.stringify({
       requiredFields,
-      tabKeys: result.tab_keys
+      tabKeys: taskResult.tab_keys,
+      requiredScheduleFields,
+      scheduleRuleComponent: scheduleResult.schedule_rule_component,
+      requiredWebhookBodyFields,
+      webhookBodyComponent: webhookResult.webhook_body_component
     }));
+  } catch (error) {
+    await client.query('rollback').catch(() => undefined);
+    throw error;
   } finally {
     await client.end();
   }

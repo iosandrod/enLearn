@@ -75,6 +75,22 @@ export type TriggerInspectorFormField = {
   rules?: Array<{ required?: boolean; min?: number; message: string }>;
 };
 
+type TriggerScheduleRuleKind =
+  | 'daily'
+  | 'weekly'
+  | 'monthly'
+  | 'weekdays'
+  | 'interval'
+  | 'custom';
+
+type TriggerScheduleRule = {
+  kind: TriggerScheduleRuleKind;
+  time: string;
+  weekday: string;
+  dayOfMonth: number;
+  intervalMinutes: number;
+};
+
 export type TriggerInspectorFormLayoutNode =
   | { kind: 'field'; field: string }
   | {
@@ -124,13 +140,29 @@ const taskNodeTypes = new Set([
   'memory'
 ]);
 
+const webhookServiceNameOptions = [
+  { label: '账户服务', value: 'account' },
+  { label: '支付服务', value: 'payment' },
+  { label: '用户服务', value: 'user' },
+  { label: '低代码服务', value: 'lowcode' },
+  { label: '系统管理服务', value: 'admin' },
+  { label: '文章服务', value: 'posts' },
+  { label: '通知服务', value: 'notification' },
+  { label: '工作流服务', value: 'workflow' },
+  { label: '实体设计服务', value: 'entityDesign' },
+  { label: '文件服务', value: 'files' },
+  { label: '聊天服务', value: 'chat' },
+  { label: '计划服务', value: 'planning' },
+  { label: 'MES 服务', value: 'mes' }
+] as const;
+
 const nodeFieldPaths: Record<string, string[]> = {
   cron: ['schedule', 'cron'],
   timezone: ['schedule', 'timezone'],
   externalId: ['schedule', 'externalId'],
   webhookPath: ['webhook', 'path'],
   webhookMethod: ['webhook', 'method'],
-  webhookSecretHeader: ['webhook', 'secretHeader'],
+  webhookBody: ['webhook', 'body'],
   taskType: ['task', 'type'],
   taskId: ['task', 'id'],
   taskImportPath: ['task', 'importPath'],
@@ -305,11 +337,16 @@ export function createTriggerNodeFormModel(node: TriggerWorkflowNode) {
     name: node.name,
     description: node.description ?? '',
     cron: config.schedule?.cron ?? '',
+    scheduleRule: createScheduleRuleModel(config.schedule?.cron ?? ''),
     timezone: config.schedule?.timezone ?? '',
     externalId: config.schedule?.externalId ?? '',
-    webhookPath: config.webhook?.path ?? '',
-    webhookMethod: config.webhook?.method ?? 'POST',
-    webhookSecretHeader: config.webhook?.secretHeader ?? '',
+    webhookPath: '/api/service',
+    webhookMethod: 'POST',
+    webhookBody: cloneValue(config.webhook?.body ?? {
+      serviceName: '',
+      serviceMethod: '',
+      postData: {}
+    }),
     taskType: resolveTaskType(config.task),
     taskId: config.task?.id ?? '',
     taskImportPath: config.task?.importPath ?? '',
@@ -360,6 +397,101 @@ export function createTriggerNodeFormModel(node: TriggerWorkflowNode) {
   };
 }
 
+function createScheduleRuleModel(cron: string): TriggerScheduleRule {
+  const fallback: TriggerScheduleRule = {
+    kind: 'custom',
+    time: '08:00',
+    weekday: '1',
+    dayOfMonth: 1,
+    intervalMinutes: 15
+  };
+  const parts = cron.trim().split(/\s+/);
+  if (parts.length !== 5) return fallback;
+
+  const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
+  const intervalMatch = minute.match(/^\*\/([1-5]?\d)$/);
+  if (intervalMatch && hour === '*' && dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+    const intervalMinutes = Number(intervalMatch[1]);
+    if (intervalMinutes >= 1 && intervalMinutes <= 59) {
+      return { ...fallback, kind: 'interval', intervalMinutes };
+    }
+  }
+
+  const time = readCronTime(minute, hour);
+  if (!time) return fallback;
+
+  if (dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+    return { ...fallback, kind: 'daily', time };
+  }
+  if (dayOfMonth === '*' && month === '*' && dayOfWeek === '1-5') {
+    return { ...fallback, kind: 'weekdays', time };
+  }
+  if (dayOfMonth === '*' && month === '*' && /^[0-7]$/.test(dayOfWeek)) {
+    return { ...fallback, kind: 'weekly', time, weekday: dayOfWeek === '7' ? '0' : dayOfWeek };
+  }
+  if (month === '*' && dayOfWeek === '*' && /^\d{1,2}$/.test(dayOfMonth)) {
+    const parsedDay = Number(dayOfMonth);
+    if (parsedDay >= 1 && parsedDay <= 31) {
+      return { ...fallback, kind: 'monthly', time, dayOfMonth: parsedDay };
+    }
+  }
+
+  return fallback;
+}
+
+function buildCronFromScheduleRule(value: unknown, fallback: string) {
+  if (!isRecord(value)) return fallback;
+  const kind = value.kind;
+  if (kind === 'custom') return fallback;
+
+  if (kind === 'interval') {
+    const intervalMinutes = Number(value.intervalMinutes);
+    return Number.isInteger(intervalMinutes) && intervalMinutes >= 1 && intervalMinutes <= 59
+      ? `*/${intervalMinutes} * * * *`
+      : fallback;
+  }
+
+  const time = parseScheduleTime(value.time);
+  if (!time) return fallback;
+  const { minute, hour } = time;
+
+  if (kind === 'daily') return `${minute} ${hour} * * *`;
+  if (kind === 'weekdays') return `${minute} ${hour} * * 1-5`;
+  if (kind === 'weekly') {
+    const weekday = String(value.weekday ?? '1');
+    return /^[0-7]$/.test(weekday) ? `${minute} ${hour} * * ${weekday}` : fallback;
+  }
+  if (kind === 'monthly') {
+    const dayOfMonth = Number(value.dayOfMonth);
+    return Number.isInteger(dayOfMonth) && dayOfMonth >= 1 && dayOfMonth <= 31
+      ? `${minute} ${hour} ${dayOfMonth} * *`
+      : fallback;
+  }
+
+  return fallback;
+}
+
+function readCronTime(minute: string, hour: string) {
+  if (!/^\d{1,2}$/.test(minute) || !/^\d{1,2}$/.test(hour)) return '';
+  const parsedMinute = Number(minute);
+  const parsedHour = Number(hour);
+  if (parsedMinute > 59 || parsedHour > 23) return '';
+  return `${String(parsedHour).padStart(2, '0')}:${String(parsedMinute).padStart(2, '0')}`;
+}
+
+function parseScheduleTime(value: unknown) {
+  const text = String(value ?? '').trim();
+  const match = text.match(/^(\d{1,2}):(\d{1,2})$/);
+  if (!match) return undefined;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (hour > 23 || minute > 59) return undefined;
+  return {
+    hour: String(hour),
+    minute: String(minute)
+  };
+}
+
 export function updateTriggerNodeFromFormField(
   node: TriggerWorkflowNode,
   field: string,
@@ -372,6 +504,30 @@ export function updateTriggerNodeFromFormField(
   }
   if (field === 'rawConfig') {
     return { ...node, config: isRecord(value) ? cloneValue(value) : {} };
+  }
+  if (
+    node.type === 'webhook' &&
+    (field === 'webhookPath' || field === 'webhookMethod' || field === 'webhookBody')
+  ) {
+    const config = cloneValue(node.config ?? {});
+    const webhook = isRecord(config.webhook) ? config.webhook : {};
+    config.webhook = {
+      ...webhook,
+      path: '/api/service',
+      method: 'POST',
+      ...(field === 'webhookBody'
+        ? { body: normalizeNodeFieldValue('webhookBody', value) }
+        : {})
+    };
+    return { ...node, config };
+  }
+  if (field === 'scheduleRule') {
+    const config = cloneValue(node.config ?? {});
+    const schedule = isRecord(config.schedule) ? config.schedule : {};
+    const cron = buildCronFromScheduleRule(value, typeof schedule.cron === 'string' ? schedule.cron : '');
+    if (!cron) return node;
+    config.schedule = { ...schedule, cron };
+    return { ...node, config };
   }
 
   const path = nodeFieldPaths[field];
@@ -483,7 +639,7 @@ function createNodeConfigSection(type: TriggerNodeType): FormSection {
       key: 'trigger',
       label: '触发设置',
       fields: [
-        textField('cron', 'Cron 表达式', { placeholder: '例如：0 8 * * *' }, true),
+        textField('cron', 'Cron 表达式（高级）', { placeholder: '例如：0 8 * * *' }, true),
         textField('timezone', '时区', { placeholder: 'Asia/Shanghai' }),
         textField('externalId', '外部标识', { placeholder: '用于同步 Trigger.dev 计划' })
       ]
@@ -495,9 +651,15 @@ function createNodeConfigSection(type: TriggerNodeType): FormSection {
       key: 'trigger',
       label: '触发设置',
       fields: [
-        textField('webhookPath', '请求路径', { placeholder: '/events/created' }, true),
-        selectField('webhookMethod', '请求方法', ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
-        textField('webhookSecretHeader', '签名请求头', { placeholder: '例如：x-webhook-signature' })
+        textField('webhookPath', '请求路径', { disabled: true }, true),
+        {
+          field: 'webhookMethod',
+          label: '请求方法',
+          component: 'vxe-select',
+          props: { clearable: false, disabled: true },
+          options: [{ label: 'POST', value: 'POST' }]
+        },
+        createWebhookBodyField()
       ]
     };
   }
@@ -871,6 +1033,48 @@ function jsonField(
   };
 }
 
+function createWebhookBodyField(): TriggerInspectorFormField {
+  return {
+    field: 'webhookBody',
+    label: '请求 Body',
+    component: 'lc-sub-form',
+    props: {
+      schema: {
+        columns: 1,
+        fields: [
+          {
+            field: 'serviceName',
+            label: '服务名称',
+            component: 'vxe-select',
+            props: { clearable: false },
+            options: webhookServiceNameOptions,
+            rules: [{ required: true, message: '服务名称不能为空' }]
+          },
+          {
+            field: 'serviceMethod',
+            label: '服务方法',
+            component: 'vxe-input',
+            props: { placeholder: '例如：listItems', clearable: true },
+            rules: [{ required: true, message: '服务方法不能为空' }]
+          },
+          {
+            field: 'postData',
+            label: '请求参数',
+            component: 'lc-json-editor',
+            props: {
+              dialogTitle: '编辑 postData',
+              jsonRootType: 'object',
+              jsonValueMode: 'parsed',
+              placeholder: '打开 JSON 编辑器'
+            }
+          }
+        ],
+        actions: []
+      }
+    }
+  };
+}
+
 function codeField(
   field: string,
   label: string,
@@ -919,11 +1123,20 @@ function normalizeNodeFieldValue(field: string, value: unknown) {
   }
   if (field === 'retryFactor') return toOptionalNumber(value, 1);
   if (
+    field === 'webhookBody' ||
     field === 'dataMapping' ||
     field === 'metadata' ||
     field === 'taskInput' ||
     field === 'outputMapping'
-  ) return isRecord(value) ? cloneValue(value) : {};
+  ) {
+    if (field !== 'webhookBody') return isRecord(value) ? cloneValue(value) : {};
+    const body = isRecord(value) ? value : {};
+    return {
+      serviceName: typeof body.serviceName === 'string' ? body.serviceName : '',
+      serviceMethod: typeof body.serviceMethod === 'string' ? body.serviceMethod : '',
+      postData: isRecord(body.postData) ? cloneValue(body.postData) : {}
+    };
+  }
   if (field === 'defaultOutput') return cloneValue(value ?? {});
   if (field === 'branches') return Array.isArray(value) ? cloneValue(value) : [];
   return typeof value === 'string' ? value : value ?? '';

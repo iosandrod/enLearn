@@ -1,0 +1,100 @@
+
+> @ mobile:dev E:\enLearn
+> pnpm --dir mobile-app web:dev
+
+
+> @enlearn/mobile-app@0.1.0 web:dev E:\enLearn\mobile-app
+> concurrently --kill-others-on-fail --names hippy,web --prefix-colors magenta,cyan "pnpm hippy:dev" "node ./scripts/env-polyfill.js webpack serve --config ./scripts/hippy-webpack.web-renderer.dev.js"
+
+[hippy] 
+[hippy] > @enlearn/mobile-app@0.1.0 hippy:dev E:\enLearn\mobile-app
+[hippy] > node ./scripts/env-polyfill.js hippy-dev -c ./scripts/hippy-webpack.dev.js
+[hippy] 
+[hippy] 2026-08-15 10:54:25.549 [32mentry[39m [32minfo[39m version: 0.5.7
+[hippy] 2026-08-15 10:54:25.549 [32mentry[39m [32minfo[39m start dev argv: {"_":[],"c":"./scripts/hippy-webpack.dev.js","config":"./scripts/hippy-webpack.dev.js","$0":"node_modules\\@hippy\\debug-server-next\\dist\\index-dev.js"}
+[hippy] 2026-08-15 10:54:25.714 [32mwebpack-util[39m [32minfo[39m [1m[33mwebpack publicPath is set as: http://127.0.0.1:38989/[39m[22m
+[hippy] (node:36272) [DEP_WEBPACK_WATCH_WITHOUT_CALLBACK] DeprecationWarning: A 'callback' argument needs to be provided to the 'webpack(options, callback)' function when the 'watch' option is set. There is no way to handle the 'watch' option without a callback.
+[hippy] (Use `node --trace-deprecation ...` to show where the warning was created)
+[hippy] <i> [webpack-dev-server] Project is running at:
+[hippy] <i> [webpack-dev-server] Loopback: [36mhttp://localhost:39000/[39m, [36mhttp://[::1]:39000/[39m
+[hippy] <i> [webpack-dev-server] Content not from webpack is served from '[36mE:\enLearn\mobile-app\public[39m' directory
+[hippy] 2026-08-15 10:54:27.338 [96mentry[39m [32minfo[39m version: 0.5.7
+[hippy] 2026-08-15 10:54:27.339 [33mdebug-server[39m [32minfo[39m start server argv: {"_":[],"port":38989,"entry":"dist/dev/index.bundle","host":"0.0.0.0","open":true,"enableIOS":true,"enable-i-o-s":true,"log":"info","iWDPPort":9000,"i-w-d-p-port":9000,"iWDPStartPort":9200,"i-w-d-p-start-port":9200,"iWDPEndPort":9300,"i-w-d-p-end-port":9300,"env":"hippy","$0":"..\\node_modules\\.pnpm\\@hippy+debug-server-next@0._c06c2a843f0bcb3355cf73806735e4e1\\node_modules\\@hippy\\debug-server-next\\dist\\index-debug.js"}
+[hippy] (node:4196) [DEP0147] DeprecationWarning: In future versions of Node.js, fs.rmdir(path, { recursive: true }) will be removed. Use fs.rm(path, { recursive: true }) instead
+[hippy] (Use `node --trace-deprecation ...` to show where the warning was created)
+[hippy] 2026-08-15 10:54:27.442 [33mdebug-server[39m [32minfo[39m [1m[32mhippy debug steps:[39m[22m
+[hippy] [1m[32m1. start debug server by run 'npm run hippy:debug'[39m[22m
+[hippy] [1m[32m2. start dev server by run 'npm run hippy:dev'[39m[22m
+[hippy] [1m[32m3. open hippy pages with debugMode on mobile/emulator[39m[22m
+[hippy] [1m[32m4. find connected debug targets on devtools home page: [4m[34mhttp://localhost:38989/extensions/home.html?env=hippy[32m[24m[39m[22m
+[hippy] 
+[hippy] [1m[32mfind full guide on [4m[34mhttps://hippyjs.org/#/guide/debug[32m[24m[39m[22m
+[hippy] 2026-08-15 10:54:27.446 [33mrouter[39m [32minfo[39m serve bundle: dist/dev/index.bundle; serve folder: E:\enLearn\mobile-app\dist\dev
+[hippy] 2026-08-15 10:54:27.508 [35mchild-process[39m [32minfo[39m tunnel option: {"adb_path":"E:\\enLearn\\node_modules\\.pnpm\\@hippy+debug-server-next@0._c06c2a843f0bcb3355cf73806735e4e1\\node_modules\\@hippy\\debug-server-next\\dist\\build\\win\\adb.exe","hdc_path":"E:\\enLearn\\node_modules\\.pnpm\\@hippy+debug-server-next@0._c06c2a843f0bcb3355cf73806735e4e1\\node_modules\\@hippy\\debug-server-next\\dist\\build\\win\\hdc.exe","iwdp":{"iwdp_params":["--no-frontend","--config=null:9000,:9200-9300"],"iwdp_listen_port":9000,"iwdp_path":"E:\\enLearn\\node_modules\\.pnpm\\@hippy+debug-server-next@0._c06c2a843f0bcb3355cf73806735e4e1\\node_modules\\@hippy\\debug-server-next\\dist\\build\\win\\iwdp1.8.8\\ios_webkit_debug_proxy.exe"},"only_use_iwdp":0,"iproxy_path":"E:\\enLearn\\node_modules\\.pnpm\\@hippy+debug-server-next@0._c06c2a843f0bcb3355cf73806735e4e1\\node_modules\\@hippy\\debug-server-next\\dist\\build\\win\\idevice\\iproxy.exe","idevice_info_path":"E:\\enLearn\\node_modules\\.pnpm\\@hippy+debug-server-next@0._c06c2a843f0bcb3355cf73806735e4e1\\node_modules\\@hippy\\debug-server-next\\dist\\build\\win\\idevice\\ideviceinfo.exe"}
+[hippy] (node:36272) [DEP_WEBPACK_MAIN_TEMPLATE_OUTPUT_OPTIONS] DeprecationWarning: MainTemplate.outputOptions is deprecated (use Compilation.outputOptions instead)
+[hippy] [Fail]ExecuteCommand need connect-key? please confirm a device by help info
+[hippy] (node:36272) [DEP_WEBPACK_MAIN_TEMPLATE_RENDER_CURRENT_HASH_CODE] DeprecationWarning: MainTemplate.renderCurrentHashCode is deprecated (use RuntimeGlobals.getFullHash runtime function instead)
+[hippy] (node:36272) [DEP_WEBPACK_MAIN_TEMPLATE_GET_ASSET_PATH] DeprecationWarning: MainTemplate.getAssetPath is deprecated (use Compilation.getAssetPath instead)
+[hippy] (node:36272) [DEP_WEBPACK_MAIN_TEMPLATE_REQUIRE_FN] DeprecationWarning: MainTemplate.requireFn is deprecated (use "__webpack_require__")
+[hippy] asset index.bundle 5.73 MiB [emitted] (name: index)
+[hippy] runtime modules 28.7 KiB 14 modules
+[hippy] orphan modules 246 bytes [orphan] 8 modules
+[hippy] modules by path ./ 710 KiB
+[hippy]   modules by path ./src/runtime/ 586 KiB 172 modules
+[hippy]   modules by path ./src/pages/*.vue 43.1 KiB 21 modules
+[hippy]   modules by path ./src/*.vue 61.3 KiB 7 modules
+[hippy]   modules by path ./src/components/*.vue 11.4 KiB 7 modules
+[hippy]   modules by path ./src/*.ts 8.47 KiB 3 modules
+[hippy]   ./util.inspect (ignored) 15 bytes [built] [code generated]
+[hippy] modules by path ../ 1.02 MiB
+[hippy]   modules by path ../node_modules/.pnpm/ 1.02 MiB 79 modules
+[hippy]   modules by path ../packages/lowcode-framework/src/runtime/*.ts 4.75 KiB
+[hippy]     ../packages/lowcode-framework/src/runtime/edit-page-mode.ts 1.74 KiB [built] [code generated]
+[hippy]     ../packages/lowcode-framework/src/runtime/row-action-state.ts 3.01 KiB [built] [code generated]
+[hippy] webpack 5.109.2 compiled successfully in 1707 ms
+[hippy] <i> [webpack-dev-server] HMR websocket client is connected.
+[hippy] 2026-08-15 10:54:29.055 [32mwebpack-util[39m [32minfo[39m bundleUrl: [1m[32mhttp://127.0.0.1:38989/index.bundle?debugUrl=ws%3A%2F%2F127.0.0.1%3A38989%2Fdebugger-proxy[39m[22m
+[hippy] 2026-08-15 10:54:29.055 [32mwebpack-util[39m [32minfo[39m find debug page on: [1m[32mhttp://127.0.0.1:38989/extensions/home.html?hash=29abfb3faa885bf5e872c4f4dec35111[39m[22m
+[hippy] 2026-08-15 10:54:29.026 [34mhmr-controller[39m [32minfo[39m HMR server connected
+[hippy] <i> [webpack-dev-server] enable HMR
+[hippy] <i> [webpack-dev-server] enable live reload
+[hippy] 2026-08-15 10:54:29.398 [32mwebpack-util[39m [32minfo[39m bundleUrl: [1m[32mhttp://127.0.0.1:38989/index.bundle?debugUrl=ws%3A%2F%2F127.0.0.1%3A38989%2Fdebugger-proxy[39m[22m
+[hippy] 2026-08-15 10:54:29.398 [32mwebpack-util[39m [32minfo[39m find debug page on: [1m[32mhttp://127.0.0.1:38989/extensions/home.html?hash=29abfb3faa885bf5e872c4f4dec35111[39m[22m
+[hippy] assets by status 5.73 MiB [cached] 1 asset
+[hippy] cached modules 1.71 MiB (javascript) 28.7 KiB (runtime) [cached] 314 modules
+[hippy] webpack 5.109.2 compiled successfully in 55 ms
+[web] <i> [webpack-dev-server] Project is running at:
+[web] <i> [webpack-dev-server] Loopback: http://localhost:3100/, http://[::1]:3100/
+[web] <i> [webpack-dev-server] On Your Network (IPv4): http://169.254.83.107:3100/
+[web] <i> [webpack-dev-server] Content not from webpack is served from 'E:\enLearn\mobile-app\public' directory
+[web] asset src_main-native_ts.index.bundle.js 1.23 MiB [emitted] 1 related asset
+[web] asset index.bundle.js 1.21 MiB [emitted] (name: index) 1 related asset
+[web] asset vendors-node_modules_pnpm_hippy_vue-router-next-hist_f971ac4b40e4c99c8d8e53eaccc6ef80_node_mo-b75a2b.index.bundle.js 262 KiB [emitted] (id hint: vendors) 1 related asset
+[web] asset index.html 714 bytes [emitted]
+[web] runtime modules 32.3 KiB 14 modules
+[web] orphan modules 246 bytes [orphan] 8 modules
+[web] modules by path ./src/runtime/ 586 KiB 172 modules
+[web] modules by path ../ 1.31 MiB 33 modules
+[web] modules by path ./src/pages/*.vue 43.1 KiB 21 modules
+[web] modules by path ./src/*.vue 61.3 KiB
+[web]   ./src/app.vue 906 bytes [built] [code generated]
+[web]   + 6 modules
+[web] modules by path ./src/components/*.vue 11.4 KiB
+[web]   ./src/components/mobile-menu-tree.vue 1.04 KiB [built] [code generated]
+[web]   + 6 modules
+[web] modules by path ./src/*.ts 9.61 KiB
+[web]   ./src/main-web.ts 1.14 KiB [built] [code generated]
+[web]   + 3 modules
+[web] ./src/web/hippy-web-view.ts 1.75 KiB [built] [code generated]
+[web] webpack 5.109.2 compiled successfully in 4441 ms
+[web] assets by status 1.49 MiB [cached] 3 assets
+[web] assets by path . 1.21 MiB
+[web]   asset index.bundle.js 1.21 MiB [emitted] (name: index) 1 related asset
+[web]   asset index.6054ede6ec28a681ea23.hot-update.js 379 bytes [emitted] [immutable] [hmr] (name: index) 1 related asset
+[web]   asset index.6054ede6ec28a681ea23.hot-update.json 29 bytes [emitted] [immutable] [hmr]
+[web] Entrypoint index 1.21 MiB (1.42 MiB) = index.bundle.js 1.21 MiB index.6054ede6ec28a681ea23.hot-update.js 379 bytes 2 auxiliary assets
+[web] cached modules 2.01 MiB [cached] 253 modules
+[web] runtime modules 32.3 KiB 14 modules
+[web] webpack 5.109.2 compiled successfully in 69 ms
+[hippy] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[web] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'

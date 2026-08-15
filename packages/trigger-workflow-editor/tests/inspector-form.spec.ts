@@ -15,6 +15,7 @@ import {
   updateTriggerNodeFromFormField,
   type TriggerInspectorFormSchema
 } from '../src/inspector-form';
+import { normalizeTriggerWorkflow } from '../src/schema/normalize';
 import { createApprovalTriggerWorkflow } from '../src/templates';
 
 const workflow = createApprovalTriggerWorkflow();
@@ -90,7 +91,164 @@ assert.ok(taskTabs && taskTabs.kind === 'tabs');
 assert.ok(taskTabs.tabs.some((tab) => tab.key === 'execution' && tab.label === '执行策略'));
 
 const webhookSchema = createTriggerNodeFormSchema({ id: 'webhook', type: 'webhook', name: 'Webhook' });
-assert.ok(webhookSchema.fields.some((field) => field.field === 'webhookSecretHeader'));
+assert.ok(webhookSchema.fields.some((field) => field.field === 'webhookPath'));
+assert.ok(webhookSchema.fields.some((field) => field.field === 'webhookMethod'));
+const webhookBodyField = webhookSchema.fields.find((field) => field.field === 'webhookBody');
+assert.equal(webhookBodyField?.component, 'lc-sub-form');
+assert.deepEqual(
+  (webhookBodyField?.props?.schema as { fields?: Array<{ field: string }> })?.fields?.map(
+    (field) => field.field
+  ),
+  ['serviceName', 'serviceMethod', 'postData']
+);
+assert.equal(
+  createTriggerNodeFormModel({ id: 'webhook', type: 'webhook', name: 'Webhook' }).webhookPath,
+  '/api/service'
+);
+const normalizedLegacyWebhook = normalizeTriggerWorkflow({
+  schemaVersion: 1,
+  code: 'legacy-webhook',
+  name: 'Legacy webhook',
+  kind: 'custom',
+  nodes: [
+    {
+      id: 'webhook',
+      type: 'webhook',
+      name: 'Webhook',
+      config: {
+        webhook: {
+          path: '/legacy/events',
+          method: 'PATCH',
+          secretHeader: 'x-legacy-signature',
+          body: {
+            serviceName: 'planning',
+            serviceMethod: 'listInventoryBuffers',
+            postData: { limit: 20 }
+          }
+        }
+      }
+    }
+  ],
+  edges: []
+});
+assert.deepEqual(normalizedLegacyWebhook.nodes[0]?.config?.webhook, {
+  path: '/api/service',
+  method: 'POST',
+  body: {
+    serviceName: 'planning',
+    serviceMethod: 'listInventoryBuffers',
+    postData: { limit: 20 }
+  }
+});
+
+const scheduleNode = {
+  id: 'schedule',
+  type: 'schedule',
+  name: 'Schedule',
+  config: { schedule: { cron: '0 8 * * *', timezone: 'Asia/Shanghai' } }
+} as const;
+const scheduleSchema = createTriggerNodeFormSchema(scheduleNode);
+assert.equal(scheduleSchema.fields.some((field) => field.field === 'scheduleRule'), false);
+assert.equal(createTriggerNodeFormModel(scheduleNode).scheduleRule.kind, 'daily');
+
+const weeklySchedule = updateTriggerNodeFromFormField(scheduleNode, 'scheduleRule', {
+  kind: 'weekly',
+  time: '09:30',
+  weekday: '1'
+});
+assert.equal(weeklySchedule.config?.schedule?.cron, '30 9 * * 1');
+
+const intervalSchedule = updateTriggerNodeFromFormField(scheduleNode, 'scheduleRule', {
+  kind: 'interval',
+  intervalMinutes: 15
+});
+assert.equal(intervalSchedule.config?.schedule?.cron, '*/15 * * * *');
+
+const databaseScheduleSchema: TriggerInspectorFormSchema = {
+  columns: 1,
+  fields: [
+    {
+      field: 'scheduleRule',
+      label: '数据库业务定时设置',
+      component: 'lc-sub-form',
+      props: {
+        schema: {
+          columns: 1,
+          fields: [
+            { field: 'kind', label: '执行方式', component: 'vxe-select' },
+            { field: 'time', label: '执行时间', component: 'vxe-input' }
+          ],
+          actions: []
+        }
+      }
+    },
+    { field: 'cron', label: 'Cron 表达式（高级）', component: 'vxe-input' },
+    { field: 'timezone', label: '时区', component: 'vxe-input' }
+  ],
+  layout: [
+    {
+      kind: 'tabs',
+      defaultKey: 'trigger',
+      tabs: [
+        {
+          key: 'trigger',
+          label: '触发配置',
+          blocks: [
+            { kind: 'field', field: 'scheduleRule' },
+            { kind: 'field', field: 'cron' },
+            { kind: 'field', field: 'timezone' }
+          ]
+        }
+      ]
+    }
+  ],
+  actions: []
+};
+const resolvedDatabaseScheduleSchema = resolveTriggerNodeFormSchema(scheduleNode, {
+  schedule: databaseScheduleSchema
+});
+const resolvedScheduleRuleField = resolvedDatabaseScheduleSchema.fields.find(
+  (field) => field.field === 'scheduleRule'
+);
+assert.equal(resolvedScheduleRuleField?.component, 'lc-sub-form');
+assert.equal(resolvedScheduleRuleField?.label, '数据库业务定时设置');
+assert.equal(
+  (resolvedScheduleRuleField?.props?.schema as { fields?: Array<{ field: string }> })?.fields?.[0]
+    ?.field,
+  'kind'
+);
+assert.notEqual(
+  resolvedDatabaseScheduleSchema,
+  databaseScheduleSchema,
+  'Database schemas must be cloned before rendering.'
+);
+
+const legacyScheduleSchema: TriggerInspectorFormSchema = {
+  columns: 1,
+  fields: [
+    { field: 'cron', label: 'Cron 表达式', component: 'vxe-input' },
+    { field: 'timezone', label: '时区', component: 'vxe-input' }
+  ],
+  layout: [
+    {
+      kind: 'tabs',
+      defaultKey: 'trigger',
+      tabs: [{ key: 'trigger', label: '触发设置', blocks: [{ kind: 'field', field: 'cron' }] }]
+    }
+  ],
+  actions: []
+};
+const resolvedLegacyScheduleSchema = resolveTriggerNodeFormSchema(scheduleNode, {
+  schedule: legacyScheduleSchema
+});
+assert.equal(
+  resolvedLegacyScheduleSchema.fields.some((field) => field.field === 'scheduleRule'),
+  false
+);
+assert.equal(
+  resolvedLegacyScheduleSchema.fields.find((field) => field.field === 'cron')?.label,
+  'Cron 表达式'
+);
 
 const dataSchema = createTriggerNodeFormSchema({ id: 'data', type: 'dataSource', name: 'Data' });
 assert.ok(dataSchema.fields.some((field) => field.field === 'dataMapping'));
@@ -174,10 +332,20 @@ assert.deepEqual(procedureTask.config?.task?.defaultOutput, { ok: false });
 
 const webhook = updateTriggerNodeFromFormField(
   { id: 'hook', type: 'webhook', name: 'Hook' },
-  'webhookSecretHeader',
-  'x-signature'
+  'webhookBody',
+  {
+    serviceName: 'planning',
+    serviceMethod: 'listInventoryBuffers',
+    postData: { itemId: '{{payload.itemId}}' }
+  }
 );
-assert.equal(webhook.config?.webhook?.secretHeader, 'x-signature');
+assert.equal(webhook.config?.webhook?.path, '/api/service');
+assert.equal(webhook.config?.webhook?.method, 'POST');
+assert.deepEqual(webhook.config?.webhook?.body, {
+  serviceName: 'planning',
+  serviceMethod: 'listInventoryBuffers',
+  postData: { itemId: '{{payload.itemId}}' }
+});
 
 const data = updateTriggerNodeFromFormField(
   { id: 'data', type: 'dataSource', name: 'Data' },

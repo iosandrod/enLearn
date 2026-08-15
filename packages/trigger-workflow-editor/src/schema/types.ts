@@ -86,8 +86,12 @@ export type TriggerWorkflowNodeConfig = {
   };
   webhook?: {
     path?: string;
-    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-    secretHeader?: string;
+    method?: 'POST';
+    body?: {
+      serviceName?: string;
+      serviceMethod?: string;
+      postData?: Record<string, unknown>;
+    };
   };
   approval?: {
     assigneeType?: 'user' | 'role' | 'team' | 'expression';

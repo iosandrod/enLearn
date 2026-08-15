@@ -233,8 +233,10 @@ export function getTriggerNodePresentation(node: TriggerWorkflowNode): TriggerFl
 
 function summarizeNode(node: TriggerWorkflowNode) {
   const config = node.config;
-  if (node.type === 'schedule') return `${config?.schedule?.cron ?? '未配置 Cron'} · ${config?.schedule?.timezone ?? 'UTC'}`;
-  if (node.type === 'webhook') return `${config?.webhook?.method ?? 'POST'} ${config?.webhook?.path ?? '/'}`;
+  if (node.type === 'schedule') {
+    return `${describeScheduleCron(config?.schedule?.cron)} · ${config?.schedule?.timezone ?? 'UTC'}`;
+  }
+  if (node.type === 'webhook') return 'POST /api/service';
   if (node.type === 'manualApproval' || node.type === 'humanReview') {
     return `${approvalAssigneeLabels[config?.approval?.assigneeType ?? ''] ?? '未指定处理人'} · ${approvalTimeoutLabels[config?.approval?.onTimeout ?? ''] ?? '标记失败'}`;
   }
@@ -258,6 +260,38 @@ function summarizeNode(node: TriggerWorkflowNode) {
     return `执行存储过程 · ${schema && !procedure.includes('.') ? `${schema}.${procedure}` : procedure}`;
   }
   return config?.task?.id ?? node.description ?? '未配置';
+}
+
+function describeScheduleCron(cron?: string) {
+  const parts = cron?.trim().split(/\s+/) ?? [];
+  if (parts.length !== 5) return '未配置 Cron';
+
+  const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
+  const intervalMatch = minute.match(/^\*\/([1-5]?\d)$/);
+  if (intervalMatch && hour === '*' && dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+    return `每 ${intervalMatch[1]} 分钟`;
+  }
+
+  const time = describeCronTime(minute, hour);
+  if (!time) return cron ?? '未配置 Cron';
+  if (dayOfMonth === '*' && month === '*' && dayOfWeek === '*') return `每天 ${time}`;
+  if (dayOfMonth === '*' && month === '*' && dayOfWeek === '1-5') return `周一至周五 ${time}`;
+  if (dayOfMonth === '*' && month === '*' && /^[0-7]$/.test(dayOfWeek)) {
+    const weekday = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][Number(dayOfWeek) % 7];
+    return `每${weekday} ${time}`;
+  }
+  if (month === '*' && dayOfWeek === '*' && /^\d{1,2}$/.test(dayOfMonth)) {
+    return `每月 ${dayOfMonth} 日 ${time}`;
+  }
+  return cron ?? '未配置 Cron';
+}
+
+function describeCronTime(minute: string, hour: string) {
+  if (!/^\d{1,2}$/.test(minute) || !/^\d{1,2}$/.test(hour)) return '';
+  const parsedMinute = Number(minute);
+  const parsedHour = Number(hour);
+  if (parsedMinute > 59 || parsedHour > 23) return '';
+  return `${String(parsedHour).padStart(2, '0')}:${String(parsedMinute).padStart(2, '0')}`;
 }
 
 const approvalAssigneeLabels: Record<string, string> = {

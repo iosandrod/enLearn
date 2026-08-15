@@ -802,7 +802,18 @@ function createConfiguredNode(
   if (type === 'transform' || type === 'memory') return { ...base, config: { task: { type: 'registeredTask', id: taskId }, expression: '' } };
   if (type === 'agent') return { ...base, config: { task: { type: 'registeredTask', id: taskId }, ai: { provider: 'openai', model: 'gpt-4.1', prompt: '', maxTurns: 6 } } };
   if (type === 'schedule') return { ...base, config: { schedule: { cron: '0 8 * * *', timezone: 'Asia/Shanghai' } } };
-  if (type === 'webhook') return { ...base, config: { webhook: { path: '/', method: 'POST' } } };
+  if (type === 'webhook') {
+    return {
+      ...base,
+      config: {
+        webhook: {
+          path: '/api/service',
+          method: 'POST',
+          body: { serviceName: '', serviceMethod: '', postData: {} }
+        }
+      }
+    };
+  }
   return base;
 }
 

@@ -6,6 +6,14 @@ const migration = await readFile(
   new URL('../../supabase/migrations/20260813130000_trigger_workflow_inspector_forms.sql', import.meta.url),
   'utf8',
 );
+const scheduleMigration = await readFile(
+  new URL('../../supabase/migrations/20260815120000_trigger_workflow_schedule_sub_form.sql', import.meta.url),
+  'utf8',
+);
+const webhookMigration = await readFile(
+  new URL('../../supabase/migrations/20260815130000_trigger_workflow_webhook_service_form.sql', import.meta.url),
+  'utf8',
+);
 const designer = await readFile(
   new URL('../pages/dashboard/trigger-workflow/designer.vue', import.meta.url),
   'utf8',
@@ -65,7 +73,16 @@ assert.match(migration, /on conflict \(code\) do update set/g);
 assert.match(migration, /"kind": "tabs"/);
 assert.match(migration, /"label": "基础信息"/);
 assert.match(migration, /"label": "高级配置"/);
-assert.match(migration, /"field": "webhookSecretHeader"/);
+assert.match(webhookMigration, /'trigger-workflow\.node\.webhook'/);
+assert.match(webhookMigration, /"field": "webhookPath"/);
+assert.match(webhookMigration, /"field": "webhookMethod"/);
+assert.match(webhookMigration, /"field": "webhookBody"/);
+assert.match(webhookMigration, /"component": "lc-sub-form"/);
+assert.match(webhookMigration, /"field": "serviceName"/);
+assert.match(webhookMigration, /"field": "serviceMethod"/);
+assert.match(webhookMigration, /"field": "postData"/);
+assert.match(webhookMigration, /"value": "workflow"/);
+assert.match(webhookMigration, /\/api\/service/);
 assert.match(migration, /"field": "taskType"/);
 assert.match(migration, /"value": "frontendCommand"/);
 assert.match(migration, /"value": "backendCommand"/);
@@ -89,6 +106,24 @@ assert.match(migration, /"field": "aiTools"/);
 assert.match(migration, /"field": "memoryKey"/);
 assert.match(migration, /"field": "branches"/);
 assert.match(migration, /"field": "metadata"/);
+
+assert.match(scheduleMigration, /update public\.lowcode_form_definitions/);
+assert.match(scheduleMigration, /'trigger-workflow\.node\.schedule'/);
+assert.match(scheduleMigration, /"field": "scheduleRule"/);
+assert.match(scheduleMigration, /"component": "lc-sub-form"/);
+assert.match(scheduleMigration, /"field": "kind"/);
+assert.match(scheduleMigration, /"field": "time"/);
+assert.match(scheduleMigration, /"field": "weekday"/);
+assert.match(scheduleMigration, /"field": "dayOfMonth"/);
+assert.match(scheduleMigration, /"field": "intervalMinutes"/);
+assert.match(scheduleMigration, /"field": "cron"/);
+assert.match(scheduleMigration, /"label": "Cron 表达式（高级）"/);
+assert.match(scheduleMigration, /"props": \{\s*"schema": \{/);
+assert.doesNotMatch(
+  inspectorSource,
+  /enhanceScheduleFormSchema|createScheduleRuleField/,
+  'The schedule sub-form must be defined by the database schema.',
+);
 
 assert.match(
   designer,
