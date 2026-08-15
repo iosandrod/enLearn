@@ -113,6 +113,21 @@ try {
   assert.ok(await page.locator('.ai-message.is-user').count() >= 1);
   assert.ok(await page.locator('.ai-message.is-assistant').count() >= 1);
   assert.ok(await page.locator('.ai-tool-trace').count() >= 1);
+  const firstAnswer = await page.locator('.ai-message.is-assistant').last().innerText();
+  assert.match(firstAnswer, /返回列表|重新载入|保存|销售订单/);
+  assert.doesNotMatch(firstAnswer, /我已结合当前页面的结构、字段、数据源和按钮进行分析/);
+
+  await sendPrompt('当前页面有几个按钮？请给出明确数量和名称。');
+  const buttonAnswer = await page.locator('.ai-message.is-assistant').last().innerText();
+  const listedButtons = [...buttonAnswer.matchAll(/^\s*\d+\.\s+\*\*([^*]+)\*\*/gm)]
+    .map((match) => match[1]?.trim())
+    .filter(Boolean);
+  const statedCount = Number(buttonAnswer.match(/(?:共有|总计[:：]?)\s*\*\*(\d+)\s*个按钮?\*\*/)?.[1]);
+  assert.ok(statedCount >= 3);
+  assert.equal(listedButtons.length, statedCount);
+  assert.match(buttonAnswer, /返回列表/);
+  assert.match(buttonAnswer, /重新载入/);
+  assert.match(buttonAnswer, /保存/);
 
   await page.screenshot({
     path: join(artifactsDir, 'ai-assistant-desktop.png'),

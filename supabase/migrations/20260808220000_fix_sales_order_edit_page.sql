@@ -353,7 +353,33 @@ begin
   for update;
 
   if v_page_id is null then
-    raise exception 'Low-code page sales-orders-edit does not exist.';
+    insert into public.lowcode_pages (
+      code,
+      route,
+      title,
+      description,
+      page_type,
+      layout,
+      status,
+      keep_alive,
+      schema,
+      version,
+      published_at
+    ) values (
+      'sales-orders-edit',
+      '/dashboard/sales/orders/edit',
+      U&'\9500\552E\8BA2\5355\7F16\8F91',
+      U&'\7EF4\62A4\9500\552E\8BA2\5355\5355\636E\3001\5BA2\6237\3001\5546\52A1\6761\6B3E\3001\91D1\989D\53CA\8BA2\5355\660E\7EC6\3002',
+      'edit',
+      'dashboard',
+      'published',
+      false,
+      v_schema,
+      1,
+      timezone('utc'::text, now())
+    )
+    returning id, version, schema
+    into v_page_id, v_current_version, v_current_schema;
   end if;
 
   v_next_version := case

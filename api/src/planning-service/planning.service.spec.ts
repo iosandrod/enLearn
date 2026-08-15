@@ -176,6 +176,22 @@ async function testConsoleOptionBoundary() {
   assert.deepEqual(options[0], { id: 'item-0', label: 'Item 0000' });
 }
 
+async function testConsoleReadRequiresTheExactInternalCapability() {
+  const capabilityService = new PlanningService() as unknown as {
+    authorizeConsoleRead(context: unknown): Promise<unknown>;
+  };
+  await assert.rejects(
+    () => capabilityService.authorizeConsoleRead({
+      accountId: 'account-1',
+      internal: {
+        principal: 'trigger-workflow',
+        capability: 'planning.listInventoryBuffers'
+      }
+    }),
+    /planning\.getPlanningConsoleOptions/
+  );
+}
+
 async function testCategoryRelationOptions() {
   const calls: Array<[string, unknown]> = [];
   const rows = [
@@ -247,6 +263,7 @@ async function testCategoryRelationOptions() {
 void Promise.all([
   testPlanningPayloadNormalization(),
   testConsoleOptionBoundary(),
+  testConsoleReadRequiresTheExactInternalCapability(),
   testCategoryRelationOptions()
 ]).then(() => {
   console.log('planning service configuration tests passed');

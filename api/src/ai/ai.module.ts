@@ -12,7 +12,6 @@ import {
   resolveAiRouterType
 } from './ai-service-router';
 import { ModelProviderRegistry } from './provider/model-provider.registry';
-import { MockAiProvider } from './provider/mock.provider';
 import { OpenAiCompatibleProvider } from './provider/openai-compatible.provider';
 import { PageProposalService } from './proposals/page-proposal.service';
 import { PageProposalValidator } from './proposals/page-proposal.validator';
@@ -33,7 +32,6 @@ export class AiModule {
         AiToolRegistry,
         PageProposalService,
         PageProposalValidator,
-        MockAiProvider,
         OpenAiCompatibleProvider,
         ModelProviderRegistry,
         {
@@ -46,4 +44,3 @@ export class AiModule {
     };
   }
 }
-

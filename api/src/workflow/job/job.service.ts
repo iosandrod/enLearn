@@ -8,9 +8,11 @@ import {
   type WorkflowJobRunStatus
 } from './job.types';
 import { TriggerDevClient } from '../trigger/trigger-dev.client';
+import { assertTriggerWorkflowJobPayload } from '../trigger/trigger-workflow-policy';
 
 const WORKFLOW_SCHEDULED_JOB_TASK_ID = 'workflow.job.scheduled';
 const WORKFLOW_JOB_RPC = 'workflow_job_command';
+const WORKFLOW_DELETE_JOB_RPC = 'workflow_delete_job';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -34,6 +36,10 @@ export class JobService {
     }
 
     const payload = normalizeJobPayload(dto);
+    assertTriggerWorkflowJobPayload(
+      dto.triggerTaskId?.trim() || defaultTriggerTaskId(dto.type),
+      payload
+    );
     if (dto.type === 'interval') {
       intervalCron(readIntervalSeconds(payload) ?? 60);
     }
@@ -67,6 +73,10 @@ export class JobService {
     }
 
     const payload = normalizeJobPayload(dto);
+    assertTriggerWorkflowJobPayload(
+      dto.triggerTaskId?.trim() || defaultTriggerTaskId(dto.type),
+      payload
+    );
     if (dto.type === 'interval') {
       intervalCron(readIntervalSeconds(payload) ?? 60);
     }
@@ -107,6 +117,24 @@ export class JobService {
     const row = await this.command('get_job', {
       account_id: actor.tenantId,
       job_id: jobId
+    });
+    if (!row) throw new NotFoundException('Workflow job not found.');
+    return mapJob(assertRecord(row, 'Workflow job RPC returned an invalid job.'));
+  }
+
+  async deleteJob(jobId: string, actor: WorkflowJobActor) {
+    const current = await this.getJob(jobId, actor);
+    if (current.scheduleId) {
+      try {
+        await this.triggerClient.deleteSchedule(current.scheduleId);
+      } catch (error) {
+        if (!isTriggerNotFoundError(error)) throw error;
+      }
+    }
+
+    const row = await this.deleteJobRecord({
+      p_account_id: actor.tenantId,
+      p_job_id: jobId
     });
     if (!row) throw new NotFoundException('Workflow job not found.');
     return mapJob(assertRecord(row, 'Workflow job RPC returned an invalid job.'));
@@ -208,13 +236,9 @@ export class JobService {
     if (job.status === 'archived') {
       throw new BadRequestException('Archived job cannot be run.');
     }
+    assertTriggerWorkflowJobPayload(job.triggerTaskId, job.payload);
 
-    const input = {
-      ...(job.payload ?? {}),
-      ...(dto.payload ?? {}),
-      jobId: job.id,
-      tenantId: job.tenantId
-    };
+    const input = buildJobRunInput(job, dto, actor);
     const run = await this.createRun({
       tenantId: job.tenantId,
       jobId: job.id,
@@ -322,6 +346,20 @@ export class JobService {
       p_action: action,
       p_payload: payload
     });
+    if (error) throw new BadRequestException(error.message);
+    return data;
+  }
+
+  private async deleteJobRecord(payload: JsonRecord) {
+    if (!this.persistence.isConfigured) {
+      throw new BadRequestException(
+        'Supabase service-role configuration is required for workflow job persistence.'
+      );
+    }
+    const { data, error } = await this.persistence.client.rpc(
+      WORKFLOW_DELETE_JOB_RPC,
+      payload
+    );
     if (error) throw new BadRequestException(error.message);
     return data;
   }
@@ -448,6 +486,25 @@ function normalizeJobPayload(dto: CreateJobDto) {
 function readTriggerWorkflowModelId(payload: Record<string, unknown>) {
   const definition = isRecord(payload.triggerWorkflow) ? payload.triggerWorkflow : undefined;
   return readOptionalString(definition?.modelId);
+}
+
+function buildJobRunInput(
+  job: WorkflowJobRecord,
+  dto: RunJobDto,
+  actor: WorkflowJobActor
+) {
+  const input: Record<string, unknown> = {
+    ...job.payload,
+    ...(dto.payload ?? {})
+  };
+  delete input.runId;
+  if (job.payload.triggerWorkflow !== undefined) {
+    input.triggerWorkflow = job.payload.triggerWorkflow;
+  }
+  input.jobId = job.id;
+  input.tenantId = job.tenantId;
+  if (actor.userId) input.userId = actor.userId;
+  return input;
 }
 
 function readIntervalSeconds(payload: Record<string, unknown> | null | undefined) {

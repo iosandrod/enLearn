@@ -40,23 +40,19 @@ const taskExamples: readonly TriggerWorkflowModel[] = [
     schemaVersion: TRIGGER_WORKFLOW_SCHEMA_VERSION,
     code: 'example_backend_http_planning_scenarios',
     name: '示例：HTTP 查询排产场景',
-    description: `Webhook 收到请求后，通过 context.http 调用平台服务 API 查询排产场景。${customRuntimeNote}`,
+    description: `Webhook 收到请求后，通过 context.http 调用显式允许的 HTTP API。${customRuntimeNote}`,
     kind: 'custom',
     nodes: [
       webhookNode('request_received', '收到查询请求', '/workflow-examples/planning-scenarios'),
-      taskNode('query_scenarios', 'HTTP 查询排产场景', {
+      taskNode('query_status', 'HTTP 查询服务状态', {
         type: 'backendCommand',
         backendFunction: [
-          'async ({ payload, context }) => {',
-          "  return await context.http.post('/api/service', {",
-          "    serviceName: 'planning',",
-          "    serviceMethod: 'getPlanningConsoleOptions',",
-          "    postData: { optionType: 'scenario', limit: payload.limit ?? 20 }",
-          '  });',
+          'async ({ context }) => {',
+          "  return await context.http.get('/api/auth/account-options?login=workflow-example');",
           '}'
         ].join('\n'),
-        input: { limit: '{{payload.limit}}' },
-        outputPath: 'taskOutputs.planningScenarios',
+        input: {},
+        outputPath: 'taskOutputs.httpResponse',
         failureStrategy: 'failWorkflow',
         timeoutSeconds: 30,
         retry: { maxAttempts: 3, factor: 2, minTimeoutMs: 1000, maxTimeoutMs: 10000 },
@@ -64,7 +60,7 @@ const taskExamples: readonly TriggerWorkflowModel[] = [
       }),
       endNode('end', '查询完成')
     ],
-    edges: chainEdges('request_received', 'query_scenarios', 'end')
+    edges: chainEdges('request_received', 'query_status', 'end')
   },
   {
     schemaVersion: TRIGGER_WORKFLOW_SCHEMA_VERSION,
@@ -101,7 +97,7 @@ const taskExamples: readonly TriggerWorkflowModel[] = [
     schemaVersion: TRIGGER_WORKFLOW_SCHEMA_VERSION,
     code: 'example_backend_base_service_inventory',
     name: '示例：BaseService 查询库存',
-    description: `手动启动后，通过 context.baseService 调用 planning.listItems 查询库存缓冲。${customRuntimeNote}`,
+    description: `手动启动后，通过 context.baseService 调用受限的 planning.listInventoryBuffers capability 查询库存缓冲。${customRuntimeNote}`,
     kind: 'custom',
     nodes: [
       startNode('manual_start', '手动启动'),
@@ -112,12 +108,10 @@ const taskExamples: readonly TriggerWorkflowModel[] = [
           '  const filters = {};',
           '  if (payload.itemId) filters.item_id = payload.itemId;',
           '  if (payload.locationId) filters.location_id = payload.locationId;',
-          "  return await context.baseService.invoke('planning', 'listItems', {",
-          "    resource: 'planning_buffer',",
-          '    filters,',
+          "  return await context.baseService.invoke('planning', 'listInventoryBuffers', {",
+          '    itemId: filters.item_id,',
+          '    locationId: filters.location_id,',
           '    limit: 50,',
-          "    orderBy: 'updated_at',",
-          "    orderDirection: 'desc'",
           '  });',
           '}'
         ].join('\n'),

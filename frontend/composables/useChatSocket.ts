@@ -23,6 +23,7 @@ export function useChatSocket() {
   const auth = useAuth();
   const status = useState<ChatSocketStatus>('chat-socket-status', () => 'idle');
   const lastError = useState<ChatSocketError | null>('chat-socket-error', () => null);
+  const serverReady = useState<boolean>('chat-socket-server-ready', () => false);
   const messages = useState<ChatMessage[]>('chat-socket-messages', () => []);
   const typingUsers = useState<Record<string, Record<string, boolean>>>(
     'chat-socket-typing-users',
@@ -52,6 +53,7 @@ export function useChatSocket() {
     if (chatSocket || connectionPromise) closeSocket();
 
     status.value = 'connecting';
+    serverReady.value = false;
     connectionAccountId = accountId;
     const generation = ++connectionGeneration;
     connectionPromise = $fetch<SocketTokenResponse>('/api/auth/socket-token')
@@ -105,17 +107,26 @@ export function useChatSocket() {
       lastError.value = null;
     });
 
+    socket.on('chat:connected', () => {
+      serverReady.value = true;
+      status.value = 'connected';
+      lastError.value = null;
+    });
+
     socket.on('disconnect', () => {
       status.value = 'disconnected';
+      serverReady.value = false;
     });
 
     socket.on('connect_error', (error) => {
       status.value = 'error';
+      serverReady.value = false;
       lastError.value = { message: error.message };
     });
 
     socket.on('chat:error', (error: ChatSocketError) => {
       status.value = 'error';
+      serverReady.value = false;
       lastError.value = error;
     });
 
@@ -157,6 +168,7 @@ export function useChatSocket() {
     connectionAccountId = '';
     referenceCount = 0;
     status.value = 'idle';
+    serverReady.value = false;
   }
 
   function disconnect() {
@@ -252,6 +264,7 @@ export function useChatSocket() {
   return {
     status,
     lastError,
+    serverReady,
     messages,
     typingUsers,
     connect,

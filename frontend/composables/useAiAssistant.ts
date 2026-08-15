@@ -78,16 +78,26 @@ export function useAiAssistant() {
       return;
     }
     if (event.type === 'error') {
-      errorMessage.value = String(event.payload.message ?? 'AI 生成失败。');
+      const message = String(event.payload.message ?? 'AI 生成失败。');
+      errorMessage.value = message;
       const target = [...messages.value].reverse().find((message) => message.streaming);
-      if (target) target.error = true;
+      if (target) {
+        target.error = true;
+        if (!target.content) target.content = message;
+      }
       return;
     }
     if (event.type === 'done') {
       const target = [...messages.value].reverse().find((message) => message.streaming);
       if (target) {
         target.streaming = false;
-        if (!target.content) target.content = event.payload.status === 'cancelled' ? '已取消生成。' : '处理完成。';
+        if (!target.content) {
+          target.content = event.payload.status === 'cancelled'
+            ? '已取消生成。'
+            : event.payload.status === 'failed'
+              ? errorMessage.value || 'AI 生成失败。'
+              : '处理完成。';
+        }
       }
       running.value = false;
       statusText.value = '';

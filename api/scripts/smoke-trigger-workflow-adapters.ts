@@ -14,6 +14,7 @@ import {
   type TriggerWorkflowJobDefinitionPayload,
   type TriggerWorkflowTaskJobAdapter
 } from '../src/workflow/trigger/trigger-workflow.types';
+import { getTriggerWorkflowExecutionPlanSignature } from '../src/workflow/trigger/trigger-workflow-policy';
 
 const DEFAULT_ACCOUNT_ID = '00000000-0000-4000-8000-000000000001';
 const WORKFLOW_JOB_RPC = 'workflow_job_command';
@@ -104,7 +105,11 @@ async function runCase(
       { idempotencyKey: `trigger-workflow-adapter-smoke:${testCase.type}:${suffix}` }
     );
     const triggerRun = await waitForTriggerRun(handle.id, timeoutMs);
-    assert.equal(triggerRun.status, 'COMPLETED', `${testCase.type} Trigger.dev run failed.`);
+    assert.equal(
+      triggerRun.status,
+      'COMPLETED',
+      `${testCase.type} Trigger.dev run failed (${handle.id}): ${readTriggerRunError(triggerRun)}`
+    );
 
     const projected = await waitForProjectedRun(supabase, runRow.id, timeoutMs);
     assert.equal(projected.status, 'succeeded');
@@ -182,11 +187,19 @@ function createCases(): AdapterSmokeCase[] {
           configHash: await context.supabase.rpc('get_dynamic_crud_resource_hash', {
             p_resource_name: 'planning_buffer',
             p_table_name: 'planning_buffer'
-          })
+          }),
+          inventoryBuffers: await context.baseService.invoke(
+            'planning',
+            'listInventoryBuffers',
+            { limit: 1 }
+          )
         })`
       },
       assertOutput(output) {
-        assert.match(String(requireRecord(output, 'backendCommand output').configHash), /^[0-9a-f]{64}$/);
+        const result = requireRecord(output, 'backendCommand output');
+        assert.match(String(result.configHash), /^[0-9a-f]{64}$/);
+        assert.ok(Array.isArray(result.inventoryBuffers));
+        assert.ok(result.inventoryBuffers.length <= 1);
       }
     },
     {
@@ -226,12 +239,12 @@ function createDefinition(
   suffix: string
 ): TriggerWorkflowJobDefinitionPayload {
   const code = `adapter_smoke_${testCase.type}_${suffix}`;
-  return {
+  const definition: TriggerWorkflowJobDefinitionPayload = {
     version: 1,
     modelId: code,
     modelCode: code,
     modelName: `Adapter smoke ${testCase.type}`,
-    planSignature: `smoke-${suffix}`,
+    planSignature: '',
     executionPlan: {
       workflowId: code,
       workflowCode: code,
@@ -244,6 +257,10 @@ function createDefinition(
       ]
     }
   };
+  definition.planSignature = getTriggerWorkflowExecutionPlanSignature(
+    definition.executionPlan
+  );
+  return definition;
 }
 
 function operation(nodeId: string, type: string, next: string[]) {
@@ -319,6 +336,17 @@ async function waitForProjectedRun(
 
 function isTerminalTriggerStatus(status: string) {
   return ['COMPLETED', 'FAILED', 'CANCELED', 'CRASHED', 'EXPIRED', 'TIMED_OUT'].includes(status);
+}
+
+function readTriggerRunError(run: unknown) {
+  const record = readRecord(run);
+  const error = readRecord(record?.error);
+  return String(
+    error?.message ??
+    record?.errorMessage ??
+    record?.failureReason ??
+    'No Trigger.dev error detail was returned.'
+  );
 }
 
 function requireValue(value: string | undefined, name: string) {

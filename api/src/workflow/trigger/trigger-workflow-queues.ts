@@ -4,10 +4,16 @@ export const TRIGGER_WORKFLOW_REGISTERED_QUEUES = [
   {
     name: 'trigger-workflow-jobs',
     concurrencyLimit: 10
+  },
+  {
+    name: 'planning-supply',
+    concurrencyLimit: 2
   }
 ] as const;
 
-export const triggerWorkflowJobsQueue = queue(TRIGGER_WORKFLOW_REGISTERED_QUEUES[0]);
+export const triggerWorkflowQueues = TRIGGER_WORKFLOW_REGISTERED_QUEUES.map(
+  (definition) => queue(definition)
+);
 
 export function resolveTriggerWorkflowQueueName(value: unknown) {
   const name = typeof value === 'string' ? value.trim() : '';

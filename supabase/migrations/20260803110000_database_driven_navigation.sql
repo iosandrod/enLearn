@@ -25,7 +25,11 @@ where code in (
 
 update public.admin_routes
 set
-  page_code = 'lowcode-pages',
+  page_code = case
+    when exists (select 1 from public.lowcode_pages where code = 'lowcode-pages')
+      then 'lowcode-pages'
+    else null
+  end,
   updated_at = timezone('utc'::text, now())
 where code = 'lowcode-pages';
 

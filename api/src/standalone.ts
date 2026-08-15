@@ -8,6 +8,7 @@ import { responseCompressionMiddleware } from './common/middleware/compression.m
 import { getEnv } from './common/utils/env';
 import { registerChatSocket } from './chat-service/chat.socket';
 import { StandaloneAppModule } from './standalone/standalone.module';
+import { maybeStartTriggerDevWorkerFromApi } from './workflow/trigger/trigger-worker-autostart';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(StandaloneAppModule);
@@ -38,6 +39,7 @@ async function bootstrap() {
 
   console.log(`Standalone API listening on http://${host || 'localhost'}:${port}/api/service`);
   console.log('Domain and workflow services are running in-process; Redis transport is disabled.');
+  maybeStartTriggerDevWorkerFromApi();
 }
 
 void bootstrap();

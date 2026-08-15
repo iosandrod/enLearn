@@ -44,7 +44,16 @@ const summary = aiContextInternals.summarizePageRecord({
     blocks: [{
       id: 'orders-grid',
       kind: 'grid',
-      schema: { grid: { columns: [{ field: 'number', title: 'Number' }] } }
+      schema: {
+        toolbar: [{ code: 'export', label: 'Export' }],
+        grid: {
+          columns: [
+            { field: 'number', title: 'Number' },
+            { title: 'Actions', slots: { default: 'actions' } }
+          ]
+        },
+        rowActions: { edit: true, editLabel: 'Edit', delete: true, deleteLabel: 'Delete' }
+      }
     }],
     functions: [{ name: 'refreshOrders', script: 'async function main() {}' }]
   }
@@ -54,6 +63,14 @@ assert.equal(summary.code, 'orders');
 assert.equal(summary.version, 7);
 assert.equal(JSON.stringify(summary).includes('async function'), false);
 assert.equal(JSON.stringify(summary).includes('hidden'), false);
+const summaryBlocks = summary.blocks as Array<Record<string, unknown>>;
+const toolbarActions = summaryBlocks[0]?.toolbarActions as Array<Record<string, unknown>>;
+assert.equal(toolbarActions[0]?.code, 'export');
+assert.equal(toolbarActions[0]?.label, 'Export');
+assert.deepEqual(summaryBlocks[0]?.rowActions, [
+  { code: 'edit', label: 'Edit', repeatedPerRow: true },
+  { code: 'delete', label: 'Delete', repeatedPerRow: true }
+]);
 
 assert.throws(
   () => aiContextInternals.validateClientPageHint(

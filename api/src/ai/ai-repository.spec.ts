@@ -29,6 +29,13 @@ assert.equal(
   aiRepositoryInternals.isMissingAiSchema({ message: 'relation ai_conversations does not exist' }),
   true
 );
+assert.equal(
+  aiRepositoryInternals.isMissingAiSchema({
+    code: 'PGRST204',
+    message: "Could not find the 'account_id' column of 'ai_conversations' in the schema cache"
+  }),
+  true
+);
 assert.equal(aiRepositoryInternals.assertAiSchemaAvailable({ code: '23505' }), false);
 assert.throws(
   () => aiRepositoryInternals.assertAiSchemaAvailable({ code: '42P01' }),

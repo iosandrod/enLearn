@@ -9,7 +9,7 @@ const playwrightPath = join(
   workspaceDir,
   'node_modules/.pnpm/playwright-core@1.57.0/node_modules/playwright-core/index.js'
 );
-const baseUrl = (process.env.TASK_CONSOLE_TEST_SERVER_URL || 'http://127.0.0.1:4181')
+const baseUrl = (process.env.TASK_CONSOLE_TEST_SERVER_URL || 'http://localhost:3000')
   .replace(/\/$/, '');
 const accountId = '00000000-0000-4000-8000-000000000001';
 

@@ -47,7 +47,9 @@ enLearn users do not authenticate with Trigger.dev directly. The backend
 resolves the project ref, environment secret, and admin PAT from the Trigger.dev
 database and keeps them in an in-process cache.
 
-Start or reuse the local Trigger.dev webapp first, then start the API gateway:
+Start or reuse the local Trigger.dev webapp first, then start the API gateway.
+The API dev script also starts the enLearn Trigger.dev worker, so workflow tasks
+can run without a second worker terminal:
 
 ```bash
 cd C:\Users\11516\Desktop\project\trigger.dev-main
@@ -55,6 +57,13 @@ pnpm run dev --filter webapp
 
 cd C:\Users\11516\Desktop\project\enLearn
 pnpm api:dev
+```
+
+Run only the API gateway, without the worker, when you are not testing workflow
+execution:
+
+```bash
+pnpm --dir api dev:api-only
 ```
 
 Or start the API gateway and domain service together:

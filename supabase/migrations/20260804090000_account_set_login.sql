@@ -897,7 +897,6 @@ using (public.has_account_permission(public.account_id_from_tenant(tenant_id), '
 with check (public.has_account_permission(public.account_id_from_tenant(tenant_id), 'notification.deliveries.manage'));
 
 -- Chat membership and chat permissions must belong to the same account set.
-alter table public.chat_messages alter column session_id drop not null;
 alter table public.chat_conversations enable row level security;
 alter table public.chat_conversation_members enable row level security;
 alter table public.chat_messages enable row level security;

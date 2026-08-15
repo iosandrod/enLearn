@@ -8,6 +8,7 @@ import { AppModule } from './app.module';
 import { registerChatSocket } from './chat-service/chat.socket';
 import { responseCompressionMiddleware } from './common/middleware/compression.middleware';
 import { getEnv } from './common/utils/env';
+import { maybeStartTriggerDevWorkerFromApi } from './workflow/trigger/trigger-worker-autostart';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -37,6 +38,7 @@ async function bootstrap() {
   else await app.listen(port);
 
   console.log(`Nest API listening on http://${host || 'localhost'}:${port}/api/service`);
+  maybeStartTriggerDevWorkerFromApi();
 }
 
 void bootstrap();

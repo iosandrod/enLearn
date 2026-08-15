@@ -4,6 +4,7 @@ export type TriggerTaskCatalogItem = {
   category: 'workflow' | 'planning' | 'notification' | 'frontend' | 'diagnostic';
   description: string;
   queueNames?: string[];
+  workflowCallable?: boolean;
 };
 
 export const TRIGGER_TASK_CATALOG: readonly TriggerTaskCatalogItem[] = [
@@ -62,44 +63,51 @@ export const TRIGGER_TASK_CATALOG: readonly TriggerTaskCatalogItem[] = [
     id: 'workflow.timer.fire',
     name: '旧版流程定时器',
     category: 'workflow',
-    description: '兼容旧版流程定时节点的执行任务。'
+    description: '兼容旧版流程定时节点的执行任务。',
+    workflowCallable: true
   },
   {
     id: 'planning.run',
     name: '生产计划运算',
     category: 'planning',
     description: '执行生产计划求解、校验与结果写入。',
-    queueNames: ['planning-supply']
+    queueNames: ['planning-supply'],
+    workflowCallable: true
   },
   {
     id: 'notification.dispatch',
     name: '通知分发',
     category: 'notification',
-    description: '处理站内信、邮件和短信通知分发。'
+    description: '处理站内信、邮件和短信通知分发。',
+    workflowCallable: true
   },
   {
     id: 'notification.retryDelivery',
     name: '通知投递重试',
     category: 'notification',
-    description: '重试发送失败且满足重试条件的通知。'
+    description: '重试发送失败且满足重试条件的通知。',
+    workflowCallable: true
   },
   {
     id: 'notification.remindUnread',
     name: '未读通知提醒',
     category: 'notification',
-    description: '在指定延迟后检查并提醒未读消息。'
+    description: '在指定延迟后检查并提醒未读消息。',
+    workflowCallable: true
   },
   {
     id: 'notification.digest',
     name: '通知摘要',
     category: 'notification',
-    description: '汇总通知并生成收件人摘要。'
+    description: '汇总通知并生成收件人摘要。',
+    workflowCallable: true
   },
   {
     id: 'notification.cleanup',
     name: '通知数据清理',
     category: 'notification',
-    description: '归档已读消息并清理历史投递记录。'
+    description: '归档已读消息并清理历史投递记录。',
+    workflowCallable: true
   },
   {
     id: 'simple-approval-demo',
@@ -116,3 +124,7 @@ export const TRIGGER_TASK_CATALOG: readonly TriggerTaskCatalogItem[] = [
 ] as const;
 
 export const TRIGGER_TASK_IDENTIFIERS = TRIGGER_TASK_CATALOG.map((task) => task.id);
+
+export const TRIGGER_WORKFLOW_REGISTERED_TASK_IDS = TRIGGER_TASK_CATALOG
+  .filter((task) => task.workflowCallable)
+  .map((task) => task.id);

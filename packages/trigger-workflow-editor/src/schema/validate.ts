@@ -29,6 +29,7 @@ export function validateTriggerWorkflow(model: TriggerWorkflowModel) {
   if (!model.code.trim()) push(issues, 'error', 'code', '工作流编码不能为空。');
   if (!model.name.trim()) push(issues, 'error', 'name', '工作流名称不能为空。');
   if (!model.nodes.length) push(issues, 'error', 'nodes', '工作流至少需要一个节点。');
+  validateModelDefaults(model, issues);
 
   model.nodes.forEach((node, index) => {
     const path = `nodes.${index}`;
@@ -200,6 +201,51 @@ function validateNodeConfig(node: TriggerWorkflowNode, issues: TriggerWorkflowIs
   }
   if (node.type === 'transform' && !config.expression?.trim() && !isRecord(config.data?.mapping)) {
     push(issues, 'warning', `${path}.config`, '数据转换节点应填写表达式或字段映射。');
+  }
+}
+
+function validateModelDefaults(model: TriggerWorkflowModel, issues: TriggerWorkflowIssue[]) {
+  const queue = model.settings?.defaultQueue;
+  const queueName = queue?.name?.trim();
+  if (queueName && !isRegisteredTriggerWorkflowQueue(queueName)) {
+    push(
+      issues,
+      'error',
+      'settings.defaultQueue.name',
+      `队列“${queueName}”未随当前 worker 注册。可用队列：${TRIGGER_WORKFLOW_REGISTERED_QUEUE_NAMES.join('、')}。`
+    );
+  }
+  if (queue?.concurrencyLimit !== undefined) {
+    push(
+      issues,
+      'error',
+      'settings.defaultQueue.concurrencyLimit',
+      '队列并发上限由 Trigger.dev worker 静态注册，不能在流程中修改。'
+    );
+  }
+  const retry = model.settings?.defaultRetry;
+  if (retry?.maxAttempts !== undefined && (!Number.isInteger(retry.maxAttempts) || retry.maxAttempts < 0)) {
+    push(issues, 'error', 'settings.defaultRetry.maxAttempts', '默认最大尝试次数必须是非负整数。');
+  }
+  if (retry?.factor !== undefined && (!Number.isFinite(retry.factor) || retry.factor < 1)) {
+    push(issues, 'error', 'settings.defaultRetry.factor', '默认重试退避倍数必须大于或等于 1。');
+  }
+  if (retry?.minTimeoutMs !== undefined && (!Number.isInteger(retry.minTimeoutMs) || retry.minTimeoutMs < 0)) {
+    push(issues, 'error', 'settings.defaultRetry.minTimeoutMs', '默认最小重试间隔必须是非负整数。');
+  }
+  if (retry?.maxTimeoutMs !== undefined && (!Number.isInteger(retry.maxTimeoutMs) || retry.maxTimeoutMs < 0)) {
+    push(issues, 'error', 'settings.defaultRetry.maxTimeoutMs', '默认最大重试间隔必须是非负整数。');
+  }
+  if (
+    retry?.minTimeoutMs !== undefined &&
+    retry.maxTimeoutMs !== undefined &&
+    retry.minTimeoutMs > retry.maxTimeoutMs
+  ) {
+    push(issues, 'error', 'settings.defaultRetry', '默认最小重试间隔不能大于默认最大重试间隔。');
+  }
+  const timeout = model.settings?.defaultTimeoutSeconds;
+  if (timeout !== undefined && (!Number.isInteger(timeout) || timeout < 1)) {
+    push(issues, 'error', 'settings.defaultTimeoutSeconds', '默认任务超时必须是正整数。');
   }
 }
 

@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import {
   TRIGGER_WORKFLOW_ADAPTER_TASK_IDS,
   TRIGGER_WORKFLOW_RUNNER_TASK_ID,
-  buildTriggerWorkflowJob
+  buildTriggerWorkflowJob,
+  getTriggerWorkflowExecutionPlanSignature
 } from '../src/job-adapters';
 import { TRIGGER_WORKFLOW_REGISTERED_QUEUE_NAMES } from '../src/runtime-catalog';
 import type { TriggerWorkflowModel } from '../src/schema/types';
@@ -83,6 +84,12 @@ assert.equal(job.triggerTaskId, TRIGGER_WORKFLOW_RUNNER_TASK_ID);
 assert.equal(job.payload.triggerWorkflow.modelId, model.id);
 assert.equal(job.concurrencyKey, `trigger-workflow:${model.id}`);
 assert.match(job.payload.triggerWorkflow.planSignature, /^fnv1a-[0-9a-f]{8}$/);
+assert.equal(
+  job.payload.triggerWorkflow.planSignature,
+  getTriggerWorkflowExecutionPlanSignature(
+    JSON.parse(JSON.stringify(job.payload.triggerWorkflow.executionPlan))
+  )
+);
 
 const adapters = job.payload.triggerWorkflow.executionPlan.operations
   .flatMap((operation) => operation.adapter ? [operation.adapter] : []);
@@ -111,6 +118,32 @@ const queuedAdapter = buildTriggerWorkflowJob(queued).payload.triggerWorkflow.ex
   .find((operation) => operation.nodeId === 'registered')?.adapter;
 assert.deepEqual(queuedAdapter?.queue, { name: TRIGGER_WORKFLOW_REGISTERED_QUEUE_NAMES[0] });
 
+const modelDefaults = structuredClone(model);
+modelDefaults.settings = {
+  defaultQueue: { name: TRIGGER_WORKFLOW_REGISTERED_QUEUE_NAMES[0] },
+  defaultRetry: { maxAttempts: 4, factor: 2 },
+  defaultTimeoutSeconds: 75
+};
+const inheritedAdapter = buildTriggerWorkflowJob(modelDefaults)
+  .payload.triggerWorkflow.executionPlan.operations
+  .find((operation) => operation.nodeId === 'registered')?.adapter;
+assert.deepEqual(inheritedAdapter?.queue, { name: TRIGGER_WORKFLOW_REGISTERED_QUEUE_NAMES[0] });
+assert.deepEqual(inheritedAdapter?.retry, { maxAttempts: 4, factor: 2 });
+assert.equal(inheritedAdapter?.timeoutSeconds, 75);
+
+const overriddenDefaults = structuredClone(modelDefaults);
+const overriddenTask = overriddenDefaults.nodes.find(
+  (node) => node.id === 'registered'
+)?.config?.task;
+assert.ok(overriddenTask);
+overriddenTask.retry = { maxAttempts: 2 };
+overriddenTask.timeoutSeconds = 15;
+const overriddenAdapter = buildTriggerWorkflowJob(overriddenDefaults)
+  .payload.triggerWorkflow.executionPlan.operations
+  .find((operation) => operation.nodeId === 'registered')?.adapter;
+assert.deepEqual(overriddenAdapter?.retry, { maxAttempts: 2, factor: 2 });
+assert.equal(overriddenAdapter?.timeoutSeconds, 15);
+
 const unregisteredQueue = structuredClone(model);
 const unregisteredTask = unregisteredQueue.nodes.find(
   (node) => node.id === 'registered'
@@ -133,6 +166,18 @@ dynamicConcurrencyTask.queue = {
 };
 assert.throws(
   () => buildTriggerWorkflowJob(dynamicConcurrency),
+  /静态注册|defined by the workflow worker/
+);
+
+const dynamicDefaultConcurrency = structuredClone(model);
+dynamicDefaultConcurrency.settings = {
+  defaultQueue: {
+    name: TRIGGER_WORKFLOW_REGISTERED_QUEUE_NAMES[0],
+    concurrencyLimit: 2
+  }
+};
+assert.throws(
+  () => buildTriggerWorkflowJob(dynamicDefaultConcurrency),
   /静态注册|defined by the workflow worker/
 );
 

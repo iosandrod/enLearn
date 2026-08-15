@@ -7,8 +7,12 @@ import {
   useLowCodePageRuntime,
 } from '../../packages/lowcode-framework/src/runtime/page-runtime.ts';
 import {
+  isLowCodeEditPageActionDisabled,
   isLowCodeEditPageFieldDisabled,
+  isLowCodeEditPageModifyAction,
   isLowCodeEditPageReadonly,
+  isLowCodeEditPageSaveAction,
+  normalizeLowCodeEditPageActionCode,
   resolveLowCodeEditPageMode,
 } from '../../packages/lowcode-framework/src/runtime/edit-page-mode.ts';
 import {
@@ -29,6 +33,12 @@ assert.equal(resolveLowCodeEditPageMode(''), 'add');
 assert.equal(resolveLowCodeEditPageMode(undefined), 'add');
 assert.equal(isLowCodeEditPageReadonly('scan'), true);
 assert.equal(isLowCodeEditPageReadonly('edit'), false);
+assert.equal(normalizeLowCodeEditPageActionCode('Save-And_Close'), 'saveandclose');
+assert.equal(isLowCodeEditPageSaveAction({ code: 'save-and-close' }), true);
+assert.equal(isLowCodeEditPageModifyAction({ code: 'modify' }), true);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'save' }, 'scan'), true);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'modify' }, 'scan'), false);
+assert.equal(isLowCodeEditPageActionDisabled({ code: 'addDetail' }, 'scan'), true);
 assert.equal(
   isLowCodeEditPageFieldDisabled({ createDisabled: true }, 'add'),
   true,

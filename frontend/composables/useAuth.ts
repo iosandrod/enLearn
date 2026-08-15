@@ -240,7 +240,7 @@ function toDevTestUser(row: AdminUserRow, index: number): DevTestUser | null {
     readOptionalString(row.role_names) ||
     readOptionalString(row.app_role_names) ||
     readOptionalString(row.role);
-  const role = rawRole === 'admin' ? '管理员' : rawRole === 'student' ? '审批用户' : rawRole || '审批用户';
+  const role = rawRole === 'admin' ? '管理员' : rawRole || '审批用户';
 
   return {
     id,

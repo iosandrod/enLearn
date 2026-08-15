@@ -74,7 +74,7 @@ function buildLines(failThirdLine: boolean, itemPrefix = 'ITEM') {
     {
       line_no: 1,
       item_code: `${itemPrefix}-001`,
-      item_name: 'English Starter Pack',
+      item_name: 'Controller Starter Kit',
       uom_code: 'SET',
       uom_name: 'Set',
       ordered_qty: 2,
@@ -88,7 +88,7 @@ function buildLines(failThirdLine: boolean, itemPrefix = 'ITEM') {
     {
       line_no: 2,
       item_code: `${itemPrefix}-002`,
-      item_name: 'Speaking Practice Card',
+      item_name: 'Control Interface Card',
       uom_code: 'BOX',
       uom_name: 'Box',
       ordered_qty: 1,
@@ -102,7 +102,7 @@ function buildLines(failThirdLine: boolean, itemPrefix = 'ITEM') {
     {
       line_no: failThirdLine ? 0 : 3,
       item_code: `${itemPrefix}-003`,
-      item_name: 'Listening Course License',
+      item_name: 'Controller Software License',
       uom_code: 'EA',
       uom_name: 'Each',
       ordered_qty: 5,
@@ -186,7 +186,7 @@ function buildUpdateRequest(
               id: firstLine.id,
               line_no: failUpdatedLine ? 0 : 1,
               item_code: 'UPDATED-ITEM-001',
-              item_name: 'English Starter Pack',
+              item_name: 'Controller Starter Kit',
               ordered_qty: 2
             }],
             deleted: failUpdatedLine ? [] : [deletedLine.id]

@@ -1,5 +1,9 @@
 export interface ServiceContext {
   authorization?: string;
+  internal?: {
+    principal: 'trigger-workflow';
+    capability: string;
+  };
   requestId?: string;
   userId?: string;
   accountId?: string;

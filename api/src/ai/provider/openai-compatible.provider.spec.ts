@@ -1,8 +1,14 @@
 import assert from 'node:assert/strict';
 import { ServiceUnavailableException } from '@nestjs/common';
-import { openAiCompatibleProviderInternals } from './openai-compatible.provider';
+import { OpenAiCompatibleProvider, openAiCompatibleProviderInternals } from './openai-compatible.provider';
 
-const { normalizeBaseUrl, providerErrorText, readArguments } = openAiCompatibleProviderInternals;
+const {
+  normalizeBaseUrl,
+  providerErrorText,
+  providerFailureMessage,
+  requiredSetting,
+  readArguments
+} = openAiCompatibleProviderInternals;
 
 assert.equal(normalizeBaseUrl('https://api.openai.com'), 'https://api.openai.com/v1');
 assert.equal(normalizeBaseUrl('https://example.test/custom/v1/'), 'https://example.test/custom/v1');
@@ -21,5 +27,42 @@ assert.equal(
   providerErrorText('request rejected: Bearer secret-token'),
   'request rejected: Bearer [redacted]'
 );
+assert.equal(
+  providerErrorText('{"error":{"message":"invalid sk-secret-value"}}'),
+  'invalid sk-[redacted]'
+);
+assert.equal(requiredSetting({ AI_MODEL: 'qwen-plus' }, 'AI_MODEL'), 'qwen-plus');
+assert.throws(
+  () => requiredSetting({}, 'AI_API_KEY'),
+  (error: unknown) => error instanceof ServiceUnavailableException &&
+    /缺少 AI_API_KEY/.test(error.message)
+);
+assert.equal(
+  providerFailureMessage(new Error('connect ECONNREFUSED Bearer secret-token')),
+  '无法连接 AI 服务：connect ECONNREFUSED Bearer [redacted]'
+);
 
-console.log('OpenAI-compatible provider validation tests passed');
+async function testMissingConfiguration() {
+  const previous = process.env.AI_API_KEY;
+  process.env.AI_API_KEY = '';
+  try {
+    await assert.rejects(
+      new OpenAiCompatibleProvider().complete({
+        mode: 'ask',
+        messages: [{ role: 'user', content: 'hello' }],
+        tools: [],
+        signal: new AbortController().signal,
+        onDelta() {}
+      }),
+      (error: unknown) => error instanceof ServiceUnavailableException &&
+        /缺少 AI_API_KEY/.test(error.message)
+    );
+  } finally {
+    if (typeof previous === 'undefined') delete process.env.AI_API_KEY;
+    else process.env.AI_API_KEY = previous;
+  }
+}
+
+void testMissingConfiguration().then(() => {
+  console.log('OpenAI-compatible provider validation tests passed');
+});

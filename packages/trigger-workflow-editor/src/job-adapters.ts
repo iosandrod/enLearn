@@ -145,19 +145,21 @@ const supportedJobOperationTypes = new Set<TriggerWorkflowOperation['type']>([
 ]);
 
 export function buildTriggerWorkflowTaskJobAdapter(
-  task: TriggerWorkflowTaskRef
+  task: TriggerWorkflowTaskRef,
+  defaults?: TriggerWorkflowModel['settings']
 ): TriggerWorkflowTaskJobAdapter {
-  if (!task.type) throw new Error('Task type is required to build a workflow Job adapter.');
+  const resolvedTask = applyTaskDefaults(task, defaults);
+  if (!resolvedTask.type) throw new Error('Task type is required to build a workflow Job adapter.');
 
-  switch (task.type) {
+  switch (resolvedTask.type) {
     case 'frontendCommand':
-      return taskJobAdapterBuilders.frontendCommand({ ...task, type: task.type });
+      return taskJobAdapterBuilders.frontendCommand({ ...resolvedTask, type: resolvedTask.type });
     case 'backendCommand':
-      return taskJobAdapterBuilders.backendCommand({ ...task, type: task.type });
+      return taskJobAdapterBuilders.backendCommand({ ...resolvedTask, type: resolvedTask.type });
     case 'storedProcedure':
-      return taskJobAdapterBuilders.storedProcedure({ ...task, type: task.type });
+      return taskJobAdapterBuilders.storedProcedure({ ...resolvedTask, type: resolvedTask.type });
     case 'registeredTask':
-      return taskJobAdapterBuilders.registeredTask({ ...task, type: task.type });
+      return taskJobAdapterBuilders.registeredTask({ ...resolvedTask, type: resolvedTask.type });
   }
 }
 
@@ -182,7 +184,7 @@ export function buildTriggerWorkflowJobExecutionPlan(
       options: operation.task ? {} : stripEmbeddedTask(operation.options),
       ...(operation.condition ? { condition: operation.condition } : {}),
       ...(operation.task
-        ? { adapter: buildTriggerWorkflowTaskJobAdapter(operation.task) }
+        ? { adapter: buildTriggerWorkflowTaskJobAdapter(operation.task, model.settings) }
         : {})
     };
   });
@@ -190,15 +192,51 @@ export function buildTriggerWorkflowJobExecutionPlan(
   return { ...plan, operations };
 }
 
+function applyTaskDefaults(
+  task: TriggerWorkflowTaskRef,
+  defaults?: TriggerWorkflowModel['settings']
+): TriggerWorkflowTaskRef {
+  const defaultQueue = defaults?.defaultQueue;
+  if (defaultQueue?.concurrencyLimit !== undefined) {
+    throw new Error('Trigger.dev queue concurrency is defined by the workflow worker.');
+  }
+  return {
+    ...task,
+    ...(task.queue?.name?.trim()
+      ? { queue: { ...task.queue } }
+      : defaultQueue?.name?.trim()
+        ? { queue: { name: defaultQueue.name.trim() } }
+        : {}),
+    ...(task.retry
+      ? { retry: { ...defaults?.defaultRetry, ...task.retry } }
+      : defaults?.defaultRetry
+        ? { retry: { ...defaults.defaultRetry } }
+        : {}),
+    ...(task.timeoutSeconds !== undefined
+      ? { timeoutSeconds: task.timeoutSeconds }
+      : defaults?.defaultTimeoutSeconds !== undefined
+        ? { timeoutSeconds: defaults.defaultTimeoutSeconds }
+        : {})
+  };
+}
+
 export function getTriggerWorkflowJobPlanSignature(model: TriggerWorkflowModel) {
-  return hashText(JSON.stringify(buildTriggerWorkflowJobExecutionPlan(model)));
+  return getTriggerWorkflowExecutionPlanSignature(
+    buildTriggerWorkflowJobExecutionPlan(model)
+  );
+}
+
+export function getTriggerWorkflowExecutionPlanSignature(
+  executionPlan: TriggerWorkflowJobExecutionPlan
+) {
+  return hashText(stableStringify(executionPlan));
 }
 
 export function buildTriggerWorkflowJob(
   model: TriggerWorkflowModel
 ): TriggerWorkflowJobDefinition {
   const executionPlan = buildTriggerWorkflowJobExecutionPlan(model);
-  const planSignature = hashText(JSON.stringify(executionPlan));
+  const planSignature = getTriggerWorkflowExecutionPlanSignature(executionPlan);
   const scheduled = executionPlan.schedule;
 
   return {
@@ -281,4 +319,19 @@ function hashText(value: string) {
     hash = Math.imul(hash, 16777619);
   }
   return `fnv1a-${(hash >>> 0).toString(16).padStart(8, '0')}`;
+}
+
+function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableStringify(item ?? null)).join(',')}]`;
+  }
+  if (isRecord(value)) {
+    const fields = Object.keys(value)
+      .filter((field) => value[field] !== undefined)
+      .sort();
+    return `{${fields
+      .map((field) => `${JSON.stringify(field)}:${stableStringify(value[field])}`)
+      .join(',')}}`;
+  }
+  return JSON.stringify(value) ?? 'null';
 }

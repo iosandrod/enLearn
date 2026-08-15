@@ -1372,7 +1372,6 @@ function handleAdminRoutesUpdated() {
 }
 
 function reconnectFrontendCommandSocket() {
-  frontendCommandSocket.disconnect();
   void frontendCommandSocket.connect().catch((error) => {
     console.warn('Frontend command socket connection failed.', error);
   });

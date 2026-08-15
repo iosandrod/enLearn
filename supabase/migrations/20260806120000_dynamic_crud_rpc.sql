@@ -26,6 +26,40 @@ begin
 end;
 $function$;
 
+create or replace function dynamic_crud_private.quote_relation(
+  p_relation text
+)
+returns text
+language plpgsql
+stable
+security invoker
+set search_path = pg_catalog
+as $function$
+declare
+  v_parts text[];
+  v_schema text;
+  v_table text;
+begin
+  v_parts := pg_catalog.string_to_array(p_relation, '.');
+  if pg_catalog.array_length(v_parts, 1) = 1 then
+    v_schema := 'public';
+    v_table := v_parts[1];
+  elsif pg_catalog.array_length(v_parts, 1) = 2 then
+    v_schema := v_parts[1];
+    v_table := v_parts[2];
+  else
+    raise exception 'tableName must be table or schema.table.' using errcode = '22023';
+  end if;
+
+  perform dynamic_crud_private.assert_identifier(v_schema, 'schema');
+  perform dynamic_crud_private.assert_identifier(v_table, 'table');
+  if pg_catalog.to_regclass(pg_catalog.format('%I.%I', v_schema, v_table)) is null then
+    raise exception 'Relation %.% does not exist.', v_schema, v_table using errcode = '42P01';
+  end if;
+  return pg_catalog.format('%I.%I', v_schema, v_table);
+end;
+$function$;
+
 create table if not exists public.dynamic_crud_resource_registry (
   resource_name text primary key,
   table_name text not null,
@@ -131,40 +165,6 @@ as $function$
   where registry.resource_name = p_resource_name
     and dynamic_crud_private.quote_relation(registry.table_name) =
         dynamic_crud_private.quote_relation(p_table_name)
-$function$;
-
-create or replace function dynamic_crud_private.quote_relation(
-  p_relation text
-)
-returns text
-language plpgsql
-stable
-security invoker
-set search_path = pg_catalog
-as $function$
-declare
-  v_parts text[];
-  v_schema text;
-  v_table text;
-begin
-  v_parts := pg_catalog.string_to_array(p_relation, '.');
-  if pg_catalog.array_length(v_parts, 1) = 1 then
-    v_schema := 'public';
-    v_table := v_parts[1];
-  elsif pg_catalog.array_length(v_parts, 1) = 2 then
-    v_schema := v_parts[1];
-    v_table := v_parts[2];
-  else
-    raise exception 'tableName must be table or schema.table.' using errcode = '22023';
-  end if;
-
-  perform dynamic_crud_private.assert_identifier(v_schema, 'schema');
-  perform dynamic_crud_private.assert_identifier(v_table, 'table');
-  if pg_catalog.to_regclass(pg_catalog.format('%I.%I', v_schema, v_table)) is null then
-    raise exception 'Relation %.% does not exist.', v_schema, v_table using errcode = '42P01';
-  end if;
-  return pg_catalog.format('%I.%I', v_schema, v_table);
-end;
 $function$;
 
 drop function if exists dynamic_crud_private.assert_string_array(jsonb, text);

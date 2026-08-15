@@ -399,8 +399,16 @@ export class WorkflowService extends BaseService {
           this.readInstanceActionDto(postData),
           this.resolveActor(context)
         );
-      case 'createJob':
-        return this.createJobByCrud(postData, context);
+      case 'createJob': {
+        await this.assertRuntimeManagementAccess(context);
+        const createJobActor = this.resolveActor(context);
+        const job = await this.jobService.createJob(
+          this.readCreateJobDto(postData),
+          createJobActor
+        );
+        this.taskConsoleService.invalidate(createJobActor.tenantId);
+        return job;
+      }
       case 'upsertJob': {
         await this.assertRuntimeManagementAccess(context);
         const upsertJobActor = this.resolveActor(context);
@@ -413,6 +421,15 @@ export class WorkflowService extends BaseService {
       }
       case 'getJob':
         return this.getJobByCrud(readString(postData.jobId ?? postData.id, 'jobId'), context);
+      case 'deleteJob':
+        await this.assertRuntimeManagementAccess(context);
+        const deleteJobActor = this.resolveActor(context);
+        const deletedJob = await this.jobService.deleteJob(
+          readString(postData.jobId ?? postData.id, 'jobId'),
+          deleteJobActor
+        );
+        this.taskConsoleService.invalidate(deleteJobActor.tenantId);
+        return deletedJob;
       case 'updateJobStatus':
         await this.assertRuntimeManagementAccess(context);
         const updateJobActor = this.resolveActor(context);
@@ -571,13 +588,6 @@ export class WorkflowService extends BaseService {
     );
     if (!result) throw new NotFoundException('Workflow definition not found.');
     return result;
-  }
-
-  private async createJobByCrud(postData: PostData, context: ServiceContext) {
-    return this.createItem({
-      ...this.readCreateJobDto(postData),
-      resource: 'wf_job'
-    }, context);
   }
 
   private async publishModelByRpc(

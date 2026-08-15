@@ -1,7 +1,5 @@
 import { task, tasks, wait } from '@trigger.dev/sdk';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { createClient } from '@supabase/supabase-js';
-import { getEnv } from '../../common/utils/env';
 import {
   applyOutputMapping,
   assertRecord,
@@ -16,6 +14,7 @@ import {
   type JsonRecord
 } from './trigger-workflow.helpers';
 import {
+  TRIGGER_WORKFLOW_ADAPTER_TASK_IDS,
   TRIGGER_WORKFLOW_RUNNER_TASK_ID,
   type TriggerWorkflowAdapterPayload,
   type TriggerWorkflowJobDefinitionPayload,
@@ -25,45 +24,62 @@ import {
   type TriggerWorkflowTaskJobAdapter
 } from './trigger-workflow.types';
 import { resolveTriggerWorkflowQueueName } from './trigger-workflow-queues';
+import {
+  assertTriggerWorkflowJobPayload,
+  assertWorkflowRegisteredTaskId
+} from './trigger-workflow-policy';
+import {
+  createTriggerWorkflowSupabaseClient,
+  executeTriggerWorkflowRpc
+} from './trigger-workflow-worker-supabase';
 
 const WORKFLOW_JOB_RPC = 'workflow_job_command';
 
 export const triggerWorkflowRunnerTask = task({
   id: TRIGGER_WORKFLOW_RUNNER_TASK_ID,
   maxDuration: 3600,
-  run: async (payload: TriggerWorkflowRunnerPayload) => {
-    const runId = readRequiredString(payload.runId, 'runId');
+  run: async (payload: TriggerWorkflowRunnerPayload) => runTriggerWorkflowRunner(payload)
+});
+
+export async function runTriggerWorkflowRunner(
+  payload: TriggerWorkflowRunnerPayload,
+  dependencies: { supabase?: SupabaseClient } = {}
+) {
+  const runId = readRequiredString(payload.runId, 'runId');
+  const supabase = dependencies.supabase
+    ?? createTriggerWorkflowSupabaseClient(TRIGGER_WORKFLOW_RUNNER_TASK_ID);
+  let started = false;
+
+  try {
+    const running = await command(supabase, 'mark_run_running', { run_id: runId });
+    if (!running) throw new Error('Workflow job run not found.');
+    started = true;
+
     const tenantId = readRequiredString(payload.tenantId, 'tenantId');
     const definition = readWorkflowDefinition(payload.triggerWorkflow);
-    const supabase = createWorkerSupabaseClient(TRIGGER_WORKFLOW_RUNNER_TASK_ID);
-    let started = false;
-
-    try {
-      const running = await command(supabase, 'mark_run_running', { run_id: runId });
-      if (!running) throw new Error('Workflow job run not found.');
-      started = true;
-
-      const runtimePayload = stripRunnerMetadata(payload);
-      const output = await executeTriggerWorkflowJobPlan({
-        runId,
-        jobId: readString(payload.jobId) || undefined,
-        tenantId,
-        userId: readString(payload.userId) || undefined,
-        payload: runtimePayload,
-        definition
-      });
-      await command(supabase, 'finish_run', {
-        run_id: runId,
-        status: 'succeeded',
-        output
-      });
-      return output;
-    } catch (error) {
-      if (started) await markJobRunFailedBestEffort(supabase, runId, error);
-      throw error;
-    }
+    assertTriggerWorkflowJobPayload(TRIGGER_WORKFLOW_RUNNER_TASK_ID, {
+      triggerWorkflow: definition
+    });
+    const runtimePayload = stripRunnerMetadata(payload);
+    const output = await executeTriggerWorkflowJobPlan({
+      runId,
+      jobId: readString(payload.jobId) || undefined,
+      tenantId,
+      userId: readString(payload.userId) || undefined,
+      payload: runtimePayload,
+      definition
+    });
+    await command(supabase, 'finish_run', {
+      run_id: runId,
+      status: 'succeeded',
+      output
+    });
+    return output;
+  } catch (error) {
+    if (started) await markJobRunFailedBestEffort(supabase, runId, error);
+    throw error;
   }
-});
+}
 
 export async function executeTriggerWorkflowJobPlan(input: {
   runId: string;
@@ -78,6 +94,9 @@ export async function executeTriggerWorkflowJobPlan(input: {
     payload: TriggerWorkflowAdapterPayload
   ) => Promise<unknown>;
 }) {
+  assertTriggerWorkflowJobPayload(TRIGGER_WORKFLOW_RUNNER_TASK_ID, {
+    triggerWorkflow: input.definition
+  });
   const plan = input.definition.executionPlan;
   const operationsByNodeId = new Map(plan.operations.map((operation) => [operation.nodeId, operation]));
   const entry = operationsByNodeId.get(plan.entryNodeId);
@@ -208,9 +227,19 @@ async function executeAdapter(
       return applyOutputMapping(output, adapter.outputMapping);
     }
     const childPayload = adapter.type === 'registeredTask'
-      ? adapterPayload.payload
+      ? {
+          ...adapterPayload.payload,
+          tenantId: runtime.tenantId,
+          ...(runtime.userId ? { userId: runtime.userId } : {}),
+          workflowRunId: runtime.runId,
+          workflowJobId: runtime.jobId,
+          workflowId: runtime.definition.modelId,
+          workflowCode: runtime.definition.modelCode,
+          workflowOperationId: operation.id
+        }
       : adapterPayload;
-    const result = await tasks.triggerAndWait(adapter.executorTaskId, childPayload, {
+    const executorTaskId = resolveAdapterExecutorTaskId(adapter);
+    const result = await tasks.triggerAndWait(executorTaskId, childPayload, {
         ...(adapter.idempotencyKey
           ? { idempotencyKey: String(interpolateValue(adapter.idempotencyKey, scope)) }
           : { idempotencyKey: `trigger-workflow:${runtime.runId}:${operation.id}` }),
@@ -233,6 +262,17 @@ async function executeAdapter(
     }
     throw error;
   }
+}
+
+function resolveAdapterExecutorTaskId(adapter: TriggerWorkflowTaskJobAdapter) {
+  if (adapter.type === 'registeredTask') {
+    return assertWorkflowRegisteredTaskId(adapter.executorTaskId);
+  }
+  const expected = TRIGGER_WORKFLOW_ADAPTER_TASK_IDS[adapter.type];
+  if (adapter.executorTaskId !== expected) {
+    throw new Error(`Workflow ${adapter.type} adapter has an invalid executor Task ID.`);
+  }
+  return expected;
 }
 
 function nextOperation(
@@ -330,23 +370,9 @@ function stripRunnerMetadata(payload: TriggerWorkflowRunnerPayload) {
 }
 
 async function command(client: SupabaseClient, action: string, payload: JsonRecord) {
-  const { data, error } = await client.rpc(WORKFLOW_JOB_RPC, {
+  return executeTriggerWorkflowRpc(client, WORKFLOW_JOB_RPC, {
     p_action: action,
     p_payload: payload
-  });
-  if (error) throw new Error(error.message);
-  return data;
-}
-
-function createWorkerSupabaseClient(taskName: string) {
-  const env = getEnv();
-  const url = env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL ?? env.SUPABASE_PROJECT_URL;
-  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url?.trim() || !serviceRoleKey?.trim()) {
-    throw new Error(`SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required by ${taskName}.`);
-  }
-  return createClient(url, serviceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false }
   });
 }
 

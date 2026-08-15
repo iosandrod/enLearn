@@ -5,6 +5,7 @@ import type { WorkflowSupabaseService } from '../common/workflow-supabase.servic
 import type { TriggerDevClient } from '../trigger/trigger-dev.client';
 import { JobService } from './job.service';
 import type { WorkflowJobRecord } from './job.types';
+import { getTriggerWorkflowExecutionPlanSignature } from '../trigger/trigger-workflow-policy';
 
 const actor = {
   tenantId: '00000000-0000-4000-8000-000000000001',
@@ -14,6 +15,7 @@ const actor = {
 async function main() {
   await testCreateRejectsUnsupportedIntervalBeforeWriting();
   await testUpsertPersistsTheCurrentTypedWorkflowDefinition();
+  await testUpsertRejectsUnregisteredWorkflowTask();
   await testEnableCreatesScheduleAndPersistsItsId();
   await testCreateConflictRecoversExistingSchedule();
   await testAlreadyEnabledJobWithoutScheduleIsReconciled();
@@ -24,11 +26,53 @@ async function main() {
   await testDisableDeactivatesSchedule();
   await testArchiveDeletesSchedule();
   await testArchiveClearsMissingSchedule();
+  await testDeleteJobDeletesScheduleBeforeRecord();
+  await testDeleteJobAllowsMissingSchedule();
+  await testDeleteJobDoesNotDeleteRecordWhenScheduleCleanupFails();
   await testCreateScheduleIsDeletedWhenRpcUpdateFails();
   await testExistingScheduleIsDeactivatedWhenRpcUpdateFails();
+  await testTypedRunKeepsPersistedPlanAndTrustedActor();
   await testTriggerFailureIsPreservedWhenFailureProjectionFails();
   await testTriggeredRunIsCanceledWhenRunIdProjectionFails();
   console.log('workflow-api Trigger.dev job Supabase RPC tests passed');
+}
+
+async function testUpsertRejectsUnregisteredWorkflowTask() {
+  let rpcCalled = false;
+  const service = createService(
+    async () => {
+      rpcCalled = true;
+      return { data: null, error: null };
+    },
+    createTriggerClient()
+  );
+
+  const triggerWorkflow = createTypedWorkflowDefinition({
+    modelId: 'model-untrusted',
+    modelCode: 'untrusted-workflow-task',
+    operations: [{
+      id: 'op_task',
+      nodeId: 'task',
+      type: 'task.trigger',
+      next: [],
+      adapter: {
+        type: 'registeredTask',
+        executorTaskId: 'not.registered'
+      }
+    }]
+  });
+
+  await assert.rejects(
+    () => service.upsertJob({
+      code: 'untrusted-workflow-task',
+      name: 'Untrusted workflow task',
+      type: 'manual',
+      triggerTaskId: 'workflow.trigger-workflow.run',
+      payload: { triggerWorkflow }
+    }, actor),
+    /not registered for workflow-node execution/
+  );
+  assert.equal(rpcCalled, false);
 }
 
 async function testUpsertPersistsTheCurrentTypedWorkflowDefinition() {
@@ -46,30 +90,34 @@ async function testUpsertPersistsTheCurrentTypedWorkflowDefinition() {
     createTriggerClient()
   );
 
+  const triggerWorkflow = createTypedWorkflowDefinition({
+    modelId: 'model-1',
+    modelCode: 'typed-workflow',
+    operations: [{
+      id: 'op_task',
+      nodeId: 'task',
+      type: 'task.trigger',
+      next: [],
+      adapter: {
+        type: 'frontendCommand',
+        executorTaskId: 'workflow.adapter.frontend-command',
+        functionSource: "async () => ({ code: 'message.show', params: { message: 'ok' } })"
+      }
+    }]
+  });
+
   await service.upsertJob({
     code: job.code,
     name: job.name,
     type: 'manual',
     triggerTaskId: job.triggerTaskId,
-    payload: {
-      triggerWorkflow: {
-        version: 1,
-        modelId: 'model-1',
-        executionPlan: { operations: [{ adapter: { type: 'frontendCommand' } }] }
-      }
-    }
+    payload: { triggerWorkflow }
   }, actor);
 
   assert.equal(command?.action, 'upsert_job');
   assert.equal(command?.payload.trigger_task_id, 'workflow.trigger-workflow.run');
   assert.equal(command?.payload.model_id, 'model-1');
-  assert.deepEqual(command?.payload.payload, {
-    triggerWorkflow: {
-      version: 1,
-      modelId: 'model-1',
-      executionPlan: { operations: [{ adapter: { type: 'frontendCommand' } }] }
-    }
-  });
+  assert.deepEqual(command?.payload.payload, { triggerWorkflow });
 }
 
 async function testCreateRejectsUnsupportedIntervalBeforeWriting() {
@@ -311,6 +359,80 @@ async function testArchiveClearsMissingSchedule() {
   assert.equal(archived.scheduleId, undefined);
 }
 
+async function testDeleteJobDeletesScheduleBeforeRecord() {
+  const calls: string[] = [];
+  const job = createJob({ scheduleId: 'schedule-1' });
+  const service = createService(
+    async (action, payload) => {
+      calls.push(`rpc:${action}`);
+      if (action === 'get_job') return { data: toRow(job), error: null };
+      assert.equal(action, 'delete_job');
+      assert.equal(payload.account_id, actor.tenantId);
+      assert.equal(payload.job_id, job.id);
+      return { data: toRow(job), error: null };
+    },
+    createTriggerClient({
+      deleteSchedule: async (scheduleId: string) => {
+        calls.push(`schedule:delete:${scheduleId}`);
+        return { id: scheduleId };
+      }
+    })
+  );
+
+  const deleted = await service.deleteJob(job.id, actor);
+
+  assert.equal(deleted.id, job.id);
+  assert.deepEqual(calls, [
+    'rpc:get_job',
+    'schedule:delete:schedule-1',
+    'rpc:delete_job'
+  ]);
+}
+
+async function testDeleteJobAllowsMissingSchedule() {
+  const job = createJob({ scheduleId: 'missing-schedule' });
+  let deleted = false;
+  const service = createService(
+    async (action) => {
+      if (action === 'get_job') return { data: toRow(job), error: null };
+      deleted = true;
+      return { data: toRow(job), error: null };
+    },
+    createTriggerClient({
+      deleteSchedule: async () => {
+        throw Object.assign(new Error('Schedule not found'), { status: 404 });
+      }
+    })
+  );
+
+  await service.deleteJob(job.id, actor);
+
+  assert.equal(deleted, true);
+}
+
+async function testDeleteJobDoesNotDeleteRecordWhenScheduleCleanupFails() {
+  const job = createJob({ scheduleId: 'schedule-1' });
+  let deleteRpcCalled = false;
+  const service = createService(
+    async (action) => {
+      if (action === 'get_job') return { data: toRow(job), error: null };
+      deleteRpcCalled = true;
+      return { data: toRow(job), error: null };
+    },
+    createTriggerClient({
+      deleteSchedule: async () => {
+        throw new Error('Trigger.dev unavailable');
+      }
+    })
+  );
+
+  await assert.rejects(
+    () => service.deleteJob(job.id, actor),
+    /Trigger\.dev unavailable/
+  );
+  assert.equal(deleteRpcCalled, false);
+}
+
 async function testCreateScheduleIsDeletedWhenRpcUpdateFails() {
   const calls: string[] = [];
   const job = createJob();
@@ -346,6 +468,76 @@ async function testExistingScheduleIsDeactivatedWhenRpcUpdateFails() {
 
   await assert.rejects(() => service.updateJobStatus(job.id, 'enabled', actor), /RPC update failed/);
   assert.deepEqual(calls, ['deactivate:schedule-1']);
+}
+
+async function testTypedRunKeepsPersistedPlanAndTrustedActor() {
+  const storedDefinition = createTypedWorkflowDefinition({
+    modelId: 'model-trusted',
+    modelCode: 'trusted-workflow',
+    operations: [{
+      id: 'op_task',
+      nodeId: 'task',
+      type: 'task.trigger',
+      next: [],
+      adapter: {
+        type: 'frontendCommand',
+        executorTaskId: 'workflow.adapter.frontend-command',
+        functionSource: "async () => ({ code: 'message.show', params: { message: 'ok' } })"
+      }
+    }]
+  });
+  const job = createJob({
+    type: 'manual',
+    triggerTaskId: 'workflow.trigger-workflow.run',
+    payload: { triggerWorkflow: storedDefinition, configuredValue: 'stored' }
+  });
+  const run = createRun();
+  let commandCount = 0;
+  let createdInput: Record<string, unknown> | undefined;
+  let triggeredPayload: Record<string, unknown> | undefined;
+  const service = createService(
+    async (action, payload) => {
+      commandCount += 1;
+      if (action === 'get_job') return { data: toRow(job), error: null };
+      if (action === 'create_run') {
+        createdInput = payload.input as Record<string, unknown>;
+        return { data: toRunRow({ ...run, input: createdInput }), error: null };
+      }
+      assert.equal(action, 'project_trigger_run');
+      return {
+        data: toRunRow({ ...run, input: createdInput ?? {}, triggerRunId: 'trigger-run-1' }),
+        error: null
+      };
+    },
+    createTriggerClient({
+      triggerTask: async (_taskId: string, payload: Record<string, unknown>) => {
+        triggeredPayload = payload;
+        return { id: 'trigger-run-1' };
+      }
+    })
+  );
+  const suppliedDefinition = structuredClone(storedDefinition);
+  suppliedDefinition.modelCode = 'caller-controlled';
+
+  await service.runJob(job.id, {
+    payload: {
+      triggerWorkflow: suppliedDefinition,
+      userId: 'caller-controlled-user',
+      runId: 'caller-controlled-run',
+      configuredValue: 'request',
+      runtimeValue: 'request-only'
+    }
+  }, actor);
+
+  assert.equal(commandCount, 3);
+  assert.deepEqual(createdInput?.triggerWorkflow, storedDefinition);
+  assert.equal(createdInput?.userId, actor.userId);
+  assert.equal(createdInput?.runId, undefined);
+  assert.equal(createdInput?.configuredValue, 'request');
+  assert.equal(createdInput?.runtimeValue, 'request-only');
+  assert.deepEqual(triggeredPayload?.triggerWorkflow, storedDefinition);
+  assert.equal(triggeredPayload?.userId, actor.userId);
+  assert.equal(triggeredPayload?.runId, run.id);
 }
 
 async function testTriggerFailureIsPreservedWhenFailureProjectionFails() {
@@ -402,10 +594,21 @@ function createService(
   const client = {
     rpc: async (
       functionName: string,
-      args: { p_action: string; p_payload: Record<string, unknown> }
+      args: {
+        p_action?: string;
+        p_payload?: Record<string, unknown>;
+        p_account_id?: string;
+        p_job_id?: string;
+      }
     ) => {
+      if (functionName === 'workflow_delete_job') {
+        return rpc('delete_job', {
+          account_id: args.p_account_id,
+          job_id: args.p_job_id
+        });
+      }
       assert.equal(functionName, 'workflow_job_command');
-      return rpc(args.p_action, args.p_payload);
+      return rpc(args.p_action!, args.p_payload!);
     }
   } as unknown as SupabaseClient;
   const persistence = { isConfigured: true, client } as WorkflowSupabaseService;
@@ -442,6 +645,26 @@ function createTriggerClient(overrides: Record<string, unknown> = {}) {
     cancelRun: async () => {},
     ...overrides
   } as unknown as TriggerDevClient;
+}
+
+function createTypedWorkflowDefinition(input: {
+  modelId: string;
+  modelCode: string;
+  operations: Array<Record<string, unknown>>;
+}) {
+  const executionPlan = {
+    workflowId: input.modelId,
+    workflowCode: input.modelCode,
+    entryNodeId: String(input.operations[0]?.nodeId ?? ''),
+    operations: input.operations
+  };
+  return {
+    version: 1,
+    modelId: input.modelId,
+    modelCode: input.modelCode,
+    planSignature: getTriggerWorkflowExecutionPlanSignature(executionPlan),
+    executionPlan
+  };
 }
 
 function createJob(overrides: Partial<WorkflowJobRecord> = {}): WorkflowJobRecord {
@@ -498,12 +721,12 @@ function createRun() {
   };
 }
 
-function toRunRow(run: ReturnType<typeof createRun>) {
+function toRunRow(run: ReturnType<typeof createRun> & { triggerRunId?: string }) {
   return {
     id: run.id,
     account_id: run.tenantId,
     job_id: run.jobId,
-    trigger_run_id: null,
+    trigger_run_id: run.triggerRunId ?? null,
     status: run.status,
     attempt: run.attempt,
     input: run.input,

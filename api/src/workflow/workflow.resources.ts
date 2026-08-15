@@ -158,6 +158,7 @@ export const workflowResources: ResourceConfigMap = {
     tableName: 'wf_job',
     clientMode: 'user',
     accountField: 'account_id',
+    internalActions: ['create', 'update', 'delete'],
     transactionalHooks: true,
     databaseHooks: {
       beforeCreate: 'public.dynamic_crud_normalize_workflow_job',
@@ -216,7 +217,7 @@ export const workflowResources: ResourceConfigMap = {
     tableName: 'wf_job_run',
     clientMode: 'admin',
     accountField: 'account_id',
-    select: 'id, account_id, job_id, trigger_run_id, status, attempt, error_message, started_at, finished_at, created_at',
+    select: 'id, account_id, job_id, trigger_run_id, status, attempt, input, output, error_message, started_at, finished_at, created_at',
     permissions: runtimePermissions,
     list: {
       defaultSorts: [{ field: 'created_at', direction: 'desc' }],

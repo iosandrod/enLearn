@@ -87,6 +87,9 @@ importers:
       '@types/pg':
         specifier: ^8.11.10
         version: 8.20.0
+      import-in-the-middle:
+        specifier: 3.3.2
+        version: 3.3.2
       trigger.dev:
         specifier: 4.5.7
         version: 4.5.7(react@19.2.8)(typescript@5.9.3)

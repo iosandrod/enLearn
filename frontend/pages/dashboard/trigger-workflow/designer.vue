@@ -48,6 +48,8 @@ import {
 import { loadAvailableLowCodeFormDefinitions } from '../../../utils/lowCodeFormDefinitions';
 
 const auth = useAuth();
+const chatSocket = useChatSocket();
+const frontendCommandSocket = useFrontendCommandSocket();
 const storageKey = computed(() =>
   `enlearn.trigger-workflow-editor.${auth.activeAccount.value?.account_id ?? 'unselected'}`
 );
@@ -75,10 +77,18 @@ const currentPlanSignature = computed(() => {
     return '';
   }
 });
+const workflowUsesFrontendCommand = computed(() =>
+  model.value.nodes.some((node) => node.config?.task?.type === 'frontendCommand')
+);
+const frontendCommandChannelReady = computed(() =>
+  !workflowUsesFrontendCommand.value ||
+  (chatSocket.serverReady.value && frontendCommandSocket.listenerReady.value)
+);
 const canRunWorkflowJob = computed(() => Boolean(
   workflowJob.value?.status === 'enabled' &&
   workflowJob.value.code === model.value.code &&
-  readJobPlanSignature(workflowJob.value) === currentPlanSignature.value
+  readJobPlanSignature(workflowJob.value) === currentPlanSignature.value &&
+  frontendCommandChannelReady.value
 ));
 
 onMounted(() => {

@@ -23,7 +23,8 @@ const migrationPaths = [
   '20260806200000_notification_api_rpc.sql',
   '20260806210000_lowcode_generated_page_rpc.sql',
   '20260806220000_test_access_rpc.sql',
-  '20260814110000_workflow_job_upsert_forward_fix.sql'
+  '20260814110000_workflow_job_upsert_forward_fix.sql',
+  '20260814120000_workflow_job_controlled_delete.sql'
 ].map((name) => resolve(
   process.cwd(),
   process.cwd().toLowerCase().endsWith('api') ? '..' : '.',

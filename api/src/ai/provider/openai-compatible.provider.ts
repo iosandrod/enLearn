@@ -27,12 +27,32 @@ function providerErrorText(value: string) {
     if (isRecord(parsed)) {
       const error = isRecord(parsed.error) ? parsed.error : parsed;
       const message = typeof error.message === 'string' ? error.message.trim() : '';
-      if (message) return message.slice(0, 500);
+      if (message) return redactErrorText(message);
     }
   } catch {
     // Provider bodies can be plain text.
   }
-  return value.replace(/Bearer\s+\S+/gi, 'Bearer [redacted]').slice(0, 500);
+  return redactErrorText(value);
+}
+
+function redactErrorText(value: string) {
+  return value
+    .replace(/Bearer\s+\S+/gi, 'Bearer [redacted]')
+    .replace(/\bsk-[A-Za-z0-9._-]+/g, 'sk-[redacted]')
+    .slice(0, 500);
+}
+
+function requiredSetting(env: Record<string, unknown>, name: string, fallbackName?: string) {
+  const value = String(env[name] ?? (fallbackName ? env[fallbackName] : '') ?? '').trim();
+  if (value) return value;
+  throw new ServiceUnavailableException(`AI 服务未配置：缺少 ${name}。`);
+}
+
+function providerFailureMessage(error: unknown) {
+  const detail = error instanceof Error && error.message
+    ? redactErrorText(error.message)
+    : '未知网络错误。';
+  return `无法连接 AI 服务：${detail}`;
 }
 
 function normalizeBaseUrl(value: string) {
@@ -66,56 +86,59 @@ export class OpenAiCompatibleProvider implements AiProvider {
 
   async complete(request: AiProviderRequest): Promise<AiProviderTurn> {
     const env = getEnv();
-    const apiKey = String(env.AI_API_KEY ?? env.OPENAI_API_KEY ?? '').trim();
-    if (!apiKey) {
-      throw new ServiceUnavailableException('AI provider is not configured.');
-    }
+    const apiKey = requiredSetting(env, 'AI_API_KEY', 'OPENAI_API_KEY');
     const baseUrl = normalizeBaseUrl(
-      String(env.AI_BASE_URL ?? env.OPENAI_BASE_URL ?? 'https://api.openai.com').trim()
+      requiredSetting(env, 'AI_BASE_URL', 'OPENAI_BASE_URL')
     );
-    const model = String(env.AI_MODEL ?? env.OPENAI_MODEL ?? 'gpt-4.1-mini').trim();
-    const response = await fetch(`${baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model,
-        stream: true,
-        stream_options: { include_usage: true },
-        messages: request.messages.map((message) => ({
-          role: message.role,
-          content: message.content,
-          ...(message.name ? { name: message.name } : {}),
-          ...(message.toolCallId ? { tool_call_id: message.toolCallId } : {}),
-          ...(message.toolCalls?.length
-            ? {
-                tool_calls: message.toolCalls.map((call) => ({
-                  id: call.id,
-                  type: 'function',
-                  function: { name: call.name, arguments: JSON.stringify(call.arguments) }
-                }))
-              }
-            : {})
-        })),
-        tools: request.tools.map((tool) => ({
-          type: 'function',
-          function: {
-            name: tool.name,
-            description: tool.description,
-            parameters: tool.parameters
-          }
-        })),
-        tool_choice: 'auto'
-      }),
-      signal: request.signal
-    });
+    const model = requiredSetting(env, 'AI_MODEL', 'OPENAI_MODEL');
+    const tools = request.tools.map((tool) => ({
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.parameters
+      }
+    }));
+    let response: Response;
+    try {
+      response = await fetch(`${baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model,
+          stream: true,
+          stream_options: { include_usage: true },
+          messages: request.messages.map((message) => ({
+            role: message.role,
+            content: message.content,
+            ...(message.name ? { name: message.name } : {}),
+            ...(message.toolCallId ? { tool_call_id: message.toolCallId } : {}),
+            ...(message.toolCalls?.length
+              ? {
+                  tool_calls: message.toolCalls.map((call) => ({
+                    id: call.id,
+                    type: 'function',
+                    function: { name: call.name, arguments: JSON.stringify(call.arguments) }
+                  }))
+                }
+              : {})
+          })),
+          ...(tools.length ? { tools, tool_choice: 'auto' } : {})
+        }),
+        signal: request.signal
+      });
+    } catch (error) {
+      if (request.signal.aborted) throw request.signal.reason ?? error;
+      throw new ServiceUnavailableException(providerFailureMessage(error));
+    }
 
     if (!response.ok || !response.body) {
       const errorText = providerErrorText(await response.text().catch(() => ''));
       throw new BadGatewayException(
-        `AI provider request failed (${response.status})${errorText ? `: ${errorText}` : '.'}`
+        `AI 服务请求失败（HTTP ${response.status}）${errorText ? `：${errorText}` : '。'}`
       );
     }
 
@@ -194,5 +217,7 @@ export class OpenAiCompatibleProvider implements AiProvider {
 export const openAiCompatibleProviderInternals = {
   normalizeBaseUrl,
   providerErrorText,
+  providerFailureMessage,
+  requiredSetting,
   readArguments
 };

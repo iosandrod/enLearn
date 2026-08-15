@@ -17,9 +17,19 @@ import type {
 } from './ai.types';
 import { proposalContentHash } from './proposals/proposal-content-hash';
 
+const AI_CONVERSATIONS_TABLE = 'ai_conversations';
+const AI_MESSAGES_TABLE = 'ai_messages';
+
 function isMissingAiSchema(error: { code?: string; message?: string } | null | undefined) {
+  const message = error?.message ?? '';
+  const mentionsAssistantSchema = message.includes('ai_conversations') ||
+    message.includes('ai_messages');
   return error?.code === '42P01' || error?.code === 'PGRST205' ||
-    Boolean(error?.message?.includes('ai_') && error.message.includes('does not exist'));
+    Boolean(mentionsAssistantSchema && (
+      error?.code === 'PGRST204' ||
+      message.includes('does not exist') ||
+      message.includes('schema cache')
+    ));
 }
 
 function resolveAiPersistenceMode(value: unknown): 'database' | 'memory' {
@@ -89,7 +99,7 @@ export class AiRepository {
     };
     if (this.databaseAvailable) {
       const client = createSupabaseClient('admin', options.principal.context);
-      const { error } = await client.from('ai_conversations').insert({
+      const { error } = await client.from(AI_CONVERSATIONS_TABLE).insert({
         id: conversation.id,
         account_id: conversation.accountId,
         created_by: conversation.createdBy,
@@ -113,7 +123,7 @@ export class AiRepository {
     if (!this.databaseAvailable) return undefined;
     const client = createSupabaseClient('admin', principal.context);
     const { data, error } = await client
-      .from('ai_conversations')
+      .from(AI_CONVERSATIONS_TABLE)
       .select('*')
       .eq('id', id)
       .eq('account_id', principal.context.accountId)
@@ -131,7 +141,7 @@ export class AiRepository {
     if (this.databaseAvailable) {
       const client = createSupabaseClient('admin', principal.context);
       const { data, error } = await client
-        .from('ai_conversations')
+        .from(AI_CONVERSATIONS_TABLE)
         .select('*')
         .eq('account_id', principal.context.accountId)
         .eq('created_by', principal.context.userId)
@@ -166,14 +176,14 @@ export class AiRepository {
     if (this.databaseAvailable) {
       const client = createSupabaseClient('admin', options.principal.context);
       const { data: conversation, error: conversationError } = await client
-        .from('ai_conversations')
+        .from(AI_CONVERSATIONS_TABLE)
         .select('id')
         .eq('id', options.conversationId)
         .eq('account_id', message.accountId)
         .eq('created_by', options.principal.context.userId)
         .maybeSingle();
       assertPersistedRow(conversation, conversationError, 'AI conversation was not found.');
-      const { error } = await client.from('ai_messages').insert({
+      const { error } = await client.from(AI_MESSAGES_TABLE).insert({
         id: message.id,
         account_id: message.accountId,
         conversation_id: message.conversationId,
@@ -184,7 +194,7 @@ export class AiRepository {
       });
       if (error && !this.fallback(error)) throw new BadRequestException(error.message);
       const { error: updateError } = await client
-        .from('ai_conversations')
+        .from(AI_CONVERSATIONS_TABLE)
         .update({ updated_at: message.createdAt })
         .eq('id', options.conversationId)
         .eq('account_id', message.accountId)
@@ -277,7 +287,7 @@ export class AiRepository {
     if (this.databaseAvailable) {
       const client = createSupabaseClient('admin', principal.context);
       const { data, error } = await client
-        .from('ai_messages')
+        .from(AI_MESSAGES_TABLE)
         .select('*')
         .eq('account_id', principal.context.accountId)
         .eq('conversation_id', conversationId)

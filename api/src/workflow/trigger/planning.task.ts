@@ -13,6 +13,7 @@ import {
   PlanningOrchestrator
 } from '../../planning-service/execution/planning-orchestrator';
 import { PlanningRunRepository } from '../../planning-service/execution/planning-run.repository';
+import { TRIGGER_WORKFLOW_REGISTERED_QUEUES } from './trigger-workflow-queues';
 
 export const PLANNING_RUN_TASK_ID = 'planning.run';
 
@@ -47,10 +48,7 @@ class PlanningTaskPayloadError extends Error {
 
 export const planningRunTask = task({
   id: PLANNING_RUN_TASK_ID,
-  queue: {
-    name: 'planning-supply',
-    concurrencyLimit: 2
-  },
+  queue: requireRegisteredQueue('planning-supply'),
   maxDuration: 3_600,
   retry: {
     maxAttempts: 3,
@@ -109,6 +107,14 @@ export const planningRunTask = task({
     });
   }
 });
+
+function requireRegisteredQueue(name: string) {
+  const definition = TRIGGER_WORKFLOW_REGISTERED_QUEUES.find(
+    (queueDefinition) => queueDefinition.name === name
+  );
+  if (!definition) throw new Error(`Trigger.dev queue is not registered: ${name}.`);
+  return definition;
+}
 
 export function normalizePlanningTaskPayload(
   payload: PlanningTaskPayload

@@ -34,6 +34,11 @@ export type WorkflowApiEnv = {
   TRIGGER_API_URL?: string;
   API_BASE_URL?: string;
   WORKFLOW_INTERNAL_API_URL?: string;
+  WORKFLOW_INTERNAL_KEY?: string;
+  WORKFLOW_HTTP_ALLOWED_ORIGINS?: string;
+  WORKFLOW_HTTP_MAX_RESPONSE_BYTES?: string;
+  WORKFLOW_CAPABILITY_TIMEOUT_MS?: string;
+  WORKFLOW_RPC_ALLOWED_FUNCTIONS?: string;
   PORT?: string;
 };
 

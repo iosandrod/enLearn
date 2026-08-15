@@ -1,18 +1,34 @@
 import assert from 'node:assert/strict';
-import { executeTriggerWorkflowJobPlan } from './trigger-workflow-runner.task';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+  executeTriggerWorkflowJobPlan,
+  runTriggerWorkflowRunner
+} from './trigger-workflow-runner.task';
 import type {
   TriggerWorkflowJobDefinitionPayload,
   TriggerWorkflowTaskJobAdapter
 } from './trigger-workflow.types';
 import { resolveTriggerWorkflowQueueName } from './trigger-workflow-queues';
+import {
+  assertWorkflowRegisteredTaskId,
+  getTriggerWorkflowExecutionPlanSignature
+} from './trigger-workflow-policy';
 
 async function main() {
   assert.equal(resolveTriggerWorkflowQueueName(undefined), undefined);
   assert.equal(resolveTriggerWorkflowQueueName('trigger-workflow-jobs'), 'trigger-workflow-jobs');
+  assert.equal(resolveTriggerWorkflowQueueName('planning-supply'), 'planning-supply');
   assert.throws(
     () => resolveTriggerWorkflowQueueName('frontend-command-jobs'),
     /not registered/
   );
+  assert.equal(assertWorkflowRegisteredTaskId('notification.dispatch'), 'notification.dispatch');
+  assert.throws(
+    () => assertWorkflowRegisteredTaskId('workflow.adapter.frontend-command'),
+    /not registered for workflow-node execution/
+  );
+  await testRuntimePolicyRejectsTamperedAdapter();
+  await testRunnerProjectsInvalidDefinitionAsFailed();
   const calls: Array<{
     type: string;
     executorTaskId: string;
@@ -60,6 +76,59 @@ async function main() {
   console.log('workflow-api Trigger workflow runner dispatch tests passed');
 }
 
+async function testRuntimePolicyRejectsTamperedAdapter() {
+  const definition = createDefinition();
+  const frontend = definition.executionPlan.operations.find(
+    (operation) => operation.nodeId === 'frontend'
+  );
+  assert.ok(frontend?.adapter);
+  frontend.adapter.executorTaskId = 'workflow.timer.fire';
+  await assert.rejects(
+    () => executeTriggerWorkflowJobPlan({
+      runId: 'run-tampered',
+      tenantId: 'account-1',
+      payload: {},
+      definition,
+      executeAdapter: async () => ({})
+    }),
+    /frontendCommand adapter has an invalid executor Task ID/
+  );
+}
+
+async function testRunnerProjectsInvalidDefinitionAsFailed() {
+  const calls: Array<{ action: string; payload: Record<string, unknown> }> = [];
+  const client = {
+    rpc: async (
+      _name: string,
+      args: { p_action: string; p_payload: Record<string, unknown> }
+    ) => {
+      calls.push({ action: args.p_action, payload: args.p_payload });
+      if (args.p_action === 'mark_run_running') {
+        return { data: { id: 'run-invalid', status: 'running' }, error: null };
+      }
+      return { data: { id: 'run-invalid', status: 'failed' }, error: null };
+    }
+  } as unknown as SupabaseClient;
+  const definition = createDefinition();
+  definition.planSignature = 'fnv1a-00000000';
+
+  await assert.rejects(
+    () => runTriggerWorkflowRunner({
+      runId: 'run-invalid',
+      tenantId: 'account-1',
+      triggerWorkflow: definition
+    }, { supabase: client }),
+    /planSignature does not match executionPlan/
+  );
+
+  assert.deepEqual(calls.map((call) => call.action), [
+    'mark_run_running',
+    'finish_run'
+  ]);
+  assert.equal(calls[1].payload.status, 'failed');
+  assert.match(String(calls[1].payload.error_message), /planSignature/);
+}
+
 function createDefinition(): TriggerWorkflowJobDefinitionPayload {
   const frontend: TriggerWorkflowTaskJobAdapter = {
     type: 'frontendCommand',
@@ -76,12 +145,12 @@ function createDefinition(): TriggerWorkflowJobDefinitionPayload {
       commandId: '{{variables.taskOutputs.command.commandId}}'
     }
   };
-  return {
+  const definition: TriggerWorkflowJobDefinitionPayload = {
     version: 1,
     modelId: 'model-1',
     modelCode: 'typed-workflow',
     modelName: 'Typed workflow',
-    planSignature: 'fnv1a-test',
+    planSignature: '',
     executionPlan: {
       workflowId: 'model-1',
       workflowCode: 'typed-workflow',
@@ -95,6 +164,10 @@ function createDefinition(): TriggerWorkflowJobDefinitionPayload {
       ]
     }
   };
+  definition.planSignature = getTriggerWorkflowExecutionPlanSignature(
+    definition.executionPlan
+  );
+  return definition;
 }
 
 function operation(nodeId: string, type: string, next: string[]) {

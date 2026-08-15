@@ -14,6 +14,10 @@ import {
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import {
+  assertWorkflowInternalCapability
+} from '../common/workflow-internal-capabilities';
+import {
+  createSupabaseClient,
   getCurrentUser,
   getUserAuthorization,
   hasRequiredPermission
@@ -193,6 +197,33 @@ export class PlanningService extends BaseService {
         id: row.id,
         label: String(row[option.labelField] ?? row[option.fallbackField] ?? row.id ?? '')
       }));
+    }
+
+    if (method === 'listInventoryBuffers') {
+      assertWorkflowInternalCapability(
+        context,
+        'planning.listInventoryBuffers'
+      );
+      const accountId = this.accountValue(context, 'account_id');
+      const itemId = this.readOptionalString(postData.itemId ?? postData.item_id);
+      const locationId = this.readOptionalString(
+        postData.locationId ?? postData.location_id
+      );
+      const requestedLimit = Number(postData.limit ?? 50);
+      const limit = Number.isInteger(requestedLimit)
+        ? Math.min(100, Math.max(1, requestedLimit))
+        : 50;
+      let query = createSupabaseClient('admin', context)
+        .from('planning_buffer')
+        .select('*')
+        .eq('account_id', accountId);
+      if (itemId) query = query.eq('item_id', itemId);
+      if (locationId) query = query.eq('location_id', locationId);
+      const { data, error } = await query
+        .order('updated_at', { ascending: false })
+        .limit(limit);
+      if (error) throw new BadRequestException(error.message);
+      return data ?? [];
     }
 
     if (method === 'getPlanningConsoleData') {
@@ -572,6 +603,17 @@ export class PlanningService extends BaseService {
   }
 
   private async authorizeConsoleRead(context: ServiceContext) {
+    if (context.internal) {
+      assertWorkflowInternalCapability(
+        context,
+        'planning.getPlanningConsoleOptions'
+      );
+      this.accountValue(context, 'account_id');
+      return {
+        client: createSupabaseClient('admin', context),
+        user: undefined
+      };
+    }
     const { client, user } = await getCurrentUser(context);
     const authorization = await getUserAuthorization(client, user.id, {
       accountId: context.accountId

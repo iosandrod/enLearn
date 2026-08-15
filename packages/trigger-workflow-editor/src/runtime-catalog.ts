@@ -3,6 +3,11 @@ export const TRIGGER_WORKFLOW_REGISTERED_QUEUES = [
     name: 'trigger-workflow-jobs',
     label: '流程任务队列',
     concurrencyLimit: 10
+  },
+  {
+    name: 'planning-supply',
+    label: '生产计划队列',
+    concurrencyLimit: 2
   }
 ] as const;
 

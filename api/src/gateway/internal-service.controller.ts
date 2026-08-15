@@ -9,6 +9,10 @@ import {
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import { isPublicServiceName } from '../common/service-bus';
 import { getEnv } from '../common/utils/env';
+import {
+  WORKFLOW_INTERNAL_PRINCIPAL,
+  assertWorkflowInternalServiceRequest
+} from '../common/workflow-internal-capabilities';
 import { ServiceRouterService } from './service-router.service';
 
 type InternalServiceBody = {
@@ -30,7 +34,7 @@ export class InternalServiceController {
     @Body() body: InternalServiceBody,
     @Headers('x-workflow-internal-key') internalKey?: string
   ) {
-    const expectedKey = String(getEnv().SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
+    const expectedKey = String(getEnv().WORKFLOW_INTERNAL_KEY ?? '').trim();
     if (!expectedKey || !constantTimeEqual(internalKey ?? '', expectedKey)) {
       throw new ForbiddenException('Invalid workflow internal service key.');
     }
@@ -40,17 +44,35 @@ export class InternalServiceController {
     if (!isPublicServiceName(serviceName) || !serviceMethod) {
       throw new ForbiddenException('Invalid internal service request.');
     }
-    const context = isRecord(body.context) ? body.context as ServiceContext : {};
-    if (!readString(context.accountId) || !readString(context.userId)) {
+    const postData = isRecord(body.postData) ? body.postData : {};
+    const capability = assertWorkflowInternalServiceRequest(
+      serviceName,
+      serviceMethod,
+      postData
+    );
+    const suppliedContext = isRecord(body.context) ? body.context : {};
+    const accountId = readString(suppliedContext.accountId);
+    const userId = readString(suppliedContext.userId);
+    const requestId = readString(suppliedContext.requestId);
+    if (!accountId) {
       throw new ForbiddenException('Internal workflow service context is incomplete.');
     }
+    const context: ServiceContext = {
+      accountId,
+      ...(userId ? { userId } : {}),
+      ...(requestId ? { requestId } : {}),
+      internal: {
+        principal: WORKFLOW_INTERNAL_PRINCIPAL,
+        capability
+      }
+    };
 
     return {
       success: true,
       data: await this.router.invoke(
         serviceName,
         serviceMethod,
-        isRecord(body.postData) ? body.postData : {},
+        postData,
         context
       )
     };

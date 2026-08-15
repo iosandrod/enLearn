@@ -1,4 +1,9 @@
 import type { LowCodePageRuntimeContext } from '../page-runtime.ts';
+import {
+  isLowCodeEditPageModifyAction,
+  isLowCodeEditPageSaveAction,
+  normalizeLowCodeEditPageActionCode,
+} from '../edit-page-mode.ts';
 import { editButtonDisabledFunctions } from './edit-buttons.ts';
 import type {
   LowCodeButtonDisabledAction,
@@ -6,7 +11,11 @@ import type {
   LowCodeButtonDisabledOptions,
 } from './types.ts';
 
-const SAVE_ACTION_CODES = new Set(['save', 'submit', 'saveandclose', 'saveandnew']);
+export {
+  isLowCodeEditPageModifyAction,
+  isLowCodeEditPageSaveAction,
+  normalizeLowCodeEditPageActionCode,
+};
 
 function isNeverDisabled(context: LowCodePageRuntimeContext) {
   void context;
@@ -62,24 +71,6 @@ export const buttonDisabledFunctions = {
   ...mainButtonDisabledFunctions,
   ...editButtonDisabledFunctions,
 } satisfies Record<string, LowCodeButtonDisabledFunction>;
-
-export function normalizeLowCodeEditPageActionCode(value: unknown) {
-  return typeof value === 'string'
-    ? value.trim().toLowerCase().replace(/[\s_-]+/g, '')
-    : '';
-}
-
-export function isLowCodeEditPageSaveAction(
-  action: Pick<LowCodeButtonDisabledAction, 'code'>,
-) {
-  return SAVE_ACTION_CODES.has(normalizeLowCodeEditPageActionCode(action.code));
-}
-
-export function isLowCodeEditPageModifyAction(
-  action: Pick<LowCodeButtonDisabledAction, 'code'>,
-) {
-  return normalizeLowCodeEditPageActionCode(action.code) === 'modify';
-}
 
 const normalizedButtonDisabledFunctions = Object.fromEntries(
   Object.entries(buttonDisabledFunctions).map(([code, disabledFunction]) => [

@@ -59,6 +59,24 @@ const supabaseFunction = supabaseRpc?.nodes.find(
 assert.match(supabaseFunction, /context\.supabase\.rpc/);
 assert.doesNotMatch(supabaseFunction, /context\.supabase\.from/);
 
+const httpExample = examples.find(
+  (example) => example.code === 'example_backend_http_planning_scenarios'
+);
+const httpFunction = httpExample?.nodes.find(
+  (node) => node.type === 'task'
+)?.config?.task?.backendFunction ?? '';
+assert.match(httpFunction, /context\.http\.get/);
+assert.doesNotMatch(httpFunction, /\/api\/service/);
+
+const baseServiceExample = examples.find(
+  (example) => example.code === 'example_backend_base_service_inventory'
+);
+const baseServiceFunction = baseServiceExample?.nodes.find(
+  (node) => node.type === 'task'
+)?.config?.task?.backendFunction ?? '';
+assert.match(baseServiceFunction, /listInventoryBuffers/);
+assert.doesNotMatch(baseServiceFunction, /'listItems'/);
+
 for (const example of examples) {
   for (const node of example.nodes) {
     assert.equal(

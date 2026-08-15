@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { task } from '@trigger.dev/sdk';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { createClient } from '@supabase/supabase-js';
 import { getEnv } from '../../common/utils/env';
 import { publishFrontendCommand } from '../../frontend-command/frontend-command.publisher';
 import {
@@ -21,6 +20,18 @@ import {
   TRIGGER_WORKFLOW_ADAPTER_TASK_IDS,
   type TriggerWorkflowAdapterPayload
 } from './trigger-workflow.types';
+import {
+  assertWorkflowHttpTarget,
+  getWorkflowCapabilityTimeoutMs,
+  getWorkflowHttpMaxResponseBytes,
+  getWorkflowInternalKey,
+  resolveAllowedWorkflowRpcName,
+  resolveWorkflowHttpUrl
+} from './trigger-workflow-policy';
+import {
+  createTriggerWorkflowSupabaseClient,
+  executeTriggerWorkflowRpc
+} from './trigger-workflow-worker-supabase';
 
 export const triggerWorkflowFrontendCommandAdapterTask = task({
   id: TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.frontendCommand,
@@ -91,12 +102,14 @@ export async function executeBackendCommandAdapter(
   dependencies: {
     fetch?: typeof fetch;
     supabase?: SupabaseClient;
+    assertHttpTarget?: typeof assertWorkflowHttpTarget;
   } = {}
 ) {
   assertAdapterType(input, 'backendCommand');
   const functionSource = readRequiredString(input.adapter.functionSource, 'adapter.functionSource');
   const fetchImplementation = dependencies.fetch ?? fetch;
-  const supabase = dependencies.supabase ?? createWorkerSupabaseClient(
+  const capabilityTimeoutMs = getWorkflowCapabilityTimeoutMs(input.adapter.timeoutSeconds);
+  const supabase = dependencies.supabase ?? createTriggerWorkflowSupabaseClient(
     TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.backendCommand
   );
 
@@ -106,11 +119,21 @@ export async function executeBackendCommandAdapter(
     async (name, args) => {
       switch (name) {
         case 'http.request':
-          return executeHttpRequest(fetchImplementation, args);
+          return executeHttpRequest(
+            fetchImplementation,
+            args,
+            capabilityTimeoutMs,
+            dependencies.assertHttpTarget
+          );
         case 'supabase.rpc':
           return executeSupabaseRpc(supabase, args);
         case 'baseService.invoke':
-          return executeBaseServiceInvoke(fetchImplementation, input, args);
+          return executeBaseServiceInvoke(
+            fetchImplementation,
+            input,
+            args,
+            capabilityTimeoutMs
+          );
         default:
           throw new Error(`Unsupported backend workflow capability: ${name}.`);
       }
@@ -124,17 +147,14 @@ export async function executeStoredProcedureAdapter(
   dependencies: { supabase?: SupabaseClient } = {}
 ) {
   assertAdapterType(input, 'storedProcedure');
-  const procedureName = readRequiredString(input.adapter.procedureName, 'adapter.procedureName');
-  const procedureSchema = readString(input.adapter.procedureSchema) || 'public';
-  if (procedureSchema !== 'public') {
-    throw new Error('Only public Supabase RPC procedures are supported by this adapter.');
-  }
-  const supabase = dependencies.supabase ?? createWorkerSupabaseClient(
+  const procedureName = resolveAllowedWorkflowRpcName(
+    readRequiredString(input.adapter.procedureName, 'adapter.procedureName'),
+    readString(input.adapter.procedureSchema) || 'public'
+  );
+  const supabase = dependencies.supabase ?? createTriggerWorkflowSupabaseClient(
     TRIGGER_WORKFLOW_ADAPTER_TASK_IDS.storedProcedure
   );
-  const { data, error } = await supabase.rpc(procedureName, input.payload);
-  if (error) throw new Error(error.message);
-  return data;
+  return executeTriggerWorkflowRpc(supabase, procedureName, input.payload);
 }
 
 function assertAdapterType(
@@ -199,16 +219,27 @@ function readFrontendCommandTarget(
   throw new Error('Frontend command requires a target userId or socketId.');
 }
 
-async function executeHttpRequest(fetchImplementation: typeof fetch, args: unknown[]) {
-  const url = readRequiredString(args[0], 'http.request url');
+async function executeHttpRequest(
+  fetchImplementation: typeof fetch,
+  args: unknown[],
+  timeoutMs: number,
+  assertHttpTarget: typeof assertWorkflowHttpTarget = assertWorkflowHttpTarget
+) {
+  const url = resolveWorkflowHttpUrl(readRequiredString(args[0], 'http.request url'));
+  await assertHttpTarget(url);
   const rawInit = isRecord(args[1]) ? args[1] : {};
   const method = (readString(rawInit.method) || 'GET').toUpperCase();
+  if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    throw new Error(`Unsupported workflow HTTP method: ${method}.`);
+  }
   const headers = isRecord(rawInit.headers)
     ? Object.fromEntries(Object.entries(rawInit.headers).map(([key, value]) => [key, String(value)]))
     : {};
+  assertSafeWorkflowHeaders(headers);
   const body = rawInit.body;
-  const response = await fetchImplementation(url, {
+  const response = await fetchWithTimeout(fetchImplementation, url, {
     method,
+    redirect: 'error',
     headers: {
       ...(body !== undefined ? { 'content-type': 'application/json' } : {}),
       ...headers
@@ -216,25 +247,26 @@ async function executeHttpRequest(fetchImplementation: typeof fetch, args: unkno
     ...(body !== undefined
       ? { body: typeof body === 'string' ? body : JSON.stringify(body) }
       : {})
-  });
-  const text = await response.text();
+  }, timeoutMs);
+  const text = await readBoundedResponseText(response, getWorkflowHttpMaxResponseBytes());
   const parsed = parseResponseBody(text);
   if (!response.ok) throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
   return parsed;
 }
 
 async function executeSupabaseRpc(client: SupabaseClient, args: unknown[]) {
-  const name = readRequiredString(args[0], 'supabase.rpc name');
+  const name = resolveAllowedWorkflowRpcName(
+    readRequiredString(args[0], 'supabase.rpc name')
+  );
   const parameters = isRecord(args[1]) ? args[1] : {};
-  const { data, error } = await client.rpc(name, parameters);
-  if (error) throw new Error(error.message);
-  return data;
+  return executeTriggerWorkflowRpc(client, name, parameters);
 }
 
 async function executeBaseServiceInvoke(
   fetchImplementation: typeof fetch,
   input: TriggerWorkflowAdapterPayload,
-  args: unknown[]
+  args: unknown[],
+  timeoutMs: number
 ) {
   const serviceName = readRequiredString(args[0], 'baseService serviceName');
   const serviceMethod = readRequiredString(args[1], 'baseService serviceMethod');
@@ -242,15 +274,12 @@ async function executeBaseServiceInvoke(
   const env = getEnv();
   const apiBaseUrl = String(env.WORKFLOW_INTERNAL_API_URL ?? env.API_BASE_URL ?? 'http://127.0.0.1:3002/api')
     .replace(/\/+$/, '');
-  const serviceRoleKey = readRequiredString(
-    env.SUPABASE_SERVICE_ROLE_KEY,
-    'SUPABASE_SERVICE_ROLE_KEY'
-  );
-  const response = await fetchImplementation(`${apiBaseUrl}/internal/service`, {
+  const response = await fetchWithTimeout(fetchImplementation, `${apiBaseUrl}/internal/service`, {
     method: 'POST',
+    redirect: 'error',
     headers: {
       'content-type': 'application/json',
-      'x-workflow-internal-key': serviceRoleKey
+      'x-workflow-internal-key': getWorkflowInternalKey()
     },
     body: JSON.stringify({
       serviceName,
@@ -262,8 +291,8 @@ async function executeBaseServiceInvoke(
         requestId: `workflow:${input.runId}:${input.operationId}`
       }
     })
-  });
-  const text = await response.text();
+  }, timeoutMs);
+  const text = await readBoundedResponseText(response, getWorkflowHttpMaxResponseBytes());
   const parsed = parseResponseBody(text);
   if (!response.ok) throw new Error(`Internal service ${response.status}: ${text}`);
   return isRecord(parsed) && 'data' in parsed ? parsed.data : parsed;
@@ -278,14 +307,66 @@ function parseResponseBody(text: string): unknown {
   }
 }
 
-function createWorkerSupabaseClient(taskName: string) {
-  const env = getEnv();
-  const url = env.SUPABASE_URL ?? env.NEXT_PUBLIC_SUPABASE_URL ?? env.SUPABASE_PROJECT_URL;
-  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url?.trim() || !serviceRoleKey?.trim()) {
-    throw new Error(`SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required by ${taskName}.`);
+async function fetchWithTimeout(
+  fetchImplementation: typeof fetch,
+  input: Parameters<typeof fetch>[0],
+  init: RequestInit,
+  timeoutMs: number
+) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => {
+    controller.abort(new Error(`Workflow capability timed out after ${timeoutMs} ms.`));
+  }, timeoutMs);
+  try {
+    return await fetchImplementation(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
   }
-  return createClient(url, serviceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false }
-  });
+}
+
+async function readBoundedResponseText(response: Response, maxBytes: number) {
+  const length = Number(response.headers.get('content-length'));
+  if (Number.isFinite(length) && length > maxBytes) {
+    await response.body?.cancel().catch(() => undefined);
+    throw new Error(`Workflow HTTP response exceeds ${maxBytes} bytes.`);
+  }
+  if (!response.body) return '';
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let byteLength = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      byteLength += value.byteLength;
+      if (byteLength > maxBytes) {
+        await reader.cancel().catch(() => undefined);
+        throw new Error(`Workflow HTTP response exceeds ${maxBytes} bytes.`);
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(byteLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
+}
+
+function assertSafeWorkflowHeaders(headers: Record<string, string>) {
+  const blocked = new Set([
+    'authorization',
+    'cookie',
+    'host',
+    'proxy-authorization',
+    'x-workflow-internal-key'
+  ]);
+  const invalid = Object.keys(headers).find((name) => blocked.has(name.toLowerCase()));
+  if (invalid) throw new Error(`Workflow HTTP header is not allowed: ${invalid}.`);
 }

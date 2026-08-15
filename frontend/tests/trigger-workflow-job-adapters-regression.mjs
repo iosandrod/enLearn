@@ -38,11 +38,16 @@ assert.match(designer, /buildTriggerWorkflowJob\(model\.value\)/);
 assert.match(designer, /workflowApi<WorkflowJobRecord>\('upsertJob', definition\)/);
 assert.match(designer, /readJobPlanSignature\(workflowJob\.value\) === currentPlanSignature\.value/);
 assert.match(adapters, /frontendCommand:[\s\S]*backendCommand:[\s\S]*storedProcedure:[\s\S]*registeredTask:/);
-assert.match(runner, /tasks\.triggerAndWait\(adapter\.executorTaskId/);
+assert.match(runner, /const executorTaskId = resolveAdapterExecutorTaskId\(adapter\)/);
+assert.match(runner, /function resolveAdapterExecutorTaskId[\s\S]*assertWorkflowRegisteredTaskId\(adapter\.executorTaskId\)/);
+assert.match(runner, /TRIGGER_WORKFLOW_ADAPTER_TASK_IDS\[adapter\.type\]/);
+assert.match(runner, /tasks\.triggerAndWait\(executorTaskId/);
 assert.match(runner, /adapter\.type === 'registeredTask'/);
 assert.match(editorQueueCatalog, /trigger-workflow-jobs/);
+assert.match(editorQueueCatalog, /planning-supply/);
 assert.match(workerQueueCatalog, /trigger-workflow-jobs/);
-assert.match(workerQueueCatalog, /queue\(TRIGGER_WORKFLOW_REGISTERED_QUEUES\[0\]\)/);
+assert.match(workerQueueCatalog, /planning-supply/);
+assert.match(workerQueueCatalog, /TRIGGER_WORKFLOW_REGISTERED_QUEUES\.map/);
 assert.match(runner, /resolveTriggerWorkflowQueueName\(adapter\.queue\?\.name\)/);
 
 console.log('Trigger workflow typed Job adapter regression passed.');

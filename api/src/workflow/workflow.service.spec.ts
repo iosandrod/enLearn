@@ -17,6 +17,14 @@ type TestWorkflowService = {
   ) => Promise<unknown>>;
 };
 
+type PublicWorkflowService = {
+  execute(
+    method: string,
+    postData: Record<string, unknown>,
+    context: { accountId: string; userId: string }
+  ): Promise<unknown>;
+};
+
 class WorkflowServiceProbe extends WorkflowService {
   protected override async assertWorkflowPermission() {}
 }
@@ -54,9 +62,9 @@ const service = new WorkflowServiceProbe(
     'addSignTask'
   ]) as never,
   delegate('approvalConsole', ['listInstances', 'getInstanceDetail']) as never,
-  delegate('job', ['createJob', 'upsertJob', 'getJob', 'updateJobStatus', 'runJob']) as never,
+  delegate('job', ['createJob', 'upsertJob', 'getJob', 'deleteJob', 'updateJobStatus', 'runJob']) as never,
   delegate('runtimeStatus', ['getStatus']) as never,
-  delegate('taskConsole', ['getConsole', 'getDetail']) as never
+  delegate('taskConsole', ['getConsole', 'getDetail', 'invalidate']) as never
 ) as unknown as TestWorkflowService;
 const resources = service.resources();
 const serviceContext = {
@@ -124,9 +132,9 @@ async function testJobRunReadModel() {
     delegate('definitionJobRunProbe', []) as never,
     delegate('runtimeJobRunProbe', []) as never,
     delegate('approvalJobRunProbe', []) as never,
-    delegate('jobJobRunProbe', []) as never,
+    delegate('jobJobRunProbe', ['createJob']) as never,
     delegate('runtimeStatusJobRunProbe', []) as never,
-    delegate('taskConsoleJobRunProbe', []) as never
+    delegate('taskConsoleJobRunProbe', ['invalidate']) as never
   ) as unknown as TestWorkflowService;
   const rows = await probe.listItemHandlers().jobRuns({}, serviceContext) as Array<Record<string, unknown>>;
   assert.deepEqual(rows[0], {
@@ -184,15 +192,16 @@ assert.deepEqual(
   ['code', 'name', 'document_type', 'documentType', 'draft_schema', 'draftSchema', 'schema']
 );
 assert.ok(resources.wf_job.databaseHookInputFields?.includes('intervalSeconds'));
+assert.deepEqual(resources.wf_job.internalActions, ['create', 'update', 'delete']);
 
 async function testDirectDelegation() {
   const crudProbe = new WorkflowCrudProbe(
     delegate('definitionProbe', []) as never,
     delegate('runtimeProbe', []) as never,
     delegate('approvalProbe', []) as never,
-    delegate('jobProbe', []) as never,
+    delegate('jobProbe', ['createJob']) as never,
     delegate('runtimeStatusProbe', []) as never,
-    delegate('taskConsoleProbe', []) as never
+    delegate('taskConsoleProbe', ['invalidate']) as never
   );
   crudProbe.existing = { id: 'model-1' };
   await crudProbe.execute('getModel', { modelId: 'model-1' }, serviceContext);
@@ -241,8 +250,26 @@ async function testDirectDelegation() {
     name: 'Job 1',
     type: 'manual'
   }, serviceContext);
-  assert.deepEqual(crudProbe.calls.map((call) => call.method), ['createItem']);
-  assert.equal(crudProbe.calls[0].postData.resource, 'wf_job');
+  assert.deepEqual(crudProbe.calls, []);
+  assert.deepEqual(delegatedCalls.splice(-2), [
+    {
+      service: 'jobProbe',
+      method: 'createJob',
+      args: [
+        {
+          code: 'job-1',
+          name: 'Job 1',
+          type: 'manual'
+        },
+        { tenantId: serviceContext.accountId, userId: serviceContext.userId }
+      ]
+    },
+    {
+      service: 'taskConsoleProbe',
+      method: 'invalidate',
+      args: [serviceContext.accountId]
+    }
+  ]);
 
   await service.execute('getInstance', {
     instanceId: 'instance-1',
@@ -289,6 +316,40 @@ async function testDirectDelegation() {
 
 }
 
-void Promise.all([testDirectDelegation(), testJobRunReadModel()]).then(() => {
+async function testDirectTypedJobCrudIsBlocked() {
+  await assert.rejects(
+    () => (service as unknown as PublicWorkflowService).execute('createItem', {
+      resource: 'wf_job',
+      data: {
+        code: 'bypass',
+        name: 'Bypass',
+        type: 'manual',
+        trigger_task_id: 'workflow.trigger-workflow.run'
+      }
+    }, serviceContext),
+    /only available through its service method/
+  );
+  await assert.rejects(
+    () => (service as unknown as PublicWorkflowService).execute('updateItem', {
+      resource: 'wf_job',
+      id: 'job-1',
+      data: { trigger_task_id: 'not.allowed' }
+    }, serviceContext),
+    /only available through its service method/
+  );
+  await assert.rejects(
+    () => (service as unknown as PublicWorkflowService).execute('deleteItem', {
+      resource: 'wf_job',
+      id: 'job-1'
+    }, serviceContext),
+    /only available through its service method/
+  );
+}
+
+void Promise.all([
+  testDirectDelegation(),
+  testDirectTypedJobCrudIsBlocked(),
+  testJobRunReadModel()
+]).then(() => {
   console.log('workflow service tests passed');
 });

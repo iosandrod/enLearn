@@ -72,12 +72,45 @@ function summarizeActions(value: unknown): unknown[] {
   });
 }
 
+function isActionColumn(value: unknown) {
+  if (!isRecord(value)) return false;
+  const slots = isRecord(value.slots) ? value.slots : {};
+  return value.type === 'action' || slots.default === 'actions';
+}
+
+function summarizeRowActions(value: unknown, columns: unknown[]) {
+  if (!columns.some(isActionColumn)) return [];
+  const rowActions = isRecord(value) ? value : {};
+  const customActions = summarizeActions(rowActions.actions);
+  if (customActions.length) return customActions;
+
+  const actions: Record<string, unknown>[] = [];
+  if (rowActions.edit !== false) {
+    actions.push({
+      code: 'edit',
+      label: readString(rowActions.editLabel) || '编辑',
+      repeatedPerRow: true
+    });
+  }
+  if (rowActions.delete !== false) {
+    actions.push({
+      code: 'delete',
+      label: readString(rowActions.deleteLabel) || '删除',
+      repeatedPerRow: true
+    });
+  }
+  return actions;
+}
+
 function summarizeBlocks(value: unknown): Record<string, unknown>[] {
   if (!Array.isArray(value)) return [];
   return value.slice(0, MAX_FIELDS).flatMap((candidate) => {
     if (!isRecord(candidate)) return [];
     const schema = isRecord(candidate.schema) ? candidate.schema : {};
     const grid = isRecord(schema.grid) ? schema.grid : {};
+    const rawColumns = Array.isArray(grid.columns)
+      ? grid.columns.slice(0, MAX_FIELDS)
+      : [];
     const fields = Array.isArray(schema.fields)
       ? schema.fields.slice(0, MAX_FIELDS).map((field) => {
           if (!isRecord(field)) return {};
@@ -91,14 +124,15 @@ function summarizeBlocks(value: unknown): Record<string, unknown>[] {
           });
         })
       : [];
-    const columns = Array.isArray(grid.columns)
-      ? grid.columns.slice(0, MAX_FIELDS).map((column) => {
+    const columns = rawColumns.length
+      ? rawColumns.map((column) => {
           if (!isRecord(column)) return {};
           return sanitizeValue({
             field: column.field,
             title: column.title,
             type: column.type,
-            visible: column.visible
+            visible: column.visible,
+            actionColumn: isActionColumn(column)
           });
         })
       : [];
@@ -123,6 +157,8 @@ function summarizeBlocks(value: unknown): Record<string, unknown>[] {
       fields,
       columns,
       actions: summarizeActions(candidate.actions ?? schema.actions),
+      toolbarActions: summarizeActions(schema.toolbar),
+      rowActions: summarizeRowActions(schema.rowActions, rawColumns),
       blocks: summarizeBlocks(candidate.blocks),
       overlays: summarizeBlocks(candidate.overlays),
       tabs
@@ -288,6 +324,7 @@ export class AiContextService {
 export const aiContextInternals = {
   sanitizeValue,
   sanitizeSampleValue,
+  summarizeRowActions,
   summarizePageRecord,
   validateClientPageHint,
   enforceByteLimit,

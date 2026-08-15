@@ -66,7 +66,7 @@
       <span>{{ message }}</span>
     </p>
 
-    <GlobalDialogHost />
+    <GlobalDialogHost v-if="!embedded" />
   </section>
 </template>
 
@@ -119,6 +119,14 @@ type TemplateSnapshot = {
   content: TLContent;
   workspace: VueTemplateWorkspaceConfig;
 };
+
+const props = withDefaults(defineProps<{
+  embedded?: boolean;
+}>(), {
+  embedded: false
+});
+
+const embedded = computed(() => props.embedded);
 
 const PRINT_TEMPLATE_RESOURCE = 'print_templates';
 const PRINT_TEMPLATE_LIST_PAGE_CODE = 'print-templates';
@@ -177,7 +185,7 @@ const messageIcon = computed(() => {
 });
 
 watch(
-  () => route.query.templateId,
+  () => embedded.value ? undefined : route.query.templateId,
   async () => {
     await refreshTemplates({ quiet: true });
     await loadRouteTemplate();
@@ -667,6 +675,7 @@ function hasTemplateName(name: string, exceptId = '') {
 }
 
 async function syncRouteTemplateId(templateId: string) {
+  if (embedded.value) return;
   if (getRouteTemplateId() === templateId) return;
   templateLoadRequestId += 1;
 
@@ -688,6 +697,7 @@ function parseTemplateTimestamp(value: string) {
 }
 
 function getRouteTemplateId() {
+  if (embedded.value) return '';
   const value = route.query.templateId;
   return typeof value === 'string' ? value : '';
 }
@@ -929,5 +939,27 @@ function isRecord(value: unknown): value is Record<string, any> {
   .print-template-current > strong {
     max-width: 58vw;
   }
+}
+</style>
+
+<style>
+.print-designer-dialog .vxe-modal--body {
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #f4f6f8;
+}
+
+.print-designer-dialog .lc-global-dialog__body,
+.print-designer-dialog .print-designer-page {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.print-designer-dialog .lc-global-dialog__body {
+  display: block;
+  overflow: hidden;
 }
 </style>
