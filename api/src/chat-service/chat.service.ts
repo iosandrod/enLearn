@@ -239,7 +239,7 @@ export class ChatService extends BaseService {
       case 'deleteMessage':
         return this.deleteMessage(postData, context);
       default:
-        throw new BadRequestException(`Unsupported chat method: ${method}`);
+        return super.executeAction(method, postData, context);
     }
   }
 

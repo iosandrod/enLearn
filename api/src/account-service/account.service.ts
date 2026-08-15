@@ -83,7 +83,7 @@ export class AccountService extends BaseService {
       case 'removeMember':
         return this.removeMember(postData, context);
       default:
-        throw new BadRequestException(`Unsupported account method: ${method}`);
+        return super.executeAction(method, postData, context);
     }
   }
 

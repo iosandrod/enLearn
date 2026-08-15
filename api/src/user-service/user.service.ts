@@ -47,7 +47,7 @@ export class UserService extends BaseService {
       case 'updateSettings':
         return this.updateSettings(postData, context);
       default:
-        throw new BadRequestException(`Unsupported user method: ${method}`);
+        return super.executeAction(method, postData, context);
     }
   }
 

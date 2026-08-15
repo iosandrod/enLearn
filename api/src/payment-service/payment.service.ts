@@ -72,7 +72,7 @@ export class PaymentService extends BaseService {
       case 'createBillingPortal':
         return this.createBillingPortal(postData, context);
       default:
-        throw new BadRequestException(`Unsupported payment method: ${method}`);
+        return super.executeAction(method, postData, context);
     }
   }
 

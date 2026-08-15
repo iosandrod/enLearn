@@ -365,7 +365,7 @@ export class EntityDesignService extends BaseService {
         case 'saveRelation':
           return this.saveRelation(postData, context);
         default:
-          throw new BadRequestException(`Unsupported entityDesign method: ${method}`);
+          return super.executeAction(method, postData, context);
       }
     } catch (error) {
       if (error instanceof HttpException) throw error;

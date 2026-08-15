@@ -295,7 +295,7 @@ export class NotificationService extends BaseService {
       case 'unregisterPushDevice':
         return this.unregisterPushDevice(postData, context);
       default:
-        throw new BadRequestException(`Unsupported notification method: ${method}`);
+        return super.executeAction(method, postData, context);
     }
   }
 

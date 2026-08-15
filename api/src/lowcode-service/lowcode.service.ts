@@ -163,7 +163,7 @@ export class LowCodeService extends BaseService {
       case 'getRuntimePage':
         return this.getRuntimePage(postData, context);
       default:
-        throw new BadRequestException(`Unsupported lowcode method: ${method}`);
+        return super.executeAction(method, postData, context);
     }
   }
 
