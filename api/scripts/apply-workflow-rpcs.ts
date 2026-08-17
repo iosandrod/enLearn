@@ -24,7 +24,8 @@ const migrationPaths = [
   '20260806210000_lowcode_generated_page_rpc.sql',
   '20260806220000_test_access_rpc.sql',
   '20260814110000_workflow_job_upsert_forward_fix.sql',
-  '20260814120000_workflow_job_controlled_delete.sql'
+  '20260814120000_workflow_job_controlled_delete.sql',
+  '20260816100000_workflow_webhook_job_lookup_rpc.sql'
 ].map((name) => resolve(
   process.cwd(),
   process.cwd().toLowerCase().endsWith('api') ? '..' : '.',

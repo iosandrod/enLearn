@@ -1177,16 +1177,23 @@ async function persistRuntimeBlockUpdate(update: LowCodeRuntimeBlockUpdate) {
     };
     runtimeBlockReloadSuppression = reloadSuppression;
     Object.assign(props.page, saved);
+    Object.assign(props.page.schema, cloneRuntimeValue(update.changes.schema ? nextSchema : saved.schema));
     void nextTick(() => {
       if (runtimeBlockReloadSuppression === reloadSuppression) {
         runtimeBlockReloadSuppression = undefined;
       }
     });
-    const renderedBlock = flattenPageBlocks(props.page.schema).find(
-      (block) => block.id === (update.changes.id ?? update.blockId)
+    const renderedBlockId = readString(update.changes.id, update.blockId);
+    let renderedBlock = flattenPageBlocks(props.page.schema).find(
+      (block) => block.id === renderedBlockId,
     );
     if (renderedBlock) {
       Object.assign(renderedBlock, cloneRuntimeValue(update.changes));
+    } else {
+      const savedSchema = isRecord(saved.schema) ? saved.schema : nextSchema;
+      renderedBlock = flattenPageBlocks(savedSchema).find(
+        (block) => block.id === renderedBlockId,
+      );
     }
     runtimeBlockRenderRevision.value += 1;
     message.value = targetBlock.kind === 'form' || targetBlock.kind === 'searchForm'

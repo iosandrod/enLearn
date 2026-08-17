@@ -43,6 +43,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     SiteFooter: typeof import('./../components/SiteFooter.vue')['default']
     SiteHeader: typeof import('./../components/SiteHeader.vue')['default']
+    SystemMenuTreeNode: typeof import('./../../packages/lowcode-framework/src/components/SystemMenuTreeNode.vue')['default']
     VisualEditorProvider: typeof import('./../../packages/lowcode-framework/src/components/VisualEditorProvider.vue')['default']
   }
 }
@@ -80,5 +81,6 @@ declare global {
   const RouterView: typeof import('vue-router')['RouterView']
   const SiteFooter: typeof import('./../components/SiteFooter.vue')['default']
   const SiteHeader: typeof import('./../components/SiteHeader.vue')['default']
+  const SystemMenuTreeNode: typeof import('./../../packages/lowcode-framework/src/components/SystemMenuTreeNode.vue')['default']
   const VisualEditorProvider: typeof import('./../../packages/lowcode-framework/src/components/VisualEditorProvider.vue')['default']
 }

@@ -72,7 +72,10 @@ export class DomainServiceRouter {
     }
 
     const executor = this.resolveExecutor(serviceName);
-    return executor.execute(serviceMethod, postData, context);
+    return executor.execute(serviceMethod, postData, {
+      ...context,
+      serviceName
+    });
   }
 
   private resolveExecutor(serviceName: string): ServiceExecutor {

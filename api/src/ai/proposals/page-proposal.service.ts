@@ -156,6 +156,49 @@ function resolveButtonGroupId(schema: Record<string, unknown>, preferredBlockId?
   return readString(findOrCreateButtonGroup(schema, preferredBlockId).id);
 }
 
+function requireGridColumns(schema: Record<string, unknown>, blockId: string) {
+  const found = findBlock(schema, blockId);
+  if (!found || found.block.kind !== 'grid') {
+    throw new BadRequestException(`Grid block "${blockId}" was not found.`);
+  }
+  const blockSchema = isRecord(found.block.schema) ? found.block.schema : {};
+  const grid = isRecord(blockSchema.grid) ? blockSchema.grid : {};
+  if (!Array.isArray(grid.columns)) {
+    throw new BadRequestException(`Grid block "${blockId}" has no columns.`);
+  }
+  return {
+    block: found.block,
+    blockSchema,
+    grid,
+    columns: grid.columns.filter(isRecord)
+  };
+}
+
+function applyGridColumnAppearance(
+  column: Record<string, unknown>,
+  changes: Record<string, unknown>
+) {
+  const next: Record<string, unknown> = { ...column, ...clone(changes), field: column.field };
+  if ('width' in changes && !('minWidth' in changes)) delete next.minWidth;
+  if ('minWidth' in changes && !('width' in changes)) delete next.width;
+  return next;
+}
+
+function saveGridColumns(
+  block: Record<string, unknown>,
+  blockSchema: Record<string, unknown>,
+  grid: Record<string, unknown>,
+  columns: Record<string, unknown>[]
+) {
+  block.schema = {
+    ...blockSchema,
+    grid: {
+      ...grid,
+      columns
+    }
+  };
+}
+
 function applyOperations(base: Record<string, unknown>, operations: AiProposalOperation[]) {
   const schema = clone(base);
   for (const operation of operations) {
@@ -170,12 +213,59 @@ function applyOperations(base: Record<string, unknown>, operations: AiProposalOp
       schema.dataSources = sources;
       continue;
     }
+    if (operation.type === 'updateGridColumn') {
+      const target = requireGridColumns(schema, operation.blockId);
+      const index = target.columns.findIndex((column) => readString(column.field) === operation.field);
+      if (index < 0) {
+        throw new BadRequestException(
+          `Column "${operation.field}" was not found in grid "${operation.blockId}".`
+        );
+      }
+      target.columns[index] = applyGridColumnAppearance(target.columns[index], operation.changes);
+      saveGridColumns(target.block, target.blockSchema, target.grid, target.columns);
+      continue;
+    }
+    if (operation.type === 'upsertGridColumn') {
+      const target = requireGridColumns(schema, operation.blockId);
+      const field = readString(operation.column.field);
+      const existingIndex = target.columns.findIndex((column) => readString(column.field) === field);
+      const nextColumn = existingIndex >= 0
+        ? applyGridColumnAppearance(target.columns[existingIndex], operation.column)
+        : clone(operation.column);
+      if (existingIndex >= 0) target.columns.splice(existingIndex, 1);
+      if (operation.afterField) {
+        const anchorIndex = target.columns.findIndex(
+          (column) => readString(column.field) === operation.afterField
+        );
+        if (anchorIndex < 0) {
+          throw new BadRequestException(
+            `Anchor column "${operation.afterField}" was not found in grid "${operation.blockId}".`
+          );
+        }
+        target.columns.splice(anchorIndex + 1, 0, nextColumn);
+      } else {
+        target.columns.push(nextColumn);
+      }
+      saveGridColumns(target.block, target.blockSchema, target.grid, target.columns);
+      continue;
+    }
     if (operation.type === 'upsertPageFunction') {
       const functions = Array.isArray(schema.functions) ? schema.functions.filter(isRecord) : [];
       const name = readString(operation.pageFunction.name);
+      const pageFunction = clone(operation.pageFunction);
+      if (operation.builtinFunction) {
+        const preset = Object.values(BUILTIN_ACTIONS).find(
+          (item) => item.functionName === operation.builtinFunction
+        );
+        if (!preset) {
+          throw new BadRequestException(`Unsupported built-in page function "${operation.builtinFunction}".`);
+        }
+        assertBuiltinForPage(preset, schema);
+        pageFunction.script = builtinScript(operation.builtinFunction);
+      }
       const index = functions.findIndex((item) => item.name === name);
-      if (index >= 0) functions[index] = clone(operation.pageFunction);
-      else functions.push(clone(operation.pageFunction));
+      if (index >= 0) functions[index] = pageFunction;
+      else functions.push(pageFunction);
       schema.functions = functions;
       continue;
     }
@@ -196,6 +286,31 @@ function applyOperations(base: Record<string, unknown>, operations: AiProposalOp
       if (index >= 0) actions[index] = clone(operation.action);
       else actions.push(clone(operation.action));
       group.actions = actions;
+      continue;
+    }
+    if (operation.type === 'bindButtonToPageFunction') {
+      const target = findBlock(schema, operation.blockId);
+      if (!target || (target.block.kind !== 'buttonGroup' && target.block.kind !== 'toolbar')) {
+        throw new BadRequestException(`Button target block "${operation.blockId}" was not found.`);
+      }
+      const functions = Array.isArray(schema.functions) ? schema.functions.filter(isRecord) : [];
+      if (!functions.some((pageFunction) => readString(pageFunction.name) === operation.functionName)) {
+        throw new BadRequestException(`Page function "${operation.functionName}" was not found.`);
+      }
+      const actions = Array.isArray(target.block.actions) ? target.block.actions.filter(isRecord) : [];
+      const index = actions.findIndex((action) => readString(action.code) === operation.actionCode);
+      if (index < 0) {
+        throw new BadRequestException(
+          `Button "${operation.actionCode}" was not found in block "${operation.blockId}".`
+        );
+      }
+      const action: Record<string, unknown> = {
+        ...clone(actions[index]),
+        script: builtinScript(operation.functionName)
+      };
+      delete action.directives;
+      actions[index] = action;
+      target.block.actions = actions;
       continue;
     }
     if (operation.type === 'updateBlock') {
@@ -238,7 +353,9 @@ function syncVisualEditor(baseSchema: Record<string, unknown>, candidate: Record
     operation.type === 'addBlock' ||
     operation.type === 'updateBlock' ||
     operation.type === 'removeBlock' ||
-    operation.type === 'upsertDataSource'
+    operation.type === 'upsertDataSource' ||
+    operation.type === 'updateGridColumn' ||
+    operation.type === 'upsertGridColumn'
   );
   if (requiresRegeneration) {
     const regenerated = { ...candidate };
@@ -256,7 +373,7 @@ function syncVisualEditor(baseSchema: Record<string, unknown>, candidate: Record
       if (operation.title) page.title = operation.title;
       continue;
     }
-    if (operation.type !== 'upsertButtonAction') continue;
+    if (operation.type !== 'upsertButtonAction' && operation.type !== 'bindButtonToPageFunction') continue;
     let visual = operation.blockId
       ? visualBlocks.find((block) => isRecord(block.props) && block.props.blockId === operation.blockId)
       : visualBlocks.find((block) => block.componentKey === 'lowcode-button-group');
@@ -284,14 +401,22 @@ function syncVisualEditor(baseSchema: Record<string, unknown>, candidate: Record
     }
     const props = isRecord(visual.props) ? visual.props : {};
     const buttons = Array.isArray(props.buttons) ? props.buttons.filter(isRecord) : [];
-    const code = readString(operation.action.code);
-    const row = {
-      ...clone(operation.action),
-      directivesJson: Array.isArray(operation.action.directives) ? clone(operation.action.directives) : []
-    };
+    const code = operation.type === 'upsertButtonAction'
+      ? readString(operation.action.code)
+      : operation.actionCode;
+    const row = operation.type === 'upsertButtonAction'
+      ? {
+          ...clone(operation.action),
+          directivesJson: Array.isArray(operation.action.directives) ? clone(operation.action.directives) : []
+        }
+      : {
+          ...(clone(buttons.find((button) => readString(button.code) === code) ?? {})),
+          script: builtinScript(operation.functionName),
+          directivesJson: []
+        };
     const index = buttons.findIndex((button) => button.code === code);
     if (index >= 0) buttons[index] = row;
-    else buttons.push(row);
+    else if (operation.type === 'upsertButtonAction') buttons.push(row);
     visual.props = { ...props, buttons };
   }
   page.blocks = visualBlocks;
@@ -302,7 +427,8 @@ function syncVisualEditor(baseSchema: Record<string, unknown>, candidate: Record
 
 function buildDiff(operations: AiProposalOperation[]): AiProposalDiffItem[] {
   return operations.map((operation, index) => {
-    const category: AiProposalDiffItem['category'] = operation.type === 'upsertButtonAction'
+    const category: AiProposalDiffItem['category'] = operation.type === 'upsertButtonAction' ||
+      operation.type === 'bindButtonToPageFunction'
       ? 'button'
       : operation.type === 'upsertPageFunction'
         ? 'function'
@@ -315,8 +441,14 @@ function buildDiff(operations: AiProposalOperation[]): AiProposalDiffItem[] {
               : 'block';
     const label = operation.type === 'upsertButtonAction'
       ? `按钮：${readString(operation.action.label) || readString(operation.action.code)}`
+      : operation.type === 'bindButtonToPageFunction'
+        ? `按钮绑定：${operation.actionCode} -> ${operation.functionName}`
       : operation.type === 'upsertPageFunction'
         ? `页面函数：${readString(operation.pageFunction.name)}`
+        : operation.type === 'updateGridColumn'
+          ? `表格列：${operation.field}`
+          : operation.type === 'upsertGridColumn'
+            ? `表格列：${readString(operation.column.field)}`
         : operation.type === 'upsertDataSource'
           ? `数据源：${operation.key}`
           : operation.type === 'updateScriptPolicy'
@@ -417,9 +549,9 @@ export class PageProposalService {
         name,
         label: readString(args.label) || name,
         description: readString(args.description),
-        enabled: true,
-        script: builtinScript(builtinFunction)
-      }
+        enabled: true
+      },
+      builtinFunction
     }], `新增页面函数“${name}”`);
   }
 
@@ -648,5 +780,7 @@ export const pageProposalInternals = {
   proposalContentHash,
   builtinScript,
   buildDiff,
-  resolveButtonGroupId
+  resolveButtonGroupId,
+  requireGridColumns,
+  applyGridColumnAppearance
 };

@@ -15,6 +15,8 @@ import type { TriggerWorkflowAdapterPayload } from './trigger-workflow.types';
 async function main() {
   await testFrontendCommandFunctionIsTheSourceOfThePublishedCommand();
   await testBackendCommandUsesRegisteredCapabilities();
+  await testBackendCommandSupportsSupabaseQueryBuilder();
+  await testBackendCommandSupportsNestedSupabaseApis();
   await testBackendCommandRejectsUntrustedOrigins();
   await testWorkflowHttpTargetRejectsPrivateDnsAnswers();
   await testWorkflowHttpTargetAllowsConfiguredPublicAnswers();
@@ -89,6 +91,94 @@ async function testBackendCommandUsesRegisteredCapabilities() {
 
   assert.deepEqual(output, { ok: true });
   assert.deepEqual(calls, [{ url: 'https://example.test/orders', method: 'POST' }]);
+}
+
+async function testBackendCommandSupportsSupabaseQueryBuilder() {
+  const calls: unknown[][] = [];
+  const query = {
+    select: (...args: unknown[]) => {
+      calls.push(['select', ...args]);
+      return query;
+    },
+    eq: (...args: unknown[]) => {
+      calls.push(['eq', ...args]);
+      return query;
+    },
+    limit: (...args: unknown[]) => {
+      calls.push(['limit', ...args]);
+      return Promise.resolve({
+        data: [{ id: 'buffer-1' }],
+        error: null
+      });
+    }
+  };
+  const supabase = {
+    from: (table: string) => {
+      calls.push(['from', table]);
+      return query;
+    },
+    rpc: async () => ({ data: null, error: null })
+  } as unknown as SupabaseClient;
+
+  const output = await executeBackendCommandAdapter(
+    createPayload({
+      type: 'backendCommand',
+      executorTaskId: 'workflow.adapter.backend-command',
+      input: {},
+      functionSource: `async ({ context }) => {
+        let query = context.supabase
+          .from('planning_buffer')
+          .select('id')
+          .eq('account_id', context.accountId)
+          .limit(50);
+        const { data, error } = await query;
+        if (error) throw error;
+        return { rows: data, count: data.length, test: '123123' };
+      }`
+    }),
+    { supabase }
+  );
+
+  assert.deepEqual(output, {
+    rows: [{ id: 'buffer-1' }],
+    count: 1,
+    test: '123123'
+  });
+  assert.deepEqual(calls, [
+    ['from', 'planning_buffer'],
+    ['select', 'id'],
+    ['eq', 'account_id', 'account-1'],
+    ['limit', 50]
+  ]);
+}
+
+async function testBackendCommandSupportsNestedSupabaseApis() {
+  const calls: unknown[][] = [];
+  const supabase = {
+    functions: {
+      invoke: async (...args: unknown[]) => {
+        calls.push(['functions.invoke', ...args]);
+        return { data: { ok: true }, error: null };
+      }
+    },
+    rpc: async () => ({ data: null, error: null })
+  } as unknown as SupabaseClient;
+
+  const output = await executeBackendCommandAdapter(
+    createPayload({
+      type: 'backendCommand',
+      executorTaskId: 'workflow.adapter.backend-command',
+      input: {},
+      functionSource: `async ({ context }) =>
+        context.supabase.functions.invoke('inventory', { body: { limit: 10 } })`
+    }),
+    { supabase }
+  );
+
+  assert.deepEqual(output, { data: { ok: true }, error: null });
+  assert.deepEqual(calls, [
+    ['functions.invoke', 'inventory', { body: { limit: 10 } }]
+  ]);
 }
 
 async function testBackendCommandRejectsUntrustedOrigins() {

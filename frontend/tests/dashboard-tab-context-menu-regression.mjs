@@ -37,8 +37,15 @@ const entityLoadTablesFormMigration = await readFile(
   ),
   'utf8'
 );
+const pageInfoTableNameFormMigration = await readFile(
+  new URL(
+    '../../supabase/migrations/20260816110000_page_info_design_table_name_field.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
 const allFormDefinitionMigrations =
-  `${formDefinitionMigration}\n${entityLoadTablesFormMigration}`;
+  `${formDefinitionMigration}\n${entityLoadTablesFormMigration}\n${pageInfoTableNameFormMigration}`;
 
 const compiledUtility = ts.transpileModule(utilitySource, {
   compilerOptions: {
@@ -92,7 +99,7 @@ assert.match(
 );
 assert.match(
   layoutSource,
-  /async function reloadVisitedTab\(tab: VisitedTab\) \{\s*routeCache\.invalidate\(tab\.path\);\s*await nextTick\(\);\s*if \(route\.path !== tab\.path\) await router\.push\(tab\.path\);\s*\}/,
+  /async function reloadVisitedTab\(tab: VisitedTab\) \{\s*routeCache\.invalidate\(tab\.path\);\s*await nextTick\(\);\s*if \(route\.fullPath !== tab\.fullPath\) await router\.push\(tab\.fullPath\);\s*\}/,
   'Reloading a tab must invalidate its cache before opening it.'
 );
 assert.match(layoutSource, /name: '关闭当前'/);
@@ -182,6 +189,11 @@ assert.match(
   'The database seed must define the page-information form as one tabbed low-code form schema.'
 );
 assert.match(
+  allFormDefinitionMigrations,
+  /'page-info-design'[\s\S]*?"field": "tableName"[\s\S]*?"label": "关联表名"[\s\S]*?"component": "vxe-select"[\s\S]*?"optionsCode": "physical_table_name"[\s\S]*?"kind": "field", "field": "tableName"/,
+  'The database-backed page-information form must expose the linked table name as a physical-table dropdown.'
+);
+assert.match(
   formDefinitionSource,
   /resource: 'lowcode_form_definitions'[\s\S]*?filters: \{ code: requestedCodes, enabled: true \}/,
   'Only enabled database form definitions with the requested codes may be loaded.'
@@ -229,7 +241,7 @@ assert.match(
 );
 assert.match(
   layoutSource,
-  /if \(!visitedTabs\.value\.some\(\(tab\) => tab\.path === path\)\) return;/,
+  /const existingTab = visitedTabs\.value\.find\(\(tab\) => tab\.path === path\);\s*if \(!existingTab\) return;/,
   'A late metadata response must not restore a tab that the user closed.'
 );
 assert.match(
@@ -239,7 +251,7 @@ assert.match(
 );
 assert.match(
   layoutSource,
-  /await router\.push\(adjacentTab\?\.path \?\? '\/dashboard'\)/,
+  /await router\.push\(adjacentTab\?\.fullPath \?\? '\/dashboard'\)/,
   'Closing the final active tab must return to the dashboard.'
 );
 

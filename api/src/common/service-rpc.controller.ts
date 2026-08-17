@@ -57,7 +57,10 @@ export function createServiceRpcController<T extends ServiceExecutor>(
           data: await this.service.execute(
             request.serviceMethod,
             request.postData,
-            request.context
+            {
+              ...request.context,
+              serviceName
+            }
           )
         };
       } catch (error) {

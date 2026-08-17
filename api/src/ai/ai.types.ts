@@ -174,6 +174,18 @@ export type AiProposalOperation =
       dataSource: Record<string, unknown>;
     }
   | {
+      type: 'updateGridColumn';
+      blockId: string;
+      field: string;
+      changes: Record<string, unknown>;
+    }
+  | {
+      type: 'upsertGridColumn';
+      blockId: string;
+      column: Record<string, unknown>;
+      afterField?: string;
+    }
+  | {
       type: 'upsertButtonAction';
       blockId?: string;
       action: Record<string, unknown>;
@@ -181,6 +193,13 @@ export type AiProposalOperation =
   | {
       type: 'upsertPageFunction';
       pageFunction: Record<string, unknown>;
+      builtinFunction?: string;
+    }
+  | {
+      type: 'bindButtonToPageFunction';
+      blockId: string;
+      actionCode: string;
+      functionName: string;
     }
   | {
       type: 'updateScriptPolicy';

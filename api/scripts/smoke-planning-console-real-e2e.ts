@@ -181,7 +181,7 @@ function actionButton(page: any, label: string) {
 }
 
 async function searchFormButton(page: any, label: string) {
-  const form = page.locator('#planning_console_filter').first();
+  const form = page.locator('#planning_console_result_filter').first();
   const formButton = form.getByRole('button', { name: label }).first();
   if (await formButton.count()) return formButton;
   return page.locator('.lowcode-runtime-page > .lc-runtime-block').first()
@@ -623,7 +623,7 @@ async function main() {
         while (instance) {
           if (typeof instance.exposed?.getSnapshot === 'function') {
             const snapshot = instance.exposed.getSnapshot();
-            const form = snapshot?.formModels?.planning_console_filter ?? {};
+            const form = snapshot?.formModels?.planning_console_result_filter ?? {};
             const rows = snapshot?.runtime?.sources?.runs;
             return !String(form.planVersionId ?? '').trim() &&
               Array.isArray(rows) && rows.some((row) => row?.id === runId);

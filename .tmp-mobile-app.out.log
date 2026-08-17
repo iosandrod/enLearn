@@ -98,3 +98,27 @@
 [web] webpack 5.109.2 compiled successfully in 69 ms
 [hippy] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
 [web] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[hippy] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[web] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[hippy] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[web] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[web] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[hippy] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[web] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[hippy] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[hippy] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[web] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[hippy] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[web] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[hippy] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[web] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[hippy] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[web] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[hippy] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[web] Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'E:\pagefile.sys'
+[hippy]  ELIFECYCLE  Command failed with exit code 1073807364.
+[hippy] pnpm hippy:dev exited with code 1073807364
+--> Sending SIGTERM to other processes..
+[web] node ./scripts/env-polyfill.js webpack serve --config ./scripts/hippy-webpack.web-renderer.dev.js exited with code 1
+ ELIFECYCLE  Command failed with exit code 1.
+ ELIFECYCLE  Command failed with exit code 1.

@@ -169,7 +169,7 @@ export class AiToolRegistry {
     this.register({
       definition: {
         name: 'proposal.patch_page',
-        description: 'Create a stable-id patch proposal for the current page. This never saves the page.',
+        description: 'Create a stable-id patch proposal for the current page. This never saves the page. For grid presentation use updateGridColumn (change title or width) or upsertGridColumn (add or move a field after another field). To create a reusable built-in page function, use upsertPageFunction with builtinFunction. To bind an existing top-level button to that function, put bindButtonToPageFunction after the function operation. Never include raw scripts, direct service calls, or SQL.',
         parameters: objectParameters({
           summary: { type: 'string', maxLength: 500 },
           operations: {

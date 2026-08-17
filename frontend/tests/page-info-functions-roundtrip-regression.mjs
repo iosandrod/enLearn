@@ -17,6 +17,8 @@ const page = {
   keep_alive: false,
   page_type: 'edit',
   edit_page_id: null,
+  view_name: null,
+  table_name: 'entity_views',
   schema: {
     schemaVersion: 3,
     code: 'entity-views-edit',
@@ -62,6 +64,7 @@ const page = {
 };
 
 const opened = createPageInfoDesignForm(page);
+assert.equal(opened.tableName, 'entity_views');
 assert.deepEqual(opened.functions, page.schema.functions);
 assert.deepEqual(opened.apis, [
   {
@@ -76,6 +79,7 @@ assert.deepEqual(opened.apis, [
 
 const normalized = normalizePageInfoDesignForm({
   ...opened,
+  tableName: ' public.entity_view_drafts ',
   functions: [
     ...opened.functions,
     {
@@ -106,6 +110,9 @@ const reopened = createPageInfoDesignForm({
 });
 
 assert.equal(saved.version, 8);
+assert.equal(normalized.tableName, 'entity_view_drafts');
+assert.equal(saved.table_name, 'entity_view_drafts');
+assert.equal(reopened.tableName, 'entity_view_drafts');
 assert.deepEqual(reopened.functions, normalized.functions);
 assert.deepEqual(reopened.apis, normalized.apis);
 assert.deepEqual(saved.schema.scriptPolicy, page.schema.scriptPolicy);

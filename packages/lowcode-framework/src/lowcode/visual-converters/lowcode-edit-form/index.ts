@@ -20,10 +20,10 @@ import {
 type FormType = 'edit' | 'search' | 'default';
 
 function normalizeFormType(value: unknown): FormType {
-  const formType = readString(value, 'default');
+  const formType = readString(value, 'edit');
   return formType === 'edit' || formType === 'search' || formType === 'default'
     ? formType
-    : 'default';
+    : 'edit';
 }
 
 function normalizeActionStatus(value: unknown): LowCodeAction['status'] {
@@ -82,7 +82,7 @@ const converter: VisualToLowCodeConverter = {
   order: 20,
   defaultProps: {
     blockId: 'edit-form',
-    formType: 'default',
+    formType: 'edit',
     title: '编辑信息',
     sourceKey: 'record',
     submitSourceKey: 'record',

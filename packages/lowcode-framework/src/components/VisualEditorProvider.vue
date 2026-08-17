@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, provide, useSlots } from 'vue';
+import { computed, onBeforeUnmount, onMounted, provide, useSlots, watch } from 'vue';
 import VisualEditor from '../visual-editor/index.vue';
 import GlobalDialogHost from './GlobalDialogHost';
 import { useLowCodeHost } from '../core/host';
@@ -83,6 +83,15 @@ const visualData = initVisualData({
   initialPath: props.initialPath,
   routePath: props.routePath
 });
+
+watch(
+  () => props.initialData,
+  (nextData) => {
+    if (!nextData) return;
+    visualData.replaceProject(nextData);
+  },
+);
+
 const host = useLowCodeHost();
 const slots = useSlots();
 const hasMetaSlot = computed(() => Boolean(slots.meta));

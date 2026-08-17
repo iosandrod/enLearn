@@ -32,6 +32,7 @@ async function main() {
   await testCreateScheduleIsDeletedWhenRpcUpdateFails();
   await testExistingScheduleIsDeactivatedWhenRpcUpdateFails();
   await testTypedRunKeepsPersistedPlanAndTrustedActor();
+  await testSyncRunReturnsFinalWorkflowOutput();
   await testTriggerFailureIsPreservedWhenFailureProjectionFails();
   await testTriggeredRunIsCanceledWhenRunIdProjectionFails();
   console.log('workflow-api Trigger.dev job Supabase RPC tests passed');
@@ -540,6 +541,60 @@ async function testTypedRunKeepsPersistedPlanAndTrustedActor() {
   assert.equal(triggeredPayload?.runId, run.id);
 }
 
+async function testSyncRunReturnsFinalWorkflowOutput() {
+  const job = createJob({
+    type: 'manual',
+    triggerTaskId: 'workflow.job.run',
+    payload: {}
+  });
+  const run = createRun();
+  const completedRunRow = {
+    ...toRunRow(run),
+    trigger_run_id: 'trigger-run-1',
+    status: 'succeeded',
+    output: {
+      variables: {
+        taskOutputs: {
+          inventory: [{ id: 'row-1' }]
+        }
+      },
+      operationOutputs: {
+        task: [{ id: 'row-1' }]
+      }
+    },
+    finished_at: '2026-08-04T00:00:01.000Z'
+  };
+  let commandCount = 0;
+  const service = createService(
+    async (action, payload) => {
+      commandCount += 1;
+      if (action === 'get_job') return { data: toRow(job), error: null };
+      if (action === 'create_run') return { data: toRunRow(run), error: null };
+      assert.equal(action, 'project_trigger_run');
+      assert.equal(payload.run_id, run.id);
+      return {
+        data: {
+          ...toRunRow(run),
+          trigger_run_id: 'trigger-run-1'
+        },
+        error: null
+      };
+    },
+    createTriggerClient({
+      triggerTask: async () => ({ id: 'trigger-run-1' })
+    }),
+    [
+      toRunRow(run),
+      completedRunRow
+    ]
+  );
+
+  const output = await service.runJobAndWait(job.id, {}, actor);
+
+  assert.deepEqual(output, completedRunRow.output);
+  assert.equal(commandCount, 3);
+}
+
 async function testTriggerFailureIsPreservedWhenFailureProjectionFails() {
   const job = createJob({ type: 'manual' });
   const run = createRun();
@@ -589,8 +644,10 @@ type RpcResult = Promise<{ data: unknown; error: { message: string } | null }>;
 
 function createService(
   rpc: (action: string, payload: Record<string, unknown>) => RpcResult,
-  triggerClient: TriggerDevClient
+  triggerClient: TriggerDevClient,
+  runRows: Array<Record<string, unknown>> = []
 ) {
+  let runReadIndex = 0;
   const client = {
     rpc: async (
       functionName: string,
@@ -609,6 +666,18 @@ function createService(
       }
       assert.equal(functionName, 'workflow_job_command');
       return rpc(args.p_action!, args.p_payload!);
+    },
+    from: (tableName: string) => {
+      assert.equal(tableName, 'wf_job_run');
+      const query: any = {
+        select: () => query,
+        eq: () => query,
+        maybeSingle: async () => ({
+          data: runRows[Math.min(runReadIndex++, Math.max(runRows.length - 1, 0))] ?? null,
+          error: null
+        })
+      };
+      return query;
     }
   } as unknown as SupabaseClient;
   const persistence = { isConfigured: true, client } as WorkflowSupabaseService;

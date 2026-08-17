@@ -519,7 +519,7 @@ export default defineMaterialPropForms([
         label: '表单类型',
         component: 'lc-option-select',
         valueKind: 'raw',
-        defaultValue: 'default',
+        defaultValue: 'edit',
         options: formTypeOptions,
       }),
       propField({ field: 'title', path: 'title', label: '标题', defaultValue: '编辑信息' }),

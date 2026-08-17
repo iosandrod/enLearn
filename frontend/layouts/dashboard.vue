@@ -284,11 +284,13 @@
           <p v-if="!filteredMenuTree.length" class="admin-menu-empty">无匹配菜单</p>
           <template v-for="group in filteredMenuTree" :key="group.code">
             <section class="admin-menu-section">
-              <MenuItem
+              <SystemMenuTreeNode
                 :item="group"
                 :expanded-groups="expandedGroups"
+                :accordion="true"
                 :filtering="Boolean(normalizedMenuFilter)"
                 :level="0"
+                mode="link"
                 @context="openMenuContext"
                 @toggle="toggleGroup"
               />
@@ -324,15 +326,13 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, h, resolveComponent } from 'vue';
-import type { PropType } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import {VxeUI} from 'vxe-pc-ui';
 import { useServiceApi } from '../composables/useServiceApi';
 import { useRouteCache } from '../composables/useRouteCache';
 import { loadSystemSettings } from '../composables/useSystemSettings';
-import type {
-  LowCodePageRecord,
-} from '@enlearn/lowcode-framework/types/lowcode';
+import type { LowCodePageRecord } from '@enlearn/lowcode-framework/types/lowcode';
+import SystemMenuTreeNode from '../../packages/lowcode-framework/src/components/SystemMenuTreeNode.vue';
 import {
   confirmLowCodePage,
   ensureLowCodeEditPage,
@@ -360,26 +360,15 @@ import {
 import type { DashboardTabCloseScope } from '../utils/dashboardTabs';
 import { getLowCodePage } from '../utils/lowCodePages';
 import type { AppAccountSummary } from '../composables/useAuthState';
-
-type AdminRouteNode = {
-  id?: string;
-  code: string;
-  title: string;
-  path: string;
-  parent_id?: string | null;
-  route_type?: 'group' | 'page' | 'link';
-  icon?: string | null;
-  page_code?: string | null;
-  permission_code?: string | null;
-  visible?: boolean;
-  keep_alive?: boolean;
-  layout?: 'default' | 'dashboard' | 'blank';
-  status?: string;
-  sort_order?: number;
-  metadata?: Record<string, unknown>;
-  metadata_json?: string;
-  children?: AdminRouteNode[];
-};
+import {
+  buildAdminRouteTree,
+  collectNavigationRoots,
+  filterAdminRouteNodes,
+  flattenAdminRouteNodes,
+  normalizeAdminRouteNodes,
+  sortAdminRouteNodes,
+  type AdminRouteNode,
+} from '../../packages/lowcode-framework/src/utils/admin-navigation';
 
 type MenuContextPayload = {
   event: MouseEvent;
@@ -593,216 +582,21 @@ function publishLowCodeDesignerLoadPage(code: string) {
   }
 }
 
-const MenuItem = defineComponent({
-  name: 'DashboardMenuItem',
-  props: {
-    item: {
-      type: Object as PropType<AdminRouteNode>,
-      required: true
-    },
-    expandedGroups: {
-      type: Object as PropType<Record<string, boolean>>,
-      required: true
-    },
-    filtering: {
-      type: Boolean,
-      default: false
-    },
-    level: {
-      type: Number,
-      default: 0
-    }
-  },
-  emits: {
-    context: (_payload: MenuContextPayload) => true,
-    toggle: (_code: string) => true
-  },
-  setup(props, { emit }) {
-    const hasChildren = computed(() => Boolean(props.item.children?.length));
-    const isExpanded = computed(
-      () => props.filtering || props.expandedGroups[props.item.code] !== false
-    );
-
-    return () => {
-      if (!hasChildren.value) {
-        return h(
-          resolveComponent('RouterLink'),
-          {
-            class: ['admin-menu-link', `level-${props.level}`],
-            to: props.item.path,
-            onContextmenu: (event: MouseEvent) => {
-              event.preventDefault();
-              event.stopPropagation();
-              emit('context', { event, item: props.item });
-            }
-          },
-          () => props.item.title
-        );
-      }
-
-      return h('div', { class: 'admin-menu-node' }, [
-        h(
-          'button',
-          {
-            class: ['admin-menu-group', `level-${props.level}`],
-            type: 'button',
-            onClick: () => emit('toggle', props.item.code),
-            onContextmenu: (event: MouseEvent) => {
-              event.preventDefault();
-              event.stopPropagation();
-              emit('context', { event, item: props.item });
-            }
-          },
-          [
-            h('span', props.item.title),
-            h('span', isExpanded.value ? '-' : '+')
-          ]
-        ),
-        isExpanded.value
-          ? h(
-              'div',
-              { class: 'admin-submenu' },
-              props.item.children?.map((child) =>
-                h(MenuItem, {
-                  key: child.code,
-                  item: child,
-                  expandedGroups: props.expandedGroups,
-                  filtering: props.filtering,
-                  level: props.level + 1,
-                  onContext: (payload: MenuContextPayload) => emit('context', payload),
-                  onToggle: (code: string) => emit('toggle', code)
-                })
-              )
-            )
-          : null
-      ]);
-    };
-  }
-});
-
-function normalizeNodes(nodes: AdminRouteNode[]): AdminRouteNode[] {
-  const normalized = nodes
-    .filter((node) => node.visible !== false && node.status !== 'inactive')
-    .map((node) => ({
-      ...node,
-      children: sortRouteNodes(normalizeNodes(node.children ?? []))
-    }));
-
-  return normalized.filter((node) => {
-    if (node.children?.length) return true;
-    return node.route_type !== 'group';
-  });
-}
-
-function sortRouteNodes(nodes: AdminRouteNode[]) {
-  return [...nodes].sort((left, right) => {
-    const leftSort = left.sort_order ?? 0;
-    const rightSort = right.sort_order ?? 0;
-    if (leftSort !== rightSort) return leftSort - rightSort;
-    return left.title.localeCompare(right.title, 'zh-Hans-CN');
-  });
-}
-
-function readRouteMetadata(item: AdminRouteNode) {
-  if (item.metadata && typeof item.metadata === 'object') return item.metadata;
-  if (!item.metadata_json) return {};
-
-  try {
-    return JSON.parse(item.metadata_json) as Record<string, unknown>;
-  } catch {
-    return {};
-  }
-}
-
-function readNavigationPlacement(item: AdminRouteNode): NavigationPlacement | '' {
-  const navigation = readRouteMetadata(item).navigation;
-  return navigation === 'sidebar' ||
-    navigation === 'top-tool' ||
-    navigation === 'container' ||
-    navigation === 'hidden'
-    ? navigation
-    : '';
-}
-
-function projectNavigationBranch(
-  node: AdminRouteNode,
-  placement: Exclude<NavigationPlacement, 'container' | 'hidden'>
-): AdminRouteNode {
-  return {
-    ...node,
-    children: projectNavigationChildren(node.children ?? [], placement)
-  };
-}
-
-function projectNavigationChildren(
-  children: AdminRouteNode[],
-  placement: Exclude<NavigationPlacement, 'container' | 'hidden'>
-) {
-  return sortRouteNodes(children.flatMap((child) => {
-    const childPlacement = readNavigationPlacement(child);
-    if (childPlacement === 'hidden') return [];
-    if (childPlacement === 'container') {
-      return projectNavigationChildren(child.children ?? [], placement);
-    }
-    if (childPlacement && childPlacement !== placement) return [];
-    return [projectNavigationBranch(child, placement)];
-  }));
-}
-
-function collectNavigationRoots(
-  nodes: AdminRouteNode[],
-  placement: Exclude<NavigationPlacement, 'container' | 'hidden'>
-): AdminRouteNode[] {
-  return nodes.flatMap((node) => {
-    const nodePlacement = readNavigationPlacement(node);
-    if (nodePlacement === placement) return [projectNavigationBranch(node, placement)];
-    if (nodePlacement === 'hidden') return [];
-    return collectNavigationRoots(node.children ?? [], placement);
-  });
-}
-
-function buildSidebarMenu(nodes: AdminRouteNode[]) {
-  return sortRouteNodes(collectNavigationRoots(nodes, 'sidebar'));
-}
-
-function flattenNodes(nodes: AdminRouteNode[]): AdminRouteNode[] {
-  return nodes.flatMap((node) => [node, ...flattenNodes(node.children ?? [])]);
-}
-
-function buildRouteTree(rows: AdminRouteNode[]) {
-  const byId = new Map<string, AdminRouteNode & { children: AdminRouteNode[] }>();
-  const roots: Array<AdminRouteNode & { children: AdminRouteNode[] }> = [];
-
-  for (const row of rows) {
-    const id = row.id;
-    if (!id) continue;
-    byId.set(id, {
-      ...row,
-      children: [],
-    });
-  }
-
-  for (const node of byId.values()) {
-    const parentId = node.parent_id ?? '';
-    const parent = parentId ? byId.get(parentId) : undefined;
-    if (parent) parent.children.push(node);
-    else roots.push(node);
-  }
-
-  return roots;
-}
-
-const normalizedRoutes = computed<AdminRouteNode[]>(() => normalizeNodes(routes.value));
+const normalizedRoutes = computed<AdminRouteNode[]>(() => normalizeAdminRouteNodes(routes.value));
 const topToolGroups = computed<TopToolGroup[]>(() =>
-  sortRouteNodes(collectNavigationRoots(normalizedRoutes.value, 'top-tool')).map((group) => ({
+  sortAdminRouteNodes(collectNavigationRoots(normalizedRoutes.value, 'top-tool')).map((group) => ({
     ...group,
-    tools: sortRouteNodes(group.children ?? [])
+    tools: sortAdminRouteNodes(group.children ?? [])
   }))
 );
-const menuTree = computed<AdminRouteNode[]>(() => buildSidebarMenu(normalizedRoutes.value));
+function collectSidebarMenu(nodes: AdminRouteNode[]) {
+  return sortAdminRouteNodes(collectNavigationRoots(nodes, 'sidebar'));
+}
+
+const menuTree = computed<AdminRouteNode[]>(() => collectSidebarMenu(normalizedRoutes.value));
 const normalizedMenuFilter = computed(() => menuFilter.value.trim().toLowerCase());
-const filteredMenuTree = computed(() => filterMenuNodes(menuTree.value, normalizedMenuFilter.value));
-const flatMenu = computed<AdminRouteNode[]>(() => flattenNodes(menuTree.value));
+const filteredMenuTree = computed(() => filterAdminRouteNodes(menuTree.value, normalizedMenuFilter.value));
+const flatMenu = computed<AdminRouteNode[]>(() => flattenAdminRouteNodes(menuTree.value));
 const activeTitle = computed<string>(() =>
   resolveDashboardNavigationTitle(
     [...flatMenu.value, ...topToolGroups.value.flatMap((group) => group.tools)],
@@ -821,7 +615,7 @@ function reloadRoutes() {
         'listNavigationRoutes',
         {},
       );
-      routes.value = Array.isArray(data) ? buildRouteTree(data) : [];
+      routes.value = Array.isArray(data) ? buildAdminRouteTree(data) : [];
     } catch (error) {
       routes.value = [];
       routeError.value =
@@ -835,23 +629,30 @@ function reloadRoutes() {
 }
 
 function toggleGroup(code: string) {
-  expandedGroups[code] = expandedGroups[code] === false;
+  const willExpand = expandedGroups[code] !== true;
+
+  if (willExpand) {
+    for (const siblingCode of findSiblingGroupCodes(menuTree.value, code)) {
+      if (siblingCode !== code) expandedGroups[siblingCode] = false;
+    }
+  }
+
+  expandedGroups[code] = willExpand;
 }
 
-function filterMenuNodes(nodes: AdminRouteNode[], keyword: string): AdminRouteNode[] {
-  if (!keyword) return nodes;
+function findSiblingGroupCodes(nodes: AdminRouteNode[], targetCode: string): string[] {
+  if (nodes.some((node) => node.code === targetCode)) {
+    return nodes
+      .filter((node) => Boolean(node.children?.length))
+      .map((node) => node.code);
+  }
 
-  return nodes
-    .map<AdminRouteNode | null>((node) => {
-      const children = filterMenuNodes(node.children ?? [], keyword);
-      const selfMatched = [node.title, node.code, node.path]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(keyword));
+  for (const node of nodes) {
+    const siblingCodes = findSiblingGroupCodes(node.children ?? [], targetCode);
+    if (siblingCodes.length) return siblingCodes;
+  }
 
-      if (!selfMatched && !children.length) return null;
-      return { ...node, children };
-    })
-    .filter((node): node is AdminRouteNode => Boolean(node));
+  return [];
 }
 
 function openMenuContext(payload: MenuContextPayload) {

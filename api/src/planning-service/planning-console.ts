@@ -50,6 +50,7 @@ type PlanningConsoleVersion = {
 type PlanningFlowData = {
   nodes: PlanningRow[];
   edges: PlanningRow[];
+  lanes: PlanningRow[];
 };
 
 const CONSOLE_LIMIT = 1000;
@@ -768,46 +769,170 @@ function collectFlowEdges(
   return edges;
 }
 
-function layoutFlowNodes(operations: PlanningRow[], edges: PlanningRow[]) {
-  const columnStep = 360;
-  const rowStep = 156;
-  const ids = operations.map((row) => readString(row.id)).filter(Boolean);
-  const indegree = new Map(ids.map((id) => [id, 0]));
+function orderFlowOperations(
+  operationIds: string[],
+  operationById: Map<string, PlanningRow>,
+  edges: PlanningRow[],
+  sourceIndex: Map<string, number>
+) {
+  const includedIds = new Set(operationIds);
+  const indegree = new Map(operationIds.map((id) => [id, 0]));
   const nextById = new Map<string, string[]>();
   for (const edge of edges) {
     const source = readString(edge.source);
     const target = readString(edge.target);
-    if (!indegree.has(source) || !indegree.has(target)) continue;
+    if (!includedIds.has(source) || !includedIds.has(target)) continue;
     indegree.set(target, (indegree.get(target) ?? 0) + 1);
     nextById.set(source, [...(nextById.get(source) ?? []), target]);
   }
-  const levels = new Map<string, number>();
-  const queue = ids.filter((id) => (indegree.get(id) ?? 0) === 0);
-  for (const id of queue) levels.set(id, 0);
-  for (let index = 0; index < queue.length; index += 1) {
-    const id = queue[index];
+  const compare = (left: string, right: string) => {
+    const priorityDifference = readNumber(operationById.get(left)?.priority) -
+      readNumber(operationById.get(right)?.priority);
+    return priorityDifference || (sourceIndex.get(left) ?? 0) - (sourceIndex.get(right) ?? 0);
+  };
+  const ready = operationIds.filter((id) => (indegree.get(id) ?? 0) === 0).sort(compare);
+  const ordered: string[] = [];
+  while (ready.length) {
+    const id = ready.shift();
+    if (!id) continue;
+    ordered.push(id);
     for (const target of nextById.get(id) ?? []) {
-      levels.set(target, Math.max(levels.get(target) ?? 0, (levels.get(id) ?? 0) + 1));
       indegree.set(target, (indegree.get(target) ?? 1) - 1);
-      if (indegree.get(target) === 0) queue.push(target);
+      if (indegree.get(target) === 0) {
+        ready.push(target);
+        ready.sort(compare);
+      }
     }
   }
-  ids.forEach((id) => {
-    if (!levels.has(id)) levels.set(id, 0);
+  return [
+    ...ordered,
+    ...operationIds.filter((id) => !ordered.includes(id)).sort(compare)
+  ];
+}
+
+function layoutFlowNodes(
+  operations: PlanningRow[],
+  edges: PlanningRow[],
+  suboperations: PlanningRow[]
+) {
+  const columnStep = 360;
+  const laneStep = 196;
+  const laneHeight = 184;
+  const ids = operations.map((row) => readString(row.id)).filter(Boolean);
+  const operationById = new Map(operations.map((row) => [readString(row.id), row]));
+  const sourceIndex = new Map(ids.map((id, index) => [id, index]));
+  const routeChildren = new Map<string, { id: string; priority: number }[]>();
+  const claimedIds = new Set<string>();
+
+  for (const relation of suboperations) {
+    const routeId = readString(relation.operation_id);
+    const childId = readString(relation.suboperation_id);
+    if (!operationById.has(routeId) || !operationById.has(childId)) continue;
+    routeChildren.set(routeId, [
+      ...(routeChildren.get(routeId) ?? []),
+      { id: childId, priority: readNumber(relation.priority) }
+    ]);
+  }
+  for (const operation of operations) {
+    const routeId = readString(operation.owner_id);
+    const childId = readString(operation.id);
+    if (!operationById.has(routeId) || !childId) continue;
+    const children = routeChildren.get(routeId) ?? [];
+    if (!children.some((entry) => entry.id === childId)) {
+      routeChildren.set(routeId, [
+        ...children,
+        { id: childId, priority: readNumber(operation.priority) }
+      ]);
+    }
+  }
+
+  const routeIds = ids.filter((id) => {
+    const operation = operationById.get(id);
+    return readString(operation?.type) === 'routing' || (routeChildren.get(id)?.length ?? 0) > 0;
+  }).sort((left, right) => {
+    const priorityDifference = readNumber(operationById.get(left)?.priority) -
+      readNumber(operationById.get(right)?.priority);
+    return priorityDifference || (sourceIndex.get(left) ?? 0) - (sourceIndex.get(right) ?? 0);
   });
-  const rowsByLevel = new Map<number, string[]>();
-  for (const id of ids) {
-    const level = levels.get(id) ?? 0;
-    rowsByLevel.set(level, [...(rowsByLevel.get(level) ?? []), id]);
+
+  const laneEntries: { id: string; label: string; itemName: string; nodeIds: string[]; operationCount: number }[] = [];
+  for (const routeId of routeIds) {
+    if (claimedIds.has(routeId)) continue;
+    const route = operationById.get(routeId);
+    if (!route) continue;
+    const childIds = [...(routeChildren.get(routeId) ?? [])]
+      .sort((left, right) => left.priority - right.priority ||
+        (sourceIndex.get(left.id) ?? 0) - (sourceIndex.get(right.id) ?? 0))
+      .map((entry) => entry.id)
+      .filter((id, index, values) => id !== routeId && values.indexOf(id) === index && !claimedIds.has(id));
+    const nodeIds = [routeId, ...childIds];
+    nodeIds.forEach((id) => claimedIds.add(id));
+    laneEntries.push({
+      id: `lane:${routeId}`,
+      label: readString(route.category) || readString(route.name) || routeId,
+      itemName: readString(route.item_name),
+      nodeIds,
+      operationCount: childIds.length
+    });
   }
+
+  const unclaimedIds = ids.filter((id) => !claimedIds.has(id));
+  const neighbors = new Map(unclaimedIds.map((id) => [id, new Set<string>()]));
+  for (const edge of edges) {
+    const source = readString(edge.source);
+    const target = readString(edge.target);
+    if (!neighbors.has(source) || !neighbors.has(target)) continue;
+    neighbors.get(source)?.add(target);
+    neighbors.get(target)?.add(source);
+  }
+  const visited = new Set<string>();
+  for (const firstId of unclaimedIds) {
+    if (visited.has(firstId)) continue;
+    const pending = [firstId];
+    const componentIds: string[] = [];
+    while (pending.length) {
+      const id = pending.shift();
+      if (!id || visited.has(id)) continue;
+      visited.add(id);
+      componentIds.push(id);
+      pending.push(...(neighbors.get(id) ?? []));
+    }
+    const orderedIds = orderFlowOperations(componentIds, operationById, edges, sourceIndex);
+    const firstOperation = operationById.get(orderedIds[0]);
+    laneEntries.push({
+      id: `lane:standalone:${orderedIds[0]}`,
+      label: readString(firstOperation?.category) || readString(firstOperation?.item_name) || '独立工序',
+      itemName: readString(firstOperation?.item_name),
+      nodeIds: orderedIds,
+      operationCount: orderedIds.length
+    });
+  }
+
   const positions = new Map<string, { x: number; y: number }>();
-  for (const [level, levelIds] of rowsByLevel) {
-    levelIds.forEach((id, index) => positions.set(id, {
-      x: 40 + level * columnStep,
-      y: 36 + index * rowStep
-    }));
-  }
-  return positions;
+  const nodeMeta = new Map<string, { laneId: string; laneSequence: string | number }>();
+  const lanes = laneEntries.map((lane, laneIndex) => {
+    const y = 16 + laneIndex * laneStep;
+    lane.nodeIds.forEach((id, index) => {
+      positions.set(id, { x: 40 + index * columnStep, y: y + 40 });
+      nodeMeta.set(id, {
+        laneId: lane.id,
+        laneSequence: readString(operationById.get(id)?.type) === 'routing'
+          ? 'RT'
+          : lane.nodeIds
+            .slice(0, index + 1)
+            .filter((nodeId) => readString(operationById.get(nodeId)?.type) !== 'routing')
+            .length
+      });
+    });
+    return {
+      ...lane,
+      x: 16,
+      y,
+      width: 316 + Math.max(0, lane.nodeIds.length - 1) * columnStep,
+      height: laneHeight
+    };
+  });
+  return { positions, lanes, nodeMeta };
 }
 
 export function buildPlanningFlowData(
@@ -818,7 +943,7 @@ export function buildPlanningFlowData(
   operationResources: PlanningRow[] = []
 ): PlanningFlowData {
   const edges = collectFlowEdges(operations, dependencies, suboperations);
-  const positions = layoutFlowNodes(operations, edges);
+  const { positions, lanes, nodeMeta } = layoutFlowNodes(operations, edges, suboperations);
   const materialsByOperation = new Map<string, PlanningRow[]>();
   const resourcesByOperation = new Map<string, PlanningRow[]>();
   for (const row of operationMaterials) {
@@ -851,11 +976,14 @@ export function buildPlanningFlowData(
           .map((row) => readString(row.resource_name))
           .filter(Boolean)
           .join(' / '),
+        laneId: nodeMeta.get(id)?.laneId ?? '',
+        sequence: nodeMeta.get(id)?.laneSequence ?? '',
         position: positions.get(id) ?? { x: 40, y: 36 },
         raw: operation
       };
     }),
-    edges
+    edges,
+    lanes
   };
 }
 

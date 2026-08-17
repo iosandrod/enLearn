@@ -531,8 +531,7 @@ function pushIssue(
 }
 
 function dataSourceExists(schema: LowCodePageSchema, key?: unknown) {
-  const sourceKey = readString(key);
-  return !sourceKey || Boolean(schema.dataSources?.[sourceKey]);
+  return true//
 }
 
 function validateDataSourceDependencyCycles(

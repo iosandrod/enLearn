@@ -96,7 +96,7 @@ async function selectOption(page: any, field: string, label: string) {
 }
 
 async function searchFormButton(page: any, label: string) {
-  const form = page.locator('#planning_console_filter').first();
+  const form = page.locator('#planning_console_result_filter').first();
   const formButton = form.getByRole('button', { name: label }).first();
   if (await formButton.count()) return formButton;
   return page.locator('.lowcode-runtime-page > .lc-runtime-block').first()
@@ -563,11 +563,18 @@ async function main() {
 
     await clickTab(page, '工艺路线');
     const flow = page.locator('.lc-planning-flow').first();
-    await flow.locator('.vue-flow__node').first().waitFor({ state: 'visible', timeout: 45_000 });
-    const flowNodes = await flow.locator('.vue-flow__node').count();
+    const laneNodes = flow.locator('.lc-planning-flow__lane-node');
+    await laneNodes.first().waitFor({ state: 'visible', timeout: 45_000 });
+    assert.ok(await flow.locator('.lc-planning-flow__lane').count() >= 4);
+    assert.ok(await laneNodes.count() >= 18);
+    await flow.getByRole('button', { name: '关系视图' }).click();
+    await flow.locator('.vue-flow__node-planning-operation').first()
+      .waitFor({ state: 'visible', timeout: 45_000 });
+    const flowNodes = await flow.locator('.vue-flow__node-planning-operation').count();
     const flowEdges = await flow.locator('.vue-flow__edge').count();
     assert.ok(flowNodes >= 18);
     assert.ok(flowEdges >= 14);
+    await flow.getByRole('button', { name: '路线视图' }).click();
     await page.screenshot({ path: resolve(artifacts, 'electronics-planning-routing.png'), fullPage: true });
 
     await clickTab(page, '工艺 BOM');

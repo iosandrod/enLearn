@@ -32,7 +32,9 @@ import {
 import { defer } from '../../utils/defer';
 import {
   formDesignerPageDataKey,
+  formDesignerModeKey,
   formDesignerTableFieldOptionsKey,
+  type FormDesignerMode,
 } from '../../form-designer-context';
 import {
   collectPageTableFieldOptions,
@@ -58,8 +60,6 @@ export type FormDesignerResult = {
   fields: FormDesignerField[];
   designerModel: VisualEditorModelValue;
 };
-
-type FormDesignerMode = 'search' | 'edit';
 
 interface FormDesignerServiceOption {
   title?: string;
@@ -635,7 +635,7 @@ function createFormModel(
   layout?: LowCodeFormLayoutNode[],
   columns?: number,
 ): VisualEditorModelValue {
-  const normalizedFields = fields.length ? fields : [createDefaultField()];
+  const normalizedFields = fields;
   const fieldBlocks = normalizedFields
     .map((field, index) => createFieldBlock(field, index))
     .filter(Boolean) as VisualEditorBlockData[];
@@ -671,12 +671,17 @@ function createFormModel(
 }
 
 function resolveInitialModel(option: FormDesignerServiceOption) {
-  if (isVisualEditorModel(option.designerModel)) {
+  const normalizedFields = normalizeFields(cloneDeep(option.fields));
+
+  if (
+    isVisualEditorModel(option.designerModel) &&
+    isDesignerModelCompatible(option.designerModel, normalizedFields)
+  ) {
     return cloneDeep(option.designerModel);
   }
 
   return createFormModel(
-    normalizeFields(cloneDeep(option.fields)),
+    normalizedFields,
     option.title || '表单设计',
     cloneDeep(option.layout),
     option.columns,
@@ -793,6 +798,24 @@ function extractFields(page: VisualEditorPage) {
     .filter(Boolean) as FormDesignerField[];
 }
 
+function isDesignerModelCompatible(
+  model: VisualEditorModelValue,
+  fields: FormDesignerField[],
+) {
+  const page = model.pages?.['/'];
+  if (!page) return false;
+
+  const modelFields = extractFields(page);
+  return (
+    modelFields.length === fields.length &&
+    fields.every(
+      (field, index) =>
+        modelFields[index]?.field === field.field &&
+        modelFields[index]?.component === field.component,
+    )
+  );
+}
+
 function validateFields(fields: FormDesignerField[]) {
   if (!fields.length) {
     ElMessage.error('请至少拖入一个表单项控件');
@@ -841,6 +864,10 @@ const ServiceComponent = defineComponent({
       })(),
     });
     provide(formDesignerPageDataKey, computed(() => state.option.pageData));
+    provide(
+      formDesignerModeKey,
+      computed<FormDesignerMode>(() => state.option.mode || 'edit'),
+    );
     provide(formDesignerTableFieldOptionsKey, tableFieldOptions);
 
     const loadTableFieldOptions = async () => {
@@ -954,6 +981,7 @@ const ServiceComponent = defineComponent({
                 showPageSetting={false}
                 workbenchMode="form"
                 persistToSession={false}
+                showGlobalDialogHost={false}
               />
             </div>
           ),

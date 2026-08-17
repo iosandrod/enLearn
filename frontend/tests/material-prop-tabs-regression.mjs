@@ -28,6 +28,9 @@ const migration = await source(
 const arrayTableMigration = await source(
   'supabase/migrations/20260809170000_material_property_array_table_tabs.sql',
 );
+const repairMigration = await source(
+  'supabase/migrations/20260817090000_repair_form_property_tabs.sql',
+);
 
 assert.match(database, /MATERIAL_PROP_FORM_CODE_PREFIX = 'material-prop\.'/);
 assert.match(database, /resource: 'lowcode_form_definitions'/);
@@ -85,5 +88,39 @@ assert.match(migration, /'fields', '\[\]'::jsonb/);
 assert.match(migration, /on conflict \(code\) do update set/);
 assert.match(arrayTableMigration, /where code like 'material-prop\.%'/);
 assert.match(arrayTableMigration, /\{separateArrayTableTabs\}/);
+
+const repairedTabLabels = {
+  'material-prop.form': {
+    basic: '基础',
+    data: '数据',
+    structure: '结构',
+    actions: '按钮',
+    behavior: '行为',
+  },
+  'material-prop.lowcode-edit-form': {
+    basic: '基础',
+    data: '数据',
+    structure: '字段',
+    actions: '按钮',
+  },
+  'material-prop.lowcode-search-form': {
+    basic: '基础',
+    data: '数据',
+    structure: '字段',
+  },
+};
+
+for (const [code, labels] of Object.entries(repairedTabLabels)) {
+  for (const [key, label] of Object.entries(labels)) {
+    assert.ok(
+      repairMigration.includes(`('${code}', '${key}', '${label}')`),
+      `missing repaired label ${code}.${key}`,
+    );
+  }
+}
+assert.match(repairMigration, /jsonb_set\(tab\.value, '\{label\}'/);
+assert.match(repairMigration, /order by tab\.ordinality/);
+assert.match(repairMigration, /else tab\.value/);
+assert.match(repairMigration, /definition\.schema is distinct from repaired\.schema/);
 
 console.log('material property tabs regression checks passed');

@@ -120,26 +120,40 @@ export function selectPlanningConsoleInnerTabs(schema: LowCodePageSchema): Plann
 function consoleFilterExpressions() {
   return {
     scenarioId: '{{ forms.planning_console_filter.scenarioId }}',
-    planVersionId: '{{ forms.planning_console_filter.planVersionId }}',
-    itemId: '{{ forms.planning_console_filter.itemId }}',
-    resourceId: '{{ forms.planning_console_filter.resourceId }}',
-    operationId: '{{ forms.planning_console_filter.operationId }}',
-    operationStatus: '{{ forms.planning_console_filter.operationStatus }}',
-    demandStatus: '{{ forms.planning_console_filter.demandStatus }}',
-    from: '{{ forms.planning_console_filter.from }}',
-    to: '{{ forms.planning_console_filter.to }}'
+    planVersionId: '{{ forms.planning_console_result_filter.planVersionId }}',
+    itemId: '{{ forms.planning_console_result_filter.itemId }}',
+    resourceId: '{{ forms.planning_console_result_filter.resourceId }}',
+    operationId: '{{ forms.planning_console_result_filter.operationId }}',
+    operationStatus: '{{ forms.planning_console_result_filter.operationStatus }}',
+    demandStatus: '{{ forms.planning_console_result_filter.demandStatus }}',
+    from: '{{ forms.planning_console_result_filter.from }}',
+    to: '{{ forms.planning_console_result_filter.to }}'
   };
 }
 
 const refreshSources = [...PLANNING_CONSOLE_SOURCE_KEYS, 'versionOptions'];
-const filteredSources = [...PLANNING_CONSOLE_SOURCE_KEYS, 'versionOptions'];
+const filteredSources = [...PLANNING_CONSOLE_SOURCE_KEYS];
 
 const preflightScript = `async function main() {
   const filter = this.forms.planning_console_filter || {};
+  const scenarioId = String(filter.scenarioId || "").trim();
+  if (!scenarioId) {
+    await this.$message.warning("请先选择排产场景。");
+    return false;
+  }
+  const overrides = {
+    currentdate: String(filter.currentDate || "now").trim() || "now",
+    "plan.solver": String(filter.solver || "heuristic").trim() || "heuristic",
+    constraints: Number(filter.constraints ?? 52),
+    "plan.iterationmax": Number(filter.iterationMax ?? 0),
+    "plan.resourceiterationmax": Number(filter.resourceIterationMax ?? 500),
+    "plan.rotateResources": filter.rotateResources !== false,
+    "plan.individualPoolResources": filter.individualPoolResources === true,
+  };
   const issues = await this.executeHttp({
     api: "planningPreflight",
     method: "POST",
-    body: { jobType: "supply_plan", scenarioId: filter.scenarioId || "" },
+    body: { jobType: "supply_plan", scenarioId, overrides },
   });
   await this.$source.set("preflightIssues", issues);
   const rows = Array.isArray(issues) ? issues : [];
@@ -160,6 +174,15 @@ const runScript = `async function main() {
     await this.$message.warning("请先选择排产场景。");
     return false;
   }
+  const overrides = {
+    currentdate: String(filter.currentDate || "now").trim() || "now",
+    "plan.solver": String(filter.solver || "heuristic").trim() || "heuristic",
+    constraints: Number(filter.constraints ?? 52),
+    "plan.iterationmax": Number(filter.iterationMax ?? 0),
+    "plan.resourceiterationmax": Number(filter.resourceIterationMax ?? 500),
+    "plan.rotateResources": filter.rotateResources !== false,
+    "plan.individualPoolResources": filter.individualPoolResources === true,
+  };
 
   const capabilities = this.data.runtimeCapabilities || {};
   const engine = capabilities.engine || {};
@@ -190,7 +213,8 @@ const runScript = `async function main() {
     body: {
       jobType: "supply_plan",
       scenarioId,
-      name: "控制台排产运行",
+      name: String(filter.runName || "").trim() || "控制台排产运行",
+      overrides,
     },
   });
   await this.$source.set("planningRunStarted", result);
@@ -227,7 +251,7 @@ const cancelScript = `async function main() {
 }`;
 
 const publishScript = `async function main() {
-  const filter = this.forms.planning_console_filter || {};
+  const filter = this.forms.planning_console_result_filter || {};
   const summary = this.data.summary || {};
   const versionId = String(filter.planVersionId || summary.versionId || "").trim();
   if (!versionId) {
@@ -293,7 +317,7 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
     scriptPolicy: {
       context: {
         dataSourceKeys: ['runtimeCapabilities', 'summary', 'versionOptions'],
-        formBlockIds: ['planning_console_filter'],
+        formBlockIds: ['planning_console_filter', 'planning_console_result_filter'],
         searchSourceKeys: [],
         gridBlockIds: ['planning_console_runs_grid']
       },
@@ -402,25 +426,57 @@ export function buildPlanningConsolePageSchema(): LowCodePageSchema {
     blocks: [
       {
         id: 'planning_console_filter',
+        kind: 'form',
+        formType: 'default',
+        title: '排程参数设置',
+        initialValues: {
+          scenarioId: '', runName: '控制台排产运行', currentDate: 'now', solver: 'heuristic',
+          constraints: 52, iterationMax: 0, resourceIterationMax: 500,
+          rotateResources: true, individualPoolResources: false
+        },
+        schema: {
+          columns: 4,
+          fields: [
+            {
+              field: 'scenarioId', label: '排产场景', component: 'vxe-select', required: true,
+              optionsSourceKey: 'scenarioOptions', optionProps: { label: 'label', value: 'id' },
+              props: { clearable: true, filterable: true, placeholder: '选择排产场景' },
+              events: { change: [
+                { type: 'setFormField', blockId: 'planning_console_result_filter', field: 'planVersionId', value: '' },
+                { type: 'refreshDataSources', sourceKeys: refreshSources }
+              ] }
+            },
+            { field: 'runName', label: '运行名称', component: 'vxe-input', props: { clearable: true, placeholder: '控制台排产运行' } },
+            { field: 'currentDate', label: '计划当前时间', component: 'vxe-input', props: { clearable: true, placeholder: 'now 或 ISO 时间' } },
+            {
+              field: 'solver', label: '求解器', component: 'vxe-select', props: { clearable: false },
+              options: [
+                { label: '启发式（标准）', value: 'heuristic' },
+                { label: '启发式（备选）', value: 'heuristic_2' }
+              ]
+            },
+            { field: 'constraints', label: '约束级别', component: 'lc-number-input', props: { min: 0, step: 1 } },
+            { field: 'iterationMax', label: '计划迭代上限', component: 'lc-number-input', props: { min: 0, step: 1 } },
+            { field: 'resourceIterationMax', label: '资源迭代上限', component: 'lc-number-input', props: { min: 0, step: 1 } },
+            { field: 'rotateResources', label: '轮换资源', component: 'vxe-switch' },
+            { field: 'individualPoolResources', label: '资源池独立排产', component: 'vxe-switch' }
+          ],
+          actions: []
+        }
+      },
+      {
+        id: 'planning_console_result_filter',
         kind: 'searchForm',
-        title: '排产范围',
+        title: '结果筛选',
         targetSourceKey: 'summary',
         targetSourceKeys: filteredSources,
         initialValues: {
-          scenarioId: '', planVersionId: '', itemId: '', resourceId: '', operationId: '',
+          planVersionId: '', itemId: '', resourceId: '', operationId: '',
           operationStatus: '', demandStatus: '', from: '', to: ''
         },
         schema: {
-          columns: 5,
+          columns: 4,
           fields: [
-            {
-              field: 'scenarioId', label: '场景', component: 'vxe-select', optionsSourceKey: 'scenarioOptions',
-              optionProps: { label: 'label', value: 'id' }, props: { clearable: true, filterable: true, placeholder: '全部场景' },
-              events: { change: [
-                { type: 'setFormField', blockId: 'planning_console_filter', field: 'planVersionId', value: '' },
-                { type: 'refreshDataSources', sourceKeys: ['versionOptions'] }
-              ] }
-            },
             {
               field: 'planVersionId', label: '计划版本', component: 'vxe-select', optionsSourceKey: 'versionOptions',
               optionProps: { label: 'label', value: 'id' }, props: { clearable: true, filterable: true, placeholder: '自动选择当前版本' }

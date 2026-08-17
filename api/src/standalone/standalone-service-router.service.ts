@@ -20,9 +20,15 @@ export class StandaloneServiceRouter {
     context: ServiceContext
   ) {
     if (serviceName === 'workflow') {
-      return this.workflowService.execute(serviceMethod, postData, context);
+      return this.workflowService.execute(serviceMethod, postData, {
+        ...context,
+        serviceName
+      });
     }
 
-    return this.domainRouter.invoke(serviceName, serviceMethod, postData, context);
+    return this.domainRouter.invoke(serviceName, serviceMethod, postData, {
+      ...context,
+      serviceName
+    });
   }
 }

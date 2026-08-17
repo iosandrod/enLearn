@@ -9,6 +9,7 @@ export type PageInfoDesignForm = {
   code: string;
   route: string;
   title: string;
+  tableName: string;
   pageType: LowCodePageRecord['page_type'];
   layout: LowCodePageRecord['layout'];
   status: LowCodePageRecord['status'];
@@ -23,6 +24,7 @@ export function createPageInfoDesignForm(page: LowCodePageRecord): PageInfoDesig
     code: page.code,
     route: page.route,
     title: page.title,
+    tableName: normalizePageTableName(page.table_name),
     pageType: page.page_type,
     layout: page.layout,
     status: page.status,
@@ -39,6 +41,12 @@ export function createPageInfoDesignForm(page: LowCodePageRecord): PageInfoDesig
       postData: { ...(api.postData ?? {}) },
     })),
   };
+}
+
+function normalizePageTableName(value: unknown) {
+  return typeof value === 'string'
+    ? value.trim().replace(/^public\./i, '')
+    : '';
 }
 
 function normalizePageFunctions(value: unknown): LowCodePageFunction[] {
@@ -93,6 +101,7 @@ export function normalizePageInfoDesignForm(
     code: page.code,
     route: page.route,
     title: String(value.title ?? '').trim(),
+    tableName: normalizePageTableName(value.tableName),
     pageType: pageTypes.includes(value.pageType) ? value.pageType : page.page_type,
     layout: layouts.includes(value.layout) ? value.layout : page.layout,
     status: statuses.includes(value.status) ? value.status : page.status,
@@ -137,6 +146,7 @@ export function buildPageInfoSaveData(page: LowCodePageRecord, value: PageInfoDe
     status: value.status,
     keep_alive: value.keepAlive,
     page_type: value.pageType,
+    table_name: value.tableName || null,
     edit_page_id: page.edit_page_id,
     schema,
     version: page.version + 1,

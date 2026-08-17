@@ -7,25 +7,107 @@
       </div>
       <div class="lc-planning-visual__actions">
         <span>
-          {{ nodes.length }} 道工序 · {{ edges.length }} 条连线
+          {{ flowLanes.length }} 条路线 · {{ operationCount }} 道工序
           <template v-if="rawEdges.length !== edges.length">（{{ rawEdges.length }} 条关系）</template>
         </span>
-        <button type="button" title="适应视图" aria-label="适应视图" @click="fitCanvas">
+        <div class="lc-planning-flow__view-switch" role="group" aria-label="工艺路线视图">
+          <button
+            type="button"
+            :class="{ 'is-active': viewMode === 'lanes' }"
+            title="路线视图"
+            aria-label="路线视图"
+            @click="viewMode = 'lanes'"
+          >
+            <i class="ri-layout-row-line" aria-hidden="true" />
+            <span>路线</span>
+          </button>
+          <button
+            type="button"
+            :class="{ 'is-active': viewMode === 'graph' }"
+            title="关系视图"
+            aria-label="关系视图"
+            @click="showGraph"
+          >
+            <i class="ri-node-tree" aria-hidden="true" />
+            <span>关系</span>
+          </button>
+        </div>
+        <button v-if="viewMode === 'graph'" type="button" title="适应视图" aria-label="适应视图" @click="fitCanvas">
           <i class="ri-focus-3-line" aria-hidden="true" />
         </button>
-        <button type="button" title="放大" aria-label="放大" @click="zoomIn()">
+        <button v-if="viewMode === 'graph'" type="button" title="放大" aria-label="放大" @click="zoomIn()">
           <i class="ri-zoom-in-line" aria-hidden="true" />
         </button>
-        <button type="button" title="缩小" aria-label="缩小" @click="zoomOut()">
+        <button v-if="viewMode === 'graph'" type="button" title="缩小" aria-label="缩小" @click="zoomOut()">
           <i class="ri-zoom-out-line" aria-hidden="true" />
         </button>
       </div>
     </header>
 
-    <div v-if="nodes.length" ref="canvasElement" class="lc-planning-flow__canvas">
+    <div v-if="nodes.length && viewMode === 'lanes'" class="lc-planning-flow__lanes">
+      <section v-for="lane in laneRows" :key="lane.id" class="lc-planning-flow__lane">
+        <header class="lc-planning-flow__lane-header">
+          <div class="lc-planning-flow__lane-icon">
+            <i class="ri-route-line" aria-hidden="true" />
+          </div>
+          <div>
+            <strong :title="lane.label">{{ lane.label }}</strong>
+            <small v-if="lane.itemName" :title="lane.itemName">{{ lane.itemName }}</small>
+            <small v-else>{{ lane.operationCount }} 道工序</small>
+          </div>
+        </header>
+        <div class="lc-planning-flow__lane-scroll">
+          <div class="lc-planning-flow__lane-track">
+            <template v-for="(node, index) in lane.nodes" :key="node.id">
+              <i
+                v-if="index"
+                class="ri-arrow-right-line lc-planning-flow__lane-arrow"
+                aria-hidden="true"
+              />
+              <article
+                class="lc-planning-flow__lane-node"
+                :class="`is-${operationTone(node.data.type)}`"
+              >
+                <div class="lc-planning-flow__lane-node-title">
+                  <span>{{ node.data.sequence }}</span>
+                  <div>
+                    <strong :title="readString(node.data.label)">{{ node.data.label }}</strong>
+                    <small :title="operationMetaTitle(node.data)">
+                      {{ operationTypeLabel(node.data.type) }}<template v-if="node.data.locationName"> · {{ node.data.locationName }}</template>
+                    </small>
+                  </div>
+                </div>
+                <dl>
+                  <template v-if="node.data.resourceSummary">
+                    <dt>资源</dt>
+                    <dd :title="readString(node.data.resourceSummary)">{{ node.data.resourceSummary }}</dd>
+                  </template>
+                  <template v-if="node.data.materialSummary">
+                    <dt>物料</dt>
+                    <dd :title="readString(node.data.materialSummary)">{{ node.data.materialSummary }}</dd>
+                  </template>
+                  <template v-if="externalDependencyCount(node.id)">
+                    <dt>前置</dt>
+                    <dd :title="externalDependencyTitle(node.id)">{{ externalDependencyCount(node.id) }} 个跨路线工序</dd>
+                  </template>
+                </dl>
+                <button
+                  class="lc-planning-flow__node-hit"
+                  type="button"
+                  :aria-label="`选择工序 ${node.data.label}`"
+                  @click="selectNode(node.id, node.data)"
+                />
+              </article>
+            </template>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div v-else-if="nodes.length" ref="canvasElement" class="lc-planning-flow__canvas">
       <VueFlow
         :id="flowId"
-        :nodes="nodes"
+        :nodes="graphNodes"
         :edges="edges"
         :fit-view-on-init="block.fitViewOnInit !== false"
         :nodes-draggable="false"
@@ -36,6 +118,15 @@
         :max-zoom="2"
         @node-click="handleNodeClick"
       >
+        <template #node-planning-lane="{ data }">
+          <section
+            class="lc-planning-flow__graph-lane"
+            :style="{ width: `${data.width}px`, height: `${data.height}px` }"
+          >
+            <strong>{{ data.label }}</strong>
+            <span v-if="data.itemName">{{ data.itemName }}</span>
+          </section>
+        </template>
         <template #node-planning-operation="{ id, data, selected }">
           <article
             class="lc-planning-flow__node"
@@ -100,6 +191,19 @@ import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../ty
 type PlanningFlowPayload = {
   nodes?: Record<string, unknown>[];
   edges?: Record<string, unknown>[];
+  lanes?: Record<string, unknown>[];
+};
+
+type FlowLane = {
+  id: string;
+  label: string;
+  itemName: string;
+  operationCount: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  nodeIds: string[];
 };
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePagePlanningFlowBlock>>();
@@ -108,6 +212,7 @@ const runtime = useLowCodePageRuntime(false);
 const flowId = `planning-flow-${Math.random().toString(36).slice(2)}`;
 const { fitView, setCenter, zoomIn, zoomOut } = useVueFlow(flowId);
 const canvasElement = ref<HTMLDivElement>();
+const viewMode = ref<'lanes' | 'graph'>('lanes');
 let resizeObserver: ResizeObserver | null = null;
 let observedCanvasElement: HTMLDivElement | undefined;
 let fitTimer: number | undefined;
@@ -116,6 +221,38 @@ let lastCanvasSize = '';
 const source = computed<PlanningFlowPayload>(() => {
   const value = (runtime?.state.sources ?? props.resolvedData)[props.block.sourceKey ?? ''];
   return isRecord(value) ? value : {};
+});
+
+const flowLanes = computed<FlowLane[]>(() => {
+  const rows = (Array.isArray(source.value.lanes) ? source.value.lanes : []).filter(isRecord);
+  if (rows.length) {
+    return rows.map((row, index) => ({
+      id: readString(row.id, `lane-${index + 1}`),
+      label: readString(row.label, `路线 ${index + 1}`),
+      itemName: readString(row.itemName),
+      operationCount: readNumber(row.operationCount),
+      x: readNumber(row.x, 16),
+      y: readNumber(row.y, 16 + index * 196),
+      width: readNumber(row.width, 316),
+      height: readNumber(row.height, 184),
+      nodeIds: Array.isArray(row.nodeIds) ? row.nodeIds.map((id) => readString(id)).filter(Boolean) : [],
+    }));
+  }
+  const nodeIds = (Array.isArray(source.value.nodes) ? source.value.nodes : [])
+    .filter(isRecord)
+    .map((row) => readString(row.id))
+    .filter(Boolean);
+  return nodeIds.length ? [{
+    id: 'lane-all',
+    label: '工艺路线',
+    itemName: '',
+    operationCount: nodeIds.length,
+    x: 16,
+    y: 16,
+    width: 316 + Math.max(0, nodeIds.length - 1) * 360,
+    height: 184,
+    nodeIds,
+  }] : [];
 });
 
 const nodes = computed<Node[]>(() => (Array.isArray(source.value.nodes) ? source.value.nodes : [])
@@ -129,11 +266,35 @@ const nodes = computed<Node[]>(() => (Array.isArray(source.value.nodes) ? source
     data: {
       ...row,
       label: readString(row.label, readString(row.name, `工序 ${index + 1}`)),
-      sequence: index + 1,
+      sequence: readSequence(row.sequence, index + 1),
     },
     draggable: false,
     connectable: false,
   })));
+
+const graphNodes = computed<Node[]>(() => [
+  ...flowLanes.value.map((lane) => ({
+    id: lane.id,
+    type: 'planning-lane',
+    position: { x: lane.x, y: lane.y },
+    data: lane,
+    draggable: false,
+    connectable: false,
+    selectable: false,
+    focusable: false,
+    zIndex: -1,
+  })),
+  ...nodes.value,
+]);
+
+const nodeById = computed(() => new Map(nodes.value.map((node) => [node.id, node])));
+
+const laneRows = computed(() => flowLanes.value.map((lane) => ({
+  ...lane,
+  nodes: lane.nodeIds.map((id) => nodeById.value.get(id)).filter((node): node is Node => Boolean(node)),
+})).filter((lane) => lane.nodes.length));
+
+const operationCount = computed(() => nodes.value.filter((node) => operationTone(node.data.type) !== 'routing').length);
 
 const rawEdges = computed<Record<string, unknown>[]>(() =>
   (Array.isArray(source.value.edges) ? source.value.edges : []).filter(isRecord)
@@ -195,10 +356,13 @@ const edges = computed<Edge[]>(() => {
       const color = edgeColor(tone);
       const labels = [...new Set(rows.map(edgeDisplayLabel).filter(Boolean))];
       const label = labels.join(' · ');
-      const sourcePosition = flowNodePosition(sourceId);
-      const targetPosition = flowNodePosition(targetId);
-      const verticalDirection = Math.sign(targetPosition.y - sourcePosition.y);
-      const labelOffset = verticalDirection === 0 ? 0 : verticalDirection * 28;
+      const sameLane = readString(nodeById.value.get(sourceId)?.data.laneId) ===
+        readString(nodeById.value.get(targetId)?.data.laneId);
+      const presentation = flowEdgePresentation(
+        flowNodePosition(sourceId),
+        flowNodePosition(targetId),
+        sameLane
+      );
       return {
         id: rows.length === 1
           ? readString(first.id, `edge-${index + 1}`)
@@ -206,18 +370,18 @@ const edges = computed<Edge[]>(() => {
         source: sourceId,
         target: targetId,
         label,
-        type: 'smoothstep',
+        type: presentation.type,
         class: [`is-${tone}`, { 'is-combined': rows.length > 1 }],
-        animated: tone === 'dependency',
+        animated: tone === 'dependency' && !sameLane,
         interactionWidth: 18,
-        pathOptions: { offset: 30, borderRadius: 8 },
+        pathOptions: presentation.pathOptions,
         style: { stroke: color, strokeWidth: 2.8 },
         labelStyle: {
           fill: '#172033',
-          fontSize: 15,
+          fontSize: 12,
           fontWeight: 800,
           letterSpacing: 0,
-          transform: labelOffset ? `translateY(${labelOffset}px)` : undefined,
+          transform: presentation.labelOffset ? `translateY(${presentation.labelOffset}px)` : undefined,
         },
         labelShowBg: true,
         labelBgStyle: {
@@ -226,9 +390,9 @@ const edges = computed<Edge[]>(() => {
           stroke: color,
           strokeOpacity: 0.5,
           strokeWidth: 1,
-          transform: labelOffset ? `translateY(${labelOffset}px)` : undefined,
+          transform: presentation.labelOffset ? `translateY(${presentation.labelOffset}px)` : undefined,
         },
-        labelBgPadding: [8, 5] as [number, number],
+        labelBgPadding: [6, 3] as [number, number],
         labelBgBorderRadius: 6,
         markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 },
         ariaLabel: label,
@@ -260,6 +424,7 @@ function observeCanvasElement(element: HTMLDivElement | undefined) {
 }
 
 watch([nodes, edges], async () => {
+  if (viewMode.value !== 'graph') return;
   await nextTick();
   observeCanvasElement(canvasElement.value);
   if (!nodes.value.length) return;
@@ -290,7 +455,7 @@ onBeforeUnmount(() => {
 });
 
 function handleTabActivated() {
-  void nextTick(() => scheduleFit());
+  if (viewMode.value === 'graph') void nextTick(() => scheduleFit());
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -306,8 +471,44 @@ function readNumber(value: unknown, fallback = 0) {
   return Number.isFinite(result) ? result : fallback;
 }
 
+function readSequence(value: unknown, fallback: number) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  return readString(value, String(fallback));
+}
+
 function flowNodePosition(id: string) {
   return nodes.value.find((node) => node.id === id)?.position ?? { x: 0, y: 0 };
+}
+
+function flowEdgePresentation(
+  source: { x: number; y: number },
+  target: { x: number; y: number },
+  sameLane = false
+) {
+  const horizontalDistance = target.x - source.x;
+  const verticalDistance = target.y - source.y;
+  const isAlignedNeighbor = sameLane && horizontalDistance > 0 &&
+    horizontalDistance <= 420 &&
+    Math.abs(verticalDistance) <= 20;
+
+  if (isAlignedNeighbor) {
+    return {
+      type: 'straight',
+      pathOptions: undefined,
+      labelOffset: 0,
+    } as const;
+  }
+
+  const verticalDirection = Math.sign(verticalDistance);
+  const curvature = Math.min(
+    0.58,
+    Math.max(0.32, 0.36 + Math.abs(verticalDistance) / Math.max(Math.abs(horizontalDistance), 240) * 0.12)
+  );
+  return {
+    type: 'bezier',
+    pathOptions: { curvature },
+    labelOffset: verticalDirection * 18,
+  } as const;
 }
 
 function toCssSize(value: unknown, fallback: string) {
@@ -357,7 +558,7 @@ function edgeColor(tone: string) {
 }
 
 function currentFitViewOptions() {
-  const focusedRoute = nodes.value.length <= 6;
+  const focusedRoute = flowLanes.value.length === 1 && nodes.value.length <= 6;
   return {
     padding: focusedRoute ? 0.02 : 0.1,
     minZoom: focusedRoute ? 0.8 : 0.35,
@@ -379,6 +580,31 @@ function fitCanvasToLayout(duration = 180) {
 
 function fitCanvas() {
   void fitCanvasToLayout();
+}
+
+async function showGraph() {
+  viewMode.value = 'graph';
+  await nextTick();
+  scheduleFit(180);
+}
+
+function externalDependencies(nodeId: string) {
+  const laneId = readString(nodeById.value.get(nodeId)?.data.laneId);
+  return rawEdges.value.filter((edge) => {
+    if (readString(edge.relation) !== 'dependency' || readString(edge.target) !== nodeId) return false;
+    const sourceLaneId = readString(nodeById.value.get(readString(edge.source))?.data.laneId);
+    return sourceLaneId && sourceLaneId !== laneId;
+  });
+}
+
+function externalDependencyCount(nodeId: string) {
+  return externalDependencies(nodeId).length;
+}
+
+function externalDependencyTitle(nodeId: string) {
+  return externalDependencies(nodeId)
+    .map((edge) => readString(nodeById.value.get(readString(edge.source))?.data.label, readString(edge.source)))
+    .join('、');
 }
 
 function selectNode(id: string, data: Record<string, unknown>) {
@@ -445,6 +671,136 @@ function handleNodeClick(event: { node?: Node }) {
 }
 .lc-planning-visual__actions button:hover { background: #f5f7fa; color: #0f766e; }
 
+.lc-planning-flow__view-switch {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid #d7dee8;
+  border-radius: 5px;
+  background: #f5f7fa;
+}
+.lc-planning-visual__actions .lc-planning-flow__view-switch button {
+  display: flex;
+  width: auto;
+  min-width: 62px;
+  gap: 5px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0 8px;
+}
+.lc-planning-flow__view-switch button + button { border-left: 1px solid #d7dee8; }
+.lc-planning-flow__view-switch button.is-active {
+  background: #ffffff;
+  color: #0f766e;
+  box-shadow: inset 0 -2px #0f766e;
+}
+.lc-planning-flow__view-switch button span { color: inherit; font-size: 12px; font-weight: 700; }
+
+.lc-planning-flow__lanes {
+  height: var(--lc-planning-visual-height);
+  min-height: 340px;
+  overflow: auto !important;
+  background: #f8fafc;
+  padding: 8px 10px 12px;
+}
+.lc-planning-flow__lane {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 176px minmax(0, 1fr);
+  border-bottom: 1px solid #dfe5ec;
+  background: #ffffff;
+}
+.lc-planning-flow__lane:first-child { border-top: 1px solid #dfe5ec; }
+.lc-planning-flow__lane-header {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 9px;
+  border-right: 1px solid #dfe5ec;
+  background: #f3f7f7;
+  padding: 14px 11px;
+}
+.lc-planning-flow__lane-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 5px;
+  background: #dceeea;
+  color: #0f766e;
+}
+.lc-planning-flow__lane-header > div:last-child { min-width: 0; }
+.lc-planning-flow__lane-header strong,
+.lc-planning-flow__lane-header small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lc-planning-flow__lane-header strong { color: #172033; font-size: 13px; line-height: 18px; }
+.lc-planning-flow__lane-header small { margin-top: 3px; color: #64748b; font-size: 11px; line-height: 16px; }
+.lc-planning-flow__lane-scroll { min-width: 0; overflow-x: auto; }
+.lc-planning-flow__lane-track {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
+  min-height: 154px;
+  align-items: center;
+  padding: 12px 14px;
+}
+.lc-planning-flow__lane-arrow {
+  width: 34px;
+  flex: 0 0 34px;
+  color: #0f766e;
+  font-size: 18px;
+  text-align: center;
+}
+.lc-planning-flow__lane-node {
+  position: relative;
+  display: grid;
+  width: 220px;
+  min-height: 122px;
+  flex: 0 0 220px;
+  align-content: start;
+  gap: 9px;
+  border: 1px solid #b8d5cf;
+  border-left: 4px solid #0f766e;
+  border-radius: 6px;
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgb(15 23 42 / 7%);
+  padding: 10px;
+}
+.lc-planning-flow__lane-node.is-routing { border-color: #b8cdf1; border-left-color: #2563eb; background: #f8fbff; }
+.lc-planning-flow__lane-node.is-alternate { border-color: #e4c97e; border-left-color: #b7791f; }
+.lc-planning-flow__lane-node.is-split { border-color: #d2c4e9; border-left-color: #7655a8; }
+.lc-planning-flow__lane-node-title { display: grid; min-width: 0; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; }
+.lc-planning-flow__lane-node-title > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 5px;
+  background: #e8f5f1;
+  color: #0f766e;
+  font-size: 11px;
+  font-weight: 800;
+}
+.lc-planning-flow__lane-node.is-routing .lc-planning-flow__lane-node-title > span { background: #e7effd; color: #2563eb; }
+.lc-planning-flow__lane-node-title > div { min-width: 0; }
+.lc-planning-flow__lane-node-title strong,
+.lc-planning-flow__lane-node-title small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lc-planning-flow__lane-node-title strong { color: #172033; font-size: 14px; line-height: 18px; }
+.lc-planning-flow__lane-node-title small { margin-top: 2px; color: #64748b; font-size: 11px; line-height: 15px; }
+.lc-planning-flow__lane-node dl { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 3px 6px; margin: 0; font-size: 11px; line-height: 16px; }
+.lc-planning-flow__lane-node dt { color: #7a8797; font-weight: 600; }
+.lc-planning-flow__lane-node dd { overflow: hidden; margin: 0; color: #3d4a5c; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+
 .lc-planning-flow__canvas {
   min-height: 340px;
   flex:1;
@@ -454,6 +810,18 @@ function handleNodeClick(event: { node?: Node }) {
   background-size: 20px 20px;
 }
 .lc-planning-flow__canvas :deep(.vue-flow) { width: 100%; height: 100%; }
+.lc-planning-flow__graph-lane {
+  overflow: hidden;
+  border: 1px solid #d8e2e7;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 70%);
+  color: #526274;
+  padding: 9px 12px;
+  pointer-events: none;
+}
+.lc-planning-flow__graph-lane strong { display: block; font-size: 12px; line-height: 16px; }
+.lc-planning-flow__graph-lane span { display: block; margin-top: 1px; font-size: 10px; line-height: 14px; }
+.lc-planning-flow__canvas :deep(.vue-flow__node-planning-lane) { z-index: -1 !important; }
 
 .lc-planning-flow__node {
   position: relative;
@@ -524,6 +892,11 @@ function handleNodeClick(event: { node?: Node }) {
 @media (max-width: 720px) {
   .lc-planning-visual__header { align-items: flex-start; }
   .lc-planning-visual__actions > span { display: none; }
+  .lc-planning-flow__view-switch button span { display: none; }
+  .lc-planning-visual__actions .lc-planning-flow__view-switch button { min-width: 34px; padding: 0; }
+  .lc-planning-flow__lane { grid-template-columns: 126px minmax(0, 1fr); }
+  .lc-planning-flow__lane-header { padding: 12px 8px; }
   .lc-planning-flow__canvas { height: min(64vh, var(--lc-planning-visual-height)); }
+  .lc-planning-flow__lanes { height: min(64vh, var(--lc-planning-visual-height)); }
 }
 </style>

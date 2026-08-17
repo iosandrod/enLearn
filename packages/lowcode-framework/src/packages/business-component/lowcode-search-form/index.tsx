@@ -111,7 +111,9 @@ export default {
       <div style={{ ...styles, width: '100%', minWidth: 0 }}>
         <LowCodeForm
           ref={(element) => registerRef(element, block._vid)}
-          {...createDesignFormProps(props)}
+          modelValue={{}}
+          // {...createDesignFormProps(props)}
+          schema={props.schema as LowCodeFormSchema}//
           {...{
             'onUpdate:modelValue': (value: Record<string, unknown>) => {
               props.modelValue = value;
@@ -123,8 +125,7 @@ export default {
   },
   showStyleConfig: true,
   events: [
-    { label: '查询提交', value: 'submit' },
-    { label: '模型值变化', value: 'update:model-value' },
+   
   ],
   props: {
     blockId: createEditorInputProp({

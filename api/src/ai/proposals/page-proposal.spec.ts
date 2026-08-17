@@ -96,6 +96,159 @@ assert.equal(
   'the sales-order edit button candidate must pass deterministic validation'
 );
 
+const salesOrderAiSchema = {
+  ...base,
+  code: 'sales-orders',
+  route: '/dashboard/sales/orders',
+  title: '销售订单',
+  dataSources: {
+    salesOrders: { key: 'salesOrders', tableName: 'sales_orders' },
+    salesOrderLines: { key: 'salesOrderLines', tableName: 'sales_order_lines' }
+  },
+  blocks: [
+    {
+      id: 'sales-order-actions',
+      kind: 'buttonGroup',
+      actions: [{
+        code: 'refresh',
+        label: '刷新',
+        directives: [{ type: 'refreshDataSource', sourceKeys: ['salesOrders'] }]
+      }]
+    },
+    {
+      id: 'sales-order-grid',
+      kind: 'grid',
+      sourceKey: 'salesOrders',
+      schema: {
+        grid: {
+          columns: [
+            { field: 'doc_no', title: '订单号', minWidth: 160 },
+            { field: 'customer_code', title: '客户编码', minWidth: 140 }
+          ]
+        }
+      }
+    },
+    {
+      id: 'sales-order-lines-tabs',
+      kind: 'tabs',
+      tabs: [{
+        key: 'lines',
+        label: '订单明细',
+        blocks: [{
+          id: 'sales-order-lines-grid',
+          kind: 'grid',
+          sourceKey: 'salesOrderLines',
+          schema: {
+            grid: {
+              columns: [
+                { field: 'item_code', title: '物料编码', minWidth: 140 },
+                { field: 'item_spec', title: '规格', minWidth: 140 },
+                { field: 'uom_name', title: '单位', width: 82 },
+                { field: 'remark', title: '备注', minWidth: 180 }
+              ]
+            }
+          }
+        }]
+      }]
+    }
+  ]
+};
+const salesOrderAiOperations = validator.parseOperations([
+  {
+    type: 'updateGridColumn',
+    blockId: 'sales-order-grid',
+    field: 'customer_code',
+    changes: { title: '客户编号', width: 160 }
+  },
+  {
+    type: 'upsertGridColumn',
+    blockId: 'sales-order-lines-grid',
+    column: { field: 'remark', title: '备注' },
+    afterField: 'item_spec'
+  },
+  {
+    type: 'upsertPageFunction',
+    name: 'refreshOrderData',
+    label: '刷新订单数据',
+    description: '刷新销售订单列表数据。',
+    builtinFunction: 'refresh'
+  },
+  {
+    type: 'bindButtonToPageFunction',
+    blockId: 'sales-order-actions',
+    actionCode: 'refresh',
+    functionName: 'refreshOrderData'
+  }
+]);
+const salesOrderAiCandidate = pageProposalInternals.applyOperations(
+  salesOrderAiSchema,
+  salesOrderAiOperations
+);
+const salesOrderAiMainGrid = (salesOrderAiCandidate.blocks as Array<Record<string, any>>)[1];
+const salesOrderAiCustomerCode = salesOrderAiMainGrid.schema.grid.columns.find(
+  (column: Record<string, unknown>) => column.field === 'customer_code'
+);
+assert.deepEqual(
+  salesOrderAiCustomerCode,
+  { field: 'customer_code', title: '客户编号', width: 160 },
+  'AI must rename and resize only the target grid column'
+);
+const salesOrderAiTabs = (salesOrderAiCandidate.blocks as Array<Record<string, any>>)[2];
+const salesOrderAiLineColumns = salesOrderAiTabs.tabs[0].blocks[0].schema.grid.columns;
+assert.deepEqual(
+  salesOrderAiLineColumns.map((column: Record<string, unknown>) => column.field),
+  ['item_code', 'item_spec', 'remark', 'uom_name'],
+  'AI must move the existing remark field immediately after item_spec without duplication'
+);
+const salesOrderAiFunctions = salesOrderAiCandidate.functions as Array<Record<string, unknown>>;
+const refreshOrderData = salesOrderAiFunctions.find((pageFunction) => pageFunction.name === 'refreshOrderData');
+assert.match(
+  String(refreshOrderData?.script),
+  /name: "refresh"/,
+  'AI-created page function must use the approved refresh capability'
+);
+const salesOrderAiRefreshAction = (salesOrderAiCandidate.blocks as Array<Record<string, any>>)[0].actions[0];
+assert.match(
+  String(salesOrderAiRefreshAction.script),
+  /name: "refreshOrderData"/,
+  'refresh button must invoke the page function'
+);
+assert.equal(
+  'directives' in salesOrderAiRefreshAction,
+  false,
+  'legacy refresh directives must be removed so the action does not refresh twice'
+);
+assert.equal(
+  validator.validate(
+    salesOrderAiCandidate,
+    salesOrderAiOperations.length,
+    [],
+    salesOrderAiSchema
+  ).issues.some((issue) => issue.level === 'error'),
+  false,
+  'the sales-order AI candidate must pass deterministic validation'
+);
+assert.deepEqual(
+  pageProposalInternals.applyOperations(salesOrderAiCandidate, salesOrderAiOperations),
+  salesOrderAiCandidate,
+  'reapplying the sales-order request must not duplicate the remark field or refresh binding'
+);
+assert.equal(
+  pageProposalInternals.buildDiff(salesOrderAiOperations).some(
+    (item) => item.label === '按钮绑定：refresh -> refreshOrderData'
+  ),
+  true,
+  'the proposed button binding must be visible in the review diff'
+);
+assert.throws(
+  () => validator.parseOperations([{
+    type: 'upsertGridColumn',
+    blockId: 'sales-order-grid',
+    column: { field: 'remark', title: '备注', slots: {} }
+  }]),
+  /unsupported fields/
+);
+
 const validResult = validator.validate(synced, 1, []);
 assert.equal(validResult.issues.some((issue) => issue.level === 'error'), false);
 

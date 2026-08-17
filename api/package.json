@@ -65,6 +65,7 @@
     "db:apply-dynamic-crud-rpc": "tsx scripts/apply-dynamic-crud-rpc.ts",
     "db:apply-test-access-rpc": "tsx scripts/apply-test-access-rpc.ts",
     "workflow:db:apply-rpcs": "tsx scripts/apply-workflow-rpcs.ts",
+    "workflow:db:apply-webhook-lookup": "tsx scripts/apply-workflow-webhook-job-lookup-rpc.ts",
     "db:apply-system-settings": "tsx scripts/apply-system-settings-page.ts",
     "db:apply-system-option-source-edit-page": "tsx scripts/apply-system-option-source-edit-page.ts",
     "db:apply-dynamic-grid-association-options": "tsx scripts/apply-dynamic-grid-association-options.ts",

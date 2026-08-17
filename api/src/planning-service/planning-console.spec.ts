@@ -70,6 +70,43 @@ assert.equal(
   360
 );
 assert.equal(flow.nodes.find((node) => node.id === 'assemble')?.resourceSummary, '装配线');
+assert.equal(flow.lanes.length, 1);
+assert.deepEqual(flow.lanes[0].nodeIds, ['cut', 'assemble', 'inspect']);
+assert.deepEqual(
+  flow.nodes.map((node) => node.sequence),
+  [1, 2, 3]
+);
+
+const routeLaneFlow = buildPlanningFlowData(
+  [
+    { id: 'route-a', name: '产品 A 路线', category: '成品路线', type: 'routing', item_name: '产品 A', priority: 10 },
+    { id: 'route-a-20', name: '装配', type: 'time_per', owner_id: 'route-a', priority: 20 },
+    { id: 'route-a-10', name: '备料', type: 'time_per', owner_id: 'route-a', priority: 10 },
+    { id: 'route-b', name: '部件 B 路线', category: '部件路线', type: 'routing', item_name: '部件 B', priority: 20 },
+    { id: 'route-b-10', name: '加工', type: 'time_per', owner_id: 'route-b', priority: 10 }
+  ],
+  [{ id: 'cross-route', operation_id: 'route-a-20', blockedby_id: 'route-b-10' }],
+  [
+    { id: 'route-a-step-2', operation_id: 'route-a', suboperation_id: 'route-a-20', priority: 20 },
+    { id: 'route-a-step-1', operation_id: 'route-a', suboperation_id: 'route-a-10', priority: 10 },
+    { id: 'route-b-step-1', operation_id: 'route-b', suboperation_id: 'route-b-10', priority: 10 }
+  ]
+);
+assert.equal(routeLaneFlow.lanes.length, 2);
+assert.deepEqual(routeLaneFlow.lanes[0].nodeIds, ['route-a', 'route-a-10', 'route-a-20']);
+assert.deepEqual(routeLaneFlow.lanes[1].nodeIds, ['route-b', 'route-b-10']);
+assert.equal(routeLaneFlow.nodes.find((node) => node.id === 'route-a')?.sequence, 'RT');
+assert.equal(routeLaneFlow.nodes.find((node) => node.id === 'route-a-10')?.sequence, 1);
+assert.equal(routeLaneFlow.nodes.find((node) => node.id === 'route-a-20')?.sequence, 2);
+assert.equal(routeLaneFlow.nodes.find((node) => node.id === 'route-a-20')?.laneId, 'lane:route-a');
+assert.equal(
+  (routeLaneFlow.nodes.find((node) => node.id === 'route-a-20')?.position as { y: number }).y,
+  (routeLaneFlow.nodes.find((node) => node.id === 'route-a-10')?.position as { y: number }).y
+);
+assert.ok(
+  Number((routeLaneFlow.nodes.find((node) => node.id === 'route-b')?.position as { y: number }).y) >
+    Number((routeLaneFlow.nodes.find((node) => node.id === 'route-a')?.position as { y: number }).y)
+);
 
 const bom = buildPlanningBomTree(
   [
@@ -423,11 +460,28 @@ assert.equal(normalizedSchema.dataSources?.scenarioOptions?.serviceMethod, 'getP
 
 const blocks = normalizedSchema.blocks as Array<Record<string, unknown>>;
 const filter = blocks.find((block) => block.id === 'planning_console_filter');
-assert.deepEqual(filter?.targetSourceKeys, [...PLANNING_CONSOLE_SOURCE_KEYS, 'versionOptions']);
+assert.equal(filter?.kind, 'form');
+assert.equal(filter?.formType, 'default');
+assert.equal(filter?.title, '排程参数设置');
+assert.deepEqual(filter?.initialValues, {
+  scenarioId: '',
+  runName: '控制台排产运行',
+  currentDate: 'now',
+  solver: 'heuristic',
+  constraints: 52,
+  iterationMax: 0,
+  resourceIterationMax: 500,
+  rotateResources: true,
+  individualPoolResources: false
+});
 const filterSchema = filter?.schema as Record<string, unknown> | undefined;
 const filterFields = Array.isArray(filterSchema?.fields)
   ? filterSchema.fields as Array<Record<string, unknown>>
   : [];
+assert.deepEqual(filterFields.map((field) => field.field), [
+  'scenarioId', 'runName', 'currentDate', 'solver', 'constraints', 'iterationMax',
+  'resourceIterationMax', 'rotateResources', 'individualPoolResources'
+]);
 const scenarioField = filterFields.find((field) => field.field === 'scenarioId');
 const scenarioEvents = scenarioField?.events as Record<string, unknown> | undefined;
 const scenarioChange = Array.isArray(scenarioEvents?.change)
@@ -435,14 +489,31 @@ const scenarioChange = Array.isArray(scenarioEvents?.change)
   : [];
 assert.ok(scenarioChange.some((directive) =>
   directive.type === 'setFormField' &&
+  directive.blockId === 'planning_console_result_filter' &&
   directive.field === 'planVersionId' &&
   directive.value === ''
 ));
 assert.ok(scenarioChange.some((directive) =>
   directive.type === 'refreshDataSources' &&
   Array.isArray(directive.sourceKeys) &&
-  directive.sourceKeys.includes('versionOptions')
+  directive.sourceKeys.includes('versionOptions') &&
+  directive.sourceKeys.includes('operationPlans')
 ));
+const resultFilter = blocks.find((block) => block.id === 'planning_console_result_filter');
+assert.equal(resultFilter?.kind, 'searchForm');
+assert.equal(resultFilter?.title, '结果筛选');
+assert.deepEqual(resultFilter?.targetSourceKeys, PLANNING_CONSOLE_SOURCE_KEYS);
+const resultFilterSchema = resultFilter?.schema as Record<string, unknown> | undefined;
+const resultFilterFields = Array.isArray(resultFilterSchema?.fields)
+  ? resultFilterSchema.fields as Array<Record<string, unknown>>
+  : [];
+assert.deepEqual(resultFilterFields.map((field) => field.field), [
+  'planVersionId', 'itemId', 'resourceId', 'operationId',
+  'operationStatus', 'demandStatus', 'from', 'to'
+]);
+assert.deepEqual(normalizedSchema.scriptPolicy?.context?.formBlockIds, [
+  'planning_console_filter', 'planning_console_result_filter'
+]);
 const actionBlock = blocks.find((block) => block.id === 'planning_console_actions');
 const actions = Array.isArray(actionBlock?.actions) ? actionBlock.actions : [];
 for (const code of ['preflight', 'run', 'cancel', 'publish']) {
@@ -450,9 +521,21 @@ for (const code of ['preflight', 'run', 'cancel', 'publish']) {
   assert.equal(action?.permissionCode, 'planning.models.manage');
   assert.equal(typeof action?.script, 'string');
 }
-assert.match(String(actions.find((action: Record<string, unknown>) => action.code === 'run')?.script), /scenarioId[\s\S]*engine\.available[\s\S]*trigger\.configured[\s\S]*worker\.online/);
+const preflightActionScript = String(actions.find((action: Record<string, unknown>) => action.code === 'preflight')?.script);
+const runActionScript = String(actions.find((action: Record<string, unknown>) => action.code === 'run')?.script);
+for (const script of [preflightActionScript, runActionScript]) {
+  assert.match(script, /overrides/);
+  for (const parameter of [
+    'currentdate', 'plan.solver', 'constraints', 'plan.iterationmax',
+    'plan.resourceiterationmax', 'plan.rotateResources', 'plan.individualPoolResources'
+  ]) {
+    assert.ok(script.includes(parameter), `Planning action script must map ${parameter}.`);
+  }
+}
+assert.match(runActionScript, /scenarioId[\s\S]*engine\.available[\s\S]*trigger\.configured[\s\S]*worker\.online/);
+assert.match(runActionScript, /filter\.runName/);
 assert.match(String(actions.find((action: Record<string, unknown>) => action.code === 'cancel')?.script), /currentRow[\s\S]*queued[\s\S]*running/);
-assert.match(String(actions.find((action: Record<string, unknown>) => action.code === 'publish')?.script), /summary\.versionId[\s\S]*versionStatus[\s\S]*completed/);
+assert.match(String(actions.find((action: Record<string, unknown>) => action.code === 'publish')?.script), /planning_console_result_filter[\s\S]*summary\.versionId[\s\S]*versionStatus[\s\S]*completed/);
 assert.deepEqual(normalizedSchema.scriptPolicy?.capabilities, [
   'http.execute',
   'source.refresh',

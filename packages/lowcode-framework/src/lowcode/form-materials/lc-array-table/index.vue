@@ -24,11 +24,19 @@
       :tree-config="treeConfig"
       @cell-click="handleCellClick"
       @row-dblclick="handleRowDblclick"
+      @row-dragend="handleRowDragend"
       @checkbox-change="commitRows"
       @checkbox-all="commitRows"
       :height="'100%'"
     >
       <vxe-column v-if="showSeq" type="seq" width="42" />
+      <vxe-column
+        v-if="rowDraggable"
+        title=""
+        width="42"
+        align="center"
+        drag-sort
+      />
       <template v-for="column in columns" :key="column.field">
         <vxe-column
           v-if="column.type"
@@ -334,6 +342,9 @@ const fieldProps = computed(() => props.field.props ?? {});
 const isReadonly = computed(() =>
   fieldProps.value.readonly === true || fieldProps.value.disabled === true
 );
+const rowDraggable = computed(() =>
+  fieldProps.value.rowDraggable === true && !isReadonly.value
+);
 const valueMode = computed<ArrayTableValueMode>(() =>
   fieldProps.value.valueMode === 'primitive' ? 'primitive' : 'object'
 );
@@ -384,6 +395,7 @@ const explicitTableConfig = computed(() => {
     'headerCellConfig',
     'footerCellConfig',
     'rowConfig',
+    'rowDragConfig',
     'columnConfig',
     'sortConfig',
     'filterConfig',
@@ -415,6 +427,7 @@ const rowConfig = computed(() => {
     ...config,
     keyField,
     isCurrent: config.isCurrent !== false && gridRowConfig.isCurrent !== false,
+    ...(rowDraggable.value ? { drag: true } : {}),
   };
 });
 const tableConfig = computed(() => {
@@ -426,6 +439,16 @@ const tableConfig = computed(() => {
     },
     resolveSystemTableConfig(systemSettings),
   );
+
+  if (rowDraggable.value) {
+    const dragConfig = isRecord(config.rowDragConfig) ? config.rowDragConfig : {};
+    config.rowDragConfig = {
+      ...dragConfig,
+      trigger: 'default',
+      showIcon: true,
+      animation: dragConfig.animation !== false,
+    };
+  }
 
   if (isFillHeight(config.height)) {
     if (typeof explicitConfig.minHeight === 'undefined') {
@@ -773,6 +796,30 @@ function moveRow(row: Record<string, unknown>, offset: number) {
   const [current] = location.siblings.splice(location.index, 1);
   location.siblings.splice(nextIndex, 0, current);
   commitRows();
+}
+
+function handleRowDragend(payload: unknown) {
+  if (!rowDraggable.value || !isRecord(payload) || !isRecord(payload.dragRow)) return;
+
+  const index = isRecord(payload._index) ? payload._index : {};
+  const oldIndex = Number(index.oldIndex);
+  const newIndex = Number(index.newIndex);
+  const currentIndex = rows.value.indexOf(payload.dragRow);
+  if (
+    !Number.isInteger(oldIndex) ||
+    !Number.isInteger(newIndex) ||
+    oldIndex < 0 ||
+    newIndex < 0 ||
+    currentIndex < 0 ||
+    newIndex >= rows.value.length
+  ) {
+    return;
+  }
+
+  const [row] = rows.value.splice(currentIndex, 1);
+  rows.value.splice(newIndex, 0, row);
+  commitRows();
+  emitConfiguredEvent('onRowMove', rowEventPayload(row, payload));
 }
 
 function getRowIndex(row: Record<string, unknown>) {

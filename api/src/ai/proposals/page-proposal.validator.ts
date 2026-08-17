@@ -60,6 +60,32 @@ const ALLOWED_SCRIPT_CAPABILITIES = new Set([
   'source.refreshAll',
   'source.set'
 ]);
+const BUILTIN_PAGE_FUNCTIONS = new Set([
+  'create',
+  'copy',
+  'edit',
+  'modify',
+  'save',
+  'approve',
+  'unapprove',
+  'close',
+  'open',
+  'refresh',
+  'print',
+  'exit'
+]);
+const GRID_COLUMN_KEYS = [
+  'field',
+  'title',
+  'width',
+  'minWidth',
+  'align',
+  'visible',
+  'fixed',
+  'showOverflow',
+  'sortable'
+];
+const GRID_COLUMN_CHANGE_KEYS = GRID_COLUMN_KEYS.filter((key) => key !== 'field');
 
 const BLOCKED_SCRIPT_PATTERNS: Array<[RegExp, string]> = [
   [/\beval\s*\(/i, 'eval is not allowed.'],
@@ -91,6 +117,71 @@ function assertAllowedKeys(value: Record<string, unknown>, allowed: string[], pa
   if (unexpected.length) {
     throw new BadRequestException(`${path} contains unsupported fields: ${unexpected.join(', ')}.`);
   }
+}
+
+function readGridWidth(value: unknown, path: string) {
+  if (!Number.isInteger(value) || (value as number) < 40 || (value as number) > 2_000) {
+    throw new BadRequestException(`${path} must be an integer between 40 and 2000.`);
+  }
+  return value as number;
+}
+
+function readGridColumnAppearance(value: Record<string, unknown>, path: string) {
+  assertAllowedKeys(value, GRID_COLUMN_CHANGE_KEYS, path);
+  const changes: Record<string, unknown> = {};
+  const title = value.title === undefined ? undefined : readString(value.title);
+  if (title !== undefined) {
+    if (!title || title.length > 200) {
+      throw new BadRequestException(`${path}.title must be between 1 and 200 characters.`);
+    }
+    changes.title = title;
+  }
+  if (value.width !== undefined) changes.width = readGridWidth(value.width, `${path}.width`);
+  if (value.minWidth !== undefined) changes.minWidth = readGridWidth(value.minWidth, `${path}.minWidth`);
+  if (value.align !== undefined) {
+    const align = readString(value.align);
+    if (!['left', 'center', 'right'].includes(align)) {
+      throw new BadRequestException(`${path}.align is invalid.`);
+    }
+    changes.align = align;
+  }
+  if (value.visible !== undefined) {
+    if (typeof value.visible !== 'boolean') throw new BadRequestException(`${path}.visible must be boolean.`);
+    changes.visible = value.visible;
+  }
+  if (value.fixed !== undefined) {
+    const fixed = readString(value.fixed);
+    if (!['left', 'right'].includes(fixed)) throw new BadRequestException(`${path}.fixed is invalid.`);
+    changes.fixed = fixed;
+  }
+  if (value.showOverflow !== undefined) {
+    if (typeof value.showOverflow !== 'boolean' && readString(value.showOverflow) !== 'tooltip') {
+      throw new BadRequestException(`${path}.showOverflow must be boolean or "tooltip".`);
+    }
+    changes.showOverflow = value.showOverflow;
+  }
+  if (value.sortable !== undefined) {
+    if (typeof value.sortable !== 'boolean') throw new BadRequestException(`${path}.sortable must be boolean.`);
+    changes.sortable = value.sortable;
+  }
+  return changes;
+}
+
+function readGridColumn(value: unknown, path: string) {
+  if (!isRecord(value)) throw new BadRequestException(`${path} must be an object.`);
+  assertAllowedKeys(value, GRID_COLUMN_KEYS, path);
+  const field = readString(value.field);
+  if (!/^[A-Za-z_$][\w$]*$/.test(field)) {
+    throw new BadRequestException(`${path}.field must be a valid field identifier.`);
+  }
+  const changes = readGridColumnAppearance(
+    Object.fromEntries(Object.entries(value).filter(([key]) => key !== 'field')),
+    path
+  );
+  if (typeof changes.title !== 'string') {
+    throw new BadRequestException(`${path}.title is required.`);
+  }
+  return { field, ...changes };
 }
 
 function parseOperation(value: unknown, index: number): AiProposalOperation {
@@ -136,6 +227,64 @@ function parseOperation(value: unknown, index: number): AiProposalOperation {
     const key = readString(value.key);
     if (!key || !isRecord(value.dataSource)) throw new BadRequestException(`${path} requires key and dataSource.`);
     return { type, key, dataSource: { ...value.dataSource, key } };
+  }
+  if (type === 'updateGridColumn') {
+    assertAllowedKeys(value, ['type', 'blockId', 'field', 'changes'], path);
+    const blockId = readString(value.blockId);
+    const field = readString(value.field);
+    if (!blockId || !/^[A-Za-z_$][\w$]*$/.test(field) || !isRecord(value.changes)) {
+      throw new BadRequestException(`${path} requires blockId, field, and changes.`);
+    }
+    const changes = readGridColumnAppearance(value.changes, `${path}.changes`);
+    if (!Object.keys(changes).length) {
+      throw new BadRequestException(`${path}.changes must include a supported column property.`);
+    }
+    return { type, blockId, field, changes };
+  }
+  if (type === 'upsertGridColumn') {
+    assertAllowedKeys(value, ['type', 'blockId', 'column', 'afterField'], path);
+    const blockId = readString(value.blockId);
+    if (!blockId) throw new BadRequestException(`${path}.blockId is required.`);
+    const column = readGridColumn(value.column, `${path}.column`);
+    const afterField = readString(value.afterField);
+    if (afterField && !/^[A-Za-z_$][\w$]*$/.test(afterField)) {
+      throw new BadRequestException(`${path}.afterField must be a valid field identifier.`);
+    }
+    if (afterField && afterField === column.field) {
+      throw new BadRequestException(`${path}.afterField cannot match column.field.`);
+    }
+    return { type, blockId, column, ...(afterField ? { afterField } : {}) };
+  }
+  if (type === 'upsertPageFunction') {
+    assertAllowedKeys(value, ['type', 'name', 'label', 'description', 'builtinFunction'], path);
+    const name = readString(value.name);
+    const builtinFunction = readString(value.builtinFunction);
+    if (!/^[A-Za-z_$][\w$]*$/.test(name)) {
+      throw new BadRequestException(`${path}.name must be a valid JavaScript identifier.`);
+    }
+    if (!BUILTIN_PAGE_FUNCTIONS.has(builtinFunction)) {
+      throw new BadRequestException(`${path}.builtinFunction is unsupported.`);
+    }
+    const label = readString(value.label) || name;
+    const description = readString(value.description);
+    if (label.length > 100 || description.length > 500) {
+      throw new BadRequestException(`${path} exceeds the supported text length.`);
+    }
+    return {
+      type,
+      builtinFunction,
+      pageFunction: { name, label, description, enabled: true }
+    };
+  }
+  if (type === 'bindButtonToPageFunction') {
+    assertAllowedKeys(value, ['type', 'blockId', 'actionCode', 'functionName'], path);
+    const blockId = readString(value.blockId);
+    const actionCode = readString(value.actionCode);
+    const functionName = readString(value.functionName);
+    if (!blockId || !actionCode || !/^[A-Za-z_$][\w$]*$/.test(functionName)) {
+      throw new BadRequestException(`${path} requires blockId, actionCode, and functionName.`);
+    }
+    return { type, blockId, actionCode, functionName };
   }
   if (type === 'updateScriptPolicy') {
     assertAllowedKeys(value, ['type', 'capabilities', 'apiNames'], path);
@@ -398,6 +547,8 @@ export class PageProposalValidator {
 
 export const pageProposalValidatorInternals = {
   parseOperation,
+  readGridColumn,
+  readGridColumnAppearance,
   collectScripts,
   scriptIssues,
   aiSafetyIssues,

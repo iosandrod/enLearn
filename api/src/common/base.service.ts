@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  HttpException
+} from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import type { ServiceContext, ServiceExecutor } from './interfaces/service-executor';
@@ -8,8 +14,11 @@ import {
   getUserAuthorization,
   hasRequiredPermission
 } from './utils/supabase';
+import { getEnv } from './utils/env';
 
 const DYNAMIC_CRUD_RPC = 'execute_dynamic_crud';
+const WORKFLOW_WEBHOOK_LOOKUP_RPC = 'find_workflow_webhook_job';
+const WORKFLOW_TRIGGER_WEBHOOK_METHOD = 'triggerWebhook';
 
 export type ListFilterLogic = 'and' | 'or';
 
@@ -287,10 +296,146 @@ export abstract class BaseService implements ServiceExecutor {
 
   protected async executeAction(
     method: string,
-    _postData: ServicePostData,
-    _context: ServiceContext
+    postData: ServicePostData,
+    context: ServiceContext
   ): Promise<unknown> {
+    // 工作流内部调用不能再次触发 Webhook 工作流，避免工作流节点调用未知方法时递归启动自己。
+    if (!context.internal) {
+      const serviceName = this.resolveServiceName(context);
+      const workflowJob = await this.findWebhookWorkflowJob(
+        serviceName,
+        method,
+        context
+      );
+
+      if (workflowJob) {
+        return this.invokeWebhookWorkflow(
+          workflowJob.id,
+          serviceName,
+          method,
+          postData,
+          context
+        );
+      }
+    }
+
     throw new BadRequestException('Unsupported ' + this.serviceLabel() + ' method: ' + method);
+  }
+
+  /**
+   * 查询当前账户下已启用的 Trigger 工作流作业。
+   *
+   * Webhook 的 serviceName/serviceMethod 保存在
+   * wf_job.payload.triggerWorkflow.executionPlan.operations[*].options.body 中，
+   * 因此这里通过数据库 RPC 查询，而不是读取本地缓存或流程编辑器状态。
+   */
+  private async findWebhookWorkflowJob(
+    serviceName: string,
+    serviceMethod: string,
+    context: ServiceContext
+  ): Promise<{ id: string } | undefined> {
+    const accountId = this.readOptionalString(context.accountId);
+    if (!accountId || !serviceName || !serviceMethod) return undefined;
+
+    try {
+      const client = createSupabaseClient('admin', context);
+      const { data, error } = await client.rpc(WORKFLOW_WEBHOOK_LOOKUP_RPC, {
+        p_account_id: accountId,
+        p_service_name: serviceName,
+        p_service_method: serviceMethod
+      });
+
+      // RPC 尚未部署或数据库暂时不可用时，继续走原有的“不支持方法”错误。
+      if (error || !this.isRecord(data)) return undefined;
+      const id = this.readOptionalString(data.id);
+      return id ? { id } : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
+   * 通过 API 网关调用受限的 workflow.triggerWebhook 方法。
+   *
+   * BaseService 运行在领域服务进程中，不能直接注入 WorkflowService；
+   * 走统一服务入口可以同时兼容 Redis 分布式部署和 standalone 部署。
+   */
+  private async invokeWebhookWorkflow(
+    jobId: string,
+    serviceName: string,
+    serviceMethod: string,
+    postData: ServicePostData,
+    context: ServiceContext
+  ) {
+    const env = getEnv();
+    const apiBaseUrl = String(
+      env.WORKFLOW_INTERNAL_API_URL ?? env.API_BASE_URL ?? 'http://127.0.0.1:3002/api'
+    ).replace(/\/+$/, '');
+    const headers: Record<string, string> = {
+      'content-type': 'application/json'
+    };
+
+    if (context.authorization) headers.authorization = context.authorization;
+    if (context.accountId) headers['x-account-id'] = context.accountId;
+    if (context.requestId) headers['x-request-id'] = context.requestId;
+
+    // 兼容旧客户端的 accessToken 只用于认证，不把它继续传入工作流变量。
+    const workflowPostData = Object.fromEntries(
+      Object.entries(postData).filter(([key]) => key !== 'accessToken')
+    );
+    let response: Response;
+    try {
+      response = await fetch(`${apiBaseUrl}/service`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          serviceName: 'workflow',
+          serviceMethod: WORKFLOW_TRIGGER_WEBHOOK_METHOD,
+          postData: {
+            jobId,
+            serviceName,
+            serviceMethod,
+            postData: workflowPostData
+          }
+        })
+      });
+    } catch (error) {
+      throw new BadGatewayException(
+        error instanceof Error && error.message
+          ? `Workflow Webhook invocation failed: ${error.message}`
+          : 'Workflow Webhook invocation failed.'
+      );
+    }
+    const result = await response.json().catch(() => undefined);
+    const message = this.readRemoteServiceError(result) ||
+      `Workflow Webhook invocation failed with HTTP ${response.status}.`;
+
+    if (!response.ok) {
+      if (response.status >= 400 && response.status < 500) {
+        throw new HttpException(message, response.status);
+      }
+      throw new BadGatewayException(message);
+    }
+
+    if (!this.isRecord(result) || result.success === false) {
+      throw new BadGatewayException(message);
+    }
+
+    return result.data;
+  }
+
+  private readRemoteServiceError(value: unknown) {
+    if (!this.isRecord(value)) return '';
+    const error = this.isRecord(value.error) ? value.error : undefined;
+    return this.readOptionalString(error?.message ?? value.message);
+  }
+
+  private resolveServiceName(context: ServiceContext) {
+    const configured = this.readOptionalString(context.serviceName);
+    if (configured) return configured;
+
+    const label = this.serviceLabel();
+    return label ? `${label.slice(0, 1).toLowerCase()}${label.slice(1)}` : 'service';
   }
 
   protected async listItems(postData: ServicePostData, context: ServiceContext) {

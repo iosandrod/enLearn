@@ -124,6 +124,40 @@ function createScriptSource(
     const result = await globalThis.__workflowHostCall(name, JSON.stringify(args));
     return JSON.parse(result);
   };
+  const createSupabaseProxy = (path = []) => {
+    const target = function () {};
+    return new Proxy(target, {
+      get(_target, property) {
+        if (property === "then") {
+          const last = path[path.length - 1];
+          if (!last || last.kind !== "method") return undefined;
+          return (resolve, reject) =>
+            call("supabase.operation", path).then(resolve, reject);
+        }
+        if (property === "catch" || property === "finally") {
+          const last = path[path.length - 1];
+          if (!last || last.kind !== "method") return undefined;
+          return (...args) =>
+            call("supabase.operation", path)[property](...args);
+        }
+        if (typeof property !== "string") return undefined;
+        return createSupabaseProxy([
+          ...path,
+          { kind: "property", name: property }
+        ]);
+      },
+      apply(_target, _thisArg, args) {
+        const last = path[path.length - 1];
+        if (!last || last.kind !== "property") {
+          throw new TypeError("Supabase API path is not callable.");
+        }
+        return createSupabaseProxy([
+          ...path.slice(0, -1),
+          { kind: "method", name: last.name, args }
+        ]);
+      }
+    });
+  };
   const context = ${capabilitiesEnabled ? `Object.freeze({
     ...snapshot.context,
     http: Object.freeze({
@@ -134,7 +168,7 @@ function createScriptSource(
       patch: (url, body, init = {}) => call("http.request", url, { ...init, method: "PATCH", body }),
       delete: (url, init = {}) => call("http.request", url, { ...init, method: "DELETE" })
     }),
-    supabase: Object.freeze({ rpc: (name, args = {}) => call("supabase.rpc", name, args) }),
+    supabase: Object.freeze(createSupabaseProxy()),
     baseService: Object.freeze({
       invoke: (serviceName, serviceMethod, postData = {}) =>
         call("baseService.invoke", serviceName, serviceMethod, postData)

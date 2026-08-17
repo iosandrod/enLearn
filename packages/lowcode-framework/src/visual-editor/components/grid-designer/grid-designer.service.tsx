@@ -57,6 +57,14 @@ export type GridDesignerColumn = {
   [key: string]: unknown;
 };
 
+type GridDesignerSelectionColumnType = '' | 'checkbox' | 'radio';
+
+type GridDesignerFormSettings = {
+  selectionColumnType: GridDesignerSelectionColumnType;
+  selectionColumnWidth: string | number;
+  selectionColumnFixed: '' | 'left' | 'right';
+};
+
 export type GridDesignerTableType = 'main' | 'detail' | 'default';
 export type GridDesignerSourceType = 'custom' | 'table' | 'view';
 
@@ -159,6 +167,12 @@ const columnTypeOptions = [
   { label: '复选', value: 'checkbox' },
   { label: '展开', value: 'expand' },
   { label: '网页内容', value: 'html' },
+];
+
+const selectionColumnTypeOptions = [
+  { label: '关闭', value: '' },
+  { label: '复选', value: 'checkbox' },
+  { label: '单选', value: 'radio' },
 ];
 
 const gridTableTypeOptions = [
@@ -829,6 +843,8 @@ function createDefaultColumn(index = 0): GridDesignerColumn {
 function normalizeColumn(column: unknown, index: number): GridDesignerColumn {
   const row = isPlainRecord(column) ? column : {};
   const fallback = createDefaultColumn(index);
+  const type = readString(row.type);
+  const isFieldlessSelectionColumn = type === 'checkbox' || type === 'radio';
   const sourceEditRender = isPlainRecord(row.editRender) ? cloneDeep(row.editRender) : {};
   const currentEditType = readString(sourceEditRender.name);
   const editType = Object.prototype.hasOwnProperty.call(row, 'editType')
@@ -843,10 +859,12 @@ function normalizeColumn(column: unknown, index: number): GridDesignerColumn {
   return {
     ...fallback,
     __id: readString(row.__id, fallback.__id),
-    field: readString(row.field, fallback.field),
-    title: readString(row.title, readString(row.field, fallback.title)),
+    field: isFieldlessSelectionColumn ? readString(row.field) : readString(row.field, fallback.field),
+    title: isFieldlessSelectionColumn
+      ? readString(row.title)
+      : readString(row.title, readString(row.field, fallback.title)),
     editType,
-    type: readString(row.type),
+    type,
     width: readDimension(row.width),
     minWidth: readDimension(row.minWidth),
     maxWidth: readDimension(row.maxWidth),
@@ -868,6 +886,57 @@ function normalizeColumn(column: unknown, index: number): GridDesignerColumn {
     editRender,
     params: isPlainRecord(row.params) ? cloneDeep(row.params) : {},
   };
+}
+
+function isSelectionColumn(column: GridDesignerColumn) {
+  return column.type === 'checkbox' || column.type === 'radio';
+}
+
+function normalizeSelectionColumnType(value: unknown): GridDesignerSelectionColumnType {
+  const type = readString(value);
+  return type === 'checkbox' || type === 'radio' ? type : '';
+}
+
+function createFormSettings(columns: GridDesignerColumn[]): GridDesignerFormSettings {
+  const selectionColumn = columns.find(isSelectionColumn);
+  const fixed = readString(selectionColumn?.fixed);
+
+  return {
+    selectionColumnType: normalizeSelectionColumnType(selectionColumn?.type),
+    selectionColumnWidth: readDimension(selectionColumn?.width) || 48,
+    selectionColumnFixed: fixed === 'right' ? 'right' : fixed === '' ? '' : 'left',
+  };
+}
+
+function applyFormSettingsToColumns(
+  columns: GridDesignerColumn[],
+  settings: GridDesignerFormSettings,
+) {
+  const selectionColumn = columns.find(isSelectionColumn);
+  const dataColumns = columns.filter((column) => !isSelectionColumn(column));
+  const selectionColumnType = normalizeSelectionColumnType(settings.selectionColumnType);
+  if (!selectionColumnType) return dataColumns.length ? dataColumns : [createDefaultColumn()];
+
+  const fixed = readString(settings.selectionColumnFixed);
+  const nextSelectionColumn: GridDesignerColumn = {
+    ...(selectionColumn ?? {}),
+    __id: readString(selectionColumn?.__id, `column_${generateNanoid()}`),
+    type: selectionColumnType,
+    field: '',
+    title: '',
+    width: readDimension(settings.selectionColumnWidth) || 48,
+    minWidth: '',
+    maxWidth: '',
+    fixed: fixed === 'right' ? 'right' : fixed === '' ? '' : 'left',
+    align: 'center',
+    headerAlign: 'center',
+    sortable: false,
+    visible: true,
+  };
+
+  return nextSelectionColumn.fixed === 'right'
+    ? [...dataColumns, nextSelectionColumn]
+    : [nextSelectionColumn, ...dataColumns];
 }
 
 function normalizeColumns(columns: unknown) {
@@ -1384,8 +1453,10 @@ function createArraySchema(
 
 function normalizeColumnForResult(column: GridDesignerColumn, index: number): GridDesignerColumn {
   const field = readString(column.field);
-  const title = readString(column.title, field || `列${index + 1}`);
   const type = readString(column.type);
+  const title = type === 'checkbox' || type === 'radio'
+    ? readString(column.title)
+    : readString(column.title, field || `列${index + 1}`);
   const formatter = parseFormatterValue(column.formatter, `第 ${index + 1} 列 formatter`);
 
   if (formatter.ok === false) {
@@ -1537,6 +1608,7 @@ const ServiceComponent = defineComponent({
       activeTab: 'columns',
       business: normalizeBusiness(props.option.business),
       columns: initialColumns,
+      formSettings: createFormSettings(initialColumns),
       selectedColumnId: readString(initialColumns[0]?.__id),
       gridOptions: normalized.options,
       advanced: normalized.advanced,
@@ -1564,6 +1636,7 @@ const ServiceComponent = defineComponent({
         state.activeTab = 'columns';
         resetReactiveObject(state.business, normalizeBusiness(option.business));
         state.columns = normalizeColumns(option.columns);
+        resetReactiveObject(state.formSettings, createFormSettings(state.columns));
         state.selectedColumnId = readString(state.columns[0]?.__id);
         resetReactiveObject(state.gridOptions, nextGridOptions.options);
         resetReactiveObject(state.advanced, nextGridOptions.advanced);
@@ -1627,6 +1700,14 @@ const ServiceComponent = defineComponent({
     };
     const selectColumn = (column: GridDesignerColumn) => {
       state.selectedColumnId = readString(column.__id);
+    };
+
+    const syncColumnsFromFormSettings = () => {
+      state.columns = applyFormSettingsToColumns(state.columns, state.formSettings);
+      const selectedId = state.selectedColumnId;
+      if (!state.columns.some((column) => column.__id === selectedId)) {
+        selectColumn(state.columns[0]);
+      }
     };
 
     const syncActiveDesignerDialogModel = () => {
@@ -2188,6 +2269,40 @@ const ServiceComponent = defineComponent({
       { field: 'keepSource', label: '保留源数据', component: 'vxe-switch' },
     ]);
 
+    const formSettingsSchema = createSchema([
+      {
+        field: 'selectionColumnType',
+        label: '选择列',
+        component: 'vxe-select',
+        options: selectionColumnTypeOptions,
+      },
+      {
+        field: 'selectionColumnWidth',
+        label: '选择列宽度',
+        component: 'vxe-number-input',
+        props: {
+          min: 36,
+          max: 120,
+          visibleWhen: {
+            field: 'selectionColumnType',
+            includes: ['checkbox', 'radio'],
+          },
+        },
+      },
+      {
+        field: 'selectionColumnFixed',
+        label: '选择列位置',
+        component: 'vxe-select',
+        options: fixedOptions,
+        props: {
+          visibleWhen: {
+            field: 'selectionColumnType',
+            includes: ['checkbox', 'radio'],
+          },
+        },
+      },
+    ]);
+
     const rowConfigSubFields: LowCodeField[] = [
       { field: 'keyField', label: '行键字段', component: 'vxe-input' },
       { field: 'useKey', label: '启用行键', component: 'vxe-switch' },
@@ -2349,6 +2464,7 @@ const ServiceComponent = defineComponent({
 
     const columnDesignerBlockId = 'grid-designer-columns-form';
     const businessInfoBlockId = 'grid-designer-business-info-form';
+    const formSettingsBlockId = 'grid-designer-form-settings-form';
     const gridOptionsBlockId = 'grid-designer-grid-options-form';
     const rowConfigBlockId = 'grid-designer-row-config-form';
     const columnConfigBlockId = 'grid-designer-column-config-form';
@@ -2359,6 +2475,18 @@ const ServiceComponent = defineComponent({
     const syncColumnsFromRows = (rows: unknown) => {
       const selectedId = state.selectedColumnId;
       state.columns = normalizeColumns(rows);
+      resetReactiveObject(state.formSettings, createFormSettings(state.columns));
+
+      const formSettingsModel = designerFormModels[formSettingsBlockId];
+      if (isPlainRecord(formSettingsModel)) {
+        resetReactiveObject(
+          formSettingsModel,
+          createSchemaModel(
+            formSettingsSchema,
+            state.formSettings as unknown as Record<string, unknown>,
+          ),
+        );
+      }
 
       if (!state.columns.some((column) => column.__id === selectedId)) {
         selectColumn(state.columns[0]);
@@ -2406,9 +2534,18 @@ const ServiceComponent = defineComponent({
               ],
               rowKey: '__id',
               preserveRowKey: true,
+              rowDraggable: true,
+              onRowMove: ({ rows }: { rows: unknown }) => {
+                syncColumnsFromRows(rows);
+                const columnModel = designerFormModels[columnDesignerBlockId];
+                if (isPlainRecord(columnModel)) {
+                  columnModel.columns = state.columns as unknown as Record<string, unknown>[];
+                }
+              },
+              movable: false,
               copyable: true,
               minRows: 1,
-              actionWidth: 120,
+              actionWidth: 72,
               height: 520,
               toolbarAlign: 'left',
               columns: createColumnDesignerArrayColumns(),
@@ -2583,6 +2720,20 @@ const ServiceComponent = defineComponent({
                 ],
               },
               {
+                key: 'form-settings',
+                label: '表单设置',
+                blocks: [
+                  createInfoTabPanelBlock('grid-designer-form-settings-panel', [
+                    createFormBlock(
+                      formSettingsBlockId,
+                      '表单设置',
+                      formSettingsSchema,
+                      'grid-designer-card grid-designer-schema-form-block grid-designer-info-card grid-designer-form-settings-card',
+                    ),
+                  ]),
+                ],
+              },
+              {
                 key: 'row-config',
                 label: '行配置',
                 blocks: [
@@ -2730,6 +2881,10 @@ const ServiceComponent = defineComponent({
           businessInfoSchema,
           state.business as unknown as Record<string, unknown>,
         ),
+        [formSettingsBlockId]: createSchemaModel(
+          formSettingsSchema,
+          state.formSettings as unknown as Record<string, unknown>,
+        ),
         [gridOptionsBlockId]: createSchemaModel(
           gridOptionsSchema,
           state.gridOptions as Record<string, unknown>,
@@ -2776,6 +2931,16 @@ const ServiceComponent = defineComponent({
 
       if (event.blockId === eventDesignerBlockId) {
         syncEventsFromRows(values.gridEvents);
+        return;
+      }
+
+      if (event.blockId === formSettingsBlockId) {
+        Object.assign(state.formSettings, values);
+        syncColumnsFromFormSettings();
+        const columnModel = designerFormModels[columnDesignerBlockId];
+        if (isPlainRecord(columnModel)) {
+          columnModel.columns = state.columns as unknown as Record<string, unknown>[];
+        }
         return;
       }
 

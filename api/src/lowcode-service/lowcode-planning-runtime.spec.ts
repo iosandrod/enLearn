@@ -164,6 +164,10 @@ service.applyPlanningRuntimeAccess(managerSchema, true);
 assert.deepEqual(actions(managerSchema).map((action) => action.code), [
   'preflight', 'run', 'cancel', 'publish', 'refresh'
 ]);
+assert.deepEqual(
+  (managerSchema.scriptPolicy as Record<string, Record<string, unknown>>)?.context?.formBlockIds,
+  ['planning_console_filter', 'planning_console_result_filter']
+);
 
 const mesSchema = {
   blocks: [

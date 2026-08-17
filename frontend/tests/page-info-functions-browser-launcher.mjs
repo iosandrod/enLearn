@@ -72,6 +72,7 @@ async function restorePage(original) {
     keep_alive: original.keep_alive,
     page_type: original.page_type,
     edit_page_id: original.edit_page_id,
+    table_name: original.table_name,
     schema: original.schema,
     version: original.version,
     published_at: original.published_at,

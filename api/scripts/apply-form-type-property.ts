@@ -13,10 +13,10 @@ if (!rawConnectionString) {
 const repoRoot = process.cwd().toLowerCase().endsWith('api')
   ? resolve(process.cwd(), '..')
   : process.cwd();
-const migrationPath = resolve(
-  repoRoot,
-  'supabase/migrations/20260811130000_form_type_property.sql',
-);
+const migrationPaths = [
+  resolve(repoRoot, 'supabase/migrations/20260811130000_form_type_property.sql'),
+  resolve(repoRoot, 'supabase/migrations/20260817090000_repair_form_property_tabs.sql'),
+];
 
 function connectionString(value: string) {
   const url = new URL(normalizePostgresConnectionString(value));
@@ -38,27 +38,45 @@ async function main() {
   await client.connect();
   try {
     await client.query('begin');
-    await client.query(await readFile(migrationPath, 'utf8'));
+    for (const migrationPath of migrationPaths) {
+      await client.query(await readFile(migrationPath, 'utf8'));
+    }
     const { rows } = await client.query<{
-      found: boolean;
+      code: string;
+      tab_labels: string[];
       has_form_type: boolean;
-      form_type_tab_key: string | null;
     }>(`
       select
-        count(*) = 1 as found,
+        code,
+        array(
+          select tab ->> 'label'
+          from jsonb_array_elements(schema #> '{layout,0,tabs}') tab
+          order by tab ->> 'key'
+        ) as tab_labels,
         coalesce(schema #> '{layout,0,tabs,0,blocks}', '[]'::jsonb)
-          @> '[{"kind":"field","field":"formType"}]'::jsonb as has_form_type,
-        schema #>> '{layout,0,tabs,0,key}' as form_type_tab_key
+          @> '[{"kind":"field","field":"formType"}]'::jsonb as has_form_type
       from public.lowcode_form_definitions
-      where code = 'material-prop.form'
-      group by schema
+      where code in (
+        'material-prop.form',
+        'material-prop.lowcode-edit-form',
+        'material-prop.lowcode-search-form'
+      )
+      order by code
     `);
-    const result = rows[0];
-    if (!result?.found || !result.has_form_type || result.form_type_tab_key !== 'basic') {
-      throw new Error(`Form type property verification failed: ${JSON.stringify(result)}`);
+    const form = rows.find((row) => row.code === 'material-prop.form');
+    const editForm = rows.find((row) => row.code === 'material-prop.lowcode-edit-form');
+    const searchForm = rows.find((row) => row.code === 'material-prop.lowcode-search-form');
+    const hasGarbledLabel = rows.some((row) => row.tab_labels.some((label) => /^\?+$/.test(label)));
+    if (
+      !form?.has_form_type ||
+      !editForm?.has_form_type ||
+      !searchForm ||
+      hasGarbledLabel
+    ) {
+      throw new Error(`Form property verification failed: ${JSON.stringify(rows)}`);
     }
     await client.query('commit');
-    console.log(JSON.stringify(result));
+    console.log(JSON.stringify(rows));
   } catch (error) {
     await client.query('rollback').catch(() => undefined);
     throw error;

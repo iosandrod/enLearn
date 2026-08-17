@@ -296,7 +296,7 @@ async function selectedOptionValue(page: any, fieldName: string) {
 }
 
 async function searchFormButton(page: any, label: string) {
-  const form = page.locator('#planning_console_filter').first();
+  const form = page.locator('#planning_console_result_filter').first();
   const formButton = form.getByRole('button', { name: label }).first();
   if (await formButton.count()) return formButton;
   return page.locator('.lowcode-runtime-page > .lc-runtime-block').first()

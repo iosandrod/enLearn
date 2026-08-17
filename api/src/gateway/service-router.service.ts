@@ -42,7 +42,10 @@ export class ServiceRouterService {
     context: ServiceContext
   ) {
     if (serviceName === 'workflow') {
-      return this.workflowService.execute(serviceMethod, postData, context);
+      return this.workflowService.execute(serviceMethod, postData, {
+        ...context,
+        serviceName
+      });
     }
 
     if (!isDomainServiceName(serviceName)) {
@@ -57,7 +60,10 @@ export class ServiceRouterService {
           serviceName,
           serviceMethod,
           postData,
-          context
+          context: {
+            ...context,
+            serviceName
+          }
         })
         .pipe(timeout(DOMAIN_SERVICE_TIMEOUT_MS))
     ).catch((error: unknown) => {

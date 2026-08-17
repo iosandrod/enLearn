@@ -99,6 +99,15 @@ function cloneVisualData(value: VisualEditorModelValue) {
   return JSON.parse(JSON.stringify(value)) as VisualEditorModelValue;
 }
 
+function normalizeProjectData(jsonData: VisualEditorModelValue | string) {
+  const nextJsonData =
+    typeof jsonData === 'string'
+      ? (JSON.parse(jsonData) as VisualEditorModelValue)
+      : cloneVisualData(jsonData);
+
+  return normalizeLegacyVisualData(nextJsonData);
+}
+
 function normalizeLegacyBlock(block: VisualEditorBlockData) {
   if (block.componentKey === 'form') {
     if (block.label === '表单容器') {
@@ -405,15 +414,31 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
   };
 
   // 使用自定义JSON覆盖整个项目
-  const overrideProject = (jsonData) => {
-    const nextJsonData = normalizeLegacyVisualData(
-      typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData,
-    );
+  const applyProjectData = (jsonData: VisualEditorModelValue | string) => {
+    const nextJsonData = normalizeProjectData(jsonData);
+    const fallback = cloneDefaultValue();
+    const nextPages = Object.keys(nextJsonData.pages || {}).length ? nextJsonData.pages : fallback.pages;
+
     Object.keys(state.jsonData.pages).forEach((path) => delete state.jsonData.pages[path]);
-    Object.assign(state.jsonData.pages, nextJsonData.pages || {});
+    Object.assign(state.jsonData.pages, nextPages);
     state.jsonData.models = nextJsonData.models || [];
-    state.jsonData.actions = nextJsonData.actions || cloneDefaultValue().actions;
+    state.jsonData.actions = nextJsonData.actions || fallback.actions;
     setCurrentPage(Object.keys(state.jsonData.pages)[0] || '/');
+  };
+
+  const overrideProject = (jsonData) => {
+    applyProjectData(jsonData);
+  };
+
+  const replaceProject = (jsonData: VisualEditorModelValue | string) => {
+    historyState.restoring = true;
+    historyState.restoreVersion += 1;
+    applyProjectData(jsonData);
+    historyState.snapshots = [createHistorySnapshot()];
+    historyState.current = 0;
+    void nextTick(() => {
+      historyState.restoring = false;
+    });
   };
 
   const historyState = reactive({
@@ -534,6 +559,7 @@ export const initVisualData = (options: InitVisualDataOptions = {}) => {
     incrementPage,
     deletePage,
     updatePageBlock,
+    replaceProject,
   };
 };
 

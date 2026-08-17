@@ -346,10 +346,99 @@ async function testDirectTypedJobCrudIsBlocked() {
   );
 }
 
+async function testWebhookTriggerRequiresMatchingEnabledJob() {
+  const calls: Array<{ method: string; args: unknown[] }> = [];
+  const job = {
+    id: 'job-webhook',
+    status: 'enabled',
+    triggerTaskId: 'workflow.trigger-workflow.run',
+    payload: {
+      triggerWorkflow: {
+        executionPlan: {
+          operations: [{
+            type: 'webhook',
+            options: {
+              body: {
+                serviceName: 'lowcode',
+                serviceMethod: 'rebuildIndex'
+              }
+            }
+          }]
+        }
+      }
+    }
+  };
+  const probe = new WorkflowServiceProbe(
+    delegate('webhookDefinitionProbe', []) as never,
+    delegate('webhookRuntimeProbe', []) as never,
+    delegate('webhookApprovalProbe', []) as never,
+    {
+      getJob: async (...args: unknown[]) => {
+        calls.push({ method: 'getJob', args });
+        return job;
+      },
+      runJobAndWait: async (...args: unknown[]) => {
+        calls.push({ method: 'runJobAndWait', args });
+        return { variables: { taskOutputs: { inventory: ['row-1'] } } };
+      }
+    } as never,
+    delegate('webhookRuntimeStatusProbe', []) as never,
+    {
+      invalidate: async (...args: unknown[]) => {
+        calls.push({ method: 'invalidate', args });
+      }
+    } as never
+  ) as unknown as PublicWorkflowService;
+
+  const result = await probe.execute('triggerWebhook', {
+    jobId: job.id,
+    serviceName: 'lowcode',
+    serviceMethod: 'rebuildIndex',
+    postData: { resource: 'inventory' }
+  }, serviceContext);
+
+  assert.deepEqual(result, { variables: { taskOutputs: { inventory: ['row-1'] } } });
+  assert.deepEqual(calls, [
+    {
+      method: 'getJob',
+      args: [job.id, { tenantId: serviceContext.accountId, userId: serviceContext.userId }]
+    },
+    {
+      method: 'runJobAndWait',
+      args: [
+        job.id,
+        {
+          payload: {
+            serviceName: 'lowcode',
+            serviceMethod: 'rebuildIndex',
+            postData: { resource: 'inventory' }
+          }
+        },
+        { tenantId: serviceContext.accountId, userId: serviceContext.userId }
+      ]
+    },
+    {
+      method: 'invalidate',
+      args: [serviceContext.accountId]
+    }
+  ]);
+
+  await assert.rejects(
+    () => probe.execute('triggerWebhook', {
+      jobId: job.id,
+      serviceName: 'lowcode',
+      serviceMethod: 'notConfigured',
+      postData: {}
+    }, serviceContext),
+    /Enabled Webhook workflow not found/
+  );
+}
+
 void Promise.all([
   testDirectDelegation(),
   testDirectTypedJobCrudIsBlocked(),
-  testJobRunReadModel()
+  testJobRunReadModel(),
+  testWebhookTriggerRequiresMatchingEnabledJob()
 ]).then(() => {
   console.log('workflow service tests passed');
 });

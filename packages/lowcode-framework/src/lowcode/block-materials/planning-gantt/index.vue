@@ -20,15 +20,15 @@
     >
       <Willow :fonts="false">
         <Gantt
-          :key="ganttRenderKey"
+          :key="ganttInstanceKey"
           :tasks="ganttTasks"
           :links="[]"
           :columns="ganttColumns"
           :task-types="ganttTaskTypes"
           :scales="ganttScales"
           :selected="selectedTasks"
-          :start="ganttRange.start"
-          :end="ganttRange.end"
+          :start="ganttDataRange.start"
+          :end="ganttDataRange.end"
           :cell-width="ganttCellWidth"
           :cell-height="34"
           :scale-height="28"
@@ -74,7 +74,6 @@ type GanttSelectionEvent = {
   id?: TID;
 };
 
-const UNASSIGNED_RESOURCE_LABEL = '未分配资源';
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePagePlanningGanttBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 const runtime = useLowCodePageRuntime(false);
@@ -102,12 +101,14 @@ const validRows = computed<GanttRow[]>(() => rows.value.flatMap((row, index) => 
   const start = new Date(readString(row[props.block.startField ?? 'startdate']));
   const end = new Date(readString(row[props.block.endField ?? 'enddate']));
   if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end < start) return [];
+  const rowLabel = readString(row[props.block.rowLabelField ?? 'resource_name']);
+  if (!rowLabel) return [];
   const status = readString(row[props.block.statusField ?? 'status'], 'proposed');
   const delayed = Number(row.delay_hours ?? 0) > 0;
   return [{
     ...row,
     __end: new Date(Math.max(end.getTime(), start.getTime() + 15 * 60_000)),
-    __rowLabel: readString(row[props.block.rowLabelField ?? 'resource_name'], UNASSIGNED_RESOURCE_LABEL),
+    __rowLabel: rowLabel,
     __start: start,
     __status: status,
     __taskId: readString(row.id, `planning-task-${index}`),
@@ -123,11 +124,7 @@ const ganttTasks = computed<ITask[]>(() => {
   for (const row of validRows.value) {
     groups.set(row.__rowLabel, [...(groups.get(row.__rowLabel) ?? []), row]);
   }
-  const orderedGroups = [...groups.entries()].sort(([left], [right]) => {
-    if (left === UNASSIGNED_RESOURCE_LABEL) return 1;
-    if (right === UNASSIGNED_RESOURCE_LABEL) return -1;
-    return left.localeCompare(right, 'zh-CN');
-  });
+  const orderedGroups = [...groups.entries()].sort(([left], [right]) => left.localeCompare(right, 'zh-CN'));
   return orderedGroups.flatMap(([label, resourceRows], resourceIndex) => {
     const parentId = `__planning-resource-${resourceIndex}`;
     const start = new Date(Math.min(...resourceRows.map((row) => row.__start.getTime())));
@@ -161,29 +158,32 @@ const ganttTasks = computed<ITask[]>(() => {
   });
 });
 
-const ganttRange = computed(() => {
-  if (!validRows.value.length) {
-    const start = new Date();
-    return { start, end: new Date(start.getTime() + 86_400_000) };
-  }
-  const start = Math.min(...validRows.value.map((row) => row.__start.getTime()));
-  const end = Math.max(...validRows.value.map((row) => row.__end.getTime()));
-  const span = Math.max(60 * 60_000, end - start);
-  const padding = Math.max(60 * 60_000, Math.round(span * 0.04));
-  return {
-    start: new Date(start - padding),
-    end: new Date(end + padding),
-  };
-});
-
 const selectedTasks = computed<TID[]>(() => selectedTaskId.value ? [selectedTaskId.value] : []);
 const panelStyle = computed(() => ({ '--lc-gantt-height': toCssSize(props.block.height, '520px') }));
 const ganttCellWidth = computed(() => ganttScaleUnit.value === 'hour' ? 70 : 56);
+const ganttDataRange = computed(() => {
+  const start = Math.min(...validRows.value.map((row) => row.__start.getTime()));
+  const end = Math.max(...validRows.value.map((row) => row.__end.getTime()));
+  return { start: new Date(start), end: new Date(end) };
+});
 const ganttScaleUnit = computed<'hour' | 'day'>(() => {
   if (!validRows.value.length) return 'day';
-  const span = ganttRange.value.end.getTime() - ganttRange.value.start.getTime();
+  const span = ganttDataRange.value.end.getTime() - ganttDataRange.value.start.getTime();
   return span <= 4 * 86_400_000 ? 'hour' : 'day';
 });
+const ganttTimelineSignature = computed(() => validRows.value
+  .map((row) => [
+    row.__taskId,
+    row.__rowLabel,
+    row.__start.getTime(),
+    row.__end.getTime(),
+  ].join('|'))
+  .join(';'));
+const ganttInstanceKey = computed(() => [
+  ganttRenderKey.value,
+  ganttScaleUnit.value,
+  ganttTimelineSignature.value,
+].join(':'));
 const ganttScales = computed(() => ganttScaleUnit.value === 'hour'
   ? [
       { unit: 'day', step: 1, format: formatScaleDay },

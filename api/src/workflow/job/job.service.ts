@@ -1,4 +1,11 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  GatewayTimeoutException,
+  Inject,
+  Injectable,
+  NotFoundException
+} from '@nestjs/common';
 import { WorkflowSupabaseService } from '../common/workflow-supabase.service';
 import { type CreateJobDto, type JobQueryDto, type JobRunQueryDto, type RunJobDto } from './job.dto';
 import {
@@ -13,6 +20,8 @@ import { assertTriggerWorkflowJobPayload } from '../trigger/trigger-workflow-pol
 const WORKFLOW_SCHEDULED_JOB_TASK_ID = 'workflow.job.scheduled';
 const WORKFLOW_JOB_RPC = 'workflow_job_command';
 const WORKFLOW_DELETE_JOB_RPC = 'workflow_delete_job';
+const WORKFLOW_SYNC_RUN_TIMEOUT_MS = 120_000;
+const WORKFLOW_SYNC_RUN_POLL_INTERVAL_MS = 100;
 
 type JsonRecord = Record<string, unknown>;
 
@@ -285,6 +294,45 @@ export class JobService {
     }
   }
 
+  /**
+   * 同步执行一个工作流作业，并返回工作流运行器最终写入的 output。
+   *
+   * 普通 runJob 仍然是异步提交，供定时任务和后台管理场景使用；
+   * Webhook 调用使用本方法，确保 /api/service 返回的是业务结果而不是运行记录。
+   */
+  async runJobAndWait(
+    jobId: string,
+    dto: RunJobDto,
+    actor: WorkflowJobActor,
+    timeoutMs = WORKFLOW_SYNC_RUN_TIMEOUT_MS
+  ): Promise<Record<string, unknown>> {
+    const submittedRun = await this.runJob(jobId, dto, actor);
+    const deadline = Date.now() + Math.max(1, timeoutMs);
+    let currentRun = submittedRun;
+
+    while (!isTerminalRunStatus(currentRun.status)) {
+      if (Date.now() >= deadline) {
+        throw new GatewayTimeoutException(
+          `Workflow job did not finish within ${Math.max(1, timeoutMs)}ms.`
+        );
+      }
+
+      await sleep(Math.min(
+        WORKFLOW_SYNC_RUN_POLL_INTERVAL_MS,
+        Math.max(1, deadline - Date.now())
+      ));
+      currentRun = await this.getRun(currentRun.id, actor);
+    }
+
+    if (currentRun.status === 'succeeded') {
+      return currentRun.output ?? {};
+    }
+
+    throw new BadGatewayException(
+      currentRun.errorMessage || `Workflow job finished with status "${currentRun.status}".`
+    );
+  }
+
   async listRuns(query: JobRunQueryDto, actor: WorkflowJobActor) {
     const rows = await this.command('list_runs', {
       account_id: actor.tenantId,
@@ -334,6 +382,25 @@ export class JobService {
       input: input.input
     });
     return mapRun(assertRecord(row, 'Workflow job RPC returned an invalid run.'));
+  }
+
+  private async getRun(runId: string, actor: WorkflowJobActor) {
+    if (!this.persistence.isConfigured) {
+      throw new BadRequestException(
+        'Supabase service-role configuration is required for workflow job persistence.'
+      );
+    }
+
+    const { data, error } = await this.persistence.client
+      .from('wf_job_run')
+      .select('*')
+      .eq('id', runId)
+      .eq('account_id', actor.tenantId)
+      .maybeSingle();
+
+    if (error) throw new BadGatewayException(error.message);
+    if (!data) throw new NotFoundException('Workflow job run not found.');
+    return mapRun(assertRecord(data, 'Workflow job run query returned an invalid run.'));
   }
 
   private async command(action: string, payload: JsonRecord) {
@@ -546,6 +613,14 @@ async function runCompensation(compensation: (() => Promise<void>) | undefined) 
 
 function scheduleDeduplicationKey(job: WorkflowJobRecord) {
   return `workflow-job:${job.id}`;
+}
+
+function isTerminalRunStatus(status: WorkflowJobRunStatus) {
+  return status === 'succeeded' || status === 'failed' || status === 'canceled';
+}
+
+function sleep(milliseconds: number) {
+  return new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
 }
 
 function isTriggerNotFoundError(error: unknown) {

@@ -49,6 +49,7 @@ import { workflowResources } from './workflow.resources';
 type PostData = Record<string, unknown>;
 
 const WORKFLOW_JOB_TYPES = new Set(['once', 'cron', 'interval', 'manual', 'service_task']);
+const TRIGGER_WORKFLOW_RUNNER_TASK_ID = 'workflow.trigger-workflow.run';
 
 const WORKFLOW_JOB_RUN_STATUS_LABELS: Record<string, string> = {
   queued: '排队中',
@@ -107,6 +108,29 @@ function readRecord(value: unknown, name: string) {
   const record = readOptionalRecord(value, name);
   if (record) return record;
   throw new BadRequestException(`Missing required field: ${name}`);
+}
+
+function hasMatchingWebhookTrigger(
+  payload: Record<string, unknown>,
+  serviceName: string,
+  serviceMethod: string
+) {
+  const triggerWorkflow = isRecord(payload.triggerWorkflow)
+    ? payload.triggerWorkflow
+    : undefined;
+  const executionPlan = isRecord(triggerWorkflow?.executionPlan)
+    ? triggerWorkflow.executionPlan
+    : undefined;
+  const operations = Array.isArray(executionPlan?.operations)
+    ? executionPlan.operations
+    : [];
+
+  return operations.some((rawOperation) => {
+    if (!isRecord(rawOperation) || rawOperation.type !== 'webhook') return false;
+    const options = isRecord(rawOperation.options) ? rawOperation.options : undefined;
+    const body = isRecord(options?.body) ? options.body : undefined;
+    return body?.serviceName === serviceName && body?.serviceMethod === serviceMethod;
+  });
 }
 
 function readPositiveInteger(value: unknown, name: string) {
@@ -450,6 +474,44 @@ export class WorkflowService extends BaseService {
         );
         this.taskConsoleService.invalidate(runJobActor.tenantId);
         return jobRun;
+      case 'triggerWebhook': {
+        // Webhook 回退入口不要求“运行时管理”权限，但只允许运行已启用、
+        // 且自身配置明确匹配当前 serviceName/serviceMethod 的类型化工作流作业。
+        const webhookActor = this.resolveActor(context);
+        const webhookJobId = readString(postData.jobId, 'jobId');
+        const webhookServiceName = readString(postData.serviceName, 'serviceName');
+        const webhookServiceMethod = readString(postData.serviceMethod, 'serviceMethod');
+        const webhookJob = await this.jobService.getJob(webhookJobId, webhookActor);
+
+        if (
+          webhookJob.status !== 'enabled' ||
+          webhookJob.triggerTaskId !== TRIGGER_WORKFLOW_RUNNER_TASK_ID ||
+          !hasMatchingWebhookTrigger(
+            webhookJob.payload,
+            webhookServiceName,
+            webhookServiceMethod
+          )
+        ) {
+          throw new NotFoundException(
+            `Enabled Webhook workflow not found for ${webhookServiceName}.${webhookServiceMethod}.`
+          );
+        }
+
+        const webhookPostData = readRecord(postData.postData, 'postData');
+        const webhookOutput = await this.jobService.runJobAndWait(
+          webhookJob.id,
+          {
+            payload: {
+              serviceName: webhookServiceName,
+              serviceMethod: webhookServiceMethod,
+              postData: webhookPostData
+            }
+          },
+          webhookActor
+        );
+        this.taskConsoleService.invalidate(webhookActor.tenantId);
+        return webhookOutput;
+      }
       case 'getTask':
         return this.runtimeService.getTask(
           readString(postData.taskId, 'taskId'),

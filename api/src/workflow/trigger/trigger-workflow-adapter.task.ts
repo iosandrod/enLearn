@@ -127,6 +127,8 @@ export async function executeBackendCommandAdapter(
           );
         case 'supabase.rpc':
           return executeSupabaseRpc(supabase, args);
+        case 'supabase.operation':
+          return executeSupabaseOperation(supabase, args);
         case 'baseService.invoke':
           return executeBaseServiceInvoke(
             fetchImplementation,
@@ -260,6 +262,72 @@ async function executeSupabaseRpc(client: SupabaseClient, args: unknown[]) {
   );
   const parameters = isRecord(args[1]) ? args[1] : {};
   return executeTriggerWorkflowRpc(client, name, parameters);
+}
+
+type SupabaseOperation =
+  | { kind: 'property'; name: string }
+  | { kind: 'method'; name: string; args: unknown[] };
+
+async function executeSupabaseOperation(client: SupabaseClient, args: unknown[]) {
+  if (!Array.isArray(args) || !args.length) {
+    throw new Error('supabase.operation requires a non-empty operation path.');
+  }
+
+  const path = args[0];
+  if (!Array.isArray(path)) {
+    throw new Error('supabase.operation path must be an array.');
+  }
+
+  let current: unknown = client;
+  for (const rawOperation of path) {
+    const operation = assertSupabaseOperation(rawOperation);
+    if (operation.kind === 'property') {
+      if (current === null || current === undefined) {
+        throw new Error(`Supabase property "${operation.name}" cannot be read.`);
+      }
+      current = (current as Record<string, unknown>)[operation.name];
+      continue;
+    }
+
+    if (current === null || current === undefined) {
+      throw new Error(`Supabase method "${operation.name}" has no receiver.`);
+    }
+    const method = (current as Record<string, unknown>)[operation.name];
+    if (typeof method !== 'function') {
+      throw new Error(`Supabase method "${operation.name}" is not available.`);
+    }
+
+    if (operation.name === 'rpc') {
+      const rpcName = resolveAllowedWorkflowRpcName(
+        readRequiredString(operation.args[0], 'supabase.rpc name')
+      );
+      const parameters = isRecord(operation.args[1]) ? operation.args[1] : {};
+      current = await executeTriggerWorkflowRpc(
+        current as SupabaseClient,
+        rpcName,
+        parameters
+      );
+      continue;
+    }
+
+    current = method.apply(current, operation.args);
+  }
+
+  return await Promise.resolve(current);
+}
+
+function assertSupabaseOperation(value: unknown): SupabaseOperation {
+  const operation = assertRecord(value, 'supabase.operation contains an invalid operation.');
+  const kind = readString(operation.kind);
+  const name = readRequiredString(operation.name, 'supabase operation name');
+  if (kind === 'property') return { kind, name };
+  if (kind === 'method') {
+    if (!Array.isArray(operation.args)) {
+      throw new Error(`Supabase method "${name}" arguments must be an array.`);
+    }
+    return { kind, name, args: operation.args };
+  }
+  throw new Error(`Unsupported Supabase operation kind: ${kind || 'unknown'}.`);
 }
 
 async function executeBaseServiceInvoke(
