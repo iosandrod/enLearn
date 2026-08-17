@@ -73,6 +73,13 @@ export type LowCodeRelateInfoConfig = {
   allowInput?: boolean;
 };
 
+export type LowCodePageRelateConfig = {
+  category?: string;
+  parentCategory?: string;
+  relatedPageCode?: string;
+  [key: string]: unknown;
+};
+
 export type LowCodeField = {
   field: string;
   label: string;
@@ -799,6 +806,7 @@ export type LowCodePageRecord = {
   edit_page_id: string | null;
   view_name: string | null;
   table_name: string | null;
+  relate_config: LowCodePageRelateConfig;
   schema: LowCodePageSchema;
   version: number;
   published_at: string | null;
@@ -808,5 +816,5 @@ export type LowCodePageRecord = {
 
 export type LowCodePageSummary = Pick<
   LowCodePageRecord,
-  'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'page_type' | 'edit_page_id' | 'view_name' | 'table_name' | 'version' | 'published_at' | 'created_at' | 'updated_at'
+  'id' | 'code' | 'route' | 'title' | 'description' | 'layout' | 'status' | 'keep_alive' | 'page_type' | 'edit_page_id' | 'view_name' | 'table_name' | 'relate_config' | 'version' | 'published_at' | 'created_at' | 'updated_at'
 >;

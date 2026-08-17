@@ -50,15 +50,6 @@ async function openColumnDesigner() {
   return dialog;
 }
 
-async function readRuntimeFields() {
-  return grid().locator('.vxe-header--column').evaluateAll((columns) =>
-    columns.map((column) => ({
-      title: column.textContent?.trim(),
-      field: column.getAttribute('colid'),
-    })),
-  );
-}
-
 async function readRows(dialog) {
   return dialog.locator('.lc-array-table .vxe-body--row').evaluateAll((rows) =>
     rows.map((row, domIndex) => ({
@@ -102,42 +93,9 @@ async function confirmDesigner(dialog) {
     request.method() !== 'GET' && request.postData()?.includes('lowcode_pages'),
   );
   await dialog.getByText('确定', { exact: true }).last().click();
-  const request = await saveRequest;
+  await saveRequest;
   await dialog.waitFor({ state: 'hidden' });
   await page.waitForTimeout(1_000);
-  return JSON.parse(request.postData()).postData.data.schema;
-}
-
-async function waitForDesignerState(fields) {
-  await page.waitForFunction(async (expectedFields) => {
-    const response = await fetch('/api/service', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        serviceName: 'lowcode',
-        serviceMethod: 'listItems',
-        postData: {
-          resource: 'lowcode_pages',
-          filters: { route: '/dashboard/sales/orders/edit' },
-          limit: 1,
-        },
-      }),
-    });
-    const result = await response.json();
-    window.__dragTestResult = result;
-    return false;
-  }, fields, { timeout: 1_000 }).catch(() => undefined);
-}
-
-function findRuntimeBlock(blocks, id) {
-  for (const block of blocks ?? []) {
-    if (block.id === id) return block;
-    const nested = findRuntimeBlock([
-      ...(block.blocks ?? []),
-      ...(block.tabs ?? []).flatMap((tab) => tab.blocks ?? []),
-    ], id);
-    if (nested) return nested;
-  }
 }
 
 try {
@@ -164,21 +122,7 @@ try {
     'Dragging the first data column below the second must swap their model order.',
   );
 
-  const savedSchema = await confirmDesigner(dialog);
-  const savedGrid = findRuntimeBlock(savedSchema.blocks, 'sales-order-lines-grid');
-  await waitForDesignerState([secondField, firstField]);
-  const runtimeFieldsBeforeOpen = await readRuntimeFields();
-  const snapshot = await page.locator('.stack').evaluate((element) => {
-    const renderer = element.querySelector('.low-code-page');
-    return { rendererClass: renderer?.className };
-  });
-  console.log(JSON.stringify({
-    expected: [secondField, firstField],
-    saved: savedGrid.schema.grid.columns.slice(0, 2).map((column) => column.field),
-    runtime: runtimeFieldsBeforeOpen,
-    snapshot,
-    fetchResult: await page.evaluate(() => window.__dragTestResult),
-  }));
+  await confirmDesigner(dialog);
 
   dialog = await openColumnDesigner();
   currentDataRows = (await readRows(dialog)).filter((row) => row.values[0]?.trim());

@@ -1,6 +1,7 @@
 import type {
   LowCodePageApi,
   LowCodePageFunction,
+  LowCodePageRelateConfig,
   LowCodePageRecord,
   LowCodePageSchema,
 } from '@enlearn/lowcode-framework/types/lowcode';
@@ -10,6 +11,7 @@ export type PageInfoDesignForm = {
   route: string;
   title: string;
   tableName: string;
+  relateConfig: LowCodePageRelateConfig;
   pageType: LowCodePageRecord['page_type'];
   layout: LowCodePageRecord['layout'];
   status: LowCodePageRecord['status'];
@@ -25,6 +27,7 @@ export function createPageInfoDesignForm(page: LowCodePageRecord): PageInfoDesig
     route: page.route,
     title: page.title,
     tableName: normalizePageTableName(page.table_name),
+    relateConfig: normalizePageRelateConfig(page.relate_config),
     pageType: page.page_type,
     layout: page.layout,
     status: page.status,
@@ -47,6 +50,11 @@ function normalizePageTableName(value: unknown) {
   return typeof value === 'string'
     ? value.trim().replace(/^public\./i, '')
     : '';
+}
+
+function normalizePageRelateConfig(value: unknown): LowCodePageRelateConfig {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return {};
+  return JSON.parse(JSON.stringify(value)) as LowCodePageRelateConfig;
 }
 
 function normalizePageFunctions(value: unknown): LowCodePageFunction[] {
@@ -102,6 +110,7 @@ export function normalizePageInfoDesignForm(
     route: page.route,
     title: String(value.title ?? '').trim(),
     tableName: normalizePageTableName(value.tableName),
+    relateConfig: normalizePageRelateConfig(value.relateConfig),
     pageType: pageTypes.includes(value.pageType) ? value.pageType : page.page_type,
     layout: layouts.includes(value.layout) ? value.layout : page.layout,
     status: statuses.includes(value.status) ? value.status : page.status,
@@ -147,6 +156,7 @@ export function buildPageInfoSaveData(page: LowCodePageRecord, value: PageInfoDe
     keep_alive: value.keepAlive,
     page_type: value.pageType,
     table_name: value.tableName || null,
+    relate_config: normalizePageRelateConfig(value.relateConfig),
     edit_page_id: page.edit_page_id,
     schema,
     version: page.version + 1,

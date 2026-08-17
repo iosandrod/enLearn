@@ -63,7 +63,71 @@ function searchActions() {
   ];
 }
 
+const textFormatter = { type: 'text', emptyText: '-' };
+const numberFormatter = { type: 'number', locale: 'zh-CN', emptyText: '0' };
+const datetimeFormatter = { type: 'datetime', locale: 'zh-CN', emptyText: '-' };
+
+function planningListSource(key: string, label: string, resource: string, autoLoad: boolean) {
+  return {
+    key,
+    label,
+    sourceType: 'custom' as const,
+    serviceName: 'planning',
+    serviceMethod: 'listItems',
+    tableName: resource,
+    postData: {
+      resource,
+      tableName: resource,
+      ...(autoLoad
+        ? {}
+        : {
+            filters: { operation_id: '__none__' },
+            requiredFilters: ['operation_id']
+          }),
+      limit: 1000
+    },
+    autoLoad
+  };
+}
+
+function gridConfig(columns: Array<Record<string, unknown>>, height: number) {
+  return {
+    border: true,
+    stripe: true,
+    showOverflow: 'tooltip',
+    height,
+    rowConfig: { keyField: 'id', isCurrent: true },
+    columnConfig: { resizable: true },
+    columns
+  };
+}
+
+function detailGrid(
+  id: string,
+  sourceKey: string,
+  columns: Array<Record<string, unknown>>
+) {
+  return {
+    id,
+    kind: 'grid',
+    tableType: 'detail',
+    sourceKey,
+    schema: {
+      grid: gridConfig(columns, 270),
+      rowActions: { edit: false, delete: false }
+    }
+  };
+}
+
 export function buildPlanningRoutingPageSchema(): LowCodePageSchema {
+  const detailSourceKeys = [
+    'routingSuboperations',
+    'routingMaterials',
+    'routingResources',
+    'routingDependencies'
+  ];
+  const rowLinkedSourceKeys = [...detailSourceKeys, 'flow'];
+
   return {
     schemaVersion: 1,
     code: PLANNING_ROUTING_PAGE_CODE,
@@ -86,14 +150,44 @@ export function buildPlanningRoutingPageSchema(): LowCodePageSchema {
           filters: {
             itemId: '{{ forms.planning_routing_filter.itemId }}',
             resourceId: '{{ forms.planning_routing_filter.resourceId }}',
-            operationId: '{{ forms.planning_routing_filter.operationId }}'
-          }
+            operationId: '__none__'
+          },
+          requiredFilters: ['operationId']
         },
-        autoLoad: true
+        autoLoad: false
       },
+      routingOperations: planningListSource(
+        'routingOperations',
+        '工艺路线表',
+        'planning_operation',
+        true
+      ),
+      routingSuboperations: planningListSource(
+        'routingSuboperations',
+        '路线工序',
+        'planning_suboperation',
+        false
+      ),
+      routingMaterials: planningListSource(
+        'routingMaterials',
+        '关联物料',
+        'planning_operationmaterial',
+        false
+      ),
+      routingResources: planningListSource(
+        'routingResources',
+        '关联资源',
+        'planning_operationresource',
+        false
+      ),
+      routingDependencies: planningListSource(
+        'routingDependencies',
+        '工序依赖',
+        'planning_operation_dependency',
+        false
+      ),
       itemOptions: optionSource('item', '物料选项'),
-      resourceOptions: optionSource('resource', '资源选项'),
-      operationOptions: optionSource('operation', '工序选项')
+      resourceOptions: optionSource('resource', '资源选项')
     },
     eventHandlers: [{
       event: 'planningFlow.nodeSelect',
@@ -109,25 +203,174 @@ export function buildPlanningRoutingPageSchema(): LowCodePageSchema {
         kind: 'searchForm',
         title: '路线筛选',
         targetSourceKey: 'flow',
-        initialValues: { itemId: '', resourceId: '', operationId: '' },
+        initialValues: { itemId: '', resourceId: '' },
         schema: {
-          columns: 3,
+          columns: 2,
           fields: [
             selectField('itemId', '产出物料', 'itemOptions', '全部物料', 'flow'),
-            selectField('resourceId', '资源', 'resourceOptions', '全部资源', 'flow'),
-            selectField('operationId', '工序', 'operationOptions', '全部工序', 'flow')
+            selectField('resourceId', '资源', 'resourceOptions', '全部资源', 'flow')
           ],
           actions: searchActions()
         }
       },
       {
-        id: 'planning_routing_flow',
-        kind: 'planningFlow',
-        sourceKey: 'flow',
-        height: 650,
-        title: '工艺路线',
-        description: '工序顺序、依赖关系、投入物料和占用资源。',
-        fitViewOnInit: true
+        id: 'planning_routing_grid',
+        kind: 'grid',
+        tableType: 'main',
+        title: '工艺路线表',
+        sourceKey: 'routingOperations',
+        schema: {
+          grid: gridConfig([
+            { type: 'seq', title: '序号', width: 64, align: 'center' },
+            { field: 'name', title: '名称', minWidth: 200, fixed: 'left', sortable: true },
+            {
+              field: 'type',
+              title: '类型',
+              width: 116,
+              align: 'center',
+              formatter: {
+                type: 'enum',
+                map: {
+                  fixed_time: '固定时长',
+                  time_per: '单位时长',
+                  routing: '工艺路线',
+                  alternate: '备选工序',
+                  split: '拆分工序'
+                },
+                emptyText: '-'
+              }
+            },
+            { field: 'item_id_label', title: '产出物料', minWidth: 180, formatter: textFormatter },
+            { field: 'location_id_label', title: '地点', minWidth: 150, formatter: textFormatter },
+            { field: 'owner_id_label', title: '上级工序', minWidth: 180, formatter: textFormatter },
+            { field: 'priority', title: '优先级', width: 90, align: 'right', formatter: numberFormatter },
+            { field: 'duration', title: '固定时长', width: 120, formatter: textFormatter },
+            { field: 'duration_per', title: '单位时长', width: 120, formatter: textFormatter },
+            { field: 'cost', title: '工序成本', width: 110, align: 'right', formatter: numberFormatter },
+            { field: 'effective_start', title: '生效开始', width: 180, formatter: datetimeFormatter },
+            { field: 'effective_end', title: '生效结束', width: 180, formatter: datetimeFormatter },
+            { field: 'description', title: '说明', minWidth: 220, formatter: textFormatter }
+          ], 330),
+          rowActions: { edit: false, delete: false },
+          events: {
+            rowCurrentChange: rowLinkedSourceKeys.map((sourceKey) => ({
+              type: 'setSearchFilters',
+              sourceKey,
+              mode: 'replace',
+              values: sourceKey === 'flow'
+                ? { operationId: '{{ event.row.id }}' }
+                : { operation_id: '{{ event.row.id }}' }
+            })),
+            rowDblclick: [{
+              type: 'navigate',
+              route: '/dashboard/planning/operation/edit?id={{ row.id }}&fromPage=planning_routing_view'
+            }]
+          }
+        }
+      },
+      {
+        id: 'planning_routing_detail_tabs',
+        kind: 'tabs',
+        title: '关联信息',
+        defaultKey: 'suboperations',
+        tabs: [
+          {
+            key: 'suboperations',
+            label: '路线工序',
+            blocks: [detailGrid(
+              'planning_routing_suboperations_grid',
+              'routingSuboperations',
+              [
+                { type: 'seq', title: '序号', width: 64, align: 'center' },
+                { field: 'suboperation_id_label', title: '工序', minWidth: 220, fixed: 'left', formatter: textFormatter },
+                { field: 'operation_id_label', title: '所属路线', minWidth: 200, formatter: textFormatter },
+                { field: 'priority', title: '顺序/优先级', width: 120, align: 'right', formatter: numberFormatter },
+                { field: 'effective_start', title: '生效开始', width: 180, formatter: datetimeFormatter },
+                { field: 'effective_end', title: '生效结束', width: 180, formatter: datetimeFormatter }
+              ]
+            )]
+          },
+          {
+            key: 'materials',
+            label: '关联物料',
+            blocks: [detailGrid(
+              'planning_routing_materials_grid',
+              'routingMaterials',
+              [
+                { type: 'seq', title: '序号', width: 64, align: 'center' },
+                { field: 'item_id_label', title: '物料', minWidth: 220, fixed: 'left', formatter: textFormatter },
+                { field: 'location_id_label', title: '地点', minWidth: 160, formatter: textFormatter },
+                { field: 'name', title: '名称', minWidth: 160, formatter: textFormatter },
+                {
+                  field: 'type',
+                  title: '流动时点',
+                  width: 112,
+                  align: 'center',
+                  formatter: {
+                    type: 'enum',
+                    map: { start: '开始', end: '结束', transfer_batch: '分批转移' },
+                    emptyText: '-'
+                  }
+                },
+                { field: 'quantity', title: '变动用量', width: 110, align: 'right', formatter: numberFormatter },
+                { field: 'quantity_fixed', title: '固定用量', width: 110, align: 'right', formatter: numberFormatter },
+                { field: 'transferbatch', title: '转移批量', width: 110, align: 'right', formatter: numberFormatter },
+                { field: 'priority', title: '优先级', width: 90, align: 'right', formatter: numberFormatter },
+                { field: 'effective_start', title: '生效开始', width: 180, formatter: datetimeFormatter },
+                { field: 'effective_end', title: '生效结束', width: 180, formatter: datetimeFormatter }
+              ]
+            )]
+          },
+          {
+            key: 'resources',
+            label: '关联资源',
+            blocks: [detailGrid(
+              'planning_routing_resources_grid',
+              'routingResources',
+              [
+                { type: 'seq', title: '序号', width: 64, align: 'center' },
+                { field: 'resource_id_label', title: '资源', minWidth: 220, fixed: 'left', formatter: textFormatter },
+                { field: 'skill_id_label', title: '技能', minWidth: 180, formatter: textFormatter },
+                { field: 'name', title: '名称', minWidth: 160, formatter: textFormatter },
+                { field: 'quantity', title: '变动用量', width: 110, align: 'right', formatter: numberFormatter },
+                { field: 'quantity_fixed', title: '固定用量', width: 110, align: 'right', formatter: numberFormatter },
+                { field: 'setup', title: '换型', minWidth: 130, formatter: textFormatter },
+                { field: 'priority', title: '优先级', width: 90, align: 'right', formatter: numberFormatter },
+                { field: 'effective_start', title: '生效开始', width: 180, formatter: datetimeFormatter },
+                { field: 'effective_end', title: '生效结束', width: 180, formatter: datetimeFormatter }
+              ]
+            )]
+          },
+          {
+            key: 'dependencies',
+            label: '工序依赖',
+            blocks: [detailGrid(
+              'planning_routing_dependencies_grid',
+              'routingDependencies',
+              [
+                { type: 'seq', title: '序号', width: 64, align: 'center' },
+                { field: 'blockedby_id_label', title: '前置工序', minWidth: 240, fixed: 'left', formatter: textFormatter },
+                { field: 'operation_id_label', title: '当前工序', minWidth: 220, formatter: textFormatter },
+                { field: 'quantity', title: '数量比例', width: 110, align: 'right', formatter: numberFormatter },
+                { field: 'safety_leadtime', title: '安全提前期', width: 140, formatter: textFormatter },
+                { field: 'hard_safety_leadtime', title: '硬安全提前期', width: 150, formatter: textFormatter }
+              ]
+            )]
+          },
+          {
+            key: 'flow',
+            label: '路线图',
+            blocks: [{
+              id: 'planning_routing_flow',
+              kind: 'planningFlow',
+              sourceKey: 'flow',
+              height: 560,
+              title: '工艺路线',
+              description: '工序顺序、依赖关系、投入物料和占用资源。',
+              fitViewOnInit: true
+            }]
+          }
+        ]
       }
     ]
   };

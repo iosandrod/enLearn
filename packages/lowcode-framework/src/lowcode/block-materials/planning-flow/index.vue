@@ -402,7 +402,7 @@ const edges = computed<Edge[]>(() => {
 });
 
 const panelStyle = computed(() => ({
-  '--lc-planning-visual-height': toCssSize(props.block.height, '520px'),
+  '--lc-planning-visual-height': '100%',
 }));
 
 function scheduleFit(duration = 0) {

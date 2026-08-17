@@ -13,6 +13,7 @@ export type LowCodePageRow = {
   edit_page_id: string | null;
   view_name: string | null;
   table_name: string | null;
+  relate_config: Record<string, unknown>;
   schema: LowCodePageSchema;
   version: number;
   published_at: string | null;

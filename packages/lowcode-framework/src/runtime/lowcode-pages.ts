@@ -82,6 +82,7 @@ function buildEditPageSaveData(page: LowCodePageRecord, schema: LowCodePageSchem
     edit_page_id: null,
     view_name: page.view_name ?? null,
     table_name: page.table_name ?? null,
+    relate_config: page.relate_config ?? {},
     schema,
     version: 1,
     published_at: publishedAt,

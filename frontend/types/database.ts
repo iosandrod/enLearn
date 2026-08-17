@@ -1,4 +1,5 @@
 import type {
+  LowCodePageRelateConfig,
   LowCodePageSchema,
   LowCodePageType
 } from '@enlearn/lowcode-framework/types/lowcode';
@@ -262,6 +263,7 @@ export type LowCodePageRow = {
   edit_page_id: string | null;
   view_name: string | null;
   table_name: string | null;
+  relate_config: LowCodePageRelateConfig;
   schema: LowCodePageSchema;
   version: number;
   created_by: string | null;

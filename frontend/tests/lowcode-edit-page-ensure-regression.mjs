@@ -36,6 +36,7 @@ function pageRecord(overrides = {}) {
     edit_page_id: null,
     view_name: null,
     table_name: 'lowcode_pages',
+    relate_config: { category: 'system' },
     schema: {
       code: 'lowcode-pages',
       route: '/dashboard/low-code',
@@ -82,6 +83,7 @@ assert.equal(createPayload.data.code, 'lowcode-pages-edit');
 assert.equal(createPayload.data.route, '/dashboard/low-code/edit');
 assert.equal(createPayload.data.page_type, 'edit');
 assert.equal(createPayload.data.table_name, 'lowcode_pages');
+assert.deepEqual(createPayload.data.relate_config, createSource.relate_config);
 assert.equal(createPayload.data.schema.pageType, 'edit');
 assert.deepEqual(createPayload.data.schema.blocks, []);
 assert.equal(createPayload.data.__details[0].resource, 'lowcode_page_versions');

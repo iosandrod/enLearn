@@ -328,6 +328,7 @@ const designerPageRecord = computed<LowCodePageRecord>(() => {
     edit_page_id: current?.edit_page_id ?? null,
     view_name: current?.view_name ?? null,
     table_name: current?.table_name ?? null,
+    relate_config: current?.relate_config ?? {},
     schema: {
       ...(currentSchema ?? {}),
       code: form.value.code,
@@ -514,23 +515,44 @@ function normalizeSchema(schema: LowCodePageSchema | null | undefined) {
   const convertedPage = converted.pages?.['/'];
   if (!storedPage || !convertedPage) return schema.visualEditor;
 
-  const runtimeFormModels = new Map(
+  const runtimeBlocks = new Map(
     convertedPage.blocks
       .filter((block) => typeof block.props?.blockId === 'string')
-      .map((block) => [block.props.blockId, block.props?.formDesignerModel]),
+      .map((block) => [block.props.blockId, block]),
+  );
+  const storedBlockIds = new Set(
+    storedPage.blocks
+      .map((block) => block.props?.blockId)
+      .filter((blockId): blockId is string => typeof blockId === 'string'),
   );
   const patchedBlocks = storedPage.blocks.map((block) => {
-    if (isVisualEditorModel(block.props?.formDesignerModel)) return block;
-    const fallbackModel = runtimeFormModels.get(block.props?.blockId);
-    if (!isVisualEditorModel(fallbackModel)) return block;
+    const blockId = block.props?.blockId;
+    const runtimeBlock = typeof blockId === 'string' ? runtimeBlocks.get(blockId) : undefined;
+    if (!runtimeBlock) return block;
 
-    return {
-      ...block,
-      props: {
-        ...block.props,
-        formDesignerModel: fallbackModel,
-      },
-    };
+    const runtimeIsForm = runtimeBlock.componentKey === 'form' || runtimeBlock.componentKey === 'lowcode-search-form';
+    const storedIsForm = block.componentKey === 'form' || block.componentKey === 'lowcode-search-form';
+    if (runtimeIsForm && storedIsForm) {
+      return {
+        ...block,
+        componentKey: runtimeBlock.componentKey,
+        label: runtimeBlock.label,
+        props: {
+          ...block.props,
+          ...runtimeBlock.props,
+          formDesignerModel: isVisualEditorModel(block.props?.formDesignerModel) &&
+            block.componentKey === runtimeBlock.componentKey
+              ? block.props.formDesignerModel
+              : runtimeBlock.props?.formDesignerModel,
+        },
+      };
+    }
+
+    return block;
+  });
+  const appendedBlocks = convertedPage.blocks.filter((block) => {
+    const blockId = block.props?.blockId;
+    return typeof blockId === 'string' && !storedBlockIds.has(blockId);
   });
 
   return {
@@ -539,7 +561,7 @@ function normalizeSchema(schema: LowCodePageSchema | null | undefined) {
       ...schema.visualEditor.pages,
       '/': {
         ...storedPage,
-        blocks: patchedBlocks,
+        blocks: [...patchedBlocks, ...appendedBlocks],
       },
     },
   };
@@ -1067,6 +1089,7 @@ function buildPageSaveData(schema: LowCodePageSchema) {
     keep_alive: schema.keepAlive ?? true,
     page_type: schema.pageType ?? 'custom',
     edit_page_id: page.value?.edit_page_id ?? null,
+    relate_config: page.value?.relate_config ?? {},
     schema,
     version: nextVersion,
     published_at: publishedAt

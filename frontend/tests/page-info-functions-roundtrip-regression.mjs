@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { reactive } from 'vue';
 import {
   buildPageInfoSaveData,
   createPageInfoDesignForm,
@@ -19,6 +20,11 @@ const page = {
   edit_page_id: null,
   view_name: null,
   table_name: 'entity_views',
+  relate_config: {
+    category: 'system',
+    parentCategory: 'data-management',
+    relatedPageCode: 'entity-views',
+  },
   schema: {
     schemaVersion: 3,
     code: 'entity-views-edit',
@@ -65,6 +71,8 @@ const page = {
 
 const opened = createPageInfoDesignForm(page);
 assert.equal(opened.tableName, 'entity_views');
+assert.deepEqual(opened.relateConfig, page.relate_config);
+assert.notEqual(opened.relateConfig, page.relate_config);
 assert.deepEqual(opened.functions, page.schema.functions);
 assert.deepEqual(opened.apis, [
   {
@@ -80,6 +88,12 @@ assert.deepEqual(opened.apis, [
 const normalized = normalizePageInfoDesignForm({
   ...opened,
   tableName: ' public.entity_view_drafts ',
+  relateConfig: {
+    category: 'configuration',
+    parentCategory: 'system',
+    relatedPageCode: 'entity-view-drafts',
+    customFlag: true,
+  },
   functions: [
     ...opened.functions,
     {
@@ -113,11 +127,29 @@ assert.equal(saved.version, 8);
 assert.equal(normalized.tableName, 'entity_view_drafts');
 assert.equal(saved.table_name, 'entity_view_drafts');
 assert.equal(reopened.tableName, 'entity_view_drafts');
+assert.deepEqual(saved.relate_config, normalized.relateConfig);
+assert.deepEqual(reopened.relateConfig, normalized.relateConfig);
 assert.deepEqual(reopened.functions, normalized.functions);
 assert.deepEqual(reopened.apis, normalized.apis);
 assert.deepEqual(saved.schema.scriptPolicy, page.schema.scriptPolicy);
 assert.deepEqual(saved.schema.visualEditor, page.schema.visualEditor);
 assert.deepEqual(saved.schema.config, page.schema.config);
+
+const reactiveNormalized = normalizePageInfoDesignForm({
+  ...opened,
+  relateConfig: reactive({
+    category: 'reactive-category',
+    parentCategory: 'reactive-parent',
+  }),
+}, page);
+assert.deepEqual(reactiveNormalized.relateConfig, {
+  category: 'reactive-category',
+  parentCategory: 'reactive-parent',
+});
+assert.deepEqual(buildPageInfoSaveData(page, reactiveNormalized).relate_config, {
+  category: 'reactive-category',
+  parentCategory: 'reactive-parent',
+});
 
 const designerSource = await readFile(
   new URL('../../packages/lowcode-framework/src/components/LowCodeVisualDesigner.vue', import.meta.url),
@@ -127,6 +159,11 @@ assert.match(
   designerSource,
   /const previousSchema = \(page\.value\?\.schema \?\? \{\}\)[\s\S]*?return prepareLowCodePageSchema\(\{[\s\S]*?\.\.\.previousSchema/,
   'Visual designer saves must retain page-owned functions, APIs, and script policy.',
+);
+assert.match(
+  designerSource,
+  /relate_config: page\.value\?\.relate_config \?\? \{\}/,
+  'Visual designer saves must retain page relation configuration.',
 );
 
 console.log('Page information functions/API round-trip regression passed.');

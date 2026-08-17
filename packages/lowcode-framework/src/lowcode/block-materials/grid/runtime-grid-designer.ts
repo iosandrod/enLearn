@@ -308,7 +308,7 @@ export async function openRuntimeGridDesigner(
       const currentSource = runtimeBlockEditor.getDataSource?.(sourceKey) ?? source;
       const dataSource = createRuntimeDataSource(result, currentSource);
 
-      await runtimeBlockEditor.updateBlock({
+      const updatedBlock = await runtimeBlockEditor.updateBlock({
         blockId: block.id,
         changes: {
           id: readString(result.business.blockId, block.id),
@@ -329,6 +329,7 @@ export async function openRuntimeGridDesigner(
           [sourceKey]: dataSource,
         },
       });
+      Object.assign(block, cloneValue(updatedBlock));
     },
   });
 }

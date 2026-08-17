@@ -73,6 +73,7 @@ async function restorePage(original) {
     page_type: original.page_type,
     edit_page_id: original.edit_page_id,
     table_name: original.table_name,
+    relate_config: original.relate_config,
     schema: original.schema,
     version: original.version,
     published_at: original.published_at,
@@ -197,6 +198,7 @@ let context;
 const pageErrors = [];
 const consoleErrors = [];
 const failedRequests = [];
+const serviceResponses = [];
 try {
   const baseUrl = `http://127.0.0.1:${port}`;
   await waitForUrl(baseUrl);
@@ -207,6 +209,26 @@ try {
   });
   context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
+  await page.addInitScript(() => {
+    const nativeFetch = window.fetch;
+    window.fetch = async (...args) => {
+      const response = await nativeFetch(...args);
+      const url = typeof args[0] === 'string' ? args[0] : args[0]?.url ?? '';
+      if (url.includes('/api/service')) {
+        const requestBody = typeof args[1]?.body === 'string'
+          ? JSON.parse(args[1].body)
+          : args[1]?.body;
+        if (requestBody?.serviceName === 'lowcode' && requestBody?.serviceMethod === 'saveItem') {
+          window.__serviceResponses = window.__serviceResponses ?? [];
+          window.__serviceResponses.push({
+            status: response.status,
+            body: await response.clone().text().catch(() => ''),
+          });
+        }
+      }
+      return response;
+    };
+  });
   page.on('pageerror', (error) => pageErrors.push(error.message));
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text());
@@ -214,11 +236,27 @@ try {
   page.on('requestfailed', (request) => {
     failedRequests.push(`${request.method()} ${request.url()} ${request.failure()?.errorText ?? ''}`);
   });
+  page.on('response', async (response) => {
+    if (response.request().method() !== 'POST' || !response.url().includes('/api/service')) return;
+    const requestBody = response.request().postDataJSON();
+    if (
+      requestBody?.serviceName !== 'lowcode' ||
+      requestBody?.serviceMethod !== 'saveItem' ||
+      requestBody?.postData?.resource !== 'lowcode_pages'
+    ) return;
+    serviceResponses.push({
+      status: response.status(),
+      body: await response.text().catch(() => ''),
+    });
+  });
   await page.goto(`${baseUrl}/dashboard/system/entities`, { waitUntil: 'domcontentloaded' });
 
   let dialog = await openPageInfoDialog(page);
   const tabLabels = await dialog.locator('.vxe-tabs-header--item').allTextContents();
-  assert.deepEqual(tabLabels.map((label) => label.trim()), ['基础信息', '页面函数', '页面 API']);
+  assert.deepEqual(
+    tabLabels.map((label) => label.trim()),
+    ['基础信息', '页面函数', '页面 API', '关联配置'],
+  );
 
   await selectDialogTab(dialog, '页面函数');
   await dialog.getByRole('button', { name: '新增函数' }).click();
@@ -257,7 +295,32 @@ try {
   await fillRowInput(apiRow, 3, 'validateView');
   await fillRowInput(apiRow, 5, 'columns');
 
-  await dialog.getByRole('button', { name: '保存' }).click();
+  await selectDialogTab(dialog, '关联配置');
+  const category = `browser-${unique}`;
+  const categoryInput = dialog.getByPlaceholder('请输入页面类别', { exact: true });
+  await categoryInput.fill(category);
+
+  const saveButton = dialog.locator('.lc-global-dialog__footer').getByRole('button', {
+    name: '保存',
+    exact: true,
+  });
+  await saveButton.click();
+  await page.waitForTimeout(300);
+  if (await dialog.isVisible()) {
+    const saveDebug = await dialog.evaluate((element) => ({
+      error: element.querySelector('.lc-global-dialog__error')?.textContent?.trim() ?? '',
+      invalidFields: [...element.querySelectorAll('.is--error')].map((field) =>
+        field.getAttribute('data-lc-field') ?? field.textContent?.trim().slice(0, 120) ?? ''
+      ),
+      buttons: [...element.querySelectorAll('button')].map((button) => ({
+        text: button.textContent?.trim() ?? '',
+        disabled: button.disabled,
+      })),
+    }));
+    if (saveDebug.error || saveDebug.invalidFields.length) {
+      throw new Error(`Save validation failed: ${JSON.stringify(saveDebug)}`);
+    }
+  }
   await dialog.waitFor({ state: 'hidden', timeout: 30_000 });
 
   const savedPage = await readPage();
@@ -275,6 +338,7 @@ try {
     method: 'POST',
     resultPath: 'columns',
   });
+  assert.equal(savedPage.relate_config?.category, category);
 
   dialog = await openPageInfoDialog(page);
   await selectDialogTab(dialog, '页面函数');
@@ -318,6 +382,11 @@ try {
     await rowInputValue(reopenedApiRow, 5),
     'columns',
   );
+  await selectDialogTab(dialog, '关联配置');
+  assert.equal(
+    await dialog.getByPlaceholder('请输入页面类别', { exact: true }).inputValue(),
+    category,
+  );
   await selectDialogTab(dialog, '页面函数');
   await page.screenshot({
     path: resolve(workspaceDir, 'artifacts/page-info-functions-roundtrip.png'),
@@ -335,8 +404,9 @@ try {
     screenshot: 'artifacts/page-info-functions-roundtrip.png',
   }));
 } catch (error) {
-  const debug = context?.pages?.()?.[0]
-    ? await context.pages()[0].evaluate(() => ({
+  const activePage = context?.pages?.()?.[0];
+  const debug = activePage
+    ? await activePage.evaluate(() => ({
         url: location.href,
         text: document.body.innerText.slice(0, 5000),
         dialogs: document.querySelectorAll('.vxe-modal--wrapper').length,
@@ -345,8 +415,11 @@ try {
           .map((row) => row.outerHTML.slice(0, 1500)),
       })).catch(() => null)
     : null;
+  const fetchResponses = activePage
+    ? await activePage.evaluate(() => window.__serviceResponses ?? []).catch(() => [])
+    : [];
   throw new Error(
-    `${error instanceof Error ? error.message : String(error)}\n${JSON.stringify(debug)}\n${pageErrors.join('\n')}\n${consoleErrors.join('\n')}\n${failedRequests.join('\n')}\n${serverOutput.slice(-8000)}`,
+    `${error instanceof Error ? error.message : String(error)}\n${JSON.stringify(debug)}\n${JSON.stringify({ serviceResponses, fetchResponses })}\n${pageErrors.join('\n')}\n${consoleErrors.join('\n')}\n${failedRequests.join('\n')}\n${serverOutput.slice(-8000)}`,
   );
 } finally {
   try {

@@ -15,6 +15,7 @@ const pageFields = [
   'page_type',
   'view_name',
   'table_name',
+  'relate_config',
   'schema',
   'version',
   'published_at',

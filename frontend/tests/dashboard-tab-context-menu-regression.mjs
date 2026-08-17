@@ -44,8 +44,22 @@ const pageInfoTableNameFormMigration = await readFile(
   ),
   'utf8'
 );
+const pageRelateConfigMigration = await readFile(
+  new URL(
+    '../../supabase/migrations/20260817130000_lowcode_page_relate_config.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
+const pageRelateConfigTabMigration = await readFile(
+  new URL(
+    '../../supabase/migrations/20260817140000_page_relate_config_tab.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
 const allFormDefinitionMigrations =
-  `${formDefinitionMigration}\n${entityLoadTablesFormMigration}\n${pageInfoTableNameFormMigration}`;
+  `${formDefinitionMigration}\n${entityLoadTablesFormMigration}\n${pageInfoTableNameFormMigration}\n${pageRelateConfigMigration}\n${pageRelateConfigTabMigration}`;
 
 const compiledUtility = ts.transpileModule(utilitySource, {
   compilerOptions: {
@@ -192,6 +206,21 @@ assert.match(
   allFormDefinitionMigrations,
   /'page-info-design'[\s\S]*?"field": "tableName"[\s\S]*?"label": "关联表名"[\s\S]*?"component": "vxe-select"[\s\S]*?"optionsCode": "physical_table_name"[\s\S]*?"kind": "field", "field": "tableName"/,
   'The database-backed page-information form must expose the linked table name as a physical-table dropdown.'
+);
+assert.match(
+  pageRelateConfigMigration,
+  /add column if not exists relate_config jsonb not null default '\{\}'::jsonb[\s\S]*?"field": "relateConfig"[\s\S]*?"component": "lc-sub-form"[\s\S]*?"field": "category"[\s\S]*?"field": "parentCategory"[\s\S]*?"field": "relatedPageCode"/,
+  'Page relation configuration must use a JSONB column and a database-backed sub-form.'
+);
+assert.match(
+  pageRelateConfigTabMigration,
+  /"key":"relations","label":"关联配置","blocks":\[\{"kind":"field","field":"relateConfig"\}\]/,
+  'Page relation configuration must have its own tab.'
+);
+assert.match(
+  pageRelateConfigTabMigration,
+  /field_item->>'field' <> 'relateConfig'[\s\S]*?basic_tab->'blocks' @> '\[\{"kind":"field","field":"relateConfig"\}\]'::jsonb/,
+  'Page relation configuration must be removed from the basic tab.'
 );
 assert.match(
   formDefinitionSource,

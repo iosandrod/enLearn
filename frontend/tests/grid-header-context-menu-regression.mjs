@@ -175,6 +175,16 @@ assert.match(
   'Table fields must resolve the same optionsCode data used by form fields.'
 );
 assert.match(
+  gridSource,
+  /const configuredFormatter = updated\.formatter[\s\S]*Array\.isArray\(options\)[\s\S]*formatGridOptionLabel\([\s\S]*typeof optionLabel === 'string'[\s\S]*formatLowCodeGridValue\([\s\S]*configuredFormatter/,
+  'Table fields linked to optionsCode must prefer option labels and retain the configured formatter as a fallback.'
+);
+assert.match(
+  gridSource,
+  /hasOwnProperty\.call\(candidate, 'rawValue'\)[\s\S]*candidate\[valueKey\][\s\S]*sameGridOptionValue/,
+  'Option label formatting must match persisted raw values and custom option value keys.'
+);
+assert.match(
   pageGridSource,
   /createRuntimeGridEditRules[\s\S]*validationScript[\s\S]*grid\.fieldValidate[\s\S]*payload\.key === 'editClosed'[\s\S]*executeGridFieldUpdateScript[\s\S]*grid\.fieldChange/,
   'Table fields must execute the configured validation and update scripts.'

@@ -85,8 +85,8 @@ assert.match(
 );
 assert.match(
   visualDesignerSource,
-  /const runtimeFormModels = new Map[\s\S]*?formDesignerModel: fallbackModel/,
-  'A stored visual page must backfill missing form design models from the canonical runtime schema.',
+  /const runtimeBlocks = new Map[\s\S]*?componentKey: runtimeBlock\.componentKey[\s\S]*?const appendedBlocks = convertedPage\.blocks\.filter[\s\S]*?blocks: \[\.\.\.patchedBlocks, \.\.\.appendedBlocks\]/,
+  'A stored visual page must reconcile changed and newly added forms from the canonical runtime schema.',
 );
 
 console.log('Sales-order form layout round-trip regression test passed.');

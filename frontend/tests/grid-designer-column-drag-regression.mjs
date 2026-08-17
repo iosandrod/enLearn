@@ -15,6 +15,13 @@ const designerSource = await readFile(
   ),
   'utf8',
 );
+const runtimeGridDesignerSource = await readFile(
+  new URL(
+    '../../packages/lowcode-framework/src/lowcode/block-materials/grid/runtime-grid-designer.ts',
+    import.meta.url,
+  ),
+  'utf8',
+);
 
 assert.match(
   arrayTableSource,
@@ -45,6 +52,11 @@ assert.match(
   designerSource,
   /field: 'columns'[\s\S]*component: 'lc-array-table'[\s\S]*rowDraggable: true[\s\S]*onRowMove:[\s\S]*syncColumnsFromRows\(rows\)[\s\S]*movable: false/,
   'The grid column designer must enable drag ordering, sync the reordered model, and replace the legacy up/down controls.',
+);
+assert.match(
+  runtimeGridDesignerSource,
+  /const updatedBlock = await runtimeBlockEditor\.updateBlock\([\s\S]*Object\.assign\(block, cloneValue\(updatedBlock\)\)/,
+  'Saving table design must update the mounted grid block so reopening uses the persisted column order.',
 );
 
 console.log('Grid designer column drag regression test passed.');

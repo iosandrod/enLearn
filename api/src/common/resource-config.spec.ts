@@ -104,6 +104,12 @@ assert.equal(
   (lowcodeResources.lowcode_pages.databaseHooks?.beforeCreate as string),
   'public.dynamic_crud_normalize_lowcode_page'
 );
+assert.ok(
+  lowcodeResources.lowcode_pages.create?.allowedFields?.includes('relate_config')
+);
+assert.ok(
+  lowcodeResources.lowcode_pages.update?.allowedFields?.includes('relate_config')
+);
 assert.deepEqual(
   lowcodeResources.lowcode_form_definitions.permissions,
   {

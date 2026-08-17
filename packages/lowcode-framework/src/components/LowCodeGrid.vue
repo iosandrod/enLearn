@@ -105,7 +105,10 @@ import {
   resolveSystemTableConfig,
   useSystemSettings,
 } from '../core/system-settings';
-import { normalizeLowCodeGridColumns } from '../utils/lowcode';
+import {
+  formatLowCodeGridValue,
+  normalizeLowCodeGridColumns,
+} from '../utils/lowcode';
 import { lowCodeOptionSourceRegistry } from '../runtime/option-source-registry';
 import {
   isLowCodeRowActionDisabled,
@@ -282,6 +285,10 @@ function hydrateRuntimeGridColumn(column: LowCodeGridColumn) {
     ? metadata.optionsCode.trim()
     : '';
   const editRender = isRecord(updated.editRender) ? { ...updated.editRender } : undefined;
+  const configuredFormatter = updated.formatter;
+  const options = optionsCode
+    ? codeOptionSources[optionsCode] ?? lowCodeOptionSourceRegistry.peek(optionsCode)
+    : undefined;
 
   if (component === 'base-info') {
     updated.editRender = editRender ?? { name: 'VxeInput' };
@@ -292,13 +299,93 @@ function hydrateRuntimeGridColumn(column: LowCodeGridColumn) {
     return updated;
   }
 
-  if (editRender && optionsCode && !Array.isArray(editRender.options)) {
-    const options = codeOptionSources[optionsCode] ??
-      lowCodeOptionSourceRegistry.peek(optionsCode);
+  if (editRender && !Array.isArray(editRender.options)) {
     if (Array.isArray(options)) editRender.options = options;
+  }
+  if (Array.isArray(options)) {
+    const optionProps = isRecord(metadata.optionProps) ? metadata.optionProps : {};
+    updated.formatter = (formatterParams) => {
+      const optionLabel = formatGridOptionLabel(
+        formatterParams.cellValue,
+        options,
+        optionProps,
+      );
+      if (typeof optionLabel === 'string') return optionLabel;
+      if (typeof configuredFormatter === 'function') {
+        return configuredFormatter(formatterParams);
+      }
+      const fallback = formatLowCodeGridValue(
+        formatterParams.cellValue,
+        configuredFormatter,
+      );
+      return fallback === null || fallback === undefined ? '' : String(fallback);
+    };
   }
   if (editRender) updated.editRender = editRender;
   return updated;
+}
+
+function formatGridOptionLabel(
+  cellValue: unknown,
+  options: unknown[],
+  optionProps: Record<string, unknown>,
+): string | undefined {
+  if (cellValue === null || cellValue === undefined || cellValue === '') return undefined;
+  if (Array.isArray(cellValue)) {
+    let matched = false;
+    const labels = cellValue.map((value) => {
+      const label = resolveGridOptionLabel(value, options, optionProps);
+      if (typeof label === 'string') {
+        matched = true;
+        return label;
+      }
+      return String(value);
+    });
+    return matched ? labels.join(', ') : undefined;
+  }
+  return resolveGridOptionLabel(cellValue, options, optionProps);
+}
+
+function resolveGridOptionLabel(
+  value: unknown,
+  options: unknown[],
+  optionProps: Record<string, unknown>,
+): string | undefined {
+  const labelKey = readOptionPropKey(optionProps.label, 'label');
+  const valueKey = readOptionPropKey(optionProps.value, 'value');
+  const option = options.find((candidate) => {
+    if (!isRecord(candidate)) return sameGridOptionValue(candidate, value);
+    const candidateValues = [
+      Object.prototype.hasOwnProperty.call(candidate, 'rawValue')
+        ? candidate.rawValue
+        : undefined,
+      candidate[valueKey],
+      candidate.value,
+      candidate.code,
+      candidate.id,
+    ];
+    return candidateValues.some((candidateValue) =>
+      sameGridOptionValue(candidateValue, value)
+    );
+  });
+
+  if (!isRecord(option)) return option === undefined ? undefined : String(option);
+  const label = option[labelKey] ?? option.label ?? option.name ?? option.title ??
+    option.code ?? option.id;
+  return label === null || label === undefined ? String(value) : String(label);
+}
+
+function readOptionPropKey(value: unknown, fallback: string) {
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+function sameGridOptionValue(left: unknown, right: unknown) {
+  if (Object.is(left, right)) return true;
+  if (left === null || left === undefined || right === null || right === undefined) {
+    return false;
+  }
+  if (typeof left === 'object' || typeof right === 'object') return false;
+  return String(left) === String(right);
 }
 
 function baseInfoField(column: Record<string, unknown>) {

@@ -531,6 +531,10 @@ begin
   v_next_schema := pg_temp.set_planning_console_action_script(v_next_schema, 'run', v_run_script);
   v_next_schema := pg_temp.set_planning_console_action_script(v_next_schema, 'publish', v_publish_script);
 
+  -- The visual designer stores a separate snapshot. Drop the stale snapshot so
+  -- it is rebuilt from the canonical runtime blocks on the next designer load.
+  v_next_schema := v_next_schema - 'visualEditor';
+
   if jsonb_path_query_first(v_next_schema, 'strict $.blocks[*] ? (@.id == "planning_console_filter" && @.kind == "form")') is null
      or jsonb_path_query_first(v_next_schema, 'strict $.blocks[*] ? (@.id == "planning_console_result_filter" && @.kind == "searchForm")') is null then
     raise exception 'Planning console form split validation failed.';

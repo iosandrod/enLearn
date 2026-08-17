@@ -1,55 +1,64 @@
 <template>
   <div
-    class="lowcode-runtime-page"
+    class="lowcode-runtime-shell"
     :class="themeClass"
     :style="themeStyle"
     :aria-busy="runtime.state.status.mesCommandExecuting"
     :data-mes-command-executing="runtime.state.status.mesCommandExecuting ? 'true' : 'false'"
   >
-    <div v-if="dataLoading" class="lc-page-loading-overlay" aria-live="polite">
-      <span>{{ loadingText }}</span>
+    <LowCodeCategoryDrawer
+      v-if="hasCategoryRelation"
+      :config="page.relate_config"
+      :service-api="categoryServiceApi"
+      @select="handleCategorySelect"
+    />
+
+    <div class="lowcode-runtime-page">
+      <div v-if="dataLoading" class="lc-page-loading-overlay" aria-live="polite">
+        <span>{{ loadingText }}</span>
+      </div>
+
+      <LowCodeBlockRenderer
+        v-for="(block, index) in layoutBlocks"
+        :key="block.id"
+        :class="{ 'lc-runtime-block--fill': index === layoutBlocks.length - 1 }"
+        :block="block"
+        :resolved-data="resolvedData"
+        :form-models="formModels"
+        :search-filters="searchFilters"
+        :loading-block-id="loadingBlockId"
+        :loading-grid-id="loadingGridId"
+        @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
+        @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
+        @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
+        @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
+        @toolbar-action="({ action }) => handleToolbarAction(action)"
+        @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
+        @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
+        @runtime-event="publishRuntimeEvent"
+      />
+
+      <LowCodeOverlayHost
+        v-if="pageOverlays.length"
+        :overlays="pageOverlays"
+        :resolved-data="resolvedData"
+        :form-models="formModels"
+        :search-filters="searchFilters"
+        :loading-block-id="loadingBlockId"
+        :loading-grid-id="loadingGridId"
+        @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
+        @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
+        @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
+        @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
+        @toolbar-action="({ action }) => handleToolbarAction(action)"
+        @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
+        @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
+        @runtime-event="publishRuntimeEvent"
+      />
+
+      <p v-if="message" :class="messageClass">{{ message }}</p>
+      <GlobalDialogHost v-if="showGlobalDialogHost" />
     </div>
-
-    <LowCodeBlockRenderer
-      v-for="(block, index) in layoutBlocks"
-      :key="block.id"
-      :class="{ 'lc-runtime-block--fill': index === layoutBlocks.length - 1 }"
-      :block="block"
-      :resolved-data="resolvedData"
-      :form-models="formModels"
-      :search-filters="searchFilters"
-      :loading-block-id="loadingBlockId"
-      :loading-grid-id="loadingGridId"
-      @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
-      @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
-      @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
-      @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
-      @toolbar-action="({ action }) => handleToolbarAction(action)"
-      @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
-      @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
-      @runtime-event="publishRuntimeEvent"
-    />
-
-    <LowCodeOverlayHost
-      v-if="pageOverlays.length"
-      :overlays="pageOverlays"
-      :resolved-data="resolvedData"
-      :form-models="formModels"
-      :search-filters="searchFilters"
-      :loading-block-id="loadingBlockId"
-      :loading-grid-id="loadingGridId"
-      @form-submit="({ block: formBlock, values, action }) => handleFormSubmit(formBlock, values, action)"
-      @form-action="({ block: formBlock, action, values }) => handleFormAction(formBlock, action, values)"
-      @grid-edit="({ block: gridBlock, row }) => handleGridEdit(gridBlock, row)"
-      @grid-delete="({ block: gridBlock, row }) => handleGridDelete(gridBlock, row)"
-      @toolbar-action="({ action }) => handleToolbarAction(action)"
-      @search-submit="({ block: searchBlock, values, action }) => handleSearchSubmit(searchBlock, values, action)"
-      @search-action="({ block: searchBlock, action, values }) => handleSearchAction(searchBlock, action, values)"
-      @runtime-event="publishRuntimeEvent"
-    />
-
-    <p v-if="message" :class="messageClass">{{ message }}</p>
-    <GlobalDialogHost v-if="showGlobalDialogHost" />
   </div>
 </template>
 
@@ -71,6 +80,7 @@ import type {
 import type { LowCodeRuntimeBlock } from '../lowcode/block-materials';
 import { resolveGridRows } from '../lowcode/block-materials/helpers';
 import GlobalDialogHost from './GlobalDialogHost';
+import LowCodeCategoryDrawer from './LowCodeCategoryDrawer.vue';
 import LowCodeOverlayHost from './LowCodeOverlayHost.vue';
 import {
   createLowCodeEventBus,
@@ -281,12 +291,28 @@ const themeStyle = computed(() =>
     Object.entries(host.getTheme().variables ?? {}).map(([key, value]) => [key, String(value)])
   )
 );
+const hasCategoryRelation = computed(() => readString(props.page.relate_config?.category) !== '');
+const categoryServiceApi = computed(() => props.serviceApi ?? host.getServiceApi());
 const layoutBlocks = computed(() => {
   runtimeBlockRenderRevision.value;
   return markLastBlockFill(
     validBlocks(props.page.schema.blocks).filter((block) => !isOverlayBlock(block))
   );
 });
+
+async function handleCategorySelect(node: { id: unknown; label: string }) {
+  await publishRuntimeEvent({
+    name: 'category.selected',
+    blockId: 'page-category-drawer',
+    blockKind: 'tree',
+    timestamp: Date.now(),
+    payload: {
+      id: node.id,
+      label: node.label,
+      category: readString(props.page.relate_config?.category),
+    },
+  });
+}
 const pageOverlays = computed<LowCodePageOverlayBlock[]>(() => {
   runtimeBlockRenderRevision.value;
   return [
@@ -3816,6 +3842,18 @@ async function handleGridDelete(
 </script>
 
 <style scoped>
+.lowcode-runtime-shell {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .lowcode-runtime-page {
   position: relative;
 }
