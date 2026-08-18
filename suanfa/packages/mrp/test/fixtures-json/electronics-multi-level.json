@@ -1,0 +1,77 @@
+{
+  "name": "electronics-multi-level",
+  "industry": "electronics",
+  "description": "Controller board with a purchased component BOM, SMT and final assembly.",
+  "input": {
+    "current": 1736121600,
+    "mode": "constrained",
+    "constraints": 15,
+    "buffers": [
+      { "name": "CTRL-BOARD @ SH", "item": "CTRL-BOARD", "location": "SH", "onhand": 0 },
+      { "name": "MAINBOARD @ SH", "item": "MAINBOARD", "location": "SH", "onhand": 0 },
+      { "name": "MCU-X1 @ SH", "item": "MCU-X1", "location": "SH", "onhand": 20 },
+      { "name": "CAP-10U @ SH", "item": "CAP-10U", "location": "SH", "onhand": 80 },
+      { "name": "RES-10K @ SH", "item": "RES-10K", "location": "SH", "onhand": 300 }
+    ],
+    "sources": [
+      { "item": "MCU-X1", "supplier": "Chip Supplier", "location": "SH", "leadTimeSeconds": 172800, "extraSafetyLeadTimeSeconds": 0, "hardSafetyLeadTimeSeconds": 0, "minimumQuantity": 100, "multipleQuantity": 100, "priority": 1 },
+      { "item": "CAP-10U", "supplier": "Passive Supplier", "location": "SH", "leadTimeSeconds": 86400, "extraSafetyLeadTimeSeconds": 0, "hardSafetyLeadTimeSeconds": 0, "minimumQuantity": 100, "multipleQuantity": 100, "priority": 1 },
+      { "item": "RES-10K", "supplier": "Passive Supplier", "location": "SH", "leadTimeSeconds": 86400, "extraSafetyLeadTimeSeconds": 0, "hardSafetyLeadTimeSeconds": 0, "minimumQuantity": 100, "multipleQuantity": 100, "priority": 1 }
+    ],
+    "demands": [
+      { "name": "SO-CTRL-100", "item": "CTRL-BOARD", "location": "SH", "due": 1737331200, "quantity": 100, "minimumShipment": 100, "priority": 1 }
+    ],
+    "confirmedReceipts": [],
+    "resources": [
+      { "name": "SMT-LINE-1", "maximum": 1 },
+      { "name": "FINAL-ASSEMBLY", "maximum": 1 }
+    ],
+    "operations": [
+      {
+        "name": "SMT mainboard",
+        "type": "time_per",
+        "durationSeconds": 0,
+        "durationPerSeconds": 1800,
+        "priority": 1,
+        "flows": [
+          { "buffer": "MCU-X1 @ SH", "quantity": -1, "quantityFixed": 0, "type": "start" },
+          { "buffer": "CAP-10U @ SH", "quantity": -2, "quantityFixed": 0, "type": "start" },
+          { "buffer": "RES-10K @ SH", "quantity": -4, "quantityFixed": 0, "type": "start" },
+          { "buffer": "MAINBOARD @ SH", "quantity": 1, "quantityFixed": 0, "type": "end" }
+        ],
+        "loads": [{ "resource": "SMT-LINE-1", "quantity": 1 }],
+        "subOperations": []
+      },
+      {
+        "name": "Final assembly controller",
+        "type": "fixed_time",
+        "durationSeconds": 7200,
+        "durationPerSeconds": 0,
+        "priority": 1,
+        "flows": [
+          { "buffer": "MAINBOARD @ SH", "quantity": -1, "quantityFixed": 0, "type": "start" },
+          { "buffer": "CTRL-BOARD @ SH", "quantity": 1, "quantityFixed": 0, "type": "end" }
+        ],
+        "loads": [{ "resource": "FINAL-ASSEMBLY", "quantity": 1 }],
+        "subOperations": []
+      }
+    ]
+  },
+  "expect": {
+    "demandQuantity": { "SO-CTRL-100": 100 },
+    "demandPlans": [{ "name": "SO-CTRL-100", "date": 1737331200, "quantity": 100 }],
+    "operationPlans": [
+      { "name": "SMT mainboard", "start": 1737144000, "end": 1737324000, "quantity": 100 },
+      { "name": "Final assembly controller", "start": 1737324000, "end": 1737331200, "quantity": 100 }
+    ],
+    "purchases": [
+      { "item": "MCU-X1", "start": 1736971200, "end": 1737144000, "quantity": 100 },
+      { "item": "CAP-10U", "start": 1737057600, "end": 1737144000, "quantity": 200 },
+      { "item": "RES-10K", "start": 1737057600, "end": 1737144000, "quantity": 100 }
+    ],
+    "requiredOperations": ["SMT mainboard", "Final assembly controller"],
+    "requiredPurchases": ["MCU-X1", "CAP-10U"],
+    "minimumOperationQuantity": { "SMT mainboard": 80, "Final assembly controller": 80 },
+    "checks": { "nonNegativePurchaseQuantities": true, "deterministic": true, "materialEventsFinite": true }
+  }
+}

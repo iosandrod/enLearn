@@ -59,6 +59,24 @@ describe("additional fixture golden coverage", () => {
       suffix: "3",
       mode: "unconstrained" as const,
       constraints: 0
+    },
+    {
+      directory: "constraints_combined_1",
+      suffix: "2",
+      mode: "unconstrained" as const,
+      constraints: 15
+    },
+    {
+      directory: "constraints_leadtime_3",
+      suffix: "1",
+      mode: "constrained" as const,
+      constraints: 16
+    },
+    {
+      directory: "constraints_leadtime_3",
+      suffix: "2",
+      mode: "constrained" as const,
+      constraints: 48
     }
   ]) {
     it(`matches ${testCase.directory}.${testCase.suffix}.expect`, async () => {

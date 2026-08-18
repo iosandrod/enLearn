@@ -1,0 +1,47 @@
+{
+  "name": "mechanical-confirmed-wip",
+  "industry": "mechanical",
+  "description": "Five pump units are already confirmed in WIP and must not be planned again.",
+  "input": {
+    "current": 1736121600,
+    "mode": "constrained",
+    "constraints": 15,
+    "buffers": [
+      { "name": "WIP-PUMP @ SZ", "item": "WIP-PUMP", "location": "SZ", "onhand": 0 },
+      { "name": "STEEL-PLATE @ SZ", "item": "STEEL-PLATE", "location": "SZ", "onhand": 10 }
+    ],
+    "sources": [],
+    "demands": [
+      { "name": "SO-WIP-5", "item": "WIP-PUMP", "location": "SZ", "due": 1736208000, "quantity": 5, "minimumShipment": 5, "priority": 1 }
+    ],
+    "confirmedReceipts": [],
+    "resources": [{ "name": "WIP-BENCH", "maximum": 1 }],
+    "operations": [
+      {
+        "name": "Assemble confirmed pump",
+        "type": "fixed_time",
+        "durationSeconds": 28800,
+        "durationPerSeconds": 0,
+        "priority": 1,
+        "flows": [
+          { "buffer": "STEEL-PLATE @ SZ", "quantity": -1, "quantityFixed": 0, "type": "start" },
+          { "buffer": "WIP-PUMP @ SZ", "quantity": 1, "quantityFixed": 0, "type": "end" }
+        ],
+        "loads": [{ "resource": "WIP-BENCH", "quantity": 1 }],
+        "subOperations": []
+      }
+    ],
+    "operationPlans": [
+      { "name": "CONFIRMED-WIP-5", "operation": "Assemble confirmed pump", "start": 1736150400, "end": 1736179200, "quantity": 5, "confirmed": true, "completed": false }
+    ]
+  },
+  "expect": {
+    "demandQuantity": { "SO-WIP-5": 5 },
+    "demandPlans": [{ "name": "SO-WIP-5", "date": 1736208000, "quantity": 5 }],
+    "operationPlans": [{ "name": "Assemble confirmed pump", "start": 1736150400, "end": 1736179200, "quantity": 5, "confirmed": true }],
+    "purchases": [],
+    "requiredOperations": ["Assemble confirmed pump"],
+    "confirmedOperationNames": ["Assemble confirmed pump"],
+    "checks": { "confirmedWipReused": true, "noDuplicateUnconfirmedPlan": true, "deterministic": true }
+  }
+}

@@ -128,7 +128,16 @@ export class Calendar {
       if (bucket.start > date) {
         break;
       }
-      if (bucket.priority < priority && bucket.matches(date, forward)) {
+      if (!bucket.matches(date, forward)) {
+        continue;
+      }
+      const supersedes = winner === undefined ||
+        bucket.priority < priority ||
+        (bucket.priority === priority && (
+          bucket.start > winner.start ||
+          (bucket.start === winner.start && bucket.sequence > winner.sequence)
+        ));
+      if (supersedes) {
         winner = bucket;
         priority = bucket.priority;
       }

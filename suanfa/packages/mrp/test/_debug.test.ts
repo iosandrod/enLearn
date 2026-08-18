@@ -35,3 +35,10 @@ it("debug operation split plans", async () => {
     );
   }
 });
+
+it("debug resource 5 plans", async () => {
+  const directory = resolve("E:/frepple-master/test/constraints_resource_5");
+  const input = await loadMaterialFixture(resolve(directory, "constraints_resource_5.xml"));
+  const plan = solveMaterialFixture({ ...input, mode: "constrained", constraints: 15 });
+  console.log(JSON.stringify(plan.operationPlans, null, 2));
+});

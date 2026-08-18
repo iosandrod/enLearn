@@ -15,19 +15,34 @@ import type {
   MaterialBuffer,
   MaterialDemand,
   MaterialFlow,
+  MaterialLoad,
   MaterialPlan,
   MaterialPlanEvent,
   MaterialPlanInput,
+  OperationFlowQuantity,
   OperationPlan,
+  OperationPlanInput,
+  OperationResourceLoad,
   PurchasePlan,
   ProcurementSource,
   ResourcePlanEvent
 } from "./mrp.js";
+import {
+  PlanningTransactionManager,
+  SolverGuard,
+  createSolverRequest,
+  nextDateReply,
+  quantityReply,
+  type SolverReply,
+  type SolverRequest
+} from "./solver-state.js";
+import { runSolverPipeline, type SolverPhase } from "./solver-architecture.js";
 
 interface MutableEvent {
   readonly date: EpochSeconds;
   readonly sequence: number;
   readonly kind: "receipt" | "demand";
+  readonly demandName?: string;
   readonly confirmed?: boolean;
   readonly originalDue?: EpochSeconds;
   readonly priority?: number;
@@ -41,12 +56,17 @@ interface BufferState {
 
 interface MutableResourceEvent {
   readonly date: EpochSeconds;
-  readonly quantity: number;
+  quantity: number;
   readonly sequence: number;
+  readonly operation?: string;
+  readonly operationEnd?: EpochSeconds;
 }
 
 interface ResourceState {
   readonly name: string;
+  readonly bucketized?: boolean;
+  readonly capacity?: number;
+  readonly capacityCalendar?: Calendar;
   readonly events: MutableResourceEvent[];
 }
 
@@ -98,7 +118,17 @@ interface SolverContext {
   readonly resourceStates: Map<string, ResourceState>;
   sequence: number;
   readonly activeOperations: Set<string>;
+  readonly solverGuard: SolverGuard;
 }
+
+interface AlternateConsumptionReply extends SolverReply {
+  readonly operationEnd?: EpochSeconds;
+}
+
+type OperationPlanSettings = Pick<
+  OperationPlanInput,
+  "consumeMaterial" | "produceMaterial" | "consumeCapacity"
+>;
 
 interface PlanningSnapshot {
   readonly stateEvents: readonly {
@@ -117,36 +147,111 @@ interface PlanningSnapshot {
   readonly sequence: number;
 }
 
+const planningTransactions = new WeakMap<
+  SolverContext,
+  PlanningTransactionManager<PlanningSnapshot>
+>();
+
 const EPSILON = 1e-9;
-const DEFAULT_MINIMUM_DELAY_SECONDS = 3_600;
 
 export function solveManufacturingMaterialPlan(
   input: MaterialPlanInput
 ): MaterialPlan {
   const context = createContext(input);
-  loadConfirmedReceipts(context);
-  loadConfirmedOperationPlans(context);
-  replenishStaticBuffers(context);
-
-  for (const demand of demandsForPlan(input)) {
-    if (demand.operation) {
-      solveDeliveryDemand(context, demand);
-    } else {
-      solveDirectDemand(context, demand);
+  const phases: readonly SolverPhase[] = [
+    {
+      name: "load-confirmed",
+      run: () => {
+        loadConfirmedReceipts(context);
+        loadConfirmedPurchases(context);
+        loadConfirmedOperationPlans(context);
+        replenishStaticBuffers(context);
+      }
+    },
+    {
+      name: "propagate-demand",
+      run: () => {
+        for (const demand of demandsForPlan(input)) {
+          if (demand.operation) {
+            solveDeliveryDemand(context, demand);
+          } else {
+            solveDirectDemand(context, demand);
+          }
+        }
+      }
+    },
+    {
+      name: "propagate-buffer",
+      run: () => {
+        replenishMaterialShortages(context);
+        replenishMinimumBuffers(context);
+      }
+    },
+    {
+      name: "propagate-resource",
+      run: () => assertFiniteResourceState(context)
     }
-  }
+  ];
+  runSolverPipeline(context.solverGuard, phases);
 
   const events = [...context.states.values()].flatMap((state) =>
     materialEvents(state, input.current)
   ).sort(compareMaterialEvents);
+  const purchaseOperationPlans = context.operationPlans.filter(
+    isPurchaseOperationPlan
+  );
   return {
     events,
-    purchases: context.purchases,
-    operationPlans: context.operationPlans,
+    purchases: [
+      ...context.purchases,
+      ...purchaseOperationPlans.map((plan) =>
+        purchaseFromOperationPlan(context, plan)
+      )
+    ],
+    operationPlans: context.operationPlans.filter(
+      (plan) => !isPurchaseOperationPlan(plan)
+    ),
     demandPlans: context.demandPlans,
     resourceEvents: [...context.resourceStates.values()]
       .flatMap(resourceEvents)
       .sort(compareResourceEvents)
+  };
+}
+
+function assertFiniteResourceState(context: SolverContext): void {
+  for (const state of context.resourceStates.values()) {
+    for (const event of state.events) {
+      if (!Number.isFinite(event.date) || !Number.isFinite(event.quantity)) {
+        throw new Error(`Non-finite resource event on ${state.name}`);
+      }
+    }
+  }
+}
+
+function isPurchaseOperationPlan(plan: OperationPlan): boolean {
+  return plan.name.startsWith("Purchase ");
+}
+
+function purchaseFromOperationPlan(
+  context: SolverContext,
+  plan: OperationPlan
+): PurchasePlan {
+  const operation = context.operations.get(plan.name);
+  const output = operation?.flows.find(
+    (flow) => positiveFlowQuantity(flow) > EPSILON
+  );
+  const state = output
+    ? context.states.get(bufferKey(output.buffer))
+    : undefined;
+  return {
+    name: plan.name,
+    item: state?.buffer.item ?? operation?.item ?? "",
+    location: state?.buffer.location ?? operation?.location ?? "",
+    supplier: "",
+    start: plan.start,
+    end: plan.end,
+    quantity: plan.quantity,
+    ...(plan.confirmed ? { confirmed: true } : {})
   };
 }
 
@@ -169,7 +274,7 @@ function createContext(input: MaterialPlanInput): SolverContext {
   const operations = new Map(
     (input.operations ?? []).map((operation) => [operation.name, operation])
   );
-  for (const operation of input.operations ?? []) {
+  const ensureOperationBuffers = (operation: ManufacturingOperation): void => {
     for (const flow of operation.flows) {
       if (!states.has(bufferKey(flow.buffer))) {
         const identity = inferredBufferIdentity(flow.buffer);
@@ -183,6 +288,32 @@ function createContext(input: MaterialPlanInput): SolverContext {
           events: []
         });
       }
+    }
+    for (const child of operation.subOperations) {
+      ensureOperationBuffers(child.operation);
+    }
+  };
+  for (const operation of input.operations ?? []) {
+    ensureOperationBuffers(operation);
+  }
+  for (const source of input.sources) {
+    const location = source.kind === "transfer"
+      ? source.originLocation
+      : source.location;
+    if (!location) {
+      continue;
+    }
+    const key = bufferKey(`${source.item} @ ${location}`);
+    if (!states.has(key)) {
+      states.set(key, {
+        buffer: {
+          name: `${source.item} @ ${location}`,
+          item: source.item,
+          location,
+          onhand: 0
+        },
+        events: []
+      });
     }
   }
 
@@ -235,11 +366,27 @@ function createContext(input: MaterialPlanInput): SolverContext {
     resourceStates: new Map(
       (input.resources ?? []).map((resource) => [
         resource.name,
-        { name: resource.name, events: [] }
+        {
+          name: resource.name,
+          ...(resource.bucketized ? { bucketized: true } : {}),
+          ...(resource.maximum === undefined && resource.maximumCalendar === undefined
+            ? {}
+            : {
+                capacity: resource.maximum ?? Math.max(
+                  resource.maximumCalendar?.defaultValue ?? 0,
+                  ...(resource.maximumCalendar?.buckets.map((bucket) => bucket.value) ?? [])
+                )
+              }),
+          ...(resource.maximumCalendar === undefined
+            ? {}
+            : { capacityCalendar: resource.maximumCalendar }),
+          events: []
+        }
       ])
     ),
     sequence: 1,
-    activeOperations: new Set()
+    activeOperations: new Set(),
+    solverGuard: new SolverGuard()
   };
 }
 
@@ -325,8 +472,40 @@ function loadConfirmedReceipts(context: SolverContext): void {
   }
 }
 
+function loadConfirmedPurchases(context: SolverContext): void {
+  for (const purchase of context.input.confirmedPurchases ?? []) {
+    if (context.input.confirmedReceipts.some(
+      (receipt) =>
+        receipt.item === purchase.item &&
+        receipt.location === purchase.location &&
+        receipt.end === purchase.end &&
+        Math.abs(receipt.quantity - purchase.quantity) <= EPSILON
+    )) {
+      continue;
+    }
+    const state = findState(context, purchase.item, purchase.location);
+    if (!state) {
+      continue;
+    }
+    addEvent(
+      context,
+      state,
+      purchase.end,
+      purchase.quantity,
+      "receipt",
+      undefined,
+      true
+    );
+  }
+}
+
 function loadConfirmedOperationPlans(context: SolverContext): void {
+  const loaded = new Set<string>();
   for (const operationPlan of context.input.operationPlans ?? []) {
+    const planKey = confirmedOperationPlanKey(operationPlan);
+    if (loaded.has(planKey)) {
+      continue;
+    }
     const operation = context.operations.get(operationPlan.operation);
     if (!operation) {
       continue;
@@ -335,6 +514,41 @@ function loadConfirmedOperationPlans(context: SolverContext): void {
       start: operationPlan.start,
       end: operationPlan.end
     } satisfies Schedule;
+    if (operation.type === "routing" || operation.type === "alternate") {
+      const expanded = expandConfirmedRoute(
+        context,
+        operation,
+        schedule,
+        operationPlan.quantity,
+        loaded,
+        operationPlan.flowQuantities,
+        operationPlan.confirmed === true
+      );
+      addOperationPlan(
+        context,
+        operation,
+        expanded.schedule,
+        operationPlan.quantity,
+        operationPlan.confirmed === true,
+        true,
+        operationPlan.completed === true,
+        operationPlan.flowQuantities,
+        operationPlan.resourceLoads,
+        operationPlan
+      );
+      loaded.add(planKey);
+      continue;
+    }
+    if (operationPlan.consumeMaterial !== false) {
+      replenishConfirmedOperationInputs(
+        context,
+        operation,
+        schedule,
+        operationPlan.quantity,
+        operationPlan.flowQuantities,
+        operationPlan.confirmed === true
+      );
+    }
     addOperationPlan(
       context,
       operation,
@@ -342,9 +556,242 @@ function loadConfirmedOperationPlans(context: SolverContext): void {
       operationPlan.quantity,
       operationPlan.confirmed === true,
       true,
-      operationPlan.completed === true
+      operationPlan.completed === true,
+      operationPlan.flowQuantities,
+      operationPlan.resourceLoads,
+      operationPlan
     );
+    loaded.add(planKey);
   }
+}
+
+function confirmedOperationPlanKey(plan: OperationPlanInput): string {
+  return [plan.name, plan.operation, plan.start, plan.end, plan.quantity].join("\u0000");
+}
+
+function expandConfirmedRoute(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  parentSchedule: Schedule,
+  quantity: number,
+  loaded: Set<string>,
+  parentFlowQuantities?: readonly OperationFlowQuantity[],
+  parentConfirmed = false
+): { readonly schedule: Schedule } {
+  const children = operation.type === "alternate"
+    ? [chooseAlternate(operation)]
+    : [...operation.subOperations].sort(
+        (left, right) => left.priority - right.priority
+      );
+  const explicitPlans = children.map((child) =>
+    (context.input.operationPlans ?? [])
+      .filter(
+        (plan) =>
+          plan.operation === child.operation.name &&
+          plan.end >= parentSchedule.start &&
+          plan.start <= parentSchedule.end
+      )
+      .sort((left, right) => left.start - right.start)[0]
+  );
+  const suppressedChildren = new Set(
+    children.flatMap((child, index) =>
+      explicitPlans[index] === undefined &&
+      (context.input.operationPlans ?? []).some(
+        (plan) =>
+          plan.operation === child.operation.name &&
+          (plan.end < parentSchedule.start || plan.start > parentSchedule.end)
+      )
+        ? [index]
+        : []
+    )
+  );
+  const firstExplicit = explicitPlans.findIndex((plan) => plan !== undefined);
+  const lastExplicit = explicitPlans.reduce(
+    (last, plan, index) => plan === undefined ? last : index,
+    -1
+  );
+  const expandedStart = firstExplicit >= 0 && explicitPlans[firstExplicit]
+    ? Math.min(
+        parentSchedule.start,
+        (explicitPlans[firstExplicit]!.start -
+          children
+            .slice(0, firstExplicit)
+            .reduce(
+              (total, child) =>
+                total + operationDuration(child.operation, quantity),
+              0
+            )) as EpochSeconds
+      ) as EpochSeconds
+    : parentSchedule.start;
+  const expandedEnd = lastExplicit >= 0 && explicitPlans[lastExplicit]
+    ? Math.max(parentSchedule.end, explicitPlans[lastExplicit]!.end) as EpochSeconds
+    : parentSchedule.end;
+  let cursor = parentSchedule.start;
+  let start = expandedStart;
+  let end = expandedEnd;
+  for (const child of children) {
+    const childIndex = children.indexOf(child);
+    if (suppressedChildren.has(childIndex)) {
+      continue;
+    }
+    const explicit = explicitPlans[childIndex];
+    const childSchedule = explicit
+      ? { start: explicit.start, end: explicit.end }
+      : firstExplicit >= 0 && childIndex < firstExplicit && explicitPlans[firstExplicit]
+        ? {
+            start: (
+              explicitPlans[firstExplicit]!.start -
+              operationDuration(child.operation, quantity)
+            ) as EpochSeconds,
+            end: explicitPlans[firstExplicit]!.start
+          }
+        : lastExplicit >= 0 && childIndex > lastExplicit && explicitPlans[lastExplicit]
+          ? {
+              start: (
+                expandedEnd - operationDuration(child.operation, quantity)
+              ) as EpochSeconds,
+              end: expandedEnd
+            }
+      : {
+          start: cursor,
+          end: (cursor + operationDuration(child.operation, quantity)) as EpochSeconds
+        };
+    if (explicit) {
+      loaded.add(confirmedOperationPlanKey(explicit));
+    }
+    if (explicit?.consumeMaterial !== false) {
+      replenishConfirmedOperationInputs(
+      context,
+      child.operation,
+      childSchedule,
+      explicit?.quantity ?? quantity,
+      explicit?.flowQuantities ?? confirmedChildFlowQuantities(
+        child.operation,
+        parentFlowQuantities
+      ),
+        explicit?.confirmed ?? parentConfirmed
+      );
+    }
+    addOperationPlan(
+      context,
+      child.operation,
+      childSchedule,
+      explicit?.quantity ?? quantity,
+      explicit?.confirmed ?? parentConfirmed,
+      true,
+      explicit?.completed === true,
+      explicit?.flowQuantities ?? confirmedChildFlowQuantities(
+        child.operation,
+        parentFlowQuantities
+      ),
+      explicit?.resourceLoads,
+      explicit
+    );
+    start = Math.min(start, childSchedule.start) as EpochSeconds;
+    end = Math.max(end, childSchedule.end) as EpochSeconds;
+    cursor = Math.max(cursor, childSchedule.end) as EpochSeconds;
+  }
+  return { schedule: { start, end } };
+}
+
+function replenishConfirmedOperationInputs(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  schedule: Schedule,
+  quantity: number,
+  flowQuantities?: readonly OperationFlowQuantity[],
+  confirmed = true
+): void {
+  for (const flow of inputFlowsForSchedule(context, operation, schedule, quantity)) {
+    const override = flowQuantities?.find(
+      (entry) => entry.buffer === flow.buffer
+    );
+    const date = override?.date ?? (
+      confirmed
+        ? confirmedFlowDate(context, operation, flow, schedule, false)
+        : flowDateFor(
+            context,
+            operation,
+            flow,
+            schedule.start,
+            schedule.end
+          )
+    );
+    if (!isEffective(flow, date)) {
+      continue;
+    }
+  const state = context.states.get(bufferKey(flow.buffer));
+    if (!state) {
+      continue;
+    }
+    if (state.buffer.infinite === true) {
+      continue;
+    }
+    const overrideQuantity = override?.quantity;
+    const required = overrideQuantity === undefined
+      ? Math.abs(flow.quantity * quantity + flow.quantityFixed)
+      : Math.abs(overrideQuantity);
+    const shortage = Math.max(0, required - balanceAt(state, date));
+    // A confirmed receipt later in the same buffer is part of the committed
+    // supply picture. The original solver keeps the confirmed operation's
+    // temporary shortage visible instead of creating an additional planned
+    // purchase before that receipt.
+    if (
+      shortage > EPSILON &&
+      nextConfirmedReceiptDate(state, date) === undefined
+    ) {
+      createSupply(context, flow.buffer, shortage, date, false);
+    }
+  }
+}
+
+function nextConfirmedReceiptDate(
+  state: BufferState,
+  date: EpochSeconds
+): EpochSeconds | undefined {
+  return state.events
+    .filter(
+      (event) =>
+        event.confirmed === true &&
+        event.kind === "receipt" &&
+        event.date > date &&
+        event.quantity > EPSILON
+    )
+    .map((event) => event.date)
+    .sort((left, right) => left - right)[0];
+}
+
+function confirmedChildFlowQuantities(
+  operation: ManufacturingOperation,
+  flowQuantities: readonly OperationFlowQuantity[] | undefined
+): readonly OperationFlowQuantity[] {
+  if (!flowQuantities) {
+    return [];
+  }
+  const buffers = new Set(operation.flows.map((flow) => flow.buffer));
+  return flowQuantities.filter((entry) => buffers.has(entry.buffer));
+}
+
+function confirmedFlowDate(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  flow: MaterialFlow,
+  schedule: Schedule,
+  completed: boolean
+): EpochSeconds {
+  const date = flow.implicitType && flow.quantity < 0
+    ? schedule.start
+    : flowDateFor(
+      context,
+      operation,
+      flow,
+      schedule.start,
+      schedule.end,
+      completed
+    );
+  return schedule.end < context.input.current
+    ? (context.input.current + 1) as EpochSeconds
+    : date;
 }
 
 function replenishStaticBuffers(context: SolverContext): void {
@@ -378,6 +825,128 @@ function replenishStaticBuffers(context: SolverContext): void {
       continue;
     }
     createSupply(context, state.buffer.name, quantity, date, false);
+  }
+}
+
+function replenishMinimumBuffers(context: SolverContext): void {
+  for (const state of context.states.values()) {
+    const producer = context.producers.get(bufferKey(state.buffer.name));
+    if (!producer || !state.events.some((event) => event.kind === "demand")) {
+      continue;
+    }
+    const latestDate = state.events.reduce<EpochSeconds>(
+      (latest, event) => Math.max(latest, event.date) as EpochSeconds,
+      context.input.current
+    );
+    const minimum = bufferMinimumAt(state, latestDate);
+    const shortage = minimum - balanceAt(state, latestDate);
+    if (shortage > EPSILON) {
+      createSupply(context, state.buffer.name, shortage, latestDate, false);
+    }
+    for (const event of state.buffer.minimumCalendar?.events() ?? []) {
+      if (
+        event.date <= latestDate ||
+        event.date >= INFINITE_FUTURE ||
+        event.value <= EPSILON
+      ) {
+        continue;
+      }
+      const calendarShortage = event.value - balanceAt(state, event.date);
+      if (calendarShortage > EPSILON) {
+        createSupply(
+          context,
+          state.buffer.name,
+          calendarShortage,
+          event.date,
+          false
+        );
+      }
+    }
+  }
+}
+
+function replenishMaterialShortages(context: SolverContext): void {
+  for (const state of context.states.values()) {
+    if (!context.producers.has(bufferKey(state.buffer.name))) {
+      continue;
+    }
+    const dates = [...new Set(state.events.map((event) => event.date))]
+      .sort((left, right) => left - right);
+    let balance = 0;
+    for (const date of dates) {
+      balance += state.events
+        .filter((event) => event.date === date)
+        .reduce((total, event) => total + event.quantity, 0);
+      if (balance < -EPSILON) {
+        createSupply(context, state.buffer.name, -balance, date, false);
+        removeRedundantProducerPlansAfter(
+          context,
+          state,
+          context.producers.get(bufferKey(state.buffer.name))!,
+          date
+        );
+        break;
+      }
+    }
+  }
+}
+
+function removeRedundantProducerPlansAfter(
+  context: SolverContext,
+  state: BufferState,
+  producer: ManufacturingOperation,
+  date: EpochSeconds
+): void {
+  const removable = context.operationPlans.filter((plan) => {
+    if (plan.name !== producer.name || plan.confirmed) {
+      return false;
+    }
+    const output = producer.flows.find(
+      (flow) =>
+        flow.buffer === state.buffer.name &&
+        (flow.quantity > EPSILON || flow.quantityFixed > EPSILON)
+    );
+    if (!output) {
+      return false;
+    }
+    const outputDate = flowDateFor(
+      context,
+      producer,
+      output,
+      plan.start,
+      plan.end
+    );
+    return outputDate > date;
+  });
+  for (const plan of removable) {
+    const output = producer.flows.find(
+      (flow) =>
+        flow.buffer === state.buffer.name &&
+        (flow.quantity > EPSILON || flow.quantityFixed > EPSILON)
+    );
+    if (output) {
+      const outputDate = flowDateFor(
+        context,
+        producer,
+        output,
+        plan.start,
+        plan.end
+      );
+      const quantity = output.quantity * plan.quantity + output.quantityFixed;
+      const eventIndex = state.events.findIndex(
+        (event) =>
+          event.kind === "receipt" &&
+          event.date === outputDate &&
+          Math.abs(event.quantity - quantity) <= EPSILON
+      );
+      if (eventIndex >= 0) {
+        state.events.splice(eventIndex, 1);
+      }
+    }
+    const planIndex = context.operationPlans.indexOf(plan);
+    if (planIndex >= 0) {
+      context.operationPlans.splice(planIndex, 1);
+    }
   }
 }
 
@@ -446,7 +1015,7 @@ function solveDirectDemand(
   }
 
   if (dueBalance + EPSILON >= required || context.input.mode === "unconstrained") {
-    addDemandEvent(context, state, demand.due, -required, demand.due);
+    addDemandEvent(context, state, demand.due, -required, demand.due, undefined, demand.name);
     addDemandPlan(context, demand, demand.due, required);
   }
 }
@@ -531,7 +1100,8 @@ function solveStaticConstrainedDemand(
       allocationDate,
       -allocationQuantity,
       demand.due,
-      demand.priority
+      demand.priority,
+      demand.name
     );
     addDemandPlan(context, demand, allocationDate, allocationQuantity);
   }
@@ -608,40 +1178,45 @@ function solveManufacturingDirectDemand(
   }
 
   if (dueBalance + EPSILON >= required) {
-    addDemandEvent(context, state, demand.due, -required, demand.due);
+    addDemandEvent(context, state, demand.due, -required, demand.due, undefined, demand.name);
     addDemandPlan(context, demand, demand.due, required);
     replenishBufferAt(context, state, demand.due);
     return;
   }
 
-  const availableNow = Math.max(0, balanceAt(state, context.input.current));
-  const shortage = Math.max(0, required - availableNow);
+  // Time-varying minimum sizes need to account for a planned receipt that
+  // was created for an earlier demand. Ordinary operations keep the normal
+  // per-demand allocation semantics.
+  if (producer.minimumQuantityCalendar !== undefined) {
+    const reservedFuture = allocateFuturePlannedSupply(
+      context,
+      state,
+      demand,
+      required
+    );
+    if (reservedFuture >= required - EPSILON) {
+      return;
+    }
+    required -= reservedFuture;
+  }
+
   const mode = context.input.mode ?? "constrained";
+  const availableNow = Math.max(0, balanceAt(state, context.input.current));
+  // Backward-scheduled receipts before current can already be reserved by
+  // earlier future demands. Net this demand against its due-date balance.
+  const shortage = mode === "unconstrained"
+    ? Math.max(0, required - Math.max(0, dueBalance))
+    : Math.max(0, required - availableNow);
   const fencedConfirmed = fencedConfirmedSupplyDate(
     context,
     state,
     demand.due
   );
   if (
-    mode === "constrained" &&
-    fencedConfirmed !== undefined &&
-    availableNow > EPSILON
-  ) {
-    const immediate = Math.min(required, availableNow);
-    addDemandEvent(context, state, demand.due, -immediate, demand.due);
-    addDemandPlan(context, demand, demand.due, immediate);
-    const remainder = required - immediate;
-    if (remainder > EPSILON) {
-      addDemandEvent(context, state, fencedConfirmed, -remainder, demand.due);
-      addDemandPlan(context, demand, fencedConfirmed, remainder);
-    }
-    return;
-  }
-  if (
     mode === "unconstrained" &&
     (context.input.autofenceSeconds ?? 0) > 0
   ) {
-    addDemandEvent(context, state, demand.due, -required, demand.due);
+    addDemandEvent(context, state, demand.due, -required, demand.due, undefined, demand.name);
     addDemandPlan(context, demand, demand.due, required);
     replenishBufferAt(context, state, demand.due);
     return;
@@ -651,7 +1226,7 @@ function solveManufacturingDirectDemand(
     (context.input.autofenceSeconds ?? 0) > 0 &&
     fencedConfirmed === undefined
   ) {
-    addDemandEvent(context, state, demand.due, -required, demand.due);
+    addDemandEvent(context, state, demand.due, -required, demand.due, undefined, demand.name);
     addDemandPlan(context, demand, demand.due, required);
     replenishBufferAt(context, state, demand.due);
     return;
@@ -685,6 +1260,34 @@ function solveManufacturingDirectDemand(
     supplyQuantity = Math.max(shortage, maximum - availableNow);
   }
 
+  if (producer.minimumQuantityCalendar !== undefined) {
+    const batchEnd = scheduleForOutputDate(
+      context,
+      producer,
+      state.buffer.name,
+      demand.due,
+      1
+    ).end;
+    const batchDemand = context.input.demands
+      .filter(
+        (candidate) =>
+          !candidate.operation &&
+          bufferKeyForDemand(context, candidate) === state.buffer.name &&
+          candidate.due >= demand.due &&
+          candidate.due <= batchEnd
+      )
+      .reduce(
+        (total, candidate) =>
+          total + Math.max(candidate.quantity, candidate.minimumShipment),
+        0
+      );
+    supplyQuantity = Math.max(
+      supplyQuantity,
+      batchDemand,
+      operationMinimumQuantity(producer, batchEnd)
+    );
+  }
+
   const supply = createSupply(
     context,
     state.buffer.name,
@@ -692,14 +1295,15 @@ function solveManufacturingDirectDemand(
     demand.due,
     false
   );
-  if (mode === "unconstrained") {
+  if (mode === "unconstrained" && simpleUnconstrained) {
     addDemandEvent(
       context,
       state,
       demand.due,
       -required,
       demand.due,
-      demand.priority
+      demand.priority,
+      demand.name
     );
     addDemandPlan(context, demand, demand.due, required);
     return;
@@ -716,7 +1320,8 @@ function solveManufacturingDirectDemand(
         demand.due,
         -allocatedOnTime,
         demand.due,
-        demand.priority
+        demand.priority,
+        demand.name
       );
       addDemandPlan(context, demand, demand.due, allocatedOnTime);
     }
@@ -737,7 +1342,8 @@ function solveManufacturingDirectDemand(
         allocation.date,
         -lateQuantity,
         demand.due,
-        demand.priority
+        demand.priority,
+        demand.name
       );
       addDemandPlan(context, demand, allocation.date, lateQuantity);
       remainingDemand -= lateQuantity;
@@ -749,7 +1355,7 @@ function solveManufacturingDirectDemand(
       ? Math.min(required, Math.max(0, balanceAt(state, demand.due)))
       : 0;
   if (onTimeQuantity > EPSILON) {
-    addDemandEvent(context, state, demand.due, -onTimeQuantity, demand.due);
+    addDemandEvent(context, state, demand.due, -onTimeQuantity, demand.due, undefined, demand.name);
     addDemandPlan(context, demand, demand.due, onTimeQuantity);
   }
   const remainder = required - onTimeQuantity;
@@ -759,8 +1365,91 @@ function solveManufacturingDirectDemand(
   const deliveryDate = (
     mode === "constrained" ? Math.max(demand.due, supply.date) : demand.due
   ) as EpochSeconds;
-  addDemandEvent(context, state, deliveryDate, -remainder, demand.due);
+  addDemandEvent(context, state, deliveryDate, -remainder, demand.due, undefined, demand.name);
   addDemandPlan(context, demand, deliveryDate, remainder);
+}
+
+function allocateFuturePlannedSupply(
+  context: SolverContext,
+  state: BufferState,
+  demand: MaterialDemand,
+  required: number
+): number {
+  let remaining = required;
+  let allocated = 0;
+  const receipts = [...state.events]
+    .filter(
+      (event) =>
+        event.kind === "receipt" &&
+        event.confirmed !== true &&
+        event.date > demand.due &&
+        event.date < INFINITE_FUTURE &&
+        event.quantity > EPSILON
+    )
+    .sort((left, right) => left.date - right.date || left.sequence - right.sequence);
+  for (const receipt of receipts) {
+    if (remaining <= EPSILON) {
+      break;
+    }
+    const available = Math.max(0, balanceAt(state, receipt.date) - allocated);
+    if (available <= EPSILON) {
+      continue;
+    }
+    const quantity = Math.min(remaining, available);
+    addDemandEvent(
+      context,
+      state,
+      receipt.date,
+      -quantity,
+      demand.due,
+      demand.priority,
+      demand.name
+    );
+    addDemandPlan(context, demand, receipt.date, quantity);
+    allocated += quantity;
+    remaining -= quantity;
+  }
+  return allocated;
+}
+
+function allocateConfirmedSupply(
+  context: SolverContext,
+  state: BufferState,
+  demand: MaterialDemand,
+  required: number
+): number {
+  let remaining = required;
+  let projected = balanceAt(state, demand.due);
+  const events = [...state.events]
+    .filter((event) =>
+      event.date > demand.due &&
+      (event.kind === "demand" ||
+        (event.kind === "receipt" && event.confirmed === true))
+    )
+    .sort((left, right) => left.date - right.date || left.sequence - right.sequence);
+  for (const event of events) {
+    if (event.kind === "demand" || event.confirmed === true) {
+      projected += event.quantity;
+    }
+    if (event.kind !== "receipt" || event.confirmed !== true ||
+        projected <= EPSILON || remaining <= EPSILON) {
+      continue;
+    }
+    const quantity = Math.min(remaining, projected);
+    addDemandEvent(
+      context,
+      state,
+      event.date,
+      -quantity,
+      demand.due,
+      demand.priority,
+      demand.name
+    );
+    addDemandPlan(context, demand, event.date, quantity);
+    projected -= quantity;
+    remaining -= quantity;
+  }
+  return required - remaining;
 }
 
 function solvePurchaseDemand(
@@ -772,7 +1461,7 @@ function solvePurchaseDemand(
   source: ProcurementSource
 ): void {
   if (dueBalance + EPSILON >= required) {
-    addDemandEvent(context, state, demand.due, -required, demand.due);
+    addDemandEvent(context, state, demand.due, -required, demand.due, undefined, demand.name);
     addDemandPlan(context, demand, demand.due, required);
     replenishBufferAt(context, state, demand.due);
     return;
@@ -787,31 +1476,23 @@ function solvePurchaseDemand(
   );
   if (
     mode === "constrained" &&
-    fencedConfirmed !== undefined &&
-    availableNow > EPSILON
+    fencedConfirmed !== undefined
   ) {
-    const immediate = Math.min(required, availableNow);
-    addDemandEvent(context, state, demand.due, -immediate, demand.due);
-    addDemandPlan(context, demand, demand.due, immediate);
-    const remainder = required - immediate;
-    if (remainder > EPSILON) {
-      addDemandEvent(context, state, fencedConfirmed, -remainder, demand.due);
-      addDemandPlan(context, demand, fencedConfirmed, remainder);
-    }
+    allocateConfirmedSupply(context, state, demand, required);
     return;
   }
   if (
     mode === "unconstrained" &&
     (context.input.autofenceSeconds ?? 0) > 0
   ) {
-    addDemandEvent(context, state, demand.due, -required, demand.due);
+    addDemandEvent(context, state, demand.due, -required, demand.due, undefined, demand.name);
     addDemandPlan(context, demand, demand.due, required);
     replenishBufferAt(context, state, demand.due);
     return;
   }
   if (mode === "constrained" && availableNow > EPSILON) {
     const immediate = Math.min(required, availableNow);
-    addDemandEvent(context, state, demand.due, -immediate, demand.due);
+    addDemandEvent(context, state, demand.due, -immediate, demand.due, undefined, demand.name);
     addDemandPlan(context, demand, demand.due, immediate);
     const remainder = required - immediate;
     if (remainder <= EPSILON) {
@@ -827,7 +1508,7 @@ function solvePurchaseDemand(
       required
     );
     addPurchaseSupply(context, state, source, deliveryDate, quantity);
-    addDemandEvent(context, state, deliveryDate, -remainder, demand.due);
+    addDemandEvent(context, state, deliveryDate, -remainder, demand.due, undefined, demand.name);
     addDemandPlan(context, demand, deliveryDate, remainder);
     return;
   }
@@ -847,7 +1528,7 @@ function solvePurchaseDemand(
       ? Math.max(demand.due, deliveryDate)
       : demand.due
   ) as EpochSeconds;
-  addDemandEvent(context, state, actualDate, -required, demand.due);
+  addDemandEvent(context, state, actualDate, -required, demand.due, undefined, demand.name);
   addDemandPlan(context, demand, actualDate, required);
 }
 
@@ -944,17 +1625,37 @@ function solveDeliveryDemand(
     solveDirectDemand(context, directDemand);
     return;
   }
-  if ((context.input.mode ?? "constrained") !== "constrained") {
-    const quantity = Math.max(demand.quantity, demand.minimumShipment);
-    const end = scheduleDeliveryQuantity(
+  if (
+    operation.type === "alternate" &&
+    routedOutputQuantity(operation, "") .variable <= EPSILON &&
+    operation.subOperations.some((child) =>
+      child.operation.flows.some((flow) =>
+        flow.quantity < -EPSILON || flow.quantityFixed < -EPSILON
+      )
+    )
+  ) {
+    solveAlternateConsumptionDemand(
       context,
       demand,
       operation,
-      quantity,
-      demand.due
+      Math.max(demand.quantity, demand.minimumShipment)
     );
-    if (end !== undefined) {
-      addDemandPlan(context, demand, end, quantity);
+    return;
+  }
+  if ((context.input.mode ?? "constrained") !== "constrained") {
+    const quantity = Math.max(demand.quantity, demand.minimumShipment);
+    const lots = splitLotQuantities(operation, quantity, demand.due);
+    for (const lot of lots) {
+      const end = scheduleDeliveryQuantity(
+        context,
+        demand,
+        operation,
+        lot,
+        demand.due
+      );
+      if (end !== undefined) {
+        addDemandPlan(context, demand, end, lot);
+      }
     }
     return;
   }
@@ -973,10 +1674,18 @@ function solveDeliveryDemand(
     }
     triedHorizons.add(horizon);
 
-    const upper = Math.min(
+    const operationMaximum = Math.max(0, operation.maximumQuantity ?? 0);
+    const operationMinimum = operationMinimumQuantity(operation, horizon);
+    let upper = Math.min(
       remaining,
       maximumDeliveryQuantityAt(context, operation, horizon)
     );
+    if (operationMaximum > EPSILON) {
+      upper = Math.min(upper, operationMaximum);
+    }
+    if (operationMinimum > EPSILON && upper + EPSILON < operationMinimum) {
+      upper = 0;
+    }
     const planned = commitDeliveryQuantity(
       context,
       demand,
@@ -986,15 +1695,407 @@ function solveDeliveryDemand(
     );
     if (planned !== undefined) {
       remaining -= planned.quantity;
+      if (remaining <= EPSILON) {
+        break;
+      }
+      if (
+        operationMaximum > EPSILON &&
+        planned.quantity + EPSILON >= operationMaximum
+      ) {
+        // A size-maximum reply is partial by design. Ask again at the same
+        // date before moving to the next confirmed material event.
+        triedHorizons.delete(horizon);
+        continue;
+      }
+      const next = nextConfirmedMaterialDate(context, horizon);
+      if (next === undefined || next <= horizon) {
+        const deferred = commitDeliveryQuantity(
+          context,
+          demand,
+          operation,
+          remaining,
+          horizon
+        );
+        if (deferred !== undefined) {
+          remaining -= deferred.quantity;
+        }
+        break;
+      }
+      horizon = next;
       continue;
     }
 
     const next = nextConfirmedMaterialDate(context, horizon);
     if (next === undefined) {
+      const deferred = commitDeliveryQuantity(
+        context,
+        demand,
+        operation,
+        remaining,
+        horizon
+      );
+      if (deferred !== undefined) {
+        remaining -= deferred.quantity;
+      }
       break;
     }
     horizon = next;
   }
+}
+
+function solveAlternateConsumptionDemand(
+  context: SolverContext,
+  demand: MaterialDemand,
+  operation: ManufacturingOperation,
+  quantity: number
+): void {
+  let remaining = quantity;
+  let deliveryEnd = demand.due;
+  const candidates = [...operation.subOperations].sort(
+    (left, right) =>
+      left.priority - right.priority ||
+      left.operation.name.localeCompare(right.operation.name)
+  );
+
+  // A consumer alternate has no positive output flow. Plan one feasible lot
+  // at a time so a finite upstream capacity can move the delivery date and
+  // the next effective alternate can take over without losing prior work.
+  for (let attempt = 0; remaining > EPSILON && attempt < 10_000; attempt += 1) {
+    let planned = false;
+    let nextSupplyDate: EpochSeconds | undefined;
+    const orderedCandidates = [...candidates].sort((left, right) =>
+      Number(!isSubOperationEffective(left, deliveryEnd)) -
+        Number(!isSubOperationEffective(right, deliveryEnd)) ||
+      left.priority - right.priority ||
+      left.operation.name.localeCompare(right.operation.name)
+    );
+    for (const candidate of orderedCandidates) {
+      if (
+        candidate.effectiveStart !== undefined &&
+        deliveryEnd < candidate.effectiveStart
+      ) {
+        continue;
+      }
+      const candidateEnd = candidate.effectiveEnd !== undefined &&
+        deliveryEnd >= candidate.effectiveEnd
+        ? candidate.effectiveEnd
+        : deliveryEnd;
+      const manager = transactionManager(context);
+      let bookmark = manager.setBookmark();
+      const scheduleCandidate = (qQty: number): AlternateConsumptionReply | undefined => {
+        const request = createSolverRequest({
+          qQty,
+          qDate: candidateEnd,
+          qDateMax: candidateEnd,
+          qQtyMin: 0,
+          requireFull: false,
+          forceLate: false,
+          acceptPartialReply: false,
+          currentDemand: demand.name,
+          ownerOperation: operation.name
+        });
+        return context.solverGuard.enter(
+          `alternate:${operation.name}:${candidate.operation.name}:` +
+            `${request.qDate}:${request.qQty}`,
+          () => scheduleAlternateConsumptionLot(
+            context,
+            operation,
+            candidate,
+            request
+          )
+        );
+      };
+      let result = scheduleCandidate(remaining);
+      if (result?.operationEnd !== undefined && result.aQty > EPSILON &&
+          result.aQty < remaining - EPSILON) {
+        // The first successful probe identifies a feasible window. Re-query
+        // that same window with exponentially larger quantities to recover
+        // the native solver's partial batch instead of committing only the
+        // one-unit probe.
+        let bestQuantity = result.aQty;
+        let probeQuantity = Math.min(
+          remaining,
+          Math.max(bestQuantity * 2, bestQuantity + 1)
+        );
+        while (probeQuantity > bestQuantity + EPSILON) {
+          manager.rollback(bookmark);
+          bookmark = manager.setBookmark();
+          const probe = scheduleCandidate(probeQuantity);
+          if (probe?.operationEnd === undefined ||
+              probe.aQty <= bestQuantity + EPSILON) {
+            break;
+          }
+          bestQuantity = probe.aQty;
+          if (bestQuantity + EPSILON >= remaining) {
+            result = probe;
+            break;
+          }
+          probeQuantity = Math.min(
+            remaining,
+            Math.max(bestQuantity * 2, bestQuantity + 1)
+          );
+          result = probe;
+        }
+        manager.rollback(bookmark);
+        bookmark = manager.setBookmark();
+        result = scheduleCandidate(bestQuantity);
+      }
+      if (result === undefined || result.operationEnd === undefined ||
+          result.aQty <= EPSILON) {
+        manager.rollback(bookmark);
+        if (result !== undefined && result.aDate > candidateEnd) {
+          // Priority search keeps the first candidate's next reply. A later
+          // alternate must not move the retry horizon backward and starve the
+          // higher-priority candidate that is about to become feasible.
+          if (nextSupplyDate === undefined) {
+            nextSupplyDate = result.aDate;
+          }
+        }
+        continue;
+      }
+      manager.commit(bookmark);
+      addDemandPlan(context, demand, result.operationEnd, result.aQty);
+      remaining -= result.aQty;
+      if (remaining <= Math.max(EPSILON, quantity * 1e-8)) {
+        remaining = 0;
+      }
+      // Keep the original ask date between alternate replies. The native
+      // solver advances only when a child reports its next feasible date.
+      deliveryEnd = demand.due;
+      planned = true;
+      break;
+    }
+    if (!planned) {
+      const nextEffectiveStart = candidates
+        .map((candidate) => candidate.effectiveStart)
+        .filter(
+          (date): date is EpochSeconds =>
+            date !== undefined && date > deliveryEnd
+        )
+        .sort((left, right) => left - right)[0];
+      const minimumStep = Math.min(
+        ...candidates.map((candidate) =>
+          Math.max(1, operationDuration(candidate.operation, 1))
+        )
+      );
+      const next = nextSupplyDate === undefined && nextEffectiveStart === undefined
+        ? (deliveryEnd + minimumStep) as EpochSeconds
+        : nextSupplyDate === undefined
+        ? Math.min(
+            nextEffectiveStart!,
+            (deliveryEnd + minimumStep) as EpochSeconds
+          ) as EpochSeconds
+        : nextEffectiveStart === undefined
+        ? nextSupplyDate
+        : Math.min(nextEffectiveStart, nextSupplyDate) as EpochSeconds;
+      const retryEnd = (next + minimumStep) as EpochSeconds;
+      if (retryEnd <= deliveryEnd) {
+        break;
+      }
+      deliveryEnd = retryEnd;
+    }
+  }
+}
+
+function scheduleAlternateConsumptionLot(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  candidate: ManufacturingSubOperation,
+  request: SolverRequest
+): AlternateConsumptionReply | undefined {
+  let quantity = request.qQty;
+  const desiredEnd = request.qDate;
+  const inputFlow = candidate.operation.flows.find(
+    (flow) => flow.quantity < -EPSILON || flow.quantityFixed < -EPSILON
+  );
+  if (!inputFlow) {
+    return undefined;
+  }
+  // Alternate effectivity is evaluated at the operation boundary.  A
+  // consumer whose effective start is Feb 1 can therefore start earlier
+  // when it ends exactly at Feb 1 (frePPLe's backward solver behavior).
+  const effectiveDesiredEnd = candidate.effectiveStart === undefined
+    ? desiredEnd
+    : Math.max(desiredEnd, candidate.effectiveStart) as EpochSeconds;
+  const initialSchedule = scheduleForOutputDate(
+    context,
+    candidate.operation,
+    undefined,
+    effectiveDesiredEnd,
+    quantity
+  );
+  const inputDate = flowDateFor(
+    context,
+    candidate.operation,
+    inputFlow,
+    initialSchedule.start,
+    initialSchedule.end
+  );
+  if (!isEffective(inputFlow, inputDate)) {
+    return undefined;
+  }
+  const inputState = context.states.get(bufferKey(inputFlow.buffer));
+  const inputBalance = inputState === undefined
+    ? 0
+    : Math.max(0, balanceAt(inputState, inputDate));
+  const inputUnit = Math.max(Math.abs(inputFlow.quantity), EPSILON);
+  const onHandQuantity = Math.min(quantity, inputBalance / inputUnit);
+  let required = Math.abs(
+    inputFlow.quantity * quantity + inputFlow.quantityFixed
+  );
+  const trialSnapshot = takePlanningSnapshot(context);
+  const shortage = Math.max(0, required - inputBalance);
+  let supply: SupplyResult = shortage <= EPSILON
+    ? { date: inputDate, quantity: 0 }
+    : createSupply(context, inputFlow.buffer, shortage, inputDate, false);
+  let allocations = supplyResultAllocations(supply)
+    .filter((allocation) => allocation.date <= inputDate);
+  const onTimeSupply = allocations.reduce(
+    (total, allocation) => total + allocation.quantity,
+    0
+  ) / inputUnit;
+  let feasibleQuantity = Math.min(
+    quantity,
+    onHandQuantity + Math.max(0, onTimeSupply)
+  );
+  if (feasibleQuantity <= EPSILON) {
+    // A constrained producer can answer zero for a large request while still
+    // returning a useful next date for a one-unit request. This is the
+    // equivalent of the native solver's partial a_qty/a_date reply.
+    restorePlanningSnapshot(context, trialSnapshot);
+    const probeQuantity = Math.min(quantity, 1);
+    const probeRequired = Math.abs(
+      inputFlow.quantity * probeQuantity + inputFlow.quantityFixed
+    );
+    const probe = createSupply(
+      context,
+      inputFlow.buffer,
+      probeRequired,
+      inputDate,
+      false
+    );
+    const probeAllocations = supplyResultAllocations(probe)
+      .filter((allocation) => allocation.date <= inputDate);
+    if (probeAllocations.length === 0 && probe.date > inputDate) {
+      restorePlanningSnapshot(context, trialSnapshot);
+      return nextDateReply(probe.date);
+    }
+    if (probeAllocations.length === 0 && probe.quantity <= EPSILON) {
+      restorePlanningSnapshot(context, trialSnapshot);
+      return undefined;
+    }
+    quantity = probeQuantity;
+    required = probeRequired;
+    feasibleQuantity = probeQuantity;
+    supply = probe;
+    allocations = probeAllocations;
+  }
+  if (feasibleQuantity + EPSILON < quantity) {
+    restorePlanningSnapshot(context, trialSnapshot);
+    if (feasibleQuantity <= EPSILON) {
+      return supply.date > inputDate ? nextDateReply(supply.date) : undefined;
+    }
+    quantity = feasibleQuantity;
+    required = Math.abs(
+      inputFlow.quantity * quantity + inputFlow.quantityFixed
+    );
+    const retryState = context.states.get(bufferKey(inputFlow.buffer));
+    const retryBalance = retryState === undefined
+      ? 0
+      : Math.max(0, balanceAt(retryState, inputDate));
+    const retryShortage = Math.max(0, required - retryBalance);
+    supply = retryShortage <= EPSILON
+      ? { date: inputDate, quantity: 0 }
+      : createSupply(
+          context,
+          inputFlow.buffer,
+          retryShortage,
+          inputDate,
+          false
+        );
+    allocations = supplyResultAllocations(supply)
+      .filter((allocation) => allocation.date <= inputDate);
+    if (retryShortage > EPSILON && allocations.length === 0 &&
+        supply.date > inputDate) {
+      restorePlanningSnapshot(context, trialSnapshot);
+      return nextDateReply(supply.date);
+    }
+  }
+  if (onHandQuantity > EPSILON) {
+    allocations = [
+      { date: inputDate, quantity: onHandQuantity * inputUnit },
+      ...allocations
+    ];
+  }
+  if (allocations.length === 0) {
+    return supply.date > inputDate ? nextDateReply(supply.date) : undefined;
+  }
+  let plannedQuantity = 0;
+  let latestEnd = desiredEnd;
+  const groupedAllocations = new Map<EpochSeconds, number>();
+  for (const allocation of allocations) {
+    if (allocation.date > inputDate) {
+      return undefined;
+    }
+    groupedAllocations.set(
+      allocation.date,
+      (groupedAllocations.get(allocation.date) ?? 0) + allocation.quantity
+    );
+  }
+  for (const [allocationDate, allocatedQuantity] of groupedAllocations) {
+    const lotQuantity = Math.min(
+      quantity - plannedQuantity,
+      allocatedQuantity / Math.max(Math.abs(inputFlow.quantity), EPSILON)
+    );
+    if (lotQuantity <= EPSILON) {
+      continue;
+    }
+    const duration = operationDuration(candidate.operation, lotQuantity);
+    const schedule = inputFlow.type === "start"
+      ? scheduleFromStart(context, candidate.operation, allocationDate, duration)
+      : scheduleForOutputDate(
+          context,
+          candidate.operation,
+          undefined,
+          allocationDate,
+          lotQuantity
+        );
+    const effective = candidate.operation.flows
+      .filter((flow) => flow.quantity < -EPSILON || flow.quantityFixed < -EPSILON)
+      .every((flow) =>
+        isEffective(
+          flow,
+          flowDateFor(context, candidate.operation, flow, schedule.start, schedule.end)
+        )
+      );
+    if (!effective || !isSubOperationScheduleEffective(candidate, schedule)) {
+      return undefined;
+    }
+    addOperationPlan(
+      context,
+      candidate.operation,
+      schedule,
+      lotQuantity,
+      false,
+      false
+    );
+    addOperationPlan(
+      context,
+      operation,
+      schedule,
+      lotQuantity,
+      false,
+      false
+    );
+    plannedQuantity += lotQuantity;
+    latestEnd = Math.max(latestEnd, schedule.end) as EpochSeconds;
+  }
+  return plannedQuantity + EPSILON >= quantity
+    ? {
+        ...quantityReply(request, plannedQuantity, INFINITE_FUTURE),
+        operationEnd: latestEnd
+      }
+    : undefined;
 }
 
 interface DeliveryAttempt {
@@ -1009,7 +2110,10 @@ function commitDeliveryQuantity(
   upper: number,
   horizon: EpochSeconds
 ): DeliveryAttempt | undefined {
-  if (upper <= EPSILON) {
+  if (
+    upper <= EPSILON ||
+    upper + EPSILON < demand.minimumShipment
+  ) {
     return undefined;
   }
   const baseSnapshot = takePlanningSnapshot(context);
@@ -1102,7 +2206,14 @@ function scheduleDeliveryQuantity(
       return undefined;
     }
     const required = Math.abs(flow.quantity * quantity + flow.quantityFixed);
-    const shortage = Math.max(0, required - balanceAt(state, flowDate));
+    const minimumBalance =
+      (context.input.mode ?? "constrained") === "constrained"
+        ? 0
+        : Math.max(0, state.buffer.minimum ?? 0);
+    const shortage = Math.max(
+      0,
+      required + minimumBalance - balanceAt(state, flowDate)
+    );
     if (shortage <= EPSILON) {
       continue;
     }
@@ -1114,7 +2225,10 @@ function scheduleDeliveryQuantity(
       false,
       demand.maxLatenessSeconds
     );
-    if (supply.quantity + EPSILON < shortage) {
+    if (
+      (context.input.mode ?? "constrained") === "constrained" &&
+      supply.quantity + EPSILON < shortage
+    ) {
       return undefined;
     }
     if (
@@ -1191,6 +2305,9 @@ function maximumBufferSupplyAt(
   if (!state || visiting.has(key)) {
     return state ? Math.max(0, balanceAt(state, date)) : 0;
   }
+  if (state.buffer.infinite === true) {
+    return Number.POSITIVE_INFINITY;
+  }
   const available = Math.max(0, balanceAt(state, date));
   const producer = context.producers.get(key);
   if (!producer) {
@@ -1237,37 +2354,50 @@ function maximumProducerQuantityAt(
     );
   }
   let maximum = Number.POSITIVE_INFINITY;
-  for (const flow of operation.flows) {
+  const groups = new Map<string, MaterialFlow[]>();
+  operation.flows.forEach((flow, index) => {
     if (flow.quantity >= 0 && flow.quantityFixed >= 0) {
-      continue;
+      return;
     }
-    const available = maximumBufferSupplyAt(
-      context,
-      flow.buffer,
-      date,
-      visiting
-    );
-    const fixed = Math.max(0, -flow.quantityFixed);
-    if (flow.quantity < -EPSILON) {
-      maximum = Math.min(
-        maximum,
-        Math.max(0, (available - fixed) / -flow.quantity)
+    const key = flow.alternateGroup ?? `__flow_${index}`;
+    const entries = groups.get(key) ?? [];
+    entries.push(flow);
+    groups.set(key, entries);
+  });
+  for (const flows of groups.values()) {
+    const capacities = flows.map((flow) => {
+      const available = maximumBufferSupplyAt(
+        context,
+        flow.buffer,
+        date,
+        visiting
       );
-    } else if (available + EPSILON < fixed) {
+      const fixed = Math.max(0, -flow.quantityFixed);
+      if (flow.quantity < -EPSILON) {
+        return Math.max(0, (available - fixed) / -flow.quantity);
+      }
+      return available + EPSILON >= fixed
+        ? Number.POSITIVE_INFINITY
+        : 0;
+    });
+    const capacity = flows[0]?.alternateGroup === undefined
+      ? capacities[0] ?? 0
+      : Math.max(...capacities);
+    maximum = Math.min(maximum, capacity);
+    if (maximum <= EPSILON) {
       return 0;
     }
   }
-  const lotMaximum = operation.maximumQuantity;
-  const bounded = Math.min(
-    Number.isFinite(maximum) ? maximum : Number.POSITIVE_INFINITY,
-    lotMaximum !== undefined && lotMaximum > EPSILON
-      ? lotMaximum
-      : Number.POSITIVE_INFINITY
-  );
+  // Lot limits apply to each operation plan. The producer can be split into
+  // multiple lots, so they must not cap the aggregate feasibility estimate.
+  if (!Number.isFinite(maximum)) {
+    return maximum;
+  }
+  const normalized = Math.max(0, maximum);
   const multiple = operation.multipleQuantity ?? 0;
   return multiple > EPSILON
-    ? Math.floor(bounded / multiple + EPSILON) * multiple
-    : bounded;
+    ? Math.floor(normalized / multiple + EPSILON) * multiple
+    : normalized;
 }
 
 function nextConfirmedMaterialDate(
@@ -1321,6 +2451,15 @@ function createSupply(
     if (!source) {
       return { date: desiredEnd, quantity: 0 };
     }
+    if (source.kind === "transfer") {
+      return createTransferSupply(
+        context,
+        state,
+        source,
+        quantity,
+        desiredEnd
+      );
+    }
     const deliveryDate = purchaseDeliveryDateForDate(
       context,
       desiredEnd,
@@ -1366,6 +2505,112 @@ function createSupply(
     confirmed,
     maxLatenessSeconds
   );
+}
+
+function createTransferSupply(
+  context: SolverContext,
+  destinationState: BufferState,
+  transfer: ProcurementSource,
+  quantity: number,
+  desiredEnd: EpochSeconds
+): SupplyResult {
+  const originLocation = transfer.originLocation;
+  if (!originLocation) {
+    return { date: desiredEnd, quantity: 0 };
+  }
+  const originState = [...context.states.values()].find(
+    (candidate) =>
+      candidate.buffer.item === destinationState.buffer.item &&
+      candidate.buffer.location === originLocation
+  );
+  if (!originState) {
+    return { date: desiredEnd, quantity: 0 };
+  }
+  const transferStart = (desiredEnd - transfer.leadTimeSeconds) as EpochSeconds;
+  const purchaseSource = context.input.sources
+    .filter(
+      (source) =>
+        source.kind !== "transfer" &&
+        source.item === transfer.item &&
+        (source.location === undefined || source.location === originLocation)
+    )
+    .sort(
+      (left, right) =>
+        left.priority - right.priority ||
+        left.leadTimeSeconds - right.leadTimeSeconds ||
+        left.supplier.localeCompare(right.supplier)
+    )[0];
+  if (!purchaseSource) {
+    return { date: desiredEnd, quantity: 0 };
+  }
+  const purchaseEnd = purchaseDeliveryDateForDate(
+    context,
+    transferStart,
+    purchaseSource
+  );
+  const transferEnd = (context.input.mode ?? "constrained") === "constrained"
+    ? Math.max(desiredEnd, purchaseEnd + transfer.leadTimeSeconds) as EpochSeconds
+    : desiredEnd;
+  const ordered = orderQuantity(
+    quantity,
+    Math.max(transfer.minimumQuantity, purchaseSource.minimumQuantity),
+    Math.max(transfer.multipleQuantity, purchaseSource.multipleQuantity)
+  );
+  addPurchaseSupply(context, originState, purchaseSource, purchaseEnd, ordered);
+  const existingShipmentDemand = originState.events.find(
+    (event) =>
+      event.kind === "demand" &&
+      event.date === purchaseEnd &&
+      event.confirmed !== true &&
+      event.originalDue === undefined
+  );
+  if (existingShipmentDemand) {
+    existingShipmentDemand.quantity -= ordered;
+  } else {
+    addEvent(
+      context,
+      originState,
+      purchaseEnd,
+      -ordered,
+      "demand"
+    );
+  }
+  addEvent(
+    context,
+    destinationState,
+    transferEnd,
+    ordered,
+    "receipt",
+    undefined,
+    false,
+    true
+  );
+  const shipmentName =
+    `Ship ${transfer.item} from ${originLocation} to ${destinationState.buffer.location}`;
+  const existingShipment = context.operationPlans.findIndex(
+    (plan) =>
+      plan.name === shipmentName &&
+      plan.start === purchaseEnd &&
+      plan.end === transferEnd &&
+      plan.confirmed !== true
+  );
+  if (existingShipment >= 0) {
+    const current = context.operationPlans[existingShipment];
+    if (current) {
+      context.operationPlans[existingShipment] = {
+        ...current,
+        quantity: current.quantity + ordered
+      };
+    }
+  } else {
+    context.operationPlans.push({
+      name: shipmentName,
+      start: purchaseEnd,
+      end: transferEnd,
+      quantity: ordered
+    });
+  }
+  return { date: transferEnd, quantity: ordered };
 }
 
 function createAlternativeSupply(
@@ -1440,10 +2685,22 @@ function createSupplyFromProducer(
   notBefore?: EpochSeconds,
   alternativeCandidate = false,
   suppressLotSizing = false,
-  deferInputSupply = false
+  deferInputSupply = false,
+  suppressAlternateFlowSplit = false,
+  quantityIsOperationPlan = false
 ): SupplyResult {
   const key = bufferKey(bufferName);
   if (selected.type === "routing" || selected.type === "alternate") {
+    if (selected.type === "alternate") {
+      return createAlternateOperationSupply(
+        context,
+        selected,
+        bufferName,
+        quantity,
+        desiredEnd,
+        notBefore
+      );
+    }
     return createRoutedSupply(
       context,
       selected,
@@ -1479,6 +2736,25 @@ function createSupplyFromProducer(
     return effectivitySplit;
   }
 
+  if (
+    !suppressAlternateFlowSplit &&
+    selected.type === "time_per" &&
+    quantity > 1 + EPSILON &&
+    hasAlternateInputFlows(selected)
+  ) {
+    return createAlternateFlowSupply(
+      context,
+      selected,
+      bufferName,
+      quantity,
+      desiredEnd,
+      confirmed,
+      maxLatenessSeconds,
+      notBefore,
+      alternativeCandidate
+    );
+  }
+
   const unconstrainedAlternative =
     alternativeCandidate &&
     (context.input.mode ?? "constrained") === "unconstrained";
@@ -1498,16 +2774,15 @@ function createSupplyFromProducer(
     outputDate(context, selected, bufferName, outputSchedule)
   );
   if (initialOutput.variable > EPSILON) {
-    const planQuantity = Math.max(
-      0,
-      (quantity - initialOutput.fixed) / initialOutput.variable
-    );
+    let planQuantity = quantityIsOperationPlan
+      ? quantity
+      : Math.max(
+          0,
+          (quantity - initialOutput.fixed) / initialOutput.variable
+        );
     if (planQuantity <= EPSILON) {
-      return {
-        date: desiredEnd,
-        quantity: initialOutput.fixed,
-        operationEnd: initialSchedule.end
-      };
+      // A fixed output still requires one operation unit and its inputs.
+      planQuantity = 1;
     }
     const lotQuantities = suppressLotSizing
       ? [planQuantity]
@@ -1526,8 +2801,24 @@ function createSupplyFromProducer(
         maxLatenessSeconds,
         notBefore,
         alternativeCandidate,
-        true
+        false
       );
+    }
+    if (hasBucketizedFixedResource(context, selected)) {
+      context.activeOperations.add(`${selected.name}\u0000${key}`);
+      const supply = createBucketizedFixedTimeSupply(
+        context,
+        selected,
+        bufferName,
+        planQuantity,
+        desiredEnd,
+        confirmed,
+        maxLatenessSeconds,
+        notBefore,
+        deferInputSupply
+      );
+      context.activeOperations.delete(`${selected.name}\u0000${key}`);
+      return supply;
     }
     if (canSplitForResourceCapacity(context, selected)) {
       context.activeOperations.add(`${selected.name}\u0000${key}`);
@@ -1568,7 +2859,10 @@ function createSupplyFromProducer(
         schedule,
         planQuantity
       );
-      if (!schedule.inputsSatisfied) {
+      if (
+        (context.input.mode ?? "constrained") === "constrained" &&
+        !schedule.inputsSatisfied
+      ) {
         context.activeOperations.delete(`${selected.name}\u0000${key}`);
         return { date: desiredEnd, quantity: 0 };
       }
@@ -1630,7 +2924,10 @@ function createSupplyFromProducer(
   );
   context.activeOperations.add(`${selected.name}\u0000${key}`);
   schedule = scheduleWithInputs(context, selected, schedule, 1);
-  if (!schedule.inputsSatisfied) {
+  if (
+    (context.input.mode ?? "constrained") === "constrained" &&
+    !schedule.inputsSatisfied
+  ) {
     context.activeOperations.delete(`${selected.name}\u0000${key}`);
     return { date: desiredEnd, quantity: 0 };
   }
@@ -1657,14 +2954,214 @@ function createSupplyFromProducer(
   };
 }
 
+function hasAlternateInputFlows(operation: ManufacturingOperation): boolean {
+  return operation.flows.some((flow) =>
+    (flow.quantity < -EPSILON || flow.quantityFixed < -EPSILON) &&
+    flow.alternateGroup !== undefined
+  );
+}
+
+function createAlternateFlowSupply(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  bufferName: string,
+  quantity: number,
+  desiredEnd: EpochSeconds,
+  confirmed: boolean,
+  maxLatenessSeconds?: number,
+  notBefore?: EpochSeconds,
+  alternativeCandidate = false
+): SupplyResult {
+  let remaining = quantity;
+  let produced = 0;
+  let date = desiredEnd;
+  let operationEnd = desiredEnd;
+  const allocations: SupplyAllocation[] = [];
+  for (let attempt = 0; remaining > EPSILON && attempt < 10_000; attempt += 1) {
+    const requested = Math.min(1, remaining);
+    const result = createSupplyFromProducer(
+      context,
+      operation,
+      bufferName,
+      requested,
+      desiredEnd,
+      confirmed,
+      maxLatenessSeconds,
+      notBefore,
+      alternativeCandidate,
+      true,
+      false,
+      true
+    );
+    if (result.quantity <= EPSILON) {
+      break;
+    }
+    const accepted = Math.min(result.quantity, remaining);
+    produced += accepted;
+    remaining -= accepted;
+    date = Math.max(date, result.date) as EpochSeconds;
+    operationEnd = Math.max(operationEnd, result.operationEnd ?? desiredEnd) as EpochSeconds;
+    allocations.push(...supplyResultAllocations(result));
+  }
+  const mergedAllocations = [...allocations.reduce(
+    (merged, allocation) => {
+      merged.set(
+        allocation.date,
+        (merged.get(allocation.date) ?? 0) + allocation.quantity
+      );
+      return merged;
+    },
+    new Map<EpochSeconds, number>()
+  )].map(([allocationDate, allocationQuantity]) => ({
+    date: allocationDate,
+    quantity: allocationQuantity
+  }));
+  return {
+    date: produced > EPSILON ? date : desiredEnd,
+    quantity: produced,
+    ...(mergedAllocations.length === 0 ? {} : { allocations: mergedAllocations }),
+    ...(produced > EPSILON ? { operationEnd } : {})
+  };
+}
+
+function createAlternateOperationSupply(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  bufferName: string,
+  quantity: number,
+  desiredEnd: EpochSeconds,
+  notBefore?: EpochSeconds
+): SupplyResult {
+  const candidates = [...operation.subOperations]
+    .filter((child) => isSubOperationEffective(child, desiredEnd))
+    .sort(
+      (left, right) =>
+        left.priority - right.priority ||
+        left.operation.name.localeCompare(right.operation.name)
+    );
+  let remaining = quantity;
+  let produced = 0;
+  let date = desiredEnd;
+  let operationEnd = desiredEnd;
+  const allocations: SupplyAllocation[] = [];
+  const constrained = (context.input.mode ?? "constrained") === "constrained";
+  const smartUnconstrained =
+    !constrained && (context.input.constraints ?? 15) > 0;
+  const smartTargets = new Map<ManufacturingSubOperation, number>();
+  if (smartUnconstrained) {
+    let allocatable = quantity;
+    for (const child of candidates) {
+      const output = outputQuantity(child.operation, bufferName, desiredEnd);
+      if (
+        allocatable <= EPSILON ||
+        (output.variable <= EPSILON && output.fixed <= EPSILON)
+      ) {
+        continue;
+      }
+      const maximumPlanQuantity = maximumProducerQuantityAt(
+        context,
+        child.operation,
+        desiredEnd,
+        new Set()
+      );
+      if (maximumPlanQuantity <= EPSILON) {
+        continue;
+      }
+      const maximumOutput = Number.isFinite(maximumPlanQuantity)
+        ? output.variable > EPSILON
+          ? maximumPlanQuantity * output.variable + output.fixed
+          : output.fixed
+        : allocatable;
+      const feasible = Math.min(allocatable, maximumOutput);
+      if (feasible > EPSILON) {
+        smartTargets.set(child, feasible);
+        allocatable -= feasible;
+      }
+    }
+    const preferred = candidates[0];
+    if (preferred !== undefined && allocatable > EPSILON) {
+      smartTargets.set(
+        preferred,
+        (smartTargets.get(preferred) ?? 0) + allocatable
+      );
+    }
+  }
+
+  for (const child of candidates) {
+    if (remaining <= EPSILON) {
+      break;
+    }
+    const output = outputQuantity(child.operation, bufferName, desiredEnd);
+    if (output.variable <= EPSILON && output.fixed <= EPSILON) {
+      continue;
+    }
+
+    let target = smartUnconstrained
+      ? smartTargets.get(child) ?? 0
+      : remaining;
+    if (constrained) {
+      const maximumPlanQuantity = maximumProducerQuantityAt(
+        context,
+        child.operation,
+        desiredEnd,
+        new Set()
+      );
+      if (maximumPlanQuantity <= EPSILON) {
+        continue;
+      }
+      if (Number.isFinite(maximumPlanQuantity)) {
+        const maximumOutput = output.variable > EPSILON
+          ? maximumPlanQuantity * output.variable + output.fixed
+          : output.fixed;
+        target = Math.min(target, maximumOutput);
+      }
+    }
+    if (target <= EPSILON) {
+      continue;
+    }
+
+    // The C++ solver evaluates one alternate in a command bookmark and keeps
+    // it only when the child can answer. A single-child routed operation gives
+    // us the same timing and operation-plan shape while preserving rollback.
+    const singleChildOperation: ManufacturingOperation = {
+      ...operation,
+      subOperations: [child]
+    };
+    const result = createRoutedSupply(
+      context,
+      singleChildOperation,
+      bufferName,
+      target,
+      desiredEnd,
+      notBefore
+    );
+    if (result.quantity <= EPSILON) {
+      continue;
+    }
+    produced += result.quantity;
+    remaining = Math.max(0, quantity - produced);
+    date = Math.max(date, result.date) as EpochSeconds;
+    operationEnd = Math.max(operationEnd, result.operationEnd ?? desiredEnd) as EpochSeconds;
+    allocations.push(...supplyResultAllocations(result));
+  }
+
+  return {
+    date: produced > EPSILON ? date : desiredEnd,
+    quantity: produced,
+    ...(allocations.length === 0 ? {} : { allocations }),
+    ...(produced > EPSILON ? { operationEnd } : {})
+  };
+}
+
 function splitLotQuantities(
   operation: ManufacturingOperation,
-  requested: number
+  requested: number,
+  minimumDate?: EpochSeconds
 ): readonly number[] {
   if (requested <= EPSILON) {
     return [];
   }
-  const minimum = Math.max(0, operation.minimumQuantity ?? 0);
+  const minimum = operationMinimumQuantity(operation, minimumDate);
   const maximum = Math.max(0, operation.maximumQuantity ?? 0);
   const multiple = Math.max(0, operation.multipleQuantity ?? 0);
   const roundLot = (quantity: number): number => multiple > EPSILON
@@ -1713,7 +3210,9 @@ function createLotSizedSupply(
       notBefore,
       alternativeCandidate,
       true,
-      deferInputSupply
+      deferInputSupply,
+      false,
+      true
     );
     quantity += result.quantity;
     date = Math.max(date, result.date) as EpochSeconds;
@@ -2112,7 +3611,7 @@ function planSplitChild(
   readonly quantity: number;
   readonly schedule?: undefined;
 } {
-  const quantity = sizedOperationQuantity(child.operation, asked);
+  const quantity = sizedOperationQuantity(child.operation, asked, desiredEnd);
   if (quantity <= EPSILON) {
     return { quantity: 0 };
   }
@@ -2331,14 +3830,30 @@ function isSubOperationEffective(
   );
 }
 
+function isSubOperationScheduleEffective(
+  subOperation: ManufacturingSubOperation,
+  schedule: Schedule
+): boolean {
+  return (
+    (subOperation.effectiveStart === undefined ||
+      schedule.end >= subOperation.effectiveStart) &&
+    (subOperation.effectiveEnd === undefined ||
+      schedule.start < subOperation.effectiveEnd)
+  );
+}
+
 function sizedOperationQuantity(
   operation: ManufacturingOperation,
-  requested: number
+  requested: number,
+  minimumDate?: EpochSeconds
 ): number {
   if (requested <= EPSILON) {
     return 0;
   }
-  let quantity = Math.max(requested, operation.minimumQuantity ?? 0);
+  let quantity = Math.max(
+    requested,
+    operationMinimumQuantity(operation, minimumDate)
+  );
   const multiple = operation.multipleQuantity ?? 0;
   if (multiple > EPSILON) {
     quantity = Math.ceil(quantity / multiple - EPSILON) * multiple;
@@ -2350,6 +3865,18 @@ function sizedOperationQuantity(
     quantity = Math.min(quantity, operation.maximumQuantity);
   }
   return quantity;
+}
+
+function operationMinimumQuantity(
+  operation: ManufacturingOperation,
+  date?: EpochSeconds
+): number {
+  const constant = Math.max(0, operation.minimumQuantity ?? 0);
+  const calendar = operation.minimumQuantityCalendar;
+  if (!calendar || date === undefined) {
+    return constant;
+  }
+  return Math.max(constant, calendar.valueAt(date, false));
 }
 
 function createEffectivitySplitSupply(
@@ -2474,6 +4001,297 @@ function createEffectivitySplitSupply(
       };
 }
 
+function hasBucketizedFixedResource(
+  context: SolverContext,
+  operation: ManufacturingOperation
+): boolean {
+  return operation.type === "fixed_time" &&
+    operation.durationSeconds > EPSILON &&
+    (operation.loads ?? []).some(
+      (load) => materialResource(context, load.resource)?.bucketized === true
+    );
+}
+
+interface BucketizedCandidate {
+  readonly schedule: Schedule;
+  readonly available: number;
+}
+
+function createBucketizedFixedTimeSupply(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  bufferName: string,
+  quantity: number,
+  desiredEnd: EpochSeconds,
+  confirmed: boolean,
+  maxLatenessSeconds?: number,
+  notBefore?: EpochSeconds,
+  deferInputSupply = false
+): SupplyResult {
+  const initial = scheduleAtOrAfter(
+    context,
+    operation,
+    scheduleForOutputDate(context, operation, bufferName, desiredEnd, 1),
+    1,
+    notBefore
+  );
+  const candidates = bucketizedCandidates(
+    context,
+    operation,
+    initial,
+    desiredEnd,
+    maxLatenessSeconds
+  );
+  const allocations: SupplyAllocation[] = [];
+  let remaining = quantity;
+  let latestEnd: EpochSeconds | undefined;
+
+  for (const candidate of candidates) {
+    if (remaining <= EPSILON) {
+      break;
+    }
+    const available = availableBucketizedPlanQuantity(
+      context,
+      operation,
+      candidate.schedule.start
+    );
+    const chunkQuantity = Math.min(
+      remaining,
+      candidate.available,
+      available
+    );
+    if (chunkQuantity <= EPSILON) {
+      continue;
+    }
+    const snapshot = takePlanningSnapshot(context);
+    const schedule = deferInputSupply
+      ? candidate.schedule
+      : scheduleWithInputs(
+          context,
+          operation,
+          candidate.schedule,
+          chunkQuantity
+        );
+    if (
+      (!deferInputSupply &&
+        (context.input.mode ?? "constrained") === "constrained" &&
+        !schedule.inputsSatisfied) ||
+      schedule.start !== candidate.schedule.start ||
+      availableBucketizedPlanQuantity(
+        context,
+        operation,
+        schedule.start
+      ) + EPSILON < chunkQuantity
+    ) {
+      restorePlanningSnapshot(context, snapshot);
+      continue;
+    }
+    addOperationPlan(
+      context,
+      operation,
+      schedule,
+      chunkQuantity,
+      confirmed,
+      false
+    );
+    const date = outputDate(context, operation, bufferName, schedule);
+    const output = outputQuantity(operation, bufferName, date);
+    allocations.push({
+      date,
+      quantity: chunkQuantity * output.variable + output.fixed
+    });
+    latestEnd = latestEnd === undefined
+      ? schedule.end
+      : Math.max(latestEnd, schedule.end) as EpochSeconds;
+    remaining -= chunkQuantity;
+  }
+
+  if (remaining > EPSILON && (context.input.constraints ?? 15) === 0) {
+    const snapshot = takePlanningSnapshot(context);
+    const schedule = deferInputSupply
+      ? initial
+      : scheduleWithInputs(context, operation, initial, remaining);
+    if (
+      deferInputSupply ||
+      (context.input.mode ?? "constrained") !== "constrained" ||
+      schedule.inputsSatisfied
+    ) {
+      addOperationPlan(
+        context,
+        operation,
+        schedule,
+        remaining,
+        confirmed,
+        false
+      );
+      const date = outputDate(context, operation, bufferName, schedule);
+      const output = outputQuantity(operation, bufferName, date);
+      allocations.push({
+        date,
+        quantity: remaining * output.variable + output.fixed
+      });
+      latestEnd = latestEnd === undefined
+        ? schedule.end
+        : Math.max(latestEnd, schedule.end) as EpochSeconds;
+      remaining = 0;
+    } else {
+      restorePlanningSnapshot(context, snapshot);
+    }
+  }
+
+  const produced = allocations.reduce(
+    (total, allocation) => total + allocation.quantity,
+    0
+  );
+  const latestDate = allocations.reduce<EpochSeconds>(
+    (latest, allocation) => Math.max(latest, allocation.date) as EpochSeconds,
+    desiredEnd
+  );
+  return {
+    date: latestDate,
+    quantity: produced,
+    ...(allocations.length === 0 ? {} : { allocations }),
+    ...(latestEnd === undefined ? {} : { operationEnd: latestEnd })
+  };
+}
+
+function bucketizedCandidates(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  initial: Schedule,
+  desiredEnd: EpochSeconds,
+  maxLatenessSeconds?: number
+): readonly BucketizedCandidate[] {
+  const primaryLoad = (operation.loads ?? []).find(
+    (load) => materialResource(context, load.resource)?.bucketized === true
+  );
+  const resource = primaryLoad === undefined
+    ? undefined
+    : materialResource(context, primaryLoad.resource);
+  const calendar = resource?.maximumCalendar;
+  const initialAvailable = availableBucketizedPlanQuantity(
+    context,
+    operation,
+    initial.start
+  );
+  const candidates: BucketizedCandidate[] = initialAvailable > EPSILON
+    ? [{ schedule: initial, available: initialAvailable }]
+    : [];
+  if (!calendar) {
+    return candidates;
+  }
+
+  const events = calendar.events();
+  const intervals = events.flatMap((event, index) => {
+    const end = events[index + 1]?.date ?? INFINITE_FUTURE;
+    return event.value > EPSILON && end > event.date
+      ? [{ start: event.date, end }]
+      : [];
+  });
+  const maxEarly = resource.maxEarlySeconds ?? 100 * 86_400;
+  const earliestStart = (initial.end - maxEarly) as EpochSeconds;
+  const seen = new Set<EpochSeconds>([initial.start]);
+
+  for (const interval of [...intervals].reverse()) {
+    if (
+      interval.end > initial.start ||
+      interval.end >= INFINITE_FUTURE
+    ) {
+      continue;
+    }
+    const start = subtractWorkingTime(
+      context,
+      operation,
+      interval.end,
+      1
+    );
+    if (start < earliestStart) {
+      break;
+    }
+    const schedule = scheduleFromStart(
+      context,
+      operation,
+      start,
+      operationDuration(operation, 1)
+    );
+    if (seen.has(schedule.start)) {
+      continue;
+    }
+    seen.add(schedule.start);
+    candidates.push({
+      schedule,
+      available: availableBucketizedPlanQuantity(
+        context,
+        operation,
+        schedule.start
+      )
+    });
+  }
+
+  if ((context.input.constraints ?? 15) === 0) {
+    return candidates;
+  }
+  const latestEnd = maxLatenessSeconds === undefined
+    ? INFINITE_FUTURE
+    : (desiredEnd + maxLatenessSeconds) as EpochSeconds;
+  for (const interval of intervals) {
+    if (interval.start <= initial.start) {
+      continue;
+    }
+    const schedule = scheduleFromStart(
+      context,
+      operation,
+      interval.start,
+      operationDuration(operation, 1)
+    );
+    if (schedule.end > latestEnd) {
+      break;
+    }
+    if (
+      schedule.start >= interval.end ||
+      seen.has(schedule.start)
+    ) {
+      continue;
+    }
+    seen.add(schedule.start);
+    candidates.push({
+      schedule,
+      available: availableBucketizedPlanQuantity(
+        context,
+        operation,
+        schedule.start
+      )
+    });
+    if (candidates.length >= 10_000) {
+      break;
+    }
+  }
+  return candidates;
+}
+
+function availableBucketizedPlanQuantity(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  date: EpochSeconds
+): number {
+  let available = Number.POSITIVE_INFINITY;
+  for (const load of operation.loads ?? []) {
+    const state = context.resourceStates.get(load.resource);
+    if (!state?.bucketized || load.quantity <= EPSILON) {
+      continue;
+    }
+    const maximum = resourceMaximumAt(context, load.resource, date);
+    if (maximum === undefined) {
+      continue;
+    }
+    available = Math.min(
+      available,
+      Math.max(0, maximum - resourceLoadAt(state, date)) / load.quantity
+    );
+  }
+  return available;
+}
+
 function canSplitForResourceCapacity(
   context: SolverContext,
   operation: ManufacturingOperation
@@ -2523,7 +4341,12 @@ function scheduleFixedResourceCapacity(
 ): Schedule | undefined {
   const duration = initial.end - initial.start;
   const earliestEnd = earliestCapacityEnd(context, operation, desiredEnd);
-  const constrained = (context.input.mode ?? "constrained") === "constrained";
+  const constrained =
+    (context.input.mode ?? "constrained") === "constrained" ||
+    (
+      (context.input.constraints ?? 15) > 0 &&
+      (operation.maximumQuantity ?? 0) > EPSILON
+    );
   let end = initial.end;
   if (!preferLater) {
     for (let attempt = 0; attempt < 10_000; attempt += 1) {
@@ -2541,10 +4364,14 @@ function scheduleFixedResourceCapacity(
         return schedule;
       }
       if (
+        !constrained &&
         isSoftUnconstrainedResourcePlan(
           context,
           operation,
           maxLatenessSeconds
+        ) &&
+        (operation.loads ?? []).some((load) =>
+          materialResource(context, load.resource)?.maximumCalendar !== undefined
         )
       ) {
         if (conflict !== schedule.start) {
@@ -2557,29 +4384,63 @@ function scheduleFixedResourceCapacity(
         );
         if (
           overload &&
-          overload.currentLoad > overload.maximum + EPSILON &&
+          overload.currentLoad + resourceLoadAtSchedule(
+            context,
+            operation,
+            1
+          ) > overload.maximum + EPSILON &&
           schedule.start >= earliestEnd
         ) {
-          return {
-            start: (schedule.start - duration) as EpochSeconds,
-            end: schedule.start
-          };
+          const boundary = nextResourceChange(
+            context,
+            operation,
+            schedule.start
+          );
+          if (boundary !== undefined && boundary > schedule.start) {
+            return {
+              start: (boundary - duration) as EpochSeconds,
+              end: boundary
+            };
+          }
         }
-        if (
-          overload &&
-          hasResourceStartEvent(context, operation, schedule.start)
-        ) {
-          const delayedStart = (
-            schedule.start + DEFAULT_MINIMUM_DELAY_SECONDS
-          ) as EpochSeconds;
-          return {
-            start: delayedStart,
-            end: (delayedStart + duration) as EpochSeconds
-          };
-        }
+        // An unconstrained plan keeps a soft overload candidate when no
+        // finite early fence requires the operation to be moved.
         return schedule;
       }
       end = conflict;
+    }
+  }
+
+  const hasMaxEarlyResource = (operation.loads ?? []).some((load) =>
+    materialResource(context, load.resource)?.maxEarlySeconds !== undefined
+  );
+  if (
+    (context.input.mode ?? "constrained") === "unconstrained" &&
+    hasMaxEarlyResource
+  ) {
+    const early = {
+      start: (initial.start - duration) as EpochSeconds,
+      end: initial.start
+    } satisfies Schedule;
+    const earlyCandidateBlocked = (operation.loads ?? []).some((load) => {
+      const maximum = resourceMaximumAt(context, load.resource, early.start);
+      const state = context.resourceStates.get(load.resource);
+      return maximum !== undefined && state !== undefined &&
+        resourceLoadAt(state, early.start) + load.quantity > maximum + EPSILON;
+    });
+    if (
+      early.start >= context.input.current &&
+      early.end >= earliestEnd &&
+      (!earlyCandidateBlocked || initial.start <= early.start)
+    ) {
+      return early;
+    }
+    if (
+      earlyCandidateBlocked &&
+      initial.start > early.start &&
+      initial.end >= earliestEnd
+    ) {
+      return initial;
     }
   }
 
@@ -2612,6 +4473,23 @@ function scheduleFixedResourceCapacity(
     start = next;
   }
   return undefined;
+}
+
+function resourceLoadAtSchedule(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  quantity: number
+): number {
+  return (operation.loads ?? []).reduce(
+    (total, load) => total + scaledLoadQuantity(
+      context,
+      operation,
+      load.resource,
+      load.quantity,
+      quantity
+    ),
+    0
+  );
 }
 
 function isSoftUnconstrainedResourcePlan(
@@ -2647,7 +4525,7 @@ function resourceOverloadAt(
   readonly maximum: number;
 } | undefined {
   for (const load of operation.loads ?? []) {
-    const maximum = finiteResourceMaximum(context, load.resource);
+    const maximum = resourceMaximumAt(context, load.resource, date);
     const state = context.resourceStates.get(load.resource);
     if (maximum === undefined || !state) {
       continue;
@@ -2658,19 +4536,6 @@ function resourceOverloadAt(
     }
   }
   return undefined;
-}
-
-function hasResourceStartEvent(
-  context: SolverContext,
-  operation: ManufacturingOperation,
-  date: EpochSeconds
-): boolean {
-  return (operation.loads ?? []).some((load) => {
-    const state = context.resourceStates.get(load.resource);
-    return state?.events.some(
-      (event) => event.date === date && event.quantity > EPSILON
-    ) ?? false;
-  });
 }
 
 function earliestCapacityEnd(
@@ -2708,11 +4573,22 @@ function firstResourceCapacityConflict(
     if (maximum === undefined || !state) {
       continue;
     }
-    for (const date of sortedResourceChangeDates(state, schedule.start)) {
+    const resource = materialResource(context, load.resource);
+    const dates = [
+      ...sortedResourceChangeDates(state, schedule.start),
+      ...(resource?.maximumCalendar?.events() ?? [])
+        .map((event) => event.date)
+        .filter((date) => date > schedule.start)
+    ].sort((left, right) => left - right);
+    for (const date of dates) {
       if (date >= schedule.end) {
         break;
       }
-      if (resourceLoadAt(state, date) + load.quantity > maximum + EPSILON) {
+      const dateMaximum = resourceMaximumAt(context, load.resource, date);
+      if (
+        dateMaximum !== undefined &&
+        resourceLoadAt(state, date) + load.quantity > dateMaximum + EPSILON
+      ) {
         conflict = conflict === undefined
           ? date
           : Math.min(conflict, date) as EpochSeconds;
@@ -2744,21 +4620,31 @@ function createCapacityConstrainedSupply(
   const alternativeHorizonEnd = alternativeCandidate
     ? (initial.end + operation.durationPerSeconds) as EpochSeconds
     : undefined;
-  let earliest = notBefore === undefined
-    ? initial.start
-    : Math.max(initial.start, notBefore) as EpochSeconds;
+  // A constrained reply may never start before the solver's current date.
+  // The native solver applies this fence while searching resource capacity,
+  // after calculating the backward candidate for the requested quantity.
+  const currentFence = (context.input.mode ?? "constrained") === "constrained"
+    ? context.input.current
+    : INFINITE_PAST;
+  let earliest = Math.max(
+    initial.start,
+    currentFence,
+    notBefore ?? INFINITE_PAST
+  ) as EpochSeconds;
   let remaining = quantity;
   let latestSchedule: Schedule | undefined;
   const allocations: SupplyAllocation[] = [];
 
   for (let attempt = 0; remaining > EPSILON && attempt < 10_000; attempt += 1) {
+    const firstChunk = latestSchedule === undefined;
     const chunk = findCapacityChunk(
       context,
       operation,
       earliest,
-      initial.end,
+      Math.min(initial.end, desiredEnd) as EpochSeconds,
       remaining,
-      alternativeHorizonEnd
+      alternativeHorizonEnd,
+      firstChunk
     );
     if (!chunk) {
       break;
@@ -2809,9 +4695,6 @@ function createCapacityConstrainedSupply(
         chunkOutputDate
       ).variable
     });
-    if (chunkOutputDate > desiredEnd) {
-      break;
-    }
   }
 
   const output = outputQuantity(
@@ -2840,7 +4723,8 @@ function findCapacityChunk(
   notBefore: EpochSeconds,
   preferredEnd: EpochSeconds,
   remaining: number,
-  maximumEnd?: EpochSeconds
+  maximumEnd?: EpochSeconds,
+  firstChunk = false
 ): CapacityChunk | undefined {
   const start = findEarliestCapacityStart(context, operation, notBefore);
   if (start === undefined) {
@@ -2861,9 +4745,27 @@ function findCapacityChunk(
   ) {
     return undefined;
   }
+  // When the required date has already been reached, the native solver
+  // schedules one operation unit per available capacity slot.  Packing the
+  // whole window into a single time-per plan serializes parallel capacity and
+  // shifts the material date by extra days.
+  const forwardUnit = start >= preferredEnd;
+  const currentForwardUnit = firstChunk &&
+    start === constrainedCurrent(context) &&
+    hasCapacityIncreaseBeforeNextDrop(context, operation, start, preferredEnd);
+  const partialCapacityReply = shouldUsePartialCapacityReply(
+    context,
+    operation,
+    start,
+    targetEnd
+  );
   const duration = Math.min(
     remaining * operation.durationPerSeconds,
-    targetEnd - start
+    forwardUnit || currentForwardUnit
+      ? operation.durationPerSeconds
+      : partialCapacityReply
+        ? operation.durationPerSeconds
+      : targetEnd - start
   );
   if (duration <= EPSILON) {
     return undefined;
@@ -2875,6 +4777,106 @@ function findCapacityChunk(
     },
     quantity: duration / operation.durationPerSeconds
   };
+}
+
+function shouldUsePartialCapacityReply(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  start: EpochSeconds,
+  targetEnd: EpochSeconds
+): boolean {
+  if (operation.durationPerSeconds <= EPSILON || targetEnd <= start) {
+    return false;
+  }
+  const targetUnits =
+    (targetEnd - start) / operation.durationPerSeconds;
+  if (!Number.isFinite(targetUnits) || targetUnits <= EPSILON) {
+    return false;
+  }
+  return (operation.loads ?? []).some((load) => {
+    const state = context.resourceStates.get(load.resource);
+    const maximum = resourceMaximumAt(context, load.resource, start);
+    if (!state || maximum === undefined || load.quantity <= EPSILON) {
+      return false;
+    }
+    const currentAvailable = Math.max(
+      0,
+      maximum - resourceLoadAt(state, start)
+    ) / scaledLoadQuantity(
+      context,
+      operation,
+      load.resource,
+      load.quantity,
+      1
+    );
+    const startedAtDate = state.events
+      .filter((event) => event.date === start && event.quantity > EPSILON)
+      .reduce(
+        (total, event) =>
+          total + event.quantity / scaledLoadQuantity(
+            context,
+            operation,
+            load.resource,
+            load.quantity,
+            1
+          ),
+        0
+      );
+    const initialAvailable = currentAvailable + startedAtDate;
+    const fullPlanCount = Math.ceil(targetUnits - EPSILON);
+    if (initialAvailable <= fullPlanCount + EPSILON) {
+      return false;
+    }
+    const partialPlanStart =
+      initialAvailable - fullPlanCount + 1 - EPSILON;
+    return startedAtDate >= partialPlanStart;
+  });
+}
+
+function constrainedCurrent(context: SolverContext): EpochSeconds {
+  return (context.input.mode ?? "constrained") === "constrained"
+    ? context.input.current
+    : INFINITE_PAST;
+}
+
+function hasCapacityIncreaseBeforeNextDrop(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  start: EpochSeconds,
+  preferredEnd: EpochSeconds
+): boolean {
+  return (operation.loads ?? []).some((load) => {
+    const resource = materialResource(context, load.resource);
+    if (!resource?.maximumCalendar) {
+      return false;
+    }
+    const initialMaximum = resourceMaximumAt(context, load.resource, start);
+    if (initialMaximum === undefined) {
+      return false;
+    }
+    let previous = initialMaximum;
+    let increased = false;
+    for (const date of resourceMaximumChangeDates(resource, start)) {
+      if (date >= preferredEnd) {
+        break;
+      }
+      const maximum = resourceMaximumAt(context, load.resource, date);
+      if (maximum === undefined) {
+        continue;
+      }
+      if (maximum < previous - EPSILON) {
+        // A backward request spanning a later capacity drop keeps the
+        // native long plan. Forward ask/reply splitting only applies while
+        // the first capacity window remains open through the target date.
+        return false;
+      }
+      if (maximum > previous + EPSILON) {
+        increased = true;
+      }
+      previous = maximum;
+    }
+    return increased;
+  });
 }
 
 function findEarliestCapacityStart(
@@ -2908,8 +4910,17 @@ function capacityWindowEnd(
     if (maximum === undefined || !state) {
       continue;
     }
-    for (const date of sortedResourceChangeDates(state, start)) {
-      if (resourceLoadAt(state, date) + load.quantity > maximum + EPSILON) {
+    const resource = materialResource(context, load.resource);
+    const dates = [
+      ...sortedResourceChangeDates(state, start),
+      ...resourceMaximumChangeDates(resource, start)
+    ].sort((left, right) => left - right);
+    for (const date of dates) {
+      const dateMaximum = resourceMaximumAt(context, load.resource, date);
+      if (
+        dateMaximum !== undefined &&
+        resourceLoadAt(state, date) + load.quantity > dateMaximum + EPSILON
+      ) {
         end = end === undefined ? date : Math.min(end, date) as EpochSeconds;
         break;
       }
@@ -2927,13 +4938,19 @@ function resourceCapacityAvailable(
   quantity = 1
 ): boolean {
   return (operation.loads ?? []).every((load) => {
-    const maximum = finiteResourceMaximum(context, load.resource);
+    const maximum = resourceMaximumAt(context, load.resource, date);
     const state = context.resourceStates.get(load.resource);
     return (
       maximum === undefined ||
       state === undefined ||
       resourceLoadAt(state, date) +
-          scaledLoadQuantity(operation, load.quantity, quantity) <=
+          scaledLoadQuantity(
+            context,
+            operation,
+            load.resource,
+            load.quantity,
+            quantity
+          ) <=
         maximum + EPSILON
     );
   });
@@ -2946,7 +4963,7 @@ function availableResourceQuantity(
 ): number {
   let available = Number.POSITIVE_INFINITY;
   for (const load of operation.loads ?? []) {
-    const maximum = finiteResourceMaximum(context, load.resource);
+    const maximum = resourceMaximumAt(context, load.resource, date);
     const state = context.resourceStates.get(load.resource);
     if (
       maximum === undefined ||
@@ -2958,20 +4975,29 @@ function availableResourceQuantity(
     available = Math.min(
       available,
       Math.max(0, maximum - resourceLoadAt(state, date)) /
-        scaledLoadQuantity(operation, load.quantity, 1)
+        scaledLoadQuantity(
+          context,
+          operation,
+          load.resource,
+          load.quantity,
+          1
+        )
     );
   }
   return available;
 }
 
 function scaledLoadQuantity(
+  context: SolverContext,
   operation: ManufacturingOperation,
+  resourceName: string,
   quantity: number,
   planQuantity: number
 ): number {
-  void operation;
-  void planQuantity;
-  return quantity;
+  const resource = materialResource(context, resourceName);
+  return resource?.bucketized && operation.type === "fixed_time"
+    ? quantity * planQuantity
+    : quantity;
 }
 
 function nextResourceChange(
@@ -2991,6 +5017,16 @@ function nextResourceChange(
       }
       next = next === undefined ? event.date : Math.min(next, event.date) as EpochSeconds;
     }
+    for (const date of resourceMaximumChangeDates(
+      materialResource(context, load.resource),
+      after
+    )) {
+      if (date > after) {
+        next = next === undefined
+          ? date
+          : Math.min(next, date) as EpochSeconds;
+      }
+    }
   }
   return next;
 }
@@ -3007,6 +5043,12 @@ function sortedResourceChangeDates(
 }
 
 function resourceLoadAt(state: ResourceState, date: EpochSeconds): number {
+  if (state.bucketized) {
+    return state.events.reduce(
+      (load, event) => event.date === date ? load + event.quantity : load,
+      0
+    );
+  }
   return state.events.reduce(
     (load, event) => event.date <= date ? load + event.quantity : load,
     0
@@ -3017,7 +5059,45 @@ function finiteResourceMaximum(
   context: SolverContext,
   resourceName: string
 ): number | undefined {
-  return materialResource(context, resourceName)?.maximum;
+  const resource = materialResource(context, resourceName);
+  if (!resource) {
+    return undefined;
+  }
+  if (resource.maximumCalendar) {
+    const values = [
+      resource.maximumCalendar.defaultValue,
+      ...resource.maximumCalendar.buckets.map((bucket) => bucket.value)
+    ];
+    const maximum = Math.max(...values);
+    return Number.isFinite(maximum) ? maximum : undefined;
+  }
+  return resource.maximum;
+}
+
+function resourceMaximumAt(
+  context: SolverContext,
+  resourceName: string,
+  date: EpochSeconds,
+  forward = true
+): number | undefined {
+  const resource = materialResource(context, resourceName);
+  if (resource?.maximumCalendar) {
+    return resource.maximumCalendar.valueAt(date, forward);
+  }
+  return resource?.maximum;
+}
+
+function resourceMaximumChangeDates(
+  resource: ReturnType<typeof materialResource>,
+  after: EpochSeconds
+): readonly EpochSeconds[] {
+  if (!resource?.maximumCalendar) {
+    return [];
+  }
+  return resource.maximumCalendar.buckets
+    .flatMap((bucket) => [bucket.start, bucket.end])
+    .filter((date) => date > after && date < INFINITE_FUTURE)
+    .sort((left, right) => left - right);
 }
 
 function materialResource(
@@ -3042,19 +5122,7 @@ function createRoutedSupply(
     : [...operation.subOperations].sort(
         (left, right) => left.priority - right.priority
       );
-  const directOutput = outputQuantity(operation, bufferName);
-  const routedOutput = directOutput.variable > EPSILON || directOutput.fixed > EPSILON
-    ? directOutput
-    : children.reduce(
-        (total, child) => {
-          const output = routedOutputQuantity(child.operation, bufferName);
-          return {
-            variable: total.variable + output.variable,
-            fixed: total.fixed + output.fixed
-          };
-        },
-        { variable: 0, fixed: 0 }
-      );
+  const routedOutput = routedOutputQuantity(operation, bufferName);
   const fixedOutput = routedOutput.fixed;
   const variableOutput = routedOutput.variable;
   const planCount = variableOutput > EPSILON
@@ -3071,14 +5139,22 @@ function createRoutedSupply(
     planQuantity,
     notBefore
   );
-  context.activeOperations.add(`${operation.name}\u0000${bufferName}`);
-  const routed = scheduleRoutedOperations(
-    context,
-    children,
-    schedule,
-    planQuantity
-  );
-  context.activeOperations.delete(`${operation.name}\u0000${bufferName}`);
+  const operationKey = `${operation.name}\u0000${bufferName}`;
+  context.activeOperations.add(operationKey);
+  let routed: RoutedSchedule | undefined;
+  try {
+    routed = scheduleRoutedOperations(
+      context,
+      children,
+      schedule,
+      planQuantity
+    );
+  } finally {
+    context.activeOperations.delete(operationKey);
+  }
+  if (!routed) {
+    return { date: desiredEnd, quantity: 0 };
+  }
   for (let index = 0; index < planCount; index += 1) {
     addOperationPlan(
       context,
@@ -3123,7 +5199,7 @@ function scheduleRoutedOperations(
   children: readonly ManufacturingSubOperation[],
   schedule: Schedule,
   quantity: number
-): RoutedSchedule {
+): RoutedSchedule | undefined {
   let cursor = schedule.start;
   const childSchedules: {
     readonly operation: ManufacturingOperation;
@@ -3146,6 +5222,12 @@ function scheduleRoutedOperations(
       childSchedule,
       quantity
     );
+    if (
+      (context.input.mode ?? "constrained") === "constrained" &&
+      childSchedule.inputsSatisfied === false
+    ) {
+      return undefined;
+    }
     childSchedules.push({
       operation: child.operation,
       schedule: childSchedule
@@ -3195,11 +5277,9 @@ function addScheduledRoutedOperationPlans(
         child.schedule,
         quantity
       );
-      addScheduledRoutedOperationPlans(
-        context,
-        nested.children,
-        quantity
-      );
+      if (nested) {
+        addScheduledRoutedOperationPlans(context, nested.children, quantity);
+      }
     }
   }
 }
@@ -3211,15 +5291,30 @@ function addOperationPlan(
   quantity: number,
   confirmed: boolean,
   isConfirmedInput: boolean,
-  completed = false
+  completed = false,
+  flowQuantities?: readonly OperationFlowQuantity[],
+  resourceLoads?: readonly OperationResourceLoad[],
+  settings?: OperationPlanSettings
 ): void {
   const hasFixedFlow = operation.flows.some(
     (flow) => Math.abs(flow.quantityFixed) > EPSILON
   );
-  const mergeable = (operation.maximumQuantity ?? 0) <= EPSILON &&
-    !hasFixedFlow && operation.flows.some(
-      (flow) => flow.quantity > EPSILON
+  const hasPositiveFlow = operation.flows.some(
+    (flow) => flow.quantity > EPSILON || flow.quantityFixed > EPSILON
+  );
+  const capacityConstrained =
+    (context.input.constraints ?? 15) !== 0 &&
+    (operation.loads ?? []).some((load) =>
+      finiteResourceMaximum(context, load.resource) !== undefined
     );
+  const mergeable = !confirmed &&
+    !isConfirmedInput &&
+    (!capacityConstrained || hasBucketizedFixedResource(context, operation)) &&
+    operation.type !== "time_per" &&
+    (operation.maximumQuantity ?? 0) <= EPSILON &&
+    !hasFixedFlow &&
+    !hasAlternateInputFlows(operation) &&
+    hasPositiveFlow;
   const existingIndex = mergeable
     ? context.operationPlans.findIndex(
         (plan) =>
@@ -3240,15 +5335,47 @@ function addOperationPlan(
       ...(completed ? { completed: true } : {})
     };
   } else {
-    context.operationPlans.push({
+    const plan: OperationPlan = {
       name: operation.name,
       start: schedule.start,
       end: schedule.end,
       quantity,
       ...(confirmed ? { confirmed: true } : {}),
       ...(completed ? { completed: true } : {})
-    });
-    applyOperationLoads(context, operation, schedule, quantity);
+    };
+    if (hasBucketizedFixedResource(context, operation)) {
+      const laterIndex = context.operationPlans.findIndex(
+        (candidate) =>
+          candidate.name === operation.name &&
+          candidate.start > schedule.start
+      );
+      if (laterIndex >= 0) {
+        context.operationPlans.splice(laterIndex, 0, plan);
+      } else {
+        context.operationPlans.push(plan);
+      }
+    } else {
+      context.operationPlans.push(plan);
+    }
+    applyOperationLoads(
+      context,
+      operation,
+      schedule,
+      quantity,
+      resourceLoads,
+      settings
+    );
+  }
+  if (merged && hasBucketizedFixedResource(context, operation)) {
+    applyOperationLoads(
+      context,
+      operation,
+      schedule,
+      quantity,
+      resourceLoads,
+      settings,
+      true
+    );
   }
   if (isConfirmedInput) {
     applyOperationFlows(
@@ -3256,16 +5383,46 @@ function addOperationPlan(
       operation,
       schedule,
       quantity,
-      true,
+      confirmed,
       merged,
-      completed
+      completed,
+      flowQuantities,
+      settings
     );
     return;
   }
-  if (operation.type !== "routing" && operation.type !== "alternate") {
-    applyOperationFlows(context, operation, schedule, quantity, false, merged);
-  } else {
-    // Parent routing plans carry timing; the child plans carry the flows.
+  if (
+    operation.type !== "routing" &&
+    operation.type !== "alternate"
+  ) {
+    applyOperationFlows(
+      context,
+      operation,
+      schedule,
+      quantity,
+      false,
+      merged,
+      false,
+      flowQuantities,
+      settings
+    );
+  } else if (operation.flows.some(
+    (flow) => Math.abs(flow.quantity) > EPSILON ||
+      Math.abs(flow.quantityFixed) > EPSILON
+  )) {
+    // Routing/alternate parents can carry their own output flow in addition
+    // to child flows. The original solver expands that top-level flow too.
+    applyOperationFlows(
+      context,
+      operation,
+      schedule,
+      quantity,
+      false,
+      merged,
+      false,
+      flowQuantities,
+      settings
+    );
   }
 }
 
@@ -3273,24 +5430,123 @@ function applyOperationLoads(
   context: SolverContext,
   operation: ManufacturingOperation,
   schedule: Schedule,
-  quantity: number
+  quantity: number,
+  resourceLoads?: readonly OperationResourceLoad[],
+  settings?: OperationPlanSettings,
+  mergeBucketized = false
 ): void {
-  for (const load of operation.loads ?? []) {
-    const state = context.resourceStates.get(load.resource);
+  if (settings?.consumeCapacity === false) {
+    return;
+  }
+  for (const load of resourceLoads ?? operation.loads ?? []) {
+    const resource = resourceLoads
+      ? load.resource
+      : selectResourceMember(context, load, schedule.start);
+    const state = context.resourceStates.get(resource);
     if (!state) {
+      continue;
+    }
+    const loadQuantity = scaledLoadQuantity(
+      context,
+      operation,
+      resource,
+      load.quantity,
+      quantity
+    );
+    if (state.bucketized) {
+      const existing = mergeBucketized
+        ? state.events.find(
+            (event) =>
+              event.date === schedule.start &&
+              event.operation === operation.name &&
+              event.operationEnd === schedule.end
+          )
+        : undefined;
+      if (existing) {
+        existing.quantity += loadQuantity;
+      } else {
+        state.events.push({
+          date: schedule.start,
+          quantity: loadQuantity,
+          sequence: context.sequence++,
+          operation: operation.name,
+          operationEnd: schedule.end
+        });
+      }
       continue;
     }
     state.events.push({
       date: schedule.start,
-      quantity: scaledLoadQuantity(operation, load.quantity, quantity),
+      quantity: loadQuantity,
       sequence: context.sequence++
     });
     state.events.push({
       date: schedule.end,
-      quantity: -scaledLoadQuantity(operation, load.quantity, quantity),
+      quantity: -loadQuantity,
       sequence: context.sequence++
     });
   }
+}
+
+function selectResourceMember(
+  context: SolverContext,
+  load: MaterialLoad,
+  date: EpochSeconds
+): string {
+  const resourceName = load.resource;
+  const resource = context.input.resources?.find(
+    (candidate) => candidate.name === resourceName
+  );
+  const members = resource?.members;
+  if (!members || members.length === 0) {
+    return resourceName;
+  }
+  const availableMembers = members.filter((member) => {
+    const availability = materialResource(context, member)?.availability;
+    const skills = materialResource(context, member)?.skills ?? [];
+    const qualified = load.skill === undefined || skills.some(
+      (skill) => skill.skill === load.skill && skill.priority > EPSILON
+    );
+    return qualified &&
+      (availability === undefined || availability.valueAt(date, true) > EPSILON);
+  });
+  const reserved = new Set(
+    (context.input.operationPlans ?? []).flatMap((plan) =>
+      plan.resourceLoads?.map((load) => load.resource) ?? []
+    )
+  );
+  const candidates = (availableMembers.length > 0 ? availableMembers : members)
+    .filter((member) => !reserved.has(member));
+  return [...(candidates.length > 0 ? candidates : members)].sort((left, right) => {
+    const leftSkill = materialResource(context, left)?.skills?.find(
+      (skill) => skill.skill === load.skill
+    );
+    const rightSkill = materialResource(context, right)?.skills?.find(
+      (skill) => skill.skill === load.skill
+    );
+    const priority = load.search === "PRIORITY"
+      ? ((context.input.mode ?? "constrained") === "constrained" ? 1 : -1) *
+        ((leftSkill?.priority ?? Number.POSITIVE_INFINITY) -
+          (rightSkill?.priority ?? Number.POSITIVE_INFINITY))
+      : 0;
+    return priority ||
+      resourceLoadAtForSelection(context.resourceStates.get(left), date) -
+        resourceLoadAtForSelection(context.resourceStates.get(right), date) ||
+      left.localeCompare(right);
+  })[0] ?? resourceName;
+}
+
+function resourceLoadAtForSelection(
+  state: ResourceState | undefined,
+  date: EpochSeconds
+): number {
+  if (state?.bucketized) {
+    return resourceLoadAt(state, date);
+  }
+  return state?.events.reduce(
+    (total, event) => total + (event.date <= date ? event.quantity : 0),
+    0
+  ) ?? 0;
 }
 
 function applyOperationFlows(
@@ -3300,21 +5556,45 @@ function applyOperationFlows(
   quantity: number,
   confirmed: boolean,
   mergeReceipts: boolean,
-  completed = false
+  completed = false,
+  flowQuantities?: readonly OperationFlowQuantity[],
+  settings?: OperationPlanSettings
 ): void {
+  const inputFlows = new Set(
+    inputFlowsForSchedule(context, operation, schedule, quantity)
+  );
   for (const flow of operation.flows) {
-    const date = flowDateFor(
-      context,
-      operation,
-      flow,
-      schedule.start,
-      schedule.end,
-      completed
+    const isInput = flow.quantity < -EPSILON || flow.quantityFixed < -EPSILON;
+    if (
+      (isInput && settings?.consumeMaterial === false) ||
+      (!isInput && settings?.produceMaterial === false)
+    ) {
+      continue;
+    }
+    if (
+      (flow.quantity < -EPSILON || flow.quantityFixed < -EPSILON) &&
+      !inputFlows.has(flow)
+    ) {
+      continue;
+    }
+    const override = flowQuantities?.find(
+      (entry) => entry.buffer === flow.buffer
     );
+    const date = override?.date ?? (confirmed
+      ? confirmedFlowDate(context, operation, flow, schedule, completed)
+      : flowDateFor(
+          context,
+          operation,
+          flow,
+          schedule.start,
+          schedule.end,
+          completed
+        ));
     if (!isEffective(flow, date)) {
       continue;
     }
-    const flowQuantity = flow.quantity * quantity + flow.quantityFixed;
+    const flowQuantity = override?.quantity ??
+      (flow.quantity * quantity + flow.quantityFixed);
     if (Math.abs(flowQuantity) <= EPSILON) {
       continue;
     }
@@ -3342,10 +5622,11 @@ function scheduleOperation(
   quantity: number
 ): Schedule {
   const duration = operationDuration(operation, quantity);
-  const constrained = (context.input.mode ?? "constrained") === "constrained";
+  const constrained = manufacturingLeadTimeConstrained(context);
+  const release = operationReleaseDate(context, operation);
   if (!operationUsesWorkingCalendar(context, operation)) {
     const minimumEnd = constrained
-      ? (context.input.current + duration) as EpochSeconds
+      ? (release + duration) as EpochSeconds
       : desiredEnd;
     const end = Math.max(desiredEnd, minimumEnd) as EpochSeconds;
     return {
@@ -3354,7 +5635,7 @@ function scheduleOperation(
     };
   }
   const minimumEnd = constrained
-    ? advanceWorkingTime(context, operation, context.input.current, duration)
+    ? advanceWorkingTime(context, operation, release, duration)
     : desiredEnd;
   let end = Math.max(desiredEnd, minimumEnd) as EpochSeconds;
   if (!isWorkingAt(context, operation, end, false)) {
@@ -3364,6 +5645,31 @@ function scheduleOperation(
     start: subtractWorkingTime(context, operation, end, duration),
     end
   };
+}
+
+function manufacturingLeadTimeConstrained(context: SolverContext): boolean {
+  if ((context.input.mode ?? "constrained") !== "constrained") {
+    return false;
+  }
+  const constraints = context.input.constraints ?? 15;
+  return (constraints & 1) !== 0 || (constraints & 16) !== 0;
+}
+
+function purchasingLeadTimeConstrained(context: SolverContext): boolean {
+  if ((context.input.mode ?? "constrained") !== "constrained") {
+    return false;
+  }
+  const constraints = context.input.constraints ?? 15;
+  return (constraints & 1) !== 0 || (constraints & 32) !== 0;
+}
+
+function operationReleaseDate(
+  context: SolverContext,
+  operation: ManufacturingOperation
+): EpochSeconds {
+  return (
+    context.input.current + (operation.fenceSeconds ?? 0)
+  ) as EpochSeconds;
 }
 
 function scheduleFromStart(
@@ -3431,6 +5737,9 @@ function workingCalendars(
   operation: ManufacturingOperation
 ): readonly Calendar[] {
   const calendars: Calendar[] = [];
+  if (operation.availability) {
+    calendars.push(operation.availability);
+  }
   const location = context.input.locations?.find(
     (candidate) => candidate.name === operation.location
   );
@@ -3439,8 +5748,18 @@ function workingCalendars(
   }
   for (const load of operation.loads ?? []) {
     const resource = materialResource(context, load.resource);
-    if (resource?.availability && !calendars.includes(resource.availability)) {
-      calendars.push(resource.availability);
+    const planningMember = resource?.members?.[0] === undefined
+      ? undefined
+      : (context.input.mode ?? "constrained") === "constrained"
+        ? selectResourceMember(context, load, context.input.current)
+        : resource.members[0];
+    const availability = resource?.availability ?? (
+      planningMember === undefined
+        ? undefined
+        : materialResource(context, planningMember)?.availability
+    );
+    if (availability && !calendars.includes(availability)) {
+      calendars.push(availability);
     }
   }
   return calendars;
@@ -3510,6 +5829,9 @@ function advanceWorkingTime(
       cursor,
       calendars
     );
+    if (next >= INFINITE_FUTURE) {
+      return (cursor + remaining) as EpochSeconds;
+    }
     const span = next - cursor;
     if (span <= EPSILON) {
       cursor = (cursor + 1) as EpochSeconds;
@@ -3556,6 +5878,9 @@ function subtractWorkingTime(
       cursor,
       calendars
     );
+    if (previous <= INFINITE_PAST) {
+      return (cursor - remaining) as EpochSeconds;
+    }
     const span = cursor - previous;
     if (span <= EPSILON) {
       cursor = (cursor - 1) as EpochSeconds;
@@ -3801,13 +6126,6 @@ function routedOutputQuantity(
   bufferName: string
 ): { readonly variable: number; readonly fixed: number } {
   const direct = outputQuantity(operation, bufferName);
-  if (
-    direct.variable > EPSILON ||
-    direct.fixed > EPSILON ||
-    operation.subOperations.length === 0
-  ) {
-    return direct;
-  }
   return operation.subOperations.reduce(
     (total, child) => {
       const output = routedOutputQuantity(child.operation, bufferName);
@@ -3816,7 +6134,7 @@ function routedOutputQuantity(
         fixed: total.fixed + output.fixed
       };
     },
-    { variable: 0, fixed: 0 }
+    direct
   );
 }
 
@@ -3925,7 +6243,7 @@ function ensureFlowSupply(
   quantity: number
 ): readonly FlowSupplyResult[] {
   const results: FlowSupplyResult[] = [];
-  for (const flow of operation.flows) {
+  for (const flow of inputFlowsForSchedule(context, operation, schedule, quantity)) {
     if (flow.quantity >= 0 && flow.quantityFixed >= 0) {
       continue;
     }
@@ -3943,6 +6261,9 @@ function ensureFlowSupply(
     if (!state) {
       continue;
     }
+    if (state.buffer.infinite === true) {
+      continue;
+    }
     const required = Math.abs(flow.quantity * quantity + flow.quantityFixed);
     const shortage = Math.max(0, required - balanceAt(state, date));
     if (shortage > EPSILON) {
@@ -3958,6 +6279,91 @@ function ensureFlowSupply(
     }
   }
   return results;
+}
+
+function inputFlowsForSchedule(
+  context: SolverContext,
+  operation: ManufacturingOperation,
+  schedule: Schedule,
+  quantity: number
+): readonly MaterialFlow[] {
+  const groups = new Map<string, MaterialFlow[]>();
+  operation.flows.forEach((flow, index) => {
+    if (flow.quantity >= 0 && flow.quantityFixed >= 0) {
+      return;
+    }
+    const key = flow.alternateGroup ?? `__flow_${index}`;
+    const entries = groups.get(key) ?? [];
+    entries.push(flow);
+    groups.set(key, entries);
+  });
+  const selected: MaterialFlow[] = [];
+  for (const flows of groups.values()) {
+    const effective = flows
+      .filter((flow) => isEffective(
+        flow,
+        flowDateFor(context, operation, flow, schedule.start, schedule.end)
+      ))
+      .sort(
+        (left, right) =>
+          (left.priority ?? 1) - (right.priority ?? 1) ||
+          left.buffer.localeCompare(right.buffer)
+      );
+    if (effective.length === 0) {
+      continue;
+    }
+    if (effective.length === 1 || flows[0]?.alternateGroup === undefined) {
+      selected.push(effective[0]!);
+      continue;
+    }
+    const constrained = (context.input.mode ?? "constrained") === "constrained";
+    if (!constrained) {
+      selected.push(effective[0]!);
+      continue;
+    }
+    const feasible = effective.find((flow) => {
+      const date = flowDateFor(
+        context,
+        operation,
+        flow,
+        schedule.start,
+        schedule.end
+      );
+      const state = context.states.get(bufferKey(flow.buffer));
+      if (!state) {
+        return false;
+      }
+      const required = Math.abs(flow.quantity * quantity + flow.quantityFixed);
+      return balanceAt(state, date) + EPSILON >= required;
+    });
+    if (feasible) {
+      selected.push(feasible);
+      continue;
+    }
+    const replenishmentDate = (flow: MaterialFlow): EpochSeconds => {
+      const state = context.states.get(bufferKey(flow.buffer));
+      if (!state) {
+        return INFINITE_FUTURE;
+      }
+      const source = matchingSourceForBuffer(context.input.sources, state.buffer);
+      return source
+        ? purchaseDeliveryDateForDate(
+            context,
+            flowDateFor(context, operation, flow, schedule.start, schedule.end),
+            source
+          )
+        : INFINITE_FUTURE;
+    };
+    selected.push(
+      effective.slice().sort(
+        (left, right) =>
+          replenishmentDate(left) - replenishmentDate(right) ||
+          (left.priority ?? 1) - (right.priority ?? 1) ||
+          left.buffer.localeCompare(right.buffer)
+      )[0]!
+    );
+  }
+  return selected;
 }
 
 function scheduleWithInputs(
@@ -4040,6 +6446,20 @@ function takePlanningSnapshot(context: SolverContext): PlanningSnapshot {
     })),
     sequence: context.sequence
   };
+}
+
+function transactionManager(
+  context: SolverContext
+): PlanningTransactionManager<PlanningSnapshot> {
+  let manager = planningTransactions.get(context);
+  if (manager === undefined) {
+    manager = new PlanningTransactionManager(
+      () => takePlanningSnapshot(context),
+      (snapshot) => restorePlanningSnapshot(context, snapshot)
+    );
+    planningTransactions.set(context, manager);
+  }
+  return manager;
 }
 
 function restorePlanningSnapshot(
@@ -4149,12 +6569,13 @@ function purchaseDeliveryDateForDate(
   target: EpochSeconds,
   source: ProcurementSource
 ): EpochSeconds {
-  if ((context.input.mode ?? "constrained") === "unconstrained") {
+  if (!purchasingLeadTimeConstrained(context)) {
     return (target - source.extraSafetyLeadTimeSeconds) as EpochSeconds;
   }
   return Math.max(
     target - source.extraSafetyLeadTimeSeconds,
     context.input.current +
+      (source.fenceSeconds ?? 0) +
       source.leadTimeSeconds +
       source.hardSafetyLeadTimeSeconds
   ) as EpochSeconds;
@@ -4246,14 +6667,17 @@ function addEvent(
   originalDue?: EpochSeconds,
   confirmed = false,
   merge = true,
-  priority?: number
+  priority?: number,
+  demandName?: string
 ): void {
-  if (merge && kind === "receipt" && originalDue === undefined) {
+  if (merge && (kind === "receipt" || kind === "demand")) {
     const existing = state.events.find(
       (event) =>
-        event.kind === "receipt" &&
+        event.kind === kind &&
         event.date === date &&
-        Boolean(event.confirmed) === confirmed
+        Boolean(event.confirmed) === confirmed &&
+        event.originalDue === originalDue &&
+        event.demandName === demandName
     );
     if (existing) {
       existing.quantity += quantity;
@@ -4266,6 +6690,7 @@ function addEvent(
     sequence: context.sequence++,
     kind,
     ...(originalDue !== undefined ? { originalDue } : {}),
+    ...(demandName === undefined ? {} : { demandName }),
     ...(confirmed ? { confirmed: true } : {}),
     ...(priority === undefined ? {} : { priority })
   });
@@ -4277,7 +6702,8 @@ function addDemandEvent(
   date: EpochSeconds,
   quantity: number,
   originalDue: EpochSeconds,
-  priority?: number
+  priority?: number,
+  demandName?: string
 ): void {
   addEvent(
     context,
@@ -4288,7 +6714,8 @@ function addDemandEvent(
     date > originalDue ? originalDue : undefined,
     false,
     true,
-    priority
+    priority,
+    demandName
   );
 }
 
@@ -4301,11 +6728,30 @@ function addDemandPlan(
   if (quantity <= EPSILON) {
     return;
   }
+  const originalDue = date > demand.due ? demand.due : undefined;
+  if (!demand.operation) {
+    const existingIndex = context.demandPlans.findIndex(
+      (plan) =>
+        plan.name === demand.name &&
+        plan.date === date &&
+        plan.originalDue === originalDue
+    );
+    const existing = existingIndex >= 0
+      ? context.demandPlans[existingIndex]
+      : undefined;
+    if (existing && existingIndex >= 0) {
+      context.demandPlans[existingIndex] = {
+        ...existing,
+        quantity: existing.quantity + quantity
+      };
+      return;
+    }
+  }
   context.demandPlans.push({
     name: demand.name,
     date,
     quantity,
-    ...(date > demand.due ? { originalDue: demand.due } : {})
+    ...(originalDue === undefined ? {} : { originalDue })
   });
 }
 
@@ -4335,6 +6781,24 @@ function resourceEvents(state: ResourceState): readonly ResourcePlanEvent[] {
       Number(left.quantity < 0) - Number(right.quantity < 0) ||
       left.sequence - right.sequence
   );
+  if (state.bucketized) {
+    let bucketDate: EpochSeconds | undefined;
+    let consumed = 0;
+    const capacity = state.capacity ?? 0;
+    return ordered.map((event) => {
+      if (bucketDate !== event.date) {
+        bucketDate = event.date;
+        consumed = 0;
+      }
+      consumed += event.quantity;
+      return {
+        resource: state.name,
+        date: event.date,
+        quantity: -event.quantity,
+        load: capacity - consumed
+      };
+    });
+  }
   let load = 0;
   return ordered.map((event) => {
     load += event.quantity;
@@ -4398,17 +6862,32 @@ function bufferKeyForDemand(
   context: SolverContext,
   demand: MaterialDemand
 ): string {
-  return [...context.states.values()].find(
+  const candidates = [...context.states.values()].filter(
     (state) =>
       state.buffer.item === demand.item &&
       (state.buffer.location === demand.location || state.buffer.location === "")
-  )?.buffer.name ?? `${demand.item} @ ${demand.location}`;
+  );
+  return candidates.sort(
+    (left, right) =>
+      Number(context.producers.has(bufferKey(right.buffer.name))) -
+        Number(context.producers.has(bufferKey(left.buffer.name))) ||
+      Number(right.buffer.location === demand.location) -
+        Number(left.buffer.location === demand.location)
+  )[0]?.buffer.name ?? `${demand.item} @ ${demand.location}`;
 }
 
 function balanceAt(state: BufferState, date: EpochSeconds): number {
   return state.events.reduce(
     (total, event) => total + (event.date <= date ? event.quantity : 0),
     0
+  );
+}
+
+function bufferMinimumAt(state: BufferState, date: EpochSeconds): number {
+  return Math.max(
+    0,
+    state.buffer.minimum ?? 0,
+    state.buffer.minimumCalendar?.valueAt(date, false) ?? 0
   );
 }
 
@@ -4455,12 +6934,13 @@ function replenishmentDeliveryDate(
   requestedDate: EpochSeconds,
   source: ProcurementSource
 ): EpochSeconds {
-  if ((context.input.mode ?? "constrained") === "unconstrained") {
+  if (!purchasingLeadTimeConstrained(context)) {
     return requestedDate;
   }
   return Math.max(
     requestedDate,
     context.input.current +
+      (source.fenceSeconds ?? 0) +
       source.leadTimeSeconds +
       source.hardSafetyLeadTimeSeconds
   ) as EpochSeconds;
@@ -4649,11 +7129,15 @@ function operationEndForFlowDate(
       ? advanceWorkingTime(context, operation, start, duration)
       : (start + duration) as EpochSeconds;
   }
+  // Post-operation time is a soft backward-planning delay. The operation
+  // ends before the finished item becomes available; constrained scheduling
+  // can still move it forward when the current date makes that impossible.
+  const posttime = operation.posttimeSeconds ?? 0;
   return shiftFlowTime(
     context,
     operation,
     desiredFlowDate,
-    -offset,
+    -offset - posttime,
     flow
   );
 }
@@ -4679,6 +7163,7 @@ function sortedDemands(
     (left, right) =>
       left.priority - right.priority ||
       left.due - right.due ||
+      left.quantity - right.quantity ||
       left.name.localeCompare(right.name)
   );
 }
@@ -4693,6 +7178,7 @@ function demandsForPlan(
     (left, right) =>
       left.due - right.due ||
       left.priority - right.priority ||
+      left.quantity - right.quantity ||
       left.name.localeCompare(right.name)
   );
 }
@@ -4716,6 +7202,7 @@ function usesDefaultEarlyResourceSweep(input: MaterialPlanInput): boolean {
         (candidate) => candidate.name === load.resource
       );
       return (
+        resource?.bucketized === true &&
         resource?.maximum !== undefined &&
         resource.maxEarlySeconds === undefined
       );
@@ -4739,10 +7226,14 @@ function compareMaterialEvents(
   right: MaterialPlanEvent
 ): number {
   return (
-    left.buffer.localeCompare(right.buffer) ||
+    compareNames(left.buffer, right.buffer) ||
     left.date - right.date ||
     Number(left.quantity <= 0) - Number(right.quantity <= 0)
   );
+}
+
+function compareNames(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 function compareResourceEvents(

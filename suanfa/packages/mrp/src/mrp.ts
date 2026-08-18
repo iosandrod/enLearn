@@ -7,7 +7,9 @@ export interface MaterialBuffer {
   readonly item: string;
   readonly location: string;
   readonly onhand: number;
+  readonly infinite?: boolean;
   readonly minimum?: number;
+  readonly minimumCalendar?: Calendar;
   readonly maximum?: number;
 }
 
@@ -15,9 +17,13 @@ export type MaterialFlowType = "start" | "end";
 
 export interface MaterialFlow {
   readonly buffer: string;
+  readonly location?: string;
   readonly quantity: number;
   readonly quantityFixed: number;
   readonly type: MaterialFlowType;
+  readonly implicitType?: boolean;
+  readonly alternateGroup?: string;
+  readonly priority?: number;
   readonly offsetSeconds?: number;
   readonly effectiveStart?: EpochSeconds;
   readonly effectiveEnd?: EpochSeconds;
@@ -26,6 +32,13 @@ export interface MaterialFlow {
 export interface MaterialLoad {
   readonly resource: string;
   readonly quantity: number;
+  readonly skill?: string;
+  readonly search?: "PRIORITY" | "MINCOST" | "MINPENALTY" | "MINCOSTPENALTY";
+}
+
+export interface MaterialResourceSkill {
+  readonly skill: string;
+  readonly priority: number;
 }
 
 export interface MaterialLocation {
@@ -35,7 +48,11 @@ export interface MaterialLocation {
 
 export interface MaterialResource {
   readonly name: string;
+  readonly bucketized?: boolean;
+  readonly members?: readonly string[];
+  readonly skills?: readonly MaterialResourceSkill[];
   readonly maximum?: number;
+  readonly maximumCalendar?: Calendar;
   readonly maxEarlySeconds?: number;
   readonly availability?: Calendar;
 }
@@ -55,10 +72,15 @@ export interface ManufacturingOperation {
   readonly durationPerSeconds: number;
   readonly priority: number;
   readonly location?: string;
+  readonly availability?: Calendar;
   readonly item?: string;
   readonly minimumQuantity?: number;
+  readonly minimumQuantityCalendar?: Calendar;
   readonly maximumQuantity?: number;
   readonly multipleQuantity?: number;
+  readonly pretimeSeconds?: number;
+  readonly posttimeSeconds?: number;
+  readonly hardPosttime?: boolean;
   readonly flows: readonly MaterialFlow[];
   readonly loads?: readonly MaterialLoad[];
   readonly subOperations: readonly ManufacturingSubOperation[];
@@ -75,9 +97,12 @@ export interface ManufacturingSubOperation {
 export interface ProcurementSource {
   readonly item: string;
   readonly supplier: string;
+  readonly kind?: "purchase" | "transfer";
+  readonly originLocation?: string;
   readonly leadTimeSeconds: number;
   readonly extraSafetyLeadTimeSeconds: number;
   readonly hardSafetyLeadTimeSeconds: number;
+  readonly fenceSeconds?: number;
   readonly minimumQuantity: number;
   readonly multipleQuantity: number;
   readonly priority: number;
@@ -112,6 +137,9 @@ export interface OperationPlan {
   readonly quantity: number;
   readonly confirmed?: boolean;
   readonly completed?: boolean;
+  readonly consumeMaterial?: boolean;
+  readonly produceMaterial?: boolean;
+  readonly consumeCapacity?: boolean;
 }
 
 export interface DemandPlan {
@@ -139,6 +167,19 @@ export interface MaterialPlanInput {
 
 export interface OperationPlanInput extends OperationPlan {
   readonly operation: string;
+  readonly flowQuantities?: readonly OperationFlowQuantity[];
+  readonly resourceLoads?: readonly OperationResourceLoad[];
+}
+
+export interface OperationFlowQuantity {
+  readonly buffer: string;
+  readonly quantity: number;
+  readonly date?: EpochSeconds;
+}
+
+export interface OperationResourceLoad {
+  readonly resource: string;
+  readonly quantity: number;
 }
 
 export interface MaterialPlanEvent {

@@ -46,4 +46,39 @@ describe("resource fixture parsing", () => {
     expect(fixture.resources).toEqual([{ name: "Assembly line", maximum: 4 }]);
     expect(operation?.loads).toEqual([{ resource: "Assembly line", quantity: 2 }]);
   });
+
+  it("resolves named calendars on locations and resources", () => {
+    const fixture = parseMaterialFixture(`
+      <plan>
+        <current>2009-01-01T00:00:00</current>
+        <calendars>
+          <calendar name="Working days">
+            <default>1</default>
+            <buckets>
+              <bucket start="2009-01-03T00:00:00" end="2009-01-05T00:00:00">
+                <value>0</value>
+              </bucket>
+            </buckets>
+          </calendar>
+          <calendar name="Capacity">
+            <default>0</default>
+            <buckets>
+              <bucket start="2008-01-01T00:00:00"><value>2</value></bucket>
+            </buckets>
+          </calendar>
+        </calendars>
+        <locations>
+          <location name="factory"><available name="Working days"/></location>
+        </locations>
+        <resources>
+          <resource name="line"><maximum_calendar name="Capacity"/></resource>
+        </resources>
+      </plan>
+    `);
+
+    expect(fixture.locations?.[0]?.availability?.defaultValue).toBe(1);
+    expect(fixture.locations?.[0]?.availability?.buckets).toHaveLength(1);
+    expect(fixture.resources?.[0]?.maximumCalendar?.defaultValue).toBe(0);
+    expect(fixture.resources?.[0]?.maximumCalendar?.buckets[0]?.value).toBe(2);
+  });
 });

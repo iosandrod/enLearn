@@ -1,0 +1,94 @@
+{
+  "name": "mechanical-routing",
+  "industry": "mechanical",
+  "description": "Pump housing routing through cutting, machining and assembly.",
+  "input": {
+    "current": 1736121600,
+    "mode": "constrained",
+    "constraints": 15,
+    "buffers": [
+      { "name": "PUMP @ SZ", "item": "PUMP", "location": "SZ", "onhand": 0 },
+      { "name": "STEEL-BAR @ SZ", "item": "STEEL-BAR", "location": "SZ", "onhand": 2 },
+      { "name": "BEARING-6204 @ SZ", "item": "BEARING-6204", "location": "SZ", "onhand": 5 }
+    ],
+    "sources": [
+      { "item": "STEEL-BAR", "supplier": "Steel Mill", "location": "SZ", "leadTimeSeconds": 259200, "extraSafetyLeadTimeSeconds": 0, "hardSafetyLeadTimeSeconds": 0, "minimumQuantity": 10, "multipleQuantity": 10, "priority": 1 }
+    ],
+    "demands": [
+      { "name": "SO-PUMP-5", "item": "PUMP", "location": "SZ", "due": 1737936000, "quantity": 5, "minimumShipment": 5, "priority": 1 }
+    ],
+    "confirmedReceipts": [],
+    "resources": [
+      { "name": "CUTTING", "maximum": 1 },
+      { "name": "CNC-MILL", "maximum": 1 },
+      { "name": "ASSEMBLY-BENCH", "maximum": 1 }
+    ],
+    "operations": [
+      {
+        "name": "Make pump routing",
+        "type": "routing",
+        "durationSeconds": 0,
+        "durationPerSeconds": 0,
+        "priority": 1,
+        "flows": [
+          { "buffer": "PUMP @ SZ", "quantity": 1, "quantityFixed": 0, "type": "end" }
+        ],
+        "subOperations": [
+          {
+            "priority": 1,
+            "operation": {
+              "name": "Cut steel bar",
+              "type": "fixed_time",
+              "durationSeconds": 14400,
+              "durationPerSeconds": 0,
+              "priority": 1,
+              "flows": [{ "buffer": "STEEL-BAR @ SZ", "quantity": -1, "quantityFixed": 0, "type": "start" }],
+              "loads": [{ "resource": "CUTTING", "quantity": 1 }],
+              "subOperations": []
+            }
+          },
+          {
+            "priority": 2,
+            "operation": {
+              "name": "CNC machine housing",
+              "type": "fixed_time",
+              "durationSeconds": 28800,
+              "durationPerSeconds": 0,
+              "priority": 1,
+              "flows": [],
+              "loads": [{ "resource": "CNC-MILL", "quantity": 1 }],
+              "subOperations": []
+            }
+          },
+          {
+            "priority": 3,
+            "operation": {
+              "name": "Assemble pump",
+              "type": "fixed_time",
+              "durationSeconds": 21600,
+              "durationPerSeconds": 0,
+              "priority": 1,
+              "flows": [{ "buffer": "BEARING-6204 @ SZ", "quantity": -1, "quantityFixed": 0, "type": "start" }],
+              "loads": [{ "resource": "ASSEMBLY-BENCH", "quantity": 1 }],
+              "subOperations": []
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "expect": {
+    "demandQuantity": { "SO-PUMP-5": 5 },
+    "demandPlans": [{ "name": "SO-PUMP-5", "date": 1737936000, "quantity": 5 }],
+    "operationPlans": [
+      { "name": "Make pump routing", "start": 1737871200, "end": 1737936000, "quantity": 5 },
+      { "name": "Cut steel bar", "start": 1737871200, "end": 1737885600, "quantity": 5 },
+      { "name": "CNC machine housing", "start": 1737885600, "end": 1737914400, "quantity": 5 },
+      { "name": "Assemble pump", "start": 1737914400, "end": 1737936000, "quantity": 5 }
+    ],
+    "purchases": [{ "item": "STEEL-BAR", "start": 1737612000, "end": 1737871200, "quantity": 10 }],
+    "requiredOperations": ["Cut steel bar", "CNC machine housing", "Assemble pump"],
+    "requiredPurchases": ["STEEL-BAR"],
+    "checks": { "routingExpanded": true, "resourceCapacityRespected": true, "deterministic": true }
+  }
+}
