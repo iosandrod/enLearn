@@ -293,6 +293,7 @@ const themeStyle = computed(() =>
 );
 const hasCategoryRelation = computed(() => readString(props.page.relate_config?.category) !== '');
 const categoryServiceApi = computed(() => props.serviceApi ?? host.getServiceApi());
+const selectedCategoryId = ref('');
 const layoutBlocks = computed(() => {
   runtimeBlockRenderRevision.value;
   return markLastBlockFill(
@@ -301,6 +302,20 @@ const layoutBlocks = computed(() => {
 });
 
 async function handleCategorySelect(node: { id: unknown; label: string }) {
+  selectedCategoryId.value = readString(node.id);
+  const mainSourceKeys = [...new Set(flattenPageBlocks(props.page.schema)
+    .filter((block): block is LowCodePageGridBlock => (
+      block.kind === 'grid' && block.tableType === 'main' && readString(block.categoryField) !== ''
+    ))
+    .map((block) => readString(block.sourceKey))
+    .filter(Boolean))];
+  if (mainSourceKeys.length) {
+    const errors = await refreshDataSources(mainSourceKeys);
+    if (errors.length) {
+      message.value = errors[0];
+      messageClass.value = 'lc-error';
+    }
+  }
   await publishRuntimeEvent({
     name: 'category.selected',
     blockId: 'page-category-drawer',
@@ -673,6 +688,32 @@ function mergeDataSourceSearchFilters(
   };
 }
 
+function mergeMainGridCategoryFilter(
+  key: string,
+  postData: Record<string, unknown>,
+) {
+  if (!selectedCategoryId.value) return postData;
+
+  const mainGrid = flattenPageBlocks(props.page.schema).find(
+    (block): block is LowCodePageGridBlock => (
+      block.kind === 'grid' &&
+      block.tableType === 'main' &&
+      block.sourceKey === key &&
+      readString(block.categoryField) !== ''
+    ),
+  );
+  const categoryField = readString(mainGrid?.categoryField);
+  if (!categoryField) return postData;
+
+  return {
+    ...postData,
+    filters: {
+      ...(isRecord(postData.filters) ? postData.filters : {}),
+      [categoryField]: selectedCategoryId.value,
+    },
+  };
+}
+
 function resolveDataSourceRequest(
   key: string,
   source: LowCodePageDataSource,
@@ -681,9 +722,10 @@ function resolveDataSourceRequest(
 ) {
   const basePostData = resolveRuntimePostData(postDataOverride ?? source.postData);
   const targetedPostData = withDataSourceTargetPostData(source, basePostData);
-  const postData = includeSearchFilters
+  const searchedPostData = includeSearchFilters
     ? mergeDataSourceSearchFilters(key, targetedPostData)
     : targetedPostData;
+  const postData = mergeMainGridCategoryFilter(key, searchedPostData);
   const service = resolveDataSourceService(source, postData);
 
   return normalizeLegacyAdminListRequest(service.serviceName, service.serviceMethod, postData);

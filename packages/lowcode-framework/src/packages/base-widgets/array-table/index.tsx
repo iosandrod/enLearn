@@ -220,6 +220,37 @@ function renderVxeGrid(
   return <VxeGrid {...createArrayTableGridProps(props, preview, systemTableConfig)} />;
 }
 
+function renderTablePreview() {
+  return (
+    <div
+      style={{
+        width: '100%',
+        overflow: 'hidden',
+        border: '1px solid #dbe3ec',
+        borderRadius: '5px',
+        background: '#fff',
+      }}
+    >
+      <div style={{ display: 'grid', gridTemplateColumns: '1.3fr .7fr 1fr', background: '#f3f6fa' }}>
+        {['名称', '数量', '备注'].map((title) => (
+          <strong style={{ padding: '7px 8px', borderRight: '1px solid #dbe3ec', fontSize: '12px' }}>
+            {title}
+          </strong>
+        ))}
+      </div>
+      {[['物料 A', '1', '示例'], ['物料 B', '2', '示例']].map((row) => (
+        <div style={{ display: 'grid', gridTemplateColumns: '1.3fr .7fr 1fr', borderTop: '1px solid #e8edf3' }}>
+          {row.map((value) => (
+            <span style={{ padding: '6px 8px', borderRight: '1px solid #e8edf3', color: '#475569', fontSize: '12px' }}>
+              {value}
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function createFieldProps(props: Record<string, unknown>) {
   return Object.fromEntries(
     Object.entries(props).filter(([key]) => !fieldPropExcludeKeys.has(key))
@@ -239,16 +270,7 @@ export default {
       }}
     >
       <div style={{ color: '#475569', fontSize: '13px' }}>表格输入</div>
-      <div style={{ height: '128px' }}>
-        {renderVxeGrid(
-          {
-            columns: defaultArrayTableColumns,
-            data: defaultArrayTableData,
-            height: 128,
-          },
-          true
-        )}
-      </div>
+      {renderTablePreview()}
     </div>
   ),
   render: ({ styles, block, props }) => {

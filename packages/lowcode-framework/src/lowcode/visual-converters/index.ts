@@ -670,6 +670,7 @@ function convertRuntimeBlockToVisual(
         viewName: sourceType === 'view'
           ? readString(block.viewName, readString(source?.viewName, sourceTarget))
           : '',
+        categoryField: readString(block.categoryField),
         sourceKey: readString(block.sourceKey, source?.key ?? 'records'),
         serviceName: source?.serviceName ?? 'admin',
         serviceMethod: source?.serviceMethod ?? 'listItems',

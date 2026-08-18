@@ -75,6 +75,7 @@ export type GridDesignerBusinessInfo = {
   sourceType: GridDesignerSourceType;
   tableName: string;
   viewName: string;
+  categoryField: string;
   sourceKey: string;
   serviceName: string;
   serviceMethod: string;
@@ -1105,6 +1106,7 @@ function createDefaultBusiness(): GridDesignerBusinessInfo {
     sourceType: 'table',
     tableName: 'profiles',
     viewName: '',
+    categoryField: '',
     sourceKey: 'records',
     serviceName: 'admin',
     serviceMethod: 'listItems',
@@ -1173,6 +1175,7 @@ function normalizeBusiness(value: unknown): GridDesignerBusinessInfo {
     sourceType,
     tableName,
     viewName,
+    categoryField: readString(row.categoryField),
     sourceKey: readString(row.sourceKey, fallback.sourceKey),
     serviceName: readString(row.serviceName, fallback.serviceName),
     serviceMethod: readString(row.serviceMethod, fallback.serviceMethod),
@@ -2217,6 +2220,15 @@ const ServiceComponent = defineComponent({
           filterable: true,
           clearable: true,
           placeholder: '请选择视图',
+        },
+      },
+      {
+        field: 'categoryField',
+        label: '类别关联字段',
+        component: 'vxe-input',
+        props: {
+          clearable: true,
+          placeholder: '如 category_id；留空不按类别过滤',
         },
       },
       { field: 'sourceKey', label: '数据源标识', component: 'vxe-input' },

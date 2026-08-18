@@ -617,6 +617,8 @@ export type LowCodePageGridBlock = LowCodeMaterialVersionedBlock & {
   sourceType?: 'custom' | 'table' | 'view';
   tableName?: string;
   viewName?: string;
+  /** Field on the main table that stores the selected page-category id. */
+  categoryField?: string;
   editorBlockId?: string;
   editRoute?: string;
   deleteSourceKey?: string;

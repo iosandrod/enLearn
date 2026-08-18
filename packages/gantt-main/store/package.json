@@ -20,7 +20,9 @@
     "license.txt"
   ],
   "dependencies": {
-    "date-fns": "3.6.0",
-    "@svar-ui/lib-state": "1.9.7"
+    "@svar-ui/grid-store": "2.7.1",
+    "@svar-ui/lib-dom": "0.13.1",
+    "@svar-ui/lib-state": "1.9.7",
+    "date-fns": "3.6.0"
   }
 }

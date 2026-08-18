@@ -19,6 +19,7 @@ export {
 export {
   MATERIAL_PROP_FORM_CODE_PREFIX,
   loadDatabaseMaterialPropForms,
+  reloadDatabaseMaterialPropForms,
 } from './database';
 export type {
   MaterialPropFieldTarget,

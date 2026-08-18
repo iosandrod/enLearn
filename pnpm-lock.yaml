@@ -468,6 +468,12 @@ importers:
 
   packages/gantt-main/store:
     dependencies:
+      '@svar-ui/grid-store':
+        specifier: 2.7.1
+        version: 2.7.1
+      '@svar-ui/lib-dom':
+        specifier: 0.13.1
+        version: 0.13.1
       '@svar-ui/lib-state':
         specifier: 1.9.7
         version: 1.9.7

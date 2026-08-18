@@ -260,11 +260,52 @@ async function testCategoryRelationOptions() {
   ]);
 }
 
+async function testCategoryDeleteRejectsChildren() {
+  const deleteService = new PlanningService() as unknown as {
+    execute(method: string, postData: Record<string, unknown>, context: unknown): Promise<unknown>;
+    createCrudContext: (...args: unknown[]) => Promise<Record<string, unknown>>;
+    assertPermission: (...args: unknown[]) => Promise<void>;
+    accountValue(context: unknown, field: string): string;
+  };
+  const childQuery = {
+    select() { return childQuery; },
+    eq() { return childQuery; },
+    then(resolve: (value: unknown) => void) {
+      resolve({ count: 1, error: null });
+    }
+  };
+  deleteService.createCrudContext = async () => ({
+    action: 'delete',
+    serviceName: 'planning',
+    resourceName: 'planning_category',
+    resource: resources.planning_category,
+    input: { resource: 'planning_category', id: 'parent-category' },
+    data: {},
+    context: { accountId: 'account-1' },
+    client: { from: () => childQuery },
+    id: 'parent-category',
+    ids: ['parent-category'],
+    meta: {}
+  });
+  deleteService.assertPermission = async () => undefined;
+  deleteService.accountValue = () => 'account-1';
+
+  await assert.rejects(
+    () => deleteService.execute(
+      'deleteItem',
+      { resource: 'planning_category', id: 'parent-category' },
+      { accountId: 'account-1' }
+    ),
+    /存在子类别，不能删除/
+  );
+}
+
 void Promise.all([
   testPlanningPayloadNormalization(),
   testConsoleOptionBoundary(),
   testConsoleReadRequiresTheExactInternalCapability(),
-  testCategoryRelationOptions()
+  testCategoryRelationOptions(),
+  testCategoryDeleteRejectsChildren()
 ]).then(() => {
   console.log('planning service configuration tests passed');
 });

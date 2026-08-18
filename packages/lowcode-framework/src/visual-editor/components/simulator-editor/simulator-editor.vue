@@ -127,6 +127,8 @@
   const visualData = useVisualData();
   const { currentPage, setCurrentBlock } = visualData;
   const host = useLowCodeHost();
+  const readString = (value: unknown, fallback = '') =>
+    typeof value === 'string' && value.trim() ? value.trim() : fallback;
 
   const { globalProperties } = useGlobalProperties();
 
@@ -423,6 +425,7 @@
 
   const formDesignComponentKeys = new Set(['form', 'lowcode-search-form', 'lowcode-edit-form']);
   const gridDesignComponentKeys = new Set(['lowcode-grid', 'grid', 'table', 'vxe-grid']);
+  const arrayTableDesignComponentKeys = new Set(['array-table', 'lc-array-table']);
   const buttonGroupDesignComponentKeys = new Set([
     'lowcode-button-group',
     'button-group',
@@ -435,8 +438,11 @@
     formDesignComponentKeys.has(block.componentKey) || Array.isArray(block.props?.fields);
 
   const isGridDesignBlock = (block: VisualEditorBlockData) =>
-    gridDesignComponentKeys.has(block.componentKey) ||
-    (Array.isArray(block.props?.columns) && !isFormDesignBlock(block));
+    gridDesignComponentKeys.has(block.componentKey);
+
+  const isArrayTableDesignBlock = (block: VisualEditorBlockData) =>
+    arrayTableDesignComponentKeys.has(block.componentKey) ||
+    block.props?.__lowcodeComponent === 'lc-array-table';
 
   const vxeGridPropKeys = [
     'border',
@@ -528,6 +534,40 @@
     selectComp(block);
   };
 
+  const syncArrayTableDesignToFieldBlock = (
+    block: VisualEditorBlockData,
+    result: GridDesignerResult,
+  ) => {
+    const previousColumns = new Map(
+      (Array.isArray(block.props.columns) ? block.props.columns : [])
+        .filter(isRecord)
+        .map((column) => [readString(column.field), column]),
+    );
+    block.props.__lowcodeComponent = 'lc-array-table';
+    block.props.columns = result.columns.map((column) => {
+      const previous = previousColumns.get(readString(column.field));
+      const editType = readString(column.editType);
+      return {
+        ...(previous ? cloneDeep(previous) : {}),
+        ...cloneDeep(column),
+        ...(editType ? { component: editType } : {}),
+      };
+    });
+    Object.assign(block.props, cloneDeep(result.gridOptions));
+    delete block.props.gridOptions;
+    const keyField = isRecord(result.gridOptions.rowConfig)
+      ? result.gridOptions.rowConfig.keyField
+      : undefined;
+    if (keyField) {
+      block.props.rowConfig = {
+        ...(isRecord(block.props.rowConfig) ? block.props.rowConfig : {}),
+        keyField,
+      };
+    }
+    block.props.gridDesignerUpdatedAt = Date.now();
+    selectComp(block);
+  };
+
   const syncButtonGroupDesignToPageBlock = (
     block: VisualEditorBlockData,
     result: ButtonGroupDesignerResult,
@@ -603,6 +643,7 @@
         sourceType: block.props?.sourceType,
         tableName: block.props?.tableName,
         viewName: block.props?.viewName,
+        categoryField: block.props?.categoryField,
         sourceKey: block.props?.sourceKey,
         serviceName: block.props?.serviceName,
         serviceMethod: block.props?.serviceMethod,
@@ -617,6 +658,45 @@
     });
 
     syncGridDesignToPageBlock(block, result);
+  };
+
+  const openArrayTableDesigner = async (block: VisualEditorBlockData) => {
+    selectComp(block);
+    const fieldLabel = readString(block.props?.label, block.label || '表格输入');
+    const rowConfig = isRecord(block.props?.rowConfig)
+      ? cloneDeep(block.props.rowConfig)
+      : {};
+    const columns = (Array.isArray(block.props?.columns) ? block.props.columns : [])
+      .filter(isRecord)
+      .map((column) => ({
+        ...cloneDeep(column),
+        editType: readString(column.editType, readString(column.component)),
+      }));
+    const result = await $$gridDesigner({
+      title: `${fieldLabel}设计表格`,
+      serviceApi: getOptionalServiceApi(),
+      business: {
+        blockId: readString(block.props?.name, block._vid),
+        title: fieldLabel,
+        tableType: 'default',
+        sourceType: 'custom',
+        sourceKey: '',
+        serviceName: '',
+        serviceMethod: '',
+        saveMethod: '',
+        deleteMethod: '',
+        postDataJson: '{}',
+        showRowActions: false,
+      },
+      columns,
+      gridOptions: {
+        ...readVxeGridOptions(block.props),
+        rowConfig,
+      },
+      gridEvents: [],
+    });
+
+    syncArrayTableDesignToFieldBlock(block, result);
   };
 
   const openButtonGroupDesigner = async (block: VisualEditorBlockData) => {
@@ -680,11 +760,13 @@
     e.preventDefault();
     e.stopPropagation();
     const canOpenModalDesigner = props.allowFormDesign && isModalDesignBlock(block);
+    const canOpenArrayTableDesigner = isArrayTableDesignBlock(block);
     const canOpenBlockDesigner =
-      props.allowFormDesign &&
-      (isFormDesignBlock(block) ||
-        isGridDesignBlock(block) ||
-        isButtonGroupDesignBlock(block));
+      canOpenArrayTableDesigner ||
+      (props.allowFormDesign &&
+        (isFormDesignBlock(block) ||
+          isGridDesignBlock(block) ||
+          isButtonGroupDesignBlock(block)));
     const canOpenSubFormDesigner = isSubFormDesignBlock(block);
 
     VxeUI.contextMenu.open({
@@ -737,6 +819,8 @@
           if (option.code === 'open-block-designer') {
             void (isButtonGroupDesignBlock(block)
               ? openButtonGroupDesigner(block)
+              : isArrayTableDesignBlock(block)
+                ? openArrayTableDesigner(block)
               : isGridDesignBlock(block)
                 ? openGridDesigner(block)
                 : openFormDesigner(block));

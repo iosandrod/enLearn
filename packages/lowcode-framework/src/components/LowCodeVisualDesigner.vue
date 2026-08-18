@@ -148,10 +148,14 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { cloneDeep } from 'lodash-es';
 import VisualEditorProvider from './VisualEditorProvider.vue';
 import SystemMenuTreeNode from './SystemMenuTreeNode.vue';
 import type {
   LowCodeFormSchema,
+  LowCodePageApi,
+  LowCodePageBlock,
+  LowCodePageFormBlock,
   LowCodePageRecord,
   LowCodePageSchema,
 } from '../types/lowcode';
@@ -348,47 +352,6 @@ const designerPageRecord = computed<LowCodePageRecord>(() => {
     updated_at: current?.updated_at ?? '',
   };
 });
-const statusOptions = [
-  { label: '草稿', value: 'draft' },
-  { label: '发布', value: 'published' },
-  { label: '归档', value: 'archived' }
-];
-const pageInfoSchema: LowCodeFormSchema = {
-  fields: [
-    {
-      field: 'code',
-      label: '页面编码',
-      component: 'vxe-input',
-      props: { clearable: true },
-    },
-    {
-      field: 'route',
-      label: '后台路由',
-      component: 'vxe-input',
-      props: { clearable: true },
-    },
-    {
-      field: 'title',
-      label: '页面标题',
-      component: 'vxe-input',
-      props: { clearable: true },
-    },
-    {
-      field: 'status',
-      label: '状态',
-      component: 'vxe-select',
-      options: statusOptions,
-    },
-    {
-      field: 'description',
-      label: '描述',
-      component: 'vxe-textarea',
-      props: { rows: 3 },
-    },
-  ],
-  actions: [],
-};
-
 const menuChildSchema: LowCodeFormSchema = {
   fields: [
     {
@@ -1046,9 +1009,10 @@ function buildSchema(payload: {
     route: form.value.route,
     title: form.value.title,
     description: form.value.description,
-    layout: 'dashboard',
+    pageType: page.value?.page_type ?? previousSchema.pageType ?? 'custom',
+    layout: page.value?.layout ?? previousSchema.layout ?? 'dashboard',
     status: form.value.status,
-    keepAlive: true,
+    keepAlive: page.value?.keep_alive ?? previousSchema.keepAlive ?? true,
     config: payload.currentPage.config,
     visualEditor: payload.model,
     dataSources: hasRuntimeContent
@@ -1089,6 +1053,7 @@ function buildPageSaveData(schema: LowCodePageSchema) {
     keep_alive: schema.keepAlive ?? true,
     page_type: schema.pageType ?? 'custom',
     edit_page_id: page.value?.edit_page_id ?? null,
+    table_name: page.value?.table_name ?? null,
     relate_config: page.value?.relate_config ?? {},
     schema,
     version: nextVersion,
@@ -1264,37 +1229,138 @@ function normalizePageInfoForm(value: Record<string, unknown>): DesignerPageForm
   };
 }
 
-function openPageInfo() {
+function getChildPageBlocks(block: LowCodePageBlock): LowCodePageBlock[] {
+  const children: LowCodePageBlock[] = [];
+  if ('blocks' in block && Array.isArray(block.blocks)) children.push(...block.blocks);
+  if (block.kind === 'tabs') {
+    block.tabs.forEach((tab) => children.push(...tab.blocks));
+  }
+  if ('overlays' in block && Array.isArray(block.overlays)) children.push(...block.overlays);
+  return children;
+}
+
+function findPageInfoForm(blocks: LowCodePageBlock[]): LowCodePageFormBlock | undefined {
+  for (const block of blocks) {
+    if (block.kind === 'form') return block;
+    const nestedForm = findPageInfoForm(getChildPageBlocks(block));
+    if (nestedForm) return nestedForm;
+  }
+  return undefined;
+}
+
+function createPageInfoEditorPage(
+  editorPage: LowCodePageRecord,
+  initialValues: Record<string, unknown>,
+): LowCodePageRecord {
+  const schema = cloneDeep(editorPage.schema);
+  const formBlock = findPageInfoForm([
+    ...(schema.blocks ?? []),
+    ...(schema.overlays ?? []),
+  ]);
+  if (!formBlock) {
+    throw new Error('页面信息编辑页中没有可用的表单。');
+  }
+
+  formBlock.initialValues = cloneDeep(initialValues);
+  formBlock.sourceKey = undefined;
+  formBlock.submitSourceKey = undefined;
+  formBlock.schema.actions = [];
+
+  return { ...editorPage, schema };
+}
+
+function readPageInfoValues(
+  formModels: Record<string, Record<string, unknown>>,
+) {
+  return Object.values(formModels).find(isPlainRecord) ?? {};
+}
+
+async function openPageInfo() {
   if (findGlobalDialog('lowcode-page-info')) return;
 
-  void openGlobalDialog<DesignerPageForm>({
-    id: 'lowcode-page-info',
-    title: '页面信息',
-    width: 'min(760px, calc(100vw - 48px))',
-    showFooter: true,
-    model: { ...form.value },
-    form: {
-      schema: pageInfoSchema,
-    },
-    actions: [
-      {
-        code: 'cancel',
-        label: '取消',
-        role: 'cancel',
-      },
-      {
-        code: 'confirm',
-        label: '确定',
-        role: 'confirm',
-        status: 'primary',
-      },
-    ],
-    onConfirm: ({ model }) => {
-      form.value = normalizePageInfoForm(model);
-      message.value = '页面信息已更新。';
-      messageType.value = 'success';
-    },
-  });
+  try {
+    const serviceApi = host.getServiceApi();
+    if (!page.value) {
+      throw new Error('请先保存当前页面，再编辑页面信息。');
+    }
+    const pageManagement = await getLowCodePage(serviceApi, {
+      code: 'lowcode-pages',
+      includeData: false,
+    });
+    const editorPage = await ensureLowCodeEditPage(serviceApi, pageManagement);
+    const initialValues = {
+      ...form.value,
+      pageType: page.value?.page_type ?? page.value?.schema?.pageType ?? 'custom',
+      layout: page.value?.layout ?? page.value?.schema?.layout ?? 'dashboard',
+      keepAlive: page.value?.keep_alive ?? page.value?.schema?.keepAlive ?? true,
+      tableName: page.value?.table_name ?? '',
+      relateConfig: cloneDeep(page.value?.relate_config ?? {}),
+      functions: cloneDeep(page.value?.schema?.functions ?? []),
+      apis: cloneDeep(
+        Object.entries(page.value?.schema?.apis ?? {}).map(([name, api]) => ({
+          name,
+          ...api,
+        })),
+      ),
+    };
+    const result = await confirmLowCodePage({
+      page: createPageInfoEditorPage(editorPage, initialValues),
+      includeData: false,
+      serviceApi,
+      router: host.getRouter(),
+      route: host.getRoute(),
+      title: '页面信息',
+      width: 'min(1120px, calc(100vw - 48px))',
+      confirmLabel: '确定',
+      cancelLabel: '取消',
+      dialog: { id: 'lowcode-page-info' },
+    });
+    if (result.action !== 'confirm' || !result.payload) return;
+
+    const values = readPageInfoValues(result.payload.formModels);
+    form.value = normalizePageInfoForm(values);
+    if (page.value) {
+      page.value.page_type = String(values.pageType ?? page.value.page_type) as LowCodePageRecord['page_type'];
+      page.value.layout = String(values.layout ?? page.value.layout) as LowCodePageRecord['layout'];
+      page.value.keep_alive = values.keepAlive !== false;
+      page.value.table_name = String(values.tableName ?? '').trim() || null;
+      page.value.relate_config = isPlainRecord(values.relateConfig)
+        ? cloneDeep(values.relateConfig)
+        : {};
+      page.value.schema.functions = Array.isArray(values.functions)
+        ? cloneDeep(values.functions) as LowCodePageSchema['functions']
+        : [];
+      page.value.schema.apis = Array.isArray(values.apis)
+        ? values.apis.filter(isPlainRecord).reduce<NonNullable<LowCodePageSchema['apis']>>(
+            (apis, api) => {
+              const name = String(api.name ?? '').trim();
+              if (!name) return apis;
+              const serviceName = String(api.serviceName ?? '').trim();
+              const serviceMethod = String(api.serviceMethod ?? '').trim();
+              if (!serviceName || !serviceMethod) return apis;
+              const definition: LowCodePageApi = {
+                serviceName,
+                serviceMethod,
+                ...(typeof api.method === 'string' ? { method: api.method as LowCodePageApi['method'] } : {}),
+                ...(isPlainRecord(api.postData) ? { postData: cloneDeep(api.postData) } : {}),
+                ...(typeof api.resultPath === 'string' ? { resultPath: api.resultPath } : {}),
+              };
+              apis[name] = definition;
+              return apis;
+            },
+            {},
+          )
+        : {};
+      page.value.schema.pageType = page.value.page_type;
+      page.value.schema.layout = page.value.layout;
+      page.value.schema.keepAlive = page.value.keep_alive;
+    }
+    message.value = '页面信息已更新。';
+    messageType.value = 'success';
+  } catch (error) {
+    message.value = error instanceof Error ? error.message : '页面信息加载失败。';
+    messageType.value = 'error';
+  }
 }
 
 async function goBackToList() {

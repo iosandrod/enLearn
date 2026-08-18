@@ -226,6 +226,7 @@ const converter: VisualToLowCodeConverter = {
     sourceType: 'table',
     tableName: 'profiles',
     viewName: '',
+    categoryField: '',
     sourceKey: 'records',
     serviceName: 'admin',
     serviceMethod: 'listItems',
@@ -293,6 +294,7 @@ const converter: VisualToLowCodeConverter = {
       sourceType: association.sourceType,
       tableName: association.tableName,
       viewName: association.viewName,
+      categoryField: readString(props.categoryField),
       ...(typeof props.gridDesignerUpdatedAt === 'number'
         ? { gridDesignerUpdatedAt: props.gridDesignerUpdatedAt }
         : {}),

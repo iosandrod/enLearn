@@ -829,98 +829,62 @@ async function openLowCodePageInfoDesignerByCode(pageCode: string, tab: VisitedT
       code: pageCode,
       includeData: true,
     });
-    const formDefinition = await loadLowCodeFormDefinition(
-      serviceApi,
-      PAGE_INFO_DESIGN_FORM_CODE,
+    const pageManagement = await getLowCodePage(serviceApi, {
+      code: 'lowcode-pages',
+      includeData: false,
+    });
+    const editorPage = await ensureLowCodeEditPage(serviceApi, pageManagement);
+    const formBlock = editorPage.schema.blocks.find(
+      (block) => block.kind === 'form',
     );
-    const formSchema = hydratePageInfoDesignSchema(
-      formDefinition.schema,
-      currentPage,
+    if (!formBlock || formBlock.kind !== 'form') {
+      throw new Error('页面信息编辑页中没有可用的表单。');
+    }
+    const formSchema = hydratePageInfoDesignSchema(formBlock.schema, currentPage);
+    const pageWithCurrentForm = structuredClone(editorPage);
+    const runtimeForm = pageWithCurrentForm.schema.blocks.find(
+      (block) => block.kind === 'form',
     );
+    if (!runtimeForm || runtimeForm.kind !== 'form') {
+      throw new Error('页面信息编辑页中没有可用的表单。');
+    }
+    runtimeForm.schema = formSchema;
+    runtimeForm.initialValues = createPageInfoDesignForm(currentPage);
+    runtimeForm.sourceKey = undefined;
+    runtimeForm.submitSourceKey = undefined;
+    runtimeForm.schema.actions = [];
 
-    const result = await openGlobalDialog<PageInfoDesignForm>({
-      id: PAGE_INFO_DESIGN_DIALOG_ID,
+    const result = await confirmLowCodePage({
+      page: pageWithCurrentForm,
+      includeData: false,
+      serviceApi,
+      router,
+      route,
       title: '页面信息设计',
       width: 'min(1100px, calc(100vw - 32px))',
       height: 'min(680px, calc(100vh - 48px))',
       className: 'dashboard-page-info-design-dialog',
-      props: {
-        top: '3vh',
-        destroyOnClose: true,
-      },
-      showFooter: true,
-      model: createPageInfoDesignForm(currentPage),
-      form: {
-        schema: formSchema,
+      confirmLabel: '保存',
+      cancelLabel: '取消',
+      dialog: {
+        id: PAGE_INFO_DESIGN_DIALOG_ID,
         props: {
-          className: 'dashboard-page-info-design-form',
-          vertical: true,
+          top: '3vh',
+          destroyOnClose: true,
         },
-      },
-      actions: [
-        {
-          code: 'cancel',
-          label: '取消',
-          role: 'cancel',
-        },
-        {
-          code: 'confirm',
-          label: '保存',
-          role: 'confirm',
-          status: 'primary',
-        },
-      ],
-      onConfirm: async ({ model }) => {
-        const value = normalizePageInfoDesignForm(model, currentPage);
-        if (!value.title) {
-          showPageInfoDesignMessage('页面标题不能为空。', 'error');
-          return false;
-        }
-        const functionNames = value.functions.map((item) => item.name);
-        if (functionNames.some((name) => !/^[A-Za-z_$][\w$]*$/.test(name))) {
-          showPageInfoDesignMessage('页面函数名必须是合法的 JavaScript 标识符。', 'error');
-          return false;
-        }
-        if (new Set(functionNames).size !== functionNames.length) {
-          showPageInfoDesignMessage('页面函数名不能重复。', 'error');
-          return false;
-        }
-        if (value.functions.some((item) => !item.script.trim())) {
-          showPageInfoDesignMessage('页面函数脚本不能为空。', 'error');
-          return false;
-        }
-        const apiNames = value.apis.map((item) => item.name);
-        if (apiNames.some((name) => !name)) {
-          showPageInfoDesignMessage('页面 API 别名不能为空。', 'error');
-          return false;
-        }
-        if (new Set(apiNames).size !== apiNames.length) {
-          showPageInfoDesignMessage('页面 API 别名不能重复。', 'error');
-          return false;
-        }
-        if (value.apis.some((item) => !item.serviceName || !item.serviceMethod)) {
-          showPageInfoDesignMessage('页面 API 的服务名和服务方法不能为空。', 'error');
-          return false;
-        }
-
-        try {
-          currentPage = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
-            resource: 'lowcode_pages',
-            id: currentPage.id,
-            data: buildPageInfoSaveData(currentPage, value),
-          });
-          savedPage = currentPage;
-          return { values: createPageInfoDesignForm(currentPage) };
-        } catch (error) {
-          const message = error instanceof Error ? error.message : '页面信息保存失败。';
-          routeError.value = message;
-          showPageInfoDesignMessage(message, 'error');
-          return false;
-        }
       },
     });
-
-    if (result.action !== 'confirm' || !savedPage) return;
+    if (result.action !== 'confirm' || !result.payload) return;
+    const model = result.payload.formModels[runtimeForm.id];
+    if (model) {
+      const value = normalizePageInfoDesignForm(model as PageInfoDesignForm, currentPage);
+      currentPage = await serviceApi.invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+        resource: 'lowcode_pages',
+        id: currentPage.id,
+        data: buildPageInfoSaveData(currentPage, value),
+      });
+    }
+    savedPage = currentPage;
 
     const page = savedPage as LowCodePageRecord;
     replaceVisitedTabPageInfo(tab, page);

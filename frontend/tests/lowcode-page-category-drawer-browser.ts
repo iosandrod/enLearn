@@ -39,8 +39,29 @@ const page: LowCodePageRecord = {
         id: 'page-copy',
         kind: 'text',
         content: '当前页面内容',
+      }, {
+        id: 'materials-grid',
+        kind: 'grid',
+        title: '物料列表',
+        sourceKey: 'materials',
+        tableType: 'main',
+        categoryField: 'category_id',
+        schema: {
+          grid: {
+            columns: [{ field: 'name', title: '名称' }],
+          },
+        },
       }],
     }],
+    dataSources: {
+      materials: {
+        key: 'materials',
+        serviceName: 'admin',
+        serviceMethod: 'listItems',
+        postData: { resource: 'planning_item' },
+        autoLoad: false,
+      },
+    },
   },
   version: 1,
   published_at: null,
@@ -67,6 +88,9 @@ const serviceApi: LowCodeHostServiceApi = {
         },
         { id: 'finished-goods', label: '成品' },
       ] as T;
+    }
+    if (serviceName === 'admin' && serviceMethod === 'listItems') {
+      return [{ id: 'material-1', name: '板材物料' }] as T;
     }
     return [] as T;
   },

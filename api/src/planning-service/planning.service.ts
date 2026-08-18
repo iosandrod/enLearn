@@ -9,7 +9,9 @@ import {
 import {
   BaseService,
   type CrudContext,
+  type HookContext,
   type ResourceConfigMap,
+  type ServiceHooks,
   type ServicePostData
 } from '../common/base.service';
 import type { ServiceContext } from '../common/interfaces/service-executor';
@@ -48,6 +50,32 @@ import {
 
 @Injectable()
 export class PlanningService extends BaseService {
+  protected override hooks(): ServiceHooks {
+    return {
+      planning_category: {
+        beforeDelete: [this.preventDeleteCategoryWithChildren]
+      }
+    };
+  }
+
+  private preventDeleteCategoryWithChildren = async (ctx: HookContext) => {
+    const categoryId = ctx.id ?? ctx.ids[0];
+    if (!categoryId) return;
+
+    const accountField = ctx.resource.accountField ?? 'account_id';
+    let query = ctx.client
+      .from(ctx.resource.tableName)
+      .select('id', { count: 'exact', head: true })
+      .eq('parent_id', categoryId);
+    if (accountField) {
+      query = query.eq(accountField, this.accountValue(ctx.context, accountField));
+    }
+    const { count, error } = await query;
+    if (error) throw new BadRequestException(error.message);
+    if ((count ?? 0) > 0) {
+      throw new BadRequestException('该类别存在子类别，不能删除。');
+    }
+  };
   constructor(
     @Optional()
     @Inject(TriggerDevClient)

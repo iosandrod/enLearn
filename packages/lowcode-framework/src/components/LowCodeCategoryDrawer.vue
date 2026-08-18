@@ -56,6 +56,8 @@
           :selected-id="selectedId"
           @toggle="toggleNode"
           @select="selectNode"
+          @add-child="addChildCategory"
+          @delete="deleteCategory"
         />
       </ul>
     </div>
@@ -65,7 +67,9 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue';
 import type { LowCodeHostServiceApi } from '../core/host';
-import type { LowCodePageRelateConfig } from '../types/lowcode';
+import type { LowCodePageBlock, LowCodePageRecord, LowCodePageRelateConfig } from '../types/lowcode';
+import { confirmLowCodePage, openGlobalDialog } from '../runtime/global-dialog';
+import { getLowCodePage } from '../runtime/lowcode-pages';
 import LowCodeCategoryTreeNode, {
   type LowCodeCategoryTreeNodeData,
 } from './LowCodeCategoryTreeNode.vue';
@@ -147,6 +151,122 @@ function toggleNode(node: LowCodeCategoryTreeNodeData) {
 function selectNode(node: LowCodeCategoryTreeNodeData) {
   selectedId.value = String(node.id ?? '');
   emit('select', node);
+}
+
+async function addChildCategory(parent: LowCodeCategoryTreeNodeData) {
+  const category = readString(props.config?.category);
+  const parentId = readString(parent.id);
+  if (!category || !parentId) return;
+
+  const editPage = await getLowCodePage(props.serviceApi, {
+    code: 'planning_category-edit',
+    includeData: false,
+  });
+  const result = await confirmLowCodePage({
+    page: createCategoryEditPage(editPage, category, parentId),
+    includeData: false,
+    serviceApi: props.serviceApi,
+    title: `添加子类别 - ${parent.label}`,
+    width: 'min(560px, calc(100vw - 32px))',
+    confirmLabel: '保存',
+    cancelLabel: '取消',
+    submitOnConfirm: true,
+    dialog: { id: `category-child-editor-${parentId}` },
+  });
+  if (result.action !== 'confirm') return;
+  expandedIds.value = new Set([...expandedIds.value, parentId]);
+  await loadCategories();
+}
+
+function createCategoryEditPage(
+  page: LowCodePageRecord,
+  category: string,
+  parentId: string,
+): LowCodePageRecord {
+  const initialValues = {
+    id: '',
+    target_type: category,
+    code: '',
+    name: '',
+    parent_id: parentId,
+    description: '',
+    status: 'active',
+    sort_order: 0,
+    metadata: {},
+    source: '',
+  };
+  const prepareBlocks = (blocks: LowCodePageBlock[]): LowCodePageBlock[] => blocks.map((block) => {
+    if (block.kind === 'buttonGroup') return { ...block, actions: [] };
+    if (block.kind === 'form') {
+      return {
+        ...block,
+        sourceKey: undefined,
+        submitSourceKey: 'planning_categoryRows',
+        initialValues,
+        schema: { ...block.schema, actions: [] },
+      };
+    }
+    if (block.kind === 'tabs') {
+      return {
+        ...block,
+        tabs: block.tabs.map((tab) => ({ ...tab, blocks: prepareBlocks(tab.blocks) })),
+      };
+    }
+    if (block.kind === 'section' || block.kind === 'container') {
+      return { ...block, blocks: prepareBlocks(block.blocks) };
+    }
+    return block;
+  });
+
+  return {
+    ...page,
+    schema: {
+      ...page.schema,
+      dataSources: {
+        planning_categoryRows: {
+          key: 'planning_categoryRows',
+          serviceName: 'planning',
+          serviceMethod: 'listItems',
+          saveMethod: 'saveItem',
+          postData: { resource: 'planning_category' },
+          autoLoad: false,
+        },
+        ...(page.schema.dataSources?.planning_categoryOptions
+          ? { planning_categoryOptions: page.schema.dataSources.planning_categoryOptions }
+          : {}),
+      },
+      blocks: prepareBlocks(page.schema.blocks),
+    },
+  };
+}
+
+async function deleteCategory(node: LowCodeCategoryTreeNodeData) {
+  const nodeId = readString(node.id);
+  if (!nodeId) return;
+
+  const result = await openGlobalDialog({
+    id: `category-delete-confirm-${nodeId}`,
+    title: '删除类别',
+    width: 'min(440px, calc(100vw - 32px))',
+    showFooter: true,
+    body: () => `确定删除类别“${node.label}”吗？存在子类别或已关联数据时将无法删除。`,
+    actions: [
+      { code: 'cancel', label: '取消', role: 'cancel' },
+      { code: 'confirm', label: '删除', role: 'confirm', status: 'danger' },
+    ],
+    onConfirm: async () => {
+      await props.serviceApi.invoke('planning', 'deleteItem', {
+        resource: 'planning_category',
+        id: nodeId,
+      });
+    },
+  });
+  if (result.action !== 'confirm') return;
+  if (selectedId.value === nodeId) {
+    selectedId.value = '';
+    emit('select', { id: '', label: '' });
+  }
+  await loadCategories();
 }
 
 function normalizeTree(value: unknown): LowCodeCategoryTreeNodeData[] {

@@ -29,6 +29,27 @@
         />
         <span>{{ node.label }}</span>
       </button>
+
+      <span class="lc-category-tree-node__actions">
+        <button
+          type="button"
+          class="lc-category-tree-node__action"
+          title="添加子类别"
+          aria-label="添加子类别"
+          @click.stop="emit('add-child', node)"
+        >
+          <i class="ri-folder-add-line" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="lc-category-tree-node__action is-danger"
+          title="删除类别"
+          aria-label="删除类别"
+          @click.stop="emit('delete', node)"
+        >
+          <i class="ri-delete-bin-line" aria-hidden="true" />
+        </button>
+      </span>
     </div>
 
     <ul v-if="children.length && isExpanded" class="lc-category-tree-node__children">
@@ -40,6 +61,8 @@
         :selected-id="selectedId"
         @toggle="emit('toggle', $event)"
         @select="emit('select', $event)"
+        @add-child="emit('add-child', $event)"
+        @delete="emit('delete', $event)"
       />
     </ul>
   </li>
@@ -63,6 +86,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   toggle: [node: LowCodeCategoryTreeNodeData];
   select: [node: LowCodeCategoryTreeNodeData];
+  'add-child': [node: LowCodeCategoryTreeNodeData];
+  delete: [node: LowCodeCategoryTreeNodeData];
 }>();
 
 const nodeKey = computed(() => String(props.node.id ?? ''));
@@ -152,5 +177,44 @@ const isExpanded = computed(() => props.expandedIds.has(nodeKey.value));
   line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.lc-category-tree-node__actions {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 1px;
+  padding-right: 3px;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.lc-category-tree-node__row:hover .lc-category-tree-node__actions,
+.lc-category-tree-node__row:focus-within .lc-category-tree-node__actions,
+.lc-category-tree-node__row.is-selected .lc-category-tree-node__actions {
+  opacity: 1;
+}
+
+.lc-category-tree-node__action {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #667085;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.lc-category-tree-node__action:hover {
+  background: #fff;
+  color: #175cd3;
+}
+
+.lc-category-tree-node__action.is-danger:hover {
+  color: #d92d20;
 }
 </style>

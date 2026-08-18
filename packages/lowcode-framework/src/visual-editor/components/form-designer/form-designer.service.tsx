@@ -41,6 +41,7 @@ import {
   loadFormDesignerTableFieldOptions,
   mergeTableFieldOptions,
 } from '../../material-prop-forms/table-field-options';
+import { reloadDatabaseMaterialPropForms } from '../../material-prop-forms/database';
 
 export type FormDesignerField = {
   field: string;
@@ -894,6 +895,16 @@ const ServiceComponent = defineComponent({
       service: async (option: FormDesignerServiceOption) => {
         state.option = option;
         void loadTableFieldOptions();
+        if (option.serviceApi) {
+          try {
+            await reloadDatabaseMaterialPropForms(option.serviceApi);
+          } catch (error) {
+            console.warn(
+              '数据库物料属性表单加载失败，已继续使用内置定义。',
+              error,
+            );
+          }
+        }
         state.initialData = resolveInitialModel(option);
         state.providerKey += 1;
         providerRef.value = null;
@@ -980,6 +991,7 @@ const ServiceComponent = defineComponent({
                 allowFormDesign={false}
                 showPageSetting={false}
                 workbenchMode="form"
+                serviceApi={state.option.serviceApi}
                 persistToSession={false}
                 showGlobalDialogHost={false}
               />

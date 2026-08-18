@@ -72,20 +72,22 @@ async function assertInsideViewport(page) {
 }
 
 const port = await freePort();
-const server = spawn(
-  process.execPath,
-  [
-    process.platform === 'win32'
-      ? 'C:\\Program Files\\nodejs\\node_modules\\pnpm\\bin\\pnpm.cjs'
-      : 'pnpm',
-    'exec',
+const pnpmBin = process.env.PNPM_BIN || 'pnpm';
+const serverCommand = process.platform === 'win32' ? (process.env.ComSpec || 'cmd.exe') : pnpmBin;
+const serverArgs = [
+  'exec',
     'vite',
     '--host',
     '127.0.0.1',
     '--port',
     String(port),
     '--strictPort',
-  ],
+];
+const server = spawn(
+  serverCommand,
+  process.platform === 'win32'
+    ? ['/d', '/s', '/c', pnpmBin, ...serverArgs]
+    : serverArgs,
   {
     cwd: frontendDir,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -126,6 +128,8 @@ try {
   assert.equal(await page.getByText('板材', { exact: true }).count(), 1);
   assert.equal(await page.getByText('紧固件', { exact: true }).count(), 1);
   assert.equal(await page.getByText('成品', { exact: true }).count(), 1);
+  assert.ok(await page.getByRole('button', { name: '添加子类别' }).count() >= 3);
+  assert.ok(await page.getByRole('button', { name: '删除类别' }).count() >= 3);
 
   const calls = await page.evaluate(() => window.__categoryDrawerSmoke.calls);
   assert.deepEqual(calls, [{
@@ -147,7 +151,12 @@ try {
   await page.getByText('板材', { exact: true }).waitFor();
 
   await page.locator('.lc-category-tree-node__label', { hasText: '板材' }).click();
-  await page.waitForFunction(() => window.__categoryDrawerSmoke.events.length > 0);
+  await page.waitForFunction(() => (
+    window.__categoryDrawerSmoke.events.length > 0 &&
+    window.__categoryDrawerSmoke.calls.some((call) => (
+      call.serviceName === 'admin' && call.payload?.filters?.category_id === 'boards'
+    ))
+  ));
   const selectedEvent = await page.evaluate(() => window.__categoryDrawerSmoke.events.at(-1));
   assert.equal(selectedEvent.name, 'category.selected');
   assert.deepEqual(selectedEvent.payload, {
@@ -155,7 +164,15 @@ try {
     label: '板材',
     category: 'item',
   });
-
+  const filteredCall = await page.evaluate(() => window.__categoryDrawerSmoke.calls.at(-1));
+  assert.deepEqual(filteredCall, {
+    serviceName: 'admin',
+    serviceMethod: 'listItems',
+    payload: {
+      resource: 'planning_item',
+      filters: { category_id: 'boards' },
+    },
+  });
   const expandedLayout = await assertInsideViewport(page);
   assert.ok(expandedLayout.drawer.width >= 247 && expandedLayout.drawer.width <= 249);
   const expandedContentWidth = expandedLayout.content.width;

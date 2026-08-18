@@ -292,6 +292,7 @@ export async function openRuntimeGridDesigner(
       sourceType,
       tableName: readString(block.tableName, sourceType === 'table' ? source?.tableName : ''),
       viewName: readString(block.viewName, sourceType === 'view' ? readString(source?.viewName, source?.tableName) : ''),
+      categoryField: readString(block.categoryField),
       sourceKey: block.sourceKey ?? source?.key ?? 'records',
       serviceName: source?.serviceName ?? 'admin',
       serviceMethod: source?.serviceMethod ?? 'listItems',
@@ -322,6 +323,7 @@ export async function openRuntimeGridDesigner(
           viewName: result.business.sourceType === 'view'
             ? readString(result.business.viewName)
             : '',
+          categoryField: readString(result.business.categoryField),
           schema: createRuntimeGridSchema(block, result),
           gridDesignerUpdatedAt: Date.now(),
         },

@@ -10,7 +10,7 @@ type MaterialPropFormRecord = {
   schema?: unknown;
 };
 
-const loadingRequests = new WeakMap<
+const loadedRequests = new WeakMap<
   LowCodeHostServiceApi,
   Promise<MaterialPropFormDefinition[]>
 >();
@@ -51,7 +51,7 @@ function normalizeDefinition(record: MaterialPropFormRecord) {
 }
 
 export function loadDatabaseMaterialPropForms(serviceApi: LowCodeHostServiceApi) {
-  const activeRequest = loadingRequests.get(serviceApi);
+  const activeRequest = loadedRequests.get(serviceApi);
   if (activeRequest) return activeRequest;
 
   const request = serviceApi
@@ -72,10 +72,15 @@ export function loadDatabaseMaterialPropForms(serviceApi: LowCodeHostServiceApi)
       return definitions;
     })
     .catch((error) => {
-      loadingRequests.delete(serviceApi);
+      loadedRequests.delete(serviceApi);
       throw error;
     });
 
-  loadingRequests.set(serviceApi, request);
+  loadedRequests.set(serviceApi, request);
   return request;
+}
+
+export function reloadDatabaseMaterialPropForms(serviceApi: LowCodeHostServiceApi) {
+  loadedRequests.delete(serviceApi);
+  return loadDatabaseMaterialPropForms(serviceApi);
 }

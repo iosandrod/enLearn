@@ -36,6 +36,7 @@ import {
 } from '../visual-editor/hooks/useVisualData';
 import { provideVisualEditorPersistence } from '../visual-editor/hooks/useVisualPersistence';
 import type { LowCodePageRecord } from '../types/lowcode';
+import type { LowCodeHostServiceApi } from '../core/host';
 
 const props = withDefaults(
   defineProps<{
@@ -49,6 +50,7 @@ const props = withDefaults(
     showPageSetting?: boolean;
     workbenchMode?: 'page' | 'form';
     pageRecord?: LowCodePageRecord | null;
+    serviceApi?: LowCodeHostServiceApi;
     persistToSession?: boolean;
     showGlobalDialogHost?: boolean;
   }>(),
@@ -63,6 +65,7 @@ const props = withDefaults(
     showPageSetting: true,
     workbenchMode: 'page',
     pageRecord: null,
+    serviceApi: undefined,
     persistToSession: true,
     showGlobalDialogHost: true,
   }
@@ -92,7 +95,9 @@ watch(
   },
 );
 
-const host = useLowCodeHost();
+const host = useLowCodeHost({
+  serviceApi: computed(() => props.serviceApi),
+});
 const slots = useSlots();
 const hasMetaSlot = computed(() => Boolean(slots.meta));
 const hasActionsSlot = computed(() => Boolean(slots.actions));
