@@ -6,23 +6,32 @@
     </p>
 
     <LowCodeForm
+      v-if="settingsSchema"
       v-model="settingsForm"
       :schema="settingsSchema"
-      :loading="loading"
+      :loading="loading || formDefinitionLoading"
       @submit="saveSettings"
     />
 
+    <p v-if="formDefinitionError" class="lc-error">{{ formDefinitionError }}</p>
     <p v-if="message" :class="messageClass">{{ message }}</p>
   </section>
 </template>
 
 <script setup lang="ts">
-import { settingsSchema } from '~/schemas/settings';
+import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode';
+import {
+  loadLowCodeFormDefinition,
+  LOW_CODE_FORM_CODES,
+} from '../../utils/lowCodeFormDefinitions';
 
 const SETTINGS_STORAGE_KEY = 'hikari-dashboard-settings';
 const auth = useAuth();
 const serviceApi = useServiceApi();
 const loading = ref(false);
+const formDefinitionLoading = ref(true);
+const formDefinitionError = ref('');
+const settingsSchema = shallowRef<LowCodeFormSchema | null>(null);
 const message = ref('');
 const messageClass = ref('lc-help');
 const settingsForm = ref<Record<string, unknown>>({
@@ -33,6 +42,23 @@ const settingsForm = ref<Record<string, unknown>>({
   theme: 'system',
   font: 'sans'
 });
+
+async function loadSettingsFormDefinition() {
+  formDefinitionLoading.value = true;
+  formDefinitionError.value = '';
+  try {
+    const definition = await loadLowCodeFormDefinition(
+      serviceApi,
+      LOW_CODE_FORM_CODES.dashboardSettings,
+    );
+    settingsSchema.value = definition.schema;
+  } catch (error) {
+    formDefinitionError.value =
+      error instanceof Error ? error.message : 'Could not load the settings form definition.';
+  } finally {
+    formDefinitionLoading.value = false;
+  }
+}
 
 function applyTheme(theme: unknown) {
   if (import.meta.server) return;
@@ -104,5 +130,7 @@ async function saveSettings(values: Record<string, unknown>) {
   }
 }
 
-onMounted(loadSettings);
+onMounted(() => {
+  void Promise.all([loadSettingsFormDefinition(), loadSettings()]);
+});
 </script>

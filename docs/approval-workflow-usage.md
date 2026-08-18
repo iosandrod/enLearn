@@ -12,7 +12,7 @@
 |---|---|---|---|
 | `@enlearn/approval-workflow` | `packages/approval-workflow` | 对外 npm 包 | Vue 3 审批流设计器、查看器、任务面板、时间线、工具函数，并重新导出 `@enlearn/workflow-schema` |
 | `@enlearn/workflow-schema` | `packages/workflow-schema` | 对外 npm 包 | 流程 DSL 类型、标准化、校验、编译和节点注册表，供前后端共享 |
-| `@enlearn/workflow-api` | `services/workflow-api` | 内部微服务 | NestJS REST API，统一前缀 `/api/workflow`，使用 PostgreSQL 业务投影和 Trigger.dev 持久化运行时 |
+| Workflow domain | `api/src/workflow` | API 内部领域模块 | 由 `/api/service` 的 `serviceName: "workflow"` 直接调用，使用 PostgreSQL 业务投影和 Trigger.dev 持久化运行时 |
 
 当前 Nuxt 示例页在 `frontend/pages/dashboard/workflow/designer.vue`，可作为接入参考。
 
@@ -596,29 +596,25 @@ export type WorkflowNodeDefinition = {
 | `subProcess` | 子流程 | `task` |
 | `end` | 结束 | `event` |
 
-## 7. 后端 REST API
+## 7. 后端领域接口
+
+本节中的 REST 路径是旧接口映射，仅用于理解动作语义。当前客户端必须通过
+`POST /api/service` 调用，并使用 `serviceName: "workflow"` 与对应的
+`serviceMethod`；这些旧路径不会再注册为 HTTP 路由。
 
 ### 7.1 服务信息
 
-启动：
+启动 API 网关：
 
 ```bash
-pnpm --dir services/workflow-api dev
+pnpm api:dev
 ```
 
-默认地址：
+统一地址：
 
 ```text
-http://localhost:3010/api/workflow
+http://localhost:3002/api/service
 ```
-
-端口读取顺序：
-
-| 环境变量 | 说明 |
-|---|---|
-| `WORKFLOW_API_PORT` | 优先使用 |
-| `PORT` | 兜底 |
-| 默认值 | `3010` |
 
 通用请求头：
 
@@ -1433,5 +1429,5 @@ pnpm workflow-api:typecheck
 pnpm workflow-api:test
 pnpm --dir services/workflow-api db:apply-trigger-runtime
 pnpm --dir services/workflow-api trigger:dev
-pnpm workflow-api:dev
+pnpm api:dev
 ```

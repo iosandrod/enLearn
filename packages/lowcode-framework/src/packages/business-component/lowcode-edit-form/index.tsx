@@ -5,32 +5,10 @@ import type {
 } from '../../../visual-editor/visual-editor.utils';
 import {
   createEditorInputProp,
+  createEditorJsonProp,
+  createEditorSelectProp,
   createEditorTableProp,
 } from '../../../visual-editor/visual-editor.props';
-
-const defaultFields = [
-  {
-    field: 'email',
-    label: '邮箱',
-    component: 'vxe-input',
-    placeholder: '请输入邮箱',
-    required: true,
-  },
-  {
-    field: 'full_name',
-    label: '姓名',
-    component: 'vxe-input',
-    placeholder: '请输入姓名',
-    required: true,
-  },
-  {
-    field: 'role',
-    label: '角色',
-    component: 'vxe-select',
-    placeholder: '请选择角色',
-    optionsJson: '[{"label":"管理员","value":"admin"},{"label":"用户","value":"user"}]',
-  },
-] as unknown as { label: string; value: string }[];
 
 const formComponentOptions = [
   { label: '输入框', value: 'vxe-input' },
@@ -40,6 +18,8 @@ const formComponentOptions = [
   { label: '密码框', value: 'vxe-password-input' },
   { label: '数字输入', value: 'lc-number-input' },
   { label: 'JSON 编辑器', value: 'lc-json-editor' },
+  { label: '代码编辑器', value: 'lc-monaco-editor' },
+  { label: '关联资料', value: 'base-info' },
   { label: '表格输入', value: 'lc-array-table' },
   { label: '子表单', value: 'lc-sub-form' },
 ];
@@ -52,6 +32,23 @@ function readDesignedBlocks(value: unknown) {
 }
 
 function renderFields(fields: Record<string, unknown>[]) {
+  if (!fields.length) {
+    return (
+      <div
+        style={{
+          minHeight: '72px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#909399',
+          fontSize: '13px',
+        }}
+      >
+        当前表单为空
+      </div>
+    );
+  }
+
   return (
     <div
       style={{
@@ -87,38 +84,13 @@ export default {
       style={{
         width: '220px',
         border: '1px solid #dcdfe6',
+        minHeight: '100px',
         borderRadius: '6px',
         padding: '10px',
         background: '#fff',
       }}
     >
-      <div style={{ fontWeight: 600, marginBottom: '8px' }}>编辑表单</div>
-      {renderFields(defaultFields as unknown as Record<string, unknown>[])}
-      <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
-        <span
-          style={{
-            display: 'inline-block',
-            borderRadius: '4px',
-            background: '#409eff',
-            color: '#fff',
-            padding: '4px 12px',
-            fontSize: '12px',
-          }}
-        >
-          保存
-        </span>
-        <span
-          style={{
-            display: 'inline-block',
-            borderRadius: '4px',
-            border: '1px solid #dcdfe6',
-            padding: '4px 12px',
-            fontSize: '12px',
-          }}
-        >
-          重置
-        </span>
-      </div>
+      {renderFields([])}
     </div>
   ),
   render({ props, styles, custom }) {
@@ -149,31 +121,6 @@ export default {
                 String(props.formDesignerUpdatedAt || ''),
               )
             : renderFields(fields)}
-          <div style={{ marginTop: '10px', display: 'flex', gap: '8px' }}>
-            <span
-              style={{
-                display: 'inline-block',
-                borderRadius: '4px',
-                background: '#409eff',
-                color: '#fff',
-                padding: '4px 12px',
-                fontSize: '12px',
-              }}
-            >
-              {props.submitText || '保存'}
-            </span>
-            <span
-              style={{
-                display: 'inline-block',
-                borderRadius: '4px',
-                border: '1px solid #dcdfe6',
-                padding: '4px 12px',
-                fontSize: '12px',
-              }}
-            >
-              {props.resetText || '重置'}
-            </span>
-          </div>
         </div>
       );
     };
@@ -183,6 +130,15 @@ export default {
     blockId: createEditorInputProp({
       label: 'Block ID',
       defaultValue: 'edit-form',
+    }),
+    formType: createEditorSelectProp({
+      label: '表单类型',
+      defaultValue: 'edit',
+      options: [
+        { label: 'edit', value: 'edit' },
+        { label: 'search', value: 'search' },
+        { label: 'default', value: 'default' },
+      ],
     }),
     title: createEditorInputProp({
       label: '标题',
@@ -208,9 +164,11 @@ export default {
       label: '保存方法',
       defaultValue: 'saveUser',
     }),
-    postDataJson: createEditorInputProp({
+    postDataJson: createEditorJsonProp({
       label: '请求参数 JSON',
       defaultValue: '{}',
+      rootType: 'object',
+      valueMode: 'string',
     }),
     /* columns: createEditorInputNumberProp({
       label: '列数',
@@ -260,7 +218,7 @@ export default {
           },
         ],
       },
-      defaultValue: defaultFields,
+      defaultValue: [],
     }),
   },
 } as VisualEditorComponent;

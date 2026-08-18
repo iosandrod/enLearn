@@ -35,6 +35,7 @@
         <simulator-editor
           :allow-form-design="allowFormDesign"
           :workbench-mode="workbenchMode"
+          :page-record="pageRecord"
         />
         <!-- 中间编辑区域end -->
 
@@ -52,6 +53,7 @@
   import LeftAside from './components/left-aside/index.vue';
   import RightAttributePanel from './components/right-attribute-panel';
   import SimulatorEditor from './components/simulator-editor/simulator-editor.vue';
+  import type { LowCodePageRecord } from '../types/lowcode';
 
   withDefaults(
     defineProps<{
@@ -61,6 +63,7 @@
       allowFormDesign?: boolean;
       showPageSetting?: boolean;
       workbenchMode?: 'page' | 'form';
+      pageRecord?: LowCodePageRecord | null;
     }>(),
     {
       showHeader: true,
@@ -69,6 +72,7 @@
       allowFormDesign: true,
       showPageSetting: true,
       workbenchMode: 'page',
+      pageRecord: null,
     },
   );
 

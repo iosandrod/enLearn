@@ -54,6 +54,8 @@ export class UpdateJobStatusDto {
   status!: WorkflowJobStatus;
 }
 
+export class UpsertJobDto extends CreateJobDto {}
+
 export class RunJobDto {
   @IsOptional()
   @IsObject()

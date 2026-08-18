@@ -1,18 +1,122 @@
 
-> @ dev C:\Users\11516\Desktop\project\enLearn
+> @ dev E:\enLearn
 > pnpm --dir frontend dev
 
 
-> @ dev C:\Users\11516\Desktop\project\enLearn\frontend
+> @ dev E:\enLearn\frontend
 > vite --host 0.0.0.0 --port 3000
 
-[2m12:33:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
 
-  [32m[1mVITE[22m v8.1.5[39m  [2mready in [0m[1m5393[22m[2m[0m ms[22m
+  [32m[1mVITE[22m v8.1.5[39m  [2mready in [0m[1m2954[22m[2m[0m ms[22m
 
   [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
-  [32m➜[39m  [1mNetwork[22m: [36mhttp://100.101.158.119:[1m3000[22m/[39m
-  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.137.96:[1m3000[22m/[39m
-[2m12:33:31[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
-[2m12:34:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
-[2m12:34:29[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mdependency optimized: [33msocket.io-client[32m[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.0.12.5:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://100.65.207.11:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.20.208.1:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.137.1:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.36:[1m3000[22m/[39m
+[2m15:11:55[22m [36m[1m[vite][22m[39m changed tsconfig file detected: E:/enLearn/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2m15:12:37[22m [36m[1m[vite][22m[39m changed tsconfig file detected: E:/enLearn/frontend/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2m15:20:23[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m15:21:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m15:22:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/layouts/dashboard.vue, /assets/styles/app.css[22m
+[2m15:22:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css, /layouts/dashboard.vue, /pages/dashboard/[...slug].vue[22m
+[2m15:29:19[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m15:31:06[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mdependency optimized: [33m@vue-flow/core[32m[39m
+[2m15:31:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/runtime/lowcode-pages.ts[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/checkbox/index.tsx[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/radio/index.tsx[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/rate/index.tsx[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/slider/index.tsx[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/array-table/index.tsx[22m
+[2m15:32:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/switch/index.tsx[22m
+[2m15:32:42[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m15:33:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/input/index.tsx[22m
+[2m15:33:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/picker/index.tsx[22m
+[2m15:33:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/datetimePicker/index.tsx[22m
+[2m15:33:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/stepper/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/image/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/button/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/process/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/divider/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/nav-bar/index.tsx[22m
+[2m15:34:17[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/notice-bar/index.tsx[22m
+[2m15:35:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/tabbar/index.tsx[22m
+[2m15:35:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mE:/enLearn/packages/lowcode-framework/src/packages/base-widgets/swipe/index.tsx[22m
+[2m15:35:47[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue, /assets/styles/app.css[22m
+[2m15:36:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/spa-compat.ts[22m
+[2m15:37:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/stubs/tldraw-vue-phase-one.ts[22m
+[2m15:37:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m15:37:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/stubs/tldraw-vue-phase-one.css[22m
+[2m15:37:50[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m15:38:28[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/pages/dashboard/advanced/print-designer.vue, /assets/styles/app.css[22m
+[2m15:38:39[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m15:39:38[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m
+[2m15:40:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mcomposables/useAuth.ts[22m
+[2m15:41:07[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m15:41:08[22m [36m[1m[vite][22m[39m server restarted.
+ ELIFECYCLE  Command failed with exit code 4294967295.
+ ELIFECYCLE  Command failed with exit code 4294967295.
+
+> @ dev E:\enLearn\frontend
+> vite --host 0.0.0.0 --port 3000
+
+
+  [32m[1mVITE[22m v8.1.5[39m  [2mready in [0m[1m738[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.0.12.5:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://100.65.207.11:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.20.208.1:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.137.1:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.36:[1m3000[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m16:05:19[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue[22m
+[2m16:06:20[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue[22m
+[2m16:07:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue[22m
+[2m16:07:52[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m16:08:31[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodeForm.vue[22m
+[2m16:12:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css, /pages/dashboard/advanced/print-designer.vue[22m
+[2m16:13:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/stubs/tldraw-vue-phase-one.ts[22m
+[2m16:13:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css, /src/stubs/tldraw-vue-phase-one.css[22m
+[2m16:13:24[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/stubs/tldraw-vue-phase-one.css[22m
+[2m16:48:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m16:50:28[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+ ELIFECYCLE  Command failed with exit code 4294967295.
+
+> @ dev E:\enLearn\frontend
+> vite --host 0.0.0.0 --port 3000
+
+[2m16:51:36[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because lockfile has changed
+
+  [32m[1mVITE[22m v8.1.5[39m  [2mready in [0m[1m1086[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.0.12.5:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://100.65.207.11:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://172.20.208.1:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.137.1:[1m3000[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.1.36:[1m3000[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[2m16:51:37[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m16:51:40[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m16:51:41[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mdependency optimized: [33msocket.io-client[32m[39m
+[2m19:53:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [optimizer] bundling dependencies...
+[2m19:53:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mdependency optimized: [33mreact/jsx-runtime[32m[39m
+[2m19:54:05[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m19:56:51[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/tldraw-vue/src/styles.css[22m
+[2m19:57:07[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m19:58:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m20:10:15[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m20:10:31[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m20:11:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/pages/dashboard/[...slug].vue, /assets/styles/app.css[22m
+[2m20:11:42[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m20:14:54[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/@fs/E:/enLearn/packages/lowcode-framework/src/components/LowCodePageRenderer.vue[22m
+[2m20:15:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/router.ts[22m
+[2m20:15:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m20:15:48[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m20:15:59[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m20:16:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+[2m21:05:14[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/pages/signin.vue, /assets/styles/app.css[22m
+[2m21:07:02[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/assets/styles/app.css[22m
+ ELIFECYCLE  Command failed with exit code 4294967295.

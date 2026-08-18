@@ -188,7 +188,7 @@ insert into public.admin_role_permissions (role_id, permission_id)
 select roles.id, permissions.id
 from public.admin_roles roles
 join public.admin_permissions permissions on permissions.code = 'entity.design.manage'
-where roles.code in ('system_admin', 'operations_admin', 'teaching_manager')
+where roles.code in ('system_admin', 'operations_admin')
 on conflict do nothing;
 
 insert into public.admin_entities (

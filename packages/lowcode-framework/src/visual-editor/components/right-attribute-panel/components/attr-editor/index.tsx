@@ -6,7 +6,7 @@
  * @Description: 组件属性编辑器
  * @FilePath: \vite-vue3-lowcode\src\visual-editor\components\right-attribute-panel\components\attr-editor\index.tsx
  */
-import { computed, defineComponent } from 'vue';
+import { computed, defineComponent, inject } from 'vue';
 import { ElEmpty } from '../../../common/designer-ui';
 import LowCodeForm from '../../../../../components/LowCodeForm.vue';
 import { useVisualData } from '../../../../hooks/useVisualData';
@@ -18,10 +18,27 @@ import {
   type MaterialPropFormField,
 } from '../../../../material-prop-forms';
 import type { LowCodeField } from '../../../../../types/lowcode';
+import {
+  formDesignerPageDataKey,
+  formDesignerTableFieldOptionsKey,
+} from '../../../../form-designer-context';
 
 export const AttrEditor = defineComponent({
   setup() {
     const { visualConfig, currentBlock, jsonData, historyState } = useVisualData();
+    const designerPageData = inject(formDesignerPageDataKey, null);
+    const injectedTableFieldOptions = inject(formDesignerTableFieldOptionsKey, null);
+    const tableFieldPageData = computed(() => designerPageData?.value ?? jsonData);
+    const optionSources = computed(() => {
+      const sources = createMaterialPropOptionSources(
+        jsonData.models,
+        tableFieldPageData.value,
+      );
+      if (injectedTableFieldOptions) {
+        sources.__visualTableFields = injectedTableFieldOptions.value;
+      }
+      return sources;
+    });
 
     const formState = computed(() => {
       const block = currentBlock.value;
@@ -31,7 +48,7 @@ export const AttrEditor = defineComponent({
       return {
         schema,
         model: createMaterialPropModel(block, schema.fields),
-        optionSources: createMaterialPropOptionSources(jsonData.models),
+        optionSources: optionSources.value,
       };
     });
 
@@ -56,6 +73,7 @@ export const AttrEditor = defineComponent({
               schema={formState.value.schema}
               modelValue={formState.value.model}
               optionSources={formState.value.optionSources}
+              vertical={true}
               onFieldChange={handleFieldChange}
             />
           </div>

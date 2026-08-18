@@ -1,9 +1,27 @@
-import { createApp, defineComponent, getCurrentInstance, nextTick, onMounted, PropType, reactive, ref } from 'vue';
+import {
+  computed,
+  createApp,
+  defineComponent,
+  getCurrentInstance,
+  nextTick,
+  onMounted,
+  PropType,
+  provide,
+  reactive,
+  ref,
+} from 'vue';
 import DesignerUI, { ElButton, ElDialog, ElMessage } from '../common/designer-ui';
 import { cloneDeep } from 'lodash-es';
 import VisualEditorProvider from '../../../components/VisualEditorProvider.vue';
 import { visualConfig } from '../../../visual.config';
-import type { LowCodeField, LowCodeFormSchema } from '../../../types/lowcode';
+import type {
+  LowCodeField,
+  LowCodeFormLayoutNode,
+  LowCodeOption,
+  LowCodePageRecord,
+  LowCodeFormSchema,
+} from '../../../types/lowcode';
+import type { LowCodeHostServiceApi } from '../../../core/host';
 import { readFormDesignerLayout } from '../../../lowcode/visual-converters/helpers';
 import {
   createNewBlock,
@@ -12,6 +30,17 @@ import {
   type VisualEditorPage,
 } from '../../visual-editor.utils';
 import { defer } from '../../utils/defer';
+import {
+  formDesignerPageDataKey,
+  formDesignerModeKey,
+  formDesignerTableFieldOptionsKey,
+  type FormDesignerMode,
+} from '../../form-designer-context';
+import {
+  collectPageTableFieldOptions,
+  loadFormDesignerTableFieldOptions,
+  mergeTableFieldOptions,
+} from '../../material-prop-forms/table-field-options';
 
 export type FormDesignerField = {
   field: string;
@@ -21,6 +50,7 @@ export type FormDesignerField = {
   required?: boolean | string;
   span?: number | string;
   help?: string;
+  optionsCode?: string;
   optionsJson?: string;
   propsJson?: string;
   props?: Record<string, unknown>;
@@ -31,14 +61,17 @@ export type FormDesignerResult = {
   designerModel: VisualEditorModelValue;
 };
 
-type FormDesignerMode = 'search' | 'edit';
-
 interface FormDesignerServiceOption {
   title?: string;
   mode?: FormDesignerMode;
   fields?: FormDesignerField[];
+  layout?: LowCodeFormLayoutNode[];
+  columns?: number;
   designerModel?: VisualEditorModelValue | null;
-  onConfirm: (value: FormDesignerResult) => void;
+  pageData?: unknown;
+  pageRecord?: LowCodePageRecord | null;
+  serviceApi?: LowCodeHostServiceApi;
+  onConfirm: (value: FormDesignerResult) => Promise<void> | void;
   onCancel?: () => void;
 }
 
@@ -71,7 +104,9 @@ const runtimeToEditorComponent: Record<string, string> = {
   'vxe-radio-group': 'radio',
   'vxe-checkbox-group': 'checkbox',
   'lc-json-editor': 'input',
+  'lc-monaco-editor': 'input',
   'lc-number-input': 'input',
+  'base-info': 'input',
   'lc-array-table': 'array-table',
   'lc-sub-form': 'sub-form',
 };
@@ -297,20 +332,18 @@ export function createLowCodeFormSchemaFromDesignerResult(
 }
 
 function normalizeSubFormProps(props: Record<string, unknown>) {
-  const schema =
-    readLowCodeFormSchema(props.schema) ??
-    createLowCodeFormSchema(props.fields, props.formDesignerModel);
-  const {
-    fields: _legacyFields,
-    layout: _legacyLayout,
-    formDesignerModel: _legacyDesignerModel,
-    schema: _legacySchema,
-    ...restProps
-  } = props;
+  const schema = readLowCodeFormSchema(props.schema);
+  const restProps = cloneDeep(props);
+  delete restProps.fields;
+  delete restProps.columns;
+  delete restProps.layout;
+  delete restProps.actions;
+  delete restProps.formDesignerModel;
+  delete restProps.subFormDesignerModel;
 
   return {
     ...restProps,
-    schema: schema.fields.length ? schema : cloneDeep(defaultSubFormSchema()),
+    ...(schema ? { schema } : {}),
   };
 }
 
@@ -331,6 +364,7 @@ function designerFieldToLowCodeField(field: FormDesignerField, index: number): L
       ? normalizeSubFormProps(fieldProps)
       : fieldProps;
   const options = parseJsonArray(field.optionsJson);
+  const optionsCode = readString(field.optionsCode);
   const required = normalizeRequired(field.required);
   const span = normalizeSpan(field.span);
 
@@ -340,16 +374,13 @@ function designerFieldToLowCodeField(field: FormDesignerField, index: number): L
     component,
     ...(Object.keys(normalizedProps).length ? { props: normalizedProps } : {}),
     ...(options?.length ? { options: cloneDeep(options) as LowCodeField['options'] } : {}),
+    ...(optionsCode ? { optionsCode } : {}),
     ...(readString(field.help) ? { help: readString(field.help) } : {}),
     ...(span ? { span } : {}),
     ...(required
       ? { rules: [{ required: true, message: `${label}不能为空` }] }
       : {}),
   };
-}
-
-function defaultSubFormSchema(): LowCodeFormSchema {
-  return createLowCodeFormSchema(createDefaultSubFormFields(), undefined);
 }
 
 function applyCommonFieldProps(block: VisualEditorBlockData, field: FormDesignerField, index: number) {
@@ -362,6 +393,7 @@ function applyCommonFieldProps(block: VisualEditorBlockData, field: FormDesigner
   block.props.required = normalizeRequired(field.required);
   block.props.__formSpan = normalizeSpan(field.span) || 1;
   block.props.__formHelp = readString(field.help);
+  block.props.__lowcodeOptionsCode = readString(field.optionsCode);
 }
 
 function createFieldBlock(field: FormDesignerField, index: number) {
@@ -383,24 +415,22 @@ function createFieldBlock(field: FormDesignerField, index: number) {
     block.props.type = 'password';
   }
 
-  if (runtimeComponent === 'vxe-tree-select') {
-    block.props.__lowcodeComponent = 'vxe-tree-select';
-  }
-
-  if (runtimeComponent === 'lc-json-editor' || runtimeComponent === 'lc-number-input') {
+  if (
+    !['vxe-textarea', 'vxe-password-input'].includes(runtimeComponent) &&
+    editorToRuntimeComponent[componentKey] !== runtimeComponent
+  ) {
     block.props.__lowcodeComponent = runtimeComponent;
   }
 
   if (runtimeComponent === 'lc-sub-form') {
     const fieldProps = isRecord(field.props) ? field.props : {};
-    const schema =
-      readLowCodeFormSchema(fieldProps.schema) ??
-      createLowCodeFormSchema(fieldProps.fields, fieldProps.formDesignerModel);
-    const subFields = normalizeFields(schema.fields);
+    const schema = readLowCodeFormSchema(fieldProps.schema);
+    const subFields = normalizeFields(schema?.fields);
     const subFormDesignerModel = fieldProps.formDesignerModel;
 
     block.props.__lowcodeComponent = 'lc-sub-form';
-    block.props.schema = schema.fields.length ? schema : defaultSubFormSchema();
+    if (schema) block.props.schema = schema;
+    else delete block.props.schema;
     block.props.subFormDesignerModel = isVisualEditorModel(subFormDesignerModel)
       ? cloneDeep(subFormDesignerModel)
       : createFormModel(
@@ -414,12 +444,20 @@ function createFieldBlock(field: FormDesignerField, index: number) {
 
     block.props.__lowcodeComponent = 'lc-array-table';
     block.props.columns = normalizeArrayTableColumns(fieldProps.columns);
-    block.props.addText = readString(fieldProps.addText, '新增行');
+    block.props.toolbarButtons = Array.isArray(fieldProps.toolbarButtons)
+      ? cloneDeep(fieldProps.toolbarButtons)
+      : [{ code: 'add', label: '新增行', command: 'add', status: 'primary' }];
     block.props.rowConfig = readArrayTableRowConfig(fieldProps);
 
     if (isRecord(fieldProps.defaultRow)) {
       block.props.defaultRow = cloneDeep(fieldProps.defaultRow);
     }
+  }
+
+  if (runtimeComponent === 'base-info') {
+    const fieldProps = isRecord(field.props) ? field.props : {};
+    Object.assign(block.props, cloneDeep(fieldProps));
+    block.props.__lowcodeComponent = 'base-info';
   }
 
   const options = parseJsonArray(field.optionsJson);
@@ -430,6 +468,10 @@ function createFieldBlock(field: FormDesignerField, index: number) {
 
     if (componentKey === 'radio' || componentKey === 'checkbox') {
       block.props.options = options;
+    }
+
+    if (!['picker', 'radio', 'checkbox'].includes(componentKey)) {
+      block.props.__lowcodeOptions = options;
     }
   }
 
@@ -452,6 +494,7 @@ function normalizeFields(fields: unknown): FormDesignerField[] {
       required: normalizeRequired(row.required),
       span: normalizeSpan(row.span) || 1,
       help: readString(row.help, readString(props?.help)),
+      optionsCode: readString(row.optionsCode),
       optionsJson:
         stringifyOptions(row.optionsJson) ||
         stringifyOptions(row.options) ||
@@ -462,11 +505,152 @@ function normalizeFields(fields: unknown): FormDesignerField[] {
   });
 }
 
-function createFormModel(fields: FormDesignerField[], title = '表单设计'): VisualEditorModelValue {
-  const normalizedFields = fields.length ? fields : [createDefaultField()];
-  const blocks = normalizedFields
+function createLayoutSlots(
+  columns: Array<{ span?: number | string; blocks: LowCodeFormLayoutNode[] }>,
+  fieldBlocks: Map<string, VisualEditorBlockData>,
+) {
+  const weights = columns.map((column) => normalizeSpan(column.span) || 1);
+  const totalWeight = weights.reduce((total, weight) => total + weight, 0);
+  const normalizedSpans = weights.map((weight) =>
+    Math.max(1, Math.round((24 * weight) / totalWeight)),
+  );
+  const spanDelta = 24 - normalizedSpans.reduce((total, span) => total + span, 0);
+  normalizedSpans[normalizedSpans.length - 1] += spanDelta;
+  const slots = columns.reduce<Record<string, unknown>>((result, column, index) => {
+    const span = normalizedSpans[index];
+    result[`slot${index}`] = {
+      key: `slot${index}`,
+      span,
+      children: layoutNodesToBlocks(column.blocks, fieldBlocks),
+    };
+    return result;
+  }, {});
+
+  return {
+    value: normalizedSpans.join(':'),
+    ...slots,
+  };
+}
+
+function layoutNodesToBlocks(
+  nodes: LowCodeFormLayoutNode[],
+  fieldBlocks: Map<string, VisualEditorBlockData>,
+): VisualEditorBlockData[] {
+  return nodes.flatMap((node) => {
+    if (node.kind === 'field') {
+      const block = fieldBlocks.get(node.field);
+      if (!block) return [];
+      fieldBlocks.delete(node.field);
+      return [block];
+    }
+
+    if (node.kind === 'stack') {
+      return layoutNodesToBlocks(node.blocks, fieldBlocks);
+    }
+
+    if (node.kind === 'tabs') {
+      const component = visualConfig.componentMap['vxe-tabs'];
+      if (!component || !node.tabs.length) return [];
+      const block = createNewBlock(cloneDeep(component));
+      const usedSlotKeys = new Set<string>();
+      block.props.panes = node.tabs.map((tab) => ({
+        title: tab.label,
+        name: tab.key,
+      }));
+      block.props.modelValue = node.defaultKey || node.tabs[0]?.key || '';
+      block.props.slots = node.tabs.reduce<Record<string, unknown>>((slots, tab, index) => {
+        const normalizedKey = tab.key
+          .replace(/[^a-zA-Z0-9_-]/g, '_')
+          .replace(/^_+|_+$/g, '');
+        let slotKey = `tab_${normalizedKey || index + 1}`;
+        if (usedSlotKeys.has(slotKey)) slotKey = `${slotKey}_${index + 1}`;
+        usedSlotKeys.add(slotKey);
+        slots[slotKey] = {
+          key: slotKey,
+          label: tab.label,
+          children: layoutNodesToBlocks(tab.blocks, fieldBlocks),
+        };
+        return slots;
+      }, {});
+      return [block];
+    }
+
+    const component = visualConfig.componentMap.layout;
+    if (!component || !node.columns.length) return [];
+    const block = createNewBlock(cloneDeep(component));
+    block.props.gutter = node.gutter ?? '';
+    block.props.slots = createLayoutSlots(node.columns, fieldBlocks);
+    return [block];
+  });
+}
+
+function createColumnLayout(fields: FormDesignerField[], columns: number): LowCodeFormLayoutNode[] {
+  const columnCount = Math.min(24, Math.max(1, Math.round(columns)));
+  const rows: LowCodeFormLayoutNode[] = [];
+  let currentColumns: Array<{ span: number; blocks: LowCodeFormLayoutNode[] }> = [];
+  let occupiedColumns = 0;
+
+  fields.forEach((field) => {
+    const fieldSpan = Math.min(columnCount, Math.max(1, Math.round(Number(field.span) || 1)));
+    if (currentColumns.length && occupiedColumns + fieldSpan > columnCount) {
+      if (occupiedColumns < columnCount) {
+        currentColumns.push({
+          span: Math.max(1, Math.round((24 * (columnCount - occupiedColumns)) / columnCount)),
+          blocks: [],
+        });
+      }
+      rows.push({ kind: 'row', columns: currentColumns });
+      currentColumns = [];
+      occupiedColumns = 0;
+    }
+
+    currentColumns.push({
+      span: Math.max(1, Math.round((24 * fieldSpan) / columnCount)),
+      blocks: [{ kind: 'field', field: field.field }],
+    });
+    occupiedColumns += fieldSpan;
+
+    if (occupiedColumns >= columnCount) {
+      rows.push({ kind: 'row', columns: currentColumns });
+      currentColumns = [];
+      occupiedColumns = 0;
+    }
+  });
+
+  if (currentColumns.length) {
+    if (occupiedColumns < columnCount) {
+      currentColumns.push({
+        span: Math.max(1, Math.round((24 * (columnCount - occupiedColumns)) / columnCount)),
+        blocks: [],
+      });
+    }
+    rows.push({ kind: 'row', columns: currentColumns });
+  }
+  return rows;
+}
+
+function createFormModel(
+  fields: FormDesignerField[],
+  title = '表单设计',
+  layout?: LowCodeFormLayoutNode[],
+  columns?: number,
+): VisualEditorModelValue {
+  const normalizedFields = fields;
+  const fieldBlocks = normalizedFields
     .map((field, index) => createFieldBlock(field, index))
     .filter(Boolean) as VisualEditorBlockData[];
+  const fieldBlockMap = new Map(
+    fieldBlocks.map((block) => [readString(block.props?.name), block]),
+  );
+  const initialLayout = Array.isArray(layout) && layout.length
+    ? layout
+    : Number(columns) > 1
+      ? createColumnLayout(normalizedFields, Number(columns))
+      : [];
+  const laidOutBlocks = initialLayout.length
+    ? layoutNodesToBlocks(cloneDeep(initialLayout), fieldBlockMap)
+    : [];
+  const blocks = [...laidOutBlocks, ...fieldBlockMap.values()];
 
   return {
     pages: {
@@ -487,13 +671,20 @@ function createFormModel(fields: FormDesignerField[], title = '表单设计'): V
 }
 
 function resolveInitialModel(option: FormDesignerServiceOption) {
-  if (isVisualEditorModel(option.designerModel)) {
+  const normalizedFields = normalizeFields(cloneDeep(option.fields));
+
+  if (
+    isVisualEditorModel(option.designerModel) &&
+    isDesignerModelCompatible(option.designerModel, normalizedFields)
+  ) {
     return cloneDeep(option.designerModel);
   }
 
   return createFormModel(
-    normalizeFields(cloneDeep(option.fields)),
+    normalizedFields,
     option.title || '表单设计',
+    cloneDeep(option.layout),
+    option.columns,
   );
 }
 
@@ -524,6 +715,8 @@ function getRuntimeComponent(block: VisualEditorBlockData) {
 }
 
 function getOptionsJson(block: VisualEditorBlockData, runtimeComponent: string) {
+  const preservedOptions = stringifyOptions(block.props?.__lowcodeOptions);
+  if (preservedOptions) return preservedOptions;
   if (!optionComponents.has(runtimeComponent)) return '';
 
   if (block.componentKey === 'picker') {
@@ -550,18 +743,32 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
     required: normalizeRequired(block.props?.required),
     span: normalizeSpan(block.props?.__formSpan) || normalizeSpan(block.props?.span),
     help: readString(block.props?.__formHelp || block.props?.help),
+    optionsCode: readString(block.props?.__lowcodeOptionsCode),
     optionsJson: getOptionsJson(block, runtimeComponent),
   };
 
+  if (runtimeComponent === 'base-info') {
+    const {
+      __formSpan: _formSpan,
+      __formHelp: _formHelp,
+      __lowcodeComponent: _lowcodeComponent,
+      __lowcodeOptionsCode: _lowcodeOptionsCode,
+      __lowcodeOptions: _lowcodeOptions,
+      name: _name,
+      label: _label,
+      required: _required,
+      type: _type,
+      ...props
+    } = block.props ?? {};
+    result.props = cloneDeep(props);
+    result.propsJson = stringifyFieldProps(result.props);
+  }
+
   if (runtimeComponent === 'lc-sub-form') {
-    const schema =
-      readLowCodeFormSchema(block.props?.schema) ??
-      createLowCodeFormSchema(block.props?.fields, block.props?.subFormDesignerModel);
+    const schema = readLowCodeFormSchema(block.props?.schema);
     const subFormDesignerModel = block.props?.subFormDesignerModel;
 
-    result.props = {
-      schema: schema.fields.length ? schema : defaultSubFormSchema(),
-    };
+    result.props = schema ? { schema } : {};
     if (isVisualEditorModel(subFormDesignerModel)) {
       result.props.formDesignerModel = cloneDeep(subFormDesignerModel);
     }
@@ -573,7 +780,9 @@ function blockToField(block: VisualEditorBlockData, index: number): FormDesigner
 
     result.props = {
       columns: normalizeArrayTableColumns(props.columns),
-      addText: readString(props.addText, '新增行'),
+      toolbarButtons: Array.isArray(props.toolbarButtons)
+        ? cloneDeep(props.toolbarButtons)
+        : [{ code: 'add', label: '新增行', command: 'add', status: 'primary' }],
       rowConfig: readArrayTableRowConfig(props),
       ...(isRecord(props.defaultRow) ? { defaultRow: cloneDeep(props.defaultRow) } : {}),
     };
@@ -587,6 +796,24 @@ function extractFields(page: VisualEditorPage) {
   return flattenBlocks(page.blocks)
     .map((block, index) => blockToField(block, index))
     .filter(Boolean) as FormDesignerField[];
+}
+
+function isDesignerModelCompatible(
+  model: VisualEditorModelValue,
+  fields: FormDesignerField[],
+) {
+  const page = model.pages?.['/'];
+  if (!page) return false;
+
+  const modelFields = extractFields(page);
+  return (
+    modelFields.length === fields.length &&
+    fields.every(
+      (field, index) =>
+        modelFields[index]?.field === field.field &&
+        modelFields[index]?.component === field.component,
+    )
+  );
 }
 
 function validateFields(fields: FormDesignerField[]) {
@@ -620,6 +847,10 @@ const ServiceComponent = defineComponent({
   setup(props) {
     const ctx = getCurrentInstance()!;
     const providerRef = ref<FormProviderInstance | null>(null);
+    const tableFieldOptions = ref<LowCodeOption[]>(
+      collectPageTableFieldOptions(props.option.pageData),
+    );
+    let tableFieldLoadSequence = 0;
 
     const state = reactive({
       option: props.option,
@@ -632,10 +863,37 @@ const ServiceComponent = defineComponent({
         return dfd.promise;
       })(),
     });
+    provide(formDesignerPageDataKey, computed(() => state.option.pageData));
+    provide(
+      formDesignerModeKey,
+      computed<FormDesignerMode>(() => state.option.mode || 'edit'),
+    );
+    provide(formDesignerTableFieldOptionsKey, tableFieldOptions);
+
+    const loadTableFieldOptions = async () => {
+      const sequence = ++tableFieldLoadSequence;
+      const localOptions = collectPageTableFieldOptions(state.option.pageData);
+      tableFieldOptions.value = localOptions;
+
+      if (!state.option.serviceApi || !state.option.pageRecord?.id) return;
+
+      try {
+        const loaded = await loadFormDesignerTableFieldOptions(
+          state.option.serviceApi,
+          state.option.pageRecord,
+        );
+        if (sequence === tableFieldLoadSequence) {
+          tableFieldOptions.value = mergeTableFieldOptions(localOptions, loaded);
+        }
+      } catch {
+        // Local choices and custom field creation remain available if metadata fails.
+      }
+    };
 
     const methods = {
       service: async (option: FormDesignerServiceOption) => {
         state.option = option;
+        void loadTableFieldOptions();
         state.initialData = resolveInitialModel(option);
         state.providerKey += 1;
         providerRef.value = null;
@@ -652,7 +910,7 @@ const ServiceComponent = defineComponent({
     };
 
     const handler = {
-      onConfirm: () => {
+      onConfirm: async () => {
         const snapshot = providerRef.value?.getSnapshot();
         if (!snapshot) {
           ElMessage.error('表单设计器还未初始化完成');
@@ -662,10 +920,15 @@ const ServiceComponent = defineComponent({
         const fields = extractFields(snapshot.currentPage);
         if (!validateFields(fields)) return;
 
-        state.option.onConfirm({
-          fields,
-          designerModel: snapshot.model,
-        });
+        try {
+          await state.option.onConfirm({
+            fields,
+            designerModel: snapshot.model,
+          });
+        } catch (error) {
+          ElMessage.error(error instanceof Error ? error.message : '表单配置保存失败');
+          return;
+        }
         methods.hide();
       },
       onCancel: () => {
@@ -718,6 +981,7 @@ const ServiceComponent = defineComponent({
                 showPageSetting={false}
                 workbenchMode="form"
                 persistToSession={false}
+                showGlobalDialogHost={false}
               />
             </div>
           ),
@@ -735,7 +999,11 @@ const ServiceComponent = defineComponent({
   },
 });
 
-export const $$formDesigner = (option: Omit<FormDesignerServiceOption, 'onConfirm'>) => {
+export const $$formDesigner = (
+  option: Omit<FormDesignerServiceOption, 'onConfirm'> & {
+    onConfirm?: FormDesignerServiceOption['onConfirm'];
+  },
+) => {
   const dfd = defer<FormDesignerResult>();
   const el = document.createElement('div');
   document.body.appendChild(el);
@@ -763,7 +1031,8 @@ export const $$formDesigner = (option: Omit<FormDesignerServiceOption, 'onConfir
   ins.service({
     ...option,
     onCancel: cleanup,
-    onConfirm: (value) => {
+    onConfirm: async (value) => {
+      await option.onConfirm?.(value);
       dfd.resolve(value);
       cleanup();
     },

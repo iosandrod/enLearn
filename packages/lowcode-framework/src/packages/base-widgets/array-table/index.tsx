@@ -1,5 +1,10 @@
 ﻿import { resolveComponent } from 'vue';
 import { Field } from '../../../components/LegacyWidgets';
+import {
+  mergeSystemTableOptions,
+  resolveSystemTableConfig,
+  useSystemSettings,
+} from '../../../core/system-settings';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
   createEditorInputNumberProp,
@@ -48,6 +53,7 @@ const formComponentOptions = [
   { label: 'Password', value: 'vxe-password-input' },
   { label: 'Number', value: 'lc-number-input' },
   { label: 'JSON Editor', value: 'lc-json-editor' },
+  { label: 'Code Editor', value: 'lc-monaco-editor' },
 ];
 
 const gridOverflowOptions = [
@@ -83,10 +89,20 @@ const vxeGridPropKeys = [
   'showHeaderOverflow',
   'showFooterOverflow',
   'height',
+  'minHeight',
   'maxHeight',
+  'rowHeight',
+  'headerHeight',
+  'headerRowHeight',
+  'footerHeight',
+  'footerRowHeight',
   'size',
   'round',
   'showHeader',
+  'showFooter',
+  'cellConfig',
+  'headerCellConfig',
+  'footerCellConfig',
   'rowConfig',
   'columnConfig',
   'sortConfig',
@@ -96,6 +112,9 @@ const vxeGridPropKeys = [
   'radioConfig',
   'treeConfig',
   'expandConfig',
+  'tooltipConfig',
+  'virtualXConfig',
+  'virtualYConfig',
 ] as const;
 
 const fieldPropExcludeKeys = new Set<string>([
@@ -106,7 +125,7 @@ const fieldPropExcludeKeys = new Set<string>([
   'rowConfig.keyField',
   'rowKey',
   'defaultRow',
-  'addText',
+  'toolbarButtons',
   'showToolbar',
   'showActions',
   'toolbarAlign',
@@ -158,8 +177,15 @@ function createPreviewData(columns: Record<string, unknown>[]) {
   });
 }
 
-function createArrayTableGridProps(props: Record<string, unknown>, preview = false) {
-  const options = pickVxeGridOptions(props);
+function createArrayTableGridProps(
+  props: Record<string, unknown>,
+  preview = false,
+  systemTableConfig = resolveSystemTableConfig(),
+) {
+  const options = mergeSystemTableOptions(
+    pickVxeGridOptions(props),
+    systemTableConfig,
+  );
   const dataColumns = normalizeRows(props.columns ?? options.columns, defaultArrayTableColumns);
   const data = normalizeRows(props.data ?? props.modelValue, createPreviewData(dataColumns));
   const configuredRowConfig = isRecord(options.rowConfig) ? options.rowConfig : {};
@@ -185,9 +211,13 @@ function createArrayTableGridProps(props: Record<string, unknown>, preview = fal
   };
 }
 
-function renderVxeGrid(props: Record<string, unknown>, preview = false) {
+function renderVxeGrid(
+  props: Record<string, unknown>,
+  preview = false,
+  systemTableConfig = resolveSystemTableConfig(),
+) {
   const VxeGrid = resolveComponent('vxe-grid') as any;
-  return <VxeGrid {...createArrayTableGridProps(props, preview)} />;
+  return <VxeGrid {...createArrayTableGridProps(props, preview, systemTableConfig)} />;
 }
 
 function createFieldProps(props: Record<string, unknown>) {
@@ -223,6 +253,7 @@ export default {
   ),
   render: ({ styles, block, props }) => {
     const { registerRef } = useGlobalProperties();
+    const systemSettings = useSystemSettings();
 
     return () => (
       <div style={{ ...styles, width: '100%' }}>
@@ -240,7 +271,11 @@ export default {
                   minWidth: 0,
                 }}
               >
-                {renderVxeGrid(props)}
+                {renderVxeGrid(
+                  props,
+                  false,
+                  resolveSystemTableConfig(systemSettings),
+                )}
               </div>
             ),
           }}
@@ -264,10 +299,6 @@ export default {
     __formHelp: createEditorInputProp({
       label: '帮助文本',
       defaultValue: '',
-    }),
-    addText: createEditorInputProp({
-      label: 'Add button text',
-      defaultValue: 'Add row',
     }),
     'rowConfig.keyField': createEditorInputProp({
       label: 'rowConfig.keyField',

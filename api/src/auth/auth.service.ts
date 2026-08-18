@@ -1,7 +1,12 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException
+} from '@nestjs/common';
 import type { AuthError, Provider, Session, User } from '@supabase/supabase-js';
 import type { ServiceContext } from '../common/interfaces/service-executor';
 import {
+  clearUserAuthorizationCache,
   createSupabaseClient,
   getCurrentUser,
   getUserAuthorization
@@ -10,9 +15,11 @@ import type {
   EmailPasswordAuthDto,
   OAuthUrlDto,
   RefreshSessionDto,
+  SelectAccountDto,
   SetSessionDto,
   SignInPasswordAuthDto
 } from './auth.dto';
+import { requireActiveAccount } from '../common/utils/account-context';
 
 type PublicUser = Pick<
   User,
@@ -73,6 +80,42 @@ function toPublicSession(session: Session): PublicSession {
 
 @Injectable()
 export class AuthService {
+  async listLoginAccountOptions(login?: string) {
+    const normalizedLogin = normalizeLoginEmail(login ?? '');
+    if (!normalizedLogin) return { accounts: [] };
+
+    const admin = createSupabaseClient('admin');
+    let page = 1;
+    let userId = '';
+    while (!userId) {
+      const { data: users, error: userError } = await admin.auth.admin.listUsers({
+        page,
+        perPage: 1000
+      });
+      if (userError) {
+        throw new BadRequestException(userError.message);
+      }
+
+      const rows = users.users;
+      userId = rows.find(
+        (user) => user.email?.trim().toLowerCase() === normalizedLogin.toLowerCase()
+      )?.id ?? '';
+      if (userId || rows.length < 1000) break;
+      page += 1;
+    }
+
+    if (!userId) return { accounts: [] };
+
+    const { data, error } = await admin.rpc('get_login_account_options', {
+      login_user_id: userId
+    });
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+
+    return { accounts: Array.isArray(data) ? data : [] };
+  }
+
   async signInWithPassword(dto: SignInPasswordAuthDto) {
     const supabase = createSupabaseClient('public');
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -82,6 +125,21 @@ export class AuthService {
 
     if (error || !data.user) {
       throwAuthError(error, 'Invalid email or password.');
+    }
+
+    if (dto.accountId && data.session?.access_token) {
+      const selectedAccount = await this.selectAccount(
+        {
+          accountId: dto.accountId,
+          setDefault: dto.setDefault
+        },
+        { authorization: `Bearer ${data.session.access_token}` }
+      );
+
+      return {
+        ...selectedAccount,
+        session: toPublicSession(data.session)
+      };
     }
 
     return this.buildAuthResponse(data.user, data.session);
@@ -131,7 +189,7 @@ export class AuthService {
       throwAuthError(error, 'Invalid auth session.');
     }
 
-    const authorization = await getUserAuthorization(supabase, user.id);
+    const authorization = await getUserAuthorization(supabase, user.id, { refresh: true });
     const nowSeconds = Math.floor(Date.now() / 1000);
 
     return {
@@ -139,6 +197,8 @@ export class AuthService {
       profile: authorization.profile,
       permissions: authorization.permissionCodes,
       accounts: authorization.accounts,
+      activeAccount: null,
+      accountRequired: true,
       session: {
         access_token: dto.accessToken,
         refresh_token: dto.refreshToken ?? '',
@@ -165,13 +225,56 @@ export class AuthService {
 
   async me(context: ServiceContext) {
     const { client, user } = await getCurrentUser(context);
-    const authorization = await getUserAuthorization(client, user.id);
+    const globalAuthorization = await getUserAuthorization(client, user.id, { refresh: true });
+    const requestedAccount = context.accountId
+      ? globalAuthorization.accounts.find((account) => account.account_id === context.accountId)
+      : undefined;
+    const activeAccount = requestedAccount &&
+      requestedAccount.status !== 'inactive' &&
+      requestedAccount.status !== 'archived'
+      ? requestedAccount
+      : null;
+    const authorization = activeAccount
+      ? await getUserAuthorization(client, user.id, { accountId: activeAccount.account_id })
+      : globalAuthorization;
+
+    return {
+      user: toPublicUser(user),
+      profile: authorization.profile,
+      permissions: authorization.permissionCodes,
+      accounts: globalAuthorization.accounts,
+      activeAccount,
+      accountRequired: !activeAccount,
+      session: null
+    };
+  }
+
+  async selectAccount(dto: SelectAccountDto, context: ServiceContext) {
+    const selected = await requireActiveAccount(context, dto.accountId);
+    const { client, user } = await getCurrentUser(selected.context);
+    const { error: selectError } = await client.rpc('select_account_set_with_preference', {
+      account_id: selected.account.account_id,
+      set_default: dto.setDefault === true
+    });
+    if (selectError && !selectError.message.includes('Could not find the function')) {
+      throw new BadRequestException(selectError.message);
+    }
+    clearUserAuthorizationCache(user.id);
+    const authorization = await getUserAuthorization(client, user.id, {
+      refresh: true,
+      accountId: selected.account.account_id
+    });
+    const activeAccount = authorization.accounts.find(
+      (account) => account.account_id === selected.account.account_id
+    ) ?? selected.account;
 
     return {
       user: toPublicUser(user),
       profile: authorization.profile,
       permissions: authorization.permissionCodes,
       accounts: authorization.accounts,
+      activeAccount,
+      accountRequired: false,
       session: null
     };
   }
@@ -197,6 +300,8 @@ export class AuthService {
         profile: null,
         permissions: [],
         accounts: [],
+        activeAccount: null,
+        accountRequired: true,
         session: null
       };
     }
@@ -206,28 +311,17 @@ export class AuthService {
       { authorization: `Bearer ${session.access_token}` }
     );
 
-    const authorization = await getUserAuthorization(client, user.id);
+    const authorization = await getUserAuthorization(client, user.id, { refresh: true });
 
     return {
       user: toPublicUser(user),
       profile: authorization.profile,
       permissions: authorization.permissionCodes,
       accounts: authorization.accounts,
+      activeAccount: null,
+      accountRequired: true,
       session: session ? toPublicSession(session) : null
     };
   }
 
-  private async getProfile(client: ReturnType<typeof createSupabaseClient>, userId: string) {
-    const { data, error } = await client
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
-
-    if (error) {
-      return null;
-    }
-
-    return data ?? null;
-  }
 }

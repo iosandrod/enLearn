@@ -1,10 +1,17 @@
-import type { LowCodeField, LowCodeFormLayoutNode, LowCodeOption } from '../../types/lowcode';
+import { createSubFormField } from '../../lowcode/form-schema';
+import type {
+  LowCodeAction,
+  LowCodeField,
+  LowCodeFormLayoutNode,
+  LowCodeOption,
+} from '../../types/lowcode';
 import type {
   MaterialPropFieldTarget,
   MaterialPropFormDefinition,
   MaterialPropFormField,
   MaterialPropValueKind,
 } from './types';
+import type { VxeButtonProps } from 'vxe-pc-ui';
 
 type FieldInput = Partial<Omit<MaterialPropFormField, 'target' | 'valueKind'>> &
   Pick<MaterialPropFormField, 'field' | 'label'> & {
@@ -22,11 +29,20 @@ type ArrayTableColumnInput = {
   defaultValue?: unknown;
   props?: Record<string, unknown>;
   options?: LowCodeOption[];
+  optionsCode?: string;
 };
 
 type ArrayTableFieldInput = FieldInput & {
   columns: ArrayTableColumnInput[];
-  addText?: string;
+  toolbarButtons?: Array<
+    VxeButtonProps & {
+      code: string | number;
+      label: string;
+      command?: string;
+      row?: Record<string, unknown>;
+      visible?: boolean;
+    }
+  >;
   rowKey?: string;
   defaultRow?: Record<string, unknown>;
   valueMode?: 'object' | 'primitive';
@@ -36,7 +52,9 @@ type ArrayTableFieldInput = FieldInput & {
 
 type SubFormFieldInput = FieldInput & {
   fields: MaterialPropFormField[];
+  columns?: number;
   layout?: LowCodeFormLayoutNode[];
+  actions?: LowCodeAction[];
 };
 
 export function defineMaterialPropForm(definition: MaterialPropFormDefinition) {
@@ -71,7 +89,14 @@ export function jsonPropField(field: FieldInput): MaterialPropFormField {
 
 export function arrayTablePropField({
   columns,
-  addText = '新增',
+  toolbarButtons = [
+    {
+      code: 'add',
+      label: '新增',
+      command: 'add',
+      status: 'primary',
+    },
+  ],
   rowKey = '__rowKey',
   defaultRow,
   valueMode,
@@ -85,7 +110,7 @@ export function arrayTablePropField({
     valueKind: 'raw',
     defaultValue: [],
     props: {
-      addText,
+      toolbarButtons,
       rowKey,
       columns,
       ...(defaultRow ? { defaultRow } : {}),
@@ -100,24 +125,23 @@ export function arrayTablePropField({
 
 export function subFormPropField({
   fields,
+  columns,
   layout,
+  actions,
   props,
   ...field
 }: SubFormFieldInput): MaterialPropFormField {
-  return propField({
-    component: 'lc-sub-form',
+  return createSubFormField({
+    target: 'props',
     valueKind: 'raw',
     defaultValue: {},
-    props: {
-      schema: {
-        fields,
-        ...(layout?.length ? { layout } : {}),
-        actions: [],
-      },
-      ...(props ?? {}),
-    },
+    fields,
+    columns,
+    layout,
+    actions,
+    props,
     ...field,
-  });
+  }) as MaterialPropFormField;
 }
 
 export function switchPropField(field: FieldInput): MaterialPropFormField {

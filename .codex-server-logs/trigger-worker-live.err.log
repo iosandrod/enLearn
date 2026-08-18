@@ -1,0 +1,7 @@
+tsx.cmd : {"accessToken":"tr_pat_2e3b177f252727f4a58225deacf8edbab57f8fd3","projectRef":"proj_rdxcpdxdckdmxroceyml"}
+ËùÔÚÎ»ÖÃ E:\enLearn\api\scripts\start-trigger-dev.ps1:126 ×Ö·û: 21
++ ... ialsJson = (& $tsxCli scripts/resolve-trigger-cli-credentials.ts 2>&1 ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ({"accessToken":...dckdmxroceyml"}:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

@@ -5,9 +5,10 @@
         <h2 class="page-title">Personal Information</h2>
         <p class="page-description">Update your display name.</p>
         <LowCodeForm
+          v-if="profileSchema"
           v-model="profileForm"
           :schema="profileSchema"
-          :loading="loading"
+          :loading="loading || formDefinitionsLoading"
           @submit="saveProfile"
         />
       </div>
@@ -16,9 +17,10 @@
         <h2 class="page-title">Email</h2>
         <p class="page-description">Email changes may require confirmation.</p>
         <LowCodeForm
+          v-if="emailSchema"
           v-model="emailForm"
           :schema="emailSchema"
-          :loading="loading"
+          :loading="loading || formDefinitionsLoading"
           @submit="saveEmail"
         />
       </div>
@@ -32,20 +34,26 @@
       />
     </div>
 
+    <p v-if="formDefinitionError" class="lc-error">{{ formDefinitionError }}</p>
     <p v-if="message" :class="messageClass">{{ message }}</p>
   </section>
 </template>
 
 <script setup lang="ts">
+import type { LowCodeFormSchema } from '@enlearn/lowcode-framework/types/lowcode';
+import { subscriptionGridSchema } from '~/schemas/account';
 import {
-  emailSchema,
-  profileSchema,
-  subscriptionGridSchema
-} from '~/schemas/account';
+  loadLowCodeFormDefinitions,
+  LOW_CODE_FORM_CODES,
+} from '../../utils/lowCodeFormDefinitions';
 
 const auth = useAuth();
 const serviceApi = useServiceApi();
 const loading = ref(false);
+const formDefinitionsLoading = ref(true);
+const formDefinitionError = ref('');
+const profileSchema = shallowRef<LowCodeFormSchema | null>(null);
+const emailSchema = shallowRef<LowCodeFormSchema | null>(null);
 const message = ref('');
 const messageClass = ref('lc-help');
 const profileForm = ref<Record<string, unknown>>({ fullName: '' });
@@ -53,6 +61,24 @@ const emailForm = ref<Record<string, unknown>>({ email: '' });
 const subscriptionRows = ref<Record<string, unknown>[]>([
   { label: 'Status', value: 'No active subscription' }
 ]);
+
+async function loadAccountFormDefinitions() {
+  formDefinitionsLoading.value = true;
+  formDefinitionError.value = '';
+  try {
+    const definitions = await loadLowCodeFormDefinitions(serviceApi, [
+      LOW_CODE_FORM_CODES.accountProfile,
+      LOW_CODE_FORM_CODES.accountEmail,
+    ]);
+    profileSchema.value = definitions[LOW_CODE_FORM_CODES.accountProfile].schema;
+    emailSchema.value = definitions[LOW_CODE_FORM_CODES.accountEmail].schema;
+  } catch (error) {
+    formDefinitionError.value =
+      error instanceof Error ? error.message : 'Could not load account form definitions.';
+  } finally {
+    formDefinitionsLoading.value = false;
+  }
+}
 
 async function loadAccount() {
   loading.value = true;
@@ -158,5 +184,7 @@ async function saveEmail(values: Record<string, unknown>) {
   }
 }
 
-onMounted(loadAccount);
+onMounted(() => {
+  void Promise.all([loadAccountFormDefinitions(), loadAccount()]);
+});
 </script>

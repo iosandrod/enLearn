@@ -6,18 +6,27 @@
       :field="renderField"
       :model-value="modelValue"
       :options="options"
+      :option-sources="optionSources"
+      :form-values="formValues"
+      :on-field-change="handleNestedFieldChange"
       @update:model-value="handleUpdate"
+      @patch-model="handlePatchModel"
+      @select="handleSelect"
     />
-    <span v-if="field.help" class="lc-help">{{ field.help }}</span>
-    <span v-if="error" class="lc-error">{{ error }}</span>
+    <!-- <span v-if="field.help" class="lc-help">{{ field.help }}</span>
+    <span v-if="error" class="lc-error">{{ error }}</span> -->
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { getLowCodeFormMaterial } from '../lowcode/form-materials';
 import type { LowCodeField } from '../types/lowcode';
 import type { LowCodeResolvedOption } from '../lowcode/form-materials';
+import type {
+  LowCodeFormMaterialPatchPayload,
+  LowCodeFormMaterialSelectPayload,
+} from '../lowcode/form-materials';
 
 const props = withDefaults(
   defineProps<{
@@ -28,6 +37,8 @@ const props = withDefaults(
     showLabel?: boolean;
     disabled?: boolean;
     readonly?: boolean;
+    optionSources?: Record<string, unknown>;
+    formValues?: Record<string, unknown>;
   }>(),
   {
     options: () => [],
@@ -35,18 +46,23 @@ const props = withDefaults(
     showLabel: true,
     disabled: false,
     readonly: false,
+    optionSources: () => ({}),
+    formValues: () => ({}),
   }
 );
 
 const emit = defineEmits<{
   'update:modelValue': [value: any];
   change: [payload: { field: LowCodeField; value: any; previousValue: any }];
+  patchModel: [payload: LowCodeFormMaterialPatchPayload];
+  relateSelect: [payload: LowCodeFormMaterialSelectPayload];
 }>();
 
 const renderField = computed<LowCodeField>(() => {
   const fieldProps = {
     ...(props.field.props ?? {}),
   };
+  delete fieldProps.visibleWhen;
 
   if (props.disabled) {
     fieldProps.disabled = true;
@@ -67,12 +83,53 @@ const materialComponent = computed(() =>
 );
 
 function handleUpdate(value: any) {
-  const previousValue = props.modelValue;
+  const previousValue = cloneValue(valueBeforeChange);
   emit('update:modelValue', value);
   emit('change', {
     field: props.field,
     value,
     previousValue,
+  });
+}
+
+let valueBeforeChange = cloneValue(props.modelValue);
+
+watch(
+  () => props.modelValue,
+  (value) => {
+    valueBeforeChange = cloneValue(value);
+  },
+  { deep: true },
+);
+
+function cloneValue<T>(value: T): T {
+  if (typeof value !== 'object' || value === null) return value;
+
+  try {
+    return JSON.parse(JSON.stringify(value)) as T;
+  } catch {
+    return value;
+  }
+}
+
+function handlePatchModel(payload: LowCodeFormMaterialPatchPayload) {
+  emit('patchModel', payload);
+}
+
+function handleSelect(payload: LowCodeFormMaterialSelectPayload) {
+  emit('relateSelect', payload);
+}
+
+function handleNestedFieldChange(payload: {
+  field: LowCodeField;
+  value: unknown;
+  previousValue: unknown;
+  values: Record<string, unknown>;
+}) {
+  emit('change', {
+    field: props.field,
+    value: cloneValue(payload.values),
+    previousValue: cloneValue(valueBeforeChange),
   });
 }
 </script>

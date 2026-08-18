@@ -1,9 +1,27 @@
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 import { ElMessage } from '../common/designer-ui';
 import { cloneDeep } from 'lodash-es';
-import type { LowCodePageBlock, LowCodeRuntimeDirective } from '../../../types/lowcode';
+import type {
+  LowCodePageBlock,
+  LowCodeRuntimeDirective,
+} from '../../../types/lowcode';
+import type { ArrayTableToolbarExecutionContext } from '../../../lowcode/form-materials/lc-array-table/index.vue';
+import {
+  createBuiltinLowCodeActionEditorRow,
+  createBuiltinLowCodePageFunctionScript,
+  createDefaultButtonGroupEditorRows,
+  getBuiltinLowCodeActionPresets,
+  getBuiltinLowCodeActionPresetsForPage,
+  resolveBuiltinLowCodeActionSelection,
+  resolveBuiltinLowCodeActionPresetForButton,
+  type BuiltinLowCodeActionKey,
+  type LowCodeBuiltinActionPageType,
+  type LowCodeBuiltinActionSelection,
+} from '../../../lowcode/actions/builtins';
 import { generateNanoid } from '../../utils';
 import { openGlobalDialog } from '../../../runtime/global-dialog';
+import type { LowCodeContextSource } from '../../../runtime/lowcode-context';
+import { registerButtonScriptMonacoTypes } from './button-script-monaco';
 
 export type ButtonGroupDesignerButton = {
   __id?: string;
@@ -13,6 +31,7 @@ export type ButtonGroupDesignerButton = {
   type?: string;
   route?: string;
   eventName?: string;
+  script?: string;
   disabled?: boolean;
   directivesJson?: unknown;
   children?: ButtonGroupDesignerButton[] | string;
@@ -36,6 +55,8 @@ type ButtonGroupDesignerServiceOption = {
   title?: string;
   business?: Partial<ButtonGroupDesignerBusinessInfo> | null;
   buttons?: ButtonGroupDesignerButton[] | null;
+  scriptContext?: LowCodeContextSource;
+  onConfirm?: (result: ButtonGroupDesignerResult) => Promise<void> | void;
 };
 
 type ButtonGroupDesignerState = {
@@ -45,8 +66,214 @@ type ButtonGroupDesignerState = {
   };
 };
 
+type DefaultButtonPickerRow = {
+  key: BuiltinLowCodeActionKey;
+  label: string;
+  code: string;
+  selectionLabel: string;
+  typeLabel: string;
+  availabilityLabel: string;
+  checked: boolean;
+  disabled: boolean;
+};
+
 const BUTTONS_FORM_ID = 'button-group-designer-buttons-form';
 const INFO_FORM_ID = 'button-group-designer-info-form';
+
+function executeAddToolbarAction({ action, addRow }: ArrayTableToolbarExecutionContext) {
+  return addRow(action.row);
+}
+
+function describeSelection(selection: LowCodeBuiltinActionSelection) {
+  if (selection === 'single') return '选中一条记录';
+  if (selection === 'multiple') return '可选多条记录';
+  return '无需选中记录';
+}
+
+function resolveDesignerPageType(
+  scriptContext?: LowCodeContextSource,
+): LowCodeBuiltinActionPageType | undefined {
+  const pageType = scriptContext?.page?.page_type ?? scriptContext?.page?.schema.pageType;
+  return pageType === 'list' || pageType === 'edit' ? pageType : undefined;
+}
+
+function getPickerPresets(pageType?: LowCodeBuiltinActionPageType) {
+  return pageType
+    ? getBuiltinLowCodeActionPresetsForPage(pageType)
+    : getBuiltinLowCodeActionPresets();
+}
+
+function collectButtonCodes(
+  button: unknown,
+  result: Set<string> = new Set<string>(),
+) {
+  if (!isRecord(button)) return result;
+
+  const code = readString(button.code);
+  if (code) result.add(code);
+  normalizeChildrenSource(button.children).forEach((child) =>
+    collectButtonCodes(child, result),
+  );
+  return result;
+}
+
+function collectConfiguredButtonCodes(buttons: Record<string, unknown>[]) {
+  const result = new Set<string>();
+  buttons.forEach((button) => collectButtonCodes(button, result));
+  return result;
+}
+
+function createDefaultButtonPickerRows(
+  buttons: Record<string, unknown>[],
+  pageType?: LowCodeBuiltinActionPageType,
+): DefaultButtonPickerRow[] {
+  const configuredCodes = collectConfiguredButtonCodes(buttons);
+
+  return getPickerPresets(pageType).map((preset) => {
+    const actionCodes = [...collectButtonCodes(preset.action)];
+    const code = readString(preset.action.code);
+    const rootExists = configuredCodes.has(code);
+    const disabled = actionCodes.some((actionCode) => configuredCodes.has(actionCode));
+
+    return {
+      key: preset.key,
+      label: readString(preset.action.label, code),
+      code,
+      selectionLabel: describeSelection(
+        resolveBuiltinLowCodeActionSelection(preset, pageType),
+      ),
+      typeLabel: Array.isArray(preset.action.children) && preset.action.children.length
+        ? '下拉按钮'
+        : '普通按钮',
+      availabilityLabel: rootExists ? '已添加' : disabled ? '子按钮已存在' : '可添加',
+      checked: false,
+      disabled,
+    };
+  });
+}
+
+function appendBuiltinButtons(
+  keys: BuiltinLowCodeActionKey[],
+  rows: Record<string, unknown>[],
+  addRow: ArrayTableToolbarExecutionContext['addRow'],
+  pageType?: LowCodeBuiltinActionPageType,
+) {
+  const selectedKeys = new Set(keys);
+  const presets = getPickerPresets(pageType)
+    .filter((preset) => selectedKeys.has(preset.key))
+    .sort(
+      (previous, next) =>
+        collectButtonCodes(next.action).size - collectButtonCodes(previous.action).size,
+    );
+  const configuredCodes = collectConfiguredButtonCodes(rows);
+  const added: string[] = [];
+  const skipped: string[] = [];
+
+  presets.forEach((preset) => {
+    const actionCodes = [...collectButtonCodes(preset.action)];
+    const label = readString(preset.action.label, readString(preset.action.code));
+
+    if (actionCodes.some((code) => configuredCodes.has(code))) {
+      skipped.push(label);
+      return;
+    }
+
+    addRow(
+      createBuiltinLowCodeActionEditorRow(preset.key, {
+        pageType,
+      }) as unknown as Record<string, unknown>,
+    );
+    actionCodes.forEach((code) => configuredCodes.add(code));
+    added.push(label);
+  });
+
+  if (!added.length) {
+    ElMessage.warning('所选默认按钮已存在，未添加重复编码。');
+    return;
+  }
+
+  const skippedMessage = skipped.length ? `，已跳过重复项：${skipped.join('、')}` : '';
+  ElMessage.success(`已添加 ${added.length} 个默认按钮${skippedMessage}`);
+}
+
+async function executeSelectDefaultButtons({
+  rows,
+  addRow,
+}: ArrayTableToolbarExecutionContext, pageType?: LowCodeBuiltinActionPageType) {
+  const pickerRows = reactive(createDefaultButtonPickerRows(rows, pageType));
+  const confirmDisabled = computed(
+    () => !pickerRows.some((row) => row.checked && !row.disabled),
+  );
+  const result = await openGlobalDialog({
+    title: '选择默认按钮',
+    width: 'min(760px, calc(100vw - 32px))',
+    height: 'min(520px, calc(100vh - 64px))',
+    className: 'button-default-picker-dialog',
+    props: {
+      top: '8vh',
+      destroyOnClose: true,
+    },
+    content: {
+      type: 'grid',
+      key: 'default-button-picker-grid',
+      className: 'button-default-picker-grid',
+      style: { minHeight: 0 },
+      grid: {
+        rows: pickerRows,
+        columns: [
+          { type: 'checkbox', width: 48, align: 'center' },
+          { field: 'label', title: '按钮名称', minWidth: 120 },
+          { field: 'code', title: '编码 code', minWidth: 140 },
+          { field: 'selectionLabel', title: '使用条件', width: 126 },
+          { field: 'typeLabel', title: '类型', width: 100 },
+          { field: 'availabilityLabel', title: '状态', width: 110 },
+        ],
+        props: {
+          border: true,
+          stripe: true,
+          size: 'small',
+          height: '100%',
+          showOverflow: 'tooltip',
+          rowConfig: { keyField: 'key' },
+          checkboxConfig: {
+            checkField: 'checked',
+            checkMethod: ({ row }: { row: DefaultButtonPickerRow }) => !row.disabled,
+          },
+        },
+      },
+    },
+    actions: [
+      {
+        code: 'cancel',
+        label: '取消',
+        role: 'cancel',
+      },
+      {
+        code: 'confirm',
+        label: '添加所选',
+        role: 'confirm',
+        status: 'primary',
+        disabled: confirmDisabled,
+      },
+    ],
+    onConfirm: () => ({
+      payload: pickerRows
+        .filter((row) => row.checked && !row.disabled)
+        .map((row) => row.key),
+    }),
+  });
+
+  if (result.action !== 'confirm' || !Array.isArray(result.payload)) return;
+
+  appendBuiltinButtons(
+    result.payload.filter((key): key is BuiltinLowCodeActionKey =>
+      getPickerPresets(pageType).some((preset) => preset.key === key),
+    ),
+    rows,
+    addRow,
+    pageType,
+  );
+}
 
 const statusOptions = [
   { label: '默认', value: '' },
@@ -78,39 +305,7 @@ const defaultBusiness: ButtonGroupDesignerBusinessInfo = {
   gap: 8,
 };
 
-const defaultButtons: ButtonGroupDesignerButton[] = [
-  {
-    code: 'create',
-    label: '新增',
-    status: 'primary',
-    type: 'button',
-    eventName: 'buttonGroup.create',
-    directivesJson: '[]',
-  },
-  {
-    code: 'more',
-    label: '更多',
-    type: 'button',
-    eventName: 'buttonGroup.more',
-    directivesJson: '[]',
-    children: [
-      {
-        code: 'import',
-        label: '导入',
-        type: 'button',
-        eventName: 'buttonGroup.import',
-        directivesJson: '[]',
-      },
-      {
-        code: 'export',
-        label: '导出',
-        type: 'button',
-        eventName: 'buttonGroup.export',
-        directivesJson: '[]',
-      },
-    ],
-  },
-];
+const defaultButtons: ButtonGroupDesignerButton[] = createDefaultButtonGroupEditorRows();
 
 function ensureButtonIds(button: ButtonGroupDesignerButton): ButtonGroupDesignerButton {
   const next: ButtonGroupDesignerButton = {
@@ -118,6 +313,7 @@ function ensureButtonIds(button: ButtonGroupDesignerButton): ButtonGroupDesigner
     __id: button.__id || `button_${generateNanoid()}`,
     type: button.type || 'button',
     status: button.status || '',
+    script: typeof button.script === 'string' ? button.script : '',
     directivesJson:
       typeof button.directivesJson === 'undefined' ? '[]' : button.directivesJson,
   };
@@ -132,9 +328,40 @@ function ensureButtonIds(button: ButtonGroupDesignerButton): ButtonGroupDesigner
   return next;
 }
 
-function createInitialButtons(buttons?: ButtonGroupDesignerButton[] | null) {
-  const source = Array.isArray(buttons) && buttons.length ? buttons : defaultButtons;
-  return cloneDeep(source).map(ensureButtonIds);
+function attachMissingBuiltinFunctionScripts(
+  button: ButtonGroupDesignerButton,
+  pageType?: LowCodeBuiltinActionPageType,
+): ButtonGroupDesignerButton {
+  const next = cloneDeep(button);
+  const preset = pageType
+    ? resolveBuiltinLowCodeActionPresetForButton(pageType, {
+        code: readString(button.code),
+        eventName: readString(button.eventName),
+      })
+    : undefined;
+
+  if (!readString(button.script) && preset?.functionName) {
+    next.script = createBuiltinLowCodePageFunctionScript(preset.functionName);
+  }
+
+  const children = normalizeChildrenSource(button.children);
+  if (children.length) {
+    next.children = children.map((child) =>
+      attachMissingBuiltinFunctionScripts(child, pageType),
+    );
+  }
+
+  return next;
+}
+
+function createInitialButtons(option: ButtonGroupDesignerServiceOption) {
+  const source = Array.isArray(option.buttons) && option.buttons.length
+    ? option.buttons
+    : defaultButtons;
+  const pageType = resolveDesignerPageType(option.scriptContext);
+  return source
+    .map((button) => attachMissingBuiltinFunctionScripts(button, pageType))
+    .map(ensureButtonIds);
 }
 
 function readString(value: unknown, fallback = '') {
@@ -197,20 +424,29 @@ function normalizeButtonForResult(
     normalizeButtonForResult(child, [...indexPath, index + 1]),
   );
   const next: ButtonGroupDesignerButton = {
+    ...Object.fromEntries(
+      Object.entries(button)
+        .filter(([key, value]) => key !== '__id' && typeof value !== 'undefined')
+        .map(([key, value]) => [key, cloneDeep(value)]),
+    ),
     code,
     label,
     type: readString(button.type, 'button'),
     status: readString(button.status),
     route: readString(button.route),
     eventName: readString(button.eventName),
+    script: typeof button.script === 'string' ? button.script : '',
     disabled: Boolean(button.disabled),
     directivesJson: normalizeDirectivesJsonValue(button.directivesJson),
   };
 
   if (children.length) {
     next.children = children;
+  } else {
+    delete next.children;
   }
 
+  delete next.__id;
   return next;
 }
 
@@ -239,7 +475,7 @@ function createDesignerState(option: ButtonGroupDesignerServiceOption) {
   return reactive<ButtonGroupDesignerState>({
     business: createInitialBusiness(option),
     buttonsForm: {
-      buttons: createInitialButtons(option.buttons),
+      buttons: createInitialButtons(option),
     },
   });
 }
@@ -304,7 +540,22 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function createButtonArrayColumns() {
+function createButtonRow(label = '按钮'): ButtonGroupDesignerButton {
+  return {
+    label,
+    code: '',
+    status: '',
+    type: 'button',
+    route: '',
+    eventName: '',
+    script: '',
+    disabled: false,
+    directivesJson: '[]',
+    children: [],
+  };
+}
+
+function createButtonArrayColumns(scriptContext?: LowCodeContextSource) {
   return [
     {
       field: 'label',
@@ -319,6 +570,30 @@ function createButtonArrayColumns() {
       component: 'vxe-input',
       minWidth: 150,
       placeholder: 'create',
+    },
+    {
+      field: 'script',
+      title: '执行脚本',
+      component: 'lc-monaco-editor',
+      minWidth: 260,
+      placeholder: '例如：await this.$source.refresh("records")',
+      defaultValue: '',
+      props: {
+        dialog: true,
+        dialogTitle: '编辑按钮执行脚本',
+        language: 'javascript',
+        theme: 'vs',
+        scriptThisType: 'LowCodeButtonScriptThis',
+        contextDrawer: true,
+        contextDrawerTitle: '当前页面上下文',
+        contextSource: scriptContext,
+        editorHeight: 'min(500px, calc(100vh - 250px))',
+        editorOptions: {
+          wordWrap: 'on',
+          formatOnPaste: true,
+          formatOnType: true,
+        },
+      },
     },
     {
       field: 'status',
@@ -357,29 +632,22 @@ function createButtonArrayColumns() {
     {
       field: 'directivesJson',
       title: 'directives JSON',
-      component: 'vxe-textarea',
+      component: 'lc-json-editor',
       minWidth: 260,
       defaultValue: '[]',
       props: {
         rows: 3,
         placeholder: '[]',
-      },
-    },
-    {
-      field: 'children',
-      title: '子按钮 JSON',
-      component: 'lc-json-editor',
-      minWidth: 260,
-      defaultValue: [],
-      props: {
-        rows: 3,
-        placeholder: '[{ "code": "import", "label": "导入" }]',
+        jsonRootType: 'array',
+        jsonValueMode: 'string',
       },
     },
   ];
 }
 
-function createDesignerBlocks(): LowCodePageBlock[] {
+function createDesignerBlocks(scriptContext?: LowCodeContextSource): LowCodePageBlock[] {
+  const pageType = resolveDesignerPageType(scriptContext);
+
   return [
     {
       id: 'button-group-designer-tabs',
@@ -404,28 +672,51 @@ function createDesignerBlocks(): LowCodePageBlock[] {
                     component: 'lc-array-table',
                     span: 24,
                     props: {
-                      height: 560,
-                      addText: '新增按钮',
+                      height: '100%',
+                      toolbarButtons: [
+                        {
+                          code: 'add',
+                          label: '新增按钮',
+                          status: 'primary',
+                          execute: executeAddToolbarAction,
+                        },
+                        {
+                          code: 'add-dropdown',
+                          label: '新增下拉按钮',
+                          status: 'primary',
+                          row: {
+                            ...createButtonRow('下拉按钮'),
+                            children: [createButtonRow('下拉项')],
+                          },
+                          execute: executeAddToolbarAction,
+                        },
+                        {
+                          code: 'select-default',
+                          label: '选择默认按钮',
+                          status: 'primary',
+                          prefixIcon: 'ri-list-check-3',
+                          execute: (context: ArrayTableToolbarExecutionContext) =>
+                            executeSelectDefaultButtons(context, pageType),
+                        },
+                      ],
                       toolbarAlign: 'left',
                       rowKey: '__id',
                       preserveRowKey: true,
+                      treeConfig: {
+                        childrenField: 'children',
+                        expandAll: true,
+                        showLine: true,
+                        indent: 20,
+                      },
                       minRows: 1,
+                      childAddable: true,
+                      addChildText: '新增子按钮',
                       movable: true,
                       copyable: true,
                       removable: true,
-                      actionWidth: 128,
-                      defaultRow: {
-                        label: '按钮',
-                        code: '',
-                        status: '',
-                        type: 'button',
-                        route: '',
-                        eventName: '',
-                        disabled: false,
-                        directivesJson: '[]',
-                        children: [],
-                      },
-                      columns: createButtonArrayColumns(),
+                      actionWidth: 156,
+                      defaultRow: createButtonRow(),
+                      columns: createButtonArrayColumns(scriptContext),
                     },
                   },
                 ],
@@ -490,12 +781,14 @@ function isButtonGroupDesignerResult(value: unknown): value is ButtonGroupDesign
 }
 
 export function $$buttonGroupDesigner(option: ButtonGroupDesignerServiceOption) {
+  registerButtonScriptMonacoTypes();
   const state = createDesignerState(option);
   const formModels = createDesignerFormModels(state);
 
   return openGlobalDialog({
     title: option.title || '按钮组设计',
     width: 'min(1280px, calc(100vw - 40px))',
+    height: 'min(760px, calc(100vh - 80px))',
     className: 'button-group-designer-dialog grid-designer-dialog',
     props: {
       top: '4vh',
@@ -504,7 +797,7 @@ export function $$buttonGroupDesigner(option: ButtonGroupDesignerServiceOption) 
     content: {
       type: 'lowcodeBlocks',
       lowcode: {
-        blocks: createDesignerBlocks(),
+        blocks: createDesignerBlocks(option.scriptContext),
         formModels,
       },
     },
@@ -519,9 +812,16 @@ export function $$buttonGroupDesigner(option: ButtonGroupDesignerServiceOption) 
         label: '确定',
         role: 'custom',
         status: 'primary',
-        onClick: () => {
+        onClick: async () => {
           const result = validateAndBuildResult(formModels);
           if (!result) return false;
+
+          try {
+            await option.onConfirm?.(result);
+          } catch (error) {
+            ElMessage.error(error instanceof Error ? error.message : '按钮配置保存失败');
+            return false;
+          }
 
           return {
             close: true,

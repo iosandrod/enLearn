@@ -2,6 +2,7 @@ import { h } from 'vue';
 import { VxeButton } from 'vxe-pc-ui';
 import type { VxeButtonProps } from 'vxe-pc-ui';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
+import { createDefaultButtonGroupEditorRows } from '../../../lowcode/actions/builtins';
 import {
   createEditorInputProp,
   createEditorSelectProp,
@@ -13,49 +14,13 @@ type ButtonGroupItem = Omit<Partial<VxeButtonProps>, 'options'> & {
   label?: string;
   route?: string;
   eventName?: string;
+  script?: string;
   directivesJson?: string;
   children?: ButtonGroupItem[];
   text?: boolean;
 };
 
-const defaultButtons: ButtonGroupItem[] = [
-  {
-    code: 'create',
-    label: '新增',
-    status: 'primary',
-    type: 'button',
-    mode: 'button',
-    eventName: 'buttonGroup.create',
-    directivesJson: '[]',
-  },
-  {
-    code: 'more',
-    label: '更多',
-    type: 'button',
-    mode: 'button',
-    eventName: 'buttonGroup.more',
-    directivesJson: '[]',
-    showDropdownIcon: true,
-    children: [
-      {
-        code: 'import',
-        label: '导入',
-        type: 'button',
-        mode: 'button',
-        eventName: 'buttonGroup.import',
-        directivesJson: '[]',
-      },
-      {
-        code: 'export',
-        label: '导出',
-        type: 'button',
-        mode: 'button',
-        eventName: 'buttonGroup.export',
-        directivesJson: '[]',
-      },
-    ],
-  },
-];
+const defaultButtons: ButtonGroupItem[] = createDefaultButtonGroupEditorRows();
 
 const alignOptions = [
   { label: '左对齐', value: 'left' },
@@ -270,6 +235,19 @@ export default {
             options: buttonTypeOptions,
           },
           {
+            label: '执行脚本',
+            field: 'script',
+            component: 'lc-monaco-editor',
+            minWidth: 240,
+            placeholder: 'JavaScript',
+            props: {
+              dialog: true,
+              language: 'javascript',
+              dialogTitle: '编辑按钮执行脚本',
+              scriptThisType: 'LowCodeButtonScriptThis',
+            },
+          },
+          {
             label: '模式',
             field: 'mode',
             component: 'vxe-select',
@@ -278,6 +256,7 @@ export default {
           },
           { label: '路由', field: 'route' },
           { label: '事件名', field: 'eventName' },
+
           { label: '图标', field: 'icon' },
           { label: '前缀图标', field: 'prefixIcon' },
           { label: '后缀图标', field: 'suffixIcon' },

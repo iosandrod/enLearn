@@ -1,0 +1,102 @@
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[2m13:33:42[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:34:22[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:34:43[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:35:15[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:35:56[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:36:49[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:36:51[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:38:00[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:39:01[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:40:53[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:42:04[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:42:44[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:43:10[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:45:34[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:46:16[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:47:20[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m13:48:57[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[2m14:52:40[22m [33m[1m[vite][22m[39m [33m[2m(client)[22m[39m [2m[console.warn] [22m[Vue warn]: Invalid prop: type check failed for prop "routeComponent". Expected Object, got Undefined  
+  at <RouteCacheOutlet route-component=undefined keep-alive=false cache-key="00000000-0000-4000-8000-000000000001:1:/"  ... > 
+  at <RouterView> 
+  at <Default key="default" > 
+  at <App>
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+
+[1m[33m[@vue/compiler-sfc][0m[33m :deep usage as a combinator has been deprecated. Use :deep(<inner-selector>) instead of :deep <inner-selector>.[0m
+

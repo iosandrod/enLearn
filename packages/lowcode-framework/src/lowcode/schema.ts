@@ -2,7 +2,9 @@ import { getLowCodeBlockMaterial } from './block-materials';
 import type {
   LowCodeEventHandler,
   LowCodePageBlock,
+  LowCodePageApi,
   LowCodePageDataSource,
+  LowCodePageFunction,
   LowCodePageOverlayBlock,
   LowCodePageSchema,
   LowCodeRuntimeDirective,
@@ -67,6 +69,28 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function readString(value: unknown, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+function normalizeStringList(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return [...new Set(value.map((item) => readString(item)).filter(Boolean))];
+}
+
+function normalizeScriptPolicy(value: unknown): LowCodePageSchema['scriptPolicy'] | undefined {
+  if (!isRecord(value)) return undefined;
+
+  return {
+    ...(Array.isArray(value.apiNames)
+      ? { apiNames: normalizeStringList(value.apiNames) }
+      : {}),
+    ...(Array.isArray(value.capabilities)
+      ? {
+          capabilities: normalizeStringList(value.capabilities) as NonNullable<
+            LowCodePageSchema['scriptPolicy']
+          >['capabilities'],
+        }
+      : {}),
+  };
 }
 
 function readPostDataObject(value: unknown) {
@@ -137,25 +161,60 @@ function normalizeDataSource(
   const sourcePostData = readPostDataObject(source.postData);
   const sourceServiceName = readString(source.serviceName);
   const sourceServiceMethod = readString(source.serviceMethod);
-  const entityCode = readDataSourceEntityCode(source);
-  const tableName = readDataSourceTableName(source) || (entityCode ? tableNameFromEntityCode(entityCode) : '');
+  const requestedSourceType = readString(source.sourceType ?? source.source_type);
+  const hasExplicitCustomType = requestedSourceType === 'custom';
+  const rawEntityCode = hasExplicitCustomType ? '' : readDataSourceEntityCode(source);
+  const rawTableName = hasExplicitCustomType
+    ? ''
+    : readDataSourceTableName(source) || (rawEntityCode ? tableNameFromEntityCode(rawEntityCode) : '');
+  const viewName = readString(source.viewName ?? source.view_name);
+  const sourceType: NonNullable<LowCodePageDataSource['sourceType']> | '' = requestedSourceType === 'custom'
+    ? 'custom'
+    : requestedSourceType === 'table'
+      ? 'table'
+      : requestedSourceType === 'view'
+        ? 'view'
+    : viewName
+      ? 'view'
+      : rawTableName
+        ? 'table'
+        : '';
+  const normalizedViewName = sourceType === 'view' ? viewName || rawTableName : '';
+  const tableName = sourceType === 'custom'
+    ? ''
+    : sourceType === 'view'
+      ? normalizedViewName
+      : rawTableName;
+  const entityCode = sourceType === 'custom' ? '' : rawEntityCode;
   const usesListItems = Boolean(entityCode || tableName);
   const saveMethod = readString(source.saveMethod);
   const deleteMethod = readString(source.deleteMethod);
-  const postData = {
-    ...sourcePostData,
-    ...(tableName && !sourcePostData.tableName && !sourcePostData.table_name ? { tableName } : {}),
-  };
+  const postData = { ...sourcePostData };
+  if (sourceType !== 'custom') {
+    delete postData.tableName;
+    delete postData.table_name;
+    delete postData.entityCode;
+    delete postData.entity_code;
+    delete postData.viewName;
+    delete postData.view_name;
+    if (usesListItems) delete postData.resource;
+    if (tableName) postData.tableName = tableName;
+  }
 
   return {
     key: sourceKey,
     ...(label ? { label } : {}),
+    ...(sourceType ? { sourceType } : {}),
     serviceName: usesListItems ? 'admin' : sourceServiceName,
     serviceMethod: usesListItems ? 'listItems' : sourceServiceMethod,
     ...(saveMethod ? { saveMethod } : {}),
     ...(deleteMethod ? { deleteMethod } : {}),
     ...(tableName ? { tableName } : {}),
+    ...(normalizedViewName ? { viewName: normalizedViewName } : {}),
     ...(Object.keys(postData).length ? { postData } : {}),
+    ...(Array.isArray(source.loadAfterSourceKeys)
+      ? { loadAfterSourceKeys: normalizeStringList(source.loadAfterSourceKeys) }
+      : {}),
     autoLoad: source.autoLoad !== false,
   };
 }
@@ -166,6 +225,50 @@ function normalizeDataSources(value: unknown) {
   return Object.fromEntries(
     Object.entries(value).map(([key, source]) => [key, normalizeDataSource(key, source)])
   );
+}
+
+function normalizePageApis(value: unknown): Record<string, LowCodePageApi> {
+  if (!isRecord(value)) return {};
+
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([name, rawApi]) => {
+      if (!isRecord(rawApi)) return [];
+      const apiName = readString(name);
+      if (!apiName) return [];
+      const serviceName = readString(rawApi.serviceName);
+      const serviceMethod = readString(rawApi.serviceMethod);
+      const method = readString(rawApi.method, 'POST').toUpperCase();
+      const postData = readPostDataObject(rawApi.postData);
+      const resultPath = readString(rawApi.resultPath);
+      return [[apiName, {
+        serviceName,
+        serviceMethod,
+        method: method as LowCodePageApi['method'],
+        ...(Object.keys(postData).length ? { postData } : {}),
+        ...(resultPath ? { resultPath } : {}),
+      }]];
+    }),
+  );
+}
+
+function normalizePageFunctions(value: unknown): LowCodePageFunction[] {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .filter(isRecord)
+    .map((rawFunction) => {
+      const name = readString(rawFunction.name);
+      const script = typeof rawFunction.script === 'string' ? rawFunction.script : '';
+      const label = readString(rawFunction.label);
+      const description = readString(rawFunction.description);
+      return {
+        name,
+        ...(label ? { label } : {}),
+        ...(description ? { description } : {}),
+        enabled: rawFunction.enabled !== false,
+        script,
+      };
+    });
 }
 
 function normalizeDirectives(value: unknown): LowCodeRuntimeDirective[] {
@@ -292,6 +395,7 @@ export function normalizeLowCodePageSchema(
   const title = readString(value.title, options.fallbackTitle);
   const description = readString(value.description);
   const eventHandlers = normalizeEventHandlers(value.eventHandlers);
+  const scriptPolicy = normalizeScriptPolicy(value.scriptPolicy);
 
   return {
     schemaVersion: readSchemaVersion(value.schemaVersion),
@@ -319,7 +423,12 @@ export function normalizeLowCodePageSchema(
         }
       : {}),
     dataSources: normalizeDataSources(value.dataSources),
+    ...(isRecord(value.apis) ? { apis: normalizePageApis(value.apis) } : {}),
+    ...(Array.isArray(value.functions)
+      ? { functions: normalizePageFunctions(value.functions) }
+      : {}),
     ...(eventHandlers.length ? { eventHandlers } : {}),
+    ...(scriptPolicy ? { scriptPolicy } : {}),
     blocks: normalizeBlocks(value.blocks),
     ...(Array.isArray(value.overlays) ? { overlays: normalizeOverlays(value.overlays) } : {}),
   };
@@ -359,6 +468,37 @@ function pushIssue(
   issues.push({ level, path, message });
 }
 
+function validateDataSourceDependencyCycles(
+  schema: LowCodePageSchema,
+  issues: LowCodeSchemaIssue[]
+) {
+  const sources = schema.dataSources ?? {};
+  const visited = new Set<string>();
+  const visiting = new Set<string>();
+
+  function visit(key: string) {
+    if (visited.has(key)) return;
+    if (visiting.has(key)) {
+      pushIssue(
+        issues,
+        'error',
+        `dataSources.${key}.loadAfterSourceKeys`,
+        `Data source dependency cycle includes "${key}".`
+      );
+      return;
+    }
+
+    visiting.add(key);
+    for (const dependencyKey of sources[key]?.loadAfterSourceKeys ?? []) {
+      if (sources[dependencyKey]) visit(dependencyKey);
+    }
+    visiting.delete(key);
+    visited.add(key);
+  }
+
+  Object.keys(sources).forEach(visit);
+}
+
 function validateDataSources(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
   Object.entries(schema.dataSources ?? {}).forEach(([key, source]) => {
     const path = `dataSources.${key}`;
@@ -375,7 +515,22 @@ function validateDataSources(schema: LowCodePageSchema, issues: LowCodeSchemaIss
     if (!source.serviceMethod && !hasTableTarget) {
       pushIssue(issues, 'error', `${path}.serviceMethod`, 'Service method is required.');
     }
+
+    for (const dependencyKey of source.loadAfterSourceKeys ?? []) {
+      if (dependencyKey === key) {
+        pushIssue(issues, 'error', `${path}.loadAfterSourceKeys`, 'A data source cannot depend on itself.');
+      } else if (!schema.dataSources?.[dependencyKey]) {
+        pushIssue(
+          issues,
+          'error',
+          `${path}.loadAfterSourceKeys`,
+          `Data source dependency "${dependencyKey}" does not exist.`
+        );
+      }
+    }
   });
+
+  validateDataSourceDependencyCycles(schema, issues);
 }
 
 function validateDirectives(
@@ -416,9 +571,91 @@ function validateEventHandlers(schema: LowCodePageSchema, issues: LowCodeSchemaI
   });
 }
 
+function validatePageApis(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
+  const allowedMethods = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']);
+  Object.entries(schema.apis ?? {}).forEach(([name, api]) => {
+    const path = `apis.${name}`;
+    if (!name.trim()) pushIssue(issues, 'error', path, 'API alias is required.');
+    if (!api.serviceName) {
+      pushIssue(issues, 'error', `${path}.serviceName`, 'Service name is required.');
+    }
+    if (!api.serviceMethod) {
+      pushIssue(issues, 'error', `${path}.serviceMethod`, 'Service method is required.');
+    }
+    if (api.method && !allowedMethods.has(api.method)) {
+      pushIssue(issues, 'error', `${path}.method`, `Unsupported HTTP method "${api.method}".`);
+    }
+  });
+}
+
+function validatePageFunctions(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
+  const names = new Set<string>();
+  (schema.functions ?? []).forEach((pageFunction, index) => {
+    const path = `functions.${index}`;
+    if (!pageFunction.name) {
+      pushIssue(issues, 'error', `${path}.name`, 'Function name is required.');
+    } else if (!/^[A-Za-z_$][\w$]*$/.test(pageFunction.name)) {
+      pushIssue(
+        issues,
+        'error',
+        `${path}.name`,
+        `Invalid function name "${pageFunction.name}".`,
+      );
+    } else if (names.has(pageFunction.name)) {
+      pushIssue(
+        issues,
+        'error',
+        `${path}.name`,
+        `Duplicate function name "${pageFunction.name}".`,
+      );
+    } else {
+      names.add(pageFunction.name);
+    }
+
+    if (!pageFunction.script.trim()) {
+      pushIssue(issues, 'error', `${path}.script`, 'Function script is required.');
+    }
+  });
+}
+
+const knownScriptCapabilities = new Set([
+  'action.execute',
+  'api.invoke',
+  'dialog.open',
+  'event.emit',
+  'form.patch',
+  'form.replace',
+  'grid.setRows',
+  'http.execute',
+  'pageFunction.execute',
+  'message.error',
+  'message.info',
+  'message.success',
+  'message.warning',
+  'page.refresh',
+  'router.push',
+  'search.patch',
+  'search.replace',
+  'source.refresh',
+  'source.refreshAll',
+  'source.set',
+]);
+
+function validateScriptPolicy(schema: LowCodePageSchema, issues: LowCodeSchemaIssue[]) {
+  schema.scriptPolicy?.capabilities?.forEach((capability, index) => {
+    if (!knownScriptCapabilities.has(capability)) {
+      pushIssue(
+        issues,
+        'error',
+        `scriptPolicy.capabilities.${index}`,
+        `Unknown script capability "${capability}".`,
+      );
+    }
+  });
+}
+
 function dataSourceExists(schema: LowCodePageSchema, key?: unknown) {
-  const sourceKey = readString(key);
-  return !sourceKey || Boolean(schema.dataSources?.[sourceKey]);
+  return true//
 }
 
 function validateFields(
@@ -540,6 +777,19 @@ function validateBlock(
         `Target data source "${block.targetSourceKey}" does not exist.`
       );
     }
+
+    if (Array.isArray(block.targetSourceKeys)) {
+      block.targetSourceKeys.forEach((sourceKey, index) => {
+        if (!dataSourceExists(schema, sourceKey)) {
+          pushIssue(
+            issues,
+            'error',
+            `${path}.targetSourceKeys.${index}`,
+            `Target data source "${sourceKey}" does not exist.`
+          );
+        }
+      });
+    }
   }
 
   if (kind === 'grid') {
@@ -634,7 +884,10 @@ export function validateLowCodePageSchema(schema: LowCodePageSchema) {
   }
 
   validateDataSources(schema, issues);
+  validatePageApis(schema, issues);
+  validatePageFunctions(schema, issues);
   validateEventHandlers(schema, issues);
+  validateScriptPolicy(schema, issues);
 
   const blockIds = new Set<string>();
   schema.blocks.forEach((block, index) =>

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visual design dialog smoke</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      #app {
+        padding: 24px;
+        box-sizing: border-box;
+      }
+
+      #result {
+        position: fixed;
+        z-index: -1;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'remixicon/fonts/remixicon.css';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import '../assets/styles/app.css';
+      import '../assets/styles/visual-editor-utilities.scss';
+      import GlobalDialogHost from '../../packages/lowcode-framework/src/components/GlobalDialogHost.tsx';
+      import { openDesignDialog } from '../../packages/lowcode-framework/src/designer/design-dialog.ts';
+      import { globalDialogHostStack } from '../../packages/lowcode-framework/src/runtime/global-dialog-core.ts';
+
+      const calls = [];
+      const controller = {
+        async save() {
+          calls.push('save');
+          return { id: 'saved-page', version: 2 };
+        },
+        async publish() {
+          calls.push('publish');
+          return { id: 'saved-page', version: 2 };
+        },
+        async reload() {
+          calls.push('reload');
+        },
+      };
+      const StubDesigner = defineComponent({
+        name: 'StubDesigner',
+        props: {
+          code: String,
+          embedded: Boolean,
+        },
+        setup(props, { expose }) {
+          expose(controller);
+          return () => h('div', {
+            class: 'visual-design-dialog-stub',
+            'data-code': props.code,
+            'data-embedded': String(props.embedded),
+          }, `Designing ${props.code}`);
+        },
+      });
+
+      const pageRecord = {
+        id: 'system-options-page',
+        code: 'system-options',
+        route: '/dashboard/system/options',
+        title: '下拉数据',
+        description: null,
+        layout: 'dashboard',
+        status: 'published',
+        keep_alive: true,
+        page_type: 'list',
+        edit_page_id: null,
+        view_name: null,
+        table_name: null,
+        schema: {
+          schemaVersion: 1,
+          code: 'system-options',
+          route: '/dashboard/system/options',
+          title: '下拉数据',
+          pageType: 'list',
+          layout: 'dashboard',
+          status: 'published',
+          keepAlive: true,
+          dataSources: {},
+          blocks: [],
+          overlays: [],
+          visualEditor: {
+            pages: {
+              '/': {
+                title: '下拉数据',
+                path: '/',
+                config: { bgColor: '', bgImage: '', keepAlive: true },
+                blocks: [],
+                overlays: [],
+              },
+            },
+            models: [],
+            actions: {
+              fetch: { name: '接口请求', apis: [] },
+              dialog: { name: '对话框', handlers: [] },
+            },
+          },
+        },
+        version: 1,
+        published_at: null,
+        created_at: '',
+        updated_at: '',
+      };
+      const serviceCalls = [];
+      const serviceApi = {
+        async invoke(serviceName, serviceMethod, payload = {}) {
+          serviceCalls.push({ serviceName, serviceMethod, payload: structuredClone(payload) });
+          if (serviceName === 'lowcode' && serviceMethod === 'listItems') {
+            if (payload.tableName === 'lowcode_pages') return [structuredClone(pageRecord)];
+            return [];
+          }
+          if (serviceName === 'lowcode' && serviceMethod === 'saveItem') {
+            Object.assign(pageRecord, payload.data, {
+              schema: structuredClone(payload.data.schema),
+            });
+            return structuredClone(pageRecord);
+          }
+          throw new Error(`Unexpected service call: ${serviceName}.${serviceMethod}`);
+        },
+      };
+      const routerCalls = [];
+      const router = {
+        async push(target) {
+          routerCalls.push(target);
+        },
+      };
+
+      const App = defineComponent({
+        setup() {
+          return () => h('div', [
+            h('button', {
+              id: 'open-designer',
+              onClick: async () => {
+                const result = await openDesignDialog({
+                  id: 'visual-design-dialog-smoke',
+                  code: 'system-options',
+                  title: '下拉数据设计',
+                  component: StubDesigner,
+                });
+                window.__visualDesignDialogSmoke.result = result;
+              },
+            }, '可视化设计'),
+            h('button', {
+              id: 'open-real-designer',
+              onClick: async () => {
+                const result = await openDesignDialog({
+                  id: 'visual-design-dialog-real-smoke',
+                  code: 'system-options',
+                  title: '下拉数据设计',
+                  serviceApi,
+                  router,
+                  locale: 'zh-CN',
+                });
+                window.__visualDesignDialogSmoke.realResult = result;
+              },
+            }, '打开真实设计器'),
+            h(GlobalDialogHost),
+          ]);
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.component('ClientOnly', defineComponent({
+        name: 'ClientOnly',
+        setup(_, { slots }) {
+          return () => slots.default?.() ?? null;
+        },
+      }));
+      app.mount('#app');
+
+      window.__visualDesignDialogSmoke = {
+        calls,
+        serviceCalls,
+        routerCalls,
+        result: null,
+        realResult: null,
+        get hostCount() {
+          return globalDialogHostStack.length;
+        },
+      };
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

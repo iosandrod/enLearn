@@ -1,119 +1,79 @@
-﻿import { renderSlot, useSlots } from 'vue';
-import { Button, Field, Form } from '../../../components/LegacyWidgets';
-import { compProps } from './compProps';
-import type {
-  VisualEditorBlockData,
-  VisualEditorComponent,
-  VisualEditorModelValue,
-} from '../../../visual-editor/visual-editor.utils';
+import LowCodeForm from '../../../components/LowCodeForm.vue';
 import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
+import type { LowCodeFormProps, LowCodeFormSchema } from '../../../types/lowcode';
+import {
+  createLowCodeFormSchema,
+  isPlainRecord,
+  readJsonObject,
+  readLowCodeFormSchema,
+} from '../../../lowcode/visual-converters/helpers';
+import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
+import { compProps } from './compProps';
 
-function resolveFieldType(component: unknown) {
-  if (component === 'vxe-password-input') return 'password';
-  if (component === 'vxe-textarea') return 'textarea';
-  return 'text';
+const previewSchema: LowCodeFormSchema = {
+  fields: [
+    {
+      field: 'username',
+      label: 'Username',
+      component: 'vxe-input',
+      props: { placeholder: 'Username' },
+      rules: [{ required: true, message: 'Username is required' }],
+    },
+    {
+      field: 'password',
+      label: 'Password',
+      component: 'vxe-password-input',
+      props: { placeholder: 'Password' },
+      rules: [{ required: true, message: 'Password is required' }],
+    },
+  ],
+  actions: [],
+};
+
+function createDesignSchema(props: Record<string, unknown>) {
+  return createLowCodeFormSchema(
+    props.fields,
+    props.formDesignerModel,
+    props.schema,
+  );
 }
 
-function isRequired(value: unknown) {
-  if (typeof value === 'boolean') return value;
-  return typeof value === 'string' && ['true', '1', 'yes'].includes(value.trim().toLowerCase());
+function createDesignModel(props: Record<string, unknown>) {
+  if (isPlainRecord(props.modelValue)) return props.modelValue;
+  return readJsonObject(props.initialValuesJson, {});
 }
 
-function readDesignedBlocks(value: unknown) {
-  const model = value as VisualEditorModelValue | null | undefined;
-  const blocks = model?.pages?.['/']?.blocks;
-
-  return Array.isArray(blocks) ? (blocks as VisualEditorBlockData[]) : [];
+function createDesignFormProps(props: Record<string, unknown>): LowCodeFormProps {
+  return {
+    schema: createDesignSchema(props),
+    modelValue: createDesignModel(props),
+    optionSources: isPlainRecord(props.optionSources) ? props.optionSources : {},
+    loading: props.loading === true,
+    disabled: props.disabled === true,
+    readonly: props.readonly === true,
+    align: props.inputAlign as LowCodeFormProps['align'],
+    titleAlign: props.labelAlign as LowCodeFormProps['titleAlign'],
+    titleWidth: props.labelWidth as LowCodeFormProps['titleWidth'],
+    titleColon: props.colon === true,
+  };
 }
 
 export default {
   key: 'form',
   moduleName: 'businessComponents',
   label: 'Form',
-  preview: () => (
-    <Form>
-      <Field name="username" label="Username" placeholder="Username" />
-      <Field type="password" name="password" label="Password" placeholder="Password" />
-      <div style="margin: 16px;">
-        <Button round size="small" block type="primary">
-          Submit
-        </Button>
-      </div>
-    </Form>
-  ),
-  render({ props, styles, block, custom }) {
-    const slots = useSlots();
+  preview: () => <LowCodeForm schema={previewSchema} modelValue={{}} />,
+  render({ props, styles, block }) {
     const { registerRef } = useGlobalProperties();
 
-    const onSubmit = (values) => {
-      console.log('onSubmit:', values);
-    };
-
-    return () => {
-      const fields = Array.isArray(props.fields) ? props.fields : [];
-      const designedBlocks = readDesignedBlocks(props.formDesignerModel);
-      const renderDesignedBlocks =
-        typeof custom.renderDesignedBlocks === 'function'
-          ? custom.renderDesignedBlocks
-          : undefined;
-
-      return (
-        <div style={styles}>
-          <Form
-            ref={(el) => registerRef(el, block._vid)}
-            {...props}
-            style={{ width: '100%' }}
-            onSubmit={onSubmit}
-          >
-            {designedBlocks.length && renderDesignedBlocks ? (
-              renderDesignedBlocks(
-                designedBlocks,
-                String(props.formDesignerUpdatedAt || ''),
-              )
-            ) : fields.length ? (
-              <div
-                style={{
-                  display: 'grid',
-                  gap: '8px',
-                }}
-              >
-                {fields.map((field: Record<string, unknown>, index: number) => (
-                  <div key={String(field.field || index)}>
-                    <Field
-                      name={String(field.field || '')}
-                      label={String(field.label || field.field || '瀛楁')}
-                      placeholder={String(field.placeholder || '')}
-                      type={resolveFieldType(field.component)}
-                      required={isRequired(field.required)}
-                    />
-                    {field.help ? (
-                      <div
-                        style={{
-                          padding: '2px 16px 0',
-                          color: '#8c8c8c',
-                          fontSize: '12px',
-                        }}
-                      >
-                        {String(field.help)}
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              renderSlot(slots, 'default')
-            )}
-            {fields.length ? (
-              <div style="margin: 16px;">
-                <Button round size="small" block type="primary">
-                  鎻愪氦
-                </Button>
-              </div>
-            ) : null}
-          </Form>
-        </div>
-      );
-    };
+    return () => (
+      <div style={{ ...styles, width: '100%', minWidth: 0 }}>
+        <LowCodeForm
+          ref={(el) => registerRef(el, block._vid)}
+          {...createDesignFormProps(props)}
+        />
+      </div>
+    );
   },
   resize: {
     height: true,
@@ -121,7 +81,7 @@ export default {
   },
   events: [
     { label: 'Submit', value: 'submit' },
-    { label: 'Validation failed', value: 'failed' },
+    { label: 'Model value changed', value: 'update:model-value' },
   ],
   props: compProps,
 } as VisualEditorComponent;

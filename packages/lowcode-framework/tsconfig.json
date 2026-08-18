@@ -1,6 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
@@ -23,6 +28,15 @@
       ],
       "@enlearn/lowcode-framework/*": [
         "src/*"
+      ],
+      "@svar-ui/vue-gantt": [
+        "../gantt-main/vue/types/index.d.ts"
+      ],
+      "@svar-ui/gantt-locales": [
+        "../gantt-main/locales/index.ts"
+      ],
+      "@svar-ui/gantt-store": [
+        "../gantt-main/store/src/index.ts"
       ]
     }
   },

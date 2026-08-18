@@ -1,0 +1,12 @@
+
+> @ workflow-api:trigger:dev E:\enLearn
+> pnpm --dir api workflow:trigger:dev
+
+
+> hikari-api@ workflow:trigger:dev E:\enLearn\api
+> powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start-trigger-dev.ps1 -ApiUrl http://localhost:3030 -EnvFile %INIT_CWD%\.env
+
+[enLearn-trigger] Starting Trigger.dev worker: http://localhost:3030
+X Error: You must login first. Use the `login` CLI command.
+
+Connection error.

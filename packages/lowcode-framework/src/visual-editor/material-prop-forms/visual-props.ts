@@ -1,5 +1,5 @@
 import { cloneDeep } from 'lodash-es';
-import type { LowCodeField, LowCodeOption } from '../../types/lowcode';
+import type { LowCodeField, LowCodeFormLayoutNode, LowCodeOption } from '../../types/lowcode';
 import { VisualEditorPropsType, type VisualEditorProps } from '../visual-editor.props';
 import type {
   VisualEditorBlockData,
@@ -7,6 +7,7 @@ import type {
 } from '../visual-editor.utils';
 import { useDotProp } from '../hooks/useDotProp';
 import { getMaterialPropFormDefinition } from './registry';
+import { collectPageTableFieldOptions } from './table-field-options';
 import type {
   MaterialPropFieldTarget,
   MaterialPropFormDefinition,
@@ -15,6 +16,7 @@ import type {
 } from './types';
 
 const visualModelsSourceKey = '__visualModels';
+const visualTableFieldsSourceKey = '__visualTableFields';
 const layoutGridSpan = 24;
 const minLayoutSpan = 1;
 
@@ -100,6 +102,10 @@ export function getVisualModelsSourceKey() {
   return visualModelsSourceKey;
 }
 
+export function getVisualTableFieldsSourceKey() {
+  return visualTableFieldsSourceKey;
+}
+
 export function createMaterialPropForm(
   component: VisualEditorComponent | undefined,
   block: VisualEditorBlockData,
@@ -119,9 +125,213 @@ export function createMaterialPropForm(
   return {
     title: definition?.title ?? component?.label ?? block.label,
     fields,
-    layout: definition?.layout,
+    layout: completeMaterialPropLayout(
+      definition?.layout,
+      fields,
+      definition?.separateArrayTableTabs === true,
+    ),
     actions: definition?.actions ?? [],
   };
+}
+
+function collectLayoutFieldKeys(
+  nodes: LowCodeFormLayoutNode[],
+  keys = new Set<string>(),
+) {
+  nodes.forEach((node) => {
+    if (node.kind === 'field') {
+      keys.add(node.field);
+      return;
+    }
+
+    if (node.kind === 'row') {
+      node.columns.forEach((column) => collectLayoutFieldKeys(column.blocks, keys));
+      return;
+    }
+
+    if (node.kind === 'stack') {
+      collectLayoutFieldKeys(node.blocks, keys);
+      return;
+    }
+
+    node.tabs.forEach((tab) => collectLayoutFieldKeys(tab.blocks, keys));
+  });
+
+  return keys;
+}
+
+function completeMaterialPropLayout(
+  layout: LowCodeFormLayoutNode[] | undefined,
+  fields: MaterialPropFormField[],
+  separateArrayTableTabs: boolean,
+) {
+  if (!layout?.length) return undefined;
+
+  const nextLayout = cloneDeep(layout);
+  const assignedFields = collectLayoutFieldKeys(nextLayout);
+  const missingFormFields = fields.filter((field) => !assignedFields.has(field.field));
+  const missingFields = missingFormFields
+    .map<LowCodeFormLayoutNode>((field) => ({ kind: 'field', field: field.field }));
+
+  const rootTabs = nextLayout.length === 1 && nextLayout[0].kind === 'tabs'
+    ? nextLayout[0]
+    : undefined;
+  if (!rootTabs) {
+    return missingFields.length ? [...nextLayout, ...missingFields] : nextLayout;
+  }
+
+  if (missingFields.length) {
+    appendMissingFieldsToTab(
+      rootTabs,
+      'style',
+      '样式',
+      missingFormFields.filter((field) => field.target === 'styles'),
+    );
+    appendMissingFieldsToTab(
+      rootTabs,
+      'other',
+      '其他',
+      missingFormFields.filter((field) => field.target !== 'styles'),
+    );
+  }
+  if (separateArrayTableTabs) {
+    promoteArrayTableFieldsToTabs(rootTabs, fields);
+  }
+
+  return nextLayout;
+}
+
+function promoteArrayTableFieldsToTabs(
+  tabsNode: Extract<LowCodeFormLayoutNode, { kind: 'tabs' }>,
+  fields: MaterialPropFormField[],
+) {
+  const arrayTableFields = new Map(
+    fields
+      .filter((field) => field.component === 'lc-array-table')
+      .map((field) => [field.field, field]),
+  );
+  if (!arrayTableFields.size) return;
+
+  const reservedKeys = new Set(tabsNode.tabs.map((tab) => tab.key));
+  const promotedFieldKeys = new Set<string>();
+  tabsNode.tabs = tabsNode.tabs.flatMap((tab) => {
+    const extracted = extractArrayTableFields(tab.blocks, arrayTableFields);
+    const tableFields = extracted.fields.filter((field) => {
+      if (promotedFieldKeys.has(field.field)) return false;
+      promotedFieldKeys.add(field.field);
+      return true;
+    });
+    if (!tableFields.length) return [tab];
+
+    const nextTabs = extracted.blocks.length
+      ? [{ ...tab, blocks: extracted.blocks }]
+      : [];
+    const pendingFields = [...tableFields];
+
+    if (!extracted.blocks.length) {
+      const firstField = pendingFields.shift()!;
+      nextTabs.push({
+        ...tab,
+        label: firstField.label || tab.label,
+        blocks: [{ kind: 'field', field: firstField.field }],
+      });
+    }
+
+    pendingFields.forEach((field) => {
+      nextTabs.push({
+        key: createArrayTableTabKey(`${tab.key}-${field.field}`, reservedKeys),
+        label: field.label || field.field,
+        blocks: [{ kind: 'field', field: field.field }],
+      });
+    });
+
+    return nextTabs;
+  });
+}
+
+function extractArrayTableFields(
+  nodes: LowCodeFormLayoutNode[],
+  arrayTableFields: Map<string, MaterialPropFormField>,
+): {
+  blocks: LowCodeFormLayoutNode[];
+  fields: MaterialPropFormField[];
+} {
+  const blocks: LowCodeFormLayoutNode[] = [];
+  const fields: MaterialPropFormField[] = [];
+
+  nodes.forEach((node) => {
+    if (node.kind === 'field') {
+      const tableField = arrayTableFields.get(node.field);
+      if (tableField) {
+        fields.push(tableField);
+      } else {
+        blocks.push(node);
+      }
+      return;
+    }
+
+    if (node.kind === 'row') {
+      const columns = node.columns.flatMap((column) => {
+        const extracted = extractArrayTableFields(column.blocks, arrayTableFields);
+        fields.push(...extracted.fields);
+        return extracted.blocks.length
+          ? [{ ...column, blocks: extracted.blocks }]
+          : [];
+      });
+      if (columns.length) blocks.push({ ...node, columns });
+      return;
+    }
+
+    if (node.kind === 'stack') {
+      const extracted = extractArrayTableFields(node.blocks, arrayTableFields);
+      fields.push(...extracted.fields);
+      if (extracted.blocks.length) {
+        blocks.push({ ...node, blocks: extracted.blocks });
+      }
+      return;
+    }
+
+    blocks.push(node);
+  });
+
+  return { blocks, fields };
+}
+
+function createArrayTableTabKey(base: string, reservedKeys: Set<string>) {
+  const normalized = base
+    .replace(/[^A-Za-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'table';
+  let key = normalized;
+  let suffix = 2;
+
+  while (reservedKeys.has(key)) {
+    key = `${normalized}-${suffix}`;
+    suffix += 1;
+  }
+
+  reservedKeys.add(key);
+  return key;
+}
+
+function appendMissingFieldsToTab(
+  tabsNode: Extract<LowCodeFormLayoutNode, { kind: 'tabs' }>,
+  key: string,
+  label: string,
+  fields: MaterialPropFormField[],
+) {
+  if (!fields.length) return;
+
+  const blocks = fields.map<LowCodeFormLayoutNode>((field) => ({
+    kind: 'field',
+    field: field.field,
+  }));
+  const targetTab = tabsNode.tabs.find((tab) => tab.key === key);
+  if (targetTab) {
+    targetTab.blocks.push(...blocks);
+    return;
+  }
+
+  tabsNode.tabs.push({ key, label, blocks });
 }
 
 export function createMaterialPropModel(
@@ -131,14 +341,23 @@ export function createMaterialPropModel(
   ensureDefaultValues(block, fields);
 
   return fields.reduce<Record<string, unknown>>((model, field) => {
-    model[field.field] = cloneDeep(readFieldValue(block, field));
+    const value = readFieldValue(block, field);
+    model[field.field] = cloneDeep(
+      field.optionsSourceKey === visualTableFieldsSourceKey && Array.isArray(value)
+        ? value[value.length - 1] ?? ''
+        : value,
+    );
     return model;
   }, {});
 }
 
-export function createMaterialPropOptionSources(models: readonly unknown[]) {
+export function createMaterialPropOptionSources(
+  models: readonly unknown[],
+  pageData?: unknown,
+) {
   return {
     [visualModelsSourceKey]: cloneDeep(models),
+    [visualTableFieldsSourceKey]: collectPageTableFieldOptions(pageData),
   };
 }
 
@@ -213,6 +432,8 @@ function createFieldFromVisualProp(
       props: {
         rows: 8,
         resize: 'vertical',
+        jsonRootType: propConfig.jsonRootType,
+        jsonValueMode: propConfig.jsonValueMode,
       },
     };
   }
@@ -249,22 +470,15 @@ function createFieldFromVisualProp(
   if (propConfig.type === VisualEditorPropsType.modelBind) {
     return {
       ...baseField,
-      component: 'lc-cascader',
-      optionsSourceKey: visualModelsSourceKey,
-      optionProps: {
-        label: 'name',
-        value: 'key',
-        children: 'entitys',
-      },
+      component: 'vxe-select',
+      optionsSourceKey: visualTableFieldsSourceKey,
       props: {
         clearable: true,
-        cascaderProps: {
-          checkStrictly: true,
-          children: 'children',
-          expandTrigger: 'hover',
-        },
+        filterable: true,
+        allowCreate: true,
+        placeholder: '请选择或输入字段',
       },
-      valueKind: 'raw',
+      valueKind: 'string',
     };
   }
 
@@ -289,6 +503,7 @@ type ArrayTableColumnOption = {
   defaultValue?: unknown;
   props?: Record<string, unknown>;
   options?: LowCodeOption[];
+  optionsCode?: string;
 };
 
 const booleanColumnFields = new Set([
@@ -325,7 +540,9 @@ function createTableMaterialField(
     valueKind: 'raw',
     defaultValue: propConfig.defaultValue ?? [],
     props: {
-      addText: '新增',
+      toolbarButtons: [
+        { code: 'add', label: '新增', command: 'add', status: 'primary' },
+      ],
       rowKey: propConfig.table?.showKey || inferRowKey(columns),
       defaultRow: createDefaultRow(columns),
       columns,
@@ -356,7 +573,9 @@ function createCrossSortableMaterialField(
     valueKind: 'raw',
     defaultValue,
     props: {
-      addText: '新增',
+      toolbarButtons: [
+        { code: 'add', label: '新增', command: 'add', status: 'primary' },
+      ],
       rowKey: primitiveMode ? '__rowKey' : inferRowKey(columns),
       defaultRow: createDefaultRow(columns),
       ...(primitiveMode ? { valueMode: 'primitive', valueField: 'value' } : {}),
@@ -378,6 +597,7 @@ function createTableColumns(propConfig: VisualEditorProps): ArrayTableColumnOpti
       ? { defaultValue: option.defaultValue }
       : {}),
     ...(option.props ? { props: option.props } : {}),
+    ...(option.optionsCode ? { optionsCode: option.optionsCode } : {}),
     ...(option.options ? { options: option.options.map(toLowCodeOption) } : {}),
   }));
 }
@@ -446,6 +666,8 @@ function getColumnOptions(field: string): LowCodeOption[] {
       toSelectOption('密码框', 'vxe-password-input'),
       toSelectOption('数字输入', 'lc-number-input'),
       toSelectOption('JSON 编辑器', 'lc-json-editor'),
+      toSelectOption('代码编辑器', 'lc-monaco-editor'),
+      toSelectOption('关联资料', 'base-info'),
       toSelectOption('表格输入', 'lc-array-table'),
       toSelectOption('子表单', 'lc-sub-form'),
     ];

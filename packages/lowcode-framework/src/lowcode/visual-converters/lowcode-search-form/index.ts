@@ -1,10 +1,10 @@
 import type { LowCodePageBlock } from '../../../types/lowcode';
 import type { VisualToLowCodeConverter } from '../types';
 import {
-  isDefined,
-  normalizeField,
-  normalizeRows,
-  readFormDesignerLayout,
+  createLowCodeFormSchema,
+  isPlainRecord,
+  readJsonObject,
+  readLowCodeFormSchema,
   readString,
   readVisualBlockProps,
   toBlockId,
@@ -18,35 +18,49 @@ const converter: VisualToLowCodeConverter = {
     blockId: 'query-form',
     title: '查询条件',
     sourceKey: 'records',
+    initialValuesJson: '{}',
     fields: [],
   },
   toRuntimeBlock(block) {
     const props = readVisualBlockProps(block);
-    const fields = normalizeRows(props.fields).map(normalizeField).filter(isDefined);
+    const preservedSchema = readLowCodeFormSchema(props.schema);
+    const formSchema = createLowCodeFormSchema(
+      props.fields,
+      props.formDesignerModel,
+      props.schema,
+    );
     const sourceKey = readString(props.sourceKey, 'records');
-    const layout = readFormDesignerLayout(props.formDesignerModel);
+    const initialValues = readJsonObject(props.initialValuesJson, {});
 
     return {
       id: toBlockId(props.blockId, block._vid),
       kind: 'searchForm',
       title: readString(props.title, 'Query Conditions'),
       targetSourceKey: sourceKey,
+      ...(Object.keys(initialValues).length ? { initialValues } : {}),
+      ...(isPlainRecord(props.formDesignerModel)
+        ? { formDesignerModel: props.formDesignerModel }
+        : {}),
+      ...(typeof props.formDesignerUpdatedAt === 'number'
+        ? { formDesignerUpdatedAt: props.formDesignerUpdatedAt }
+        : {}),
       schema: {
-        fields,
-        ...(layout ? { layout } : {}),
-        actions: [
-          {
-            code: 'submit',
-            label: '查询',
-            type: 'submit',
-            status: 'primary',
-          },
-          {
-            code: 'reset',
-            label: '重置',
-            type: 'reset',
-          },
-        ],
+        ...formSchema,
+        actions: preservedSchema
+          ? formSchema.actions
+          : [
+              {
+                code: 'submit',
+                label: '查询',
+                type: 'submit',
+                status: 'primary',
+              },
+              {
+                code: 'reset',
+                label: '重置',
+                type: 'reset',
+              },
+            ],
       },
     } as LowCodePageBlock;
   },

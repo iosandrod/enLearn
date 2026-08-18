@@ -171,6 +171,80 @@ export type VisualEditorModelValue = {
   /** 动作 */
   actions: VisualEditorActions;
 };
+
+function normalizeVisualBlockId(value: unknown, fallback: string) {
+  const source = typeof value === 'string' && value.trim() ? value.trim() : fallback;
+  return (
+    source
+      .replace(/\s+/g, '-')
+      .replace(/[^a-zA-Z0-9_-]/g, '')
+      .replace(/^-+|-+$/g, '') || fallback
+  );
+}
+
+function createUniqueVisualBlockId(
+  baseId: string,
+  block: VisualEditorBlockData,
+  usedIds: Set<string>,
+) {
+  if (!usedIds.has(baseId)) return baseId;
+
+  const vidSuffix = normalizeVisualBlockId(block._vid, 'block')
+    .replace(/^vid[_-]?/, '')
+    .slice(-6);
+  const candidateBase = `${baseId}-${vidSuffix || 'copy'}`;
+  let candidate = candidateBase;
+  let index = 2;
+
+  while (usedIds.has(candidate)) {
+    candidate = `${candidateBase}-${index}`;
+    index += 1;
+  }
+
+  return candidate;
+}
+
+function normalizeVisualBlockIds(
+  blocks: VisualEditorBlockData[] = [],
+  usedIds: Set<string>,
+) {
+  blocks.forEach((block) => {
+    block.props ??= {};
+    if (typeof block.props.blockId === 'string' && block.props.blockId.trim()) {
+      const baseId = normalizeVisualBlockId(block.props.blockId, block._vid);
+      const blockId = createUniqueVisualBlockId(baseId, block, usedIds);
+
+      block.props.blockId = blockId;
+      usedIds.add(blockId);
+    }
+
+    const slots = block.props.slots;
+    if (slots && typeof slots === 'object' && !Array.isArray(slots)) {
+      Object.values(slots).forEach((slot) => {
+        if (slot && typeof slot === 'object' && !Array.isArray(slot)) {
+          const children = (slot as { children?: unknown }).children;
+          if (Array.isArray(children)) {
+            normalizeVisualBlockIds(children as VisualEditorBlockData[], usedIds);
+          }
+        }
+      });
+    }
+
+    if (Array.isArray(block.props.overlays)) {
+      normalizeVisualBlockIds(block.props.overlays, usedIds);
+    }
+  });
+}
+
+export function ensureUniqueVisualBlockIds(model: VisualEditorModelValue) {
+  Object.values(model.pages ?? {}).forEach((page) => {
+    const usedIds = new Set<string>();
+    normalizeVisualBlockIds(page.blocks, usedIds);
+    normalizeVisualBlockIds(page.overlays, usedIds);
+  });
+
+  return model;
+}
 /**
  * @description 动画项
  */
@@ -230,8 +304,28 @@ export type VisualEditorMarkLines = {
 };
 
 export function createNewBlock(component: VisualEditorComponent): VisualEditorBlockData {
+  const vid = `vid_${generateNanoid()}`;
+  const props = Object.entries(component.props || {}).reduce<Record<string, any>>(
+    (prev, [propName, propSchema]) => {
+      const { propObj, prop, isDotProp } = useDotProp(prev, propName);
+      if (propSchema?.defaultValue) {
+        propObj[prop] = propSchema.defaultValue;
+        if (!isDotProp) {
+          prev[propName] = propSchema.defaultValue;
+        }
+      }
+      return prev;
+    },
+    {},
+  );
+
+  if (typeof props.blockId === 'string' && props.blockId.trim()) {
+    const suffix = vid.replace(/^vid_/, '').slice(-6);
+    props.blockId = `${normalizeVisualBlockId(props.blockId, component.key)}-${suffix}`;
+  }
+
   return {
-    _vid: `vid_${generateNanoid()}`,
+    _vid: vid,
     moduleName: component.moduleName,
     componentKey: component!.key,
     label: component!.label,
@@ -248,16 +342,7 @@ export function createNewBlock(component: VisualEditorComponent): VisualEditorBl
       ...(component.styles || {}),
     },
     hasResize: false,
-    props: Object.entries(component.props || {}).reduce((prev, [propName, propSchema]) => {
-      const { propObj, prop, isDotProp } = useDotProp(prev, propName);
-      if (propSchema?.defaultValue) {
-        propObj[prop] = propSchema?.defaultValue;
-        if (!isDotProp) {
-          prev[propName] = propSchema?.defaultValue;
-        }
-      }
-      return prev;
-    }, {}),
+    props,
     draggable: component.draggable ?? true, // 是否可以拖拽
     showStyleConfig: component.showStyleConfig ?? true, // 是否显示组件样式配置
     animations: [], // 动画集

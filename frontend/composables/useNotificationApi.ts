@@ -23,7 +23,7 @@ export type NotificationUnreadCount = {
 
 export type NotificationPreference = {
   id?: string;
-  tenant_id?: string;
+  account_id?: string;
   tenantId?: string;
   user_id?: string;
   userId?: string;
@@ -127,7 +127,7 @@ function normalizePreference(row: NotificationPreference): NotificationPreferenc
   return {
     ...row,
     category_label: row.category_label ?? categoryLabels[row.category] ?? row.category,
-    tenantId: row.tenantId ?? row.tenant_id,
+    tenantId: row.tenantId ?? row.account_id,
     userId: row.userId ?? row.user_id,
     inboxEnabled: row.inboxEnabled ?? row.inbox_enabled,
     emailEnabled: row.emailEnabled ?? row.email_enabled,
@@ -149,13 +149,17 @@ export function useNotificationApi() {
   const auth = useAuth();
 
   function currentUserId() {
-    return auth.user.value?.id ?? '';
+    return auth.activeDevTestUser.value?.id ?? auth.user.value?.id ?? '';
+  }
+
+  function currentAccountId() {
+    return auth.activeAccount.value?.account_id ?? '';
   }
 
   function currentUserFilters(postData: Record<string, unknown> = {}) {
     const userId = readString(postData.userId ?? postData.user_id) || currentUserId();
     return {
-      tenant_id: readString(postData.tenantId ?? postData.tenant_id) || 'default',
+      account_id: currentAccountId(),
       ...(userId ? { recipient_id: userId } : {})
     };
   }
@@ -189,33 +193,26 @@ export function useNotificationApi() {
   }
 
   async function markRead(ids: string[]) {
-    const rows = await serviceApi.invoke<NotificationMessage[]>('notification', 'updateItem', {
-      resource: 'messages',
+    const result = await serviceApi.invoke<{ success: boolean; count: number }>('notification', 'markRead', {
       ids,
-      markRead: true
+      userId: currentUserId()
     });
 
-    return { success: true, count: Array.isArray(rows) ? rows.length : 0 };
+    return result;
   }
 
   async function markAllRead(postData: Record<string, unknown> = {}) {
-    const rows = await serviceApi.invoke<NotificationMessage[]>('notification', 'updateItem', {
-      resource: 'messages',
-      filters: {
-        ...currentUserFilters(postData),
-        read_at: { op: 'isNull' },
-        archived_at: { op: 'isNull' },
-        ...(readString(postData.category) ? { category: readString(postData.category) } : {})
-      },
-      markRead: true
+    return serviceApi.invoke<{ success: boolean; count: number }>('notification', 'markAllRead', {
+      ...postData,
+      userId: readString(postData.userId ?? postData.user_id) || currentUserId(),
+      tenantId: currentAccountId(),
+      ...(readString(postData.category) ? { category: readString(postData.category) } : {})
     });
-
-    return { success: true, count: Array.isArray(rows) ? rows.length : 0 };
   }
 
   async function archiveMessage(ids: string[]) {
     const rows = await serviceApi.invoke<NotificationMessage[]>('notification', 'updateItem', {
-      resource: 'messages',
+      resource: 'notification_messages',
       ids,
       archive: true
     });
@@ -225,12 +222,12 @@ export function useNotificationApi() {
 
   async function getPreferences(postData: Record<string, unknown> = {}) {
     const userId = readString(postData.userId ?? postData.user_id) || currentUserId();
-    const tenantId = readString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const tenantId = currentAccountId();
     const rows = await serviceApi.listItems<NotificationPreference[]>('notification', {
       ...postData,
       tableName: 'notification_preferences',
       filters: {
-        tenant_id: tenantId,
+        account_id: tenantId,
         ...(userId ? { user_id: userId } : {}),
         ...normalizeFilters(postData.filters)
       },
@@ -242,7 +239,7 @@ export function useNotificationApi() {
     return notificationCategories.map((category) => normalizePreference(
       byCategory.get(category) ?? {
         id: '',
-        tenant_id: tenantId,
+        account_id: tenantId,
         user_id: userId,
         category,
         inbox_enabled: true,
@@ -255,11 +252,11 @@ export function useNotificationApi() {
 
   async function updatePreference(postData: Record<string, unknown>) {
     const userId = readString(postData.userId ?? postData.user_id) || currentUserId();
-    const tenantId = readString(postData.tenantId ?? postData.tenant_id) || 'default';
+    const tenantId = currentAccountId();
     const category = readString(postData.category);
     const existing = (await getPreferences({ tenantId, userId })).find((item) => item.category === category);
     const payload = {
-      tenant_id: tenantId,
+      account_id: tenantId,
       user_id: userId,
       category,
       inbox_enabled: postData.inboxEnabled === undefined && postData.inbox_enabled === undefined
@@ -275,7 +272,7 @@ export function useNotificationApi() {
     };
     const method = existing?.id ? 'updateItem' : 'createItem';
     const result = await serviceApi.invoke<NotificationPreference>('notification', method, {
-      resource: 'preferences',
+      resource: 'notification_preferences',
       ...(existing?.id ? { id: existing.id } : {}),
       data: payload
     });
@@ -285,7 +282,7 @@ export function useNotificationApi() {
 
   async function listDeliveries(postData: Record<string, unknown> = {}) {
     const filters = {
-      tenant_id: readString(postData.tenantId ?? postData.tenant_id) || 'default',
+      account_id: currentAccountId(),
       ...normalizeFilters(postData.filters),
       ...(readString(postData.status) ? { status: readString(postData.status) } : {}),
       ...(readString(postData.channel) ? { channel: readString(postData.channel) } : {}),
@@ -304,7 +301,7 @@ export function useNotificationApi() {
 
   async function retryDelivery(id: string) {
     const delivery = await serviceApi.invoke<NotificationDelivery>('notification', 'updateItem', {
-      resource: 'deliveries',
+      resource: 'notification_deliveries',
       id,
       retry: true
     });

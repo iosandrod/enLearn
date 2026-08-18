@@ -1,5 +1,5 @@
 <template>
-  <section class="file-page" @click="closeContextMenu">
+  <section class="file-page">
     <header class="file-toolbar">
       <div>
         <h1>文件管理</h1>
@@ -200,31 +200,6 @@
       </aside>
     </div>
 
-    <div
-      v-if="contextMenu.visible && contextMenu.file"
-      class="context-menu"
-      :style="{ left: `${contextMenu.x}px`, top: `${contextMenu.y}px` }"
-      @click.stop
-    >
-      <button type="button" @click="download(contextMenu.file)">
-        <i class="ri-download-2-line" aria-hidden="true"></i>
-        下载文件
-      </button>
-      <button type="button" @click="toggleLock(contextMenu.file)">
-        <i :class="contextMenu.file.locked ? 'ri-lock-unlock-line' : 'ri-lock-line'" aria-hidden="true"></i>
-        {{ contextMenu.file.locked ? '解锁文件' : '锁定文件' }}
-      </button>
-      <button
-        class="danger"
-        type="button"
-        :disabled="contextMenu.file.locked"
-        @click="remove(contextMenu.file)"
-      >
-        <i class="ri-delete-bin-line" aria-hidden="true"></i>
-        删除文件
-      </button>
-    </div>
-
     <div v-if="uploadDialog.visible" class="upload-progress-mask">
       <section class="upload-progress-modal" role="dialog" aria-modal="true" aria-labelledby="upload-progress-title" @click.stop>
         <div class="upload-progress-header">
@@ -269,6 +244,7 @@
 </template>
 
 <script setup lang="ts">
+import { VxeUI } from 'vxe-pc-ui';
 import type { FileFolder, FileObject } from '~/composables/useFilesApi';
 
 type FileTreeNode = {
@@ -282,6 +258,7 @@ type FileTreeNode = {
 type UploadPhase = 'idle' | 'preparing' | 'uploading' | 'confirming' | 'finishing' | 'success' | 'failed';
 
 const filesApi = useFilesApi();
+const auth = useAuth();
 const fileInput = ref<HTMLInputElement | null>(null);
 const files = ref<FileObject[]>([]);
 const folders = ref<FileFolder[]>([]);
@@ -319,18 +296,6 @@ const uploadDialog = reactive<{
   totalBytes: 0,
   overallProgress: 0
 });
-const contextMenu = reactive<{
-  visible: boolean;
-  x: number;
-  y: number;
-  file: FileObject | null;
-}>({
-  visible: false,
-  x: 0,
-  y: 0,
-  file: null
-});
-
 const rootNode = computed<FileTreeNode>(() => buildTree(files.value, folders.value));
 const flatTreeNodes = computed(() => flattenTree(rootNode.value));
 const selectedNode = computed(() => findNode(rootNode.value, selectedNodeKey.value));
@@ -537,10 +502,19 @@ async function createFolder() {
 async function deleteSelectedFolder() {
   if (!selectedPrefix.value) return;
   if (!canDeleteSelectedFolder.value) {
-    window.alert('只能删除空文件夹。');
+    await VxeUI.modal.confirm({
+      title: '提示',
+      content: '只能删除空文件夹。',
+      mask: false,
+      lockView: false
+    }).catch(() => false);
     return;
   }
-  if (!window.confirm(`确认删除文件夹「${selectedNodeLabel.value}」？`)) return;
+  const confirmResult = await VxeUI.modal.confirm({
+    title: '确认删除文件夹',
+    content: `确认删除文件夹「${selectedNodeLabel.value}」？`
+  });
+  if (confirmResult !== 'confirm') return;
 
   try {
     await filesApi.deleteFolder(selectedPrefix.value);
@@ -728,16 +702,47 @@ async function loadThumbnails() {
 }
 
 function openFileContextMenu(event: MouseEvent, file: FileObject) {
+  event.preventDefault();
+  event.stopPropagation();
   selectedFileId.value = file.id;
-  contextMenu.visible = true;
-  contextMenu.file = file;
-  contextMenu.x = Math.min(event.clientX, window.innerWidth - 180);
-  contextMenu.y = Math.min(event.clientY, window.innerHeight - 130);
+
+  VxeUI.contextMenu.open({
+    x: event.clientX,
+    y: event.clientY,
+    className: 'enlearn-context-menu',
+    options: [
+      [
+        {
+          code: 'download',
+          name: '下载文件',
+          prefixIcon: 'ri-download-2-line'
+        },
+        {
+          code: 'toggle-lock',
+          name: file.locked ? '解锁文件' : '锁定文件',
+          prefixIcon: file.locked ? 'ri-lock-unlock-line' : 'ri-lock-line'
+        },
+        {
+          code: 'delete',
+          name: '删除文件',
+          prefixIcon: 'ri-delete-bin-line',
+          className: 'enlearn-context-menu-option--danger',
+          disabled: file.locked
+        }
+      ]
+    ],
+    events: {
+      optionClick({ option }) {
+        if (option.code === 'download') void download(file);
+        if (option.code === 'toggle-lock') void toggleLock(file);
+        if (option.code === 'delete') void remove(file);
+      }
+    }
+  });
 }
 
 function closeContextMenu() {
-  contextMenu.visible = false;
-  contextMenu.file = null;
+  VxeUI.contextMenu.close();
 }
 
 async function download(file: FileObject) {
@@ -780,10 +785,19 @@ async function toggleLock(file: FileObject) {
 async function remove(file: FileObject) {
   closeContextMenu();
   if (file.locked) {
-    window.alert('文件已锁定，解锁后才能删除。');
+    await VxeUI.modal.confirm({
+      title: '提示',
+      content: '文件已锁定，解锁后才能删除。',
+      mask: false,
+      lockView: false
+    }).catch(() => false);
     return;
   }
-  if (!window.confirm(`确认删除 ${file.originalName}？`)) return;
+  const confirmResult = await VxeUI.modal.confirm({
+    title: '确认删除文件',
+    content: `确认删除 ${file.originalName}？`
+  });
+  if (confirmResult !== 'confirm') return;
 
   try {
     await filesApi.remove(file.id);
@@ -793,9 +807,18 @@ async function remove(file: FileObject) {
   }
 }
 
-onMounted(() => {
-  void loadAll();
+onMounted(async () => {
+  await auth.init();
+  await loadAll();
 });
+
+watch(
+  () => auth.user.value?.id ?? '',
+  (userId, previousUserId) => {
+    if (!userId || !previousUserId || userId === previousUserId) return;
+    void loadAll();
+  }
+);
 
 watch(filteredFiles, () => {
   void loadThumbnails();
@@ -1290,48 +1313,6 @@ watch(filteredFiles, () => {
   gap: 12px;
   color: #667085;
   font-size: 12px;
-}
-
-.context-menu {
-  position: fixed;
-  z-index: 1000;
-  display: grid;
-  min-width: 160px;
-  border: 1px solid #cfd7e3;
-  border-radius: 6px;
-  background: #ffffff;
-  box-shadow: 0 12px 28px rgb(15 23 42 / 14%);
-  padding: 4px;
-}
-
-.context-menu button {
-  display: grid;
-  align-items: center;
-  grid-template-columns: 18px minmax(0, 1fr);
-  gap: 8px;
-  min-height: 32px;
-  border: 0;
-  border-radius: 4px;
-  background: transparent;
-  color: #111827;
-  cursor: pointer;
-  font: inherit;
-  font-size: 13px;
-  padding: 0 8px;
-  text-align: left;
-}
-
-.context-menu button:hover {
-  background: #eef2f6;
-}
-
-.context-menu button.danger {
-  color: #b42318;
-}
-
-.context-menu button:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
 }
 
 @media (max-width: 1100px) {

@@ -3,18 +3,13 @@ import {
   WORKFLOW_INSTANCE_TASK_ID,
   type WorkflowInstanceTaskPayload
 } from '../runtime/runtime.engine.types';
-import { createStandalonePostgresWorkflowRuntimeStore } from '../runtime/runtime.postgres-store';
+import { createStandaloneSupabaseWorkflowRuntimeStore } from '../runtime/runtime.supabase-store';
 import { executeWorkflowInstance, type WorkflowWaitDriver } from '../runtime/workflow.executor';
 
 export const workflowInstanceTask = task({
   id: WORKFLOW_INSTANCE_TASK_ID,
   run: async (payload: WorkflowInstanceTaskPayload) => {
-    const connectionString = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
-    if (!connectionString) {
-      throw new Error('DIRECT_URL or DATABASE_URL is required by the Trigger.dev workflow task.');
-    }
-
-    const runtime = createStandalonePostgresWorkflowRuntimeStore(connectionString);
+    const store = createStandaloneSupabaseWorkflowRuntimeStore();
     const waits: WorkflowWaitDriver = {
       createToken: async (options) => wait.createToken(options),
       waitForToken: async <T>(tokenId: string) => {
@@ -33,10 +28,6 @@ export const workflowInstanceTask = task({
       }
     };
 
-    try {
-      return await executeWorkflowInstance(payload, runtime.store, waits);
-    } finally {
-      await runtime.close();
-    }
+    return executeWorkflowInstance(payload, store, waits);
   }
 });

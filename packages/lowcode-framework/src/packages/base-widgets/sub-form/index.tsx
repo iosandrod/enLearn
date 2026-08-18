@@ -1,4 +1,5 @@
 import LowCodeForm from '../../../components/LowCodeForm.vue';
+import { isLowCodeFormSchema } from '../../../lowcode/form-schema';
 import type { LowCodeFormProps, LowCodeFormSchema } from '../../../types/lowcode';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
 import {
@@ -36,10 +37,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function createLowCodeFormProps(props: Record<string, unknown>): LowCodeFormProps {
+function createLowCodeFormProps(
+  props: Record<string, unknown>,
+  schema: LowCodeFormSchema,
+): LowCodeFormProps {
   return {
     ...(props as Partial<LowCodeFormProps>),
-    schema: isRecord(props.schema) ? (props.schema as LowCodeFormSchema) : defaultSchema,
+    schema,
     modelValue: isRecord(props.modelValue) ? props.modelValue : {},
   };
 }
@@ -62,18 +66,33 @@ export default {
   ),
   render: ({ styles, props }) => {
     return () => {
-      const formProps = createLowCodeFormProps(props);
+      const schema = isLowCodeFormSchema(props.schema) ? props.schema : null;
 
       return (
         <div style={{ ...styles, width: '100%', minWidth: 0 }}>
-          <LowCodeForm
-            {...formProps}
-            {...{
-              'onUpdate:modelValue': (value: Record<string, unknown>) => {
-                props.modelValue = value;
-              },
-            }}
-          />
+          {schema ? (
+            <LowCodeForm
+              {...createLowCodeFormProps(props, schema)}
+              {...{
+                'onUpdate:modelValue': (value: Record<string, unknown>) => {
+                  props.modelValue = value;
+                },
+              }}
+            />
+          ) : (
+            <div
+              role="alert"
+              style={{
+                display: 'grid',
+                minHeight: '48px',
+                placeItems: 'center',
+                color: '#b42318',
+                fontSize: '12px',
+              }}
+            >
+              子表单 Schema 未配置
+            </div>
+          )}
         </div>
       );
     };

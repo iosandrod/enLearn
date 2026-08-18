@@ -1,0 +1,14 @@
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+SkipLoggingError
+    at bundleWorker (file:///E:/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/build/bundle.js:54:15)
+    at async runBundle (file:///E:/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSession.js:116:34)
+    at async startDevSession (file:///E:/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/dev/devSession.js:141:26)
+    at async startDev (file:///E:/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/commands/dev.js:224:23)
+    at async devCommand (file:///E:/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/commands/dev.js:137:29)
+    at async file:///E:/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/commands/dev.js:69:13
+    at async wrapCommandAction (file:///E:/enLearn/node_modules/.pnpm/trigger.dev@4.5.7_react@19.2.8_typescript@5.9.3/node_modules/trigger.dev/dist/esm/cli/common.js:47:24)
+
+Node.js v22.17.0

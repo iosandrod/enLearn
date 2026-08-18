@@ -26,8 +26,9 @@
   /**
    * @description 左侧边栏
    */
-  import { computed, ref, watch } from 'vue';
+  import { computed, inject, ref, watch } from 'vue';
   import components from './components';
+  import { formDesignerModeKey } from '../../form-designer-context';
 
   defineOptions({
     name: 'LeftAside',
@@ -44,6 +45,8 @@
     },
   );
 
+  const formDesignerMode = inject(formDesignerModeKey, null);
+
   const tabs = computed(() =>
     Object.entries(components)
       .map(([name, component]) => {
@@ -58,7 +61,11 @@
           return false;
         }
 
-        return !excludeLabels.includes(tab.label);
+        if (excludeLabels.includes(tab.label)) {
+          return false;
+        }
+
+        return tab.label !== '列组件' || formDesignerMode?.value === 'edit';
       })
       .sort((a, b) => a.order - b.order),
   );

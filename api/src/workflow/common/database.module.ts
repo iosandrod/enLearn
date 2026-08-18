@@ -1,10 +1,11 @@
 import { Global, Module } from '@nestjs/common';
-import { DatabaseService } from './database.service';
+import { TriggerCredentialsService } from '../trigger/trigger-credentials.service';
+import { WorkflowSupabaseService } from './workflow-supabase.service';
 
 @Global()
 @Module({
-  providers: [DatabaseService],
-  exports: [DatabaseService]
+  providers: [WorkflowSupabaseService, TriggerCredentialsService],
+  exports: [WorkflowSupabaseService, TriggerCredentialsService]
 })
 export class DatabaseModule {}
 

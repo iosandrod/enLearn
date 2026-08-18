@@ -1,4 +1,6 @@
 packages:
   - "api"
   - "frontend"
+  - "mobile-app"
   - "packages/*"
+  - "packages/gantt-main/*"

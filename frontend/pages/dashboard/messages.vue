@@ -9,7 +9,13 @@
       <p class="page-description">{{ errorMessage }}</p>
     </div>
 
-    <LowCodePageRenderer v-else-if="page" :page="page" />
+    <LowCodePageRenderer
+      v-else-if="page"
+      :page="page"
+      :service-api="serviceApi"
+      :router="router"
+      :route="route"
+    />
   </section>
 </template>
 
@@ -20,6 +26,8 @@ import { getLowCodePage } from '../../utils/lowCodePages';
 
 const pageCode = 'notification-message-center';
 const serviceApi = useServiceApi();
+const router = useRouter();
+const route = useRoute();
 const page = ref<LowCodePageRecord & { resolvedData?: Record<string, unknown> } | null>(null);
 const loading = ref(true);
 const errorMessage = ref('');

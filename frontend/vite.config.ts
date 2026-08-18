@@ -33,11 +33,15 @@ const approvalWorkflowRoot = resolve(__dirname, '..', 'packages', 'approval-work
 const chatWidgetRoot = resolve(__dirname, '..', 'packages', 'chat-widget', 'src');
 const triggerWorkflowEditorRoot = resolve(__dirname, '..', 'packages', 'trigger-workflow-editor', 'src');
 const workflowSchemaRoot = resolve(__dirname, '..', 'packages', 'workflow-schema', 'src');
+const areaPluginRoot = resolve(__dirname, '..', 'packages', 'area-plugin');
+const tableAdvancedFilterPluginRoot = resolve(__dirname, '..', 'packages', 'table-advanced-filter-plugin');
+const tableSearchPluginRoot = resolve(__dirname, '..', 'packages', 'table-search-plugin');
+const ganttRoot = resolve(__dirname, '..', 'packages', 'gantt-main');
 const tldrawVueRoot = resolve(__dirname, '..', 'packages', 'tldraw-vue');
 const tldrawVueSrcRoot = resolve(tldrawVueRoot, 'src');
 const tldrawVueEntry = existsSync(resolve(tldrawVueSrcRoot, 'index.ts'))
   ? resolve(tldrawVueSrcRoot, 'index.ts')
-  : resolve(__dirname, 'src', 'stubs', 'tldraw-vue-phase-one.ts');
+  : resolve(__dirname, 'src', 'stubs', 'tldraw-vue-phase-one.tsx');
 const tldrawVueStyle = existsSync(resolve(tldrawVueSrcRoot, 'styles.css'))
   ? resolve(tldrawVueSrcRoot, 'styles.css')
   : resolve(__dirname, 'src', 'stubs', 'tldraw-vue-phase-one.css');
@@ -141,20 +145,54 @@ export default defineConfig({
       { find: /^~\/types\/lowcode$/, replacement: `${toVitePath(lowcodeFrameworkRoot)}/types/lowcode.ts` },
       { find: /^@\/types\/lowcode$/, replacement: `${toVitePath(lowcodeFrameworkRoot)}/types/lowcode.ts` },
       { find: '@enlearn/lowcode-framework/runtime/global-dialog', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'global-dialog.ts') },
-      { find: '@enlearn/lowcode-framework/runtime/page-reference-dialog', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'page-reference-dialog.ts') },
+      { find: '@enlearn/lowcode-framework/runtime/global-drawer', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'global-drawer.ts') },
+      { find: '@enlearn/lowcode-framework/runtime/lowcode-context-drawer', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'lowcode-context-drawer.tsx') },
+      { find: '@enlearn/lowcode-framework/runtime/page-reference-dialog', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'page-reference-dialog.tsx') },
       { find: '@enlearn/lowcode-framework/runtime/directives', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'directives.ts') },
+      { find: '@enlearn/lowcode-framework/runtime/scripts', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'scripts.ts') },
       { find: '@enlearn/lowcode-framework/runtime', replacement: resolve(lowcodeFrameworkRoot, 'runtime', 'index.ts') },
+      { find: '@enlearn/lowcode-framework/designer/design-dialog', replacement: resolve(lowcodeFrameworkRoot, 'designer', 'design-dialog.ts') },
       { find: '@enlearn/lowcode-framework/designer', replacement: resolve(lowcodeFrameworkRoot, 'designer', 'index.ts') },
       { find: '@enlearn/lowcode-framework/materials', replacement: resolve(lowcodeFrameworkRoot, 'materials', 'index.ts') },
       { find: '@enlearn/lowcode-framework/core/host', replacement: resolve(lowcodeFrameworkRoot, 'core', 'host.ts') },
       { find: '@enlearn/lowcode-framework/core', replacement: resolve(lowcodeFrameworkRoot, 'core', 'index.ts') },
       { find: '@enlearn/lowcode-framework/types/lowcode', replacement: resolve(lowcodeFrameworkRoot, 'types', 'lowcode.ts') },
       { find: '@enlearn/lowcode-framework/lowcode/schema', replacement: resolve(lowcodeFrameworkRoot, 'lowcode', 'schema.ts') },
+      { find: '@enlearn/lowcode-framework/components/low-code-form', replacement: resolve(lowcodeFrameworkRoot, 'components', 'LowCodeForm.vue') },
+      { find: '@enlearn/lowcode-framework/components/json-dialog-input', replacement: resolve(lowcodeFrameworkRoot, 'components', 'JsonDialogInput.vue') },
       { find: '@enlearn/lowcode-framework', replacement: lowcodeFrameworkRoot },
       { find: '@enlearn/approval-workflow', replacement: approvalWorkflowRoot },
       { find: '@enlearn/chat-widget', replacement: chatWidgetRoot },
       { find: '@enlearn/trigger-workflow-editor', replacement: triggerWorkflowEditorRoot },
       { find: '@enlearn/workflow-schema', replacement: workflowSchemaRoot },
+      { find: '@svar-ui/vue-gantt/style.css', replacement: resolve(ganttRoot, 'vue', 'src', 'runtime-style.ts') },
+      { find: '@svar-ui/vue-gantt', replacement: resolve(ganttRoot, 'vue', 'src', 'index.ts') },
+      { find: '@svar-ui/gantt-locales', replacement: resolve(ganttRoot, 'locales', 'index.ts') },
+      { find: '@svar-ui/gantt-store', replacement: resolve(ganttRoot, 'store', 'src', 'index.ts') },
+      {
+        find: /^vxe-table-plugin-extend-cell-area\/style\.css$/,
+        replacement: resolve(areaPluginRoot, 'dist', 'style.css'),
+      },
+      {
+        find: /^vxe-table-plugin-extend-cell-area$/,
+        replacement: resolve(areaPluginRoot, 'dist', 'index.js'),
+      },
+      {
+        find: /^vxe-table-plugin-advanced-filter\/style\.css$/,
+        replacement: resolve(tableAdvancedFilterPluginRoot, 'src', 'style', 'index.css'),
+      },
+      {
+        find: /^vxe-table-plugin-advanced-filter$/,
+        replacement: resolve(tableAdvancedFilterPluginRoot, 'src', 'index.ts'),
+      },
+      {
+        find: /^vxe-table-plugin-search-panel\/style\.css$/,
+        replacement: resolve(tableSearchPluginRoot, 'dist', 'style.css'),
+      },
+      {
+        find: /^vxe-table-plugin-search-panel$/,
+        replacement: resolve(tableSearchPluginRoot, 'dist', 'index.js'),
+      },
       { find: 'tldraw-vue-phase-one/style.css', replacement: tldrawVueStyle },
       { find: 'tldraw-vue-phase-one', replacement: tldrawVueEntry },
       { find: 'echarts', replacement: resolve(__dirname, 'node_modules', 'echarts') },
@@ -185,7 +223,7 @@ export default defineConfig({
         find: '@vue-flow/core',
         replacement: resolve(__dirname, '..', 'packages', 'trigger-workflow-editor', 'node_modules', '@vue-flow', 'core'),
       },
-      { find: 'vue/jsx-runtime', replacement: resolve(__dirname, 'runtime/vue-jsx-runtime.ts') },
+      { find: 'vue/jsx-runtime', replacement: resolve(__dirname, 'runtime/vue-jsx-runtime.tsx') },
       { find: /^@\/editor(\/.*)?$/, replacement: `${resolve(tldrawVueSrcRoot, 'editor')}$1` },
       { find: /^@\/print(\/.*)?$/, replacement: `${resolve(tldrawVueSrcRoot, 'print')}$1` },
       { find: /^@\/vue(\/.*)?$/, replacement: `${resolve(tldrawVueSrcRoot, 'vue')}$1` },
@@ -193,13 +231,15 @@ export default defineConfig({
       { find: '~', replacement: __dirname },
       { find: '@', replacement: __dirname },
     ],
-    dedupe: ['vue', 'react', 'react-dom', 'vxe-pc-ui', 'vxe-table'],
+    dedupe: ['vue', 'react', 'react-dom', '@vxe-ui/core', 'vxe-pc-ui', 'vxe-table', '@svar-ui/lib-dom', '@svar-ui/lib-state', '@svar-ui/lib-vue'],
   },
   optimizeDeps: {
     include: ['vue', 'vue-router'],
   },
   server: {
-    port: 3000,
+    port: Number(env.VITE_PORT ?? 3000),
+    host: env.VITE_HOST ?? '127.0.0.1',
+    allowedHosts: ['frp-bag.com'],
     proxy: {
       '/api': {
         target: env.VITE_API_BASE_URL ?? env.NUXT_API_BASE_URL ?? env.API_BASE_URL ?? `http://localhost:${env.API_PORT ?? '3002'}/api`,

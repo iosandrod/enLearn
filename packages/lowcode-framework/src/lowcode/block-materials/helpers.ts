@@ -57,11 +57,19 @@ export function resolveGridRows(
   searchFilters: Record<string, Record<string, unknown>>
 ) {
   const sourceValue = getSourceValue(resolvedData, block.sourceKey);
-  const rows = Array.isArray(block.rows)
-    ? block.rows
-    : Array.isArray(sourceValue)
-      ? (sourceValue as Record<string, unknown>[])
-      : [];
+  const sourceRows = Array.isArray(sourceValue)
+    ? sourceValue
+    : typeof sourceValue === 'object' && sourceValue !== null && Array.isArray(
+        (sourceValue as Record<string, unknown>).rows
+      )
+      ? (sourceValue as { rows: Record<string, unknown>[] }).rows
+      : undefined;
+  const rows = block.sourceKey && sourceRows
+    ? sourceRows
+    : Array.isArray(block.rows)
+      ? block.rows
+      : sourceRows ?? [];
+  if (block.clientFilter === false) return rows;
   const filters = block.sourceKey ? searchFilters[block.sourceKey] : undefined;
 
   return filters ? rows.filter((row) => matchesFilter(row, filters)) : rows;

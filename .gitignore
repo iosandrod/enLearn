@@ -8,19 +8,27 @@
 
 # testing
 /coverage
-
+/api/.trigger/*
+/artifacts/.mes-*.json
+/artifacts/.mes-*.mjs
+/artifacts/.mes-*.tmp
+/artifacts/mes-*.log
+/.tmp-ai-pgdata/
+/.tmp-ai-postgres.log
 # nuxt
 /nuxt-app/.nuxt/
 /nuxt-app/.output/
 /nuxt-app/node_modules/
 /api/dist/
 /api/node_modules/
+/api/.trigger.worker.env
 /services/*/dist/
 /services/*/node_modules/
-
+**/dist/*
 # production
 /build
-
+**/.codex-server-logs/*
+**/.trigger/*
 # misc
 .DS_Store
 *.pem
@@ -42,6 +50,8 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+/trigger-workflow-gateway/.env.bootstrap
+/trigger-workflow-gateway/dist/bootstrap.*
 
 # vercel
 .vercel
@@ -52,3 +62,12 @@ yarn-error.log*
 # certificates
 certificates
 .env*.local
+api/.trigger/**
+frontend/dist/index.html
+/api/.trigger/**
+api/.trigger/tmp/**/*
+/.codex-server-logs/**
+
+.tmp-ai-pgdata/**/*
+/.tmp-ai-pgdata
+**/.tmp-ai-pgdata

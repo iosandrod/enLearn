@@ -52,7 +52,10 @@ begin
   end if;
 
   if jsonb_typeof(value) = 'array' then
-    select coalesce(jsonb_agg(public.__enlearn_normalize_admin_execute_actions(item)), '[]'::jsonb)
+    select coalesce(
+      jsonb_agg(public.__enlearn_normalize_admin_execute_actions(array_items.item)),
+      '[]'::jsonb
+    )
       into result
     from jsonb_array_elements(value) as array_items(item);
 

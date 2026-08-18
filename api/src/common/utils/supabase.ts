@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { getEnv } from './env';
 import type { ServiceContext } from '../interfaces/service-executor';
+import { createSupabaseFetch } from './supabase-fetch';
 
 type ClientMode = 'public' | 'user' | 'admin';
 type CurrentUserResult = {
@@ -15,6 +16,7 @@ type CurrentUserResult = {
 
 type UserAuthorizationOptions = {
   refresh?: boolean;
+  accountId?: string;
 };
 
 type CacheEntry<T> = {
@@ -22,10 +24,17 @@ type CacheEntry<T> = {
   value: Promise<T>;
 };
 
-const AUTH_CACHE_TTL_MS = 10 * 60_000;
+const CURRENT_USER_CACHE_TTL_MS = 10 * 60_000;
+const USER_AUTHORIZATION_CACHE_TTL_MS = 60_000;
 const AUTH_CACHE_MAX_ENTRIES = 200;
 const currentUserCache = new Map<string, CacheEntry<CurrentUserResult>>();
 const userAuthorizationCache = new Map<string, CacheEntry<UserAuthorization>>();
+const supabaseFetch = createSupabaseFetch(fetch, {
+  onRequest: ({ method, url }) => {
+    if (process.env.ENLEARN_DEBUG_SUPABASE_FETCH !== '1') return;
+    console.log(`[supabase] ${method} ${url}`);
+  }
+});
 
 export type AccountRole = 'owner' | 'member';
 
@@ -35,10 +44,17 @@ export type AccountSummary = {
   is_primary_owner: boolean;
   name: string | null;
   slug: string | null;
-  personal_account: boolean;
   metadata?: Record<string, unknown> | null;
   created_at?: string | null;
   updated_at?: string | null;
+  code?: string | null;
+  status?: 'active' | 'inactive' | 'archived' | null;
+  base_currency?: string | null;
+  timezone?: string | null;
+  fiscal_year_start_month?: number | null;
+  is_default?: boolean;
+  is_last_used?: boolean;
+  last_login_at?: string | null;
 };
 
 export type UserAuthorization = {
@@ -83,10 +99,23 @@ function normalizeAccounts(value: unknown): AccountSummary[] {
         is_primary_owner: account.is_primary_owner === true,
         name: typeof account.name === 'string' ? account.name : null,
         slug: typeof account.slug === 'string' ? account.slug : null,
-        personal_account: account.personal_account === true,
         metadata: isRecord(account.metadata) ? account.metadata : null,
         created_at: typeof account.created_at === 'string' ? account.created_at : null,
-        updated_at: typeof account.updated_at === 'string' ? account.updated_at : null
+        updated_at: typeof account.updated_at === 'string' ? account.updated_at : null,
+        code: typeof account.code === 'string' ? account.code : null,
+        status:
+          account.status === 'inactive' || account.status === 'archived'
+            ? account.status
+            : 'active',
+        base_currency: typeof account.base_currency === 'string' ? account.base_currency : null,
+        timezone: typeof account.timezone === 'string' ? account.timezone : null,
+        fiscal_year_start_month:
+          typeof account.fiscal_year_start_month === 'number'
+            ? account.fiscal_year_start_month
+            : null,
+        is_default: account.is_default === true,
+        is_last_used: account.is_last_used === true,
+        last_login_at: typeof account.last_login_at === 'string' ? account.last_login_at : null
       };
     })
     .filter((account) => account.account_id);
@@ -111,10 +140,14 @@ function isPermissionReadDenied(error: { message?: string } | null | undefined) 
   return isMissingPermissionTableError(error) || message.includes('permission denied');
 }
 
-async function readPermissionCodesFromSupabase(client: SupabaseClient, userId: string) {
+async function readPermissionCodesFromSupabase(
+  client: SupabaseClient,
+  userId: string,
+  accountId?: string
+) {
   const { data: userRoles, error: userRolesError } = await client
     .from('admin_user_roles')
-    .select('role_id')
+    .select('role_id, account_id')
     .eq('user_id', userId);
 
   if (userRolesError) {
@@ -123,7 +156,12 @@ async function readPermissionCodesFromSupabase(client: SupabaseClient, userId: s
   }
 
   const roleIds = uniqueStrings(
-    (userRoles ?? []).map((row: Record<string, unknown>) => String(row.role_id ?? ''))
+    (userRoles ?? [])
+      .filter((row: Record<string, unknown>) => {
+        const roleAccountId = typeof row.account_id === 'string' ? row.account_id : '';
+        return !roleAccountId || Boolean(accountId && roleAccountId === accountId);
+      })
+      .map((row: Record<string, unknown>) => String(row.role_id ?? ''))
   );
   if (!roleIds.length) return [] as string[];
 
@@ -214,7 +252,8 @@ function trimCache<T>(cache: Map<string, CacheEntry<T>>) {
 function readCachedPromise<T>(
   cache: Map<string, CacheEntry<T>>,
   key: string,
-  factory: () => Promise<T>
+  factory: () => Promise<T>,
+  ttlMs: number,
 ) {
   trimCache(cache);
 
@@ -229,7 +268,7 @@ function readCachedPromise<T>(
     throw error;
   });
   cache.set(key, {
-    expiresAt: now + AUTH_CACHE_TTL_MS,
+    expiresAt: now + ttlMs,
     value
   });
 
@@ -294,7 +333,10 @@ export function createSupabaseClient(
       autoRefreshToken: false,
       persistSession: false
     },
-    global: Object.keys(headers).length ? { headers } : undefined
+    global: {
+      fetch: supabaseFetch,
+      ...(Object.keys(headers).length ? { headers } : {})
+    }
   });
 }
 
@@ -321,7 +363,12 @@ export async function getCurrentUser(context: ServiceContext): Promise<CurrentUs
   };
 
   return cacheKey
-    ? readCachedPromise(currentUserCache, cacheKey, loadCurrentUser)
+    ? readCachedPromise(
+        currentUserCache,
+        cacheKey,
+        loadCurrentUser,
+        CURRENT_USER_CACHE_TTL_MS,
+      )
     : loadCurrentUser();
 }
 
@@ -330,28 +377,51 @@ export async function getUserAuthorization(
   userId: string,
   options: UserAuthorizationOptions = {}
 ): Promise<UserAuthorization> {
-  const cacheKey = userId.trim();
+  const cacheKey = [userId.trim(), options.accountId?.trim() ?? 'global'].join(':');
   if (options.refresh && cacheKey) {
     userAuthorizationCache.delete(cacheKey);
   }
 
   if (cacheKey) {
-    return readCachedPromise(userAuthorizationCache, cacheKey, () =>
-      loadUserAuthorization(client, userId)
+    return readCachedPromise(
+      userAuthorizationCache,
+      cacheKey,
+      () => loadUserAuthorization(client, userId, options.accountId),
+      USER_AUTHORIZATION_CACHE_TTL_MS,
     );
   }
 
-  return loadUserAuthorization(client, userId);
+  return loadUserAuthorization(client, userId, options.accountId);
+}
+
+export async function getFreshUserAccounts(client: SupabaseClient) {
+  const { data, error } = await client.rpc('get_accounts');
+  if (error) {
+    throw new ForbiddenException(error.message);
+  }
+  return normalizeAccounts(data);
+}
+
+export function clearUserAuthorizationCache(userId: string) {
+  const prefix = `${userId.trim()}:`;
+  for (const key of userAuthorizationCache.keys()) {
+    if (key.startsWith(prefix)) userAuthorizationCache.delete(key);
+  }
+}
+
+export function clearAllUserAuthorizationCaches() {
+  userAuthorizationCache.clear();
 }
 
 async function loadUserAuthorization(
   client: SupabaseClient,
-  userId: string
+  userId: string,
+  accountId?: string
 ): Promise<UserAuthorization> {
   const [{ data: profile, error: profileError }, permissionsResult, accountsResult] =
     await Promise.all([
       client.from('users').select('*').eq('id', userId).maybeSingle(),
-      client.rpc('current_user_permission_codes'),
+      client.rpc('current_user_permission_codes', { account_id: accountId ?? null }),
       client.rpc('get_accounts')
     ]);
 
@@ -374,7 +444,7 @@ async function loadUserAuthorization(
   const rpcPermissionCodes = normalizeStringArray(permissionsResult.data);
   const databasePermissionCodes = rpcPermissionCodes.length
     ? []
-    : await readPermissionCodesFromSupabase(client, userId);
+    : await readPermissionCodesFromSupabase(client, userId, accountId);
   const legacyAdminPermissionCodes = isLegacyAdmin
     ? await readLegacyAdminPermissionCodes(client)
     : [];
@@ -413,7 +483,10 @@ export async function requireAdmin(
   requiredPermissions?: string | string[]
 ) {
   const { client, user } = await getCurrentUser(context);
-  const authorization = await getUserAuthorization(client, user.id);
+  const authorization = await getUserAuthorization(client, user.id, {
+    accountId: context.accountId,
+    refresh: true
+  });
 
   if (!hasRequiredPermission(authorization, requiredPermissions)) {
     throw new ForbiddenException('Admin permission required.');

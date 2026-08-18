@@ -997,8 +997,8 @@ button {
 
 .bottom-toolbar-panel {
 	position: absolute;
-	top: 34px;
-	left: min(850px, calc(100vw - 512px));
+	top: 82px;
+	left: 34px;
 	z-index: 32;
 	color: #172033;
 	pointer-events: auto;
@@ -1128,15 +1128,15 @@ button {
 
 @media (max-width: 1360px) {
 	.bottom-toolbar-panel {
-		top: 78px;
-		left: 50%;
-		transform: translateX(-50%);
+		top: 82px;
+		left: 34px;
+		transform: none;
 	}
 }
 
 .component-palette {
 	position: absolute;
-	top: 80px;
+	top: 134px;
 	left: 42px;
 	z-index: 33;
 	width: 244px;
@@ -2324,7 +2324,7 @@ button {
 
 .style-panel {
 	position: absolute;
-	top: 384px;
+	top: 438px;
 	left: 42px;
 	z-index: 33;
 	display: flex;

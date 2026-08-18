@@ -1,10 +1,11 @@
 import { IsIn, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator';
+import { PUBLIC_SERVICE_NAMES, type PublicServiceName } from '../service-bus';
 
 export class ServiceInvokeDto {
   @IsString()
   @IsNotEmpty()
-  @IsIn(['account', 'payment', 'user', 'lowcode', 'admin', 'posts', 'notification', 'workflow'])
-  serviceName!: 'account' | 'payment' | 'user' | 'lowcode' | 'admin' | 'posts' | 'notification' | 'workflow';
+  @IsIn(PUBLIC_SERVICE_NAMES)
+  serviceName!: PublicServiceName;
 
   @IsString()
   @IsNotEmpty()

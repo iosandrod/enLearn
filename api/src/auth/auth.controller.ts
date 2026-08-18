@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Headers, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Inject, Post, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   EmailPasswordAuthDto,
   OAuthUrlDto,
   RefreshSessionDto,
+  SelectAccountDto,
   SetSessionDto,
   SignInPasswordAuthDto
 } from './auth.dto';
@@ -15,6 +16,11 @@ export class AuthController {
   @Post('signin')
   signInWithPassword(@Body() dto: SignInPasswordAuthDto) {
     return this.authService.signInWithPassword(dto);
+  }
+
+  @Get('account-options')
+  listLoginAccountOptions(@Query('login') login?: string) {
+    return this.authService.listLoginAccountOptions(login);
   }
 
   @Post('signup')
@@ -40,9 +46,19 @@ export class AuthController {
   @Get('me')
   me(
     @Headers('authorization') authorization?: string,
+    @Headers('x-request-id') requestId?: string,
+    @Headers('x-account-id') accountId?: string
+  ) {
+    return this.authService.me({ authorization, requestId, accountId });
+  }
+
+  @Post('select-account')
+  selectAccount(
+    @Body() dto: SelectAccountDto,
+    @Headers('authorization') authorization?: string,
     @Headers('x-request-id') requestId?: string
   ) {
-    return this.authService.me({ authorization, requestId });
+    return this.authService.selectAccount(dto, { authorization, requestId });
   }
 
   @Post('signout')

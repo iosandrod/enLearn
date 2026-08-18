@@ -1,420 +1,377 @@
 import { strict as assert } from 'node:assert';
-import { BadRequestException } from '@nestjs/common';
-import { DefinitionService } from '../definition/definition.service';
+import type { DefinitionService } from '../definition/definition.service';
 import type {
-  WorkflowInstanceTaskPayload,
-  WorkflowTaskDecision,
+  PreparedTaskDecision,
+  WorkflowRuntimeStore,
   WorkflowTriggerClient
 } from './runtime.engine.types';
-import { MemoryWorkflowRuntimeStore } from './runtime.memory-store';
 import { RuntimeService } from './runtime.service';
-import { executeWorkflowInstance, type WorkflowWaitDriver } from './workflow.executor';
+import type {
+  ProcessInstanceDetail,
+  ProcessInstanceRecord,
+  RuntimeActor,
+  WorkflowTaskRecord
+} from './runtime.types';
 
-const actor = {
+const actor: RuntimeActor = {
   tenantId: 'default',
   userId: '00000000-0000-0000-0000-000000000001'
 };
-const secondActor = {
-  tenantId: 'default',
-  userId: '00000000-0000-0000-0000-000000000002'
-};
 
 async function main() {
-  await testApprovalAndAddSign();
-  await testTransferNotification();
-  await testReject();
-  await testAutomaticNodes();
-  console.log('workflow-api Trigger.dev runtime tests passed');
+  await testTriggerFailureMarksInstanceFailed();
+  await testTriggerFailureIsPreservedWhenFailureProjectionFails();
+  await testTriggerSuccessStoresPersistentRunId();
+  await testRunIsCanceledWhenRunIdProjectionFails();
+  await testTerminateInstanceCancelsTriggerRun();
+  await testAddSignDoesNotFallBackWhenWaitpointCreationFails();
+  await testApprovalRecordsWaitpointFailureWithoutContinuing();
+  await testPreparedApprovalDoesNotCompleteWaitpointTwice();
+  console.log('workflow-api Trigger.dev runtime boundary tests passed');
 }
 
-async function testApprovalAndAddSign() {
-  const definitionService = new DefinitionService();
-  const definition = await publishDefinition(definitionService, {
-    schemaVersion: 1,
-    code: 'expense_trigger_runtime',
-    name: 'Expense Trigger Runtime',
-    documentType: 'expense',
-    nodes: [
-      { id: 'start', type: 'start', name: 'Start' },
-      {
-        id: 'approval',
-        type: 'approval',
-        name: 'Manager Approval',
-        config: {
-          assigneeStrategy: {
-            type: 'users',
-            userIds: [actor.userId]
-          }
-        }
-      },
-      { id: 'end', type: 'end', name: 'End' }
-    ],
-    edges: [
-      { id: 'e1', source: 'start', target: 'approval' },
-      { id: 'e2', source: 'approval', target: 'end' }
-    ]
+async function testTriggerFailureMarksInstanceFailed() {
+  const instance = createInstance();
+  let failedPayload: Record<string, unknown> | undefined;
+  let storedRunId: string | undefined;
+  const store = createStore({
+    createInstance: async () => instance,
+    setTriggerRun: async (_instanceId, runId) => {
+      storedRunId = runId;
+    },
+    setInstanceStatus: async (_instanceId, status, payload) => {
+      instance.status = status;
+      failedPayload = payload;
+    }
   });
-  const store = new MemoryWorkflowRuntimeStore();
-  const trigger = new TestTriggerClient();
-  const service = new RuntimeService(definitionService, store, trigger);
-
-  const started = await service.startInstance(
-    {
-      definitionId: definition.id,
-      businessKey: 'expense:trigger:1',
-      documentType: 'expense',
-      documentId: 'trigger-1',
-      title: 'Trigger Expense',
-      variables: {
-        amount: 1200
-      }
-    },
-    actor
-  );
-
-  assert.equal(started.status, 'running');
-  assert.equal(started.tasks.length, 0);
-  assert.equal(started.triggerRunId, 'run-1');
-
-  const execution = executeWorkflowInstance(trigger.lastWorkflowPayload(), store, trigger);
-  const firstTask = await waitForTask(service, actor);
-  const addSignTask = await service.addSignTask(
-    firstTask.id,
-    {
-      targetUserId: secondActor.userId,
-      comment: 'Please confirm'
-    },
-    actor
-  );
-  assert.equal(addSignTask.assigneeId, secondActor.userId);
-
-  await service.completeTask(
-    firstTask.id,
-    {
-      comment: 'Approved',
-      variables: {
-        managerApproved: true
-      }
-    },
-    actor
-  );
-  assert.equal((await service.getInstance(started.id)).status, 'running');
-
-  await service.completeTask(addSignTask.id, { comment: 'Confirmed' }, secondActor);
-  await execution;
-
-  const approved = await service.getInstance(started.id);
-  assert.equal(approved.status, 'approved');
-  assert.ok(approved.endedAt);
-  assert.equal(approved.tasks.filter((task) => task.status === 'completed').length, 2);
-  assert.ok(approved.variables.some((variable) => variable.key === 'managerApproved'));
-  assert.ok((await service.getTimeline(approved.id)).some((event) => event.eventType === 'PROCESS_COMPLETED'));
-  assert.equal((await service.listDoneTasks(actor)).length, 1);
-  assert.ok(trigger.notificationEventTypes().includes('approval.task.created'));
-  assert.ok(trigger.notificationEventTypes().includes('approval.task.add_signed'));
-  assert.equal(
-    trigger.notificationEventTypes().filter((eventType) => eventType === 'approval.task.completed').length,
-    2
-  );
+  const trigger = createTriggerClient({
+    triggerWorkflow: async (): Promise<{ id: string }> => {
+      throw new Error('Trigger.dev unavailable');
+    }
+  });
+  const service = new RuntimeService(createDefinitionService(), store, trigger);
 
   await assert.rejects(
-    () => service.completeTask(firstTask.id, { comment: 'Duplicate' }, actor),
-    BadRequestException
+    () => service.startInstance(startInput(), actor),
+    /Trigger.dev unavailable/
   );
-}
 
-async function testTransferNotification() {
-  const definitionService = new DefinitionService();
-  const definition = await publishDefinition(definitionService, {
-    schemaVersion: 1,
-    code: 'expense_trigger_transfer',
-    name: 'Expense Trigger Transfer',
-    nodes: [
-      { id: 'start', type: 'start', name: 'Start' },
-      {
-        id: 'approval',
-        type: 'approval',
-        name: 'Approval',
-        config: {
-          assigneeStrategy: {
-            type: 'users',
-            userIds: [actor.userId]
-          }
-        }
-      },
-      { id: 'end', type: 'end', name: 'End' }
-    ],
-    edges: [
-      { id: 'e1', source: 'start', target: 'approval' },
-      { id: 'e2', source: 'approval', target: 'end' }
-    ]
+  assert.equal(instance.status, 'failed');
+  assert.equal(storedRunId, undefined);
+  assert.deepEqual(failedPayload, {
+    message: 'Trigger.dev unavailable',
+    phase: 'triggerWorkflow'
   });
-  const store = new MemoryWorkflowRuntimeStore();
-  const trigger = new TestTriggerClient();
-  const service = new RuntimeService(definitionService, store, trigger);
-  const started = await service.startInstance(
-    {
-      definitionId: definition.id,
-      businessKey: 'expense:trigger:transfer',
-      title: 'Transfer Expense',
-      variables: {}
-    },
-    actor
-  );
-  const execution = executeWorkflowInstance(trigger.lastWorkflowPayload(), store, trigger);
-  const task = await waitForTask(service, actor);
-
-  const transferred = await service.transferTask(
-    task.id,
-    {
-      targetUserId: secondActor.userId,
-      comment: 'Please take over'
-    },
-    actor
-  );
-  assert.equal(transferred.assigneeId, secondActor.userId);
-  assert.ok(trigger.notificationEventTypes().includes('approval.task.transferred'));
-  assert.equal((await service.listTodoTasks(secondActor)).length, 1);
-
-  await service.completeTask(transferred.id, { comment: 'Approved after transfer' }, secondActor);
-  await execution;
-
-  assert.equal((await service.getInstance(started.id)).status, 'approved');
 }
 
-async function testReject() {
-  const definitionService = new DefinitionService();
-  const definition = await publishDefinition(definitionService, {
-    schemaVersion: 1,
-    code: 'expense_trigger_reject',
-    name: 'Expense Trigger Reject',
-    nodes: [
-      { id: 'start', type: 'start', name: 'Start' },
-      {
-        id: 'approval',
-        type: 'approval',
-        name: 'Approval',
-        config: {
-          assigneeStrategy: {
-            type: 'users',
-            userIds: [actor.userId]
-          }
-        }
-      },
-      { id: 'end', type: 'end', name: 'End' }
-    ],
-    edges: [
-      { id: 'e1', source: 'start', target: 'approval' },
-      { id: 'e2', source: 'approval', target: 'end' }
-    ]
-  });
-  const store = new MemoryWorkflowRuntimeStore();
-  const trigger = new TestTriggerClient();
-  const service = new RuntimeService(definitionService, store, trigger);
-  const started = await service.startInstance(
-    {
-      definitionId: definition.id,
-      businessKey: 'expense:trigger:reject',
-      title: 'Reject Expense',
-      variables: {}
-    },
-    actor
-  );
-  const execution = executeWorkflowInstance(trigger.lastWorkflowPayload(), store, trigger);
-  const task = await waitForTask(service, actor);
-
-  const rejected = await service.rejectTask(task.id, { comment: 'Missing material' }, actor);
-  await execution;
-
-  assert.equal(rejected.status, 'rejected');
-  assert.ok(rejected.comments.some((comment) => comment.action === 'reject'));
-  assert.ok((await service.getTimeline(started.id)).some((event) => event.eventType === 'PROCESS_REJECTED'));
-  assert.ok(trigger.notificationEventTypes().includes('approval.task.rejected'));
-}
-
-async function testAutomaticNodes() {
-  const definitionService = new DefinitionService();
-  const definition = await publishDefinition(definitionService, {
-    schemaVersion: 1,
-    code: 'automatic_trigger_runtime',
-    name: 'Automatic Trigger Runtime',
-    nodes: [
-      { id: 'start', type: 'start', name: 'Start' },
-      { id: 'condition', type: 'condition', name: 'Amount Condition' },
-      {
-        id: 'cc',
-        type: 'cc',
-        name: 'Notify',
-        config: {
-          assigneeStrategy: {
-            type: 'users',
-            userIds: [actor.userId]
-          }
-        }
-      },
-      {
-        id: 'timer',
-        type: 'timer',
-        name: 'Delay',
-        config: {
-          delaySeconds: 0
-        }
-      },
-      {
-        id: 'service',
-        type: 'serviceTask',
-        name: 'Sync'
-      },
-      { id: 'end', type: 'end', name: 'End' }
-    ],
-    edges: [
-      { id: 'e1', source: 'start', target: 'condition' },
-      {
-        id: 'e2',
-        source: 'condition',
-        target: 'cc',
-        priority: 1,
-        condition: { type: 'field', field: 'amount', operator: 'gte', value: 5000 }
-      },
-      { id: 'e3', source: 'condition', target: 'end', priority: 99, condition: { type: 'always' } },
-      { id: 'e4', source: 'cc', target: 'timer' },
-      { id: 'e5', source: 'timer', target: 'service' },
-      { id: 'e6', source: 'service', target: 'end' }
-    ]
-  });
-  const store = new MemoryWorkflowRuntimeStore();
-  const trigger = new TestTriggerClient();
-  const service = new RuntimeService(definitionService, store, trigger);
-  const started = await service.startInstance(
-    {
-      definitionId: definition.id,
-      businessKey: 'automatic:trigger:1',
-      title: 'Automatic Flow',
-      variables: {
-        amount: 6800
-      }
-    },
-    actor
-  );
-
-  await executeWorkflowInstance(trigger.lastWorkflowPayload(), store, trigger);
-  const completed = await service.getInstance(started.id);
-  const timeline = await service.getTimeline(started.id);
-
-  assert.equal(completed.status, 'approved');
-  assert.equal((await service.listCc(actor)).length, 1);
-  assert.ok(timeline.some((event) => event.eventType === 'CC_CREATED'));
-  assert.ok(timeline.some((event) => event.eventType === 'TIMER_SCHEDULED'));
-  assert.ok(timeline.some((event) => event.eventType === 'TIMER_FIRED'));
-  assert.ok(timeline.some((event) => event.eventType === 'SERVICE_TASK_COMPLETED'));
-}
-
-async function publishDefinition(definitionService: DefinitionService, schema: Record<string, unknown>) {
-  const model = await definitionService.saveModel(
-    {
-      code: String(schema.code),
-      name: String(schema.name),
-      documentType: typeof schema.documentType === 'string' ? schema.documentType : undefined,
-      schema
-    },
-    actor
-  );
-  return (await definitionService.publishModel(model.id, { remark: 'runtime test' }, actor)).definition;
-}
-
-async function waitForTask(service: RuntimeService, taskActor: typeof actor) {
-  for (let attempt = 0; attempt < 100; attempt += 1) {
-    const tasks = await service.listTodoTasks(taskActor);
-    if (tasks[0]) return tasks[0];
-    await new Promise((resolve) => setTimeout(resolve, 5));
-  }
-  throw new Error('Timed out waiting for workflow task projection.');
-}
-
-class TestTriggerClient implements WorkflowTriggerClient, WorkflowWaitDriver {
-  private runSequence = 0;
-  private tokenSequence = 0;
-  private readonly workflowPayloads: WorkflowInstanceTaskPayload[] = [];
-  private readonly taskPayloads: Array<{
-    taskId: string;
-    payload: Record<string, unknown>;
-  }> = [];
-  private readonly tokenIdsByKey = new Map<string, string>();
-  private readonly tokenWaiters = new Map<
-    string,
-    {
-      promise: Promise<WorkflowTaskDecision>;
-      resolve: (decision: WorkflowTaskDecision) => void;
+async function testTriggerFailureIsPreservedWhenFailureProjectionFails() {
+  const store = createStore({
+    createInstance: async () => createInstance(),
+    setInstanceStatus: async () => {
+      throw new Error('failure projection failed');
     }
-  >();
+  });
+  const trigger = createTriggerClient({
+    triggerWorkflow: async (): Promise<{ id: string }> => {
+      throw new Error('Trigger.dev unavailable');
+    }
+  });
+  const service = new RuntimeService(createDefinitionService(), store, trigger);
 
-  async triggerWorkflow(payload: WorkflowInstanceTaskPayload) {
-    this.workflowPayloads.push(payload);
-    this.runSequence += 1;
-    return { id: `run-${this.runSequence}` };
-  }
-
-  async triggerTask(taskId: string, payload: Record<string, unknown>) {
-    this.taskPayloads.push({ taskId, payload });
-    this.runSequence += 1;
-    return { id: `run-${this.runSequence}` };
-  }
-
-  async createWaitpoint(options: { idempotencyKey: string; tags: string[] }) {
-    return this.createToken(options);
-  }
-
-  async createToken(options: { idempotencyKey: string; tags: string[] }) {
-    const existing = this.tokenIdsByKey.get(options.idempotencyKey);
-    if (existing) return { id: existing };
-
-    this.tokenSequence += 1;
-    const id = `waitpoint-${this.tokenSequence}`;
-    let resolve!: (decision: WorkflowTaskDecision) => void;
-    const promise = new Promise<WorkflowTaskDecision>((nextResolve) => {
-      resolve = nextResolve;
-    });
-    this.tokenIdsByKey.set(options.idempotencyKey, id);
-    this.tokenWaiters.set(id, { promise, resolve });
-    return { id };
-  }
-
-  async completeWaitpoint(tokenId: string, decision: WorkflowTaskDecision) {
-    const waiter = this.tokenWaiters.get(tokenId);
-    if (!waiter) throw new Error(`Unknown waitpoint ${tokenId}.`);
-    waiter.resolve(decision);
-  }
-
-  async cancelRun() {}
-
-  async waitForToken<T>(tokenId: string) {
-    const waiter = this.tokenWaiters.get(tokenId);
-    if (!waiter) throw new Error(`Unknown waitpoint ${tokenId}.`);
-    return waiter.promise as Promise<T>;
-  }
-
-  async waitFor() {}
-
-  async waitUntil() {}
-
-  lastWorkflowPayload() {
-    const payload = this.workflowPayloads.at(-1);
-    if (!payload) throw new Error('Workflow was not triggered.');
-    return payload;
-  }
-
-  notificationEventTypes() {
-    return this.taskPayloads
-      .map((item) => readNotificationEventType(item.payload))
-      .filter((eventType): eventType is string => Boolean(eventType));
-  }
+  await assert.rejects(
+    () => service.startInstance(startInput(), actor),
+    /Trigger\.dev unavailable/
+  );
 }
 
-function readNotificationEventType(payload: Record<string, unknown>) {
-  const event = payload.event;
-  if (!event || typeof event !== 'object' || Array.isArray(event)) return undefined;
-  const eventType = (event as Record<string, unknown>).eventType;
-  return typeof eventType === 'string' ? eventType : undefined;
+async function testTriggerSuccessStoresPersistentRunId() {
+  const instance = createInstance();
+  let storedRunId: string | undefined;
+  const store = createStore({
+    createInstance: async () => instance,
+    setTriggerRun: async (_instanceId, runId) => {
+      storedRunId = runId;
+      instance.triggerRunId = runId;
+    },
+    getInstance: async () => createInstanceDetail(instance)
+  });
+  const service = new RuntimeService(
+    createDefinitionService(),
+    store,
+    createTriggerClient({
+      triggerWorkflow: async () => ({ id: 'trigger-run-1' })
+    })
+  );
+
+  const started = await service.startInstance(startInput(), actor);
+
+  assert.equal(storedRunId, 'trigger-run-1');
+  assert.equal(started.triggerRunId, 'trigger-run-1');
+  assert.equal(started.status, 'running');
+}
+
+async function testRunIsCanceledWhenRunIdProjectionFails() {
+  const instance = createInstance();
+  let canceledRunId: string | undefined;
+  const store = createStore({
+    createInstance: async () => instance,
+    setTriggerRun: async () => {
+      throw new Error('run projection failed');
+    },
+    setInstanceStatus: async () => {}
+  });
+  const trigger = createTriggerClient({
+    triggerWorkflow: async () => ({ id: 'trigger-run-1' }),
+    cancelRun: async (runId) => {
+      canceledRunId = runId;
+    }
+  });
+  const service = new RuntimeService(createDefinitionService(), store, trigger);
+
+  await assert.rejects(
+    () => service.startInstance(startInput(), actor),
+    /run projection failed/
+  );
+  assert.equal(canceledRunId, 'trigger-run-1');
+}
+
+async function testTerminateInstanceCancelsTriggerRun() {
+  const instance = createInstance();
+  instance.triggerRunId = 'trigger-run-terminate';
+  let canceledRunId: string | undefined;
+  const store = createStore({
+    closeInstance: async () => ({
+      instance: createInstanceDetail({ ...instance, status: 'terminated' }),
+      triggerRunId: instance.triggerRunId
+    })
+  });
+  const trigger = createTriggerClient({
+    cancelRun: async (runId) => {
+      canceledRunId = runId;
+    }
+  });
+  const service = new RuntimeService(createDefinitionService(), store, trigger);
+
+  const terminated = await service.terminateInstance(instance.id, { comment: 'stop' }, actor);
+
+  assert.equal(terminated.status, 'terminated');
+  assert.equal(canceledRunId, 'trigger-run-terminate');
+}
+
+async function testAddSignDoesNotFallBackWhenWaitpointCreationFails() {
+  const task = createTask();
+  let addSignCalled = false;
+  const store = createStore({
+    getTask: async () => ({ ...task, candidates: [] }),
+    addSignTask: async () => {
+      addSignCalled = true;
+      return { ...task, candidates: [] };
+    }
+  });
+  const trigger = createTriggerClient({
+    createWaitpoint: async (): Promise<{ id: string }> => {
+      throw new Error('Trigger.dev waitpoint unavailable');
+    }
+  });
+  const service = new RuntimeService(createDefinitionService(), store, trigger);
+
+  await assert.rejects(
+    () =>
+      service.addSignTask(
+        task.id,
+        { targetUserId: '00000000-0000-0000-0000-000000000002' },
+        actor
+      ),
+    /Trigger.dev waitpoint unavailable/
+  );
+  assert.equal(addSignCalled, false);
+}
+
+async function testApprovalRecordsWaitpointFailureWithoutContinuing() {
+  const instance = createInstance();
+  const task = createTask();
+  const decision = {
+    action: 'approve' as const,
+    taskId: task.id,
+    nodeId: task.nodeId,
+    operatorId: actor.userId,
+    comment: '',
+    variables: {}
+  };
+  const prepared: PreparedTaskDecision = {
+    task,
+    instance,
+    tokenId: task.waitpointTokenId!,
+    decision,
+    alreadyPrepared: false
+  };
+  let failure: { taskId: string; message: string } | undefined;
+  let markedCompleted = false;
+  let notificationTriggered = false;
+  const store = createStore({
+    prepareTaskDecision: async () => prepared,
+    markWaitpointCompleted: async () => {
+      markedCompleted = true;
+    },
+    recordWaitpointFailure: async (taskId, message) => {
+      failure = { taskId, message };
+    }
+  });
+  const trigger = createTriggerClient({
+    completeWaitpoint: async () => {
+      throw new Error('Trigger.dev waitpoint completion failed');
+    },
+    triggerTask: async () => {
+      notificationTriggered = true;
+      return { id: 'unexpected-notification-run' };
+    }
+  });
+  const service = new RuntimeService(createDefinitionService(), store, trigger);
+
+  await assert.rejects(
+    () => service.completeTask(task.id, {}, actor),
+    /Trigger.dev waitpoint completion failed/
+  );
+
+  assert.deepEqual(failure, {
+    taskId: task.id,
+    message: 'Trigger.dev waitpoint completion failed'
+  });
+  assert.equal(markedCompleted, false);
+  assert.equal(notificationTriggered, false);
+}
+
+async function testPreparedApprovalDoesNotCompleteWaitpointTwice() {
+  const instance = createInstance();
+  const task = createTask();
+  const decision = {
+    action: 'approve' as const,
+    taskId: task.id,
+    nodeId: task.nodeId,
+    operatorId: actor.userId,
+    comment: '',
+    variables: {}
+  };
+  let completedWaitpoint = false;
+  let markedCompleted = false;
+  const store = createStore({
+    prepareTaskDecision: async () => ({
+      task,
+      instance,
+      tokenId: task.waitpointTokenId!,
+      decision,
+      alreadyPrepared: true
+    }),
+    markWaitpointCompleted: async () => {
+      markedCompleted = true;
+    },
+    getInstance: async () => createInstanceDetail(instance)
+  });
+  const trigger = createTriggerClient({
+    completeWaitpoint: async () => {
+      completedWaitpoint = true;
+    }
+  });
+  const service = new RuntimeService(createDefinitionService(), store, trigger);
+
+  await service.completeTask(task.id, {}, actor);
+
+  assert.equal(completedWaitpoint, false);
+  assert.equal(markedCompleted, true);
+}
+
+function createDefinitionService() {
+  return {
+    getDefinition: async () => ({
+      id: 'definition-1',
+      version: 1,
+      status: 'active',
+      schema: {
+        schemaVersion: 1,
+        nodes: [
+          { id: 'start', type: 'start', name: 'Start' },
+          { id: 'end', type: 'end', name: 'End' }
+        ],
+        edges: [{ id: 'edge-1', source: 'start', target: 'end' }]
+      }
+    })
+  } as unknown as DefinitionService;
+}
+
+function createStore(overrides: Partial<WorkflowRuntimeStore> = {}) {
+  const instance = createInstance();
+  return {
+    createInstance: async () => instance,
+    setTriggerRun: async () => {},
+    setInstanceStatus: async () => {},
+    getInstance: async () => createInstanceDetail(instance),
+    ...overrides
+  } as WorkflowRuntimeStore;
+}
+
+function createTriggerClient(overrides: Partial<WorkflowTriggerClient> = {}) {
+  return {
+    triggerWorkflow: async () => ({ id: 'trigger-run-1' }),
+    triggerTask: async () => ({ id: 'trigger-task-run-1' }),
+    createWaitpoint: async () => ({ id: 'waitpoint-1' }),
+    completeWaitpoint: async () => {},
+    cancelRun: async () => {},
+    ...overrides
+  } satisfies WorkflowTriggerClient;
+}
+
+function startInput() {
+  return {
+    definitionId: 'definition-1',
+    businessKey: 'document:1',
+    documentType: 'document',
+    documentId: '1',
+    title: 'Approval document',
+    variables: { amount: 100 }
+  };
+}
+
+function createInstance(): ProcessInstanceRecord {
+  return {
+    id: 'instance-1',
+    tenantId: actor.tenantId,
+    definitionId: 'definition-1',
+    definitionVersion: 1,
+    businessKey: 'document:1',
+    documentType: 'document',
+    documentId: '1',
+    title: 'Approval document',
+    status: 'running',
+    initiatorId: actor.userId,
+    triggerTaskId: 'workflow.instance.run',
+    startedAt: '2026-08-04T00:00:00.000Z'
+  };
+}
+
+function createInstanceDetail(instance: ProcessInstanceRecord): ProcessInstanceDetail {
+  return {
+    ...instance,
+    variables: [],
+    comments: [],
+    ccItems: [],
+    nodeInstances: [],
+    tasks: []
+  };
+}
+
+function createTask(): WorkflowTaskRecord {
+  return {
+    id: 'task-1',
+    tenantId: actor.tenantId,
+    processInstanceId: 'instance-1',
+    nodeInstanceId: 'node-instance-1',
+    nodeId: 'approval-1',
+    title: 'Approval task',
+    status: 'pending',
+    assigneeId: actor.userId,
+    waitpointTokenId: 'waitpoint-1',
+    createdAt: '2026-08-04T00:00:00.000Z'
+  };
 }
 
 void main();

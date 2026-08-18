@@ -1,4 +1,4 @@
-import { IsEmail, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEmail, IsIn, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class SignInPasswordAuthDto {
   @IsString()
@@ -8,6 +8,16 @@ export class SignInPasswordAuthDto {
   @IsString()
   @IsNotEmpty()
   password!: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @IsUUID()
+  accountId?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  setDefault?: boolean;
 }
 
 export class EmailPasswordAuthDto {
@@ -47,4 +57,14 @@ export class SetSessionDto {
   @IsOptional()
   @IsNumber()
   expiresAt?: number;
+}
+
+export class SelectAccountDto {
+  @IsString()
+  @IsNotEmpty()
+  accountId!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  setDefault?: boolean;
 }

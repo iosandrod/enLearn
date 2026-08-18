@@ -17,6 +17,12 @@
     ],
     "baseUrl": ".",
     "paths": {
+      "@enlearn/lowcode-framework/components/low-code-form": [
+        "../lowcode-framework/src/components/low-code-form.d.ts"
+      ],
+      "@enlearn/lowcode-framework/components/json-dialog-input": [
+        "../lowcode-framework/src/components/json-dialog-input.d.ts"
+      ],
       "@enlearn/trigger-workflow-editor": [
         "src/index.ts"
       ],

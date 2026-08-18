@@ -27,10 +27,12 @@
     "access": "public"
   },
   "dependencies": {
+    "@enlearn/lowcode-framework": "workspace:*",
     "@vue-flow/core": "^1.48.2"
   },
   "peerDependencies": {
-    "vue": "^3.5.0"
+    "vue": "^3.5.0",
+    "vxe-pc-ui": "^4.16.24"
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
@@ -39,12 +41,13 @@
     "typescript": "^5.4.5",
     "vite": "^7.3.6",
     "vue": "^3.5.0",
-    "vue-tsc": "^3.3.7"
+    "vue-tsc": "^3.3.7",
+    "vxe-pc-ui": "^4.16.24"
   },
   "scripts": {
     "build": "vite build && vue-tsc --declaration --emitDeclarationOnly -p tsconfig.build.json",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json",
-    "test": "tsx tests/templates.spec.ts",
+    "test": "tsx tests/templates.spec.ts && tsx tests/task-examples.spec.ts && tsx tests/job-adapters.spec.ts && tsx tests/inspector-form.spec.ts && tsx tests/canvas-tools.spec.ts",
     "prepublishOnly": "pnpm typecheck && pnpm test && pnpm build"
   }
 }

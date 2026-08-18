@@ -2,7 +2,7 @@
   <LowCodeBlockRenderer
     v-for="(child, index) in runtimeBlocks"
     :key="child.id"
-    :class="{ 'lc-runtime-block--fill': index === blocks.length - 1 }"
+    :class="{ 'lc-runtime-block--fill': index === runtimeBlocks.length - 1 }"
     :block="child"
     :resolved-data="resolvedData"
     :form-models="formModels"
@@ -30,15 +30,22 @@ import type {
 
 const props = defineProps<
   Omit<LowCodeBlockMaterialProps, 'block'> & {
-    blocks: LowCodeRuntimeBlock[];
+    blocks: unknown;
   }
 >();
 
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
 
+function isRuntimeBlock(value: unknown): value is LowCodeRuntimeBlock {
+  return typeof value === 'object' && value !== null && !Array.isArray(value) &&
+    typeof (value as Record<string, unknown>).id === 'string' &&
+    typeof (value as Record<string, unknown>).kind === 'string';
+}
+
 const runtimeBlocks = computed(() => {
-  const lastIndex = props.blocks.length - 1;
-  return props.blocks.map((block, index) =>
+  const blocks = Array.isArray(props.blocks) ? props.blocks.filter(isRuntimeBlock) : [];
+  const lastIndex = blocks.length - 1;
+  return blocks.map((block, index) =>
     index === lastIndex
       ? {
           ...block,

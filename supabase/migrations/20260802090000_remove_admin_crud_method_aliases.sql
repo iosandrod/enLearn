@@ -20,7 +20,10 @@ begin
   end if;
 
   if jsonb_typeof(value) = 'array' then
-    select coalesce(jsonb_agg(public.__enlearn_replace_admin_crud_aliases(item)), '[]'::jsonb)
+    select coalesce(
+      jsonb_agg(public.__enlearn_replace_admin_crud_aliases(array_items.item)),
+      '[]'::jsonb
+    )
       into result
     from jsonb_array_elements(value) as array_items(item);
 

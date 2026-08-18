@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>View management create flow smoke</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      #result {
+        position: fixed;
+        z-index: -1;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick, ref } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'remixicon/fonts/remixicon.css';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import migrationSource from '../../supabase/migrations/20260807090000_view_management.sql?raw';
+      import LowCodePageRenderer from '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue';
+
+      function readEditPageSchema(source) {
+        const markerIndex = source.indexOf("'entity-views-edit'");
+        const jsonStartMarker = source.indexOf('$json$', markerIndex);
+        const jsonStart = jsonStartMarker + '$json$'.length;
+        const jsonEnd = source.indexOf('$json$', jsonStart);
+        if (markerIndex < 0 || jsonStartMarker < 0 || jsonEnd < 0) {
+          throw new Error('View edit page schema was not found in the migration.');
+        }
+        return JSON.parse(source.slice(jsonStart, jsonEnd));
+      }
+
+      const schema = readEditPageSchema(migrationSource);
+      const renderer = ref(null);
+      const serviceCalls = [];
+      const analyzedColumns = [
+        {
+          ordinal_position: 1,
+          column_name: 'id',
+          data_type: 'integer',
+          udt_name: 'int4',
+          is_nullable: 'YES',
+        },
+        {
+          ordinal_position: 2,
+          column_name: 'view_title',
+          data_type: 'text',
+          udt_name: 'text',
+          is_nullable: 'YES',
+        },
+      ];
+      const pageRecord = {
+        id: 'entity-views-edit-browser',
+        code: schema.code,
+        route: schema.route,
+        title: schema.title,
+        description: schema.description,
+        layout: schema.layout,
+        status: schema.status,
+        keep_alive: schema.keepAlive,
+        page_type: schema.pageType,
+        edit_page_id: null,
+        schema,
+        version: 1,
+        published_at: null,
+        created_at: '',
+        updated_at: '',
+      };
+      const serviceApi = {
+        async invoke(serviceName, serviceMethod, payload = {}) {
+          serviceCalls.push({ serviceName, serviceMethod, payload });
+          if (serviceName === 'entityDesign' && serviceMethod === 'listViews') {
+            return [];
+          }
+          if (serviceName === 'entityDesign' && serviceMethod === 'listViewColumns') {
+            return [];
+          }
+          if (serviceName === 'entityDesign' && serviceMethod === 'validateView') {
+            return { valid: true, columns: analyzedColumns };
+          }
+          throw new Error(`Unexpected service call: ${serviceName}.${serviceMethod}`);
+        },
+      };
+
+      const App = defineComponent({
+        setup() {
+          return () => h(LowCodePageRenderer, {
+            ref: renderer,
+            page: pageRecord,
+            serviceApi,
+            route: {
+              query: {},
+              params: {},
+              path: schema.route,
+              fullPath: schema.route,
+            },
+          });
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+
+      window.__viewManagementCreateSmoke = {
+        analyzedColumns,
+        schema,
+        serviceCalls,
+        snapshot() {
+          return renderer.value?.getSnapshot?.() ?? null;
+        },
+      };
+
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

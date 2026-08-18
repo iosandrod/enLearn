@@ -8,9 +8,12 @@ export {}
 declare global {
   const $fetch: typeof import('@/src/spa-compat').$fetch
   const EffectScope: typeof import('vue').EffectScope
+  const aiPageContextInternals: typeof import('../composables/useAiPageContext').aiPageContextInternals
+  const clearAiPageContext: typeof import('../composables/useAiPageContext').clearAiPageContext
   const computed: typeof import('vue').computed
   const createApp: typeof import('vue').createApp
   const createError: typeof import('@/src/spa-compat').createError
+  const createSystemSettingsContext: typeof import('../composables/useSystemSettings').createSystemSettingsContext
   const customRef: typeof import('vue').customRef
   const defineAsyncComponent: typeof import('vue').defineAsyncComponent
   const defineComponent: typeof import('vue').defineComponent
@@ -19,15 +22,19 @@ declare global {
   const getCurrentScope: typeof import('vue').getCurrentScope
   const getCurrentWatcher: typeof import('vue').getCurrentWatcher
   const h: typeof import('vue').h
+  const initializeSystemSettings: typeof import('../composables/useSystemSettings').initializeSystemSettings
   const inject: typeof import('vue').inject
+  const installSystemSettingsListeners: typeof import('../composables/useSystemSettings').installSystemSettingsListeners
   const isProxy: typeof import('vue').isProxy
   const isReactive: typeof import('vue').isReactive
   const isReadonly: typeof import('vue').isReadonly
   const isRef: typeof import('vue').isRef
   const isShallow: typeof import('vue').isShallow
+  const loadSystemSettings: typeof import('../composables/useSystemSettings').loadSystemSettings
   const markRaw: typeof import('vue').markRaw
   const navigateTo: typeof import('@/src/spa-compat').navigateTo
   const nextTick: typeof import('vue').nextTick
+  const notifySystemSettingsChanged: typeof import('../composables/useSystemSettings').notifySystemSettingsChanged
   const onActivated: typeof import('vue').onActivated
   const onBeforeMount: typeof import('vue').onBeforeMount
   const onBeforeRouteLeave: typeof import('vue-router').onBeforeRouteLeave
@@ -44,11 +51,15 @@ declare global {
   const onUnmounted: typeof import('vue').onUnmounted
   const onUpdated: typeof import('vue').onUpdated
   const onWatcherCleanup: typeof import('vue').onWatcherCleanup
+  const parseSseFrames: typeof import('../composables/useAiStream').parseSseFrames
   const provide: typeof import('vue').provide
+  const provideAppSystemSettings: typeof import('../composables/useSystemSettings').provideAppSystemSettings
   const reactive: typeof import('vue').reactive
   const readonly: typeof import('vue').readonly
   const ref: typeof import('vue').ref
+  const resetSystemSettings: typeof import('../composables/useSystemSettings').resetSystemSettings
   const resolveComponent: typeof import('vue').resolveComponent
+  const setAiPageContext: typeof import('../composables/useAiPageContext').setAiPageContext
   const shallowReactive: typeof import('vue').shallowReactive
   const shallowReadonly: typeof import('vue').shallowReadonly
   const shallowRef: typeof import('vue').shallowRef
@@ -58,6 +69,10 @@ declare global {
   const toValue: typeof import('vue').toValue
   const triggerRef: typeof import('vue').triggerRef
   const unref: typeof import('vue').unref
+  const useAiAssistant: typeof import('../composables/useAiAssistant').useAiAssistant
+  const useAiPageContext: typeof import('../composables/useAiPageContext').useAiPageContext
+  const useAiStream: typeof import('../composables/useAiStream').useAiStream
+  const useAppSystemSettings: typeof import('../composables/useSystemSettings').useAppSystemSettings
   const useAsyncData: typeof import('@/src/spa-compat').useAsyncData
   const useAttrs: typeof import('vue').useAttrs
   const useAuth: typeof import('../composables/useAuth').useAuth
@@ -68,6 +83,7 @@ declare global {
   const useCssModule: typeof import('vue').useCssModule
   const useCssVars: typeof import('vue').useCssVars
   const useFilesApi: typeof import('../composables/useFilesApi').useFilesApi
+  const useFrontendCommandSocket: typeof import('../composables/useFrontendCommandSocket').useFrontendCommandSocket
   const useId: typeof import('vue').useId
   const useLink: typeof import('vue-router').useLink
   const useModel: typeof import('vue').useModel
@@ -75,6 +91,7 @@ declare global {
   const usePostsApi: typeof import('../composables/usePostsApi').usePostsApi
   const useResourceApi: typeof import('../composables/useResourceApi').useResourceApi
   const useRoute: typeof import('vue-router').useRoute
+  const useRouteCache: typeof import('../composables/useRouteCache').useRouteCache
   const useRouter: typeof import('vue-router').useRouter
   const useSeoMeta: typeof import('@/src/spa-compat').useSeoMeta
   const useServiceApi: typeof import('../composables/useServiceApi').useServiceApi
@@ -106,6 +123,12 @@ declare global {
   // @ts-ignore
   export type { NotificationMessage, NotificationUnreadCount, NotificationPreference, NotificationDelivery } from '../composables/useNotificationApi'
   import('../composables/useNotificationApi')
+  // @ts-ignore
+  export type { RouteCacheInvalidation } from '../composables/useRouteCache'
+  import('../composables/useRouteCache')
+  // @ts-ignore
+  export type { ServiceInvokeOptions } from '../composables/useServiceApi'
+  import('../composables/useServiceApi')
 }
 
 // for vue template auto import
@@ -115,9 +138,12 @@ declare module 'vue' {
   interface ComponentCustomProperties {
     readonly $fetch: UnwrapRef<typeof import('@/src/spa-compat')['$fetch']>
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly aiPageContextInternals: UnwrapRef<typeof import('../composables/useAiPageContext')['aiPageContextInternals']>
+    readonly clearAiPageContext: UnwrapRef<typeof import('../composables/useAiPageContext')['clearAiPageContext']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createError: UnwrapRef<typeof import('@/src/spa-compat')['createError']>
+    readonly createSystemSettingsContext: UnwrapRef<typeof import('../composables/useSystemSettings')['createSystemSettingsContext']>
     readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
     readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
     readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
@@ -126,15 +152,19 @@ declare module 'vue' {
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
     readonly getCurrentWatcher: UnwrapRef<typeof import('vue')['getCurrentWatcher']>
     readonly h: UnwrapRef<typeof import('vue')['h']>
+    readonly initializeSystemSettings: UnwrapRef<typeof import('../composables/useSystemSettings')['initializeSystemSettings']>
     readonly inject: UnwrapRef<typeof import('vue')['inject']>
+    readonly installSystemSettingsListeners: UnwrapRef<typeof import('../composables/useSystemSettings')['installSystemSettingsListeners']>
     readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
     readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
     readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
     readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
     readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
+    readonly loadSystemSettings: UnwrapRef<typeof import('../composables/useSystemSettings')['loadSystemSettings']>
     readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
     readonly navigateTo: UnwrapRef<typeof import('@/src/spa-compat')['navigateTo']>
     readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
+    readonly notifySystemSettingsChanged: UnwrapRef<typeof import('../composables/useSystemSettings')['notifySystemSettingsChanged']>
     readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
     readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
     readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
@@ -151,11 +181,15 @@ declare module 'vue' {
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
+    readonly parseSseFrames: UnwrapRef<typeof import('../composables/useAiStream')['parseSseFrames']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
+    readonly provideAppSystemSettings: UnwrapRef<typeof import('../composables/useSystemSettings')['provideAppSystemSettings']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>
     readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
     readonly ref: UnwrapRef<typeof import('vue')['ref']>
+    readonly resetSystemSettings: UnwrapRef<typeof import('../composables/useSystemSettings')['resetSystemSettings']>
     readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
+    readonly setAiPageContext: UnwrapRef<typeof import('../composables/useAiPageContext')['setAiPageContext']>
     readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
     readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
     readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
@@ -165,6 +199,10 @@ declare module 'vue' {
     readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
     readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
     readonly unref: UnwrapRef<typeof import('vue')['unref']>
+    readonly useAiAssistant: UnwrapRef<typeof import('../composables/useAiAssistant')['useAiAssistant']>
+    readonly useAiPageContext: UnwrapRef<typeof import('../composables/useAiPageContext')['useAiPageContext']>
+    readonly useAiStream: UnwrapRef<typeof import('../composables/useAiStream')['useAiStream']>
+    readonly useAppSystemSettings: UnwrapRef<typeof import('../composables/useSystemSettings')['useAppSystemSettings']>
     readonly useAsyncData: UnwrapRef<typeof import('@/src/spa-compat')['useAsyncData']>
     readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
     readonly useAuth: UnwrapRef<typeof import('../composables/useAuth')['useAuth']>
@@ -175,6 +213,7 @@ declare module 'vue' {
     readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
     readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
     readonly useFilesApi: UnwrapRef<typeof import('../composables/useFilesApi')['useFilesApi']>
+    readonly useFrontendCommandSocket: UnwrapRef<typeof import('../composables/useFrontendCommandSocket')['useFrontendCommandSocket']>
     readonly useId: UnwrapRef<typeof import('vue')['useId']>
     readonly useLink: UnwrapRef<typeof import('vue-router')['useLink']>
     readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
@@ -182,6 +221,7 @@ declare module 'vue' {
     readonly usePostsApi: UnwrapRef<typeof import('../composables/usePostsApi')['usePostsApi']>
     readonly useResourceApi: UnwrapRef<typeof import('../composables/useResourceApi')['useResourceApi']>
     readonly useRoute: UnwrapRef<typeof import('vue-router')['useRoute']>
+    readonly useRouteCache: UnwrapRef<typeof import('../composables/useRouteCache')['useRouteCache']>
     readonly useRouter: UnwrapRef<typeof import('vue-router')['useRouter']>
     readonly useSeoMeta: UnwrapRef<typeof import('@/src/spa-compat')['useSeoMeta']>
     readonly useServiceApi: UnwrapRef<typeof import('../composables/useServiceApi')['useServiceApi']>

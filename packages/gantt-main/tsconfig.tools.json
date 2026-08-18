@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"noEmit": true,
+		"skipLibCheck": true,
+		"target": "ES2022",
+		"types": ["node"]
+	},
+	"include": [
+		"eslint.config.ts",
+		"vitest.workspace.ts",
+		"scripts/**/*.ts",
+		"store/vite.config.ts",
+		"provider/vite.config.ts",
+		"vue/eslint.config.ts",
+		"vue/vite.config.ts",
+		"vue/scripts/**/*.ts"
+	]
+}

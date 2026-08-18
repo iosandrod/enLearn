@@ -23,6 +23,7 @@ const componentMap: Record<string, LowCodeField['component']> = {
   'vxe-radio-group': 'vxe-radio-group',
   'vxe-tree-select': 'vxe-tree-select',
   'lc-json-editor': 'lc-json-editor',
+  'lc-monaco-editor': 'lc-monaco-editor',
   'lc-number-input': 'lc-number-input',
   'array-table': 'lc-array-table',
   'lc-array-table': 'lc-array-table',
@@ -113,14 +114,36 @@ export function readLowCodeFormSchema(value: unknown): LowCodeFormSchema | undef
 export function createLowCodeFormSchema(
   fields: unknown,
   designerModel?: unknown,
+  fallbackSchema?: unknown,
 ): LowCodeFormSchema {
-  const normalizedFields = normalizeRows(fields).map(normalizeField).filter(isDefined);
+  const preservedSchema = readLowCodeFormSchema(fallbackSchema);
+  const preservedByField = new Map(
+    (preservedSchema?.fields ?? []).map((field) => [field.field, field]),
+  );
+  const normalizedFields = normalizeRows(fields)
+    .map(normalizeField)
+    .filter(isDefined)
+    .map((field) => {
+      const preserved = preservedByField.get(field.field);
+      if (!preserved) return field;
+      const requiredRules = field.rules?.filter((rule) => rule.required === true) ?? [];
+      const unrelatedRules = preserved.rules?.filter((rule) => rule.required !== true) ?? [];
+      const rules = [...unrelatedRules, ...requiredRules];
+      const merged: LowCodeField = {
+        ...cloneJson(preserved),
+        ...field,
+        ...(rules.length ? { rules } : {}),
+      };
+      if (!rules.length) delete merged.rules;
+      return merged;
+    });
   const layout = readFormDesignerLayout(designerModel);
 
   return {
+    ...(preservedSchema ?? {}),
     fields: normalizedFields,
     ...(layout ? { layout } : {}),
-    actions: [],
+    actions: preservedSchema?.actions ?? [],
   };
 }
 
@@ -140,6 +163,7 @@ function normalizeArrayTableColumns(value: unknown) {
     const component = readString(column.component);
     const width = readDimension(column.width);
     const minWidth = readDimension(column.minWidth);
+    const optionsCode = readString(column.optionsCode);
     const options = Array.isArray(column.options)
       ? cloneJson(column.options)
       : readJsonArray<LowCodeOption>(column.optionsJson);
@@ -158,6 +182,7 @@ function normalizeArrayTableColumns(value: unknown) {
       ...(typeof column.defaultValue !== 'undefined'
         ? { defaultValue: cloneJson(column.defaultValue) }
         : {}),
+      ...(optionsCode ? { optionsCode } : {}),
       ...(options?.length ? { options } : {}),
       ...(Object.keys(props).length ? { props } : {}),
     };
@@ -172,7 +197,16 @@ function normalizeArrayTableProps(rawProps: Record<string, unknown>) {
   return {
     ...restProps,
     columns: normalizeArrayTableColumns(rawProps.columns),
-    addText: readString(rawProps.addText, '新增行'),
+    toolbarButtons: Array.isArray(rawProps.toolbarButtons)
+      ? cloneJson(rawProps.toolbarButtons)
+      : [
+          {
+            code: 'add',
+            label: '新增行',
+            command: 'add',
+            status: 'primary',
+          },
+        ],
     rowConfig: {
       ...rowConfig,
       keyField,
@@ -195,6 +229,7 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
   const componentName = readString(row.component, 'vxe-input');
   const component = componentMap[componentName] ?? 'vxe-input';
   const options = readJsonArray<LowCodeOption>(row.optionsJson);
+  const optionsCode = readString(row.optionsCode);
   const optionsSourceKey = readString(row.optionsSourceKey);
   const optionLabel = readString(row.optionLabel);
   const optionValue = readString(row.optionValue);
@@ -206,6 +241,12 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
     ...(optionChildren ? { children: optionChildren } : {}),
   };
   const required = readBoolean(row.required, false);
+  const defaultValueType = readString(row.defaultValueType);
+  const defaultValueScript = readString(row.defaultValueScript);
+  const defaultValueProcedure = readString(row.defaultValueProcedure);
+  const updateScript = readString(row.updateScript);
+  const validationScript = readString(row.validationScript);
+  const validationMessage = readString(row.validationMessage);
   const placeholder = readString(row.placeholder);
   const help = readString(row.help);
   const span = readNumber(row.span);
@@ -219,11 +260,16 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
   };
 
   if (component === 'lc-sub-form') {
-    props.schema =
-      readLowCodeFormSchema(rawProps.schema) ??
-      createLowCodeFormSchema(rawProps.fields, rawProps.formDesignerModel);
+    const subFormSchema = readLowCodeFormSchema(rawProps.schema);
+    props.schema = subFormSchema &&
+      isPlainRecord(rawProps.schema) &&
+      Array.isArray(rawProps.schema.actions)
+      ? subFormSchema
+      : undefined;
     delete props.fields;
+    delete props.columns;
     delete props.layout;
+    delete props.actions;
     delete props.formDesignerModel;
     delete props.subFormDesignerModel;
   }
@@ -238,13 +284,23 @@ export function normalizeField(row: Record<string, unknown>): LowCodeField | nul
     component,
     ...(Object.keys(props).length ? { props } : {}),
     ...(options ? { options } : {}),
+    ...(optionsCode ? { optionsCode } : {}),
     ...(optionsSourceKey ? { optionsSourceKey } : {}),
     ...(Object.keys(optionProps).length ? { optionProps } : {}),
     ...(help ? { help } : {}),
     ...(span ? { span } : {}),
     ...(required
-      ? { rules: [{ required: true, message: `${label} is required` }] }
+      ? { rules: [{ required: true, message: `${label}不能为空` }] }
       : {}),
+    ...(defaultValueType === 'function' && defaultValueScript
+      ? { defaultValueType: 'function', defaultValueScript }
+      : {}),
+    ...(defaultValueType === 'procedure' && defaultValueProcedure
+      ? { defaultValueType: 'procedure', defaultValueProcedure }
+      : {}),
+    ...(updateScript ? { updateScript } : {}),
+    ...(validationScript ? { validationScript } : {}),
+    ...(validationMessage ? { validationMessage } : {}),
   };
 }
 
@@ -432,14 +488,48 @@ function convertDesignedBlockToLayoutNode(
       .map((slot) => ({
         span: readNumber(slot.span),
         blocks: convertDesignedBlocksToLayout(slot.children as VisualEditorBlockData[]),
-      }))
-      .filter((column) => column.blocks.length > 0);
+      }));
 
-    return columns.length
+    return columns.some((column) => column.blocks.length > 0)
       ? {
           kind: 'row',
           gutter: readNumber(block.props?.gutter),
           columns,
+        }
+      : null;
+  }
+
+  if (block.componentKey === 'vxe-tabs') {
+    const props = isPlainRecord(block.props) ? block.props : {};
+    const panes = normalizeRows(props.panes);
+    const slots = isPlainRecord(props.slots) ? props.slots : {};
+    const usedSlotKeys = new Set<string>();
+    const tabs = panes.map((pane, index) => {
+      const key = readString(pane.name, `tab${index + 1}`);
+      let slotKey = toTabsSlotKey(key, index);
+
+      if (usedSlotKeys.has(slotKey)) {
+        slotKey = `${slotKey}_${index + 1}`;
+      }
+      usedSlotKeys.add(slotKey);
+
+      const rawSlot = slots[slotKey];
+      const slot = isPlainRecord(rawSlot) ? rawSlot : {};
+
+      return {
+        key,
+        label: readString(pane.title, `页签 ${index + 1}`),
+        blocks: convertDesignedBlocksToLayout(
+          Array.isArray(slot.children) ? slot.children as VisualEditorBlockData[] : []
+        ),
+      };
+    });
+
+    return tabs.length
+      ? {
+          kind: 'tabs',
+          defaultKey: readString(props.modelValue, tabs[0]?.key),
+          tabs,
         }
       : null;
   }

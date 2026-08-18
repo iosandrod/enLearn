@@ -3,72 +3,100 @@
     ref="vxeFormRef"
     v-bind="mergedFormProps"
     class="lc-form"
-    :data="vxeFormData"
+    :class="{ 'lc-form--fill': fillRemainingLayout }"
+    :data="formData"
     :loading="loading"
     :rules="formRules"
     :custom-layout="true"
     @submit="handleVxeSubmit"
+    @contextmenu="handleLabelContextMenu"
   >
     <LowCodeFormLayout
       v-if="layoutNodes.length"
       :nodes="layoutNodes"
       :fields-by-key="fieldsByKey"
+      :style="formLayoutStyle"
     >
       <template #field="{ field }">
-        <vxe-form-item v-bind="resolveFormItemProps(field)">
+        <vxe-form-item
+          v-bind="resolveFormItemProps(field)"
+          :data-lc-field="field.field"
+        >
           <LowCodeFormField
             :field="field"
             :model-value="readFieldValue(field)"
             :options="resolveOptions(field)"
+            :option-sources="optionSources"
+            :form-values="formData"
             :show-label="false"
-            :disabled="isFormDisabled"
+            :disabled="isFieldDisabled(field)"
             :readonly="isFormReadonly"
             @update:model-value="(value) => setFieldValue(field, value)"
             @change="handleFieldChange"
+            @patch-model="(payload) => patchFieldValues(field, payload)"
+            @relate-select="(payload) => handleRelateSelect(field, payload)"
           />
         </vxe-form-item>
       </template>
     </LowCodeFormLayout>
 
-    <div v-else class="lc-form-grid" :style="formGridStyle">
+    <div v-else ref="formGridRef" class="lc-form-grid" :style="formGridStyle">
       <div
         v-for="field in fields"
         :key="field.field"
         :class="fieldGridCellClass(field)"
         :style="fieldGridCellStyle(field)"
       >
-        <vxe-form-item v-bind="resolveFormItemProps(field)">
+        <vxe-form-item
+          v-bind="resolveFormItemProps(field)"
+          :data-lc-field="field.field"
+        >
           <LowCodeFormField
             :field="field"
             :model-value="readFieldValue(field)"
             :options="resolveOptions(field)"
+            :option-sources="optionSources"
+            :form-values="formData"
             :show-label="false"
-            :disabled="isFormDisabled"
+            :disabled="isFieldDisabled(field)"
             :readonly="isFormReadonly"
             @update:model-value="(value) => setFieldValue(field, value)"
             @change="handleFieldChange"
+            @patch-model="(payload) => patchFieldValues(field, payload)"
+            @relate-select="(payload) => handleRelateSelect(field, payload)"
           />
         </vxe-form-item>
       </div>
     </div>
-
-    <div v-if="formActions.length" class="lc-actions">
+    <!--
+      不要使用按钮，注释掉
+    -->
+    <!-- <div v-if="formActions.length" class="lc-actions">
       <vxe-button
         v-for="action in formActions"
         :key="action.code"
         :status="action.status"
-        :loading="loading && action.type === 'submit'"
-        :disabled="action.disabled || (loading && action.type !== 'submit')"
+        :disabled="action.disabled"
         @click="handleAction(action)"
       >
         {{ action.label }}
       </vxe-button>
-    </div>
+    </div> -->
   </vxe-form>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, useAttrs, watch, type PropType } from 'vue';
+import {
+  computed,
+  onBeforeUnmount,
+  onMounted,
+  provide,
+  reactive,
+  ref,
+  useAttrs,
+  watch,
+  type PropType,
+} from 'vue';
 import type {
   VxeFormDefines,
   VxeFormInstance,
@@ -77,6 +105,7 @@ import type {
 } from 'vxe-pc-ui';
 import type {
   LowCodeAction,
+  LowCodeEditPageMode,
   LowCodeField,
   LowCodeFormModel,
   LowCodeFormLayoutNode,
@@ -85,6 +114,16 @@ import type {
 } from '../types/lowcode';
 import LowCodeFormField from './LowCodeFormField.vue';
 import LowCodeFormLayout from './LowCodeFormLayout.vue';
+import { useLowCodeHost } from '../core/host';
+import { lowCodeOptionSourceRegistry } from '../runtime/option-source-registry';
+import {
+  isLowCodeEditPageFieldDisabled,
+  isLowCodeEditPageReadonly,
+} from '../runtime/edit-page-mode';
+import type {
+  LowCodeFormMaterialPatchPayload,
+  LowCodeFormMaterialSelectPayload,
+} from '../lowcode/form-materials';
 
 defineOptions({
   inheritAttrs: false,
@@ -93,6 +132,12 @@ defineOptions({
 type VxeLowCodeFormProps = VxeFormProps<LowCodeFormModel>;
 type VxeLowCodeFormRules = NonNullable<VxeLowCodeFormProps['rules']>;
 type VxeLowCodeFormRule = VxeFormDefines.FormRule<LowCodeFormModel>;
+type FieldVisibilityCondition = {
+  field: string;
+  equals?: unknown;
+  notEquals?: unknown;
+  includes?: unknown[];
+};
 
 const props = defineProps({
   schema: {
@@ -125,7 +170,10 @@ const props = defineProps({
   titleAlign: String as PropType<'left' | 'center' | 'right'>,
   titleWidth: [Number, String],
   titleColon: Boolean,
-  titleAsterisk: Boolean,
+  titleAsterisk: {
+    type: Boolean,
+    default: true,
+  },
   titleOverflow: [Boolean, String] as PropType<boolean | 'ellipsis' | 'title' | 'tooltip'>,
   vertical: Boolean,
   padding: {
@@ -135,12 +183,19 @@ const props = defineProps({
   className: String,
   readonly: Boolean,
   disabled: Boolean,
+  mode: String as PropType<LowCodeEditPageMode>,
   rules: Object as PropType<Record<string, VxeLowCodeFormRule[]>>,
+  fieldValidator: Function as PropType<(
+    field: LowCodeField,
+    value: unknown,
+    values: Record<string, unknown>,
+  ) => Promise<true | string> | true | string>,
   preventSubmit: Boolean,
   validConfig: Object as PropType<Record<string, unknown>>,
   tooltipConfig: Object as PropType<Record<string, unknown>>,
   collapseConfig: Object as PropType<Record<string, unknown>>,
   params: Object as PropType<Record<string, unknown>>,
+  labelContextMenu: Boolean,
 });
 
 const emit = defineEmits<{
@@ -155,18 +210,38 @@ const emit = defineEmits<{
       values: Record<string, unknown>;
     },
   ];
+  labelContextMenu: [event: MouseEvent, field: LowCodeField];
+  relateSelect: [
+    payload: {
+      field: LowCodeField;
+      row: Record<string, unknown>;
+      values: Record<string, unknown>;
+      formValues: Record<string, unknown>;
+    },
+  ];
 }>();
 
 const attrs = useAttrs();
+const host = useLowCodeHost();
 const vxeFormRef = ref<VxeFormInstance<LowCodeFormModel>>();
+const formGridRef = ref<HTMLElement>();
+const formGridRowCount = ref(0);
 const formData = reactive<Record<string, unknown>>({ ...props.modelValue });
-const vxeFormData = reactive<Record<string, unknown>>({});
+provide('low-code-form-values', () => formData);
 const initialModel = ref<Record<string, unknown>>({ ...props.modelValue });
+const codeOptionSources = reactive<Record<string, unknown[]>>({});
 const fields = computed(() =>
   Array.isArray(props.schema.fields) ? props.schema.fields : []
 );
+const optionsCodes = computed(() =>
+  [...new Set(fields.value.map((field) => field.optionsCode?.trim()).filter(Boolean))] as string[]
+);
+const optionsCodeKey = computed(() => optionsCodes.value.join('\u0000'));
 const layoutNodes = computed<LowCodeFormLayoutNode[]>(() =>
   Array.isArray(props.schema.layout) ? props.schema.layout : []
+);
+const fillRemainingLayout = computed(() =>
+  layoutNodes.value.some((node) => node.kind === 'tabs' && node.fillRemaining === true)
 );
 const formActions = computed(() =>
   Array.isArray(props.schema.actions) ? props.schema.actions : []
@@ -181,21 +256,19 @@ const formColumnCount = computed(() => readFormColumnCount());
 const defaultVxeSpan = computed(() =>
   normalizeVxeSpan(props.span, Math.max(1, Math.floor(24 / formColumnCount.value)))
 );
-const fieldKeyByName = computed(() =>
-  fields.value.reduce<Record<string, string>>((prev, field, index) => {
-    prev[field.field] = createVxeFieldKey(field.field, index);
-    return prev;
-  }, {})
-);
 const formRules = computed<VxeLowCodeFormRules>(() => {
   return fields.value.reduce<VxeLowCodeFormRules>((rules, field) => {
-    const vxeField = getVxeFieldKey(field);
+    if (isFieldDisabled(field)) return rules;
+
     const schemaRules = (field.rules ?? []).map((rule) => createVxeRule(rule));
-    const externalRules = readExternalRules(field.field, vxeField);
-    const itemRules = [...schemaRules, ...externalRules];
+    const scriptRules = field.validationScript && props.fieldValidator
+      ? [createFieldValidationRule(field)]
+      : [];
+    const externalRules = readExternalRules(field.field);
+    const itemRules = [...schemaRules, ...scriptRules, ...externalRules];
 
     if (itemRules.length) {
-      rules[vxeField] = itemRules;
+      rules[field.field] = itemRules;
     }
 
     return rules;
@@ -203,14 +276,17 @@ const formRules = computed<VxeLowCodeFormRules>(() => {
 });
 const formItemPropsByField = computed(() =>
   fields.value.reduce<Record<string, VxeFormItemProps<LowCodeFormModel>>>((prev, field) => {
-    const vxeField = getVxeFieldKey(field);
     const span = getFieldVxeSpan(field);
 
     prev[field.field] = {
-      field: vxeField,
+      field: field.field,
       title: field.label,
+      showTitle: field.showTitle,
       span,
-      rules: formRules.value[vxeField],
+      rules: formRules.value[field.field],
+      ...(readFieldVisibilityCondition(field)
+        ? { visibleMethod: ({ data }) => isFieldVisible(field, data) }
+        : {}),
       className: 'lc-form-item',
       contentClassName: 'lc-form-item__content',
       titleClassName: 'lc-form-item__title',
@@ -218,8 +294,26 @@ const formItemPropsByField = computed(() =>
     return prev;
   }, {})
 );
+const renderedLayoutRowCount = computed(() =>
+  layoutNodes.value.filter(
+    (node) => node.kind !== 'field' || Boolean(fieldsByKey.value[node.field])
+  ).length
+);
+const formLayoutStyle = computed(() => ({
+  gridTemplateRows: createLastRowFillTemplate(
+    renderedLayoutRowCount.value,
+    fillRemainingLayout.value
+  ),
+}));
 const formGridStyle = computed(() => ({
   '--lc-form-columns': String(formColumnCount.value),
+  gridTemplateRows: createLastRowFillTemplate(formGridRowCount.value),
+}));
+const formValidConfig = computed(() => ({
+  showErrorMessage: false,
+  showErrorIcon: true,
+  theme: 'beautify' as const,
+  ...props.validConfig,
 }));
 const vxeFormProps = computed(() => ({
   size: props.size,
@@ -239,9 +333,9 @@ const vxeFormProps = computed(() => ({
   padding: props.padding ?? false,
   className: props.className,
   readonly: props.readonly,
-  disabled: props.disabled,
+  disabled: props.disabled || isLowCodeEditPageReadonly(props.mode),
   preventSubmit: props.preventSubmit !== false,
-  validConfig: props.validConfig,
+  validConfig: formValidConfig.value,
   tooltipConfig: props.tooltipConfig,
   collapseConfig: props.collapseConfig,
   params: props.params,
@@ -267,28 +361,170 @@ const mergedFormProps = computed(() => ({
   ...forwardedFormAttrs.value,
   ...vxeFormProps.value,
 }));
-const isFormDisabled = computed(() => props.disabled === true);
+const isFormDisabled = computed(() =>
+  props.disabled === true || isLowCodeEditPageReadonly(props.mode)
+);
 const isFormReadonly = computed(() => props.readonly === true);
+const isFormInteractionBlocked = computed(() =>
+  isFormDisabled.value || isFormReadonly.value
+);
+
+function isFieldDisabled(field: LowCodeField) {
+  if (
+    isFormDisabled.value ||
+    field.props?.disabled === true
+  ) return true;
+  return isLowCodeEditPageFieldDisabled(field, props.mode);
+}
+
+watch(
+  [() => props.mode, () => props.disabled],
+  () => {
+    void clearValidation();
+  }
+);
 
 watch(
   () => props.modelValue,
   (nextValue: Record<string, unknown>) => {
+    const isLocalUpdate = formValuesEqual(nextValue, formData);
     Object.keys(formData).forEach((key) => delete formData[key]);
     Object.assign(formData, nextValue);
-    initialModel.value = { ...nextValue };
-    syncVxeFormData();
+    if (!isLocalUpdate) initialModel.value = { ...nextValue };
   },
   { deep: true }
 );
 
 watch(
   () => props.schema.fields,
-  () => syncVxeFormData(),
+  () => {
+    scheduleFormGridMeasurement();
+  },
   { deep: true, immediate: true }
 );
 
+let formGridResizeObserver: ResizeObserver | undefined;
+let formGridMeasureFrame: number | undefined;
+
+watch(
+  formGridRef,
+  (grid, previousGrid) => {
+    if (previousGrid) {
+      formGridResizeObserver?.unobserve(previousGrid);
+    }
+
+    if (!grid) {
+      formGridRowCount.value = 0;
+      return;
+    }
+
+    if (typeof ResizeObserver !== 'undefined') {
+      formGridResizeObserver ??= new ResizeObserver(() => scheduleFormGridMeasurement());
+      formGridResizeObserver.observe(grid);
+    }
+    scheduleFormGridMeasurement();
+  },
+  { flush: 'post' }
+);
+
+watch(formColumnCount, () => scheduleFormGridMeasurement(), { flush: 'post' });
+
+let unsubscribeOptionSources: (() => void) | undefined;
+
+watch(
+  optionsCodeKey,
+  () => {
+    unsubscribeOptionSources?.();
+    const codes = optionsCodes.value;
+    const activeCodes = new Set(codes);
+    Object.keys(codeOptionSources).forEach((code) => {
+      if (!activeCodes.has(code)) delete codeOptionSources[code];
+    });
+    if (!codes.length) return;
+
+    unsubscribeOptionSources = lowCodeOptionSourceRegistry.subscribe(
+      codes,
+      (code, options) => {
+        codeOptionSources[code] = options;
+      },
+      () => {
+        try {
+          return host.getServiceApi();
+        } catch {
+          return undefined;
+        }
+      },
+    );
+  },
+  { immediate: true },
+);
+
+onMounted(() => window.addEventListener('resize', scheduleFormGridMeasurement));
+
+onBeforeUnmount(() => {
+  unsubscribeOptionSources?.();
+  window.removeEventListener('resize', scheduleFormGridMeasurement);
+  formGridResizeObserver?.disconnect();
+  if (typeof formGridMeasureFrame === 'number') {
+    cancelAnimationFrame(formGridMeasureFrame);
+  }
+});
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readFieldVisibilityCondition(field: LowCodeField) {
+  const condition = field.props?.visibleWhen;
+  if (!isRecord(condition) || typeof condition.field !== 'string') return undefined;
+  const sourceField = condition.field.trim();
+  if (!sourceField) return undefined;
+  return { ...condition, field: sourceField } as FieldVisibilityCondition;
+}
+
+function isFieldVisible(field: LowCodeField, values: Record<string, unknown>) {
+  const condition = readFieldVisibilityCondition(field);
+  if (!condition) return true;
+  const value = values[condition.field];
+  if (Array.isArray(condition.includes)) return condition.includes.includes(value);
+  if (Object.prototype.hasOwnProperty.call(condition, 'notEquals')) {
+    return value !== condition.notEquals;
+  }
+  return value === condition.equals;
+}
+
+function createLastRowFillTemplate(rowCount: number, allowLastRowToShrink = false) {
+  if (rowCount <= 0) return undefined;
+
+  const lastRow = allowLastRowToShrink
+    ? 'minmax(0, 1fr)'
+    : 'minmax(max-content, 1fr)';
+  return rowCount === 1
+    ? lastRow
+    : `repeat(${rowCount - 1}, max-content) ${lastRow}`;
+}
+
+function measureFormGridRows() {
+  formGridMeasureFrame = undefined;
+  const grid = formGridRef.value;
+  if (!grid) return;
+
+  const rowTops: number[] = [];
+  Array.from(grid.children).forEach((child) => {
+    const top = child.getBoundingClientRect().top;
+    if (!rowTops.some((rowTop) => Math.abs(rowTop - top) < 1)) {
+      rowTops.push(top);
+    }
+  });
+  formGridRowCount.value = rowTops.length;
+}
+
+function scheduleFormGridMeasurement() {
+  if (!formGridRef.value || typeof requestAnimationFrame === 'undefined') return;
+  if (typeof formGridMeasureFrame === 'number') {
+    cancelAnimationFrame(formGridMeasureFrame);
+  }
+  formGridMeasureFrame = requestAnimationFrame(measureFormGridRows);
 }
 
 function readFormColumnCount() {
@@ -308,17 +544,13 @@ function normalizeVxeSpan(value: unknown, fallback = 24) {
   return Math.min(24, Math.max(1, Math.round(numeric)));
 }
 
-function createVxeFieldKey(field: string, index: number) {
-  const suffix = field.replace(/[^A-Za-z0-9_$]+/g, '_').replace(/^_+|_+$/g, '');
-  return `__lc_field_${index}_${suffix || 'value'}`;
-}
-
-function getVxeFieldKey(field: LowCodeField) {
-  return fieldKeyByName.value[field.field] ?? createVxeFieldKey(field.field, 0);
-}
-
 function isWideField(field: LowCodeField) {
-  return ['lc-array-table', 'lc-sub-form', 'lc-json-editor'].includes(field.component);
+  return [
+    'lc-array-table',
+    'lc-sub-form',
+    'lc-json-editor',
+    'lc-monaco-editor',
+  ].includes(field.component);
 }
 
 function fieldGridCellClass(field: LowCodeField) {
@@ -354,8 +586,9 @@ function fieldGridCellStyle(field: LowCodeField) {
 
 function resolveFormItemProps(field: LowCodeField) {
   return formItemPropsByField.value[field.field] ?? {
-    field: getVxeFieldKey(field),
+    field: field.field,
     title: field.label,
+    showTitle: field.showTitle,
     span: getFieldVxeSpan(field),
     className: 'lc-form-item',
     contentClassName: 'lc-form-item__content',
@@ -396,6 +629,16 @@ function normalizeOption(
 }
 
 function resolveOptions(field: LowCodeField) {
+  if (field.optionsCode) {
+    const source =
+      codeOptionSources[field.optionsCode] ??
+      lowCodeOptionSourceRegistry.peek(field.optionsCode);
+
+    if (Array.isArray(source)) {
+      return source.map((option) => normalizeOption(option, field));
+    }
+  }
+
   if (field.optionsSourceKey) {
     const source = props.optionSources?.[field.optionsSourceKey];
 
@@ -411,29 +654,29 @@ function readFieldValue(field: LowCodeField) {
   return formData[field.field];
 }
 
-function syncVxeFieldValue(field: LowCodeField, value: unknown) {
-  vxeFormData[getVxeFieldKey(field)] = value;
-}
-
-function syncVxeFormData() {
-  const nextKeys = new Set(fields.value.map((field) => getVxeFieldKey(field)));
-
-  Object.keys(vxeFormData).forEach((key) => {
-    if (!nextKeys.has(key)) {
-      delete vxeFormData[key];
-    }
-  });
-
-  fields.value.forEach((field) => {
-    syncVxeFieldValue(field, readFieldValue(field));
-  });
+function formValuesEqual(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) return true;
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return left.length === right.length && left.every(
+      (value, index) => formValuesEqual(value, right[index])
+    );
+  }
+  if (typeof left === 'object' && left !== null && typeof right === 'object' && right !== null) {
+    const leftValues = left as Record<string, unknown>;
+    const rightValues = right as Record<string, unknown>;
+    const keys = Object.keys(leftValues);
+    return keys.length === Object.keys(rightValues).length && keys.every(
+      (key) => key in rightValues && formValuesEqual(leftValues[key], rightValues[key])
+    );
+  }
+  return false;
 }
 
 function setFieldValue(field: LowCodeField, value: unknown) {
+  if (isFormInteractionBlocked.value || isFieldDisabled(field)) return;
   formData[field.field] = value;
-  syncVxeFieldValue(field, value);
   emit('update:modelValue', { ...formData });
-  vxeFormRef.value?.updateStatus({ field: getVxeFieldKey(field) }, value);
+  vxeFormRef.value?.updateStatus({ field: field.field }, value);
 }
 
 function handleFieldChange(payload: {
@@ -441,6 +684,7 @@ function handleFieldChange(payload: {
   value: unknown;
   previousValue: unknown;
 }) {
+  if (isFormInteractionBlocked.value || isFieldDisabled(payload.field)) return;
   emit('fieldChange', {
     ...payload,
     values: { ...formData },
@@ -472,25 +716,82 @@ function createVxeRule(rule: LowCodeRule): VxeLowCodeFormRule {
   };
 }
 
-function readExternalRules(field: string, vxeField: string) {
-  const rules: VxeLowCodeFormRule[] = [];
-  const source = props.rules;
+function createFieldValidationRule(field: LowCodeField): VxeLowCodeFormRule {
+  const message = field.validationMessage || `${field.label}校验不通过`;
 
-  if (!source) return rules;
+  return {
+    content: message,
+    message,
+    trigger: 'change',
+    async validator({ itemValue }) {
+      if (!props.fieldValidator) return;
+      const result = await props.fieldValidator(field, itemValue, { ...formData });
+      if (result !== true) throw new Error(result || message);
+    },
+  };
+}
 
-  const directRules = source[field];
-  if (Array.isArray(directRules)) {
-    rules.push(...directRules);
-  }
+function readExternalRules(field: string) {
+  const rules = props.rules?.[field];
+  return Array.isArray(rules) ? rules : [];
+}
 
-  if (vxeField !== field) {
-    const internalRules = source[vxeField];
-    if (Array.isArray(internalRules)) {
-      rules.push(...internalRules);
-    }
-  }
+function isSafeFormFieldName(field: string) {
+  return Boolean(field) && !['__proto__', 'prototype', 'constructor'].includes(field);
+}
 
-  return rules;
+function patchFieldValues(
+  sourceField: LowCodeField,
+  payload: LowCodeFormMaterialPatchPayload,
+) {
+  if (
+    isFormInteractionBlocked.value ||
+    isFieldDisabled(sourceField) ||
+    !isRecord(payload?.values)
+  ) return;
+
+  const changes = Object.entries(payload.values).filter(([field]) =>
+    isSafeFormFieldName(field)
+  );
+  if (!changes.length) return;
+
+  const previousValues = Object.fromEntries(
+    changes.map(([field]) => [field, formData[field]])
+  );
+  changes.forEach(([field, value]) => {
+    formData[field] = value;
+  });
+  emit('update:modelValue', { ...formData });
+
+  changes.forEach(([fieldName, value]) => {
+    vxeFormRef.value?.updateStatus({ field: fieldName }, value);
+    const field = fieldsByKey.value[fieldName];
+    if (!field || Object.is(previousValues[fieldName], value)) return;
+    emit('fieldChange', {
+      field,
+      value,
+      previousValue: previousValues[fieldName],
+      values: { ...formData },
+    });
+  });
+}
+
+function handleRelateSelect(
+  field: LowCodeField,
+  payload: LowCodeFormMaterialSelectPayload,
+) {
+  if (
+    isFormInteractionBlocked.value ||
+    isFieldDisabled(field) ||
+    !isRecord(payload?.row) ||
+    !isRecord(payload?.values)
+  ) return;
+  emit('relateSelect', {
+    field,
+    row: payload.row,
+    values: payload.values,
+    formValues: { ...formData },
+  });
 }
 
 function isValidResult(value: unknown) {
@@ -505,8 +806,7 @@ function isValidResult(value: unknown) {
 }
 
 async function validate() {
-  syncVxeFormData();
-
+  if (isFormInteractionBlocked.value) return true;
   try {
     const result = await vxeFormRef.value?.validate();
     return isValidResult(result);
@@ -515,14 +815,18 @@ async function validate() {
   }
 }
 
+async function clearValidation() {
+  await vxeFormRef.value?.clearValidate();
+}
+
 function snapshot() {
-  syncVxeFormData();
   const value = { ...formData };
   emit('update:modelValue', value);
   return value;
 }
 
 async function handleSubmit() {
+  if (isFormInteractionBlocked.value) return false;
   if (!(await validate())) return false;
   emit('submit', snapshot());
   return true;
@@ -532,7 +836,34 @@ function handleVxeSubmit() {
   void handleSubmit();
 }
 
+function handleLabelContextMenu(event: MouseEvent) {
+  if (!props.labelContextMenu) return;
+
+  const target = event.target;
+  const currentTarget = event.currentTarget;
+  if (!(target instanceof Element) || !(currentTarget instanceof Element)) return;
+
+  const title = target.closest('.vxe-form--item-title');
+  if (!title || title.closest('.lc-form') !== currentTarget) return;
+
+  const formItem = title.closest('[data-lc-field]');
+  const fieldName = formItem?.getAttribute('data-lc-field') ?? '';
+  const field = fieldsByKey.value[fieldName];
+  if (!field) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  emit('labelContextMenu', event, field);
+}
+
+function setValues(values: Record<string, unknown>) {
+  Object.keys(formData).forEach((key) => delete formData[key]);
+  Object.assign(formData, values);
+  emit('update:modelValue', { ...formData });
+}
+
 async function handleAction(action: LowCodeAction) {
+  if (isFormInteractionBlocked.value || action.disabled) return;
   if (action.type === 'submit') {
     await handleSubmit();
     return;
@@ -543,8 +874,7 @@ async function handleAction(action: LowCodeAction) {
       delete formData[key];
     });
     Object.assign(formData, initialModel.value);
-    syncVxeFormData();
-    void vxeFormRef.value?.clearValidate();
+    void clearValidation();
   }
 
   emit('action', action, snapshot());
@@ -553,7 +883,9 @@ async function handleAction(action: LowCodeAction) {
 defineExpose({
   submit: handleSubmit,
   validate,
-  snapshot
+  snapshot,
+  setValues,
+  clearValidation,
 });
 </script>
 
@@ -567,6 +899,18 @@ defineExpose({
 
 .lc-form {
   background: transparent;
+}
+
+.lc-form--fill {
+  height: 100%;
+  min-height: 0;
+}
+
+.lc-form.vxe-form.lc-form--fill > .vxe-form--wrapper,
+.lc-form.vxe-form.lc-form--fill > .vxe-form--wrapper > .lc-form-layout {
+  height: 100%;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
 }
 
 .lc-form.vxe-form > .vxe-form--wrapper {
@@ -585,7 +929,9 @@ defineExpose({
 .lc-form-grid,
 .lc-form-layout {
   display: grid;
-  gap: 12px 16px;
+  min-height: 0;
+  gap: 6px 8px;
+  grid-auto-rows: max-content;
 }
 
 .lc-form-grid {
@@ -605,6 +951,7 @@ defineExpose({
 .lc-form-grid-cell--array {
   display: grid;
   min-height: 0;
+  align-self: stretch;
 }
 
 .lc-form-grid-cell--array .vxe-form--item,
@@ -623,6 +970,11 @@ defineExpose({
   width: 100%;
   min-width: 0;
   align-items: flex-start;
+}
+
+.lc-form-layout > .lc-form-row.lc-form-row--span-grid {
+  display: grid;
+  grid-template-columns: var(--lc-form-row-template, minmax(0, 1fr));
 }
 
 .lc-form-col {
@@ -647,10 +999,55 @@ defineExpose({
   line-height: 18px;
 }
 
+.lc-form .vxe-form--item.is--vertical {
+  align-items: stretch;
+  gap: 5px;
+}
+
+.lc-form .vxe-form--item.is--vertical > .vxe-form--item-title {
+  width: auto;
+  height: auto;
+  min-height: 18px;
+  margin: 0;
+  line-height: 18px;
+}
+
+.lc-form .vxe-form--item.is--vertical:not(.is--padding) > .vxe-form--item-title {
+  padding: 0;
+}
+
+.lc-form .vxe-form--item.is--vertical > .vxe-form--item-content {
+  min-height: 0;
+}
+
 .lc-form .vxe-form--item-content,
 .lc-form .lc-form-item__content {
   min-width: 0;
   max-width: 100%;
+}
+.vxe-form--item-inner{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.vxe-form--item-inner >:last-child{
+  flex: 1;
+}
+.lc-array-table{
+  display: flex;
+  flex-direction: column;
+}
+.lc-array-table>:last-child{
+  flex: 1;
+}
+.lc-form .vxe-form-item--valid-error-icon-wrapper:hover
+  .vxe-form-item--valid-error-icon-msg-tip,
+.lc-form .vxe-form-item--valid-error-icon-wrapper.is--show
+  .vxe-form-item--valid-error-icon-msg-tip {
+  width: max-content;
+  max-width: min(24em, 60vw);
+  padding: 0.4em;
+  overflow: visible;
 }
 
 .lc-field {
@@ -676,7 +1073,7 @@ defineExpose({
 .lc-field > .lc-array-table,
 .lc-field > .lc-sub-form,
 .lc-field > .lc-json-editor,
-.lc-json-editor > .vxe-textarea {
+.lc-field > .lc-monaco-editor {
   width: 100%;
   max-width: 100%;
 }
@@ -701,6 +1098,10 @@ defineExpose({
 
   .lc-form-row {
     flex-direction: column;
+  }
+
+  .lc-form-layout > .lc-form-row.lc-form-row--span-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .lc-form-col {

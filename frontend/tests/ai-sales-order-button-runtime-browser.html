@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI sales-order candidate button runtime smoke</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      #app {
+        padding: 24px;
+        box-sizing: border-box;
+      }
+
+      #result {
+        position: fixed;
+        z-index: -1;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick, ref } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'remixicon/fonts/remixicon.css';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import '../assets/styles/app.css';
+      import LowCodePageRenderer from '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue';
+
+      const candidateAction = {
+        code: 'custom-record-edit',
+        label: '测试',
+        type: 'button',
+        prefixIcon: 'ri-edit-line',
+        eventName: 'buttonGroup.custom-record-edit',
+        script: [
+          'async function main() {',
+          '  return this.executeFunction({',
+          '    name: "edit",',
+          '    args: {},',
+          '  });',
+          '}',
+        ].join('\n'),
+      };
+      const pageRecord = {
+        id: 'ai-sales-order-candidate-page',
+        code: 'sales-orders',
+        route: '/dashboard/sales/orders',
+        title: '销售订单（AI 候选预览）',
+        description: '隔离候选页面，不连接真实数据库。',
+        layout: 'dashboard',
+        status: 'published',
+        keep_alive: false,
+        page_type: 'list',
+        edit_page_id: null,
+        schema: {
+          schemaVersion: 3,
+          code: 'sales-orders',
+          route: '/dashboard/sales/orders',
+          title: '销售订单（AI 候选预览）',
+          description: '隔离候选页面，不连接真实数据库。',
+          pageType: 'list',
+          layout: 'dashboard',
+          status: 'published',
+          keepAlive: false,
+          dataSources: {},
+          blocks: [
+            {
+              id: 'sales-order-actions',
+              kind: 'buttonGroup',
+              title: '销售订单操作',
+              align: 'left',
+              gap: 8,
+              actions: [candidateAction],
+            },
+            {
+              id: 'sales-order-grid',
+              kind: 'grid',
+              title: '销售订单',
+              tableType: 'main',
+              rows: [
+                {
+                  id: 'sales-order-row-1',
+                  doc_no: 'SO-AI-TEST-001',
+                  customer_name: '候选页面测试客户',
+                  status: 'draft',
+                },
+              ],
+              schema: {
+                grid: {
+                  border: true,
+                  stripe: true,
+                  height: 320,
+                  rowConfig: { keyField: 'id', isCurrent: true },
+                  columns: [
+                    { type: 'seq', title: '序号', width: 72, align: 'center' },
+                    { field: 'doc_no', title: '订单号', minWidth: 180 },
+                    { field: 'customer_name', title: '客户名称', minWidth: 220 },
+                    { field: 'status', title: '订单状态', width: 120, align: 'center' },
+                  ],
+                },
+                rowActions: { edit: false, delete: false },
+              },
+            },
+          ],
+          overlays: [],
+        },
+        version: 17,
+        published_at: null,
+        created_at: '',
+        updated_at: '',
+      };
+      const renderer = ref(null);
+      const serviceCalls = [];
+      const routerPushes = [];
+      const serviceApi = {
+        async invoke(serviceName, serviceMethod, payload = {}) {
+          serviceCalls.push({
+            serviceName,
+            serviceMethod,
+            payload: structuredClone(payload),
+          });
+          if (serviceName === 'lowcode' && serviceMethod === 'listItems') {
+            return [{
+              id: 'sales-orders-edit-page',
+              code: 'sales-orders-edit',
+              route: '/dashboard/sales/orders/edit',
+            }];
+          }
+          throw new Error(`Unexpected service call: ${serviceName}.${serviceMethod}`);
+        },
+      };
+      const router = {
+        async push(target) {
+          routerPushes.push(target);
+          return target;
+        },
+      };
+
+      const App = defineComponent({
+        setup() {
+          return () => h(LowCodePageRenderer, {
+            ref: renderer,
+            page: pageRecord,
+            serviceApi,
+            router,
+            locale: 'zh-CN',
+            route: {
+              query: {},
+              params: {},
+              path: pageRecord.route,
+              fullPath: pageRecord.route,
+            },
+          });
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+
+      window.__aiSalesOrderButtonRuntimeSmoke = {
+        candidateAction,
+        pageRecord,
+        serviceCalls,
+        routerPushes,
+        snapshot() {
+          return renderer.value?.getSnapshot?.() ?? null;
+        },
+      };
+
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

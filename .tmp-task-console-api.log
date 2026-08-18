@@ -1,0 +1,41 @@
+
+> hikari-api@ standalone:start E:\enLearn\api
+> node dist/standalone.js
+
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [NestFactory] Starting Nest application...
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] AccountModule dependencies initialized +16ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] AdminModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] PaymentModule dependencies initialized +1ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] UserModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] LowCodeModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] PostsModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] NotificationModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] EntityDesignModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] FilesModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] ChatModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] MesModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] DatabaseModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] AuthModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] DefinitionModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] FrontendCommandModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] JobModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] PlanningModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] RuntimeModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] WorkflowModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [InstanceLoader] StandaloneAppModule dependencies initialized +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RoutesResolver] ServiceGatewayController {/api}: +19ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RouterExplorer] Mapped {/api/service, POST} route +1ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RoutesResolver] AuthController {/api/auth}: +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RouterExplorer] Mapped {/api/auth/signin, POST} route +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RouterExplorer] Mapped {/api/auth/account-options, GET} route +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RouterExplorer] Mapped {/api/auth/signup, POST} route +1ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RouterExplorer] Mapped {/api/auth/oauth, POST} route +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RouterExplorer] Mapped {/api/auth/session, POST} route +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RouterExplorer] Mapped {/api/auth/refresh, POST} route +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RouterExplorer] Mapped {/api/auth/me, GET} route +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RouterExplorer] Mapped {/api/auth/select-account, POST} route +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [RouterExplorer] Mapped {/api/auth/signout, POST} route +0ms
+[Nest] 45236  - 2026/08/13 12:41:30     LOG [NestApplication] Nest application successfully started +1ms
+Standalone API listening on http://localhost:3012/api/service
+Domain and workflow services are running in-process; Redis transport is disabled.
+^C

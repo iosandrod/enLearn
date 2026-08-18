@@ -7,11 +7,15 @@ declare module 'tldraw-vue-phase-one' {
     getCurrentPageShapeIdsSorted(): unknown[];
     getContentFromCurrentPage(shapeIds: unknown[]): TLContent;
     resolveAssetsInContent(content: TLContent): Promise<TLContent>;
+    clearHistory(): void;
     markHistoryStoppingPoint(label: string): void;
     run(callback: () => void, options?: Record<string, unknown>): void;
     deleteShapes(shapeIds: unknown[]): void;
     selectNone(): void;
     putContentOntoCurrentPage(content: TLContent, options?: Record<string, unknown>): void;
+    store: {
+      mergeRemoteChanges(callback: () => void): void;
+    };
   };
 
   export type VueTemplateWorkspaceConfig = Record<string, unknown>;

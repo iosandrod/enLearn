@@ -253,7 +253,7 @@ export function useFilesApi() {
 
   async function createUploadIntent(input: CreateUploadIntentInput) {
     return serviceApi.invoke<UploadIntentResponse>('files', 'runAction', {
-      resource: 'files',
+      resource: 'file_objects',
       operation: 'createUploadIntent',
       originalName: input.file.name,
       mimeType: input.file.type || null,
@@ -271,7 +271,7 @@ export function useFilesApi() {
       'files',
       'runAction',
       {
-        resource: 'files',
+        resource: 'file_objects',
         operation: 'confirmUpload',
         fileId: input.fileId,
         checksum: input.checksum,
@@ -291,7 +291,7 @@ export function useFilesApi() {
 
   async function getDownloadUrl(fileId: string, expiresInSeconds?: number) {
     return serviceApi.invoke<DownloadUrlResponse>('files', 'runAction', {
-      resource: 'files',
+      resource: 'file_objects',
       operation: 'getDownloadUrl',
       fileId,
       expiresInSeconds
@@ -310,7 +310,9 @@ export function useFilesApi() {
     if (!input.includeDeleted) filters.deleted_at = null;
     if (input.status) filters.status = input.status;
 
-    const result = await serviceApi.invoke<ListItemsPageResponse<FileObjectRow>>('files', 'listItems', {
+    const result = await serviceApi.invoke<
+      ListItemsPageResponse<FileObjectRow> | FileObjectRow[]
+    >('files', 'listItems', {
       tableName: 'file_objects',
       filters,
       limit,
@@ -320,10 +322,15 @@ export function useFilesApi() {
       withCount: true,
       responseMode: 'page'
     });
+    const rows = Array.isArray(result)
+      ? result
+      : Array.isArray(result?.rows)
+        ? result.rows
+        : [];
 
     return {
-      items: result.rows.map(normalizeFile),
-      count: result.total,
+      items: rows.map(normalizeFile),
+      count: Array.isArray(result) ? result.length : Number(result?.total ?? rows.length),
       limit,
       offset
     } satisfies ListFilesResponse;
@@ -354,7 +361,7 @@ export function useFilesApi() {
     metadata?: Record<string, unknown>;
   }) {
     return serviceApi.invoke<{ folder: FileFolder }>('files', 'runAction', {
-      resource: 'folders',
+      resource: 'file_folders',
       operation: 'createFolder',
       ...input
     });
@@ -362,7 +369,7 @@ export function useFilesApi() {
 
   async function deleteFolder(path: string) {
     return serviceApi.invoke<{ success: boolean; path: string }>('files', 'runAction', {
-      resource: 'folders',
+      resource: 'file_folders',
       operation: 'deleteFolder',
       path
     });
@@ -370,7 +377,7 @@ export function useFilesApi() {
 
   async function setFileLocked(fileId: string, locked: boolean) {
     const row = await serviceApi.invoke<FileObjectRow>('files', 'updateItem', {
-      resource: 'files',
+      resource: 'file_objects',
       id: fileId,
       data: { locked }
     });
@@ -388,7 +395,7 @@ export function useFilesApi() {
     if (!fileRow) throw new Error('File not found.');
 
     const usage = await serviceApi.invoke<FileUsageRow>('files', 'createItem', {
-      resource: 'usages',
+      resource: 'file_usages',
       data: {
         file_id: input.fileId,
         entity_type: input.entityType,
@@ -409,7 +416,7 @@ export function useFilesApi() {
       'files',
       'deleteItem',
       {
-        resource: 'files',
+        resource: 'file_objects',
         fileId,
         purge
       }

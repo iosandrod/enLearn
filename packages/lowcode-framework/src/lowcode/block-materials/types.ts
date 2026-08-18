@@ -29,7 +29,13 @@ export type LowCodeBlockMaterialProps<T extends LowCodeRuntimeBlock = LowCodeRun
 };
 
 export type LowCodeBlockMaterialEmits = {
-  formSubmit: [payload: { block: LowCodeRuntimeBlock; values: Record<string, unknown> }];
+  formSubmit: [
+    payload: {
+      block: LowCodeRuntimeBlock;
+      values: Record<string, unknown>;
+      action?: LowCodeAction;
+    },
+  ];
   formAction: [
     payload: {
       block: LowCodeRuntimeBlock;
@@ -43,7 +49,11 @@ export type LowCodeBlockMaterialEmits = {
     payload: { block: LowCodeRuntimeBlock; action: LowCodeAction | LowCodeButtonGroupAction },
   ];
   searchSubmit: [
-    payload: { block: LowCodePageSearchFormBlock; values: Record<string, unknown> },
+    payload: {
+      block: LowCodePageSearchFormBlock;
+      values: Record<string, unknown>;
+      action?: LowCodeAction;
+    },
   ];
   searchAction: [
     payload: {

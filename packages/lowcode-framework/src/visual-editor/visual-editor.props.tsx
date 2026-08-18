@@ -19,6 +19,9 @@ export enum VisualEditorPropsType {
   json = 'json',
 }
 
+export type VisualEditorJsonRootType = 'any' | 'object' | 'array';
+export type VisualEditorJsonValueMode = 'parsed' | 'string' | 'preserve';
+
 export type VisualEditorProps = {
   type: VisualEditorPropsType;
   /** 表单项标签名称 */
@@ -39,6 +42,9 @@ export type VisualEditorProps = {
 } & {
   max?: number;
   min?: number;
+} & {
+  jsonRootType?: VisualEditorJsonRootType;
+  jsonValueMode?: VisualEditorJsonValueMode;
 } & {
   table?: VisualEditorTableOption;
 };
@@ -91,6 +97,11 @@ interface EditorInputProp {
   tips?: string;
 }
 
+interface EditorJsonProp extends EditorInputProp {
+  rootType?: VisualEditorJsonRootType;
+  valueMode?: VisualEditorJsonValueMode;
+}
+
 export function createEditorInputProp({
   label,
   defaultValue,
@@ -108,12 +119,16 @@ export function createEditorJsonProp({
   label,
   defaultValue,
   tips,
-}: EditorInputProp): VisualEditorProps {
+  rootType,
+  valueMode,
+}: EditorJsonProp): VisualEditorProps {
   return {
     type: VisualEditorPropsType.json,
     label,
     tips,
     defaultValue,
+    jsonRootType: rootType,
+    jsonValueMode: valueMode,
   };
 }
 /*---------------------------------------InputNumber -------------------------------------------*/
@@ -209,6 +224,7 @@ export type VisualEditorTableColumnOption = {
     | 'vxe-password-input'
     | 'lc-number-input'
     | 'lc-json-editor'
+    | 'lc-monaco-editor'
     | 'lc-option-select'
     | 'lc-sub-form'
     | (string & {});
@@ -218,6 +234,7 @@ export type VisualEditorTableColumnOption = {
   defaultValue?: unknown;
   props?: Record<string, unknown>;
   options?: VisualEditorSelectOptions;
+  optionsCode?: string;
 };
 
 interface EditorTableProp {

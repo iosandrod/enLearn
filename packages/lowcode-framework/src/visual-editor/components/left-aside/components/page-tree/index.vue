@@ -38,6 +38,7 @@
 
   <script lang="tsx" setup>
   import { ref, computed } from 'vue';
+  import { VxeUI } from 'vxe-pc-ui';
   import { ElMessage, ElForm, ElFormItem, ElInput } from '../../../common/designer-ui';
   import { Tickets, Plus, Edit, Delete, Link } from '../../../common/remix-icons';
   import type { VisualEditorPage } from '../../../../visual-editor.utils';
@@ -153,11 +154,14 @@
     console.log('子页面数据：', data);
   };
   // 删除子页面
-  const delPage = (data) => {
+  const delPage = async (data) => {
     console.log('删除子页面数据', data);
-    if (window.confirm('确定要删除该页面吗？')) {
-      deletePage(data.path, '/');
-    }
+    const confirmResult = await VxeUI.modal.confirm({
+      title: '删除页面',
+      content: '确定要删除该页面吗？',
+    });
+    if (confirmResult !== 'confirm') return;
+    deletePage(data.path, '/');
   };
   // 设置为默认页面
   const setDefaultPage = (data) => {

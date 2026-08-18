@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"],
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "src/*": ["src/*"]
+    },
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "app.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -157,7 +157,7 @@ const theme: LowCodeTheme = {
 VXE 组件和样式需要在宿主项目注册：
 
 ```ts
-import VxeUI from 'vxe-pc-ui';
+import { VxeUI } from 'vxe-pc-ui';
 import VxeUITable from 'vxe-table';
 import 'vxe-pc-ui/lib/style.css';
 import 'vxe-table/lib/style.css';
@@ -227,52 +227,77 @@ invoke<LowCodePageRecord & { resolvedData: Record<string, unknown> }>(
 
 异常：`code` 和 `route` 都为空时返回参数错误；查不到页面时返回 not found。
 
-### `lowcode.savePage`
+### `lowcode.saveItem`
 
 ```ts
-invoke<LowCodePageRecord>('lowcode', 'savePage', {
-  code: 'users',
-  schema,
+invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+  resource: 'lowcode_pages',
+  id: existingPage?.id,
+  data: {
+    code: schema.code,
+    route: schema.route,
+    title: schema.title,
+    description: schema.description ?? null,
+    layout: schema.layout ?? 'dashboard',
+    status: schema.status ?? 'draft',
+    keep_alive: schema.keepAlive ?? true,
+    page_type: schema.pageType ?? 'custom',
+    edit_page_id: existingPage?.edit_page_id ?? null,
+    schema,
+    version: (existingPage?.version ?? 0) + 1,
+    published_at: schema.status === 'published'
+      ? new Date().toISOString()
+      : existingPage?.published_at ?? null,
+  },
 });
 ```
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `code` | `string` | 否 | 已存在页面的查找编码；不传时使用 `schema.code` |
-| `schema` | `LowCodePageSchema` | 是 | 待保存 Schema |
+| `resource` | `'lowcode_pages'` | 是 | 低代码页面资源（与真实表名一致） |
+| `id` | `string` | 否 | 已有记录的 ID；传入时更新，否则新增 |
+| `data` | `Record<string, unknown>` | 是 | `lowcode_pages` 的页面字段和 Schema |
 
 返回值：`Promise<LowCodePageRecord>`。
 
 说明：
 
-- 保存前会执行 Schema 迁移和阻断性校验。
-- 已存在页面会更新并递增 `version`。
-- 新页面会插入 `lowcode_pages`，同时写入 `lowcode_page_versions`。
-- `schema.status === 'published'` 时会写入 `published_at`。
+- 调用方负责先用 `prepareLowCodePageSchema` 规范化 Schema。
+- 已存在页面传入 `id` 后更新；不传 `id` 时新增。
+- 调用方负责递增 `version`，发布时写入 `published_at`。
+- 页面类型以 `lowcode_pages.page_type` 为准；`schema.pageType` 作为兼容镜像，由数据库从该字段保持同步。
+- 列表页通过 `lowcode_pages.edit_page_id` 指向编辑页，不使用独立关系表。
 
-### Publish with `lowcode.savePage`
+### Publish with `lowcode.saveItem`
 
 ```ts
-invoke<LowCodePageRecord>('lowcode', 'savePage', {
-  code: 'users',
-  schema: { ...schema, status: 'published' },
+invoke<LowCodePageRecord>('lowcode', 'saveItem', {
+  resource: 'lowcode_pages',
+  id: page.id,
+  data: {
+    status: 'published',
+    schema: { ...schema, status: 'published' },
+    version: page.version + 1,
+    published_at: new Date().toISOString(),
+  },
 });
 ```
 
 | 参数 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `code` | `string` | 是 | 页面编码 |
-| `schema` | `LowCodePageSchema` | 是 | 发布用 Schema，当前实现会合并 `status: 'published'` 后保存 |
+| `resource` | `'lowcode_pages'` | 是 | 低代码页面资源（与真实表名一致） |
+| `id` | `string` | 是 | 页面记录 ID |
+| `data` | `Record<string, unknown>` | 是 | 包含发布状态、Schema、版本号和发布时间 |
 
-返回值：`Promise<{ success: true; page: LowCodePageRecord }>`。
+返回值：`Promise<LowCodePageRecord>`。
 
-注意：当前设计器发布按钮实际调用的是 `savePage` 并把 `schema.status` 设置为 `'published'`；`publishPage` 是服务端预留方法。
+注意：设计器保存和发布都调用 `saveItem`；发布时把记录与 `schema.status` 同步设置为 `'published'`。
 
 ### Archive with `lowcode.updateItem`
 
 ```ts
 invoke('lowcode', 'updateItem', {
-  resource: 'pages',
+  resource: 'lowcode_pages',
   filters: { code: 'users' },
   data: { status: 'archived' },
 });
@@ -500,7 +525,7 @@ type Props = {
 | 服务 | 方法 | 参数 | 返回值 |
 | --- | --- | --- | --- |
 | `lowcode` | `getPage` | `{ code: string; includeData: boolean }` | `Promise<LowCodePageRecord>` |
-| `lowcode` | `savePage` | `{ code: string; schema: LowCodePageSchema }` | `Promise<LowCodePageRecord>` |
+| `lowcode` | `saveItem` | `{ resource: 'lowcode_pages'; id?: string; data: Record<string, unknown> }` | `Promise<LowCodePageRecord>` |
 | `lowcode` | `listPages` | 无 | `Promise<LowCodePageRecord[]>` |
 
 ### `VisualEditorProvider`
@@ -989,7 +1014,12 @@ type LowCodeFormSchema = {
 type LowCodeFormLayoutNode =
   | { kind: 'field'; field: string }
   | { kind: 'row'; gutter?: number | string; columns: LowCodeFormLayoutColumn[] }
-  | { kind: 'stack'; blocks: LowCodeFormLayoutNode[] };
+  | { kind: 'stack'; blocks: LowCodeFormLayoutNode[] }
+  | {
+      kind: 'tabs';
+      defaultKey?: string;
+      tabs: Array<{ key: string; label: string; blocks: LowCodeFormLayoutNode[] }>;
+    };
 ```
 
 ### 表格 Schema

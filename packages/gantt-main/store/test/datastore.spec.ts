@@ -1,0 +1,2851 @@
+import { test, expect, describe, beforeEach, vi, afterEach } from "vitest";
+import { DataStore } from "../src/index";
+import {
+	getData,
+	taskTypes,
+	cellHeight,
+	scaleHeight,
+	cellWidth,
+	unitFormats,
+} from "./stubs/data";
+import { writable } from "./stubs/writable";
+import GanttDataTree from "../src/GanttDataTree";
+import { DataArray } from "@svar-ui/lib-state";
+
+import { resetScales } from "../src/scales";
+import { updateTask } from "../src/tasks";
+import { updateLink, normalizeLinks } from "../src/links";
+import {
+	ADD_TASK_COLUMN_WIDTH,
+	normalizeColumns,
+	defaultColumns,
+} from "../src/columns";
+import { parseTaskDates } from "../src/normalizeDates";
+
+import type {
+	GanttScaleData,
+	IGanttLink,
+	IGanttTask,
+	ILink,
+	ITask,
+	IData,
+} from "../src/types";
+import { Calendar } from "../src/schedule-types";
+import ResourceDataTree from "../src/pro/ResourceDataTree";
+
+let store: DataStore;
+
+function resetState(data?: any) {
+	if (!data) data = getData();
+	if (data.links) data.links = normalizeLinks(data.links);
+	store = new DataStore(writable);
+
+	store.init({ ...data });
+}
+
+beforeEach(() => {
+	vi.useFakeTimers({ shouldAdvanceTime: true });
+});
+
+afterEach(() => {
+	vi.useRealTimers();
+});
+
+describe("datastore", () => {
+	describe("datastore init", () => {
+		test("initializes correctly", () => {
+			resetState();
+			expect(store).to.not.be.undefined;
+		});
+
+		test("sets correct default state", () => {
+			resetState();
+			const data = getData();
+
+			const normalizedTasks = data.tasks.map((t: any) => ({ ...t }));
+			parseTaskDates(
+				normalizedTasks,
+				{ durationUnit: "day", splitTasks: false },
+				store.getTaskCalendar.bind(store)
+			);
+			const tasks = new GanttDataTree(normalizedTasks as ITask[]);
+			const links = new DataArray(data.links as ILink[]);
+			const scales = getData().scales;
+			const calendars = getData().calendars;
+			const resources = new ResourceDataTree([]);
+			const assignments = new DataArray([]);
+
+			const _scales = resetScales(
+				new Date(2024, 3, 1),
+				new Date(2024, 3, 9),
+				"day",
+				cellWidth,
+				scaleHeight,
+				1,
+				scales,
+				1
+			) as GanttScaleData;
+			const _tasks = tasks.toArray().map((task, i) =>
+				updateTask(task as IGanttTask, i, {
+					cellWidth,
+					cellHeight,
+					_scales,
+					baselines: false,
+				})
+			);
+			const _links = links.map(l =>
+				updateLink(
+					l as IGanttLink,
+					_tasks.find(t => t.id === l.source) as IGanttTask,
+					_tasks.find(t => t.id === l.target) as IGanttTask,
+					cellHeight
+				)
+			);
+
+			const _calendars = {};
+			calendars.forEach(({ id, ...config }) => {
+				_calendars[id] = new Calendar(config);
+				_calendars[id].css = config.css;
+			});
+
+			const defaultState: any = {
+				_activeTask: null,
+				selected: [],
+				_selected: [],
+				scrollLeft: 0,
+				scrollTop: 0,
+				area: { from: 0, start: 0, end: 0 },
+				xArea: { from: 0, to: 0, start: 0, end: 0 },
+				scales,
+				tasks,
+				_calendars,
+				_rollups: {},
+				links,
+				columns: normalizeColumns(defaultColumns),
+				taskTypes,
+				cellWidth,
+				_cellWidth: cellWidth,
+				cellHeight: 38,
+				scaleHeight: 30,
+				_start: new Date(2024, 3, 1),
+				_end: new Date(2024, 3, 9),
+				_scales,
+				_scaleMinUnit: "day",
+				_tasks,
+				_links,
+				_visibleLinks: [],
+				focusTask: null,
+				_sort: null,
+				autoScale: true,
+				markers: [],
+				_markers: [],
+				durationUnit: "day",
+				_unitFormats: unitFormats,
+				_isFiltered: false,
+				_headerLength: 1,
+				filterValues: {},
+				groupBy: { field: null },
+				tree: tasks,
+				highlightTime: null,
+				resources,
+				_resources: [],
+				assignments,
+				_assignments: {
+					byTask: {},
+					byResource: {},
+				},
+				_resourceSort: null,
+				displayMode: "all",
+				gridWidth: 440,
+				_compactMode: false,
+				_columnsWidth: 440,
+				_gridCollapseThreshold: ADD_TASK_COLUMN_WIDTH,
+				_tasksPatch: null,
+			};
+
+			vi.advanceTimersByTime(1);
+
+			const state = store.getState();
+
+			for (const key in state) {
+				if (
+					key !== "_scales" &&
+					key !== "_linksIndex" &&
+					key !== "columns" &&
+					key !== "calendars"
+				) {
+					expect(state[key as keyof IData], key).to.deep.eq(
+						defaultState[key as keyof IData]
+					);
+				}
+			}
+
+			// skip comparison for diff function
+			for (const key in state["_scales"]) {
+				if (key !== "diff")
+					expect(
+						state["_scales"][key as keyof GanttScaleData]
+					).to.deep.eq(
+						defaultState["_scales"]?.[key as keyof GanttScaleData]
+					);
+			}
+
+			// skip comparison for templates
+			state["columns"]?.forEach((column, i) => {
+				expect(column.width).to.eq(defaultState["columns"]?.[i].width);
+				expect(column.align).to.eq(defaultState["columns"]?.[i].align);
+				expect(column.header).to.deep.eq(
+					defaultState["columns"]?.[i].header
+				);
+				expect(column.resize).to.eq(
+					defaultState["columns"]?.[i].resize
+				);
+				expect(column.id).to.eq(defaultState["columns"]?.[i].id);
+				expect(column.flexgrow).to.eq(
+					defaultState["columns"]?.[i].flexgrow
+				);
+			});
+		});
+	});
+
+	describe("add-task", () => {
+		test("can add tasks to top level, no date set", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("add-task", {
+				task: { text: "Task 3", id: 3 },
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(3);
+			expect(tasks.byId(3).text).to.eq("Task 3");
+			expect(tasks.byId(3).start).to.deep.eq(new Date(2024, 3, 6));
+			expect(tasks.byId(3).end).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(3).duration).to.eq(1);
+			expect(tasks.getIndexById(3)).to.eq(2);
+		});
+
+		test("can add tasks to top level, set start date and duration", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("add-task", {
+				task: {
+					text: "Task 3",
+					id: 3,
+					start: new Date(2024, 3, 3),
+					duration: 2,
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(3);
+			expect(tasks.byId(3).text).to.eq("Task 3");
+			expect(tasks.byId(3).start).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(3).end).to.deep.eq(new Date(2024, 3, 5));
+			expect(tasks.byId(3).duration).to.eq(2);
+		});
+
+		test("can add tasks to top level, set start and end date", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			// within scale bounds
+			store.in.exec("add-task", {
+				task: {
+					text: "Task 3",
+					id: 3,
+					start: new Date(2024, 3, 3),
+					end: new Date(2024, 3, 5),
+				},
+			});
+
+			expect(tasks.toArray().length).to.eq(3);
+			expect(tasks.byId(3).text).to.eq("Task 3");
+			expect(tasks.byId(3).start).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(3).end).to.deep.eq(new Date(2024, 3, 5));
+			expect(tasks.byId(3).duration).to.eq(2);
+
+			// outside scale bounds
+			store.in.exec("add-task", {
+				task: {
+					text: "Task 4",
+					id: 4,
+					start: new Date(2024, 2, 6),
+					end: new Date(2024, 3, 10),
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(4);
+			expect(tasks.byId(4).text).to.eq("Task 4");
+			expect(tasks.byId(4).start).to.deep.eq(new Date(2024, 2, 6));
+			expect(tasks.byId(4).end).to.deep.eq(new Date(2024, 3, 10));
+			expect(tasks.byId(4).duration).to.eq(35);
+		});
+
+		test("can add tasks as children", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			//should correct parent to target
+			store.in.exec("add-task", {
+				target: 1,
+				task: { text: "Task 3", id: 3, parent: 2 },
+				mode: "child",
+				show: true,
+			});
+
+			store.in.exec("add-task", {
+				task: { text: "Task 4", id: 4, parent: 2 },
+				show: true,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(4);
+			expect(tasks.byId(2).data?.length).to.eq(1);
+
+			expect(tasks.byId(1).open).to.eq(true);
+			expect(tasks.byId(2).open).to.eq(true);
+
+			expect(tasks.byId(3).parent).to.eq(1);
+			expect(tasks.byId(4).parent).to.eq(2);
+
+			expect(tasks.byId(3).$level).to.eq(2);
+			expect(tasks.byId(4).$level).to.eq(2);
+
+			expect(tasks.byId(3).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(3).end).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(3).duration).to.eq(1);
+
+			expect(tasks.byId(4).start).to.deep.eq(new Date(2024, 3, 6));
+			expect(tasks.byId(4).end).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(4).duration).to.eq(1);
+		});
+
+		test("can add tasks as children, before/after", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			store.in.exec("add-task", {
+				target: 20,
+				task: { text: "Task 6", id: 6, parent: 2 },
+				mode: "before",
+			});
+
+			store.in.exec("add-task", {
+				target: 20,
+				task: { text: "Task 7", id: 7, parent: 2 },
+				mode: "after",
+			});
+
+			store.in.exec("add-task", {
+				target: 6,
+				task: { text: "Task 8", id: 8, parent: 2 },
+				mode: "before",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(22);
+			expect(tasks.getIndexById(6)).to.eq(1);
+			expect(tasks.getIndexById(7)).to.eq(3);
+			expect(tasks.getIndexById(8)).to.eq(0);
+
+			expect(tasks.byId(6).$level).to.eq(2);
+			expect(tasks.byId(7).$level).to.eq(2);
+			expect(tasks.byId(8).$level).to.eq(2);
+
+			expect(tasks.byId(6).text).to.eq("Task 6");
+			expect(tasks.byId(7).text).to.eq("Task 7");
+			expect(tasks.byId(8).text).to.eq("Task 8");
+
+			expect(tasks.byId(6).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(6).end).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(6).duration).to.eq(1);
+
+			expect(tasks.byId(7).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(7).end).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(7).duration).to.eq(1);
+
+			expect(tasks.byId(8).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(8).end).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(8).duration).to.eq(1);
+		});
+
+		test("can add tasks as siblings, before/after", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("add-task", {
+				target: 2,
+				task: { text: "Task 3", id: 3 },
+				mode: "before",
+			});
+
+			store.in.exec("add-task", {
+				target: 3,
+				task: { text: "Task 4", id: 4 },
+				mode: "after",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(4);
+			expect(tasks.getIndexById(2)).to.eq(3);
+			expect(tasks.getIndexById(3)).to.eq(1);
+			expect(tasks.getIndexById(4)).to.eq(2);
+
+			expect(tasks.byId(3).text).to.eq("Task 3");
+			expect(tasks.byId(3).start).to.deep.eq(new Date(2024, 3, 6));
+			expect(tasks.byId(3).end).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(3).duration).to.eq(1);
+
+			expect(tasks.byId(4).text).to.eq("Task 4");
+			expect(tasks.byId(4).start).to.deep.eq(new Date(2024, 3, 6));
+			expect(tasks.byId(4).end).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(4).duration).to.eq(1);
+		});
+
+		test("can add tasks as siblings, before/after tasks with children", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			store.in.exec("add-task", {
+				target: 2,
+				task: { text: "New task 1", id: 6 },
+				mode: "before",
+			});
+
+			store.in.exec("add-task", {
+				target: 2,
+				task: { text: "New task 2", id: 7 },
+				mode: "after",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(21);
+			expect(tasks.getIndexById(2)).to.eq(2);
+			expect(tasks.getIndexById(6)).to.eq(1);
+			expect(tasks.getIndexById(7)).to.eq(3);
+
+			expect(tasks.byId(6).$level).to.eq(1);
+			expect(tasks.byId(7).$level).to.eq(1);
+
+			expect(tasks.byId(6).text).to.eq("New task 1");
+			expect(tasks.byId(6).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(6).end).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(6).duration).to.eq(1);
+
+			expect(tasks.byId(7).text).to.eq("New task 2");
+			expect(tasks.byId(7).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(7).end).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(7).duration).to.eq(1);
+		});
+
+		test("can add tasks as siblings to branch children", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			store.in.exec("add-task", {
+				target: 20,
+				task: { text: "New task 1", id: 6 },
+				mode: "before",
+			});
+
+			store.in.exec("add-task", {
+				target: 20,
+				task: { text: "New task 2", id: 7 },
+				mode: "after",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(21);
+			expect(tasks.getIndexById(20)).to.eq(1);
+			expect(tasks.getIndexById(6)).to.eq(0);
+			expect(tasks.getIndexById(7)).to.eq(2);
+
+			expect(tasks.byId(6).$level).to.eq(2);
+			expect(tasks.byId(6).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(6).end).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(6).duration).to.eq(1);
+
+			expect(tasks.byId(7).$level).to.eq(2);
+			expect(tasks.byId(7).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(7).end).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(7).duration).to.eq(1);
+		});
+
+		test("can add tasks before first task", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("add-task", {
+				target: 1,
+				task: { text: "Task 3", id: 3 },
+				mode: "before",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(3);
+			expect(tasks.getIndexById(1)).to.eq(1);
+			expect(tasks.getIndexById(3)).to.eq(0);
+
+			expect(tasks.byId(3).text).to.eq("Task 3");
+			expect(tasks.byId(3).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(3).end).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(3).duration).to.eq(1);
+		});
+
+		test("can add tasks after last task", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("add-task", {
+				target: 2,
+				task: { text: "Task 3", id: 3 },
+				mode: "after",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(3);
+			expect(tasks.getIndexById(2)).to.eq(1);
+			expect(tasks.getIndexById(3)).to.eq(2);
+
+			expect(tasks.byId(3).text).to.eq("Task 3");
+			expect(tasks.byId(3).start).to.deep.eq(new Date(2024, 3, 6));
+			expect(tasks.byId(3).end).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(3).duration).to.eq(1);
+		});
+
+		test("can add an empty task", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("add-task", {
+				task: {},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const last = tasks.toArray()[tasks.toArray().length - 1];
+
+			expect(tasks.toArray().length).to.eq(3);
+			expect(last.id).to.include(
+				"temp://",
+				"generate a temp ID if none is provided"
+			);
+			expect(last.text).to.eq("");
+		});
+
+		test("supports baselines", () => {
+			resetState({ baselines: true, ...getData() });
+
+			const { tasks } = store.getState();
+
+			store.in.exec("add-task", {
+				task: { text: "Task 3", id: 3 },
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(3);
+
+			expect(tasks.byId(3).start).to.deep.eq(new Date(2024, 3, 6));
+			expect(tasks.byId(3).end).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(3).duration).to.eq(1);
+
+			expect(tasks.byId(3).base_start).to.deep.eq(new Date(2024, 3, 6));
+			expect(tasks.byId(3).base_end).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(3).base_duration).to.eq(1);
+		});
+	});
+
+	describe("update-task", () => {
+		test("can update task", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("update-task", {
+				id: 1,
+				task: {
+					text: "Task 1 updated",
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(1).text).to.eq("Task 1 updated");
+		});
+
+		test("can update task with new dates", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("update-task", {
+				id: 1,
+				task: {
+					text: "Task 1 updated",
+					start: new Date(2024, 3, 2),
+					end: new Date(2024, 3, 10),
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(1).text).to.eq("Task 1 updated");
+			expect(tasks.byId(1).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(1).end).to.deep.eq(new Date(2024, 3, 10));
+		});
+
+		test("can update task type", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("update-task", {
+				id: 1,
+				task: { type: "summary" },
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(1).type).to.eq("summary");
+			expect(tasks.byId(1).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(1).end).to.deep.eq(new Date(2024, 3, 5));
+			expect(tasks.byId(1).duration).to.eq(3);
+
+			store.in.exec("update-task", {
+				id: 1,
+				task: { type: "milestone" },
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(1).type).to.eq("milestone");
+			expect(tasks.byId(1).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(1).end).to.be.undefined;
+			expect(tasks.byId(1).duration).to.eq(0);
+
+			store.in.exec("update-task", {
+				id: 1,
+				task: { type: "task" },
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(1).type).to.eq("task");
+			expect(tasks.byId(1).start).to.deep.eq(new Date(2024, 3, 2));
+			expect(tasks.byId(1).end).to.deep.eq(new Date(2024, 3, 3));
+			expect(tasks.byId(1).duration).to.eq(1);
+		});
+
+		test("can update task progress", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("update-task", {
+				id: 1,
+				task: { progress: 50 },
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(1).progress).to.eq(50);
+		});
+
+		test("can update task details", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("update-task", {
+				id: 1,
+				task: { details: "Some details" },
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(1).details).to.eq("Some details");
+		});
+
+		test("can pass custom props to task object", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("update-task", {
+				id: 1,
+				task: { prop1: "some prop", prop2: true },
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(1).prop1).to.eq("some prop");
+			expect(tasks.byId(1).prop2).to.be.true;
+		});
+
+		test("can pass an empty object", () => {
+			resetState();
+			const { tasks } = store.getState();
+			const oTask = { ...tasks.byId(1) };
+
+			store.in.exec("update-task", {
+				id: 1,
+				task: {},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(oTask).to.deep.eq(tasks.byId(1));
+		});
+
+		test("keeps correct layout when add-task and text update run in the same batch", () => {
+			resetState();
+			vi.advanceTimersByTime(1);
+
+			store.in.exec("add-task", {
+				id: 3,
+				mode: "after",
+				target: 0,
+				task: { id: 3, text: "child 3" },
+			});
+			store.in.exec("update-task", {
+				id: 3,
+				task: { id: 3, text: "update 3" },
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const { _tasks } = store.getState();
+			const task = _tasks.find(t => t.id === 3);
+
+			expect(task?.text).to.eq("update 3");
+			expect(task?.$x).to.be.a("number");
+			expect(task?.$y).to.be.a("number");
+			expect(task?.$w).to.be.gt(0);
+			expect(task?.$h).to.be.gt(0);
+		});
+	});
+
+	describe("delete-task", () => {
+		test("can delete tasks", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("delete-task", {
+				id: 2,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(1);
+
+			store.in.exec("delete-task", {
+				id: 1,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length, "can remove all tasks").to.eq(0);
+		});
+
+		test("deleting a task deletes related links", () => {
+			resetState();
+			const { tasks, links } = store.getState();
+
+			store.in.exec("delete-task", {
+				id: 2,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(1);
+			expect(links.map(l => l)).to.deep.eq([]);
+		});
+
+		test("deleting a task removes it from selection", () => {
+			resetState();
+			const { tasks, selected } = store.getState();
+
+			store.in.exec("select-task", {
+				id: 2,
+			});
+
+			store.in.exec("delete-task", {
+				id: 2,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(1);
+			expect(selected).to.deep.eq([]);
+		});
+
+		test("deleting a task removes its children", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			store.in.exec("delete-task", {
+				id: 2,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(14);
+		});
+	});
+
+	describe("open-task", () => {
+		test("can open/close tasks", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			store.in.exec("open-task", {
+				id: 2,
+				mode: false,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(2).open).to.eq(false);
+			expect(tasks.toArray().length).to.eq(15);
+
+			store.in.exec("open-task", {
+				id: 2,
+				mode: true,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(2).open).to.eq(true);
+			expect(tasks.toArray().length).to.eq(19);
+		});
+	});
+
+	describe("select-task", () => {
+		test("can select task", () => {
+			resetState();
+
+			store.in.exec("select-task", {
+				id: 1,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(store.getState().selected).to.deep.eq([1]);
+		});
+
+		test("can select multiple tasks", () => {
+			resetState();
+
+			store.in.exec("select-task", {
+				id: 1,
+			});
+
+			store.in.exec("select-task", {
+				id: 2,
+				toggle: true,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(store.getState().selected).to.deep.eq([1, 2]);
+		});
+
+		test("can select multiple tasks and deselect others", () => {
+			resetState();
+
+			store.in.exec("select-task", {
+				id: 1,
+			});
+
+			store.in.exec("select-task", {
+				id: 2,
+				toggle: true,
+			});
+
+			store.in.exec("select-task", {
+				id: 1,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(store.getState().selected).to.deep.eq([1]);
+		});
+
+		test("can select a range of tasks", () => {
+			resetState(getData("range"));
+
+			store.in.exec("select-task", {
+				id: 1,
+			});
+
+			store.in.exec("select-task", {
+				id: 20,
+				range: true,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(store.getState().selected).to.deep.eq([
+				1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+				19, 20,
+			]);
+		});
+
+		test("can select a range of tasks, reverse", () => {
+			resetState(getData("range"));
+
+			store.in.exec("select-task", {
+				id: 20,
+			});
+			store.in.exec("select-task", {
+				id: 1,
+				range: true,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(store.getState().selected).to.deep.eq([
+				20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3,
+				2, 1,
+			]);
+		});
+
+		test("can deselect tasks", () => {
+			resetState();
+
+			store.in.exec("select-task", {
+				id: 1,
+			});
+
+			store.in.exec("select-task", {
+				id: 1,
+				toggle: true,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(store.getState().selected).to.deep.eq([]);
+		});
+
+		test("can deselect tasks from a selected range", () => {
+			resetState(getData("range"));
+
+			store.in.exec("select-task", {
+				id: 1,
+			});
+
+			store.in.exec("select-task", {
+				id: 10,
+				range: true,
+			});
+
+			store.in.exec("select-task", {
+				id: 5,
+				toggle: true,
+			});
+
+			store.in.exec("select-task", {
+				id: 6,
+				toggle: true,
+			});
+
+			store.in.exec("select-task", {
+				id: 7,
+				toggle: true,
+			});
+
+			store.in.exec("select-task", {
+				id: 8,
+				toggle: true,
+			});
+
+			store.in.exec("select-task", {
+				id: 9,
+				toggle: true,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(store.getState().selected).to.deep.eq([1, 2, 3, 4, 10]);
+		});
+
+		test("can reset the selected range", () => {
+			resetState(getData("range"));
+
+			store.in.exec("select-task", {
+				id: 1,
+			});
+
+			store.in.exec("select-task", {
+				id: 10,
+				range: true,
+			});
+
+			store.in.exec("select-task", {
+				id: 11,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(store.getState().selected).to.deep.eq([11]);
+		});
+	});
+
+	describe("copy-task", () => {
+		test("can copy tasks", () => {
+			resetState();
+			const { tasks, links } = store.getState();
+
+			store.in.exec("copy-task", {
+				id: 2,
+				target: 2,
+			});
+
+			store.in.exec("copy-task", {
+				id: 1,
+				target: 2,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			// copied task is inserted after target by default (no mode specified || mode === "after")
+			const cTask1 = tasks.toArray()[2];
+			const cTask2 = tasks.toArray()[3];
+
+			expect(tasks.toArray().length).to.eq(4);
+
+			// everything expect id and yPos should be the same
+			for (const key in cTask1) {
+				if (key !== "id" && key !== "$y")
+					expect(cTask1[key]).to.deep.eq(tasks.byId(1)[key]);
+			}
+
+			for (const key in cTask2) {
+				if (key !== "id" && key !== "$y")
+					expect(cTask2[key]).to.deep.eq(tasks.byId(2)[key]);
+			}
+
+			expect(
+				links.map(l => l).length,
+				"links are not copied from tasks without children"
+			).to.eq(1);
+		});
+
+		test("can copy tasks before/after target", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("copy-task", {
+				id: 1,
+				target: 1,
+				mode: "before",
+			});
+
+			store.in.exec("copy-task", {
+				id: 2,
+				target: 2,
+				mode: "after",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const cTask1 = tasks.toArray()[0];
+			const cTask2 = tasks.toArray()[3];
+
+			expect(tasks.toArray().length).to.eq(4);
+
+			for (const key in cTask1) {
+				if (key !== "id" && key !== "$y")
+					expect(cTask1[key]).to.deep.eq(tasks.byId(1)[key]);
+			}
+
+			for (const key in cTask2) {
+				if (key !== "id" && key !== "$y")
+					expect(cTask2[key]).to.deep.eq(tasks.byId(2)[key]);
+			}
+		});
+
+		test("can copy tasks with children", () => {
+			resetState(getData("full"));
+			const { tasks, links } = store.getState();
+
+			store.in.exec("copy-task", {
+				id: 2,
+				target: 2,
+				mode: "after",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const vIndex = tasks.toArray().findIndex(t => t.id === 2);
+			const branchLength = tasks.byId(2).data!.length;
+			const cTask = tasks.toArray()[vIndex + (branchLength + 1)];
+
+			expect(tasks.toArray().length).to.eq(24);
+
+			// check parent
+			for (const key in cTask) {
+				if (key !== "id" && key !== "$y" && key !== "data")
+					expect(cTask[key]).to.deep.eq(tasks.byId(2)[key]);
+			}
+
+			// check children
+			cTask.data?.forEach((task, i) => {
+				for (const key in task) {
+					if (key === "parent") expect(task[key]).to.eq(cTask.id);
+					else if (key !== "id" && key !== "$y")
+						expect(task[key]).to.deep.eq(
+							tasks.byId(2).data?.[i][key]
+						);
+				}
+			});
+
+			expect(
+				links.map(l => l).length,
+				"links must be copied in this case"
+			).to.eq(10);
+		});
+
+		test("can't copy tasks inside self", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			store.in.exec("copy-task", {
+				id: 2,
+				target: 20,
+				mode: "before",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(19);
+		});
+
+		test("ignore copy-task for branch children", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			// subsequent copy-task events are called when copying branches
+			// this a sample of one such event
+			store.in.exec("copy-task", {
+				source: 20,
+				id: "tempId",
+				target: 2,
+				eventSource: "copy-task",
+				lazy: true,
+				mode: "child",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(19);
+		});
+	});
+
+	describe("move-task", () => {
+		test("can move tasks, before target", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("move-task", {
+				id: 2,
+				target: 1,
+				mode: "before",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(2);
+			expect(tasks.toArray()[0]).to.be.deep.eq(tasks.byId(2));
+			expect(tasks.toArray()[1]).to.be.deep.eq(tasks.byId(1));
+		});
+
+		test("can move tasks, after target", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("move-task", {
+				id: 1,
+				target: 2,
+				mode: "after",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(2);
+			expect(tasks.toArray()[0]).to.be.deep.eq(tasks.byId(2));
+			expect(tasks.toArray()[1]).to.be.deep.eq(tasks.byId(1));
+		});
+
+		test("can move tasks, up", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("move-task", {
+				id: 2,
+				mode: "up",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(2);
+			expect(tasks.toArray()[0]).to.be.deep.eq(tasks.byId(2));
+			expect(tasks.toArray()[1]).to.be.deep.eq(tasks.byId(1));
+		});
+
+		test("can move tasks, down", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("move-task", {
+				id: 1,
+				mode: "down",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(2);
+			expect(tasks.toArray()[0]).to.be.deep.eq(tasks.byId(2));
+			expect(tasks.toArray()[1]).to.be.deep.eq(tasks.byId(1));
+		});
+
+		test("can move tasks with children", () => {
+			resetState(getData("full"));
+
+			const { tasks } = store.getState();
+
+			store.in.exec("move-task", {
+				id: 2,
+				target: 3,
+				mode: "after",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(19);
+			expect(tasks.toArray()[8]).to.deep.eq(tasks.byId(2));
+			expect(tasks.getIndexById(2)).to.eq(2);
+			expect(tasks.byId(2).data?.length).to.eq(4);
+		});
+
+		test("can't move tasks inside self", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			store.in.exec("move-task", {
+				id: 2,
+				target: 20,
+				mode: "before",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(19);
+		});
+
+		test("second nested task stays first on multiple up moves", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			store.in.exec("move-task", {
+				id: 10,
+				mode: "up",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray()[0]).to.be.deep.eq(tasks.byId(10));
+
+			store.in.exec("move-task", {
+				id: 10,
+				mode: "up",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray()[0]).to.be.deep.eq(tasks.byId(10));
+		});
+
+		test("last nested task stays last on multiple down moves", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+			//make last root task child of 4
+			store.in.exec("move-task", {
+				id: 5,
+				mode: "up",
+			});
+			//last nested task becomes last in root
+			store.in.exec("move-task", {
+				id: 43,
+				mode: "down",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray()[tasks.toArray().length - 1]).to.be.deep.eq(
+				tasks.byId(43)
+			);
+
+			store.in.exec("move-task", {
+				id: 43,
+				mode: "down",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray()[tasks.toArray().length - 1]).to.be.deep.eq(
+				tasks.byId(43)
+			);
+		});
+
+		test("correctly moves task down when target task is a branch", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			// from lower level to higher level
+			expect(tasks.byId(11).open).to.be.undefined;
+
+			store.in.exec("move-task", {
+				id: 10,
+				mode: "down",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray()[2]).to.be.deep.eq(tasks.byId(10));
+			expect(tasks.byId(11).open).to.eq(true);
+
+			// from higher level to lower level
+			store.in.exec("move-task", {
+				id: 12,
+				mode: "down",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray()[8]).to.be.deep.eq(tasks.byId(12));
+		});
+
+		test("can move tasks inside other tasks (indent)", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("move-task", {
+				id: 2,
+				target: 1,
+				mode: "child",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(2);
+			expect(tasks.byId(2).parent).to.eq(1);
+			expect(tasks.byId(2).$level).to.eq(2);
+		});
+
+		test("can move tasks outside their parents (outdent)", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			store.in.exec("move-task", {
+				id: 20,
+				target: 1,
+				mode: "after",
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(19);
+			expect(tasks.toArray()[4]).to.deep.eq(tasks.byId(20));
+			expect(tasks.byId(20).parent).to.eq(0);
+			expect(tasks.byId(20).$level).to.eq(1);
+			expect(tasks.byId(2).data?.length).to.eq(3);
+		});
+
+		test("stop updates to task positions on DnD finish", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			store.in.exec("move-task", {
+				id: 2,
+				target: 1,
+				mode: "before",
+				inProgress: false,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.toArray().length).to.eq(19);
+			expect(tasks.getIndexById(2)).to.eq(1);
+			expect(tasks.toArray()[4]).to.deep.eq(tasks.byId(2));
+		});
+	});
+
+	describe("indent-task", () => {
+		// indent-task is a wrapper for move-task, so most of the cases are covered in move-task tests
+		test("can indent tasks", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("indent-task", {
+				id: 2,
+				mode: true,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(2).$level).to.eq(2);
+		});
+
+		test("can outdent tasks", () => {
+			resetState(getData("full"));
+			const { tasks } = store.getState();
+
+			store.in.exec("indent-task", {
+				id: 20,
+				mode: false,
+			});
+
+			store.in.exec("indent-task", {
+				id: 21,
+				mode: false,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(20).$level).to.eq(1);
+			expect(tasks.byId(21).$level).to.eq(1);
+		});
+	});
+
+	describe("drag-task", () => {
+		// this event does not update task order by itself, only its position before recalculation
+		test("can set state for horizontal drag", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("drag-task", {
+				id: 1,
+				left: 150,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(1).$x).to.eq(150);
+		});
+
+		test("can set state for vertical drag", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("drag-task", {
+				id: 1,
+				top: 40,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(1).$y).to.eq(44);
+		});
+	});
+
+	describe("add-link", () => {
+		test("can add links", () => {
+			resetState({ ...getData(), links: [] });
+			const { links } = store.getState();
+
+			store.in.exec("add-link", {
+				link: {
+					id: 2,
+					source: 1,
+					target: 2,
+					type: "e2s",
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.map(l => l).length).to.eq(1);
+			expect(links.byId(2).source).to.eq(1);
+			expect(links.byId(2).target).to.eq(2);
+			expect(links.byId(2).type).to.eq("e2s");
+
+			store.in.exec("add-link", {
+				link: {
+					id: 3,
+					source: 1,
+					target: 2,
+					type: "s2s",
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.map(l => l).length).to.eq(2);
+			expect(links.byId(3).source).to.eq(1);
+			expect(links.byId(3).target).to.eq(2);
+			expect(links.byId(3).type).to.eq("s2s");
+
+			store.in.exec("add-link", {
+				link: {
+					id: 4,
+					source: 1,
+					target: 2,
+					type: "s2e",
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.map(l => l).length).to.eq(3);
+			expect(links.byId(4).source).to.eq(1);
+			expect(links.byId(4).target).to.eq(2);
+			expect(links.byId(4).type).to.eq("s2e");
+
+			store.in.exec("add-link", {
+				link: {
+					source: 1,
+					target: 2,
+					type: "e2e",
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.map(l => l).length).to.eq(4);
+			expect(
+				links.map(l => l)[links.map(l => l).length - 1].source
+			).to.eq(1);
+			expect(
+				links.map(l => l)[links.map(l => l).length - 1].target
+			).to.eq(2);
+			expect(links.map(l => l)[links.map(l => l).length - 1].type).to.eq(
+				"e2e"
+			);
+		});
+
+		test("links are sorted by length", () => {
+			resetState(getData("full"));
+
+			store.in.exec("add-link", {
+				link: {
+					id: 999,
+					source: 20,
+					target: 23,
+					type: "e2s",
+				},
+			});
+			vi.advanceTimersByTime(1);
+
+			const { _links } = store.getState();
+			expect(_links.findIndex(l => l.id === 7)).to.eq(0);
+			expect(_links.findIndex(l => l.id === 999)).to.eq(1);
+		});
+
+		test("incorrect links are ignored", () => {
+			resetState();
+			const { links } = store.getState();
+
+			store.in.exec("add-link", {
+				link: {
+					id: 3,
+					source: 1,
+					// no target
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.map(l => l).length).to.eq(1);
+
+			store.in.exec("add-link", {
+				link: {
+					id: 3,
+					target: 2,
+					// no source
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.map(l => l).length).to.eq(1);
+		});
+
+		test("sets link type if none is provided", () => {
+			resetState();
+			const { links } = store.getState();
+
+			store.in.exec("add-link", {
+				link: {
+					id: 3,
+					source: 1,
+					target: 2,
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.map(l => l).length).to.eq(2);
+			expect(links.byId(3).type).to.eq("e2s");
+		});
+	});
+
+	describe("update-link", () => {
+		test("can update links", () => {
+			resetState(getData("full"));
+			const { links } = store.getState();
+
+			store.in.exec("update-link", {
+				id: 1,
+				link: {
+					target: 12,
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.byId(1).source).to.eq(10);
+			expect(links.byId(1).target).to.eq(12);
+
+			store.in.exec("update-link", {
+				id: 1,
+				link: {
+					target: 11,
+					type: "e2e",
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.byId(1).source).to.eq(10);
+			expect(links.byId(1).target).to.eq(11);
+			expect(links.byId(1).type).to.eq("e2e");
+
+			store.in.exec("update-link", {
+				id: 1,
+				link: {
+					type: "s2s",
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.byId(1).source).to.eq(10);
+			expect(links.byId(1).target).to.eq(11);
+			expect(links.byId(1).type).to.eq("s2s");
+
+			store.in.exec("update-link", {
+				id: 1,
+				link: {
+					source: 40,
+					target: 41,
+					type: "s2e",
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.byId(1).source).to.eq(40);
+			expect(links.byId(1).target).to.eq(41);
+			expect(links.byId(1).type).to.eq("s2e");
+		});
+	});
+
+	describe("delete-link", () => {
+		test("can delete links", () => {
+			resetState(getData("full"));
+			const { links } = store.getState();
+
+			store.in.exec("delete-link", {
+				id: 1,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.map(l => l).length).to.eq(6);
+
+			store.in.exec("delete-link", {
+				id: 2,
+			});
+
+			store.in.exec("delete-link", {
+				id: 3,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(links.map(l => l).length).to.eq(4);
+		});
+	});
+
+	describe("scroll-chart", () => {
+		test("can pass state to scroll the chart", () => {
+			resetState(getData("full"));
+			let { scrollLeft, scrollTop } = store.getState();
+
+			expect(scrollTop).to.eq(0);
+
+			store.in.exec("scroll-chart", {
+				top: 100,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			({ scrollTop } = store.getState());
+
+			expect(scrollTop).to.eq(100);
+
+			store.in.exec("scroll-chart", {
+				left: 100,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			({ scrollLeft } = store.getState());
+
+			expect(scrollLeft).to.eq(100);
+
+			store.in.exec("scroll-chart", {
+				top: 200,
+				left: 200,
+			});
+
+			({ scrollLeft, scrollTop } = store.getState());
+
+			expect(scrollTop).to.eq(200);
+			expect(scrollLeft).to.eq(200);
+		});
+	});
+
+	describe("show-editor", () => {
+		test("can set state to show editor", () => {
+			resetState();
+
+			store.in.exec("show-editor", {
+				id: 1,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const { activeTask } = store.getState();
+
+			expect(activeTask).to.eq(1);
+		});
+	});
+
+	describe("render-data", () => {
+		test("can set state to render data", () => {
+			resetState();
+
+			store.in.exec("render-data", {
+				start: 0,
+				end: 24,
+				from: 0,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const { area } = store.getState();
+
+			expect(area).to.deep.eq({
+				start: 0,
+				end: 24,
+				from: 0,
+			});
+		});
+	});
+
+	describe("request-data", () => {
+		test("can request data", () => {
+			resetState(getData("lazy"));
+
+			store.in.on("request-data", (ev: any) => {
+				expect(ev.id).to.eq(2);
+			});
+
+			store.in.exec("request-data", {
+				id: 2,
+			});
+		});
+	});
+
+	describe("provide-data", () => {
+		test("can provide data to a branch", () => {
+			resetState(getData("lazy"));
+
+			store.in.exec("provide-data", {
+				id: 2,
+				data: {
+					tasks: [
+						{
+							id: 20,
+							start: new Date(2024, 3, 2),
+							end: new Date(2024, 3, 6),
+							text: "Resource planning",
+							progress: 10,
+							parent: 2,
+							type: "task",
+						},
+						{
+							id: 21,
+							start: new Date(2024, 3, 6),
+							end: new Date(2024, 3, 8),
+							text: "Getting approval",
+							progress: 10,
+							parent: 2,
+							type: "task",
+						},
+						{
+							id: 22,
+							start: new Date(2024, 3, 8),
+							end: new Date(2024, 3, 10),
+							text: "Team introduction",
+							progress: 0,
+							parent: 2,
+							type: "task",
+						},
+						{
+							id: 23,
+							start: new Date(2024, 3, 10),
+							end: new Date(2024, 3, 12),
+							text: "Resource management",
+							progress: 10,
+							parent: 2,
+							type: "task",
+						},
+					],
+					links: [
+						{
+							id: 2,
+							source: 20,
+							target: 21,
+							type: "e2s",
+						},
+						{
+							id: 3,
+							source: 21,
+							target: 22,
+							type: "e2s",
+						},
+						{
+							id: 4,
+							source: 22,
+							target: 23,
+							type: "e2s",
+						},
+					],
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const { tasks, links } = store.getState();
+
+			expect(tasks.toArray().length).to.eq(6);
+			expect(tasks.byId(2).data?.length).to.eq(4);
+			expect(links.map(l => l).length).to.eq(4);
+
+			expect(tasks.byId(2).lazy).to.eq(false);
+			expect(tasks.byId(2).open).to.eq(true);
+		});
+	});
+
+	test("sort-tasks", () => {
+		resetState(getData("full"));
+
+		store.in.exec("sort-tasks", { order: "desc", key: "id" });
+
+		const { tasks, _tasks } = store.getState();
+		const branch = tasks.getBranch(12);
+		expect(branch?.[0].id).to.eq(12);
+		expect(_tasks[0].id).not.to.equal(1);
+	});
+
+	describe("support of forwart strategy", () => {
+		test("can add tasks", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("add-task", {
+				task: {
+					text: "Task 3",
+					id: 3,
+					start: new Date(2024, 4, 8),
+					duration: 10,
+					end: new Date(2024, 4, 10),
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(3).start).to.deep.eq(new Date(2024, 4, 8));
+			expect(tasks.byId(3).duration).to.eq(10);
+			expect(tasks.byId(3).end).to.deep.equal(new Date(2024, 4, 18));
+		});
+		test("can update task", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("update-task", {
+				id: 2,
+				task: {
+					start: new Date(2024, 3, 11),
+					duration: 4,
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(2).start).to.deep.eq(new Date(2024, 3, 11));
+			expect(tasks.byId(2).duration).to.eq(4);
+			expect(tasks.byId(2).end).to.deep.equal(new Date(2024, 3, 15));
+
+			store.in.exec("update-task", {
+				id: 2,
+				task: {
+					start: new Date(2024, 3, 16),
+					duration: 5,
+					end: new Date(2024, 3, 18),
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(2).start).to.deep.eq(new Date(2024, 3, 16));
+			expect(tasks.byId(2).duration).to.eq(5);
+			expect(tasks.byId(2).end).to.deep.equal(new Date(2024, 3, 21));
+
+			store.in.exec("update-task", {
+				id: 2,
+				task: {
+					start: new Date(2024, 3, 5),
+					end: new Date(2024, 3, 9),
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(2).start).to.deep.eq(new Date(2024, 3, 5));
+			expect(tasks.byId(2).duration).to.eq(4);
+			expect(tasks.byId(2).end).to.deep.equal(new Date(2024, 3, 9));
+		});
+
+		test("can update task on DnD finish", () => {
+			resetState();
+			const { tasks } = store.getState();
+
+			store.in.exec("update-task", {
+				id: 2,
+				task: {
+					start: new Date(2024, 3, 6),
+					end: new Date(2024, 3, 8),
+				},
+				diff: 3,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(2).start).to.deep.eq(new Date(2024, 3, 9));
+			expect(tasks.byId(2).duration).to.eq(2);
+			expect(tasks.byId(2).end).to.deep.equal(new Date(2024, 3, 11));
+
+			store.in.exec("update-task", {
+				id: 2,
+				task: {
+					start: new Date(2024, 3, 9),
+				},
+				diff: -2,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(2).start).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(2).duration).to.eq(4);
+			expect(tasks.byId(2).end).to.deep.equal(new Date(2024, 3, 11));
+
+			store.in.exec("update-task", {
+				id: 2,
+				task: {
+					end: new Date(2024, 3, 11),
+				},
+				diff: 5,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			expect(tasks.byId(2).start).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(2).duration).to.eq(9);
+			expect(tasks.byId(2).end).to.deep.equal(new Date(2024, 3, 16));
+		});
+	});
+
+	describe("rollups", () => {
+		test("rollups are not created when rollups is disabled", () => {
+			resetState(getData("full"));
+			const { _rollups } = store.getState();
+
+			vi.advanceTimersByTime(1);
+
+			expect(_rollups).to.deep.eq({});
+		});
+
+		test("rollups are created for tasks with rollup flag when parent is closed", () => {
+			const data = getData("full");
+			data.tasks[0].type = "summary"; // task 1
+			data.tasks[0].open = false;
+			data.tasks[1].rollup = true; // task 10
+			data.tasks[2].rollup = true; // task 11
+
+			resetState({ ...data, rollups: { type: "closest" } });
+			const { _rollups } = store.getState();
+
+			vi.advanceTimersByTime(1);
+
+			expect(_rollups[1]).to.not.be.undefined;
+			expect(_rollups[1].length).to.be.greaterThan(0);
+			expect(Array.from(_rollups[1]).some(r => r.id === 10)).to.be.true;
+			expect(Array.from(_rollups[1]).some(r => r.id === 11)).to.be.true;
+		});
+
+		test("rollups mode 'closest' only shows rollups from closest summary parent", () => {
+			const data = getData("full");
+			data.tasks[0].type = "summary"; // task 1
+			data.tasks[0].open = true;
+
+			data.tasks[2].type = "summary"; // task 11
+			data.tasks[2].open = false;
+
+			data.tasks[3].rollup = true; // task 110
+
+			resetState({ ...data, rollups: { type: "closest" } });
+			const { _rollups } = store.getState();
+
+			vi.advanceTimersByTime(1);
+
+			expect(_rollups["11"]).to.not.be.undefined;
+			expect(Array.from(_rollups["11"]).some(r => r.id === 110)).to.be
+				.true;
+
+			if (_rollups[1]) {
+				expect(Array.from(_rollups["1"]).some(r => r.id === 110)).to.be
+					.false;
+			}
+		});
+
+		test("rollups mode 'all' shows rollups in all summary parents", () => {
+			const data = getData("full");
+			// Create nested summary structure
+			data.tasks[0].type = "summary";
+			data.tasks[0].open = true;
+
+			data.tasks[2].type = "summary"; // task 11
+			data.tasks[2].open = false;
+
+			data.tasks[3].rollup = true; // task 110
+
+			resetState({ ...data, rollups: { type: "all" } });
+			const { _rollups } = store.getState();
+
+			vi.advanceTimersByTime(1);
+
+			expect(_rollups[11]).to.not.be.undefined;
+			expect(Array.from(_rollups[11]).some(r => r.id === 110)).to.be.true;
+			expect(_rollups[1]).to.not.be.undefined;
+			expect(Array.from(_rollups[1]).some(r => r.id === 110)).to.be.true;
+		});
+
+		test("tasks without rollup flag are not added to rollups", () => {
+			const data = getData("full");
+			data.tasks[1].rollup = false; // task 10
+			data.tasks[0].type = "summary";
+			data.tasks[0].open = false; // task 1 (summary)
+
+			resetState({ ...data, rollups: { type: "closest" } });
+			const { _rollups } = store.getState();
+
+			vi.advanceTimersByTime(1);
+
+			if (_rollups[1]) {
+				expect(Array.from(_rollups[1]).some(r => r.id === 10)).to.be
+					.false;
+			}
+		});
+
+		test("dragRollups updates rollup positions when summary is dragged", () => {
+			const data = getData("full");
+			data.tasks[0].type = "summary"; // task 1
+			data.tasks[0].open = false;
+
+			data.tasks[1].rollup = true; // task 10
+
+			resetState({ ...data, rollups: { type: "closest" } });
+
+			vi.advanceTimersByTime(1);
+			const { _rollups, _tasks } = store.getState();
+			const summaryTask = _tasks.find((t: any) => t.id === 1);
+			const rollupTask = Array.from(_rollups[1]).find(
+				(r: any) => r.id === 10
+			);
+
+			if (summaryTask && rollupTask) {
+				const initialXRollup = rollupTask.$x_rollup;
+
+				store.in.exec("drag-task", {
+					id: 1,
+					left: summaryTask.$x + 100,
+				});
+
+				vi.advanceTimersByTime(1);
+
+				const updatedState = store.getState();
+				const updatedRollupTask = Array.from(
+					updatedState._rollups[1]
+				).find((r: any) => r.id === 10);
+
+				expect(updatedRollupTask?.$x_rollup).to.eq(
+					initialXRollup + 100
+				);
+			}
+		});
+
+		test("rollups are updated when task is updated", () => {
+			const data = getData("full");
+			data.tasks[0].type = "summary"; // task 1
+			data.tasks[0].open = false;
+
+			data.tasks[1].rollup = true; // task 10
+
+			resetState({ ...data, rollups: { type: "closest" } });
+			vi.advanceTimersByTime(1);
+
+			store.in.exec("update-task", {
+				id: 10,
+				task: {
+					type: "milestone",
+				},
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const updatedState = store.getState();
+			expect(updatedState._rollups[1]).to.not.be.undefined;
+			const rollupTask = Array.from(updatedState._rollups[1]).find(
+				(r: any) => r.id === 10
+			);
+			expect(rollupTask).to.not.be.undefined;
+			expect(rollupTask!.type).to.eq("milestone");
+		});
+	});
+	describe("autoscheduling", () => {
+		// Cycle/parent-chain detection itself is owned and tested by
+		// lib-schedule. These tests cover only what AutoScheduler wires up:
+		// feeding the graph, the e2s-only filter, consuming `invalidLinks`,
+		// and re-running on the right events. Data is kept minimal so the
+		// expected outcome does not depend on lib-schedule internals.
+		const task = (
+			id: number,
+			parent = 0,
+			type: ITask["type"] = "task"
+		): ITask => ({
+			id,
+			text: `Task ${id}`,
+			type,
+			parent,
+			start: new Date(2024, 3, 2),
+			end: new Date(2024, 3, 4),
+		});
+
+		test("removes invalid e2s links on init, leaves s2s links untouched", () => {
+			resetState({
+				...getData("autoScheduling"),
+				tasks: [task(1), task(2), task(3)],
+				links: [
+					{ id: 1, source: 1, target: 2, type: "e2s" }, // valid
+					{ id: 2, source: 3, target: 3, type: "e2s" }, // invalid - self-reference
+					{ id: 3, source: 3, target: 3, type: "s2s" }, // s2s - never scheduled
+				],
+				schedule: { auto: true },
+			});
+			vi.advanceTimersByTime(1);
+
+			// AutoScheduler feeds only e2s links to lib-schedule and deletes the
+			// ones it reports invalid. Links 2 and 3 are the same self-reference;
+			// only the e2s one is scheduled, so only it is removed.
+			const { links } = store.getState();
+			expect(links.byId(1).id).to.exist;
+			expect(links.byId(2)).to.be.undefined;
+			expect(links.byId(3).id).to.exist;
+			expect(links.map(l => l).length).to.eq(2);
+		});
+		test("removes a link that becomes invalid after move-task", () => {
+			resetState({
+				...getData("autoScheduling"),
+				// summary 1 (with child 9) and a sibling task 2
+				tasks: [task(1, 0, "summary"), task(9, 1), task(2)],
+				links: [{ id: 1, source: 1, target: 2, type: "e2s" }],
+				schedule: { auto: true },
+			});
+			vi.advanceTimersByTime(1);
+			// the link is valid while task 2 is a sibling of summary 1
+			expect(store.getState().links.byId(1).id).to.exist;
+
+			// moving task 2 into summary 1 makes the link point from a summary
+			// to its own descendant; the move-task handler re-runs scheduling
+			// and the now-invalid link is removed.
+			store.in.exec("move-task", { id: 2, target: 1, mode: "child" });
+			vi.advanceTimersByTime(1);
+
+			expect(store.getState().links.byId(1)).to.be.undefined;
+		});
+		test("removes a link that becomes invalid after indent-task", () => {
+			resetState({
+				...getData("autoScheduling"),
+				tasks: [task(1, 0, "summary"), task(9, 1), task(2)],
+				links: [{ id: 1, source: 1, target: 2, type: "e2s" }],
+				schedule: { auto: true },
+			});
+			vi.advanceTimersByTime(1);
+			expect(store.getState().links.byId(1).id).to.exist;
+
+			// indent-task delegates to move-task ("child" under the previous
+			// sibling); this verifies the public action also triggers cleanup.
+			store.in.exec("indent-task", { id: 2, mode: true });
+			vi.advanceTimersByTime(1);
+
+			expect(store.getState().links.byId(1)).to.be.undefined;
+		});
+		test("add-link removes only the link that closes the cycle", () => {
+			resetState({
+				...getData("autoScheduling"),
+				tasks: [task(1), task(2), task(3)],
+				links: [
+					{ id: 1, source: 1, target: 2, type: "e2s" },
+					{ id: 2, source: 2, target: 3, type: "e2s" },
+				],
+				schedule: { auto: true },
+			});
+			vi.advanceTimersByTime(1);
+
+			// closes a 1 -> 2 -> 3 -> 1 cycle. lib-schedule reports all three
+			// links as invalid, but the add-link handler narrows deletion to
+			// the link just drawn, leaving the user's existing links intact.
+			store.in.exec("add-link", {
+				link: { id: 3, source: 3, target: 1, type: "e2s" },
+			});
+			vi.advanceTimersByTime(1);
+
+			const { links } = store.getState();
+			expect(links.byId(1).id).to.exist;
+			expect(links.byId(2).id).to.exist;
+			expect(links.byId(3)).to.be.undefined;
+			expect(links.map(l => l).length).to.eq(2);
+		});
+		test("can schedule tasks on init", () => {
+			const initData = getData("autoScheduling");
+
+			resetState({
+				...initData,
+				schedule: { auto: true },
+			});
+			vi.advanceTimersByTime(1);
+
+			const { tasks } = store.getState();
+
+			expect(tasks.byId(4).start).to.deep.eq(tasks.byId(3).end);
+			expect(tasks.byId(4).end).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(5).start).to.deep.eq(tasks.byId(4).end);
+			expect(tasks.byId(5).end).to.deep.eq(new Date(2024, 3, 9));
+		});
+		test("can reschedule dependent tasks on update-task", () => {
+			const initData = getData("autoScheduling");
+
+			resetState({
+				...initData,
+				schedule: { auto: true },
+			});
+			vi.advanceTimersByTime(1);
+
+			store.in.exec("update-task", {
+				id: 3,
+				task: {
+					start: new Date(2024, 3, 2),
+					end: new Date(2024, 3, 6),
+				},
+			});
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			const { tasks } = store.getState();
+
+			expect(tasks.byId(4).start).to.deep.eq(tasks.byId(3).end);
+			expect(tasks.byId(4).start).to.deep.eq(new Date(2024, 3, 6));
+			expect(tasks.byId(4).end).to.deep.eq(new Date(2024, 3, 8));
+			expect(tasks.byId(5).start).to.deep.eq(tasks.byId(4).end);
+			expect(tasks.byId(5).end).to.deep.eq(new Date(2024, 3, 10));
+		});
+		test("can reschedule tasks on add-task and add-link", () => {
+			const initData = getData("autoScheduling");
+
+			resetState({
+				...initData,
+				schedule: { auto: true },
+			});
+			vi.advanceTimersByTime(1);
+
+			store.in.exec("add-task", {
+				task: {
+					id: 6,
+					text: "Task 6",
+					start: new Date(2024, 3, 2),
+					end: new Date(2024, 3, 5),
+				},
+				mode: "child",
+			});
+
+			store.in.exec("add-link", {
+				link: {
+					id: 10,
+					source: 5,
+					target: 6,
+					type: "e2s",
+				},
+			});
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			const { tasks } = store.getState();
+			expect(tasks.byId(6).start).to.deep.eq(tasks.byId(5).end);
+			expect(tasks.byId(6).start).to.deep.eq(new Date(2024, 3, 9));
+			expect(tasks.byId(6).end).to.deep.eq(new Date(2024, 3, 12));
+		});
+		test("can reschedule tasks on update-link", () => {
+			const initData = getData("autoScheduling");
+
+			resetState({
+				...initData,
+				schedule: { auto: true },
+			});
+			vi.advanceTimersByTime(1);
+
+			store.in.exec("update-link", {
+				id: 9,
+				link: { type: "e2e" },
+			});
+			store.in.exec("update-task", {
+				id: 4,
+				task: {
+					start: new Date(2024, 3, 7),
+					end: new Date(2024, 3, 9),
+				},
+			});
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			const { tasks } = store.getState();
+
+			expect(tasks.byId(5).start).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(5).end).to.deep.eq(new Date(2024, 3, 9));
+
+			store.in.exec("update-link", {
+				id: 9,
+				link: { type: "e2s" },
+			});
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+			expect(tasks.byId(5).start).to.deep.eq(new Date(2024, 3, 9));
+			expect(tasks.byId(5).end).to.deep.eq(new Date(2024, 3, 11));
+		});
+		test("can reschedule tasks on delete-link", () => {
+			const initData = getData("autoScheduling");
+
+			resetState({
+				...initData,
+				schedule: { auto: true },
+			});
+			vi.advanceTimersByTime(1);
+
+			store.in.exec("delete-link", { id: 9 });
+			store.in.exec("update-task", {
+				id: 4,
+				task: {
+					start: new Date(2024, 3, 6),
+					end: new Date(2024, 3, 8),
+				},
+			});
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			const { tasks } = store.getState();
+
+			expect(tasks.byId(5).start).to.deep.eq(new Date(2024, 3, 7));
+			expect(tasks.byId(5).end).to.deep.eq(new Date(2024, 3, 9));
+		});
+	});
+	describe("critical path and slack tasks", () => {
+		test("can calculate critical path on init", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				criticalPath: { type: "flexible" },
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const { tasks, links } = store.getState();
+
+			const critTasks = tasks
+				.toArray()
+				.filter(t => t.critical)
+				.map(t => t.id);
+			expect(critTasks).to.deep.eq([1, 10, 11, 12]);
+
+			const critLinks = links
+				.map(l => l)
+				.filter(l => (l as IGanttLink).critical)
+				.map(l => l.id);
+			expect(critLinks).to.deep.eq([1, 2]);
+		});
+		test("can calculate critical path on update-task", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				criticalPath: { type: "flexible" },
+			});
+
+			store.in.exec("update-task", {
+				id: 20,
+				task: {
+					start: new Date(2024, 3, 2),
+					duration: 3,
+				},
+			});
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			const { tasks, links } = store.getState();
+
+			let critTasks = tasks
+				.toArray()
+				.filter(t => t.critical)
+				.map(t => t.id);
+			expect(critTasks).to.deep.eq([2, 20, 21, 22]);
+
+			let critLinks = links
+				.map(l => l)
+				.filter(l => (l as IGanttLink).critical)
+				.map(l => l.id);
+			expect(critLinks).to.deep.eq([3, 4]);
+
+			store.in.exec("update-task", {
+				id: 10,
+				task: {
+					start: new Date(2024, 3, 2),
+					duration: 3,
+				},
+			});
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			critTasks = tasks
+				.toArray()
+				.filter(t => t.critical)
+				.map(t => t.id);
+			expect(critTasks).to.deep.eq([1, 10, 11, 12]);
+
+			critLinks = links
+				.map(l => l)
+				.filter(l => (l as IGanttLink).critical)
+				.map(l => l.id);
+			expect(critLinks).to.deep.eq([1, 2]);
+		});
+		test("can calculate critical path on delete-task", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				criticalPath: { type: "flexible" },
+			});
+
+			store.in.exec("delete-task", { id: 12 });
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			const { tasks, links } = store.getState();
+
+			let critTasks = tasks
+				.toArray()
+				.filter(t => t.critical)
+				.map(t => t.id);
+			expect(critTasks).to.deep.eq([2, 20, 21, 22]);
+
+			let critLinks = links
+				.map(l => l)
+				.filter(l => (l as IGanttLink).critical)
+				.map(l => l.id);
+			expect(critLinks).to.deep.eq([3, 4]);
+
+			store.in.exec("delete-task", { id: 21 });
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			critTasks = tasks
+				.toArray()
+				.filter(t => t.critical)
+				.map(t => t.id);
+			expect(critTasks).to.deep.eq([1, 10, 11]);
+
+			critLinks = links
+				.map(l => l)
+				.filter(l => (l as IGanttLink).critical)
+				.map(l => l.id);
+			expect(critLinks).to.deep.eq([1]);
+		});
+		test("can calculate critical path on add-task", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				criticalPath: { type: "flexible" },
+			});
+
+			store.in.exec("add-task", {
+				task: {
+					id: 13,
+					text: "Task 13",
+					start: new Date(2024, 3, 9),
+					end: new Date(2024, 3, 13),
+				},
+				target: 1,
+			});
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			const { tasks } = store.getState();
+
+			const critTasks = tasks
+				.toArray()
+				.filter(t => t.critical)
+				.map(t => t.id);
+			expect(critTasks).to.deep.eq([1, 10, 11, 12]);
+		});
+		test("can calculate critical path on update-link", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				criticalPath: { type: "flexible" },
+			});
+
+			store.in.exec("update-link", {
+				id: 1,
+				link: { type: "s2s" },
+			});
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			const { tasks, links } = store.getState();
+
+			let critTasks = tasks
+				.toArray()
+				.filter(t => t.critical)
+				.map(t => t.id);
+			expect(critTasks).to.deep.eq([2, 20, 21, 22]);
+
+			let critLinks = links
+				.map(l => l)
+				.filter(l => (l as IGanttLink).critical)
+				.map(l => l.id);
+			expect(critLinks).to.deep.eq([3, 4]);
+
+			store.in.exec("update-link", {
+				id: 1,
+				link: { type: "e2s" },
+			});
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			critTasks = tasks
+				.toArray()
+				.filter(t => t.critical)
+				.map(t => t.id);
+			expect(critTasks).to.deep.eq([1, 10, 11, 12]);
+
+			critLinks = links
+				.map(l => l)
+				.filter(l => (l as IGanttLink).critical)
+				.map(l => l.id);
+			expect(critLinks).to.deep.eq([1, 2]);
+		});
+		test("can calculate critical path on delete-link", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				criticalPath: { type: "flexible" },
+			});
+
+			store.in.exec("delete-link", { id: 2 });
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			const { tasks, links } = store.getState();
+
+			let critTasks = tasks
+				.toArray()
+				.filter(t => t.critical)
+				.map(t => t.id);
+			expect(critTasks).to.deep.eq([2, 20, 21, 22]);
+
+			let critLinks = links
+				.map(l => l)
+				.filter(l => (l as IGanttLink).critical)
+				.map(l => l.id);
+			expect(critLinks).to.deep.eq([3, 4]);
+
+			store.in.exec("delete-link", { id: 4 });
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			critTasks = tasks
+				.toArray()
+				.filter(t => t.critical)
+				.map(t => t.id);
+			expect(critTasks).to.deep.eq([1, 10, 11]);
+
+			critLinks = links
+				.map(l => l)
+				.filter(l => (l as IGanttLink).critical)
+				.map(l => l.id);
+			expect(critLinks).to.deep.eq([1]);
+		});
+		test("slack is not calculated when only criticalPath is set", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				criticalPath: { type: "flexible" },
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const { tasks } = store.getState();
+
+			tasks.forEach(task => expect(task.slack).to.be.undefined);
+		});
+		test("criticalPath is not calculated when only slack is set", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				slack: true,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const { tasks, links } = store.getState();
+
+			tasks.forEach(task => expect(task.critical).to.be.undefined);
+			links.forEach(
+				link => expect((link as IGanttLink).critical).to.be.undefined
+			);
+		});
+		test("can calculate slack on init", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				slack: true,
+			});
+
+			vi.advanceTimersByTime(10);
+
+			const { tasks } = store.getState();
+
+			tasks.forEach(task => {
+				expect(task.slack).to.be.an("object");
+				expect(task.slack).to.have.property("totalSlack");
+				if (
+					task.slack.totalSlack > 0 &&
+					task.type !== "milestone" &&
+					task.type !== "summary"
+				) {
+					expect(task.$visibleSlack).to.be.a("number");
+				} else {
+					expect(task.$visibleSlack).to.be.undefined;
+				}
+			});
+		});
+		test("can calculate visible slack value based on projectEnd", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				slack: true,
+				projectEnd: new Date(2024, 3, 8),
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const { tasks } = store.getState();
+
+			expect(tasks.byId(30).slack.totalSlack).to.eq(5);
+			expect(tasks.byId(30).$visibleSlack).to.eq(4);
+			expect(tasks.byId(31).slack.totalSlack).to.eq(5);
+			expect(tasks.byId(31).$visibleSlack).to.eq(2);
+		});
+		test("can calculate visible slack value based on max tasks end", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				slack: true,
+			});
+
+			vi.advanceTimersByTime(1);
+
+			const { tasks } = store.getState();
+
+			expect(tasks.byId(30).slack.totalSlack).to.eq(5);
+			expect(tasks.byId(30).$visibleSlack).to.eq(5);
+			expect(tasks.byId(31).slack.totalSlack).to.eq(5);
+			expect(tasks.byId(31).$visibleSlack).to.eq(3);
+		});
+		test("can recalculate task slack on task-update", () => {
+			const initData = getData("critical");
+
+			resetState({
+				...initData,
+				slack: true,
+			});
+
+			store.in.exec("update-task", {
+				id: 30,
+				task: {
+					start: new Date(2024, 3, 2),
+					end: new Date(2024, 3, 6),
+				},
+			});
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			const { tasks } = store.getState();
+
+			expect(tasks.byId(30).slack.totalSlack).to.eq(3);
+			expect(tasks.byId(30).$visibleSlack).to.eq(3);
+			expect(tasks.byId(31).slack.totalSlack).to.eq(5);
+			expect(tasks.byId(31).$visibleSlack).to.eq(3);
+
+			store.in.exec("update-task", {
+				id: 31,
+				task: {
+					start: new Date(2024, 3, 4),
+					end: new Date(2024, 3, 7),
+				},
+			});
+
+			vi.advanceTimersByTime(20); // wait for calculation as debounce 10ms is used
+
+			expect(tasks.byId(30).slack.totalSlack).to.eq(3);
+			expect(tasks.byId(30).$visibleSlack).to.eq(3);
+			expect(tasks.byId(31).slack.totalSlack).to.eq(4);
+			expect(tasks.byId(31).$visibleSlack).to.eq(2);
+		});
+	});
+
+	describe("init re-init behavior", () => {
+		const extraTask = () => ({
+			id: 999,
+			text: "Extra",
+			parent: 0,
+			type: "task",
+			start: new Date(2026, 3, 1),
+			end: new Date(2026, 3, 2),
+		});
+
+		function setup() {
+			const data: any = getData();
+			data.links = normalizeLinks(data.links);
+			const ds = new DataStore(writable);
+			const cfg = (tasks: any) => ({ ...data, tasks });
+			return { ds, tasks: data.tasks, cfg };
+		}
+
+		test("reuses the task tree when tasks are unchanged", () => {
+			const { ds, tasks, cfg } = setup();
+			ds.init(cfg(tasks));
+			const tree1 = ds.getState().tasks;
+			ds.init(cfg(tasks));
+			expect(ds.getState().tasks).to.equal(tree1);
+		});
+
+		test("rebuilds the task tree when tasks change", () => {
+			const { ds, tasks, cfg } = setup();
+			ds.init(cfg(tasks));
+			const tree1 = ds.getState().tasks;
+			ds.init(cfg([...tasks, extraTask()]));
+			expect(ds.getState().tasks).to.not.equal(tree1);
+		});
+
+		test("keeps an active filter through an unrelated re-init", () => {
+			const { ds, tasks, cfg } = setup();
+			ds.init(cfg(tasks));
+			expect(ds.getState().tasks.toArray(true).length).to.be.above(0);
+
+			ds.in.exec("filter-tasks", { filter: () => false } as any);
+			expect(ds.getState()._isFiltered).to.equal(true);
+			expect(ds.getState().tasks.toArray().length).to.equal(0);
+
+			ds.init(cfg(tasks));
+			expect(ds.getState()._isFiltered).to.equal(true);
+			expect(ds.getState().tasks.toArray().length).to.equal(0);
+		});
+
+		test("resets the filter when new task data arrives", () => {
+			const { ds, tasks, cfg } = setup();
+			ds.init(cfg(tasks));
+			ds.in.exec("filter-tasks", { filter: () => false } as any);
+			expect(ds.getState()._isFiltered).to.equal(true);
+
+			ds.init(cfg([...tasks, extraTask()]));
+			expect(ds.getState()._isFiltered).to.equal(false);
+		});
+
+		test("keeps sort through an unrelated re-init", () => {
+			const { ds, tasks, cfg } = setup();
+			ds.init(cfg(tasks));
+			ds.in.exec("sort-tasks", { key: "text", order: "desc" } as any);
+			const order = ds
+				.getState()
+				.tasks.toArray()
+				.map((t: any) => t.id);
+
+			ds.init(cfg(tasks));
+			expect(ds.getState()._sort).to.deep.equal([
+				{ key: "text", order: "desc" },
+			]);
+			expect(
+				ds
+					.getState()
+					.tasks.toArray()
+					.map((t: any) => t.id)
+			).to.deep.equal(order);
+		});
+
+		test("resets sort when new task data arrives", () => {
+			const { ds, tasks, cfg } = setup();
+			ds.init(cfg(tasks));
+			ds.in.exec("sort-tasks", { key: "text", order: "desc" } as any);
+			expect(ds.getState()._sort).to.not.equal(null);
+
+			ds.init(cfg([...tasks, extraTask()]));
+			expect(ds.getState()._sort).to.equal(null);
+		});
+	});
+});

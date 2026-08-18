@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { BadRequestException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
-import type { QueryResultRow } from 'pg';
-import { DatabaseService } from '../common/database.service';
+import { WorkflowSupabaseService } from '../common/workflow-supabase.service';
 import {
   type PublishWorkflowModelDto,
   type SaveWorkflowModelDto,
@@ -14,6 +13,12 @@ import type {
   WorkflowProcessDefinitionRecord,
   WorkflowRequestActor
 } from './definition.types';
+import {
+  normalizeWorkflowDraftSchema,
+  validateWorkflowDraftSchema
+} from '../workflow.model';
+
+const WORKFLOW_DEFINITION_COMMAND_RPC = 'workflow_definition_command';
 
 export type WorkflowCapability = {
   nodeTypes: Array<{
@@ -33,8 +38,8 @@ export class DefinitionService {
 
   constructor(
     @Optional()
-    @Inject(DatabaseService)
-    private readonly database?: DatabaseService
+    @Inject(WorkflowSupabaseService)
+    private readonly persistence?: WorkflowSupabaseService
   ) {}
 
   getCapabilities(): WorkflowCapability {
@@ -65,20 +70,18 @@ export class DefinitionService {
   }
 
   async listModels(query: WorkflowModelQuery = {}) {
-    if (this.database?.isConfigured) {
-      const values: unknown[] = [];
-      const conditions: string[] = [];
-      addCondition(conditions, values, 'tenant_id', query.tenantId);
-      addCondition(conditions, values, 'document_type', query.documentType);
-      addCondition(conditions, values, 'status', query.status);
-      const result = await this.database.query<WorkflowModelRow>(
-        `select * from public.wf_model
-        ${conditions.length ? `where ${conditions.join(' and ')}` : ''}
-        order by updated_at desc
-        limit 200`,
-        values
-      );
-      return result.rows.map(mapModel);
+    if (this.persistence?.isConfigured) {
+      let request = this.persistence.client
+        .from('wf_model')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(200);
+      if (query.tenantId) request = request.eq('account_id', query.tenantId);
+      if (query.documentType) request = request.eq('document_type', query.documentType);
+      if (query.status) request = request.eq('status', query.status);
+      const { data, error } = await request;
+      if (error) throw new BadRequestException(error.message);
+      return (data ?? []).map((row) => mapModel(row as WorkflowModelRow));
     }
 
     return Array.from(this.models.values())
@@ -88,29 +91,36 @@ export class DefinitionService {
       .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
   }
 
-  async getModel(modelId: string) {
-    if (this.database?.isConfigured) {
-      const modelResult = await this.database.query<WorkflowModelRow>(
-        'select * from public.wf_model where id = $1',
-        [modelId]
-      );
-      const model = modelResult.rows[0];
+  async getModel(modelId: string, tenantId?: string) {
+    if (this.persistence?.isConfigured) {
+      let modelRequest = this.persistence.client
+        .from('wf_model')
+        .select('*')
+        .eq('id', modelId);
+      if (tenantId) modelRequest = modelRequest.eq('account_id', tenantId);
+      const { data: model, error: modelError } = await modelRequest.maybeSingle();
+      if (modelError) throw new BadRequestException(modelError.message);
       if (!model) {
         throw new NotFoundException('Workflow model not found.');
       }
 
-      const versionResult = await this.database.query<WorkflowModelVersionRow>(
-        'select * from public.wf_model_version where model_id = $1 order by version',
-        [modelId]
-      );
+      const { data: versions, error: versionError } = await this.persistence.client
+        .from('wf_model_version')
+        .select('*')
+        .eq('model_id', modelId)
+        .order('version', { ascending: true });
+      if (versionError) throw new BadRequestException(versionError.message);
       return {
-        ...mapModel(model),
-        versions: versionResult.rows.map(mapModelVersion)
+        ...mapModel(model as WorkflowModelRow),
+        versions: (versions ?? []).map((row) => mapModelVersion(row as WorkflowModelVersionRow))
       };
     }
 
     const model = this.models.get(modelId);
     if (!model) {
+      throw new NotFoundException('Workflow model not found.');
+    }
+    if (tenantId && model.tenantId !== tenantId) {
       throw new NotFoundException('Workflow model not found.');
     }
 
@@ -122,47 +132,28 @@ export class DefinitionService {
 
   async saveModel(dto: SaveWorkflowModelDto, actor: WorkflowRequestActor, modelId?: string) {
     const now = new Date().toISOString();
-    const schema = normalizeDraftSchema(dto);
-    assertDraftSchemaPublishable(schema, false);
+    const schema = normalizeWorkflowDraftSchema(dto);
+    validateWorkflowDraftSchema(schema, false);
 
-    if (this.database?.isConfigured) {
-      const code = dto.code.trim();
-      const existing = modelId
-        ? await this.findDbModelById(modelId)
-        : await this.findDbModelByCode(actor.tenantId, code);
-      if (modelId && !existing) {
-        throw new NotFoundException('Workflow model not found.');
+    if (this.persistence?.isConfigured) {
+      const { data, error } = await this.persistence.client.rpc(WORKFLOW_DEFINITION_COMMAND_RPC, {
+        p_action: 'save_model',
+        p_payload: {
+        model_id: modelId ?? null,
+        account_id: actor.tenantId,
+        code: dto.code.trim(),
+        name: dto.name.trim(),
+        document_type: dto.documentType?.trim() || null,
+        draft_schema: schema,
+        user_id: actor.userId ?? null
+        }
+      });
+      if (error?.code === 'P0002') throw new NotFoundException(error.message);
+      if (error) throw new BadRequestException(error.message);
+      if (!isRecord(data)) {
+        throw new BadRequestException('Workflow definition RPC returned an invalid model.');
       }
-
-      const id = existing?.id ?? randomUUID();
-      const result = await this.database.query<WorkflowModelRow>(
-        `insert into public.wf_model (
-          id, tenant_id, code, name, document_type, status, current_version,
-          draft_schema, created_by, updated_by, created_at, updated_at
-        ) values ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11, $11)
-        on conflict (id) do update set
-          code = excluded.code,
-          name = excluded.name,
-          document_type = excluded.document_type,
-          draft_schema = excluded.draft_schema,
-          updated_by = excluded.updated_by,
-          updated_at = excluded.updated_at
-        returning *`,
-        [
-          id,
-          actor.tenantId,
-          code,
-          dto.name.trim(),
-          dto.documentType?.trim() || null,
-          existing?.status ?? 'draft',
-          existing?.currentVersion ?? 0,
-          JSON.stringify(schema),
-          existing?.createdBy ?? actor.userId ?? null,
-          actor.userId ?? null,
-          now
-        ]
-      );
-      return mapModel(result.rows[0]);
+      return mapModel(data as WorkflowModelRow);
     }
 
     const existing = modelId ? this.models.get(modelId) : this.findModelByCode(actor.tenantId, dto.code);
@@ -190,94 +181,34 @@ export class DefinitionService {
   }
 
   async publishModel(modelId: string, dto: PublishWorkflowModelDto, actor: WorkflowRequestActor) {
-    if (this.database?.isConfigured) {
-      return this.database.withClient(async (client) => {
-        await client.query('begin');
-        try {
-          const modelResult = await client.query<WorkflowModelRow>(
-            'select * from public.wf_model where id = $1 for update',
-            [modelId]
-          );
-          const modelRow = modelResult.rows[0];
-          if (!modelRow) {
-            throw new NotFoundException('Workflow model not found.');
-          }
-          const model = mapModel(modelRow);
-          assertDraftSchemaPublishable(model.draftSchema, true);
-
-          const now = new Date().toISOString();
-          const version = model.currentVersion + 1;
-          const versionId = randomUUID();
-          const versionResult = await client.query<WorkflowModelVersionRow>(
-            `insert into public.wf_model_version (
-              id, model_id, version, schema, remark, created_by, created_at
-            ) values ($1, $2, $3, $4::jsonb, $5, $6, $7)
-            returning *`,
-            [
-              versionId,
-              model.id,
-              version,
-              JSON.stringify(model.draftSchema),
-              dto.remark?.trim() || null,
-              actor.userId ?? null,
-              now
-            ]
-          );
-
-          const definitionId = randomUUID();
-          const definitionResult = await client.query<WorkflowDefinitionRow>(
-            `insert into public.wf_process_definition (
-              id, tenant_id, model_id, model_version_id, code, name, version,
-              document_type, schema, status, published_by, published_at
-            ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, 'active', $10, $11)
-            returning *`,
-            [
-              definitionId,
-              model.tenantId,
-              model.id,
-              versionId,
-              model.code,
-              model.name,
-              version,
-              model.documentType ?? null,
-              JSON.stringify(model.draftSchema),
-              actor.userId ?? null,
-              now
-            ]
-          );
-
-          await insertDefinitionSnapshots(client, definitionId, model.draftSchema);
-
-          const updatedModelResult = await client.query<WorkflowModelRow>(
-            `update public.wf_model
-            set status = 'published',
-                current_version = $2,
-                updated_by = $3,
-                updated_at = $4
-            where id = $1
-            returning *`,
-            [model.id, version, actor.userId ?? null, now]
-          );
-
-          await client.query('commit');
-          return {
-            model: mapModel(updatedModelResult.rows[0]),
-            version: mapModelVersion(versionResult.rows[0]),
-            definition: mapDefinition(definitionResult.rows[0])
-          };
-        } catch (error) {
-          await client.query('rollback');
-          throw error;
-        }
+    if (this.persistence?.isConfigured) {
+      const { data, error } = await this.persistence.client.rpc('publish_workflow_model', {
+        p_model_id: modelId,
+        p_account_id: actor.tenantId,
+        p_user_id: actor.userId ?? null,
+        p_remark: dto.remark?.trim() || null
       });
+      if (error?.code === 'P0002') throw new NotFoundException(error.message);
+      if (error) throw new BadRequestException(error.message);
+      if (!isRecord(data) || !isRecord(data.model) || !isRecord(data.version) || !isRecord(data.definition)) {
+        throw new BadRequestException('Workflow publish RPC returned an invalid result.');
+      }
+      return {
+        model: mapModel(data.model as WorkflowModelRow),
+        version: mapModelVersion(data.version as WorkflowModelVersionRow),
+        definition: mapDefinition(data.definition as WorkflowDefinitionRow)
+      };
     }
 
     const model = this.models.get(modelId);
     if (!model) {
       throw new NotFoundException('Workflow model not found.');
     }
+    if (model.tenantId !== actor.tenantId) {
+      throw new NotFoundException('Workflow model not found.');
+    }
 
-    assertDraftSchemaPublishable(model.draftSchema, true);
+    validateWorkflowDraftSchema(model.draftSchema, true);
 
     const now = new Date().toISOString();
     const version = model.currentVersion + 1;
@@ -324,20 +255,18 @@ export class DefinitionService {
   }
 
   async listDefinitions(query: WorkflowDefinitionQuery = {}) {
-    if (this.database?.isConfigured) {
-      const values: unknown[] = [];
-      const conditions: string[] = [];
-      addCondition(conditions, values, 'tenant_id', query.tenantId);
-      addCondition(conditions, values, 'document_type', query.documentType);
-      addCondition(conditions, values, 'status', query.status);
-      const result = await this.database.query<WorkflowDefinitionRow>(
-        `select * from public.wf_process_definition
-        ${conditions.length ? `where ${conditions.join(' and ')}` : ''}
-        order by published_at desc
-        limit 200`,
-        values
-      );
-      return result.rows.map(mapDefinition);
+    if (this.persistence?.isConfigured) {
+      let request = this.persistence.client
+        .from('wf_process_definition')
+        .select('*')
+        .order('published_at', { ascending: false })
+        .limit(200);
+      if (query.tenantId) request = request.eq('account_id', query.tenantId);
+      if (query.documentType) request = request.eq('document_type', query.documentType);
+      if (query.status) request = request.eq('status', query.status);
+      const { data, error } = await request;
+      if (error) throw new BadRequestException(error.message);
+      return (data ?? []).map((row) => mapDefinition(row as WorkflowDefinitionRow));
     }
 
     return Array.from(this.definitions.values())
@@ -347,45 +276,54 @@ export class DefinitionService {
       .sort((left, right) => right.publishedAt.localeCompare(left.publishedAt));
   }
 
-  async getDefinition(definitionId: string) {
-    if (this.database?.isConfigured) {
-      const result = await this.database.query<WorkflowDefinitionRow>(
-        'select * from public.wf_process_definition where id = $1',
-        [definitionId]
-      );
-      const row = result.rows[0];
+  async getDefinition(definitionId: string, tenantId?: string) {
+    if (this.persistence?.isConfigured) {
+      let request = this.persistence.client
+        .from('wf_process_definition')
+        .select('*')
+        .eq('id', definitionId);
+      if (tenantId) request = request.eq('account_id', tenantId);
+      const { data: row, error } = await request.maybeSingle();
+      if (error) throw new BadRequestException(error.message);
       if (!row) {
         throw new NotFoundException('Workflow definition not found.');
       }
-      return mapDefinition(row);
+      return mapDefinition(row as WorkflowDefinitionRow);
     }
 
     const definition = this.definitions.get(definitionId);
     if (!definition) {
       throw new NotFoundException('Workflow definition not found.');
     }
+    if (tenantId && definition.tenantId !== tenantId) {
+      throw new NotFoundException('Workflow definition not found.');
+    }
 
     return definition;
   }
 
-  async disableDefinition(definitionId: string) {
-    if (this.database?.isConfigured) {
-      const result = await this.database.query<WorkflowDefinitionRow>(
-        `update public.wf_process_definition
-        set status = 'disabled'
-        where id = $1
-        returning *`,
-        [definitionId]
-      );
-      const row = result.rows[0];
-      if (!row) {
-        throw new NotFoundException('Workflow definition not found.');
+  async disableDefinition(definitionId: string, tenantId?: string) {
+    if (this.persistence?.isConfigured) {
+      const { data, error } = await this.persistence.client.rpc(WORKFLOW_DEFINITION_COMMAND_RPC, {
+        p_action: 'disable_definition',
+        p_payload: {
+          definition_id: definitionId,
+          account_id: tenantId ?? null
+        }
+      });
+      if (error?.code === 'P0002') throw new NotFoundException(error.message);
+      if (error) throw new BadRequestException(error.message);
+      if (!isRecord(data)) {
+        throw new BadRequestException('Workflow definition RPC returned an invalid definition.');
       }
-      return mapDefinition(row);
+      return mapDefinition(data as WorkflowDefinitionRow);
     }
 
     const definition = this.definitions.get(definitionId);
     if (!definition) {
+      throw new NotFoundException('Workflow definition not found.');
+    }
+    if (tenantId && definition.tenantId !== tenantId) {
       throw new NotFoundException('Workflow definition not found.');
     }
 
@@ -403,26 +341,11 @@ export class DefinitionService {
     );
   }
 
-  private async findDbModelById(modelId: string) {
-    const result = await this.database?.query<WorkflowModelRow>(
-      'select * from public.wf_model where id = $1',
-      [modelId]
-    );
-    return result?.rows[0] ? mapModel(result.rows[0]) : undefined;
-  }
-
-  private async findDbModelByCode(tenantId: string, code: string) {
-    const result = await this.database?.query<WorkflowModelRow>(
-      'select * from public.wf_model where tenant_id = $1 and code = $2',
-      [tenantId, code.trim()]
-    );
-    return result?.rows[0] ? mapModel(result.rows[0]) : undefined;
-  }
 }
 
-type WorkflowModelRow = QueryResultRow & {
+type WorkflowModelRow = {
   id: string;
-  tenant_id: string;
+  account_id: string;
   code: string;
   name: string;
   document_type: string | null;
@@ -431,23 +354,23 @@ type WorkflowModelRow = QueryResultRow & {
   draft_schema: Record<string, unknown>;
   created_by: string | null;
   updated_by: string | null;
-  created_at: Date;
-  updated_at: Date;
+  created_at: Date | string;
+  updated_at: Date | string;
 };
 
-type WorkflowModelVersionRow = QueryResultRow & {
+type WorkflowModelVersionRow = {
   id: string;
   model_id: string;
   version: number;
   schema: Record<string, unknown>;
   remark: string | null;
   created_by: string | null;
-  created_at: Date;
+  created_at: Date | string;
 };
 
-type WorkflowDefinitionRow = QueryResultRow & {
+type WorkflowDefinitionRow = {
   id: string;
-  tenant_id: string;
+  account_id: string;
   model_id: string;
   model_version_id: string;
   code: string;
@@ -457,13 +380,13 @@ type WorkflowDefinitionRow = QueryResultRow & {
   schema: Record<string, unknown>;
   status: WorkflowProcessDefinitionRecord['status'];
   published_by: string | null;
-  published_at: Date;
+  published_at: Date | string;
 };
 
 function mapModel(row: WorkflowModelRow): WorkflowModelRecord {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     code: row.code,
     name: row.name,
     ...(row.document_type ? { documentType: row.document_type } : {}),
@@ -472,8 +395,8 @@ function mapModel(row: WorkflowModelRow): WorkflowModelRecord {
     draftSchema: row.draft_schema,
     ...(row.created_by ? { createdBy: row.created_by } : {}),
     ...(row.updated_by ? { updatedBy: row.updated_by } : {}),
-    createdAt: row.created_at.toISOString(),
-    updatedAt: row.updated_at.toISOString()
+    createdAt: toIso(row.created_at),
+    updatedAt: toIso(row.updated_at)
   };
 }
 
@@ -485,14 +408,14 @@ function mapModelVersion(row: WorkflowModelVersionRow): WorkflowModelVersionReco
     schema: row.schema,
     ...(row.remark ? { remark: row.remark } : {}),
     ...(row.created_by ? { createdBy: row.created_by } : {}),
-    createdAt: row.created_at.toISOString()
+    createdAt: toIso(row.created_at)
   };
 }
 
 function mapDefinition(row: WorkflowDefinitionRow): WorkflowProcessDefinitionRecord {
   return {
     id: row.id,
-    tenantId: row.tenant_id,
+    tenantId: row.account_id,
     modelId: row.model_id,
     modelVersionId: row.model_version_id,
     code: row.code,
@@ -502,159 +425,14 @@ function mapDefinition(row: WorkflowDefinitionRow): WorkflowProcessDefinitionRec
     schema: row.schema,
     status: row.status,
     ...(row.published_by ? { publishedBy: row.published_by } : {}),
-    publishedAt: row.published_at.toISOString()
+    publishedAt: toIso(row.published_at)
   };
-}
-
-function addCondition(conditions: string[], values: unknown[], column: string, value: unknown) {
-  if (value === undefined || value === null || value === '') return;
-  values.push(value);
-  conditions.push(`${column} = $${values.length}`);
-}
-
-async function insertDefinitionSnapshots(
-  client: { query: (text: string, values?: unknown[]) => Promise<unknown> },
-  definitionId: string,
-  schema: Record<string, unknown>
-) {
-  const nodes = Array.isArray(schema.nodes) ? schema.nodes.filter(isRecord) : [];
-  const edges = Array.isArray(schema.edges) ? schema.edges.filter(isRecord) : [];
-
-  for (const node of nodes) {
-    await client.query(
-      `insert into public.wf_node_definition (
-        definition_id, node_id, node_type, name, config
-      ) values ($1, $2, $3, $4, $5::jsonb)
-      on conflict (definition_id, node_id) do update set
-        node_type = excluded.node_type,
-        name = excluded.name,
-        config = excluded.config`,
-      [
-        definitionId,
-        readString(node.id),
-        readString(node.type),
-        readString(node.name, readString(node.type)),
-        JSON.stringify(isRecord(node.config) ? node.config : {})
-      ]
-    );
-  }
-
-  for (const edge of edges) {
-    await client.query(
-      `insert into public.wf_edge_definition (
-        definition_id, edge_id, source_node_id, target_node_id, condition, priority
-      ) values ($1, $2, $3, $4, $5::jsonb, $6)
-      on conflict (definition_id, edge_id) do update set
-        source_node_id = excluded.source_node_id,
-        target_node_id = excluded.target_node_id,
-        condition = excluded.condition,
-        priority = excluded.priority`,
-      [
-        definitionId,
-        readString(edge.id),
-        readString(edge.source),
-        readString(edge.target),
-        isRecord(edge.condition) ? JSON.stringify(edge.condition) : null,
-        typeof edge.priority === 'number' ? edge.priority : null
-      ]
-    );
-  }
-}
-
-function normalizeDraftSchema(dto: SaveWorkflowModelDto) {
-  const schema = { ...dto.schema };
-
-  return {
-    schemaVersion: typeof schema.schemaVersion === 'number' ? schema.schemaVersion : 1,
-    ...schema,
-    code: readString(schema.code, dto.code),
-    name: readString(schema.name, dto.name),
-    ...(dto.documentType ? { documentType: dto.documentType } : {})
-  };
-}
-
-function assertDraftSchemaPublishable(schema: Record<string, unknown>, strict: boolean) {
-  const nodes = Array.isArray(schema.nodes) ? schema.nodes : [];
-  const edges = Array.isArray(schema.edges) ? schema.edges : [];
-
-  if (!readString(schema.code)) {
-    throw new BadRequestException('Workflow schema code is required.');
-  }
-
-  if (!readString(schema.name)) {
-    throw new BadRequestException('Workflow schema name is required.');
-  }
-
-  if (!nodes.length) {
-    throw new BadRequestException('Workflow schema requires nodes.');
-  }
-
-  if (!edges.length) {
-    throw new BadRequestException('Workflow schema requires edges.');
-  }
-
-  if (!strict) return;
-
-  const nodeIds = new Set<string>();
-  const nodeTypes = new Map<string, string>();
-
-  nodes.forEach((node, index) => {
-    if (!isRecord(node)) {
-      throw new BadRequestException(`Node at index ${index} must be an object.`);
-    }
-
-    const id = readString(node.id);
-    const type = readString(node.type);
-    if (!id) {
-      throw new BadRequestException(`Node at index ${index} requires id.`);
-    }
-
-    if (nodeIds.has(id)) {
-      throw new BadRequestException(`Duplicate node id "${id}".`);
-    }
-
-    nodeIds.add(id);
-    nodeTypes.set(id, type);
-
-    if (type === 'approval' || type === 'sign' || type === 'orSign') {
-      const config = isRecord(node.config) ? node.config : {};
-      if (!isRecord(config.assigneeStrategy)) {
-        throw new BadRequestException(`${type} node "${id}" requires assigneeStrategy.`);
-      }
-    }
-  });
-
-  const startCount = Array.from(nodeTypes.values()).filter((type) => type === 'start').length;
-  const endCount = Array.from(nodeTypes.values()).filter((type) => type === 'end').length;
-  if (startCount !== 1) {
-    throw new BadRequestException('Workflow schema must contain exactly one start node.');
-  }
-
-  if (!endCount) {
-    throw new BadRequestException('Workflow schema must contain at least one end node.');
-  }
-
-  edges.forEach((edge, index) => {
-    if (!isRecord(edge)) {
-      throw new BadRequestException(`Edge at index ${index} must be an object.`);
-    }
-
-    const source = readString(edge.source);
-    const target = readString(edge.target);
-    if (!nodeIds.has(source)) {
-      throw new BadRequestException(`Edge source "${source}" does not exist.`);
-    }
-
-    if (!nodeIds.has(target)) {
-      throw new BadRequestException(`Edge target "${target}" does not exist.`);
-    }
-  });
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function readString(value: unknown, fallback = '') {
-  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+function toIso(value: Date | string) {
+  return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
 }

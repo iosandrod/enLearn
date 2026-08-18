@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Base-info material smoke</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      #app {
+        padding: 24px;
+        box-sizing: border-box;
+      }
+
+      #result {
+        position: fixed;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick, ref } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'remixicon/fonts/remixicon.css';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import '../assets/styles/app.css';
+      import LowCodePageRenderer from '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue';
+      import { createLowCodePlugin } from '../../packages/lowcode-framework/src/core/host';
+
+      const renderer = ref(null);
+      const serviceCalls = [];
+      const runtimeEvents = [];
+      const relationRows = [
+        {
+          id: 'item-1',
+          name: 'RM-MCU-STM32',
+          description: 'Main controller',
+          uom: 'PCS',
+        },
+        {
+          id: 'item-2',
+          name: 'RM-OTHER-001',
+          description: 'Other material',
+          uom: 'EA',
+        },
+      ];
+      const relationPage = {
+        id: 'planning-item-list',
+        code: 'planning_item-list',
+        route: '/dashboard/planning/item',
+        title: '物料',
+        description: null,
+        layout: 'dashboard',
+        status: 'published',
+        keep_alive: true,
+        page_type: 'list',
+        edit_page_id: null,
+        view_name: null,
+        table_name: 'planning_item',
+        version: 1,
+        published_at: null,
+        created_at: '',
+        updated_at: '',
+        schema: {
+          code: 'planning_item-list',
+          route: '/dashboard/planning/item',
+          title: '物料',
+          dataSources: {
+            planning_itemRows: {
+              key: 'planning_itemRows',
+              label: '物料数据',
+              serviceName: 'planning',
+              serviceMethod: 'listItems',
+              tableName: 'planning_item',
+              postData: {
+                resource: 'planning_item',
+                tableName: 'planning_item',
+                filters: { id: '{{ route.query.id }}' },
+                requiredFilters: ['id'],
+              },
+            },
+          },
+          blocks: [
+            {
+              id: 'planning-item-grid',
+              kind: 'grid',
+              tableType: 'main',
+              sourceKey: 'planning_itemRows',
+              schema: {
+                grid: {
+                  tableType: 'main',
+                  columns: [
+                    { type: 'seq', title: '序号' },
+                    { field: 'name', title: '物料编码' },
+                    { field: 'description', title: '说明' },
+                    { field: 'uom', title: '单位' },
+                    { title: '操作', slots: { default: 'actions' } },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      };
+      const pageRecord = {
+        id: 'base-info-smoke',
+        code: 'base-info-smoke',
+        route: '/base-info-smoke',
+        title: '关联资料物料验证',
+        description: null,
+        layout: 'dashboard',
+        status: 'published',
+        keep_alive: false,
+        page_type: 'custom',
+        edit_page_id: null,
+        view_name: null,
+        table_name: null,
+        version: 1,
+        published_at: null,
+        created_at: '',
+        updated_at: '',
+        schema: {
+          code: 'base-info-smoke',
+          route: '/base-info-smoke',
+          title: '关联资料物料验证',
+          pageType: 'custom',
+          blocks: [
+            {
+              id: 'relation-form',
+              kind: 'form',
+              title: '关联资料',
+              initialValues: {
+                item_id: 'item-1',
+                item_id_label: '',
+                item_name: '',
+                uom: '',
+                page_item_id: '',
+                page_item_id_label: '',
+                page_item_name: '',
+              },
+              schema: {
+                columns: 2,
+                fields: [
+                  {
+                    field: 'item_id',
+                    label: '实体物料',
+                    component: 'base-info',
+                    props: {
+                      clearable: true,
+                      placeholder: '请选择物料',
+                      relateInfoConfig: {
+                        resource: 'planning_item',
+                        valueField: 'id',
+                        displayField: 'name',
+                        displayValueField: 'item_id_label',
+                        searchField: 'name',
+                        fieldMappings: [
+                          { sourceField: 'id', targetField: 'item_id' },
+                          { sourceField: 'name', targetField: 'item_name' },
+                          { sourceField: 'uom', targetField: 'uom' },
+                        ],
+                      },
+                    },
+                  },
+                  {
+                    field: 'item_name',
+                    label: '物料名称',
+                    component: 'vxe-input',
+                    props: { readonly: true },
+                  },
+                  {
+                    field: 'uom',
+                    label: '单位',
+                    component: 'vxe-input',
+                    props: { readonly: true },
+                  },
+                  {
+                    field: 'page_item_id',
+                    label: '页面物料',
+                    component: 'base-info',
+                    props: {
+                      clearable: true,
+                      placeholder: '请选择页面物料',
+                      relateInfoConfig: {
+                        sourceType: 'lowcode_page',
+                        pageCode: 'planning_item-list',
+                        popupWidth: 720,
+                        popupHeight: 260,
+                        valueField: 'id',
+                        displayField: 'name',
+                        displayValueField: 'page_item_id_label',
+                        searchField: 'name',
+                        fieldMappings: [
+                          { sourceField: 'id', targetField: 'page_item_id' },
+                          { sourceField: 'name', targetField: 'page_item_name' },
+                        ],
+                      },
+                    },
+                  },
+                  {
+                    field: 'page_item_name',
+                    label: '页面物料名称',
+                    component: 'vxe-input',
+                    props: { readonly: true },
+                  },
+                ],
+                actions: [],
+              },
+            },
+          ],
+        },
+      };
+
+      const serviceApi = {
+        async invoke(serviceName, serviceMethod, payload = {}) {
+          serviceCalls.push(structuredClone({ serviceName, serviceMethod, payload }));
+
+          if (serviceName === 'admin' && serviceMethod === 'listItems') {
+            if (payload.resource === 'admin_entities') {
+              return [{
+                code: 'planning_item',
+                table_name: 'public.planning_item',
+                schema: {
+                  service: 'planning',
+                  listMethod: 'listItems',
+                  resource: 'planning_item',
+                  fields: [
+                    { name: 'name', label: '物料编码' },
+                    { name: 'description', label: '说明' },
+                    { name: 'uom', label: '单位' },
+                  ],
+                },
+              }];
+            }
+          }
+
+          if (
+            serviceName === 'lowcode' &&
+            serviceMethod === 'listItems' &&
+            payload.tableName === 'lowcode_pages'
+          ) {
+            return [relationPage];
+          }
+
+          if (serviceName === 'planning' && serviceMethod === 'listItems') {
+            const filterId = payload.filters?.id;
+            const filteredRows = filterId
+              ? relationRows.filter((row) => row.id === filterId)
+              : relationRows;
+            return { rows: filteredRows, total: filteredRows.length };
+          }
+
+          if (serviceName === 'lowcode' && serviceMethod === 'listTableColumns') {
+            return [];
+          }
+
+          throw new Error(`Unexpected service call: ${serviceName}.${serviceMethod}`);
+        },
+      };
+
+      const App = defineComponent({
+        setup() {
+          return () => h(LowCodePageRenderer, {
+            ref: renderer,
+            page: pageRecord,
+            serviceApi,
+            locale: 'zh-CN',
+            route: {
+              query: {},
+              params: {},
+              path: pageRecord.route,
+              fullPath: pageRecord.route,
+            },
+            onRuntimeEvent: (event) => runtimeEvents.push({
+              name: event.name,
+              blockId: event.blockId,
+              blockKind: event.blockKind,
+              payload: event.payload ? JSON.parse(JSON.stringify(event.payload)) : {},
+            }),
+          });
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.use(createLowCodePlugin({ serviceApi }));
+      app.mount('#app');
+
+      window.__baseInfoSmoke = {
+        serviceCalls,
+        runtimeEvents,
+        snapshot() {
+          return renderer.value?.getSnapshot?.() ?? null;
+        },
+      };
+
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

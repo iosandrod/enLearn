@@ -1,40 +1,98 @@
 <template>
   <div class="lc-json-editor">
-    <vxe-textarea
+    <vxe-input
+      v-bind="inputProps"
       :id="field.field"
-      v-model="textValue"
-      :status="jsonError ? 'error' : undefined"
-      v-bind="field.props"
-      @blur="commitText"
-    />
-    <span v-if="jsonError" class="lc-error">{{ jsonError }}</span>
+      :model-value="previewValue"
+      :aria-label="field.label || field.field"
+      :title="previewTitle"
+      type="text"
+      :editable="false"
+      :clearable="false"
+      :disabled="isDisabled"
+    >
+      <template #suffix>
+        <button
+          type="button"
+          class="lc-json-editor__trigger"
+          :title="editorActionLabel"
+          :aria-label="editorActionLabel"
+          :disabled="isDisabled"
+          @click.stop="openEditor"
+        >
+          <i class="ri-braces-line" aria-hidden="true" />
+        </button>
+      </template>
+    </vxe-input>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, h, ref } from 'vue';
+import { VxeTextarea } from 'vxe-pc-ui';
+import { openGlobalDialog } from '../../../runtime/global-dialog-core';
 import type { LowCodeFormMaterialProps } from '../types';
+
+type JsonParseResult =
+  | { ok: true; value: unknown }
+  | { ok: false; message: string };
+
+type JsonRootType = 'any' | 'object' | 'array';
+type JsonValueMode = 'parsed' | 'string' | 'preserve';
 
 const props = defineProps<LowCodeFormMaterialProps>();
 const emit = defineEmits<{
   'update:modelValue': [value: unknown];
 }>();
 
-const textValue = ref(formatValue(props.modelValue));
-const jsonError = ref('');
+const editorText = ref('');
+const editorError = ref('');
+const editorOpen = ref(false);
 
-watch(
-  () => props.modelValue,
-  (value) => {
-    if (jsonError.value) return;
-    textValue.value = formatValue(value);
-  },
-  { deep: true }
-);
+const isDisabled = computed(() => Boolean(props.field.props?.disabled));
+const isReadonly = computed(() => Boolean(props.field.props?.readonly));
+const editorActionLabel = computed(() => (isReadonly.value ? '查看 JSON' : '编辑 JSON'));
+const previewValue = computed(() => formatPreviewValue(props.modelValue));
+const previewTitle = computed(() => previewValue.value || String(props.field.props?.placeholder || ''));
+const inputProps = computed(() => {
+  const {
+    rows: _rows,
+    cols: _cols,
+    resize: _resize,
+    autoSize: _autoSize,
+    autosize: _autosize,
+    showWordCount: _showWordCount,
+    countMethod: _countMethod,
+    suffixIcon: _suffixIcon,
+    suffixConfig: _suffixConfig,
+    readonly: _readonly,
+    disabled: _disabled,
+    clearable: _clearable,
+    editable: _editable,
+    type: _type,
+    dialogTitle: _dialogTitle,
+    jsonRootType: _jsonRootType,
+    jsonValueMode: _jsonValueMode,
+    ...rest
+  } = props.field.props ?? {};
 
-function formatValue(value: unknown) {
-  if (typeof value === 'string') return value;
+  return rest;
+});
+
+function formatEditorValue(value: unknown) {
+  if (typeof value === 'string') {
+    const text = value.trim();
+    if (!text) return '';
+
+    try {
+      return JSON.stringify(JSON.parse(text), null, 2);
+    } catch {
+      return value;
+    }
+  }
+
   if (value === undefined) return '';
+
   try {
     return JSON.stringify(value, null, 2);
   } catch {
@@ -42,20 +100,246 @@ function formatValue(value: unknown) {
   }
 }
 
-function commitText() {
-  const value = textValue.value.trim();
+function formatPreviewValue(value: unknown) {
+  if (typeof value === 'string') {
+    const text = value.trim();
+    if (!text) return '';
 
-  if (!value) {
-    jsonError.value = '';
-    emit('update:modelValue', undefined);
-    return;
+    try {
+      return JSON.stringify(JSON.parse(text));
+    } catch {
+      return text.replace(/\s+/g, ' ');
+    }
   }
 
+  if (value === undefined) return '';
+
   try {
-    jsonError.value = '';
-    emit('update:modelValue', JSON.parse(value));
+    return JSON.stringify(value);
   } catch {
-    jsonError.value = 'JSON 格式不正确';
+    return String(value ?? '');
+  }
+}
+
+function parseJsonText(text: string): JsonParseResult {
+  const value = text.trim();
+  if (!value) return { ok: true, value: undefined };
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    const rootType = resolveRootType();
+
+    if (rootType === 'object' && !isJsonObject(parsed)) {
+      return { ok: false, message: 'JSON 顶层必须是对象' };
+    }
+
+    if (rootType === 'array' && !Array.isArray(parsed)) {
+      return { ok: false, message: 'JSON 顶层必须是数组' };
+    }
+
+    return { ok: true, value: parsed };
+  } catch {
+    return { ok: false, message: 'JSON 格式不正确，请检查后重试' };
+  }
+}
+
+function isJsonObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function resolveRootType(): JsonRootType {
+  const value = props.field.props?.jsonRootType;
+  return value === 'object' || value === 'array' ? value : 'any';
+}
+
+function resolveValueMode(): JsonValueMode {
+  const value = props.field.props?.jsonValueMode;
+  return value === 'parsed' || value === 'string' ? value : 'preserve';
+}
+
+function resolveCommittedValue(parsedValue: unknown) {
+  const valueMode = resolveValueMode();
+  const keepString =
+    valueMode === 'string' ||
+    (valueMode === 'preserve' && typeof props.modelValue === 'string');
+
+  if (!keepString) return parsedValue;
+  return editorText.value.trim();
+}
+
+function resolveEditorRows() {
+  const rows = Number(props.field.props?.rows);
+  if (!Number.isFinite(rows) || rows <= 0) return 14;
+  return Math.min(24, Math.max(8, Math.round(rows)));
+}
+
+function renderEditor() {
+  const fieldProps = props.field.props ?? {};
+  const {
+    className: fieldClassName,
+    disabled: _disabled,
+    readonly: _readonly,
+    rows: _rows,
+    dialogTitle: _dialogTitle,
+    jsonRootType: _jsonRootType,
+    jsonValueMode: _jsonValueMode,
+    ...textareaProps
+  } = fieldProps;
+  const className = [
+    'lc-json-editor-dialog__textarea',
+    typeof fieldClassName === 'string' ? fieldClassName : '',
+  ].filter(Boolean).join(' ');
+
+  return h('div', { class: 'lc-json-editor-dialog' }, [
+    h(VxeTextarea as any, {
+      ...textareaProps,
+      className,
+      modelValue: editorText.value,
+      rows: resolveEditorRows(),
+      readonly: isReadonly.value,
+      disabled: isDisabled.value,
+      'onUpdate:modelValue': (value: string | number | null) => {
+        editorText.value = value == null ? '' : String(value);
+        editorError.value = '';
+      },
+    }),
+    editorError.value
+      ? h('span', { class: 'lc-json-editor-dialog__error' }, editorError.value)
+      : null,
+  ]);
+}
+
+async function openEditor() {
+  if (isDisabled.value || editorOpen.value) return;
+
+  editorOpen.value = true;
+  editorText.value = formatEditorValue(props.modelValue);
+  editorError.value = '';
+
+  try {
+    const result = await openGlobalDialog({
+      title:
+        String(props.field.props?.dialogTitle || '').trim() ||
+        `${editorActionLabel.value} - ${props.field.label || props.field.field}`,
+      width: 'min(760px, calc(100vw - 32px))',
+      showFooter: true,
+      props: {
+        top: '8vh',
+        destroyOnClose: true,
+      },
+      body: renderEditor,
+      actions: isReadonly.value
+        ? [
+            {
+              code: 'cancel',
+              label: '关闭',
+              role: 'cancel',
+            },
+          ]
+        : [
+            {
+              code: 'cancel',
+              label: '取消',
+              role: 'cancel',
+            },
+            {
+              code: 'confirm',
+              label: '确定',
+              role: 'confirm',
+              status: 'primary',
+            },
+          ],
+      onConfirm: () => {
+        const parsed = parseJsonText(editorText.value);
+        if ('message' in parsed) {
+          editorError.value = parsed.message;
+          return false;
+        }
+
+        return { payload: parsed.value };
+      },
+    });
+
+    if (result.action !== 'confirm') return;
+
+    const parsed = parseJsonText(editorText.value);
+    if (parsed.ok) {
+      emit('update:modelValue', resolveCommittedValue(parsed.value));
+    }
+  } finally {
+    editorOpen.value = false;
   }
 }
 </script>
+
+<style>
+.lc-json-editor {
+  width: 100%;
+  min-width: 0;
+}
+
+.lc-json-editor > .vxe-input {
+  width: 100%;
+  max-width: 100%;
+}
+
+.lc-json-editor__trigger {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  color: #536579;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.lc-json-editor__trigger:hover:not(:disabled),
+.lc-json-editor__trigger:focus-visible {
+  color: #1d73d8;
+  background: #edf5ff;
+  outline: none;
+}
+
+.lc-json-editor__trigger:focus-visible {
+  box-shadow: 0 0 0 2px rgb(29 115 216 / 20%);
+}
+
+.lc-json-editor__trigger:disabled {
+  color: #a8b2bf;
+  cursor: not-allowed;
+}
+
+.lc-json-editor .vxe-input--suffix {
+  display: inline-flex;
+  align-items: center;
+}
+
+.lc-json-editor-dialog {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 8px;
+}
+
+.lc-json-editor-dialog .vxe-textarea {
+  width: 100%;
+}
+
+.lc-json-editor-dialog .vxe-textarea--inner {
+  min-height: min(420px, calc(100vh - 280px));
+  font-family: Consolas, "SFMono-Regular", "Liberation Mono", monospace;
+  line-height: 1.55;
+  tab-size: 2;
+}
+
+.lc-json-editor-dialog__error {
+  color: #c0362c;
+  font-size: 12px;
+  line-height: 18px;
+}
+</style>

@@ -1,0 +1,29 @@
+asset index.bundle.js 1.21 MiB [emitted] (name: index) 1 related asset
+asset src_main-native_ts.index.bundle.js 1.16 MiB [emitted] 1 related asset
+asset vendors-node_modules_pnpm_hippy_vue-router-next-hist_f971ac4b40e4c99c8d8e53eaccc6ef80_node_mo-b75a2b.index.bundle.js 262 KiB [emitted] (id hint: vendors) 1 related asset
+asset index.html 714 bytes [emitted]
+runtime modules 32.3 KiB 14 modules
+orphan modules 246 bytes [orphan] 8 modules
+modules by path ./src/runtime/ 541 KiB 165 modules
+modules by path ../node_modules/.pnpm/ 1.31 MiB 31 modules
+modules by path ./src/pages/*.vue 42.9 KiB 21 modules
+modules by path ./src/*.vue 61.2 KiB
+  ./src/app.vue 906 bytes [built] [code generated]
+  + 6 modules
+modules by path ./src/components/*.vue 11.4 KiB
+  ./src/components/mobile-menu-tree.vue 1.04 KiB [built] [code generated]
+  + 6 modules
+modules by path ./src/*.ts 9.61 KiB
+  ./src/main-web.ts 1.14 KiB [built] [code generated]
+  + 3 modules
+./src/web/hippy-web-view.ts 1.75 KiB [built] [code generated]
+webpack 5.109.2 compiled successfully in 9309 ms
+assets by status 1.41 MiB [cached] 3 assets
+assets by status 1.21 MiB [emitted]
+  asset index.bundle.js 1.21 MiB [emitted] (name: index) 1 related asset
+  asset index.40f95a793e501afa7edb.hot-update.js 379 bytes [emitted] [immutable] [hmr] (name: index) 1 related asset
+  asset index.40f95a793e501afa7edb.hot-update.json 29 bytes [emitted] [immutable] [hmr]
+Entrypoint index 1.21 MiB (1.42 MiB) = index.bundle.js 1.21 MiB index.40f95a793e501afa7edb.hot-update.js 379 bytes 2 auxiliary assets
+cached modules 1.96 MiB [cached] 244 modules
+runtime modules 32.3 KiB 14 modules
+webpack 5.109.2 compiled successfully in 118 ms

@@ -19,3 +19,4 @@ export declare const triggerNodeDefinitionMap: Map<TriggerNodeType, TriggerNodeD
 export declare function getTriggerNodeDefinition(type: TriggerNodeType): TriggerNodeDefinition | undefined;
 export declare function isBuiltInTriggerNodeType(type: TriggerNodeType): boolean;
 export declare function getTriggerNodeDefinitionsForKind(kind: TriggerWorkflowKind): TriggerNodeDefinition[];
+export declare function getTriggerNodeCategoryLabel(category: TriggerNodeDefinition['category']): string;

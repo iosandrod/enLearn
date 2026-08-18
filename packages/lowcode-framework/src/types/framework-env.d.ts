@@ -4,7 +4,8 @@ type LowCodeHostServiceApi = {
   invoke<T = unknown>(
     serviceName: string,
     serviceMethod: string,
-    payload?: Record<string, unknown>
+    payload?: Record<string, unknown>,
+    options?: { requestId?: string }
   ): Promise<T>;
 };
 

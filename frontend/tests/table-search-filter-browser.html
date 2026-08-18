@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Table search filter smoke</title>
+    <style>
+      html,
+      body,
+      #app {
+        min-width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      body {
+        color: #202124;
+        background: #f5f7fa;
+        font-family: Arial, "Microsoft YaHei", sans-serif;
+      }
+
+      #app {
+        box-sizing: border-box;
+        padding: 24px;
+      }
+
+      .smoke-shell {
+        width: min(1180px, calc(100vw - 48px));
+        margin: 0 auto;
+      }
+
+      .smoke-title {
+        margin: 0 0 16px;
+        font-size: 20px;
+        letter-spacing: 0;
+      }
+
+      #result {
+        position: fixed;
+        z-index: -1;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick, ref } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable, { VxeGrid, VxeUI } from 'vxe-table';
+      import TableSearchPanel from 'vxe-table-plugin-search-panel';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import 'vxe-table-plugin-search-panel/style.css';
+
+      VxeUI.use(TableSearchPanel, { defaultExpanded: false });
+
+      const rows = [
+        { id: 1, code: 'planning_suboperation-list', name: '子工序', route: '/dashboard/planning/suboperation' },
+        { id: 2, code: 'planning_operationresource-list', name: '工序资源编辑', route: '/dashboard/planning/operationresource' },
+        { id: 3, code: 'planning_supplier-list', name: '供应商', route: '/dashboard/planning/supplier' },
+        { id: 4, code: 'print-logs', name: '打印日志', route: '/dashboard/print/logs' },
+      ];
+      const columns = [
+        {
+          field: 'code',
+          title: '页面编码',
+          minWidth: 260,
+          filters: [{ label: '规划页面', value: 'planning' }],
+          filterMethod: ({ row }) => String(row.code).startsWith('planning_'),
+        },
+        { field: 'name', title: '页面名称', minWidth: 180 },
+        { field: 'route', title: '路由', minWidth: 320 },
+      ];
+      const gridRef = ref();
+      const remoteGridRef = ref();
+      const delayedGridRef = ref();
+      const delayedRows = ref([]);
+
+      const App = defineComponent({
+        setup() {
+          window.__tableSearchSmoke = {
+            gridRef,
+            remoteGridRef,
+            delayedGridRef,
+            delayedRows,
+            rows,
+            columns,
+          };
+          return () => h('main', { class: 'smoke-shell' }, [
+            h('h1', { class: 'smoke-title' }, '表格快查过滤'),
+            h(VxeGrid, {
+              ref: gridRef,
+              class: 'search-smoke-grid search-smoke-grid--local',
+              id: 'table-search-grid',
+              border: true,
+              stripe: true,
+              height: 360,
+              data: rows,
+              columns,
+              showOverflow: 'tooltip',
+              rowConfig: { keyField: 'id' },
+            }),
+            h('h2', { class: 'smoke-title', style: { marginTop: '24px' } }, '远程筛选配置兼容'),
+            h(VxeGrid, {
+              ref: remoteGridRef,
+              class: 'search-smoke-grid search-smoke-grid--remote',
+              id: 'table-search-remote-grid',
+              border: true,
+              height: 220,
+              data: rows,
+              columns: columns.filter((column) => column.field !== 'code'),
+              filterConfig: { remote: true },
+              rowConfig: { keyField: 'id' },
+            }),
+            h('h2', { class: 'smoke-title', style: { marginTop: '24px' } }, '异步数据刷新'),
+            h(VxeGrid, {
+              ref: delayedGridRef,
+              class: 'search-smoke-grid search-smoke-grid--delayed',
+              id: 'table-search-delayed-grid',
+              border: true,
+              height: 220,
+              data: delayedRows.value,
+              columns: columns.filter((column) => column.field !== 'code'),
+              rowConfig: { keyField: 'id' },
+            }),
+          ]);
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

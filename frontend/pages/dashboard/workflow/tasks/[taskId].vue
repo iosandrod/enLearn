@@ -179,7 +179,9 @@ const errorMessage = ref('');
 const successMessage = ref('');
 
 const taskId = computed(() => String(route.params.taskId ?? '').trim());
-const currentUserId = computed(() => auth.user.value?.id ?? '');
+const currentUserId = computed(
+  () => auth.activeDevTestUser.value?.id ?? auth.user.value?.id ?? ''
+);
 const canApprove = computed(
   () => Boolean(task.value && instance.value) &&
     (task.value?.status === 'pending' || task.value?.status === 'claimed') &&
@@ -199,7 +201,7 @@ async function workflowApi<T>(serviceMethod: string, postData: Record<string, un
 
   return serviceApi.invoke<T>('workflow', serviceMethod, {
     ...postData,
-    tenantId: 'default',
+    tenantId: auth.activeAccount.value?.account_id,
     userId: currentUserId.value
   });
 }
@@ -283,6 +285,10 @@ onMounted(async () => {
 });
 
 watch(taskId, () => {
+  void loadTask();
+});
+
+watch(currentUserId, () => {
   void loadTask();
 });
 </script>

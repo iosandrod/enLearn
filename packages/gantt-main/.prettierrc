@@ -1,0 +1,17 @@
+{
+	"useTabs": true,
+	"semi": true,
+	"singleQuote": false,
+	"quoteProps": "as-needed",
+	"trailingComma": "es5",
+	"bracketSpacing": true,
+	"arrowParens": "avoid",
+    "overrides": [
+		{
+			"files": "*.ts",
+			"options": {
+				"parser": "typescript"
+			}
+		}
+	]
+}

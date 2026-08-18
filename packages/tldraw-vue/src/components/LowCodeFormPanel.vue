@@ -145,6 +145,22 @@ function textareaField(
 	}
 }
 
+function jsonField(
+	field: string,
+	label: string,
+	props: Record<string, unknown> = {}
+): LowCodeField {
+	return {
+		field,
+		label,
+		component: 'lc-json-editor',
+		props: {
+			jsonValueMode: 'string',
+			...props,
+		},
+	}
+}
+
 function numberField(
 	field: string,
 	label: string,
@@ -228,8 +244,9 @@ const workspaceFormDescriptor = {
 			textareaField('dataSourceText', '数据内容/配置', {
 				placeholder: 'JSON 数组、CSV 文本，或自定义协议配置 JSON',
 			}),
-			textareaField('dataSourceHeaders', '请求头 JSON', {
+			jsonField('dataSourceHeaders', '请求头 JSON', {
 				placeholder: '{"Authorization":"Bearer ..."}',
+				jsonRootType: 'object',
 			}),
 			textareaField('dataSourceBody', '请求体 JSON/文本'),
 		],
@@ -519,8 +536,9 @@ const shapeFormDescriptors: Record<string, ShapeFormDescriptor> = {
 const fallbackDescriptor: ShapeFormDescriptor = {
 	title: '通用节点',
 	schema: createSchema('通用节点', [
-		textareaField('propsJson', 'Props JSON', {
-			disabled: true,
+		jsonField('propsJson', 'Props JSON', {
+			readonly: true,
+			jsonRootType: 'object',
 		}),
 	]),
 	toModel(shape) {

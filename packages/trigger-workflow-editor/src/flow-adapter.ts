@@ -4,7 +4,7 @@ import {
   Position,
   type Connection
 } from '@vue-flow/core';
-import { getTriggerNodeDefinition } from './schema/registry';
+import { getTriggerNodeCategoryLabel, getTriggerNodeDefinition } from './schema/registry';
 import type {
   TriggerNodeType,
   TriggerWorkflowEdge,
@@ -67,7 +67,7 @@ export function triggerWorkflowToFlowNodes(model: TriggerWorkflowModel): Trigger
     position: node.position ?? { x: 380, y: 40 + index * 150 },
     type: TRIGGER_FLOW_NODE_RENDER_TYPE,
     data: getTriggerNodePresentation(node),
-    draggable: !isEntryType(node.type) && node.type !== 'end',
+    draggable: !isEntryType(node.type) || node.type === 'start' || node.type === 'schedule',
     deletable: !isEntryType(node.type) && node.type !== 'end',
     selectable: true,
     connectable: true,
@@ -219,7 +219,7 @@ export function getTriggerNodePresentation(node: TriggerWorkflowNode): TriggerFl
   return {
     workflowType: node.type,
     label: node.name,
-    category: definition?.category ?? 'custom',
+    category: definition ? getTriggerNodeCategoryLabel(definition.category) : '自定义',
     description: node.description ?? definition?.description ?? '',
     icon: definition?.icon ?? 'TASK',
     accent: definition?.accent ?? '#334155',
@@ -233,16 +233,94 @@ export function getTriggerNodePresentation(node: TriggerWorkflowNode): TriggerFl
 
 function summarizeNode(node: TriggerWorkflowNode) {
   const config = node.config;
-  if (node.type === 'schedule') return `${config?.schedule?.cron ?? 'cron'} · ${config?.schedule?.timezone ?? 'UTC'}`;
-  if (node.type === 'webhook') return `${config?.webhook?.method ?? 'POST'} ${config?.webhook?.path ?? '/'}`;
-  if (node.type === 'manualApproval' || node.type === 'humanReview') return `${config?.approval?.assigneeType ?? 'assignee'} · ${config?.approval?.onTimeout ?? 'fail'}`;
-  if (node.type === 'wait') return `${config?.wait?.mode ?? 'duration'} · ${config?.wait?.duration ?? config?.wait?.tokenKey ?? ''}`;
-  if (node.type === 'agent') return `${config?.ai?.provider ?? 'AI'} · ${config?.ai?.model ?? 'model'}`;
-  if (node.type === 'dataSource' || node.type === 'dataSink') return `${config?.data?.connector ?? 'connector'} · ${config?.data?.operation ?? 'sync'}`;
-  if (node.type === 'condition') return 'Conditional routing';
-  if (node.type === 'parallel') return 'Parallel fan-out';
-  return config?.task?.id ?? node.description ?? 'Not configured';
+  if (node.type === 'schedule') {
+    return `${describeScheduleCron(config?.schedule?.cron)} · ${config?.schedule?.timezone ?? 'UTC'}`;
+  }
+  if (node.type === 'webhook') return 'POST /api/service';
+  if (node.type === 'manualApproval' || node.type === 'humanReview') {
+    return `${approvalAssigneeLabels[config?.approval?.assigneeType ?? ''] ?? '未指定处理人'} · ${approvalTimeoutLabels[config?.approval?.onTimeout ?? ''] ?? '标记失败'}`;
+  }
+  if (node.type === 'wait') {
+    const mode = config?.wait?.mode ?? 'duration';
+    const detail = config?.wait?.duration ?? config?.wait?.until ?? config?.wait?.tokenKey ?? '未配置';
+    return `${waitModeLabels[mode] ?? '等待'} · ${detail}`;
+  }
+  if (node.type === 'agent') return `${config?.ai?.provider ?? 'AI'} · ${config?.ai?.model ?? '未配置模型'}`;
+  if (node.type === 'dataSource' || node.type === 'dataSink') {
+    const operation = config?.data?.operation ?? 'sync';
+    return `${config?.data?.connector ?? '未配置连接器'} · ${dataOperationLabels[operation] ?? '同步'}`;
+  }
+  if (node.type === 'condition') return '按条件选择执行路径';
+  if (node.type === 'parallel') return '并行执行多个分支';
+  if (config?.task?.type === 'frontendCommand') return '发送前端指令 · 自定义函数';
+  if (config?.task?.type === 'backendCommand') return '执行后端指令 · 自定义函数';
+  if (config?.task?.type === 'storedProcedure') {
+    const procedure = config.task.procedureName ?? '未配置存储过程';
+    const schema = config.task.procedureSchema;
+    return `执行存储过程 · ${schema && !procedure.includes('.') ? `${schema}.${procedure}` : procedure}`;
+  }
+  return config?.task?.id ?? node.description ?? '未配置';
 }
+
+function describeScheduleCron(cron?: string) {
+  const parts = cron?.trim().split(/\s+/) ?? [];
+  if (parts.length !== 5) return '未配置 Cron';
+
+  const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
+  const intervalMatch = minute.match(/^\*\/([1-5]?\d)$/);
+  if (intervalMatch && hour === '*' && dayOfMonth === '*' && month === '*' && dayOfWeek === '*') {
+    return `每 ${intervalMatch[1]} 分钟`;
+  }
+
+  const time = describeCronTime(minute, hour);
+  if (!time) return cron ?? '未配置 Cron';
+  if (dayOfMonth === '*' && month === '*' && dayOfWeek === '*') return `每天 ${time}`;
+  if (dayOfMonth === '*' && month === '*' && dayOfWeek === '1-5') return `周一至周五 ${time}`;
+  if (dayOfMonth === '*' && month === '*' && /^[0-7]$/.test(dayOfWeek)) {
+    const weekday = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][Number(dayOfWeek) % 7];
+    return `每${weekday} ${time}`;
+  }
+  if (month === '*' && dayOfWeek === '*' && /^\d{1,2}$/.test(dayOfMonth)) {
+    return `每月 ${dayOfMonth} 日 ${time}`;
+  }
+  return cron ?? '未配置 Cron';
+}
+
+function describeCronTime(minute: string, hour: string) {
+  if (!/^\d{1,2}$/.test(minute) || !/^\d{1,2}$/.test(hour)) return '';
+  const parsedMinute = Number(minute);
+  const parsedHour = Number(hour);
+  if (parsedMinute > 59 || parsedHour > 23) return '';
+  return `${String(parsedHour).padStart(2, '0')}:${String(parsedMinute).padStart(2, '0')}`;
+}
+
+const approvalAssigneeLabels: Record<string, string> = {
+  user: '用户',
+  role: '角色',
+  team: '团队',
+  expression: '表达式'
+};
+
+const approvalTimeoutLabels: Record<string, string> = {
+  fail: '标记失败',
+  autoApprove: '自动通过',
+  autoReject: '自动驳回',
+  continue: '继续执行'
+};
+
+const waitModeLabels: Record<string, string> = {
+  duration: '等待时长',
+  until: '指定时间',
+  token: '等待令牌'
+};
+
+const dataOperationLabels: Record<string, string> = {
+  extract: '提取',
+  load: '写入',
+  sync: '同步',
+  query: '查询',
+  upsert: '更新或插入'
+};
 
 function isEntryType(type: TriggerNodeType) {
   return type === 'start' || type === 'schedule' || type === 'webhook';

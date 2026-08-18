@@ -1,6 +1,7 @@
 import type {
   LowCodeGridRowAction,
   LowCodePageBlock,
+  LowCodePageDataSource,
   LowCodeRuntimeDirective,
 } from '../../../types/lowcode';
 import type { VisualToLowCodeConverter } from '../types';
@@ -28,6 +29,11 @@ const vxeGridOptionKeys = [
   'showHeaderOverflow',
   'showFooterOverflow',
   'height',
+  'mobileDisplay',
+  'rowHeight',
+  'headerHeight',
+  'overscanRowCount',
+  'overscanColumnCount',
   'maxHeight',
   'size',
   'loading',
@@ -68,6 +74,71 @@ function normalizeVisualGridProps(props: Record<string, unknown>) {
 function toRuntimeGridOptions(gridProps: Record<string, unknown>) {
   const { columns: _columns, data: _data, gridOptions: _gridOptions, ...options } = gridProps;
   return options;
+}
+
+type GridTableType = 'main' | 'detail' | 'default';
+type GridSourceType = 'custom' | 'table' | 'view';
+
+function normalizeGridTableType(value: unknown): GridTableType | '' {
+  const tableType = readString(value);
+  if (tableType === 'normal') return 'default';
+  return tableType === 'main' || tableType === 'detail' || tableType === 'default'
+    ? tableType
+    : '';
+}
+
+function normalizeGridSourceType(value: unknown): GridSourceType | '' {
+  const sourceType = readString(value);
+  return sourceType === 'table' || sourceType === 'view' || sourceType === 'custom'
+    ? sourceType
+    : '';
+}
+
+function resolveGridSourceAssociation(
+  props: Record<string, unknown>,
+  postData: Record<string, unknown>,
+) {
+  const explicitTableName = readString(props.tableName);
+  const explicitViewName = readString(props.viewName);
+  const postDataTableName = readString(postData.tableName ?? postData.table_name);
+  const entityCode = readString(
+    props.entityCode,
+    readString(postData.entityCode ?? postData.entity_code),
+  );
+  const legacySourceType = normalizeGridSourceType(props.tableType);
+  const requestedType = normalizeGridSourceType(props.sourceType) || legacySourceType;
+  const sourceType: GridSourceType = requestedType || (
+    explicitViewName
+      ? 'view'
+      : explicitTableName || postDataTableName || entityCode
+        ? 'table'
+        : 'custom'
+  );
+  const tableName = sourceType === 'view'
+    ? ''
+    : explicitTableName || (
+        sourceType === 'table'
+          ? postDataTableName || (entityCode === 'users' ? 'profiles' : entityCode)
+          : ''
+      );
+  const viewName = sourceType === 'view'
+    ? explicitViewName || postDataTableName
+    : '';
+  const targetName = sourceType === 'table' ? tableName : sourceType === 'view' ? viewName : '';
+  const normalizedPostData = { ...postData };
+
+  if (sourceType !== 'custom') {
+    delete normalizedPostData.tableName;
+    delete normalizedPostData.table_name;
+    delete normalizedPostData.entityCode;
+    delete normalizedPostData.entity_code;
+    delete normalizedPostData.viewName;
+    delete normalizedPostData.view_name;
+    if (targetName) delete normalizedPostData.resource;
+    if (targetName) normalizedPostData.tableName = targetName;
+  }
+
+  return { sourceType, tableName, viewName, targetName, postData: normalizedPostData };
 }
 
 function normalizeRuntimeDirectives(value: unknown): LowCodeRuntimeDirective[] {
@@ -121,6 +192,8 @@ function normalizeGridRowActions(value: unknown) {
       const icon = readString(row.icon);
       const eventName = readString(row.eventName);
       const directives = normalizeRuntimeDirectives(row.directivesJson ?? row.directives);
+      const visible = readJsonObject(row.visibleJson ?? row.visible, {});
+      const disabled = readJsonObject(row.disabledJson, {});
 
       return {
         code,
@@ -128,7 +201,12 @@ function normalizeGridRowActions(value: unknown) {
         ...(status ? { status } : {}),
         ...(icon ? { icon } : {}),
         ...(eventName ? { eventName } : {}),
-        ...(readBoolean(row.disabled, false) ? { disabled: true } : {}),
+        ...(Object.keys(visible).length ? { visible } : {}),
+        ...(Object.keys(disabled).length
+          ? { disabled }
+          : readBoolean(row.disabled, false)
+            ? { disabled: true }
+            : {}),
         ...(readBoolean(row.plain, false) ? { plain: true } : {}),
         ...(readBoolean(row.text, false) ? { text: true } : {}),
         ...(directives.length ? { directives } : {}),
@@ -144,6 +222,10 @@ const converter: VisualToLowCodeConverter = {
   defaultProps: {
     blockId: 'records-grid',
     title: '数据列表',
+    tableType: 'default',
+    sourceType: 'table',
+    tableName: 'profiles',
+    viewName: '',
     sourceKey: 'records',
     serviceName: 'admin',
     serviceMethod: 'listItems',
@@ -166,13 +248,15 @@ const converter: VisualToLowCodeConverter = {
     const props = readVisualBlockProps(block);
     const gridProps = normalizeVisualGridProps(props);
     const sourceKey = readString(props.sourceKey, 'records');
+    const tableType = normalizeGridTableType(props.tableType) || 'default';
     const serviceName = readString(props.serviceName, 'admin');
     const serviceMethod = readString(props.serviceMethod, 'listItems');
     const saveMethod = readString(props.saveMethod);
     const deleteMethod = readString(props.deleteMethod);
-    const postData = readJsonObject(props.postDataJson, {});
-    const entityCode = readString(props.entityCode, readString(postData.entityCode ?? postData.entity_code));
-    const tableName = readString(props.tableName, readString(postData.tableName ?? postData.table_name)) || (entityCode === 'users' ? 'profiles' : entityCode);
+    const association = resolveGridSourceAssociation(
+      props,
+      readJsonObject(props.postDataJson, {}),
+    );
     const columns = normalizeRows(gridProps.columns).map(normalizeColumn).filter(isDefined);
     const showRowActions = readBoolean(props.showRowActions, true);
     const rowActions = normalizeGridRowActions(props.rowActions);
@@ -185,23 +269,33 @@ const converter: VisualToLowCodeConverter = {
       columns.find((column) => Boolean(column.field))?.field ?? 'id',
     );
 
-    context.dataSources[sourceKey] = {
+    const dataSource: LowCodePageDataSource = {
       key: sourceKey,
       label: readString(props.title, sourceKey),
+      sourceType: association.sourceType,
       serviceName,
       serviceMethod,
       ...(saveMethod ? { saveMethod } : {}),
       ...(deleteMethod ? { deleteMethod } : {}),
-      ...(tableName ? { tableName } : {}),
-      ...(Object.keys(postData).length ? { postData } : {}),
+      ...(association.targetName ? { tableName: association.targetName } : {}),
+      ...(association.viewName ? { viewName: association.viewName } : {}),
+      ...(Object.keys(association.postData).length ? { postData: association.postData } : {}),
       autoLoad: true,
     };
+    context.dataSources[sourceKey] = dataSource;
 
     return {
       id: toBlockId(props.blockId, block._vid),
       kind: 'grid',
       title: readString(props.title, 'Records'),
       sourceKey,
+      tableType,
+      sourceType: association.sourceType,
+      tableName: association.tableName,
+      viewName: association.viewName,
+      ...(typeof props.gridDesignerUpdatedAt === 'number'
+        ? { gridDesignerUpdatedAt: props.gridDesignerUpdatedAt }
+        : {}),
       schema: {
         title: readString(props.title, 'Records'),
         grid: {

@@ -6,6 +6,8 @@ import {
   propField,
   switchPropField,
 } from '../helpers';
+import { createDefaultButtonGroupEditorRows } from '../../../lowcode/actions/builtins';
+import { createSubFormField } from '../../../lowcode/form-schema';
 
 const formComponentOptions = [
   option('输入框', 'vxe-input'),
@@ -18,6 +20,8 @@ const formComponentOptions = [
   option('密码框', 'vxe-password-input'),
   option('数字输入', 'lc-number-input'),
   option('JSON 编辑器', 'lc-json-editor'),
+  option('代码编辑器', 'lc-monaco-editor'),
+  option('关联资料', 'base-info'),
   option('表格输入', 'lc-array-table'),
   option('子表单', 'lc-sub-form'),
 ];
@@ -36,6 +40,18 @@ const alignOptions = [
   option('右对齐', 'right'),
 ];
 
+const formTypeOptions = [
+  option('edit', 'edit'),
+  option('search', 'search'),
+  option('default', 'default'),
+];
+
+const gridTableTypeOptions = [
+  option('main', 'main'),
+  option('detail', 'detail'),
+  option('default', 'default'),
+];
+
 const gridRendererPropFields = [
   { field: 'placeholder', label: 'placeholder', component: 'vxe-input' as const },
   { field: 'clearable', label: 'clearable', component: 'vxe-switch' as const },
@@ -45,37 +61,32 @@ const gridRendererPropFields = [
 
 const gridRendererObjectFields = [
   { field: 'name', label: 'name', component: 'vxe-input' as const, props: { placeholder: 'VxeInput' } },
-  {
+  createSubFormField({
     field: 'props',
     label: 'props',
-    component: 'lc-sub-form' as const,
-    props: { fields: gridRendererPropFields },
-  },
-  {
+    fields: gridRendererPropFields,
+  }),
+  createSubFormField({
     field: 'attrs',
     label: 'attrs',
-    component: 'lc-sub-form' as const,
-    props: { fields: gridRendererPropFields },
-  },
+    fields: gridRendererPropFields,
+  }),
 ];
 
 const gridColumnParamsFields = [
   { field: 'type', label: 'type', component: 'vxe-input' as const },
   { field: 'emptyText', label: 'emptyText', component: 'vxe-input' as const },
   { field: 'locale', label: 'locale', component: 'vxe-input' as const },
-  {
+  createSubFormField({
     field: 'options',
     label: 'options',
-    component: 'lc-sub-form' as const,
-    props: {
-      fields: [
-        { field: 'dateStyle', label: 'dateStyle', component: 'vxe-input' as const },
-        { field: 'timeStyle', label: 'timeStyle', component: 'vxe-input' as const },
-        { field: 'minimumFractionDigits', label: 'minimumFractionDigits', component: 'lc-number-input' as const },
-        { field: 'maximumFractionDigits', label: 'maximumFractionDigits', component: 'lc-number-input' as const },
-      ],
-    },
-  },
+    fields: [
+      { field: 'dateStyle', label: 'dateStyle', component: 'vxe-input' as const },
+      { field: 'timeStyle', label: 'timeStyle', component: 'vxe-input' as const },
+      { field: 'minimumFractionDigits', label: 'minimumFractionDigits', component: 'lc-number-input' as const },
+      { field: 'maximumFractionDigits', label: 'maximumFractionDigits', component: 'lc-number-input' as const },
+    ],
+  }),
 ];
 
 const buttonStatusOptions = [
@@ -111,6 +122,17 @@ const placementOptions = [
   option('左侧', 'left'),
 ];
 
+function createAddToolbarButtons(label: string) {
+  return [
+    {
+      code: 'add',
+      label,
+      command: 'add',
+      status: 'primary' as const,
+    },
+  ];
+}
+
 const fieldColumns = [
   { field: 'field', title: '字段', minWidth: 110, placeholder: 'email' },
   { field: 'label', title: '标签', minWidth: 110, placeholder: '邮箱' },
@@ -125,6 +147,7 @@ const fieldColumns = [
   { field: 'required', title: '必填', component: 'vxe-switch' as const, width: 72 },
   { field: 'span', title: '跨列', width: 76, placeholder: '1' },
   { field: 'help', title: '帮助文本', minWidth: 140 },
+  { field: 'optionsCode', title: '下拉编码', minWidth: 130 },
   { field: 'optionsSourceKey', title: '选项数据源', minWidth: 130 },
   { field: 'optionLabel', title: '选项标签字段', minWidth: 120, placeholder: 'title' },
   { field: 'optionValue', title: '选项值字段', minWidth: 120, placeholder: 'id' },
@@ -153,6 +176,7 @@ const fieldDefaultRow = {
   required: false,
   span: '',
   help: '',
+  optionsCode: '',
   optionsSourceKey: '',
   optionLabel: '',
   optionValue: '',
@@ -167,28 +191,7 @@ const gridColumnRows = [
   { field: 'role', title: '角色', minWidth: '120' },
 ];
 
-const buttonRows = [
-  {
-    code: 'create',
-    label: '新增',
-    status: 'primary',
-    type: 'button',
-    eventName: 'buttonGroup.create',
-    directivesJson: [],
-    children: [],
-  },
-  {
-    code: 'more',
-    label: '更多',
-    type: 'button',
-    eventName: 'buttonGroup.more',
-    directivesJson: [],
-    children: [
-      { code: 'import', label: '导入', type: 'button', eventName: 'buttonGroup.import' },
-      { code: 'export', label: '导出', type: 'button', eventName: 'buttonGroup.export' },
-    ],
-  },
-];
+const buttonRows = createDefaultButtonGroupEditorRows({ directivesJson: 'array' });
 
 const formActionRows = [
   {
@@ -217,6 +220,17 @@ const buttonColumns = [
     component: 'vxe-select' as const,
     width: 96,
     options: buttonStatusOptions,
+  },{
+    field: 'script',
+    title: '执行脚本',
+    component: 'lc-monaco-editor' as const,
+    minWidth: 240,
+    placeholder: 'JavaScript',
+    props: {
+      dialog: true,
+      language: 'javascript',
+      dialogTitle: '编辑按钮执行脚本',
+    },
   },
   {
     field: 'type',
@@ -234,10 +248,25 @@ const buttonColumns = [
   },
   { field: 'route', title: '路由', minWidth: 140, placeholder: '/dashboard/users' },
   { field: 'eventName', title: '事件名', minWidth: 160, placeholder: 'buttonGroup.click' },
+
   { field: 'icon', title: '图标', minWidth: 110, placeholder: 'ri-add-line' },
   { field: 'prefixIcon', title: '前缀图标', minWidth: 120, placeholder: 'ri-add-line' },
   { field: 'suffixIcon', title: '后缀图标', minWidth: 120, placeholder: 'ri-arrow-down-s-line' },
   { field: 'disabled', title: '禁用', component: 'vxe-switch' as const, width: 72 },
+  {
+    field: 'visibleJson',
+    title: '行显示条件',
+    component: 'lc-json-editor' as const,
+    minWidth: 180,
+    placeholder: '{"field":"status","operator":"eq","value":"ready"}',
+  },
+  {
+    field: 'disabledJson',
+    title: '行禁用条件',
+    component: 'lc-json-editor' as const,
+    minWidth: 180,
+    placeholder: '{"field":"status","operator":"neq","value":"ready"}',
+  },
   { field: 'round', title: '圆角', component: 'vxe-switch' as const, width: 72 },
   { field: 'circle', title: '圆形', component: 'vxe-switch' as const, width: 72 },
   { field: 'showDropdownIcon', title: '下拉图标', component: 'vxe-switch' as const, width: 92 },
@@ -269,12 +298,21 @@ export default defineMaterialPropForms([
     title: '表格属性',
     extendsVisualProps: true,
     fields: [
+      propField({
+        field: 'tableType',
+        path: 'tableType',
+        label: '表格类型',
+        component: 'lc-option-select',
+        valueKind: 'raw',
+        defaultValue: 'default',
+        options: gridTableTypeOptions,
+      }),
       arrayTablePropField({
         field: 'columns',
         path: 'columns',
         label: '表格列',
         defaultValue: gridColumnRows,
-        addText: '新增列',
+        toolbarButtons: createAddToolbarButtons('新增列'),
         rowKey: 'field',
         defaultRow: {
           field: 'field{{index}}',
@@ -324,30 +362,30 @@ export default defineMaterialPropForms([
             minWidth: 220,
             placeholder: '[]',
           },
-          {
+          createSubFormField({
             field: 'cellRender',
+            label: '渲染对象',
             title: '渲染对象',
-            component: 'lc-sub-form',
             minWidth: 220,
             defaultValue: {},
-            props: { fields: gridRendererObjectFields },
-          },
-          {
+            fields: gridRendererObjectFields,
+          }),
+          createSubFormField({
             field: 'editRender',
+            label: '编辑对象',
             title: '编辑对象',
-            component: 'lc-sub-form',
             minWidth: 220,
             defaultValue: {},
-            props: { fields: gridRendererObjectFields },
-          },
-          {
+            fields: gridRendererObjectFields,
+          }),
+          createSubFormField({
             field: 'params',
+            label: '参数对象',
             title: '参数对象',
-            component: 'lc-sub-form',
             minWidth: 220,
             defaultValue: {},
-            props: { fields: gridColumnParamsFields },
-          },
+            fields: gridColumnParamsFields,
+          }),
         ],
         help: '维护表格列配置。复杂 formatter 仍可填 JSON 字符串。',
       }),
@@ -368,7 +406,7 @@ export default defineMaterialPropForms([
         path: 'gridEvents',
         label: 'VxeGrid 事件',
         defaultValue: [],
-        addText: '新增事件',
+        toolbarButtons: createAddToolbarButtons('新增事件'),
         rowKey: 'key',
         defaultRow: {
           key: 'row-click',
@@ -394,7 +432,7 @@ export default defineMaterialPropForms([
         path: 'rowActions',
         label: '行按钮',
         defaultValue: [],
-        addText: '新增行按钮',
+        toolbarButtons: createAddToolbarButtons('新增行按钮'),
         rowKey: 'code',
         defaultRow: {
           code: 'rowAction{{index}}',
@@ -403,6 +441,8 @@ export default defineMaterialPropForms([
           eventName: '',
           icon: '',
           disabled: false,
+          visibleJson: '',
+          disabledJson: '',
           mode: 'button',
           round: false,
           circle: false,
@@ -423,7 +463,7 @@ export default defineMaterialPropForms([
         path: 'buttons',
         label: '按钮配置',
         defaultValue: buttonRows,
-        addText: '新增按钮',
+        toolbarButtons: createAddToolbarButtons('新增按钮'),
         rowKey: 'code',
         defaultRow: {
           code: 'button{{index}}',
@@ -451,12 +491,16 @@ export default defineMaterialPropForms([
     title: '查询表单属性',
     extendsVisualProps: true,
     fields: [
+      propField({ field: 'blockId', path: 'blockId', label: '区块 ID', defaultValue: 'query-form' }),
+      propField({ field: 'title', path: 'title', label: '标题', defaultValue: '查询条件' }),
+      propField({ field: 'sourceKey', path: 'sourceKey', label: '目标数据源', defaultValue: 'records' }),
+      jsonPropField({ field: 'initialValuesJson', path: 'initialValuesJson', label: '初始值', defaultValue: {} }),
       arrayTablePropField({
         field: 'fields',
         path: 'fields',
         label: '查询字段',
         defaultValue: [],
-        addText: '新增字段',
+        toolbarButtons: createAddToolbarButtons('新增字段'),
         rowKey: 'field',
         defaultRow: fieldDefaultRow,
         columns: fieldColumns,
@@ -469,6 +513,15 @@ export default defineMaterialPropForms([
     extendsVisualProps: true,
     fields: [
       propField({ field: 'blockId', path: 'blockId', label: '区块 ID', defaultValue: 'edit-form' }),
+      propField({
+        field: 'formType',
+        path: 'formType',
+        label: '表单类型',
+        component: 'lc-option-select',
+        valueKind: 'raw',
+        defaultValue: 'edit',
+        options: formTypeOptions,
+      }),
       propField({ field: 'title', path: 'title', label: '标题', defaultValue: '编辑信息' }),
       propField({ field: 'sourceKey', path: 'sourceKey', label: '读取数据源', defaultValue: '' }),
       propField({ field: 'submitSourceKey', path: 'submitSourceKey', label: '提交数据源', defaultValue: '' }),
@@ -482,7 +535,7 @@ export default defineMaterialPropForms([
         path: 'fields',
         label: '表单字段',
         defaultValue: [],
-        addText: '新增字段',
+        toolbarButtons: createAddToolbarButtons('新增字段'),
         rowKey: 'field',
         defaultRow: fieldDefaultRow,
         columns: fieldColumns,
@@ -492,7 +545,7 @@ export default defineMaterialPropForms([
         path: 'formActions',
         label: '表单按钮',
         defaultValue: formActionRows,
-        addText: '新增按钮',
+        toolbarButtons: createAddToolbarButtons('新增按钮'),
         rowKey: 'code',
         defaultRow: {
           code: 'action{{index}}',
@@ -527,7 +580,7 @@ export default defineMaterialPropForms([
         path: 'fields',
         label: '表单字段',
         defaultValue: [],
-        addText: '新增字段',
+        toolbarButtons: createAddToolbarButtons('新增字段'),
         rowKey: 'field',
         defaultRow: fieldDefaultRow,
         columns: fieldColumns,
@@ -537,7 +590,7 @@ export default defineMaterialPropForms([
         path: 'formActions',
         label: '表单按钮',
         defaultValue: formActionRows,
-        addText: '新增按钮',
+        toolbarButtons: createAddToolbarButtons('新增按钮'),
         rowKey: 'code',
         defaultRow: {
           code: 'action{{index}}',
@@ -556,7 +609,7 @@ export default defineMaterialPropForms([
         path: 'slots.default.children',
         label: '默认插槽节点',
         defaultValue: [],
-        addText: '新增节点',
+        toolbarButtons: createAddToolbarButtons('新增节点'),
         rowKey: 'value',
         defaultRow: {
           label: '节点 {{index}}',
@@ -581,7 +634,7 @@ export default defineMaterialPropForms([
         path: 'panes',
         label: 'TabPane 操作表格',
         defaultValue: tabPaneRows,
-        addText: '新增页签',
+        toolbarButtons: createAddToolbarButtons('新增页签'),
         rowKey: 'name',
         defaultRow: {
           title: '页签 {{index}}',

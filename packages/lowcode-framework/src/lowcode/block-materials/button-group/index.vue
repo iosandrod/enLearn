@@ -1,8 +1,12 @@
 <template>
-  <section class="content-panel lc-node-button-group">
+  <section
+    class="content-panel lc-node-button-group"
+    :aria-busy="isMesCommandExecuting"
+    @contextmenu.stop.prevent="openButtonGroupContextMenu"
+  >
     <div class="lc-button-group" :style="groupStyle">
       <vxe-button
-        v-for="action in block.actions"
+        v-for="action in runtimeActions"
         :key="action.code"
         v-bind="resolveButtonProps(action)"
         @click="() => handleRootClick(action)"
@@ -13,16 +17,72 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
+import { VxeUI } from 'vxe-pc-ui';
 import type { VxeButtonProps } from 'vxe-pc-ui';
 import type {
   LowCodeButtonGroupAction,
   LowCodePageButtonGroupBlock,
+  LowCodeRuntimeDirective,
 } from '../../../types/lowcode';
+import { lowCodeRuntimeBlockEditorKey } from '../../../runtime/block-editor';
+import {
+  lowCodeEditPageModeScopeKey,
+  useLowCodePageRuntime,
+} from '../../../runtime/page-runtime';
+import {
+  isLowCodeButtonDisabled,
+  isLowCodeEditPageSaveAction,
+  normalizeLowCodeEditPageActionCode,
+} from '../../../runtime/button-disabled';
+import type {
+  ButtonGroupDesignerButton,
+  ButtonGroupDesignerResult,
+} from '../../../visual-editor/components/button-group-designer/button-group-designer.service';
 import type { LowCodeBlockMaterialEmits, LowCodeBlockMaterialProps } from '../types';
+
+type RuntimeDesignerButton = Omit<LowCodeButtonGroupAction, 'children'> & {
+  directivesJson: string;
+  children?: RuntimeDesignerButton[];
+};
 
 const props = defineProps<LowCodeBlockMaterialProps<LowCodePageButtonGroupBlock>>();
 const emit = defineEmits<LowCodeBlockMaterialEmits>();
+const runtimeBlockEditor = inject(lowCodeRuntimeBlockEditorKey, null);
+const pageRuntime = useLowCodePageRuntime(false);
+const editPageModeScope = inject(lowCodeEditPageModeScopeKey, false);
+const editPageMode = computed(() =>
+  editPageModeScope && runtimeBlockEditor?.getPageRecord?.().page_type === 'edit'
+    ? pageRuntime?.state.status.formMode
+    : undefined
+);
+const isMesCommandExecuting = computed(() =>
+  pageRuntime?.state.status.mesCommandExecuting === true
+);
+const buttonDisabledOptions = computed(() => ({
+  enabled: Boolean(editPageMode.value),
+}));
+const runtimeActions = computed<LowCodeButtonGroupAction[]>(() => {
+  const actions = props.block.actions ?? [];
+  if (
+    !editPageMode.value ||
+    !actions.some((action) => isSaveAction(action)) ||
+    actions.some((action) => normalizeActionCode(action.code) === 'modify')
+  ) return actions;
+
+  const saveIndex = actions.findIndex((action) => isSaveAction(action));
+  return [
+    ...actions.slice(0, saveIndex),
+    {
+      code: 'modify',
+      label: '修改',
+      type: 'button',
+      mode: 'button',
+      icon: 'ri-edit-line',
+    },
+    ...actions.slice(saveIndex),
+  ];
+});
 
 const justifyContentMap: Record<string, string> = {
   left: 'flex-start',
@@ -80,7 +140,7 @@ function resolveButtonProps(action: LowCodeButtonGroupAction): VxeButtonProps {
     suffixIcon: action.suffixIcon,
     round: action.round,
     circle: action.circle,
-    disabled: action.disabled,
+    disabled: isLowCodeButtonDisabled(action, pageRuntime, buttonDisabledOptions.value),
     loading: action.loading,
     trigger: action.trigger,
     align: action.align,
@@ -110,8 +170,154 @@ function handleDropdownClick(params: { option?: Record<string, unknown> }) {
   if (action) handleAction(action);
 }
 
+function normalizeActionCode(value: unknown) {
+  return normalizeLowCodeEditPageActionCode(value);
+}
+
+function isSaveAction(action: LowCodeButtonGroupAction) {
+  return isLowCodeEditPageSaveAction(action);
+}
+
+function toDesignerButton(action: LowCodeButtonGroupAction): RuntimeDesignerButton {
+  const { children, content: _content, directives, ...button } = action;
+
+  return {
+    ...button,
+    label: String(readButtonContent(action)),
+    directivesJson: JSON.stringify(directives ?? []),
+    ...(children?.length
+      ? { children: children.map((child) => toDesignerButton(child)) }
+      : {}),
+  };
+}
+
+function readDesignerDirectives(value: unknown): LowCodeRuntimeDirective[] {
+  if (Array.isArray(value)) return value as LowCodeRuntimeDirective[];
+  if (typeof value !== 'string' || !value.trim()) return [];
+
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? (parsed as LowCodeRuntimeDirective[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function toRuntimeButton(button: ButtonGroupDesignerButton): LowCodeButtonGroupAction {
+  const {
+    __id: _id,
+    children: designerChildren,
+    directives: _directives,
+    directivesJson,
+    ...preservedProps
+  } = button;
+  const code = typeof button.code === 'string' && button.code.trim()
+    ? button.code.trim()
+    : 'button';
+  const label = typeof button.label === 'string' && button.label.trim()
+    ? button.label.trim()
+    : code;
+  const type = button.type === 'submit' || button.type === 'reset' ? button.type : 'button';
+  const status = typeof button.status === 'string' && button.status.trim()
+    ? button.status as LowCodeButtonGroupAction['status']
+    : undefined;
+  const route = typeof button.route === 'string' ? button.route.trim() : '';
+  const eventName = typeof button.eventName === 'string' ? button.eventName.trim() : '';
+  const directives = readDesignerDirectives(directivesJson);
+  const children = Array.isArray(designerChildren)
+    ? designerChildren.map((child) => toRuntimeButton(child))
+    : [];
+
+  const next: Record<string, unknown> = {
+    ...preservedProps,
+    code,
+    label,
+    type,
+    disabled: Boolean(button.disabled),
+  };
+
+  if (status) next.status = status;
+  else delete next.status;
+  if (route) next.route = route;
+  else delete next.route;
+  if (eventName) next.eventName = eventName;
+  else delete next.eventName;
+  if (directives.length) next.directives = directives;
+  else delete next.directives;
+  if (children.length) next.children = children;
+  else delete next.children;
+
+  return next as LowCodeButtonGroupAction;
+}
+
+function createRuntimeBlockChanges(result: ButtonGroupDesignerResult) {
+  const align = ['left', 'center', 'right', 'space-between'].includes(result.business.align)
+    ? result.business.align as LowCodePageButtonGroupBlock['align']
+    : 'left';
+
+  return {
+    id: result.business.blockId,
+    title: result.business.title,
+    description: result.business.description,
+    align,
+    gap: result.business.gap,
+    actions: result.buttons.map((button) => toRuntimeButton(button)),
+  };
+}
+
+async function openButtonDesigner() {
+  const { $$buttonGroupDesigner } = await import(
+    '../../../visual-editor/components/button-group-designer/button-group-designer.service'
+  );
+
+  void $$buttonGroupDesigner({
+    title: '设计按钮',
+    business: {
+      blockId: props.block.id,
+      title: props.block.title ?? '按钮组',
+      description: props.block.description ?? '',
+      align: props.block.align ?? 'left',
+      gap: props.block.gap ?? 8,
+    },
+    buttons: props.block.actions.map((action) => toDesignerButton(action)),
+    scriptContext: runtimeBlockEditor?.getScriptContextSource?.(),
+    onConfirm: async (result) => {
+      if (!runtimeBlockEditor) {
+        throw new Error('当前页面不支持保存按钮配置');
+      }
+
+      await runtimeBlockEditor.updateBlock({
+        blockId: props.block.id,
+        changes: createRuntimeBlockChanges(result),
+      });
+    },
+  });
+}
+
+function openButtonGroupContextMenu(event: MouseEvent) {
+  VxeUI.contextMenu.openByEvent(event, {
+    className: 'enlearn-context-menu',
+    options: [
+      [
+        {
+          code: 'design-buttons',
+          name: '设计按钮',
+          prefixIcon: 'ri-settings-3-line',
+        },
+      ],
+    ],
+    events: {
+      optionClick({ option }) {
+        if (option.code === 'design-buttons') {
+          void openButtonDesigner();
+        }
+      },
+    },
+  });
+}
+
 function handleAction(action: LowCodeButtonGroupAction) {
-  if (action.disabled) return;
+  if (isLowCodeButtonDisabled(action, pageRuntime, buttonDisabledOptions.value)) return;
 
   emit('runtimeEvent', {
     name: action.eventName ?? 'buttonGroup.click',
@@ -121,6 +327,7 @@ function handleAction(action: LowCodeButtonGroupAction) {
     payload: {
       action,
       actionCode: action.code,
+      script: action.script ?? '',
       directives: action.directives ?? [],
     },
   });

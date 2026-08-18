@@ -1,9 +1,7 @@
-import { randomUUID } from 'node:crypto';
-import { Injectable } from '@nestjs/common';
-import { runs, tasks, wait } from '@trigger.dev/sdk';
+import { Inject, Injectable } from '@nestjs/common';
+import { runs, schedules, tasks, wait } from '@trigger.dev/sdk';
 import type {
   WorkflowInstanceTaskPayload,
-  WorkflowRuntimeStore,
   WorkflowTaskDecision,
   WorkflowTriggerClient
 } from '../runtime/runtime.engine.types';
@@ -11,37 +9,25 @@ import {
   WORKFLOW_INSTANCE_TASK_ID
 } from '../runtime/runtime.engine.types';
 import type { workflowInstanceTask } from './workflow-instance.task';
-import { assertTriggerEngineConfigured } from './trigger-engine.config';
-import {
-  NOTIFICATION_DISPATCH_TASK_ID,
-  runLocalNotificationDispatchTask
-} from './notification.task';
-import { executeWorkflowInstance, type WorkflowWaitDriver } from '../runtime/workflow.executor';
+import { TriggerCredentialsService } from './trigger-credentials.service';
 
 @Injectable()
 export class TriggerDevClient implements WorkflowTriggerClient {
-  private readonly localWaiters = new Map<
-    string,
-    {
-      promise: Promise<WorkflowTaskDecision>;
-      resolve: (decision: WorkflowTaskDecision) => void;
-      reject: (error: Error) => void;
-    }
-  >();
+  constructor(
+    @Inject(TriggerCredentialsService)
+    private readonly credentials: TriggerCredentialsService
+  ) {}
 
   async triggerWorkflow(payload: WorkflowInstanceTaskPayload) {
-    this.assertTriggerDevConfigured();
-    return tasks.trigger<typeof workflowInstanceTask>(
-      WORKFLOW_INSTANCE_TASK_ID,
-      payload,
-      {
+    return this.withTriggerCredentials(() =>
+      tasks.trigger<typeof workflowInstanceTask>(WORKFLOW_INSTANCE_TASK_ID, payload, {
         idempotencyKey: `workflow-instance:${payload.instanceId}`,
         tags: [
           `tenant:${payload.tenantId}`,
           `workflow-instance:${payload.instanceId}`,
           `definition:${payload.definitionId}`
         ]
-      }
+      })
     );
   }
 
@@ -50,121 +36,57 @@ export class TriggerDevClient implements WorkflowTriggerClient {
     payload: Record<string, unknown>,
     options: Record<string, unknown> = {}
   ) {
-    try {
-      this.assertTriggerDevConfigured();
-      return await tasks.trigger(taskId, payload, options);
-    } catch (error) {
-      if (taskId === NOTIFICATION_DISPATCH_TASK_ID) {
-        await runLocalNotificationDispatchTask(
-          payload as Parameters<typeof runLocalNotificationDispatchTask>[0]
-        );
-        return {
-          id: `local-notification:${Date.now().toString(36)}`
-        };
-      }
-
-      throw error;
-    }
+    return this.withTriggerCredentials(() => tasks.trigger(taskId, payload, options));
   }
 
   async createWaitpoint(options: { idempotencyKey: string; tags: string[] }) {
-    try {
-      this.assertTriggerDevConfigured();
-      return await wait.createToken(options);
-    } catch {
-      return this.createLocalToken(options);
-    }
+    return this.withTriggerCredentials(() => wait.createToken(options));
   }
 
   async completeWaitpoint(tokenId: string, decision: WorkflowTaskDecision) {
-    if (this.localWaiters.has(tokenId)) {
-      this.completeLocalToken(tokenId, decision);
-      return;
-    }
-
-    this.assertTriggerDevConfigured();
-    try {
-      await this.completeTriggerWaitpoint(tokenId, decision);
-    } catch (error) {
-      if (this.localWaiters.has(tokenId)) {
-        this.completeLocalToken(tokenId, decision);
-        return;
-      }
-
-      throw error;
-    }
+    await this.withTriggerCredentials(() => this.completeTriggerWaitpoint(tokenId, decision));
   }
 
   async cancelRun(runId: string) {
-    this.assertTriggerDevConfigured();
-    await runs.cancel(runId);
+    await this.withTriggerCredentials(() => runs.cancel(runId));
   }
 
-  private assertTriggerDevConfigured() {
-    assertTriggerEngineConfigured();
+  async createSchedule(options: {
+    task: string;
+    cron: string;
+    timezone?: string;
+    externalId?: string;
+    deduplicationKey: string;
+  }) {
+    return this.withTriggerCredentials(() => schedules.create(options));
   }
 
-  startLocalWorkflowExecution(
-    payload: WorkflowInstanceTaskPayload,
-    store: WorkflowRuntimeStore,
-    originalError: unknown
+  async updateSchedule(
+    scheduleId: string,
+    options: { task: string; cron: string; timezone?: string; externalId?: string }
   ) {
-    const runId = `local-workflow:${payload.instanceId}`;
-    const waits: WorkflowWaitDriver = {
-      createToken: (options) => this.createLocalToken(options),
-      waitForToken: (tokenId) => this.waitForLocalToken(tokenId),
-      waitFor: ({ seconds }) =>
-        new Promise<void>((resolve) => setTimeout(resolve, Math.max(0, seconds) * 1000)),
-      waitUntil: ({ date }) =>
-        new Promise<void>((resolve) => setTimeout(resolve, Math.max(0, date.getTime() - Date.now()))),
-      triggerTask: (taskId, taskPayload, options) => this.triggerTask(taskId, taskPayload, options)
-    };
-
-    void executeWorkflowInstance(payload, store, waits).catch((error) =>
-      store.recordHistory(
-        payload.tenantId,
-        payload.instanceId,
-        'LOCAL_WORKFLOW_EXECUTION_FAILED',
-        payload.initiatorId,
-        {
-          message: error instanceof Error ? error.message : String(error),
-          triggerError: originalError instanceof Error ? originalError.message : String(originalError)
-        },
-        `workflow:${payload.instanceId}:local-execution-failed`
-      )
-    );
-
-    return { id: runId };
+    return this.withTriggerCredentials(() => schedules.update(scheduleId, options));
   }
 
-  private createLocalToken(options: { idempotencyKey: string; tags: string[] }) {
-    const id = `local-waitpoint:${randomUUID()}`;
-    let resolve!: (decision: WorkflowTaskDecision) => void;
-    let reject!: (error: Error) => void;
-    const promise = new Promise<WorkflowTaskDecision>((nextResolve, nextReject) => {
-      resolve = nextResolve;
-      reject = nextReject;
+  async findScheduleByDeduplicationKey(deduplicationKey: string) {
+    return this.withTriggerCredentials(async () => {
+      for await (const schedule of schedules.list()) {
+        if (schedule.deduplicationKey === deduplicationKey) return schedule;
+      }
+      throw new Error(`Trigger.dev schedule not found for deduplication key ${deduplicationKey}.`);
     });
-    this.localWaiters.set(id, { promise, resolve, reject });
-    return Promise.resolve({ id });
   }
 
-  private async waitForLocalToken<T>(tokenId: string) {
-    const waiter = this.localWaiters.get(tokenId);
-    if (!waiter) {
-      throw new Error(`Unknown local workflow waitpoint: ${tokenId}`);
-    }
-    return waiter.promise as Promise<T>;
+  async activateSchedule(scheduleId: string) {
+    return this.withTriggerCredentials(() => schedules.activate(scheduleId));
   }
 
-  private completeLocalToken(tokenId: string, decision: WorkflowTaskDecision) {
-    const waiter = this.localWaiters.get(tokenId);
-    if (!waiter) {
-      throw new Error(`Unknown local workflow waitpoint: ${tokenId}`);
-    }
+  async deactivateSchedule(scheduleId: string) {
+    return this.withTriggerCredentials(() => schedules.deactivate(scheduleId));
+  }
 
-    waiter.resolve(decision);
-    this.localWaiters.delete(tokenId);
+  async deleteSchedule(scheduleId: string) {
+    return this.withTriggerCredentials(() => schedules.del(scheduleId));
   }
 
   private async completeTriggerWaitpoint(tokenId: string, decision: WorkflowTaskDecision) {
@@ -186,4 +108,28 @@ export class TriggerDevClient implements WorkflowTriggerClient {
       await wait.completeToken(tokenId, decision);
     }
   }
+
+  private async withTriggerCredentials<T>(operation: () => Promise<T>): Promise<T> {
+    await this.credentials.configureSdk();
+    try {
+      return await operation();
+    } catch (error) {
+      if (!isTriggerAuthenticationError(error)) throw error;
+
+      this.credentials.invalidate();
+      await this.credentials.configureSdk(true);
+      return operation();
+    }
+  }
+}
+
+function isTriggerAuthenticationError(error: unknown) {
+  if (typeof error !== 'object' || error === null) return false;
+  const typedError = error as {
+    response?: { status?: unknown };
+    status?: unknown;
+    statusCode?: unknown;
+  };
+  const status = typedError.status ?? typedError.statusCode ?? typedError.response?.status;
+  return status === 401 || status === 403;
 }

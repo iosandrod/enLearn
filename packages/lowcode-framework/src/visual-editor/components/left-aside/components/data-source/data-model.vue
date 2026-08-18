@@ -36,6 +36,7 @@
 
 <script setup lang="tsx">
   import { reactive, ref, computed } from 'vue';
+  import { VxeUI } from 'vxe-pc-ui';
   import {
     ElForm,
     ElFormItem,
@@ -95,16 +96,22 @@
     ruleForm: createEmptyModel(),
   });
 
-  const confirmClearModels = () => {
-    if (window.confirm('???????????')) {
-      updateModel([], true);
-    }
+  const confirmClearModels = async () => {
+    const confirmResult = await VxeUI.modal.confirm({
+      title: '清空数据模型',
+      content: '确定要清空所有数据模型吗？',
+    });
+    if (confirmResult !== 'confirm') return;
+    updateModel([], true);
   };
 
-  const confirmDeleteModel = (key: string) => {
-    if (window.confirm('??????????')) {
-      deleteModel(key);
-    }
+  const confirmDeleteModel = async (key: string) => {
+    const confirmResult = await VxeUI.modal.confirm({
+      title: '删除数据模型',
+      content: '确定要删除该数据模型吗？',
+    });
+    if (confirmResult !== 'confirm') return;
+    deleteModel(key);
   };
 
   /**

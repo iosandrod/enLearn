@@ -114,6 +114,36 @@ BOOTSTRAP_ENVIRONMENT=dev
 
 `REDIS_URL` is optional and currently used only by `/health` to show whether Redis is reachable. Trigger.dev stores the project and API keys in Postgres, not Redis.
 
+## Database Bootstrap Script
+
+The standalone TypeScript bootstrap also ensures the selected super-admin has a
+Personal Access Token. It is idempotent: existing records and credentials are
+decrypted/read instead of rotated.
+
+```powershell
+Copy-Item .env.bootstrap.example .env.bootstrap
+# Set the Trigger.dev DATABASE_URL and its exact 32-byte ENCRYPTION_KEY.
+pnpm run bootstrap -- --env-file .env.bootstrap
+```
+
+It can display masked values for diagnostics:
+
+```env
+TRIGGER_PROJECT_REF=proj_...
+TRIGGER_SECRET_KEY=tr_dev_...
+TRIGGER_ACCESS_TOKEN=tr_pat_...
+```
+
+The enLearn backend does not use `--output-env`: it now resolves these values
+from the Trigger.dev database at runtime and caches them in memory. Console
+secrets are masked by default. Use `--show-secrets` only in a trusted terminal,
+and use `--dry-run` to run all checks and roll the transaction back.
+
+When `--env-file` is omitted, the script checks `.env.bootstrap`, then the
+adjacent `trigger.dev-main/.env`, and only then the gateway `.env`. The selected
+file must contain the same `DATABASE_URL` and exact 32-byte `ENCRYPTION_KEY` used
+by the running Trigger.dev webapp.
+
 ## Notes
 
 - Keep `TRIGGER_INTERNAL_URL` bound to `127.0.0.1` or a private network.

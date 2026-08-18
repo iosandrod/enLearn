@@ -34,6 +34,7 @@
 
 <script setup lang="tsx">
   import { reactive, ref, computed } from 'vue';
+  import { VxeUI } from 'vxe-pc-ui';
   import {
     ElForm,
     ElFormItem,
@@ -98,16 +99,22 @@
     ruleForm: createEmptyApiItem(),
   });
 
-  const confirmClearFetchApis = () => {
-    if (window.confirm('???????????')) {
-      updateFetchApi([], true);
-    }
+  const confirmClearFetchApis = async () => {
+    const confirmResult = await VxeUI.modal.confirm({
+      title: '清空接口',
+      content: '确定要清空所有接口吗？',
+    });
+    if (confirmResult !== 'confirm') return;
+    updateFetchApi([], true);
   };
 
-  const confirmDeleteFetchApi = (key: string) => {
-    if (window.confirm('??????????')) {
-      deleteFetchApi(key);
-    }
+  const confirmDeleteFetchApi = async (key: string) => {
+    const confirmResult = await VxeUI.modal.confirm({
+      title: '删除接口',
+      content: '确定要删除该接口吗？',
+    });
+    if (confirmResult !== 'confirm') return;
+    deleteFetchApi(key);
   };
 
   const rules = {

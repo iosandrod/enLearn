@@ -20,10 +20,31 @@
     "./core": "./src/core/index.ts",
     "./runtime": "./src/runtime/index.ts",
     "./designer": "./src/designer/index.ts",
+    "./designer/design-dialog": "./src/designer/design-dialog.ts",
     "./materials": "./src/materials/index.ts",
+    "./components/json-dialog-input": {
+      "types": "./src/components/json-dialog-input.d.ts",
+      "import": "./src/components/JsonDialogInput.vue",
+      "default": "./src/components/JsonDialogInput.vue"
+    },
+    "./components/low-code-form": {
+      "types": "./src/components/low-code-form.d.ts",
+      "import": "./src/components/LowCodeForm.vue",
+      "default": "./src/components/LowCodeForm.vue"
+    },
     "./runtime/global-dialog": "./src/runtime/global-dialog.ts",
-    "./runtime/page-reference-dialog": "./src/runtime/page-reference-dialog.ts",
+    "./runtime/global-drawer": "./src/runtime/global-drawer.ts",
+    "./runtime/page-reference-dialog": "./src/runtime/page-reference-dialog.tsx",
     "./runtime/directives": "./src/runtime/directives.ts",
+    "./runtime/scripts": "./src/runtime/scripts.ts",
+    "./runtime/lowcode-context-drawer": "./src/runtime/lowcode-context-drawer.tsx",
+    "./runtime/node-action-registry": "./src/runtime/node-action-registry.ts",
+    "./runtime/node-action-runtime": "./src/runtime/node-action-runtime.ts",
+    "./runtime/node-action": "./src/runtime/node-action/index.ts",
+    "./runtime/grid-node-actions": "./src/runtime/grid-node-actions.ts",
+    "./runtime/builtin-page-functions": "./src/runtime/builtin-page-functions.ts",
+    "./runtime/page-function": "./src/runtime/page-function/index.ts",
+    "./actions": "./src/lowcode/actions/index.ts",
     "./core/host": "./src/core/host.ts",
     "./types/lowcode": "./src/types/lowcode.ts",
     "./lowcode/schema": "./src/lowcode/schema.ts",
@@ -31,9 +52,11 @@
   },
   "peerDependencies": {
     "@vitejs/plugin-vue-jsx": "^5.1.6",
+    "@vue-flow/core": "^1.48.2",
     "@vueuse/core": "^14.3.0",
     "@vueuse/integrations": "^14.3.0",
     "dayjs": "^1.11.21",
+    "echarts": "^5.6.0",
     "lodash-es": "^4.18.1",
     "monaco-editor": "^0.33.0",
     "nanoid": "^6.0.0",
@@ -46,11 +69,18 @@
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
+    "@vue-flow/core": "^1.48.2",
+    "echarts": "^5.6.0",
     "typescript": "^5.4.5",
     "vite": "^7.3.6",
     "vue-tsc": "^3.3.7"
   },
   "scripts": {
     "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@svar-ui/vue-gantt": "workspace:*",
+    "@jitl/quickjs-wasmfile-release-sync": "0.32.0",
+    "quickjs-emscripten-core": "0.32.0"
   }
 }

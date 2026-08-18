@@ -1,0 +1,41 @@
+{
+  "name": "vxe-table-plugin-search-panel",
+  "version": "0.1.0",
+  "description": "Injectable Ctrl+F search panel shell for vxe-table and vxe-grid.",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": [
+    "./dist/style.css",
+    "./src/style/index.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-style.mjs",
+    "prepack": "pnpm build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "pnpm build && node tests/plugin-contract.mjs"
+  },
+  "peerDependencies": {
+    "vxe-pc-ui": "^4.16.0",
+    "vxe-table": "^4.20.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3",
+    "vxe-pc-ui": "^4.16.24",
+    "vxe-table": "^4.20.9"
+  },
+  "license": "MIT"
+}

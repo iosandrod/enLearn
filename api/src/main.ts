@@ -2,16 +2,19 @@ import 'reflect-metadata';
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { AppModule } from './app.module';
-import { registerChatSocket } from './chat/chat.socket';
+import { registerChatSocket } from './chat-service/chat.socket';
 import { responseCompressionMiddleware } from './common/middleware/compression.middleware';
 import { getEnv } from './common/utils/env';
+import { maybeStartTriggerDevWorkerFromApi } from './workflow/trigger/trigger-worker-autostart';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    cors: true
-  });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.useBodyParser('json', { limit: '20mb' });
+  app.useBodyParser('urlencoded', { limit: '20mb', extended: true });
 
   app.enableCors({
     origin: true,
@@ -29,10 +32,13 @@ async function bootstrap() {
 
   const env = getEnv();
   const port = Number(env.API_PORT ?? env.PORT ?? 3002);
+  const host = String(env.API_HOST ?? '').trim();
   registerChatSocket(app);
-  await app.listen(port);
+  if (host) await app.listen(port, host);
+  else await app.listen(port);
 
-  console.log(`Nest API listening on http://localhost:${port}/api/service`);
+  console.log(`Nest API listening on http://${host || 'localhost'}:${port}/api/service`);
+  maybeStartTriggerDevWorkerFromApi();
 }
 
 void bootstrap();

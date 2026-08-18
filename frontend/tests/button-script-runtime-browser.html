@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Button script runtime smoke</title>
+  </head>
+  <body>
+    <output id="result">pending</output>
+    <script type="module">
+      import {
+        createLowCodeWorkerScriptExecutor,
+      } from '../../packages/lowcode-framework/src/runtime/scripts.ts';
+
+      const output = document.querySelector('#result');
+      const scriptLogs = [];
+      const originalConsoleLog = console.log.bind(console);
+      const originalConsoleInfo = console.info.bind(console);
+      const originalConsoleWarn = console.warn.bind(console);
+      const originalConsoleError = console.error.bind(console);
+      console.log = (...args) => {
+        scriptLogs.push({ level: 'log', args });
+        originalConsoleLog(...args);
+      };
+      console.info = (...args) => {
+        scriptLogs.push({ level: 'info', args });
+        originalConsoleInfo(...args);
+      };
+      console.warn = (...args) => {
+        scriptLogs.push({ level: 'warn', args });
+        originalConsoleWarn(...args);
+      };
+      console.error = (...args) => {
+        scriptLogs.push({ level: 'error', args });
+        originalConsoleError(...args);
+      };
+      window.addEventListener('error', (event) => {
+        output.textContent = JSON.stringify({
+          ok: false,
+          workerError: event.message,
+        });
+      });
+      window.addEventListener('unhandledrejection', (event) => {
+        output.textContent = JSON.stringify({
+          ok: false,
+          rejection: String(event.reason?.message || event.reason),
+        });
+      });
+      const context = {
+        page: { code: 'runtime-smoke' },
+        route: {},
+        data: {},
+        forms: { edit: { count: 1 } },
+        searches: {},
+        grids: {},
+        event: { name: 'buttonGroup.click' },
+      };
+
+      try {
+        const executor = createLowCodeWorkerScriptExecutor();
+        const result = await executor(
+          {
+            script: `
+              await this.$message.info(this.page.code);
+              await this.$form.patch('edit', { count: 42 });
+              return this.forms.edit.count + 41;
+            `,
+            context,
+          },
+          async (request) => {
+            if (request.name === 'message.info') return `said:${request.args[0]}`;
+            if (request.name === 'form.patch') return request.args[1];
+            throw new Error(`Unexpected capability: ${request.name}`);
+          },
+        );
+        const mainCalls = [];
+        const mainResult = await executor(
+          {
+            script: `
+              async function main() {
+                console.log('sales-order-form-data', this.forms.edit);
+                console.info('script-info');
+                console.warn('script-warn');
+                console.error('script-error');
+                const dialogValues = await this.executeAction({
+                  node: 'sql-dialog',
+                  method: 'open',
+                });
+                const response = await this.executeHttp({
+                  api: 'analyzeViewSql',
+                  method: 'POST',
+                  body: { sql: dialogValues.sql },
+                });
+                return this.executeFunction({
+                  name: 'countColumns',
+                  args: { columns: response.columns },
+                });
+              }
+            `,
+            context,
+          },
+          async (request) => {
+            mainCalls.push(request);
+            if (request.name === 'action.execute') {
+              await new Promise((resolve) => setTimeout(resolve, 2_500));
+              return { sql: 'select 1 as id' };
+            }
+            if (request.name === 'http.execute') return { columns: [{ column_name: 'id' }] };
+            if (request.name === 'pageFunction.execute') return request.args[0].args.columns.length;
+            throw new Error(`Unexpected main capability: ${request.name}`);
+          },
+        );
+        const configuredFunctionResult = await executor(
+          {
+            script: `function fn() { return new Date(0); }`,
+            context,
+            executionMode: 'function',
+          },
+          () => {
+            throw new Error('Synchronous configured function must not call host capabilities.');
+          },
+        );
+        const configuredAsyncFunctionResult = await executor(
+          {
+            script: `
+              async function loadDefaultValue() {
+                await Promise.resolve();
+                return "ASYNC-DEFAULT";
+              }
+            `,
+            context,
+            executionMode: 'function',
+          },
+          () => {
+            throw new Error('Asynchronous configured function must not call host capabilities.');
+          },
+        );
+        const isolated = await executor(
+          {
+            script: `
+              let mutationBlocked = false;
+              try {
+                this.forms.edit.count = 999;
+              } catch {
+                mutationBlocked = true;
+              }
+              return {
+                mutationBlocked,
+                guestValue: this.forms.edit.count,
+                hasWindow: typeof window !== 'undefined',
+                hasDocument: typeof document !== 'undefined',
+                hasHostBridge: typeof __lowCodeHostCall !== 'undefined',
+                hasHostLog: typeof __lowCodeHostLog !== 'undefined',
+                hasWrapperCall: typeof call !== 'undefined',
+                hasWrapperSnapshot: typeof snapshot !== 'undefined',
+              };
+            `,
+            context,
+          },
+          () => {
+            throw new Error('Isolation smoke must not call host capabilities.');
+          },
+        );
+        let timeoutMessage = '';
+        try {
+          await executor(
+            {
+              script: 'while (true) {}',
+              context,
+              limits: { timeoutMs: 100 },
+            },
+            () => null,
+          );
+        } catch (error) {
+          timeoutMessage = error instanceof Error ? error.message : String(error);
+        }
+        let rejectedApiMessage = '';
+        try {
+          await executor(
+            {
+              script: `await this.$api.invoke('missing.api', {});`,
+              context,
+            },
+            () => {
+              throw new Error('API denied by host policy');
+            },
+          );
+        } catch (error) {
+          rejectedApiMessage = error instanceof Error ? error.message : String(error);
+        }
+        let apiLimitMessage = '';
+        try {
+          await executor(
+            {
+              script: `
+                await this.$message.info('one');
+                await this.$message.info('two');
+              `,
+              context,
+              limits: { maxApiCalls: 1 },
+            },
+            () => true,
+          );
+        } catch (error) {
+          apiLimitMessage = error instanceof Error ? error.message : String(error);
+        }
+        output.textContent = JSON.stringify({
+          ok:
+            result.value === 42 &&
+            mainResult.value === 1 &&
+            configuredFunctionResult.value === '1970-01-01T00:00:00.000Z' &&
+            configuredAsyncFunctionResult.value === 'ASYNC-DEFAULT' &&
+            mainCalls.map((call) => call.name).join(',') === 'action.execute,http.execute,pageFunction.execute' &&
+            isolated.value.mutationBlocked === true &&
+            isolated.value.guestValue === 1 &&
+            isolated.value.hasWindow === false &&
+            isolated.value.hasDocument === false &&
+            isolated.value.hasHostBridge === false &&
+            isolated.value.hasWrapperCall === false &&
+            isolated.value.hasWrapperSnapshot === false &&
+            isolated.value.hasHostLog === false &&
+            scriptLogs.some(
+              ({ level, args: [label, value] }) =>
+                level === 'log' && label === 'sales-order-form-data' && value?.count === 1,
+            ) &&
+            scriptLogs.some(({ level, args }) => level === 'info' && args[0] === 'script-info') &&
+            scriptLogs.some(({ level, args }) => level === 'warn' && args[0] === 'script-warn') &&
+            scriptLogs.some(({ level, args }) => level === 'error' && args[0] === 'script-error') &&
+            context.forms.edit.count === 1 &&
+            /interrupted|timeout|超时/i.test(timeoutMessage) &&
+            rejectedApiMessage.includes('API denied by host policy') &&
+            apiLimitMessage.includes('调用次数超过限制'),
+          result,
+          mainResult,
+          configuredFunctionResult,
+          configuredAsyncFunctionResult,
+          isolated,
+          scriptLogs,
+          timeoutMessage,
+          rejectedApiMessage,
+          apiLimitMessage,
+        });
+      } catch (error) {
+        output.textContent = JSON.stringify({
+          ok: false,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    </script>
+  </body>
+</html>

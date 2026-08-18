@@ -1,4 +1,8 @@
-import type { LowCodePageSchema } from '@enlearn/lowcode-framework/types/lowcode';
+import type {
+  LowCodePageRelateConfig,
+  LowCodePageSchema,
+  LowCodePageType
+} from '@enlearn/lowcode-framework/types/lowcode';
 
 export type Json =
   | string
@@ -25,19 +29,7 @@ export type UserDetailsRow = {
   payment_method: Json | null;
   phone: string | null;
   nickname: string | null;
-  role: 'student' | 'parent' | 'teacher' | 'consultant' | 'admin';
-  city: string | null;
-  english_level: string | null;
-  learning_goal: string | null;
-  source_channel: string | null;
-  lead_status:
-    | 'new'
-    | 'contacted'
-    | 'trial_booked'
-    | 'trial_done'
-    | 'converted'
-    | 'lost';
-  assigned_consultant_id: string | null;
+  role: 'user' | 'admin';
   updated_at: string | null;
 };
 
@@ -56,234 +48,44 @@ export type SubscriptionRow = {
   } | null;
 };
 
-export type LeadEventRow = {
-  id: string;
-  user_id: string;
-  event_type: string;
-  event_data: Json;
-  created_at: string;
-};
-
-export type CourseRow = {
-  id: string;
-  title: string;
-  subtitle: string | null;
-  description: string | null;
-  cover_url: string | null;
-  level: string | null;
-  age_group: 'kids' | 'teen' | 'adult' | null;
-  course_type: 'free' | 'paid' | 'trial';
-  status: 'draft' | 'published' | 'hidden';
-  sort_order: number;
-  created_at: string;
-  updated_at: string;
-};
-
-export type CourseSectionRow = {
-  id: string;
-  course_id: string;
-  title: string;
-  sort_order: number;
-  created_at: string;
-};
-
-export type LessonRow = {
-  id: string;
-  course_id: string;
-  section_id: string | null;
-  title: string;
-  description: string | null;
-  video_url: string | null;
-  duration_seconds: number;
-  lesson_type: 'video' | 'quiz' | 'speaking_task';
-  is_free: boolean;
-  sort_order: number;
-  status: 'draft' | 'published' | 'hidden';
-  created_at: string;
-  updated_at: string;
-};
-
-export type CourseEnrollmentRow = {
-  id: string;
-  user_id: string;
-  course_id: string;
-  source: 'free_signup' | 'consultant' | 'trial_package' | 'manual';
-  status: 'active' | 'completed' | 'expired' | 'cancelled';
-  created_at: string;
-  updated_at: string;
-};
-
-export type LessonProgressRow = {
-  id: string;
-  user_id: string;
-  lesson_id: string;
-  progress_seconds: number;
-  progress_percent: number;
-  completed_at: string | null;
-  last_watched_at: string;
-  updated_at: string;
-};
-
-export type AiScenarioRow = {
-  id: string;
-  title: string;
-  description: string | null;
-  level: string | null;
-  scene_type: 'daily' | 'travel' | 'business' | 'interview' | 'ielts' | 'kids';
-  system_prompt: string;
-  opening_message: string | null;
-  status: 'draft' | 'published' | 'hidden';
-  sort_order: number;
-  created_at: string;
-  updated_at: string;
-};
-
 export type AiConversationRow = {
   id: string;
-  user_id: string;
-  scenario_id: string | null;
-  title: string | null;
-  status: 'active' | 'ended';
-  score: number | null;
-  feedback: string | null;
-  started_at: string;
-  ended_at: string | null;
+  account_id: string;
+  created_by: string;
+  title: string;
+  mode: 'ask' | 'create_page' | 'edit_page' | 'generate_button' | 'generate_function';
+  page_ref: Json;
+  status: 'active' | 'archived';
+  created_at: string;
   updated_at: string;
 };
 
 export type AiMessageRow = {
   id: string;
+  account_id: string;
   conversation_id: string;
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant' | 'system' | 'tool';
   content: string;
-  audio_url: string | null;
-  pronunciation_score: number | null;
-  grammar_feedback: string | null;
-  vocabulary_feedback: string | null;
+  tool_call_id: string | null;
+  metadata: Json;
   created_at: string;
-};
-
-export type SpeechAssessmentRow = {
-  id: string;
-  user_id: string;
-  message_id: string | null;
-  transcript: string | null;
-  fluency_score: number | null;
-  pronunciation_score: number | null;
-  accuracy_score: number | null;
-  feedback: Json;
-  created_at: string;
-};
-
-export type TeacherRow = {
-  id: string;
-  user_id: string | null;
-  display_name: string;
-  intro: string | null;
-  avatar_url: string | null;
-  specialties: string[];
-  levels: string[];
-  online_status: 'online' | 'busy' | 'offline';
-  status: 'active' | 'inactive';
-  created_at: string;
-  updated_at: string;
-};
-
-export type ChatSessionRow = {
-  id: string;
-  student_id: string;
-  teacher_id: string | null;
-  session_type: 'text' | 'voice' | 'video';
-  provider: string | null;
-  provider_session_id: string | null;
-  status: 'waiting' | 'active' | 'ended' | 'cancelled';
-  started_at: string | null;
-  ended_at: string | null;
-  created_at: string;
-  updated_at: string;
 };
 
 export type ChatMessageRow = {
   id: string;
-  session_id: string;
-  sender_id: string;
-  message_type: 'text' | 'image' | 'audio' | 'file' | 'system';
-  content: string | null;
-  media_url: string | null;
-  read_at: string | null;
-  created_at: string;
-};
-
-export type CampusRow = {
-  id: string;
-  name: string;
-  city: string;
-  district: string | null;
-  address: string;
-  phone: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  status: 'active' | 'inactive';
+  account_id: string;
+  conversation_id: string;
+  sender_id: string | null;
+  content: string;
+  message_type: 'text' | 'image' | 'file' | 'system';
+  attachment_ids: string[];
+  reply_to_id: string | null;
+  status: 'sending' | 'sent' | 'failed' | 'edited' | 'deleted';
+  metadata: Json;
   created_at: string;
   updated_at: string;
-};
-
-export type TrialClassRow = {
-  id: string;
-  campus_id: string;
-  course_id: string | null;
-  teacher_id: string | null;
-  title: string;
-  start_time: string;
-  end_time: string;
-  capacity: number;
-  booked_count: number;
-  status: 'open' | 'full' | 'cancelled' | 'finished';
-  created_at: string;
-  updated_at: string;
-};
-
-export type TrialBookingRow = {
-  id: string;
-  user_id: string;
-  trial_class_id: string | null;
-  campus_id: string;
-  student_name: string;
-  student_age: number | null;
-  parent_phone: string;
-  learning_goal: string | null;
-  status: 'submitted' | 'confirmed' | 'attended' | 'no_show' | 'converted' | 'cancelled';
-  consultant_id: string | null;
-  remark: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-export type ConsultantTaskRow = {
-  id: string;
-  consultant_id: string | null;
-  user_id: string;
-  booking_id: string | null;
-  task_type: 'call' | 'wechat' | 'reminder' | 'follow_up';
-  status: 'pending' | 'done' | 'cancelled';
-  due_at: string | null;
-  completed_at: string | null;
-  note: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-export type ConversionRecordRow = {
-  id: string;
-  user_id: string;
-  booking_id: string | null;
-  consultant_id: string | null;
-  product_name: string;
-  amount: number;
-  status: 'pending' | 'paid' | 'refunded' | 'cancelled';
-  converted_at: string | null;
-  created_at: string;
-  updated_at: string;
+  edited_at: string | null;
+  deleted_at: string | null;
 };
 
 export type AdminRoleRow = {
@@ -343,12 +145,6 @@ export type AdminUserPermissionRow = {
   phone: string | null;
   nickname: string | null;
   legacy_profile_role: UserDetailsRow['role'] | string | null;
-  lead_status: UserDetailsRow['lead_status'] | string | null;
-  city: string | null;
-  english_level: string | null;
-  learning_goal: string | null;
-  source_channel: string | null;
-  assigned_consultant_id: string | null;
   updated_at: string | null;
   app_role_codes: string[];
   app_role_names: string;
@@ -361,8 +157,6 @@ export type AdminUserPermissionRow = {
   account_names: string;
   account_roles: string[];
   account_count: number;
-  personal_account_id: string | null;
-  personal_account_name: string | null;
   is_primary_account_owner: boolean;
 };
 
@@ -465,7 +259,11 @@ export type LowCodePageRow = {
   layout: 'default' | 'dashboard' | 'blank';
   status: 'draft' | 'published' | 'archived';
   keep_alive: boolean;
+  page_type: LowCodePageType;
   edit_page_id: string | null;
+  view_name: string | null;
+  table_name: string | null;
+  relate_config: LowCodePageRelateConfig;
   schema: LowCodePageSchema;
   version: number;
   created_by: string | null;
@@ -483,6 +281,19 @@ export type LowCodePageVersionRow = {
   created_by: string | null;
   published_at: string | null;
   created_at: string;
+};
+
+export type LowCodeFormDefinitionRow = {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  schema: Json;
+  enabled: boolean;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 type TableDefinition<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
@@ -524,12 +335,6 @@ export interface Database {
           phone?: string | null;
           nickname?: string | null;
           role?: UserDetailsRow['role'];
-          city?: string | null;
-          english_level?: string | null;
-          learning_goal?: string | null;
-          source_channel?: string | null;
-          lead_status?: UserDetailsRow['lead_status'];
-          assigned_consultant_id?: string | null;
           updated_at?: string | null;
         };
         Update: {
@@ -541,12 +346,6 @@ export interface Database {
           phone?: string | null;
           nickname?: string | null;
           role?: UserDetailsRow['role'];
-          city?: string | null;
-          english_level?: string | null;
-          learning_goal?: string | null;
-          source_channel?: string | null;
-          lead_status?: UserDetailsRow['lead_status'];
-          assigned_consultant_id?: string | null;
           updated_at?: string | null;
         };
       };
@@ -555,24 +354,9 @@ export interface Database {
         Insert: never;
         Update: never;
       };
-      lead_events: TableDefinition<LeadEventRow>;
-      courses: TableDefinition<CourseRow>;
-      course_sections: TableDefinition<CourseSectionRow>;
-      lessons: TableDefinition<LessonRow>;
-      course_enrollments: TableDefinition<CourseEnrollmentRow>;
-      lesson_progress: TableDefinition<LessonProgressRow>;
-      ai_scenarios: TableDefinition<AiScenarioRow>;
       ai_conversations: TableDefinition<AiConversationRow>;
       ai_messages: TableDefinition<AiMessageRow>;
-      speech_assessments: TableDefinition<SpeechAssessmentRow>;
-      teachers: TableDefinition<TeacherRow>;
-      chat_sessions: TableDefinition<ChatSessionRow>;
       chat_messages: TableDefinition<ChatMessageRow>;
-      campuses: TableDefinition<CampusRow>;
-      trial_classes: TableDefinition<TrialClassRow>;
-      trial_bookings: TableDefinition<TrialBookingRow>;
-      consultant_tasks: TableDefinition<ConsultantTaskRow>;
-      conversion_records: TableDefinition<ConversionRecordRow>;
       admin_roles: TableDefinition<AdminRoleRow>;
       admin_permissions: TableDefinition<AdminPermissionRow>;
       admin_role_permissions: TableDefinition<AdminRolePermissionRow>;
@@ -582,6 +366,7 @@ export interface Database {
       system_config: TableDefinition<SystemConfigRow>;
       lowcode_pages: TableDefinition<LowCodePageRow>;
       lowcode_page_versions: TableDefinition<LowCodePageVersionRow>;
+      lowcode_form_definitions: TableDefinition<LowCodeFormDefinitionRow>;
     };
     Views: Record<string, never>;
     Functions: {
@@ -645,10 +430,6 @@ export interface Database {
         Returns: AdminUserPermissionRow[];
       };
       get_system_config: {
-        Args: Record<string, never>;
-        Returns: Json;
-      };
-      get_personal_account: {
         Args: Record<string, never>;
         Returns: Json;
       };

@@ -35,7 +35,7 @@ export class RuntimeService {
   ) {}
 
   async startInstance(dto: StartWorkflowInstanceDto, actor: RuntimeActor) {
-    const definition = await this.definitionService.getDefinition(dto.definitionId);
+    const definition = await this.definitionService.getDefinition(dto.definitionId, actor.tenantId);
     if (definition.status !== 'active') {
       throw new BadRequestException('Workflow definition is not active.');
     }
@@ -67,44 +67,33 @@ export class RuntimeService {
 
     try {
       const run = await this.triggerClient.triggerWorkflow(triggerPayload);
-      await this.store.setTriggerRun(instance.id, run.id);
-    } catch (error) {
-      const localTriggerClient = this.triggerClient as WorkflowTriggerClient & {
-        startLocalWorkflowExecution?: (
-          payload: typeof triggerPayload,
-          store: WorkflowRuntimeStore,
-          originalError: unknown
-        ) => { id: string };
-      };
-
-      if (localTriggerClient.startLocalWorkflowExecution) {
-        const run = localTriggerClient.startLocalWorkflowExecution(
-          triggerPayload,
-          this.store,
-          error
-        );
+      try {
         await this.store.setTriggerRun(instance.id, run.id);
-        await this.store.recordHistory(
-          instance.tenantId,
-          instance.id,
-          'LOCAL_WORKFLOW_EXECUTION_STARTED',
-          actor.userId,
-          {
-            triggerRunId: run.id,
-            triggerError: error instanceof Error ? error.message : String(error)
-          },
-          `workflow:${instance.id}:local-execution-started`
-        );
-      } else {
+      } catch (error) {
+        await this.cancelRunAfterProjectionFailure(run.id);
+        throw error;
+      }
+    } catch (error) {
+      try {
         await this.store.setInstanceStatus(instance.id, 'failed', {
           message: error instanceof Error ? error.message : String(error),
           phase: 'triggerWorkflow'
         });
-        throw error;
+      } catch {
+        // Preserve the Trigger.dev or projection failure returned to the caller.
       }
+      throw error;
     }
 
     return this.store.getInstance(instance.id);
+  }
+
+  private async cancelRunAfterProjectionFailure(runId: string) {
+    try {
+      await this.triggerClient.cancelRun(runId);
+    } catch {
+      return;
+    }
   }
 
   listInstances(query: WorkflowInstanceQuery = {}) {
@@ -112,11 +101,15 @@ export class RuntimeService {
   }
 
   listStarted(actor: RuntimeActor, query: WorkflowInstanceQuery = {}) {
-    return this.store.listStarted(actor, query);
+    return this.store.listStarted(actor, { ...query, tenantId: actor.tenantId });
   }
 
-  getInstance(instanceId: string) {
-    return this.store.getInstance(instanceId);
+  async getInstance(instanceId: string, tenantId?: string) {
+    const instance = await this.store.getInstance(instanceId);
+    if (tenantId && instance.tenantId !== tenantId) {
+      throw new BadRequestException('Workflow instance does not belong to current account set.');
+    }
+    return instance;
   }
 
   listTasks(query: WorkflowTaskQuery = {}) {
@@ -124,19 +117,27 @@ export class RuntimeService {
   }
 
   listTodoTasks(actor: RuntimeActor, query: WorkflowTaskQuery = {}) {
-    return this.store.listTodoTasks(actor, query);
+    return this.store.listTodoTasks(actor, { ...query, tenantId: actor.tenantId });
   }
 
   listDoneTasks(actor: RuntimeActor, query: WorkflowTaskQuery = {}) {
-    return this.store.listDoneTasks(actor, query);
+    return this.store.listDoneTasks(actor, { ...query, tenantId: actor.tenantId });
   }
 
   listCc(actor: RuntimeActor, query: WorkflowCcQuery = {}) {
-    return this.store.listCc(actor, query);
+    return this.store.listCc(actor, {
+      ...query,
+      tenantId: actor.tenantId,
+      userId: actor.userId
+    });
   }
 
-  getTask(taskId: string) {
-    return this.store.getTask(taskId);
+  async getTask(taskId: string, tenantId?: string) {
+    const task = await this.store.getTask(taskId);
+    if (tenantId && task.tenantId !== tenantId) {
+      throw new BadRequestException('Workflow task does not belong to current account set.');
+    }
+    return task;
   }
 
   async completeTask(taskId: string, dto: CompleteTaskDto, actor: RuntimeActor) {
@@ -149,7 +150,9 @@ export class RuntimeService {
     });
 
     try {
-      await this.triggerClient.completeWaitpoint(prepared.tokenId, prepared.decision);
+      if (!prepared.alreadyPrepared) {
+        await this.triggerClient.completeWaitpoint(prepared.tokenId, prepared.decision);
+      }
       await this.store.markWaitpointCompleted(taskId);
     } catch (error) {
       await this.store.recordWaitpointFailure(
@@ -195,7 +198,9 @@ export class RuntimeService {
     });
 
     try {
-      await this.triggerClient.completeWaitpoint(prepared.tokenId, prepared.decision);
+      if (!prepared.alreadyPrepared) {
+        await this.triggerClient.completeWaitpoint(prepared.tokenId, prepared.decision);
+      }
       await this.store.markWaitpointCompleted(taskId);
     } catch (error) {
       await this.store.recordWaitpointFailure(
@@ -330,7 +335,8 @@ export class RuntimeService {
     return result.instance;
   }
 
-  getTimeline(instanceId: string) {
+  async getTimeline(instanceId: string, tenantId?: string) {
+    if (tenantId) await this.getInstance(instanceId, tenantId);
     return this.store.getTimeline(instanceId);
   }
 

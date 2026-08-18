@@ -1,0 +1,29 @@
+document.documentElement.style.setProperty(
+  '--vxe-ui-form-current-item-min-height',
+  '30px'
+);
+
+//vxe-ui-form-item-min-height-default
+document.documentElement.style.setProperty(
+  '--vxe-ui-form-item-min-height-default',
+  '30px'
+);
+
+//--vxe-ui-tabs-header-height-default
+
+document.documentElement.style.setProperty(
+  '--vxe-ui-tabs-header-height-default',
+  '30px'
+);
+
+//--vxe-ui-input-height-medium
+document.documentElement.style.setProperty(
+  '--vxe-ui-input-height-medium',
+  '30px'
+);
+
+//--vxe-table-search-panel-highlight-current-background
+document.documentElement.style.setProperty(
+  '--vxe-table-search-panel-highlight-current-background',
+  'yellow'
+);

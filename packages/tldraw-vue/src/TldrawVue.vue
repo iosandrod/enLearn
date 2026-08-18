@@ -32,14 +32,17 @@ const props = withDefaults(
 		createDefaultShapes?: boolean
 		loadTemplates?: VueTemplateLoadHandler
 		saveTemplates?: VueTemplateSaveHandler
+		showTemplateControls?: boolean
 	}>(),
 	{
 		createDefaultShapes: true,
+		showTemplateControls: true,
 	}
 )
 
 const emit = defineEmits<{
 	ready: [editor: Editor]
+	'content-change': []
 	'workspace-config-change': [config: VueTemplateWorkspaceConfig]
 }>()
 
@@ -62,6 +65,7 @@ const currentGeoShape = ref<VueGeoShape>('rectangle')
 const isCompactLayout = ref(false)
 let pluginHost: VueEditorPluginHost | null = null
 let hostResizeObserver: ResizeObserver | null = null
+let stopEditorChangeListener: (() => void) | null = null
 
 const pluginRegistry = computed(() => createVueEditorPluginRegistry(props.plugins ?? []))
 const editorExtensions = computed(() => [
@@ -85,6 +89,10 @@ function mountEditor(el: HTMLDivElement) {
 		extensions: editorExtensions.value,
 	})
 	editor.value = nextEditor
+	stopEditorChangeListener = nextEditor.store.listen(
+		() => emit('content-change'),
+		{ source: 'user', scope: 'document' }
+	)
 	pluginHost = new VueEditorPluginHost(pluginRegistry.value, {
 		editor: nextEditor,
 		getContainer: () => editorHost.value,
@@ -199,6 +207,8 @@ onBeforeUnmount(() => {
 	window.removeEventListener('keydown', onKeyDown)
 	hostResizeObserver?.disconnect()
 	hostResizeObserver = null
+	stopEditorChangeListener?.()
+	stopEditorChangeListener = null
 	pluginHost?.dispose()
 	pluginHost = null
 	editor.value?.dispose()
@@ -255,6 +265,7 @@ onBeforeUnmount(() => {
 				:load-templates="props.loadTemplates"
 				:apply-workspace-template-config="canvasRef?.applyWorkspaceTemplateConfig"
 				:save-templates="props.saveTemplates"
+				:show-template-controls="props.showTemplateControls"
 				@before-action="canvasRef?.closeContextMenu()"
 			/>
 			<VueNavigationPanel

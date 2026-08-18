@@ -1,6 +1,8 @@
 import {
   BadGatewayException,
+  BadRequestException,
   GatewayTimeoutException,
+  HttpException,
   Inject,
   Injectable
 } from '@nestjs/common';
@@ -10,15 +12,22 @@ import { firstValueFrom, timeout, TimeoutError } from 'rxjs';
 import { WorkflowService } from '../workflow/workflow.service';
 import {
   DOMAIN_SERVICE_CLIENT,
-  SERVICE_EXECUTE_PATTERN,
+  isDomainServiceName,
+  parseIndependentServiceNames,
+  resolveServiceExecutePattern,
   type ServiceBusResponse
 } from '../common/service-bus';
 import type { ServiceContext } from '../common/interfaces/service-executor';
+import { getEnv } from '../common/utils/env';
 
 const DOMAIN_SERVICE_TIMEOUT_MS = 20_000;
 
 @Injectable()
 export class ServiceRouterService {
+  private readonly independentServices = parseIndependentServiceNames(
+    getEnv().INDEPENDENT_SERVICES ?? getEnv().API_INDEPENDENT_SERVICES
+  );
+
   constructor(
     @Inject(DOMAIN_SERVICE_CLIENT)
     private readonly domainClient: ClientProxy,
@@ -33,16 +42,28 @@ export class ServiceRouterService {
     context: ServiceContext
   ) {
     if (serviceName === 'workflow') {
-      return this.workflowService.execute(serviceMethod, postData, context);
+      return this.workflowService.execute(serviceMethod, postData, {
+        ...context,
+        serviceName
+      });
     }
+
+    if (!isDomainServiceName(serviceName)) {
+      throw new BadRequestException(`Unsupported serviceName: ${serviceName}`);
+    }
+
+    const pattern = resolveServiceExecutePattern(serviceName, this.independentServices);
 
     const response = await firstValueFrom(
       this.domainClient
-        .send<ServiceBusResponse>(SERVICE_EXECUTE_PATTERN, {
+        .send<ServiceBusResponse>(pattern, {
           serviceName,
           serviceMethod,
           postData,
-          context
+          context: {
+            ...context,
+            serviceName
+          }
         })
         .pipe(timeout(DOMAIN_SERVICE_TIMEOUT_MS))
     ).catch((error: unknown) => {
@@ -60,9 +81,12 @@ export class ServiceRouterService {
     });
 
     if (!response || response.success === false) {
-      throw new BadGatewayException(
-        response?.error?.message ?? 'Domain service request failed.'
-      );
+      const message = response?.error?.message ?? 'Domain service request failed.';
+      const statusCode = response?.error?.statusCode;
+      if (typeof statusCode === 'number' && statusCode >= 400 && statusCode < 500) {
+        throw new HttpException(message, statusCode);
+      }
+      throw new BadGatewayException(message);
     }
 
     return response.data;

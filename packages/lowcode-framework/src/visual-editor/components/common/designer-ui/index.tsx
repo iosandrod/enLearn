@@ -6,7 +6,9 @@ import {
   type PropType,
   type VNode
 } from 'vue';
-import VxeUI, {
+import {
+  install as installVxeUI,
+  VxeUI,
   VxeAlert,
   VxeButton,
   VxeCard,
@@ -553,12 +555,12 @@ export const ElPopconfirm = defineComponent({
         class="lc-vxe-popconfirm-adapter"
         onClick={async (event) => {
           event.stopPropagation();
-          const modal = (VxeUI as any).modal;
-          const result = modal?.confirm
-            ? await modal.confirm(props.title || '确定执行此操作？', '确认')
-            : window.confirm(props.title || '确定执行此操作？')
-              ? 'confirm'
-              : 'cancel';
+          const result = await VxeUI.modal.confirm({
+            title: '确认',
+            content: props.title || '确定执行此操作？',
+            confirmButtonText: props.confirmButtonText,
+            cancelButtonText: props.cancelButtonText
+          });
           if (result === 'confirm') emit('confirm');
           else emit('cancel');
         }}
@@ -668,6 +670,6 @@ export const ElGrid = VxeGrid as any;
 
 export default {
   install(app: { use: (plugin: unknown) => void }) {
-    app.use(VxeUI as any);
+    app.use(installVxeUI);
   }
 };

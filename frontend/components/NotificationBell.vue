@@ -181,10 +181,21 @@ watch(
 );
 
 watch(
-  () => auth.user.value?.id,
+  () => auth.activeDevTestUser.value?.id ?? auth.user.value?.id,
   () => {
     open.value = false;
     messages.value = [];
+    void loadCount();
+  }
+);
+
+watch(
+  () => auth.activeAccount.value?.account_id,
+  () => {
+    open.value = false;
+    messages.value = [];
+    unreadTotal.value = 0;
+    errorMessage.value = '';
     void loadCount();
   }
 );

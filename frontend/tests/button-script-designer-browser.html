@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Button script designer browser smoke</title>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      #result {
+        position: fixed;
+        z-index: -1;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick, reactive } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'remixicon/fonts/remixicon.css';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import '../assets/styles/app.css';
+      import '../assets/styles/visual-editor-utilities.scss';
+      import GlobalDialogHost from '../../packages/lowcode-framework/src/components/GlobalDialogHost.tsx';
+      import {
+        createLowCodePageRuntime,
+        provideLowCodePageRuntime,
+      } from '../../packages/lowcode-framework/src/runtime/page-runtime.ts';
+      import { registerLowCodeScriptApi } from '../../packages/lowcode-framework/src/runtime/scripts.ts';
+      import { $$buttonGroupDesigner } from '../../packages/lowcode-framework/src/visual-editor/components/button-group-designer/button-group-designer.service.tsx';
+
+      registerLowCodeScriptApi('records.allowed', {
+        description: '允许调用的记录 API',
+        signature: 'this.$api.invoke("records.allowed")',
+        insertText: 'await this.$api.invoke("records.allowed", {});',
+        handler: () => true,
+      });
+
+      const initialScript = 'const selected = "replace-me";';
+      const insertedScript = 'const selected = this.forms["records-form"]?.["name"];';
+      const source = {
+        page: {
+          id: 'page-designer-browser',
+          code: 'records',
+          route: '/records',
+          title: '记录页面',
+          schema: {
+            code: 'records',
+            route: '/records',
+            title: '记录页面',
+            dataSources: { records: { key: 'records' } },
+            blocks: [
+              {
+                id: 'records-form',
+                kind: 'form',
+                title: '记录表单',
+                schema: {
+                  fields: [
+                    { field: 'name', label: '名称', component: 'vxe-input' },
+                  ],
+                  actions: [],
+                },
+              },
+              {
+                id: 'records-grid',
+                kind: 'grid',
+                title: '记录表格',
+                schema: {
+                  grid: { columns: [{ field: 'id', title: '编号' }] },
+                },
+              },
+            ],
+            overlays: [],
+          },
+        },
+        data: { records: [{ id: 1, name: 'Ada' }] },
+        forms: { 'records-form': { name: 'Ada' } },
+        grids: { 'records-grid': { currentRow: { id: 1, name: 'Ada' } } },
+        apiNames: ['records.allowed'],
+        capabilities: ['api.invoke', 'form.patch', 'message.info'],
+      };
+
+      const state = reactive({
+        confirmed: null,
+        resolved: null,
+        error: '',
+      });
+      const ambientRuntime = createLowCodePageRuntime();
+
+      const App = defineComponent({
+        setup() {
+          provideLowCodePageRuntime(ambientRuntime);
+          return () => h(GlobalDialogHost);
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+
+      window.__buttonScriptDesignerSmoke = {
+        initialScript,
+        insertedScript,
+        source,
+        state,
+        ambientRuntime,
+        open() {
+          const result = $$buttonGroupDesigner({
+            title: '设计按钮',
+            business: {
+              blockId: 'records-actions',
+              title: '记录操作',
+              description: '',
+              align: 'left',
+              gap: 8,
+            },
+            buttons: [
+              {
+                label: '刷新',
+                code: 'refresh',
+                status: 'primary',
+                type: 'button',
+                script: initialScript,
+                directivesJson: '[]',
+                children: [],
+              },
+            ],
+            scriptContext: source,
+            onConfirm(value) {
+              state.confirmed = value;
+            },
+          });
+          void result.then((value) => {
+            state.resolved = value;
+          }).catch((error) => {
+            state.error = error instanceof Error ? error.message : String(error);
+          });
+        },
+        selectText(text) {
+          const editor = window.__lcMonacoEditors?.[0];
+          const model = editor?.getModel();
+          if (!editor || !model) return false;
+          const start = model.getValue().indexOf(text);
+          if (start < 0) return false;
+          const startPosition = model.getPositionAt(start);
+          const endPosition = model.getPositionAt(start + text.length);
+          editor.setSelection({
+            startLineNumber: startPosition.lineNumber,
+            startColumn: startPosition.column,
+            endLineNumber: endPosition.lineNumber,
+            endColumn: endPosition.column,
+          });
+          editor.focus();
+          return true;
+        },
+        editorValue() {
+          return window.__lcMonacoEditors?.[0]?.getValue() ?? '';
+        },
+      };
+
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

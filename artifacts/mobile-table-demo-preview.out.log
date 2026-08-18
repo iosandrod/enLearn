@@ -1,0 +1,27 @@
+asset [1m[32mindex.bundle.js[39m[22m 1.2 MiB [1m[32m[emitted][39m[22m (name: index) 1 related asset
+asset [1m[32msrc_main-native_ts.index.bundle.js[39m[22m 576 KiB [1m[32m[emitted][39m[22m 1 related asset
+asset [1m[32mvendors-node_modules_pnpm_hippy_vue-router-next-hist_f971ac4b40e4c99c8d8e53eaccc6ef80_node_mo-b75a2b.index.bundle.js[39m[22m 262 KiB [1m[32m[emitted][39m[22m (id hint: vendors) 1 related asset
+asset [1m[32mindex.html[39m[22m 714 bytes [1m[32m[emitted][39m[22m
+runtime modules 32.3 KiB 14 modules
+orphan modules 246 bytes [1m[33m[orphan][39m[22m 8 modules
+modules by path [1m./src/[39m[22m 262 KiB
+  modules by path [1m./src/runtime/[39m[22m 204 KiB 103 modules
+  modules by path [1m./src/pages/*.vue[39m[22m 43.2 KiB 14 modules
+  modules by path [1m./src/*.vue[39m[22m 9 KiB 7 modules
+  modules by path [1m./src/*.ts[39m[22m 6.33 KiB 4 modules
+modules by path [1m../node_modules/.pnpm/[39m[22m 1.31 MiB
+  modules by path [1m../node_modules/.pnpm/webpack-dev-server@5.2.6_webpack-cli@7.2.2_webpack@5.109.2...(truncated)[39m[22m 91.6 KiB 8 modules
+  modules by path [1m../node_modules/.pnpm/@vue+devtools-api@6.6.4/node_modules/@vue/devtools-ap...(truncated)[39m[22m 5.64 KiB 5 modules
+  modules by path [1m../node_modules/.pnpm/webpack@5.109.2_esbuild@0.25.12_webpack-cli@7.2.2/node_mod...(truncated)[39m[22m 5.71 KiB 4 modules
+  modules by path [1m../node_modules/.pnpm/vue-router@4.5.1_vue@3.4.32_typescript@5.9.3_/node_modul...(truncated)[39m[22m 148 KiB 2 modules
+  + 12 modules
+webpack 5.109.2 compiled [1m[32msuccessfully[39m[22m in 3142 ms
+assets by status 838 KiB [1m[32m[cached][39m[22m 3 assets
+assets by status 1.2 MiB [1m[32m[emitted][39m[22m
+  asset [1m[32mindex.bundle.js[39m[22m 1.2 MiB [1m[32m[emitted][39m[22m (name: index) 1 related asset
+  asset [1m[32mindex.8ac27bf9275e2ac30628.hot-update.js[39m[22m 379 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m (name: index) 1 related asset
+  asset [1m[32mindex.8ac27bf9275e2ac30628.hot-update.json[39m[22m 29 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [1m[32m[hmr][39m[22m
+Entrypoint [1mindex[39m[22m 1.2 MiB (1.41 MiB) = [1m[32mindex.bundle.js[39m[22m 1.2 MiB [1m[32mindex.8ac27bf9275e2ac30628.hot-update.js[39m[22m 379 bytes 2 auxiliary assets
+cached modules 1.56 MiB [1m[32m[cached][39m[22m 167 modules
+runtime modules 32.3 KiB 14 modules
+webpack 5.109.2 compiled [1m[32msuccessfully[39m[22m in 60 ms

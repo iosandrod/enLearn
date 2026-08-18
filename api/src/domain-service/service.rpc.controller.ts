@@ -6,6 +6,7 @@ import {
   type ServiceBusRequest,
   type ServiceBusResponse
 } from '../common/service-bus';
+import { readHttpErrorStatus } from '../common/utils/http-error';
 import { DomainServiceRouter } from './service-router.service';
 
 function readErrorMessage(error: unknown) {
@@ -46,7 +47,8 @@ export class ServiceRpcController {
       return {
         success: false,
         error: {
-          message: readErrorMessage(error)
+          message: readErrorMessage(error),
+          statusCode: readHttpErrorStatus(error)
         }
       };
     }

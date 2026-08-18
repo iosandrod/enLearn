@@ -391,22 +391,6 @@ insert into public.admin_roles (
     'active',
     20,
     false
-  ),
-  (
-    'consultant_manager',
-    'Consultant Manager',
-    'Manage users and trial conversion workflows.',
-    'active',
-    30,
-    false
-  ),
-  (
-    'teaching_manager',
-    'Teaching Manager',
-    'Manage learning content and classroom-facing pages.',
-    'active',
-    40,
-    false
   )
 on conflict (code) do nothing;
 
@@ -433,27 +417,6 @@ join public.admin_permissions permissions on permissions.code in (
   'lowcode.pages.manage'
 )
 where roles.code = 'operations_admin'
-on conflict do nothing;
-
-insert into public.admin_role_permissions (role_id, permission_id)
-select roles.id, permissions.id
-from public.admin_roles roles
-join public.admin_permissions permissions on permissions.code in (
-  'admin.users.manage',
-  'lowcode.pages.manage'
-)
-where roles.code = 'consultant_manager'
-on conflict do nothing;
-
-insert into public.admin_role_permissions (role_id, permission_id)
-select roles.id, permissions.id
-from public.admin_roles roles
-join public.admin_permissions permissions on permissions.code in (
-  'admin.users.manage',
-  'lowcode.pages.manage',
-  'admin.entities.manage'
-)
-where roles.code = 'teaching_manager'
 on conflict do nothing;
 
 insert into public.admin_entities (

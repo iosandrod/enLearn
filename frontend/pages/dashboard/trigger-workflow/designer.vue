@@ -1,264 +1,419 @@
 <template>
   <section class="trigger-workflow-page">
-    <header class="trigger-workflow-page__header">
-      <div class="trigger-workflow-page__title">
-        <h2>Trigger.dev Workflow 编排器</h2>
-        <p>{{ model.code }} · {{ model.kind }} · {{ statusText }}</p>
-      </div>
-
-      <div class="trigger-workflow-page__job">
-        <strong>模拟测试：20 秒用户日志定时任务</strong>
-        <span>{{ jobStatusText }}</span>
-      </div>
-
-      <dl class="trigger-workflow-page__runtime">
-        <div>
-          <dt>Job</dt>
-          <dd>{{ demoJob?.code ?? '未创建' }}</dd>
-        </div>
-        <div>
-          <dt>状态</dt>
-          <dd>{{ demoJob?.status ?? '-' }}</dd>
-        </div>
-        <div>
-          <dt>间隔</dt>
-          <dd>{{ demoJob?.intervalSeconds ? `${demoJob.intervalSeconds}s` : '20s' }}</dd>
-        </div>
-        <div>
-          <dt>最近运行</dt>
-          <dd>{{ latestRunText }}</dd>
-        </div>
-      </dl>
-
-      <div class="trigger-workflow-page__actions">
-        <button type="button" @click="saveDraft">保存草稿</button>
-        <button type="button" @click="loadDraft">恢复草稿</button>
-        <button type="button" @click="copyModel">复制 JSON</button>
-        <button type="button" :disabled="isJobBusy" @click="createAndEnableUsersLogJob">创建并启用</button>
-        <button type="button" :disabled="isJobBusy || !demoJob" @click="runUsersLogJobOnce">手动触发一次</button>
-        <button type="button" :disabled="isJobBusy" @click="refreshUsersLogJob">刷新运行记录</button>
-      </div>
-    </header>
-
     <TriggerWorkflowEditor
       v-model="model"
-      height="calc(100vh - 118px)"
+      height="calc(100vh - 62px)"
+      :busy="isJobBusy"
+      :can-run="canRunWorkflowJob"
+      :node-form-schemas="nodeFormSchemas"
+      :edge-form-schema="edgeFormSchema"
+      :inspector-schemas-loading="inspectorSchemasLoading"
       @validation="issues = $event"
       @compile="compiledPlan = $event"
       @export="exportedModel = $event"
+      @new-workflow="newWorkflow"
+      @save-workflow="saveWorkflow"
+      @load-workflow="loadWorkflow"
+      @save="saveLocalDraft"
+      @restore="loadDraft"
+      @copy="copyModel"
+      @enable="enableWorkflowJob"
+      @run="runWorkflowJob"
+      @refresh="refreshWorkflowJob"
     />
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, shallowRef } from 'vue';
+import { VxeUI } from 'vxe-pc-ui';
+import { confirmLowCodePage } from '@enlearn/lowcode-framework/runtime';
 import {
+  TRIGGER_EDGE_FORM_SCHEMA_CODE,
   TriggerWorkflowEditor,
   TRIGGER_WORKFLOW_SCHEMA_VERSION,
+  assertTriggerInspectorFormSchema,
+  buildTriggerWorkflowJob,
   createApprovalTriggerWorkflow,
+  getTriggerWorkflowJobPlanSignature,
+  normalizeTriggerWorkflow,
+  triggerInspectorNodeTypes,
+  triggerNodeFormSchemaCodeByType,
+  type TriggerInspectorFormSchema,
+  type TriggerNodeFormSchemaMap,
   type TriggerWorkflowExecutionPlan,
   type TriggerWorkflowIssue,
   type TriggerWorkflowModel
 } from '@enlearn/trigger-workflow-editor';
+import { loadAvailableLowCodeFormDefinitions } from '../../../utils/lowCodeFormDefinitions';
 
-const storageKey = 'enlearn.trigger-workflow-editor.default';
-const demoJobCode = 'supabase_users_20s_logger';
-const demoTaskId = 'workflow.supabase.users.log';
+const auth = useAuth();
+const chatSocket = useChatSocket();
+const frontendCommandSocket = useFrontendCommandSocket();
+const storageKey = computed(() =>
+  `enlearn.trigger-workflow-editor.${auth.activeAccount.value?.account_id ?? 'unselected'}`
+);
+const triggerWorkflowDocumentType = 'trigger-workflow';
+const workflowModelListPageCode = 'trigger-workflow-models';
 const serviceApi = useServiceApi();
+const route = useRoute();
+const router = useRouter();
 const model = ref<TriggerWorkflowModel>(createApprovalTriggerWorkflow());
+const savedModelId = ref('');
 const issues = ref<TriggerWorkflowIssue[]>([]);
 const compiledPlan = ref<TriggerWorkflowExecutionPlan | undefined>();
 const exportedModel = ref<TriggerWorkflowModel | undefined>();
-const demoJob = ref<WorkflowJobRecord | undefined>();
-const demoRuns = ref<WorkflowJobRunRecord[]>([]);
+const workflowJob = ref<WorkflowJobRecord | undefined>();
+const workflowRuns = ref<WorkflowJobRunRecord[]>([]);
 const isJobBusy = ref(false);
-const jobMessage = ref('点击“创建并启用”后，后端每 20 秒读取 Supabase public.users 并打印日志。');
-
-const statusText = computed(() => {
-  const errors = issues.value.filter((issue) => issue.level === 'error').length;
-  if (errors) return `${errors} 个错误`;
-  if (issues.value.length) return `${issues.value.length} 个提示`;
-  return '可编译';
+const jobMessage = ref('');
+const inspectorSchemasLoading = ref(false);
+const nodeFormSchemas = shallowRef<TriggerNodeFormSchemaMap>({});
+const edgeFormSchema = shallowRef<TriggerInspectorFormSchema>();
+const currentPlanSignature = computed(() => {
+  try {
+    return getTriggerWorkflowJobPlanSignature(model.value);
+  } catch {
+    return '';
+  }
 });
-
-const jobStatusText = computed(() => {
-  if (isJobBusy.value) return '正在请求 workflow-api...';
-  return jobMessage.value;
-});
-
-const latestRunText = computed(() => {
-  const run = demoRuns.value[0];
-  if (!run) return '暂无';
-  const count = readUserCount(run.output);
-  return `${run.status}${count === undefined ? '' : ` · ${count} users`} · ${new Date(run.createdAt).toLocaleTimeString()}`;
-});
+const workflowUsesFrontendCommand = computed(() =>
+  model.value.nodes.some((node) => node.config?.task?.type === 'frontendCommand')
+);
+const frontendCommandChannelReady = computed(() =>
+  !workflowUsesFrontendCommand.value ||
+  (chatSocket.serverReady.value && frontendCommandSocket.listenerReady.value)
+);
+const canRunWorkflowJob = computed(() => Boolean(
+  workflowJob.value?.status === 'enabled' &&
+  workflowJob.value.code === model.value.code &&
+  readJobPlanSignature(workflowJob.value) === currentPlanSignature.value &&
+  frontendCommandChannelReady.value
+));
 
 onMounted(() => {
   loadDraft();
-  void refreshUsersLogJob();
+  void loadInspectorSchemas();
+  void refreshWorkflowJob();
 });
 
-function saveDraft() {
-  window.localStorage.setItem(storageKey, JSON.stringify(model.value, null, 2));
+async function loadInspectorSchemas() {
+  inspectorSchemasLoading.value = true;
+  const codes = [
+    ...triggerInspectorNodeTypes.map((type) => triggerNodeFormSchemaCodeByType[type]),
+    TRIGGER_EDGE_FORM_SCHEMA_CODE,
+  ] as const;
+
+  try {
+    const definitions = await loadAvailableLowCodeFormDefinitions(serviceApi, codes);
+    const invalidCodes: string[] = [];
+    nodeFormSchemas.value = Object.fromEntries(
+      triggerInspectorNodeTypes.flatMap((type) => {
+        const definition = definitions[triggerNodeFormSchemaCodeByType[type]];
+        if (!definition) return [];
+        try {
+          assertTriggerInspectorFormSchema(definition.schema);
+          return [[type, definition.schema]];
+        } catch {
+          invalidCodes.push(definition.code);
+          return [];
+        }
+      }),
+    ) as TriggerNodeFormSchemaMap;
+    const edgeDefinition = definitions[TRIGGER_EDGE_FORM_SCHEMA_CODE];
+    if (edgeDefinition) {
+      try {
+        assertTriggerInspectorFormSchema(edgeDefinition.schema);
+        edgeFormSchema.value = edgeDefinition.schema;
+      } catch {
+        invalidCodes.push(edgeDefinition.code);
+        edgeFormSchema.value = undefined;
+      }
+    } else {
+      edgeFormSchema.value = undefined;
+    }
+
+    const loadedCount = Object.keys(nodeFormSchemas.value).length;
+    if (loadedCount < triggerInspectorNodeTypes.length) {
+      notify(
+        `已加载 ${loadedCount}/${triggerInspectorNodeTypes.length} 个节点表单定义，其余使用内置配置${invalidCodes.length ? `；${invalidCodes.length} 个定义无效` : ''}。`,
+        'warning',
+      );
+    }
+  } catch (error) {
+    nodeFormSchemas.value = {};
+    edgeFormSchema.value = undefined;
+    notify(
+      `节点表单定义加载失败，已使用内置配置：${error instanceof Error ? error.message : String(error)}`,
+      'warning',
+    );
+  } finally {
+    inspectorSchemasLoading.value = false;
+  }
+}
+
+function saveLocalDraft() {
+  persistLocalWorkflow(model.value);
+  notify('本地草稿已保存。', 'success');
 }
 
 function loadDraft() {
-  const saved = window.localStorage.getItem(storageKey);
-  if (!saved) return;
+  const saved = window.localStorage.getItem(storageKey.value);
+  if (!saved) return false;
   try {
     model.value = JSON.parse(saved) as TriggerWorkflowModel;
+    savedModelId.value = readSavedModelId(model.value);
+    notify('已恢复本地草稿。', 'success');
+    return true;
   } catch {
-    window.localStorage.removeItem(storageKey);
+    window.localStorage.removeItem(storageKey.value);
+    return false;
   }
 }
 
 async function copyModel() {
   const value = exportedModel.value ?? model.value;
   await navigator.clipboard?.writeText(JSON.stringify(value, null, 2));
+  notify('工作流 JSON 已复制。', 'success');
 }
 
-async function createAndEnableUsersLogJob() {
+async function newWorkflow() {
+  const confirmed = await VxeUI.modal.confirm({
+    title: '新建流程',
+    content: '确定新建空白流程吗？当前未保存的修改将被清除。',
+    confirmButtonText: '新建'
+  });
+  if (confirmed !== 'confirm') return;
+
+  savedModelId.value = '';
+  model.value = createBlankWorkflowModel();
+  persistLocalWorkflow(model.value);
+  notify('已新建空白流程。', 'success');
+}
+
+async function saveWorkflow() {
+  if (isJobBusy.value) return;
   isJobBusy.value = true;
   try {
-    model.value = createUsersLogWorkflowModel();
-    saveDraft();
+    const saved = await workflowApi<WorkflowModelRecord>(
+      savedModelId.value ? 'updateModel' : 'saveModel',
+      {
+        ...(savedModelId.value ? { modelId: savedModelId.value } : {}),
+        code: model.value.code,
+        name: model.value.name,
+        documentType: triggerWorkflowDocumentType,
+        schema: model.value
+      }
+    );
+    savedModelId.value = saved.id;
+    model.value = { ...model.value, id: saved.id };
+    persistLocalWorkflow(model.value);
+    notify(`流程“${saved.name}”已保存。`, 'success');
+  } catch (error) {
+    notify(error instanceof Error ? error.message : '流程保存失败。', 'error');
+  } finally {
+    isJobBusy.value = false;
+  }
+}
 
-    await refreshUsersLogJob();
-    let job = demoJob.value;
-    if (!job) {
-      job = await workflowApi<WorkflowJobRecord>('createJob', {
-        code: demoJobCode,
-        name: 'Supabase users 20s logger',
-        type: 'interval',
-        triggerTaskId: demoTaskId,
-        intervalSeconds: 20,
-        timezone: 'Asia/Shanghai',
-        payload: {
-          intervalSeconds: 20,
-          limit: 20,
-          source: 'public.users',
-          logMode: 'backend-console'
-        },
-        retryPolicy: { maxAttempts: 1 },
-        concurrencyKey: demoJobCode
-      });
+async function loadWorkflow() {
+  if (isJobBusy.value) return;
+  isJobBusy.value = true;
+  try {
+    const result = await confirmLowCodePage({
+      pageCode: workflowModelListPageCode,
+      includeData: true,
+      serviceApi: serviceApi as Parameters<typeof confirmLowCodePage>[0]['serviceApi'],
+      router: router as Parameters<typeof confirmLowCodePage>[0]['router'],
+      route: route as Parameters<typeof confirmLowCodePage>[0]['route'],
+      locale: 'zh-CN',
+      title: '加载流程',
+      confirmLabel: '加载',
+      cancelLabel: '取消',
+      requireSelection: true,
+      dialog: {
+        id: 'trigger-workflow-picker-dialog'
+      }
+    });
+    if (result.action === 'cancel' || result.action === 'close') return;
+
+    const selected = readSelectedWorkflow(result.payload);
+    if (!selected) {
+      notify('请先选择要加载的流程。', 'warning');
+      return;
     }
+    const saved = await workflowApi<WorkflowModelRecord>('getModel', {
+      modelId: selected.id
+    });
+    if (saved.documentType !== triggerWorkflowDocumentType) {
+      throw new Error('所选记录不是触发器编排流程。');
+    }
+    model.value = { ...readWorkflowSchema(saved.draftSchema), id: saved.id };
+    savedModelId.value = saved.id;
+    persistLocalWorkflow(model.value);
+    await refreshWorkflowJob();
+    notify(`已加载流程“${saved.name}”。`, 'success');
+  } catch (error) {
+    notify(error instanceof Error ? error.message : '流程加载失败。', 'error');
+  } finally {
+    isJobBusy.value = false;
+  }
+}
 
-    demoJob.value = await workflowApi<WorkflowJobRecord>('updateJobStatus', {
+async function enableWorkflowJob() {
+  if (isJobBusy.value) return;
+  isJobBusy.value = true;
+  try {
+    if (!savedModelId.value || model.value.id !== savedModelId.value) {
+      throw new Error('请先保存当前流程，再启用作业。');
+    }
+    const definition = buildTriggerWorkflowJob(model.value);
+    let job = await workflowApi<WorkflowJobRecord>('upsertJob', definition);
+    job = await workflowApi<WorkflowJobRecord>('updateJobStatus', {
       jobId: job.id,
       status: 'enabled'
     });
-    await refreshUsersLogJob();
-    jobMessage.value = '已创建并启用：后端调度器会每 20 秒执行一次，日志在 workflow-api 控制台输出。';
+    workflowJob.value = job;
+    await refreshWorkflowJob();
+    jobMessage.value = `流程“${model.value.name}”已编译为作业并启用。`;
+    notify(jobMessage.value, 'success');
   } catch (error) {
     jobMessage.value = error instanceof Error ? error.message : String(error);
+    notify(jobMessage.value, 'error');
   } finally {
     isJobBusy.value = false;
   }
 }
 
-async function runUsersLogJobOnce() {
-  if (!demoJob.value) return;
+async function runWorkflowJob() {
+  if (!workflowJob.value) return;
+  if (!canRunWorkflowJob.value) {
+    notify('当前流程配置已变化，请重新启用后再运行。', 'warning');
+    return;
+  }
   isJobBusy.value = true;
   try {
     await workflowApi<WorkflowJobRunRecord>('runJob', {
-      jobId: demoJob.value.id,
+      jobId: workflowJob.value.id,
       payload: {
-        manual: true,
+        userId: auth.user.value?.id,
         requestedAt: new Date().toISOString()
       }
     });
-    await refreshUsersLogJob();
-    jobMessage.value = '已手动触发一次，请查看 workflow-api 后端日志。';
+    await refreshWorkflowJob();
+    jobMessage.value = `流程“${model.value.name}”已开始运行。`;
+    notify(jobMessage.value, 'success');
   } catch (error) {
     jobMessage.value = error instanceof Error ? error.message : String(error);
+    notify(jobMessage.value, 'error');
   } finally {
     isJobBusy.value = false;
   }
 }
 
-async function refreshUsersLogJob() {
+async function refreshWorkflowJob() {
   try {
     const jobs = await workflowApi<WorkflowJobRecord[]>('listItems', {
-      itemType: 'jobs',
-      type: 'interval'
+      itemType: 'jobs'
     });
-    demoJob.value = jobs.find((job) => job.code === demoJobCode);
-    demoRuns.value = demoJob.value
+    workflowJob.value = jobs.find((job) => job.code === model.value.code);
+    workflowRuns.value = workflowJob.value
       ? await workflowApi<WorkflowJobRunRecord[]>('listItems', {
           itemType: 'jobRuns',
-          jobId: demoJob.value.id,
+          jobId: workflowJob.value.id,
           limit: 20
         })
       : [];
   } catch (error) {
     jobMessage.value = error instanceof Error ? error.message : String(error);
+    notify(jobMessage.value, 'error');
   }
 }
 
 async function workflowApi<T>(serviceMethod: string, postData: Record<string, unknown> = {}) {
   return serviceApi.invoke<T>('workflow', serviceMethod, {
-    tenantId: 'default',
+    tenantId: auth.activeAccount.value?.account_id,
     ...postData
   });
 }
 
-function createUsersLogWorkflowModel(): TriggerWorkflowModel {
+function createBlankWorkflowModel(): TriggerWorkflowModel {
+  const suffix = Date.now().toString(36);
   return {
     schemaVersion: TRIGGER_WORKFLOW_SCHEMA_VERSION,
-    code: demoJobCode,
-    name: 'Supabase Users 20s Logger',
-    kind: 'dataSync',
+    code: `trigger_workflow_${suffix}`,
+    name: '未命名流程',
+    kind: 'custom',
     nodes: [
       {
-        id: 'schedule',
-        type: 'schedule',
-        name: 'Every 20 seconds',
-        position: { x: 380, y: 40 },
-        config: {
-          schedule: {
-            cron: '*/20 * * * * *',
-            timezone: 'Asia/Shanghai',
-            externalId: demoJobCode
-          },
-          metadata: { intervalSeconds: 20 }
-        }
-      },
-      {
-        id: 'fetch_users',
-        type: 'task',
-        name: 'Fetch Supabase users',
-        position: { x: 380, y: 210 },
-        config: {
-          task: {
-            id: demoTaskId,
-            queue: { name: 'workflow-local-jobs', concurrencyLimit: 1 },
-            retry: { maxAttempts: 1 },
-            idempotencyKey: '{{runId}}'
-          },
-          metadata: {
-            table: 'public.users',
-            limit: 20,
-            logTarget: 'workflow-api console'
-          }
-        }
+        id: 'start',
+        type: 'start',
+        name: '开始',
+        position: { x: 380, y: 40 }
       },
       {
         id: 'end',
         type: 'end',
-        name: 'Logged',
-        position: { x: 380, y: 380 }
+        name: '结束',
+        position: { x: 380, y: 360 }
       }
     ],
     edges: [
-      { id: 'edge_schedule_fetch_users', source: 'schedule', target: 'fetch_users' },
-      { id: 'edge_fetch_users_end', source: 'fetch_users', target: 'end' }
+      { id: 'edge_start_end', source: 'start', target: 'end' }
     ]
   };
 }
 
-function readUserCount(output: Record<string, unknown> | undefined) {
-  return typeof output?.userCount === 'number' ? output.userCount : undefined;
+function readSelectedWorkflow(payload: unknown): WorkflowModelListRow | null {
+  if (!isRecord(payload)) return null;
+  const row = [
+    payload.row,
+    payload.selectedRow,
+    payload.currentRow,
+    Array.isArray(payload.selectedRows) ? payload.selectedRows[0] : undefined,
+    Array.isArray(payload.rows) ? payload.rows[0] : undefined
+  ].find(isRecord);
+  if (!row || typeof row.id !== 'string' || !row.id.trim()) return null;
+  return row as WorkflowModelListRow;
+}
+
+function readWorkflowSchema(value: unknown): TriggerWorkflowModel {
+  if (isRecord(value) && Array.isArray(value.nodes) && Array.isArray(value.edges)) {
+    return normalizeTriggerWorkflow(value);
+  }
+  if (typeof value === 'string') {
+    const parsed = JSON.parse(value) as unknown;
+    if (isRecord(parsed) && Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)) {
+      return normalizeTriggerWorkflow(parsed);
+    }
+  }
+  throw new Error('所选记录不包含有效的流程结构。');
+}
+
+function readSavedModelId(value: TriggerWorkflowModel) {
+  return typeof value.id === 'string' ? value.id.trim() : '';
+}
+
+function persistLocalWorkflow(value: TriggerWorkflowModel) {
+  window.localStorage.setItem(storageKey.value, JSON.stringify(value, null, 2));
+}
+
+function readJobPlanSignature(job: WorkflowJobRecord) {
+  const definition = isRecord(job.payload.triggerWorkflow)
+    ? job.payload.triggerWorkflow
+    : undefined;
+  return typeof definition?.planSignature === 'string'
+    ? definition.planSignature
+    : '';
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function notify(content: string, status: 'success' | 'error' | 'warning') {
+  const modal = VxeUI.modal;
+  if (modal?.message) void modal.message({ content, status });
 }
 
 type WorkflowJobRecord = {
@@ -268,7 +423,6 @@ type WorkflowJobRecord = {
   type: string;
   status: string;
   triggerTaskId: string;
-  intervalSeconds?: number;
   payload: Record<string, unknown>;
 };
 
@@ -278,138 +432,22 @@ type WorkflowJobRunRecord = {
   output?: Record<string, unknown>;
   createdAt: string;
 };
+
+type WorkflowModelListRow = {
+  id: string;
+  name?: string;
+};
+
+type WorkflowModelRecord = WorkflowModelListRow & {
+  code: string;
+  name: string;
+  documentType?: string;
+  draftSchema: Record<string, unknown> | string;
+};
 </script>
 
 <style scoped>
 .trigger-workflow-page {
-  display: grid;
-  gap: 8px;
-}
-
-.trigger-workflow-page__header {
-  display: grid;
-  grid-template-columns: minmax(230px, 0.95fr) minmax(280px, 1.15fr) minmax(320px, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-  border: 1px solid #d8dee8;
-  border-radius: 8px;
-  background: #ffffff;
-  padding: 10px 12px;
-}
-
-.trigger-workflow-page__title,
-.trigger-workflow-page__job {
-  display: grid;
   min-width: 0;
-  gap: 3px;
-}
-
-.trigger-workflow-page__title h2 {
-  overflow: hidden;
-  margin: 0;
-  color: #111827;
-  font-size: 18px;
-  line-height: 24px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trigger-workflow-page__title p,
-.trigger-workflow-page__job span {
-  overflow: hidden;
-  margin: 0;
-  color: #64748b;
-  font-size: 12px;
-  line-height: 17px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trigger-workflow-page__job strong {
-  overflow: hidden;
-  color: #172033;
-  font-size: 13px;
-  line-height: 18px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trigger-workflow-page__runtime {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  margin: 0;
-}
-
-.trigger-workflow-page__runtime div {
-  min-width: 0;
-}
-
-.trigger-workflow-page__runtime dt {
-  color: #94a3b8;
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.trigger-workflow-page__runtime dd {
-  overflow: hidden;
-  margin: 1px 0 0;
-  color: #172033;
-  font-size: 12px;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trigger-workflow-page__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 6px;
-  max-width: 430px;
-}
-
-.trigger-workflow-page__actions button {
-  min-height: 30px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #334155;
-  cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 5px 9px;
-}
-
-.trigger-workflow-page__actions button:hover {
-  border-color: #94a3b8;
-  background: #f8fafc;
-}
-
-.trigger-workflow-page__actions button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-@media (max-width: 1320px) {
-  .trigger-workflow-page__header {
-    grid-template-columns: minmax(230px, 1fr) minmax(280px, 1.3fr) auto;
-  }
-
-  .trigger-workflow-page__runtime {
-    display: none;
-  }
-}
-
-@media (max-width: 900px) {
-  .trigger-workflow-page__header {
-    align-items: stretch;
-    grid-template-columns: 1fr;
-  }
-
-  .trigger-workflow-page__actions {
-    justify-content: flex-start;
-    max-width: none;
-  }
 }
 </style>

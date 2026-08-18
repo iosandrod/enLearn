@@ -1,0 +1,33 @@
+﻿import { chromium } from "../node_modules/.pnpm/playwright-core@1.57.0/node_modules/playwright-core/index.mjs";
+const auth = JSON.parse(process.env.AUTH_JSON);
+const browser = await chromium.launch({ executablePath: "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", headless: true });
+const context = await browser.newContext({ viewport: { width: 1568, height: 909 } });
+await context.addInitScript(({a,r})=>{localStorage.setItem("enlearn_access_token",a);localStorage.setItem("enlearn_refresh_token",r);localStorage.setItem("enlearn_active_account_id","00000000-0000-4000-8000-000000000001");sessionStorage.setItem("enlearn_dev_auto_login_disabled","1")},{a:auth.session.access_token,r:auth.session.refresh_token});
+const page=await context.newPage();
+const errors=[]; const consoleMessages=[]; const reqs=[];
+page.on("pageerror",e=>errors.push(e.stack||e.message));
+page.on("console",m=>consoleMessages.push(`${m.type()}: ${m.text()}`));
+page.on("request",r=>{if(r.url().includes("/api/service")){let d=null;try{d=r.postDataJSON()}catch{};reqs.push({stage:"request",method:d?.serviceMethod,resource:d?.postData?.resource,url:r.url()})}});
+page.on("response",async r=>{if(r.url().includes("/api/service")){let txt="";try{txt=(await r.text()).slice(0,1000)}catch{};reqs.push({stage:"response",status:r.status(),url:r.url(),text:txt})}});
+await page.goto("http://127.0.0.1:3000/dashboard/low-code/designer/planning_console",{waitUntil:"domcontentloaded",timeout:60000});
+await page.locator(".visual-editor-shell").waitFor({state:"visible",timeout:60000});
+await page.waitForTimeout(3000);
+console.log("url",page.url());
+console.log("summary",await page.locator(".visual-designer-summary").innerText().catch(()=>"missing"));
+console.log("buttons",await page.getByRole("button",{name:"保存",exact:true}).count());
+console.log("reqsBefore",JSON.stringify(reqs.slice(-10),null,2));
+const buttons=page.getByRole("button",{name:"保存",exact:true});
+for(let i=0;i<await buttons.count();i++){console.log("button",i,await buttons.nth(i).evaluate(e=>({outer:e.outerHTML,rect:e.getBoundingClientRect().toJSON()})))}
+await buttons.last().click();
+await page.waitForTimeout(4000);
+console.log("afterRightSave",await page.locator(".visual-designer-summary").innerText().catch(()=>"missing"));
+console.log("reqsRight",JSON.stringify(reqs.slice(-8),null,2));
+await buttons.first().click();
+await page.waitForTimeout(4000);
+console.log("afterLeftSave",await page.locator(".visual-designer-summary").innerText().catch(()=>"missing"));
+console.log("reqsLeft",JSON.stringify(reqs.slice(-8),null,2));
+console.log("errors",JSON.stringify(errors,null,2));
+console.log("console",JSON.stringify(consoleMessages.slice(-20),null,2));
+await page.screenshot({path:"artifacts/designer-save-debug.png",fullPage:true});
+await browser.close();
+

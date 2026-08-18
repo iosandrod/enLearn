@@ -1,0 +1,18 @@
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuleModule dependencies initialized[39m[38;5;3m +27ms[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mIntegrationModule dependencies initialized[39m[38;5;3m +21ms[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatabaseModule dependencies initialized[39m[38;5;3m +29ms[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +27ms[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDefinitionModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mTaskModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHistoryModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRuntimeModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mJobModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[JobSchedulerService] [39m[32mWorkflow interval scheduler disabled.[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:26:07 [32m    LOG[39m [38;5;3m[NestMicroservice] [39m[32mNest microservice successfully started[39m[38;5;3m +64ms[39m
+Workflow service is listening on Redis.
+[32m[Nest] 61840  - [39m2026/08/03 18:27:21 [32m    LOG[39m [38;5;3m[TriggerCredentialsService] [39m[32mLoaded Trigger.dev credentials from database for enlearn-workflow-local/dev; selection=project-name, cacheTtlMs=300000[39m
+[32m[Nest] 61840  - [39m2026/08/03 18:33:01 [32m    LOG[39m [38;5;3m[TriggerCredentialsService] [39m[32mLoaded Trigger.dev credentials from database for enlearn-workflow-local/dev; selection=project-name, cacheTtlMs=300000[39m
+[32m[Nest] 61840  - [39m2026/08/04 02:24:10 [32m    LOG[39m [38;5;3m[TriggerCredentialsService] [39m[32mLoaded Trigger.dev credentials from database for enlearn-workflow-local/dev; selection=project-name, cacheTtlMs=300000[39m
+[32m[Nest] 61840  - [39m2026/08/04 02:41:18 [32m    LOG[39m [38;5;3m[TriggerCredentialsService] [39m[32mLoaded Trigger.dev credentials from database for enlearn-workflow-local/dev; selection=project-name, cacheTtlMs=300000[39m

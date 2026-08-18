@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Editor, TLContent, TLPageId, TLShapeId } from '@tldraw/editor'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { VxeUI } from 'vxe-pc-ui'
 import {
 	TopMenuController,
 	type TopMenuGridActionId,
@@ -35,6 +36,7 @@ const props = defineProps<{
 	getWorkspaceTemplateConfig?: () => VueTemplateWorkspaceConfig
 	loadTemplates?: VueTemplateLoadHandler
 	saveTemplates?: VueTemplateSaveHandler
+	showTemplateControls?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -131,6 +133,15 @@ const pagedPrintPreviewPages = computed(() => {
 const printPreviewPageLabel = computed(
 	() => `${printPreviewPageIndex.value + 1} / ${printPreviewPageCount.value}`
 )
+
+async function showModalAlert(content: string, title = '提示') {
+	await VxeUI.modal.confirm({
+		title,
+		content,
+		mask: false,
+		lockView: false,
+	}).catch(() => false)
+}
 
 watch(pageMenuOpen, (open) => {
 	if (!open) {
@@ -313,7 +324,7 @@ async function printCurrentPage() {
 		const manager = new PrintManager(props.editor)
 		await manager.print(createPrintJobConfig())
 	} catch (error) {
-		window.alert(getTemplateErrorMessage(error, '打印失败'))
+		await showModalAlert(getTemplateErrorMessage(error, '打印失败'), '打印失败')
 	}
 }
 
@@ -490,7 +501,7 @@ async function saveCurrentTemplate() {
 		const content = await getCurrentPageTemplateContent()
 		const workspace = props.getWorkspaceTemplateConfig?.()
 		if (!content) {
-			window.alert('当前页没有可保存的内容')
+			await showModalAlert('当前页没有可保存的内容')
 			return
 		}
 
@@ -500,7 +511,7 @@ async function saveCurrentTemplate() {
 
 		const trimmedName = name.trim()
 		if (!trimmedName) {
-			window.alert('模板名称不能为空')
+			await showModalAlert('模板名称不能为空')
 			return
 		}
 
@@ -508,7 +519,11 @@ async function saveCurrentTemplate() {
 		const nextTemplates = existingTemplates.slice()
 
 		if (existingIndex >= 0) {
-			if (!window.confirm(`已存在模板"${trimmedName}"，是否覆盖？`)) return
+			const confirmResult = await VxeUI.modal.confirm({
+				title: '覆盖模板',
+				content: `已存在模板"${trimmedName}"，是否覆盖？`,
+			})
+			if (confirmResult !== 'confirm') return
 			const current = nextTemplates[existingIndex]
 			nextTemplates[existingIndex] = {
 				...current,
@@ -522,11 +537,11 @@ async function saveCurrentTemplate() {
 		}
 
 		await saveTemplateRecords(nextTemplates)
-		window.alert('模板已保存')
+		await showModalAlert('模板已保存')
 	} catch (error) {
 		const message = getTemplateErrorMessage(error, '模板保存失败')
 		templateError.value = message
-		window.alert(message)
+		await showModalAlert(message, '模板保存失败')
 	} finally {
 		isTemplateSaving.value = false
 	}
@@ -534,11 +549,12 @@ async function saveCurrentTemplate() {
 
 async function applyTemplate(template: VueTemplateRecord) {
 	const pageShapeIds = props.editor.getCurrentPageShapeIdsSorted()
-	if (
-		pageShapeIds.length > 0 &&
-		!window.confirm(`加载模板"${template.name}"会替换当前页内容，是否继续？`)
-	) {
-		return
+	if (pageShapeIds.length > 0) {
+		const confirmResult = await VxeUI.modal.confirm({
+			title: '加载模板',
+			content: `加载模板"${template.name}"会替换当前页内容，是否继续？`,
+		})
+		if (confirmResult !== 'confirm') return
 	}
 
 	emit('before-action')
@@ -559,12 +575,16 @@ async function applyTemplate(template: VueTemplateRecord) {
 			select: true,
 		})
 	} catch (error) {
-		window.alert(getTemplateErrorMessage(error, '模板加载失败'))
+		await showModalAlert(getTemplateErrorMessage(error, '模板加载失败'), '模板加载失败')
 	}
 }
 
 async function deleteTemplate(template: VueTemplateRecord) {
-	if (!window.confirm(`删除模板"${template.name}"？`)) return
+	const confirmResult = await VxeUI.modal.confirm({
+		title: '删除模板',
+		content: `删除模板"${template.name}"？`,
+	})
+	if (confirmResult !== 'confirm') return
 
 	try {
 		const nextTemplates = templates.value.filter((item) => item.id !== template.id)
@@ -572,7 +592,7 @@ async function deleteTemplate(template: VueTemplateRecord) {
 	} catch (error) {
 		const message = getTemplateErrorMessage(error, '模板删除失败')
 		templateError.value = message
-		window.alert(message)
+		await showModalAlert(message, '模板删除失败')
 	}
 }
 
@@ -661,7 +681,7 @@ onBeforeUnmount(() => {
 				&#9776;
 			</button>
 			<button
-				v-if="canPreviewPrint"
+				v-if="props.showTemplateControls !== false && canPreviewPrint"
 				type="button"
 				class="top-menu-icon-button"
 				aria-label="加载模板"
@@ -672,7 +692,7 @@ onBeforeUnmount(() => {
 				&#128194;
 			</button>
 			<button
-				v-if="canPrint"
+				v-if="props.showTemplateControls !== false && canPrint"
 				type="button"
 				class="top-menu-icon-button"
 				aria-label="保存模板"
@@ -735,7 +755,10 @@ onBeforeUnmount(() => {
 			</div>
 		</div>
 
-		<div v-if="templateMenuOpen" class="top-menu-popover top-menu-popover--templates">
+		<div
+			v-if="props.showTemplateControls !== false && templateMenuOpen"
+			class="top-menu-popover top-menu-popover--templates"
+		>
 			<div class="top-menu-template-title">模板</div>
 			<div v-if="templateError" class="top-menu-template-state top-menu-template-state--error">
 				{{ templateError }}

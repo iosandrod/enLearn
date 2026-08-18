@@ -22,6 +22,10 @@
           <i class="ri-play-circle-line" aria-hidden="true" />
           一键测试
         </button>
+        <button type="button" class="workflow-button workflow-button--monitor" :disabled="runtimeMonitorLoading" @click="openRuntimeMonitor">
+          <i class="ri-pulse-line" aria-hidden="true" />
+          运行监控
+        </button>
         <div class="workflow-action-menu" @click.stop>
           <button type="button" class="workflow-button workflow-button--ghost" @click="toggleActionMenu">
             <i class="ri-more-line" aria-hidden="true" />
@@ -130,10 +134,264 @@
               复制
             </button>
           </div>
-          <textarea v-model="schemaText" spellcheck="false" @change="applySchemaText" />
+          <JsonDialogInput
+            :model-value="schemaText"
+            name="workflowSchema"
+            label="Workflow Schema JSON"
+            title="编辑 Workflow Schema JSON"
+            :rows="18"
+            root-type="object"
+            value-mode="string"
+            @update:model-value="applySchemaJsonValue"
+          />
         </section>
       </aside>
     </div>
+
+    <Teleport to="body">
+      <div v-if="runtimeMonitorOpen" class="runtime-monitor-mask" @click.self="closeRuntimeMonitor">
+        <section class="runtime-monitor-dialog" role="dialog" aria-modal="true" aria-labelledby="runtime-monitor-title">
+          <header class="runtime-monitor-header">
+            <div class="runtime-monitor-heading">
+              <div class="runtime-monitor-title-row">
+                <h2 id="runtime-monitor-title">Trigger.dev 运行监控</h2>
+                <span :class="runtimeEngineBadgeClass">{{ runtimeEngineLabel }}</span>
+              </div>
+              <p>{{ runtimeMonitorData?.engine.projectRef || 'Trigger.dev 项目状态' }}</p>
+            </div>
+            <div class="runtime-monitor-header-actions">
+              <button class="runtime-monitor-icon-button" type="button" title="刷新运行状态" :disabled="runtimeMonitorLoading" @click="loadRuntimeMonitor">
+                <i :class="runtimeMonitorLoading ? 'ri-loader-4-line runtime-monitor-spin' : 'ri-refresh-line'" aria-hidden="true" />
+              </button>
+              <button class="runtime-monitor-icon-button" type="button" title="关闭" @click="closeRuntimeMonitor">
+                <i class="ri-close-line" aria-hidden="true" />
+              </button>
+            </div>
+          </header>
+
+          <div v-if="runtimeMonitorErrorText" class="runtime-monitor-alert" role="alert">
+            <i class="ri-error-warning-line" aria-hidden="true" />
+            <span>{{ runtimeMonitorErrorText }}</span>
+          </div>
+
+          <template v-if="runtimeMonitorData">
+            <div class="runtime-monitor-metrics">
+              <div>
+                <span>队列排队</span>
+                <strong>{{ runtimeMonitorData.summary.queuedRuns }}</strong>
+              </div>
+              <div>
+                <span>队列运行</span>
+                <strong>{{ runtimeMonitorData.summary.runningRuns }}</strong>
+              </div>
+              <div>
+                <span>待处理 Run</span>
+                <strong>{{ runtimeMonitorData.summary.waitingRuns }}</strong>
+              </div>
+              <div>
+                <span>人工等待点</span>
+                <strong>{{ runtimeMonitorData.summary.waitingWaitpoints }}</strong>
+              </div>
+              <div>
+                <span>在线 Worker</span>
+                <strong>{{ runtimeWorkerMetric }}</strong>
+              </div>
+              <div>
+                <span>运行中流程</span>
+                <strong>{{ runtimeMonitorData.summary.runningWorkflowInstances }}</strong>
+              </div>
+            </div>
+
+            <dl class="runtime-monitor-engine">
+              <div>
+                <dt>环境</dt>
+                <dd>{{ runtimeMonitorData.engine.environment }}</dd>
+              </div>
+              <div>
+                <dt>环境并发上限</dt>
+                <dd>{{ runtimeMonitorData.engine.environmentConcurrencyLimit ?? '-' }}</dd>
+              </div>
+              <div>
+                <dt>队列数</dt>
+                <dd>{{ runtimeMonitorData.summary.queueCount }}</dd>
+              </div>
+              <div>
+                <dt>开发连接</dt>
+                <dd>{{ runtimeDevPresenceLabel }}</dd>
+              </div>
+              <div>
+                <dt>更新时间</dt>
+                <dd>{{ formatRuntimeTime(runtimeMonitorData.generatedAt) }}</dd>
+              </div>
+            </dl>
+
+            <div class="runtime-monitor-tabs" role="tablist" aria-label="运行监控分类">
+              <button
+                v-for="tab in runtimeMonitorTabs"
+                :key="tab.key"
+                type="button"
+                role="tab"
+                :aria-selected="runtimeMonitorTab === tab.key"
+                :class="{ active: runtimeMonitorTab === tab.key }"
+                @click="runtimeMonitorTab = tab.key"
+              >
+                {{ tab.label }}
+                <span>{{ tab.count }}</span>
+              </button>
+            </div>
+
+            <div class="runtime-monitor-table-wrap">
+              <table v-if="runtimeMonitorTab === 'workflows'" class="runtime-monitor-table">
+                <thead>
+                  <tr>
+                    <th>业务流程</th>
+                    <th>状态</th>
+                    <th>Trigger Run</th>
+                    <th>启动时间</th>
+                    <th class="runtime-monitor-action-column">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="instance in runtimeMonitorData.workflows" :key="instance.id">
+                    <td>
+                      <strong>{{ instance.title }}</strong>
+                      <small>{{ instance.id }}</small>
+                    </td>
+                    <td><span :class="runtimeStatusBadgeClass(instance.status)">{{ workflowStatusLabel(instance.status) }}</span></td>
+                    <td class="runtime-monitor-mono">{{ instance.triggerRunId || '-' }}</td>
+                    <td>{{ formatRuntimeTime(instance.startedAt) }}</td>
+                    <td class="runtime-monitor-action-column">
+                      <button
+                        class="runtime-monitor-terminate"
+                        type="button"
+                        title="终止业务流程并取消对应的 Trigger.dev Run"
+                        :disabled="terminatingInstanceId === instance.id"
+                        @click="terminateWorkflowFromMonitor(instance)"
+                      >
+                        <i :class="terminatingInstanceId === instance.id ? 'ri-loader-4-line runtime-monitor-spin' : 'ri-stop-circle-line'" aria-hidden="true" />
+                        {{ terminatingInstanceId === instance.id ? '终止中' : '终止流程' }}
+                      </button>
+                    </td>
+                  </tr>
+                  <tr v-if="runtimeMonitorData.workflows.length === 0">
+                    <td colspan="5" class="runtime-monitor-empty">当前账号集没有运行中的业务流程</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <table v-else-if="runtimeMonitorTab === 'runs'" class="runtime-monitor-table">
+                <thead>
+                  <tr>
+                    <th>任务</th>
+                    <th>状态</th>
+                    <th>Run ID</th>
+                    <th>业务实例</th>
+                    <th>更新时间</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="run in runtimeMonitorData.runs" :key="run.id">
+                    <td><strong>{{ run.taskIdentifier }}</strong></td>
+                    <td><span :class="runtimeStatusBadgeClass(run.status)">{{ triggerStatusLabel(run.status) }}</span></td>
+                    <td class="runtime-monitor-mono">{{ run.id }}</td>
+                    <td class="runtime-monitor-mono">{{ run.workflowInstanceId || '-' }}</td>
+                    <td>{{ formatRuntimeTime(run.updatedAt) }}</td>
+                  </tr>
+                  <tr v-if="runtimeMonitorData.runs.length === 0">
+                    <td colspan="5" class="runtime-monitor-empty">当前账号集没有可见的 Trigger.dev Run</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <table v-else-if="runtimeMonitorTab === 'queues'" class="runtime-monitor-table">
+                <thead>
+                  <tr>
+                    <th>队列</th>
+                    <th>类型</th>
+                    <th>运行</th>
+                    <th>排队</th>
+                    <th>并发上限</th>
+                    <th>状态</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="queue in runtimeMonitorData.queues" :key="queue.id">
+                    <td>
+                      <strong>{{ queue.name }}</strong>
+                      <small>{{ queue.id }}</small>
+                    </td>
+                    <td>{{ queue.type === 'task' ? '任务队列' : '自定义队列' }}</td>
+                    <td>{{ queue.running }}</td>
+                    <td>{{ queue.queued }}</td>
+                    <td>{{ queue.concurrencyLimit ?? '-' }}</td>
+                    <td><span :class="runtimeStatusBadgeClass(queue.paused ? 'PAUSED' : 'ACTIVE')">{{ queue.paused ? '已暂停' : '运行中' }}</span></td>
+                  </tr>
+                  <tr v-if="runtimeMonitorData.queues.length === 0">
+                    <td colspan="6" class="runtime-monitor-empty">Trigger.dev 当前没有队列数据</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <table v-else-if="runtimeMonitorTab === 'waitpoints'" class="runtime-monitor-table">
+                <thead>
+                  <tr>
+                    <th>等待点</th>
+                    <th>状态</th>
+                    <th>业务实例</th>
+                    <th>审批任务</th>
+                    <th>创建时间</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="waitpoint in runtimeMonitorData.waitpoints" :key="waitpoint.id">
+                    <td class="runtime-monitor-mono">{{ waitpoint.id }}</td>
+                    <td><span :class="runtimeStatusBadgeClass(waitpoint.status)">{{ triggerStatusLabel(waitpoint.status) }}</span></td>
+                    <td class="runtime-monitor-mono">{{ waitpoint.workflowInstanceId || '-' }}</td>
+                    <td class="runtime-monitor-mono">{{ waitpoint.workflowTaskId || '-' }}</td>
+                    <td>{{ formatRuntimeTime(waitpoint.createdAt) }}</td>
+                  </tr>
+                  <tr v-if="runtimeMonitorData.waitpoints.length === 0">
+                    <td colspan="5" class="runtime-monitor-empty">当前账号集没有等待中的人工等待点</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <table v-else class="runtime-monitor-table">
+                <thead>
+                  <tr>
+                    <th>Worker</th>
+                    <th>资源标识</th>
+                    <th>最后心跳</th>
+                    <th>最后取任务</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="worker in runtimeMonitorData.workers" :key="worker.id">
+                    <td>
+                      <strong>{{ worker.name }}</strong>
+                      <small>{{ worker.id }}</small>
+                    </td>
+                    <td class="runtime-monitor-mono">{{ worker.resourceIdentifier }}</td>
+                    <td>{{ formatRuntimeTime(worker.lastHeartbeatAt) }}</td>
+                    <td>{{ formatRuntimeTime(worker.lastDequeueAt) }}</td>
+                  </tr>
+                  <tr v-if="runtimeMonitorData.workers.length === 0">
+                    <td colspan="4" class="runtime-monitor-empty">
+                      {{ runtimeMonitorData.engine.workerConnected ? '开发 Worker 已连接（Presence）' : '当前没有活跃 Worker 心跳' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+
+          <div v-else-if="runtimeMonitorLoading" class="runtime-monitor-loading">
+            <i class="ri-loader-4-line runtime-monitor-spin" aria-hidden="true" />
+            <span>正在读取 Trigger.dev 运行状态</span>
+          </div>
+        </section>
+      </div>
+    </Teleport>
   </section>
 </template>
 
@@ -150,14 +408,19 @@ import {
   type WorkflowModel,
   type WorkflowSchemaIssue
 } from '@enlearn/approval-workflow';
+import JsonDialogInput from '@enlearn/lowcode-framework/components/json-dialog-input';
 
-const localStorageKey = 'enlearn.workflow.designer.default';
+const localStorageKey = computed(() =>
+  `enlearn.workflow.designer.${auth.activeAccount.value?.account_id ?? 'unselected'}.default`
+);
 const auth = useAuth();
 const serviceApi = useServiceApi();
 const route = useRoute();
 const routeCode = computed(() => String(route.params.code ?? '').trim());
 const activeStorageKey = computed(() =>
-  routeCode.value ? `enlearn.workflow.designer.${routeCode.value}` : localStorageKey
+  routeCode.value
+    ? `enlearn.workflow.designer.${auth.activeAccount.value?.account_id ?? 'unselected'}.${routeCode.value}`
+    : localStorageKey.value
 );
 
 const workflowModel = ref<WorkflowModel>(
@@ -185,6 +448,9 @@ type WorkflowModelRecord = {
   id: string;
   code: string;
   name: string;
+  documentType?: string;
+  currentVersion: number;
+  draftSchema: WorkflowModel;
 };
 
 type WorkflowDefinitionRecord = {
@@ -219,32 +485,66 @@ type WorkflowRuntimeInstance = {
   tasks?: WorkflowRuntimeTask[];
 };
 
-type ApprovalFlowTestResult = {
-  passed: boolean;
-  started?: boolean;
-  modelId: string;
-  definitionId: string;
-  instanceId: string;
-  instanceStatus: WorkflowRuntimeStatus;
-  triggerRunId?: string;
-  approvedSteps: Array<{
-    taskId: string;
-    nodeId: string;
-    assigneeId?: string;
-    status: string;
-    comment: string;
-  }>;
-  pendingTasks?: WorkflowRuntimeTask[];
-  nextTask?: WorkflowRuntimeTask;
-  nextTaskRoute?: string;
-  finalTasks: WorkflowRuntimeTask[];
-  testData: {
-    businessKey: string;
-    documentType: string;
-    schema: WorkflowModel;
-    variables: Record<string, unknown>;
+type TriggerRuntimeStatus = {
+  generatedAt: string;
+  partial: boolean;
+  errors: Record<string, string | undefined>;
+  engine: {
+    configured: boolean;
+    apiUrl: string;
+    projectRef: string | null;
+    environment: 'dev' | 'prod';
+    environmentId: string | null;
+    workerConnected: boolean | null;
+    activeWorkerCount: number;
+    environmentConcurrencyLimit: number | null;
   };
+  summary: {
+    queueCount: number;
+    queuedRuns: number;
+    runningRuns: number;
+    waitingRuns: number;
+    waitingWaitpoints: number;
+    runningWorkflowInstances: number;
+  };
+  queues: Array<{
+    id: string;
+    name: string;
+    type: 'task' | 'custom';
+    running: number;
+    queued: number;
+    paused: boolean;
+    concurrencyLimit: number | null;
+  }>;
+  runs: Array<{
+    id: string;
+    status: string;
+    taskIdentifier: string;
+    workflowInstanceId?: string;
+    updatedAt: string;
+  }>;
+  waitpoints: Array<{
+    id: string;
+    status: string;
+    workflowInstanceId?: string;
+    workflowTaskId?: string;
+    createdAt: string;
+  }>;
+  workers: Array<{
+    id: string;
+    name: string;
+    resourceIdentifier: string;
+    lastHeartbeatAt: string;
+    lastDequeueAt?: string;
+  }>;
+  workflows: Array<WorkflowRuntimeInstance & {
+    title: string;
+    businessKey: string;
+    startedAt: string;
+  }>;
 };
+
+type RuntimeMonitorTab = 'workflows' | 'runs' | 'queues' | 'waitpoints' | 'workers';
 
 const designerRef = ref<ApprovalDesignerExpose | null>(null);
 const validationIssues = ref<WorkflowSchemaIssue[]>([]);
@@ -260,6 +560,15 @@ const startedTaskId = ref('');
 const startedTaskStatus = ref('');
 const testRunSummary = ref('');
 const actionsMenuOpen = ref(false);
+const runtimeMonitorOpen = ref(false);
+const runtimeMonitorLoading = ref(false);
+const runtimeMonitorData = ref<TriggerRuntimeStatus | null>(null);
+const runtimeMonitorError = ref('');
+const runtimeMonitorTab = ref<RuntimeMonitorTab>('workflows');
+const terminatingInstanceId = ref('');
+const approvalTestPollTimeoutMs = 90_000;
+const approvalTestPollIntervalMs = 2_000;
+let approvalTestPollGeneration = 0;
 
 const nodeTypeCoverageLabels = [
   { type: 'start', label: '开始' },
@@ -290,6 +599,41 @@ const coverageItems = computed(() => {
   }));
 });
 const coveredNodeTypeCount = computed(() => coverageItems.value.filter((item) => item.covered).length);
+const runtimeMonitorErrorText = computed(() => {
+  if (runtimeMonitorError.value) return runtimeMonitorError.value;
+  const errors = Object.values(runtimeMonitorData.value?.errors ?? {}).filter(Boolean);
+  return errors.length ? `部分 Trigger.dev 状态读取失败：${errors.join('；')}` : '';
+});
+const runtimeEngineLabel = computed(() => {
+  if (!runtimeMonitorData.value?.engine.configured) return '未连接';
+  if (runtimeMonitorData.value.partial) return '部分可用';
+  return '已连接';
+});
+const runtimeEngineBadgeClass = computed(() => ({
+  'runtime-monitor-engine-badge': true,
+  'runtime-monitor-engine-badge--warning': runtimeMonitorData.value?.partial,
+  'runtime-monitor-engine-badge--offline': !runtimeMonitorData.value?.engine.configured
+}));
+const runtimeWorkerMetric = computed(() => {
+  const engine = runtimeMonitorData.value?.engine;
+  if (!engine) return '-';
+  return engine.activeWorkerCount || (engine.workerConnected ? '已连接' : 0);
+});
+const runtimeDevPresenceLabel = computed(() => {
+  const connected = runtimeMonitorData.value?.engine.workerConnected;
+  if (connected === null || connected === undefined) return '-';
+  return connected ? '已连接' : '未连接';
+});
+const runtimeMonitorTabs = computed(() => {
+  const data = runtimeMonitorData.value;
+  return [
+    { key: 'workflows' as const, label: '业务流程', count: data?.workflows.length ?? 0 },
+    { key: 'runs' as const, label: 'Trigger Runs', count: data?.runs.length ?? 0 },
+    { key: 'queues' as const, label: '队列', count: data?.queues.length ?? 0 },
+    { key: 'waitpoints' as const, label: '等待点', count: data?.waitpoints.length ?? 0 },
+    { key: 'workers' as const, label: 'Worker', count: data?.workers.length ?? 0 }
+  ];
+});
 const documentTypeInput = computed({
   get: () => workflowModel.value.documentType ?? '',
   set: (value: string) => {
@@ -313,23 +657,69 @@ watch(
 
 onMounted(() => {
   window.addEventListener('click', closeActionMenu);
+  window.addEventListener('keydown', handlePageKeydown);
+  void loadInitialWorkflow();
+});
 
+onBeforeUnmount(() => {
+  approvalTestPollGeneration += 1;
+  window.removeEventListener('click', closeActionMenu);
+  window.removeEventListener('keydown', handlePageKeydown);
+});
+
+watch(routeCode, (nextCode, previousCode) => {
+  if (nextCode !== previousCode) void loadInitialWorkflow();
+});
+
+async function loadInitialWorkflow() {
+  resetRuntimeState();
+  savedModelId.value = '';
+  publishedDefinitionId.value = '';
+
+  if (routeCode.value) {
+    isApiBusy.value = true;
+    message.value = '正在加载审批模板...';
+    messageClass.value = 'workflow-help';
+
+    try {
+      const model = await invokeWorkflowService<WorkflowModelRecord>('getModel', {
+        modelId: routeCode.value
+      });
+      const schema = parseWorkflowModelJson(JSON.stringify(model.draftSchema));
+
+      workflowModel.value = schema;
+      savedModelId.value = model.id;
+      schemaText.value = serializeWorkflowModel(schema);
+      designerRef.value?.loadSchema(schema);
+      message.value = `已加载审批模板 ${model.name}`;
+      messageClass.value = 'workflow-success';
+      return;
+    } catch (error) {
+      message.value = error instanceof Error ? error.message : '审批模板加载失败';
+      messageClass.value = 'workflow-error';
+    } finally {
+      isApiBusy.value = false;
+    }
+  }
+
+  loadLocalDraft();
+}
+
+function loadLocalDraft() {
   const saved = window.localStorage.getItem(activeStorageKey.value);
   if (!saved) return;
 
   try {
-    workflowModel.value = parseWorkflowModelJson(saved);
-    schemaText.value = serializeWorkflowModel(workflowModel.value);
+    const schema = parseWorkflowModelJson(saved);
+    workflowModel.value = schema;
+    schemaText.value = serializeWorkflowModel(schema);
+    designerRef.value?.loadSchema(schema);
     message.value = '已加载本地草稿';
     messageClass.value = 'workflow-help';
   } catch {
-    window.localStorage.removeItem(localStorageKey);
+    window.localStorage.removeItem(activeStorageKey.value);
   }
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('click', closeActionMenu);
-});
+}
 
 function toggleActionMenu(event: MouseEvent) {
   event.stopPropagation();
@@ -338,6 +728,66 @@ function toggleActionMenu(event: MouseEvent) {
 
 function closeActionMenu() {
   actionsMenuOpen.value = false;
+}
+
+function handlePageKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && runtimeMonitorOpen.value) closeRuntimeMonitor();
+}
+
+async function openRuntimeMonitor() {
+  runtimeMonitorOpen.value = true;
+  runtimeMonitorTab.value = 'workflows';
+  await loadRuntimeMonitor();
+}
+
+function closeRuntimeMonitor() {
+  runtimeMonitorOpen.value = false;
+}
+
+async function loadRuntimeMonitor() {
+  runtimeMonitorLoading.value = true;
+  runtimeMonitorError.value = '';
+  try {
+    runtimeMonitorData.value = await invokeWorkflowService<TriggerRuntimeStatus>(
+      'getRuntimeStatus',
+      {}
+    );
+  } catch (error) {
+    runtimeMonitorError.value = error instanceof Error
+      ? error.message
+      : 'Trigger.dev 运行状态读取失败';
+  } finally {
+    runtimeMonitorLoading.value = false;
+  }
+}
+
+async function terminateWorkflowFromMonitor(
+  instance: TriggerRuntimeStatus['workflows'][number]
+) {
+  const confirmed = window.confirm(
+    `确定终止流程“${instance.title}”吗？对应的 Trigger.dev Run 也会被取消。`
+  );
+  if (!confirmed) return;
+
+  terminatingInstanceId.value = instance.id;
+  runtimeMonitorError.value = '';
+  try {
+    await invokeWorkflowService<WorkflowRuntimeInstance>('terminateInstance', {
+      instanceId: instance.id,
+      comment: '从 Trigger.dev 运行监控终止'
+    });
+    if (startedInstanceId.value === instance.id) {
+      startedTaskStatus.value = workflowStatusLabel('terminated');
+      testRunSummary.value = '流程已终止，Trigger.dev Run 已取消';
+    }
+    message.value = `流程 ${instance.id} 已终止`;
+    messageClass.value = 'workflow-success';
+    await loadRuntimeMonitor();
+  } catch (error) {
+    runtimeMonitorError.value = error instanceof Error ? error.message : '流程终止失败';
+  } finally {
+    terminatingInstanceId.value = '';
+  }
 }
 
 function runWorkflowAction(action: () => void | Promise<void>) {
@@ -375,7 +825,7 @@ function createBlankModel() {
 }
 
 function loadTriggerApprovalTestWorkflow() {
-  const currentUserId = auth.user.value?.id ?? 'approval-test-user';
+  const currentUserId = auth.activeDevTestUser.value?.id ?? auth.user.value?.id ?? 'approval-test-user';
   const approverIds = auth.devTestUsers.value
     .map((user) => user.id)
     .filter((userId) => userId !== currentUserId)
@@ -395,10 +845,12 @@ function loadTriggerApprovalTestWorkflow() {
   designerRef.value?.loadSchema(model);
   schemaText.value = serializeWorkflowModel(model);
   void nextTick(() => designerRef.value?.autoLayout());
-  message.value = `已加载测试流程，发起人：${auth.user.value?.email ?? currentUserId}`;
+  message.value = `已加载测试流程，发起人：${auth.activeDevTestUser.value?.name ?? auth.user.value?.email ?? currentUserId}`;
   messageClass.value = 'workflow-success';
 }
-
+onMounted(() => {
+  loadTriggerApprovalTestWorkflow();//
+});
 async function simulateOrderWorkflow() {
   const orderWorkflow = createOrderApprovalWorkflow();
 
@@ -439,8 +891,11 @@ function saveLocalDraft() {
 
   const serialized = serializeWorkflowModel(workflowModel.value);
   window.localStorage.setItem(activeStorageKey.value, serialized);
-  window.localStorage.setItem(localStorageKey, serialized);
-  window.localStorage.setItem(`enlearn.workflow.designer.${workflowModel.value.code}`, serialized);
+  window.localStorage.setItem(localStorageKey.value, serialized);
+  window.localStorage.setItem(
+    `enlearn.workflow.designer.${auth.activeAccount.value?.account_id ?? 'unselected'}.${workflowModel.value.code}`,
+    serialized
+  );
   message.value = '已保存本地草稿';
   messageClass.value = 'workflow-success';
 }
@@ -501,16 +956,13 @@ async function startOrderWorkflow() {
   try {
     const definitionId = publishedDefinitionId.value || (await publishCurrentWorkflow()).definition.id;
     const businessKey = `${ORDER_APPROVAL_TEST_VARIABLES.orderNo}-${Date.now().toString(36)}`;
-    const instance = await workflowApi<WorkflowRuntimeInstance>('/instances', {
-      method: 'POST',
-      body: JSON.stringify({
-        definitionId,
-        businessKey,
-        documentType: 'order',
-        documentId: ORDER_APPROVAL_TEST_VARIABLES.orderNo,
-        title: `订单审批 ${ORDER_APPROVAL_TEST_VARIABLES.orderNo}`,
-        variables: ORDER_APPROVAL_TEST_VARIABLES
-      })
+    const instance = await invokeWorkflowService<WorkflowRuntimeInstance>('startInstance', {
+      definitionId,
+      businessKey,
+      documentType: 'order',
+      documentId: ORDER_APPROVAL_TEST_VARIABLES.orderNo,
+      title: `订单审批 ${ORDER_APPROVAL_TEST_VARIABLES.orderNo}`,
+      variables: ORDER_APPROVAL_TEST_VARIABLES
     });
 
     updateRuntimeFromInstance(instance);
@@ -527,49 +979,66 @@ async function startOrderWorkflow() {
 async function runMinimalApprovalOneClickTest() {
   isApiBusy.value = true;
   resetRuntimeState();
+  const pollGeneration = approvalTestPollGeneration;
   message.value = '正在发起审批一键测试...';
   messageClass.value = 'workflow-help';
 
   try {
-    testRunSummary.value = '后端保存并发起测试审批';
+    testRunSummary.value = '正在通过正式接口保存、发布并发起审批';
     const schema = designerRef.value?.getSchema() ?? workflowModel.value;
-    const approverIds = auth.devTestUsers.value
-      .map((user) => user.id)
-      .filter((userId) => userId && userId !== auth.user.value?.id)
-      .slice(0, 3);
-    const result = await invokeWorkflowService<ApprovalFlowTestResult>('runApprovalFlowTest', {
-      timeoutMs: 90000,
-      intervalMs: 2000,
-      userId: auth.user.value?.id,
-      approverIds,
-      schema
+    const currentUserId = auth.user.value?.id;
+    if (!currentUserId) throw new Error('请先登录后再发起测试审批');
+
+    const published = await publishCurrentWorkflow();
+    const businessKey = `approval-flow-test-${Date.now().toString(36)}`;
+    const instance = await invokeWorkflowService<WorkflowRuntimeInstance>('startInstance', {
+      definitionId: published.definition.id,
+      businessKey,
+      documentType: schema.documentType ?? 'approval_flow_test',
+      documentId: businessKey,
+      title: `${schema.name} 一键测试`,
+      variables: createDesignerTestVariables(businessKey, currentUserId)
     });
 
-    workflowModel.value = result.testData.schema;
-    designerRef.value?.loadSchema(result.testData.schema);
-    schemaText.value = serializeWorkflowModel(result.testData.schema);
-    savedModelId.value = result.modelId;
-    publishedDefinitionId.value = result.definitionId;
-    startedInstanceId.value = result.instanceId;
-    startedTaskId.value =
-      result.nextTask?.id ??
-      result.pendingTasks?.[0]?.id ??
-      result.finalTasks.find((task) => task.status === 'pending' || task.status === 'claimed')?.id ??
-      '';
-    const displayedTaskStatus = result.finalTasks.find((task) => task.id === startedTaskId.value)?.status;
-    startedTaskStatus.value =
-      displayedTaskStatus ? workflowStatusLabel(displayedTaskStatus) : workflowStatusLabel(result.instanceStatus);
+    updateRuntimeFromInstance(instance);
+    startedTaskStatus.value = workflowStatusLabel(instance.status);
+    testRunSummary.value = '实例已启动，正在等待审批待办';
+    message.value = `测试实例 ${instance.id} 已启动，正在等待 Trigger.dev 生成审批待办...`;
 
-    if (result.instanceStatus === 'running' && startedTaskId.value) {
-      const assigneeId = result.nextTask?.assigneeId ?? result.pendingTasks?.[0]?.assigneeId ?? '';
+    const polledInstance = hasPendingWorkflowTask(instance) || instance.status !== 'running'
+      ? instance
+      : await waitForApprovalTestState(
+          instance.id,
+          pollGeneration,
+          approvalTestPollTimeoutMs,
+          approvalTestPollIntervalMs
+        );
+
+    if (pollGeneration !== approvalTestPollGeneration) return;
+
+    if (!polledInstance) {
+      testRunSummary.value = '实例已发起，待办仍在生成';
+      startedTaskStatus.value = workflowStatusLabel(instance.status);
+      message.value = `测试实例 ${instance.id} 已成功启动，但暂未读取到审批待办。实例不会重复发起，可稍后刷新查看。`;
+      messageClass.value = 'workflow-help';
+      return;
+    }
+
+    updateRuntimeFromInstance(polledInstance);
+    const pendingTask = polledInstance.tasks?.find(
+      (task) => task.status === 'pending' || task.status === 'claimed'
+    );
+
+    if (polledInstance.status === 'running' && pendingTask) {
+      const assigneeId = pendingTask.assigneeId ?? '';
       const approverLabel = auth.devTestUsers.value.find((user) => user.id === assigneeId)?.name ?? assigneeId;
       testRunSummary.value = `已发起审批，待 ${approverLabel || '审批人'} 处理`;
       message.value = `测试审批已发起。请切换到审批人 ${approverLabel || assigneeId}，从消息提醒进入审批页面处理。`;
-    } else if (result.passed || result.instanceStatus === 'approved') {
+    } else if (polledInstance.status === 'approved') {
       testRunSummary.value = '流程已自动结束';
-      message.value = `测试审批已完成：实例 ${result.instanceId} 已${workflowStatusLabel(result.instanceStatus)}。`;
+      message.value = `测试审批已完成：实例 ${instance.id} 已${workflowStatusLabel(polledInstance.status)}。`;
     } else {
-      throw new Error(`测试审批已发起但未生成待办，实例状态：${workflowStatusLabel(result.instanceStatus)}`);
+      throw new Error(`测试审批实例已结束，状态：${workflowStatusLabel(polledInstance.status)}`);
     }
     messageClass.value = 'workflow-success';
   } catch (error) {
@@ -593,51 +1062,39 @@ async function publishCurrentWorkflow() {
 
   const serialized = serializeWorkflowModel(schema);
   window.localStorage.setItem(activeStorageKey.value, serialized);
-  window.localStorage.setItem(localStorageKey, serialized);
-  window.localStorage.setItem(`enlearn.workflow.designer.${schema.code}`, serialized);
+  window.localStorage.setItem(localStorageKey.value, serialized);
+  window.localStorage.setItem(
+    `enlearn.workflow.designer.${auth.activeAccount.value?.account_id ?? 'unselected'}.${schema.code}`,
+    serialized
+  );
 
-  const model = await workflowApi<WorkflowModelRecord>('/models', {
-    method: 'POST',
-    body: JSON.stringify({
-      code: schema.code,
-      name: schema.name,
-      documentType: schema.documentType,
-      schema
-    })
-  });
+  const modelPayload = {
+    code: schema.code,
+    name: schema.name,
+    documentType: schema.documentType,
+    schema
+  };
+  const model = savedModelId.value
+    ? await invokeWorkflowService<WorkflowModelRecord>('updateModel', {
+        modelId: savedModelId.value,
+        ...modelPayload
+      })
+    : await invokeWorkflowService<WorkflowModelRecord>('saveModel', modelPayload);
   savedModelId.value = model.id;
 
-  const published = await workflowApi<PublishWorkflowResult>(`/models/${model.id}/publish`, {
-    method: 'POST',
-    body: JSON.stringify({
-      remark: '订单审批流设计器测试发布'
-    })
+  const published = await invokeWorkflowService<PublishWorkflowResult>('publishModel', {
+    modelId: model.id,
+    remark: '订单审批流设计器测试发布'
   });
   publishedDefinitionId.value = published.definition.id;
 
   return published;
 }
 
-async function workflowApi<T>(path: string, init: RequestInit = {}) {
-  const body = parseWorkflowBody(init.body);
-  const publishMatch = path.match(/^\/models\/([^/]+)\/publish$/);
-
-  if (path === '/models') {
-    return invokeWorkflowService<T>('saveModel', body);
-  }
-
-  if (publishMatch) {
-    return invokeWorkflowService<T>('publishModel', {
-      modelId: publishMatch[1],
-      ...body
-    });
-  }
-
-  if (path === '/instances') {
-    return invokeWorkflowService<T>('startInstance', body);
-  }
-
-  throw new Error(`Unsupported workflow API path: ${path}`);
+function applySchemaJsonValue(value: unknown) {
+  schemaText.value =
+    typeof value === 'string' ? value : JSON.stringify(value ?? {}, null, 2);
+  applySchemaText();
 }
 
 function createDesignerTestVariables(businessKey: string, currentUserId: string) {
@@ -654,10 +1111,49 @@ function createDesignerTestVariables(businessKey: string, currentUserId: string)
 }
 
 function resetRuntimeState() {
+  approvalTestPollGeneration += 1;
   startedInstanceId.value = '';
   startedTaskId.value = '';
   startedTaskStatus.value = '';
   testRunSummary.value = '';
+}
+
+async function waitForApprovalTestState(
+  instanceId: string,
+  generation: number,
+  timeoutMs: number,
+  intervalMs: number
+) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() <= deadline && generation === approvalTestPollGeneration) {
+    try {
+      const instance = await invokeWorkflowService<WorkflowRuntimeInstance>('getInstance', {
+        instanceId
+      });
+      if (hasPendingWorkflowTask(instance) || instance.status !== 'running') {
+        return instance;
+      }
+    } catch {
+      // A single gateway or database disconnect must not turn an already-started run into a failure.
+    }
+
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) break;
+    await delay(Math.min(intervalMs, remainingMs));
+  }
+
+  return undefined;
+}
+
+function hasPendingWorkflowTask(instance: WorkflowRuntimeInstance) {
+  return Boolean(
+    instance.tasks?.some((task) => task.status === 'pending' || task.status === 'claimed')
+  );
+}
+
+function delay(ms: number) {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 }
 
 function updateRuntimeFromInstance(instance: WorkflowRuntimeInstance) {
@@ -688,26 +1184,73 @@ function workflowStatusLabel(status?: string) {
   return labels[status ?? ''] ?? status ?? '-';
 }
 
-function parseWorkflowBody(body: BodyInit | null | undefined) {
-  if (typeof body !== 'string' || !body.trim()) return {};
-
-  const parsed = JSON.parse(body) as unknown;
-  return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
-    ? (parsed as Record<string, unknown>)
-    : {};
-}
-
 async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<string, unknown>) {
-  const userId = auth.user.value?.id;
-  if (!userId) {
+  if (!auth.user.value?.id) {
     throw new Error('请先登录后再操作审批流');
   }
 
   return serviceApi.invoke<T>('workflow', serviceMethod, {
     ...postData,
-    tenantId: 'default',
-    userId
+    tenantId: auth.activeAccount.value?.account_id
   });
+}
+
+function triggerStatusLabel(status?: string) {
+  const labels: Record<string, string> = {
+    ACTIVE: '运行中',
+    CANCELED: '已取消',
+    COMPLETED: '已完成',
+    CRASHED: '已崩溃',
+    DELAYED: '已延迟',
+    DEQUEUED: '已出队',
+    EXECUTING: '执行中',
+    EXPIRED: '已过期',
+    FAILED: '失败',
+    PAUSED: '已暂停',
+    PENDING_VERSION: '等待版本',
+    QUEUED: '排队中',
+    SYSTEM_FAILURE: '系统失败',
+    TIMED_OUT: '已超时',
+    WAITING: '等待中'
+  };
+  return labels[status ?? ''] ?? status ?? '-';
+}
+
+function runtimeStatusBadgeClass(status?: string) {
+  const normalized = String(status ?? '').toUpperCase();
+  return {
+    'runtime-monitor-status': true,
+    'runtime-monitor-status--danger': [
+      'CANCELED',
+      'CRASHED',
+      'FAILED',
+      'SYSTEM_FAILURE',
+      'TERMINATED',
+      'TIMED_OUT'
+    ].includes(normalized),
+    'runtime-monitor-status--warning': [
+      'DELAYED',
+      'PAUSED',
+      'PENDING_VERSION',
+      'QUEUED',
+      'WAITING'
+    ].includes(normalized),
+    'runtime-monitor-status--success': ['ACTIVE', 'COMPLETED', 'EXECUTING', 'RUNNING'].includes(normalized)
+  };
+}
+
+function formatRuntimeTime(value?: string) {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  }).format(date);
 }
 </script>
 
@@ -876,6 +1419,17 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
 .workflow-button--test:hover:not(:disabled) {
   border-color: #6ee7b7;
   background: #d1fae5;
+}
+
+.workflow-button--monitor {
+  border-color: #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.workflow-button--monitor:hover:not(:disabled) {
+  border-color: #60a5fa;
+  background: #dbeafe;
 }
 
 .workflow-action-menu {
@@ -1073,20 +1627,6 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   white-space: nowrap;
 }
 
-.workflow-panel--json textarea {
-  min-height: 150px;
-  width: 100%;
-  resize: vertical;
-  border: 1px solid #cbd5e1;
-  border-radius: 5px;
-  background: #0f172a;
-  color: #e2e8f0;
-  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
-  font-size: 12px;
-  line-height: 1.55;
-  padding: 10px;
-}
-
 .workflow-link-button {
   border: 0;
   background: transparent;
@@ -1126,6 +1666,386 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   color: #b91c1c;
 }
 
+.runtime-monitor-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.46);
+  padding: 24px;
+}
+
+.runtime-monitor-dialog {
+  display: grid;
+  grid-template-rows: auto auto auto auto auto minmax(0, 1fr);
+  width: min(1180px, 100%);
+  max-height: min(820px, calc(100vh - 48px));
+  overflow: hidden;
+  border: 1px solid #b8c4d4;
+  border-radius: 7px;
+  background: #ffffff;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.24);
+  color: #172033;
+}
+
+.runtime-monitor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid #dce3ec;
+  padding: 14px 16px;
+}
+
+.runtime-monitor-heading {
+  min-width: 0;
+}
+
+.runtime-monitor-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.runtime-monitor-title-row h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.runtime-monitor-heading p {
+  overflow: hidden;
+  margin: 2px 0 0;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runtime-monitor-engine-badge,
+.runtime-monitor-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  border: 1px solid #99f6e4;
+  border-radius: 999px;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 14px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+.runtime-monitor-engine-badge--warning,
+.runtime-monitor-status--warning {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #a16207;
+}
+
+.runtime-monitor-engine-badge--offline,
+.runtime-monitor-status--danger {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.runtime-monitor-status--success {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.runtime-monitor-header-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 5px;
+}
+
+.runtime-monitor-icon-button {
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  font-size: 17px;
+}
+
+.runtime-monitor-icon-button:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.runtime-monitor-icon-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.runtime-monitor-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  border-bottom: 1px solid #fed7aa;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 12px;
+  line-height: 18px;
+  padding: 8px 16px;
+}
+
+.runtime-monitor-alert i {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  font-size: 15px;
+}
+
+.runtime-monitor-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border-bottom: 1px solid #dce3ec;
+  background: #f8fafc;
+}
+
+.runtime-monitor-metrics > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  border-right: 1px solid #dce3ec;
+  padding: 11px 14px;
+}
+
+.runtime-monitor-metrics > div:last-child {
+  border-right: 0;
+}
+
+.runtime-monitor-metrics span {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runtime-monitor-metrics strong {
+  color: #0f172a;
+  font-size: 21px;
+  line-height: 26px;
+}
+
+.runtime-monitor-engine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  margin: 0;
+  border-bottom: 1px solid #dce3ec;
+  padding: 8px 16px;
+}
+
+.runtime-monitor-engine div {
+  display: flex;
+  gap: 6px;
+}
+
+.runtime-monitor-engine dt,
+.runtime-monitor-engine dd {
+  margin: 0;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.runtime-monitor-engine dt {
+  color: #64748b;
+}
+
+.runtime-monitor-engine dd {
+  color: #1e293b;
+  font-weight: 800;
+}
+
+.runtime-monitor-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 3px;
+  border-bottom: 1px solid #dce3ec;
+  padding: 7px 12px 0;
+}
+
+.runtime-monitor-tabs button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-height: 31px;
+  gap: 6px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 0 10px 5px;
+}
+
+.runtime-monitor-tabs button.active {
+  border-bottom-color: #0f766e;
+  color: #0f766e;
+}
+
+.runtime-monitor-tabs button span {
+  min-width: 18px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 10px;
+  line-height: 18px;
+  padding: 0 5px;
+  text-align: center;
+}
+
+.runtime-monitor-tabs button.active span {
+  background: #ccfbf1;
+  color: #0f766e;
+}
+
+.runtime-monitor-table-wrap {
+  min-height: 260px;
+  overflow: auto;
+}
+
+.runtime-monitor-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.runtime-monitor-table th,
+.runtime-monitor-table td {
+  overflow: hidden;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+  font-size: 11px;
+  line-height: 16px;
+  padding: 9px 12px;
+  text-align: left;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+.runtime-monitor-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f8fafc;
+  color: #475569;
+  font-weight: 800;
+}
+
+.runtime-monitor-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.runtime-monitor-table td strong,
+.runtime-monitor-table td small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.runtime-monitor-table td strong {
+  color: #172033;
+  font-size: 12px;
+}
+
+.runtime-monitor-table td small {
+  margin-top: 2px;
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.runtime-monitor-table th:first-child,
+.runtime-monitor-table td:first-child {
+  width: 24%;
+}
+
+.runtime-monitor-action-column {
+  width: 110px;
+  text-align: right !important;
+}
+
+.runtime-monitor-mono {
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+}
+
+.runtime-monitor-terminate {
+  display: inline-flex;
+  align-items: center;
+  min-height: 27px;
+  gap: 4px;
+  border: 1px solid #fca5a5;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #b91c1c;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 0 7px;
+}
+
+.runtime-monitor-terminate:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+.runtime-monitor-terminate:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.runtime-monitor-empty {
+  height: 180px;
+  color: #64748b !important;
+  text-align: center !important;
+}
+
+.runtime-monitor-loading {
+  display: flex;
+  min-height: 340px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.runtime-monitor-loading i {
+  color: #0f766e;
+  font-size: 20px;
+}
+
+.runtime-monitor-spin {
+  display: inline-block;
+  animation: runtime-monitor-spin 0.9s linear infinite;
+}
+
+@keyframes runtime-monitor-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 1100px) {
   .workflow-designer-page__main {
     grid-template-columns: 1fr;
@@ -1153,6 +2073,65 @@ async function invokeWorkflowService<T>(serviceMethod: string, postData: Record<
   .workflow-inline-field {
     grid-template-columns: 42px minmax(0, 1fr);
     width: 100%;
+  }
+
+  .runtime-monitor-mask {
+    place-items: stretch;
+    padding: 0;
+  }
+
+  .runtime-monitor-dialog {
+    width: 100%;
+    max-height: 100vh;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .runtime-monitor-header {
+    padding: 11px 12px;
+  }
+
+  .runtime-monitor-title-row h2 {
+    font-size: 16px;
+    line-height: 22px;
+  }
+
+  .runtime-monitor-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .runtime-monitor-metrics > div:nth-child(3) {
+    border-right: 0;
+  }
+
+  .runtime-monitor-metrics > div:nth-child(6) {
+    border-right: 0;
+  }
+
+  .runtime-monitor-metrics > div:nth-child(-n + 3) {
+    border-bottom: 1px solid #dce3ec;
+  }
+
+  .runtime-monitor-metrics > div {
+    padding: 8px 10px;
+  }
+
+  .runtime-monitor-metrics strong {
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  .runtime-monitor-engine {
+    gap: 4px 14px;
+    padding: 7px 12px;
+  }
+
+  .runtime-monitor-table {
+    min-width: 760px;
+  }
+
+  .runtime-monitor-table-wrap {
+    min-height: 0;
   }
 }
 </style>

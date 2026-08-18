@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
 
-import { AccountModule } from '../account/account.module';
-import { AdminModule } from '../admin/admin.module';
-import { ChatModule } from '../chat/chat.module';
-import { EntityDesignModule } from '../entity-design/entity-design.module';
-import { FilesModule } from '../files/files.module';
-import { LowCodeModule } from '../lowcode/lowcode.module';
-import { NotificationModule } from '../notification/notification.module';
-import { PaymentModule } from '../payment/payment.module';
-import { PostsModule } from '../posts/posts.module';
-import { UserModule } from '../user/user.module';
+import { AccountModule } from '../account-service/account.module';
+import { AdminModule } from '../admin-service/admin.module';
+import { ChatModule } from '../chat-service/chat.module';
+import { EntityDesignModule } from '../entity-design-service/entity-design.module';
+import { FilesModule } from '../files-service/files.module';
+import { LowCodeModule } from '../lowcode-service/lowcode.module';
+import { MesModule } from '../mes-service/mes.module';
+import { NotificationModule } from '../notification-service/notification.module';
+import { PaymentModule } from '../payment-service/payment.module';
+import { PostsModule } from '../posts-service/posts.module';
+import { PlanningModule } from '../planning-service/planning.module';
+import { UserModule } from '../user-service/user.module';
 import { ServiceRpcController } from './service.rpc.controller';
 import { DomainServiceRouter } from './service-router.service';
 
@@ -24,7 +26,9 @@ import { DomainServiceRouter } from './service-router.service';
     NotificationModule,
     EntityDesignModule,
     FilesModule,
-    ChatModule
+    ChatModule,
+    PlanningModule,
+    MesModule
   ],
   controllers: [ServiceRpcController],
   providers: [DomainServiceRouter]

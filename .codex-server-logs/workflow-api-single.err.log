@@ -1,0 +1,20 @@
+node:events:496
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: read ECONNRESET
+    at TCP.onStreamRead (node:internal/stream_base_commons:216:20)
+Emitted 'error' event on Client instance at:
+    at Client._handleErrorEvent (E:\enLearn\node_modules\.pnpm\pg@8.22.0\node_modules\pg\lib\client.js:417:10)
+    at Connection.emit (node:events:518:28)
+    at Socket.reportStreamError (E:\enLearn\node_modules\.pnpm\pg@8.22.0\node_modules\pg\lib\connection.js:58:12)
+    at Socket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  errno: -4077,
+  code: 'ECONNRESET',
+  syscall: 'read'
+}
+
+Node.js v22.17.0

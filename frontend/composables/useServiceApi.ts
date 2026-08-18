@@ -5,6 +5,10 @@ type ServiceEnvelope<T> = {
   data: T;
 };
 
+export type ServiceInvokeOptions = {
+  requestId?: string;
+};
+
 function isServiceEnvelope<T>(value: unknown): value is ServiceEnvelope<T> {
   return (
     typeof value === 'object' &&
@@ -31,16 +35,28 @@ function readRows<T>(value: unknown) {
   return [] as T[];
 }
 
+function createRequestId() {
+  const value = typeof globalThis.crypto?.randomUUID === 'function'
+    ? globalThis.crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `web-${value}`;
+}
+
 export function useServiceApi() {
   const { request } = useAuthenticatedFetch();
 
   async function invoke<TResponse = unknown>(
     serviceName: string,
     serviceMethod: string,
-    postData: Record<string, unknown> = {}
+    postData: Record<string, unknown> = {},
+    options: ServiceInvokeOptions = {}
   ) {
+    const requestId = options.requestId?.trim() || createRequestId();
     const response = await request<TResponse | ServiceEnvelope<TResponse>>('/api/service', {
       method: 'POST',
+      headers: {
+        'X-Request-Id': requestId
+      },
       body: {
         serviceName,
         serviceMethod,

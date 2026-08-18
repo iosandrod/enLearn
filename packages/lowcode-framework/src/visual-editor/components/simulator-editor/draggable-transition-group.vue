@@ -1,6 +1,6 @@
 <template>
   <draggable
-    v-model="list"
+    :list="list"
     class="dragArea list-group"
     :class="{ isDrag }"
     :component-data="{
@@ -45,7 +45,7 @@
   });
 
   const props = defineProps({
-    moduleValue: {
+    modelValue: {
       type: Array,
       default: () => [],
     },
@@ -63,9 +63,9 @@
     },
     fallbackClass: String,
   });
-  const emit = defineEmits(['update:moduleValue', 'update:drag']);
+  const emit = defineEmits(['update:modelValue', 'update:drag']);
 
-  const list = useVModel(props, 'moduleValue', emit);
+  const list = useVModel(props, 'modelValue', emit);
   const isDrag = useVModel(props, 'drag', emit);
 
   const dragOptions = computed(() => ({
@@ -81,7 +81,7 @@
 </script>
 
 <style lang="scss" scoped>
-  @import './func.scss';
+  @use './func' as *;
 
   .flip-list-move {
     transition: transform 0.5s;

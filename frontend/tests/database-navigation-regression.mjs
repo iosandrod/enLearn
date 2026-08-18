@@ -1,0 +1,133 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+
+const layoutSource = await readFile(
+  new URL('../layouts/dashboard.vue', import.meta.url),
+  'utf8'
+);
+const routerSource = await readFile(new URL('../src/router.ts', import.meta.url), 'utf8');
+const migrationSource = await readFile(
+  new URL(
+    '../../supabase/migrations/20260803190000_keep_file_management_in_advanced_tools.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
+const databaseNavigationMigrationSource = await readFile(
+  new URL(
+    '../../supabase/migrations/20260809150000_lowcode_page_management_dynamic_route.sql',
+    import.meta.url
+  ),
+  'utf8'
+);
+const dynamicDashboardPageSource = await readFile(
+  new URL('../pages/dashboard/[...slug].vue', import.meta.url),
+  'utf8'
+);
+
+assert.match(
+  layoutSource,
+  /collectNavigationRoots\(normalizedRoutes\.value, 'top-tool'\)/,
+  'Top tools must be projected from database navigation metadata.'
+);
+assert.match(
+  layoutSource,
+  /collectNavigationRoots\(nodes, 'sidebar'\)/,
+  'The sidebar must be projected independently from database navigation metadata.'
+);
+assert.doesNotMatch(
+  layoutSource,
+  /window\.addEventListener\('focus'/,
+  'Changing browser focus must not reload unchanged database navigation.'
+);
+assert.doesNotMatch(
+  routerSource,
+  /path:\s*['"]\/dashboard\/low-code['"]/,
+  'Low-code page management must not bypass the database renderer with a static route.'
+);
+assert.match(
+  routerSource,
+  /path:\s*['"]\/dashboard\/:slug\(\.\*\)\*['"][\s\S]*pages\/dashboard\/\[\.\.\.slug\]\.vue/,
+  'Database-backed dashboard pages must use the dynamic catch-all renderer.'
+);
+assert.match(
+  routerSource,
+  /path:\s*['"]\/dashboard\/low-code\/designer\/:code\?['"]/,
+  'The interactive visual designer must retain its dedicated application route.'
+);
+assert.match(
+  dynamicDashboardPageSource,
+  /getLowCodePage\(serviceApi,[\s\S]*route:\s*props\.routePath[\s\S]*includeData:\s*true/,
+  'The dynamic dashboard renderer must resolve page definitions and data by database route.'
+);
+assert.match(
+  databaseNavigationMigrationSource,
+  /page_code\s*=\s*'lowcode-pages'[\s\S]*where code\s*=\s*'lowcode-pages'/,
+  'The low-code page-management menu must be bound to its database page definition.'
+);
+assert.match(
+  databaseNavigationMigrationSource,
+  /insert into public\.lowcode_pages[\s\S]*'lowcode-pages'[\s\S]*on conflict \(code\) do nothing/,
+  'Fresh databases must seed low-code page management without overwriting database-edited schemas.'
+);
+assert.match(
+  databaseNavigationMigrationSource,
+  /"resource": "lowcode_pages"[\s\S]*"kind": "grid"/,
+  'The seeded management screen must load and render low-code page rows from the database.'
+);
+assert.match(
+  layoutSource,
+  /if \(routesReloadPromise\) return routesReloadPromise;/,
+  'Concurrent database navigation refreshes must share one request.'
+);
+assert.match(
+  layoutSource,
+  /serviceApi\.invoke<AdminRouteNode\[]>\([\s\S]*?'admin',[\s\S]*?'listNavigationRoutes'/,
+  'The dashboard must load the backend-authorized navigation projection instead of raw route rows.'
+);
+assert.doesNotMatch(
+  layoutSource,
+  /listItems<AdminRouteNode\[]>\('admin',[\s\S]*?tableName:\s*'admin_routes'/,
+  'The sidebar must not bypass backend route authorization with generic CRUD.'
+);
+assert.doesNotMatch(
+  layoutSource,
+  /function canViewRoute|auth\.permissions\.value\.includes\(node\.permission_code\)/,
+  'An already authorized backend route must not be hidden again by stale client permission state.'
+);
+assert.match(
+  migrationSource,
+  /where route\.code = 'file-management'[\s\S]*advanced_root\.code = 'advanced-root'/,
+  'File management must belong to the Advanced Functions route group.'
+);
+assert.match(
+  migrationSource,
+  /"group":"advanced"/,
+  'File management metadata must identify the advanced group.'
+);
+assert.match(
+  migrationSource,
+  /"renderMode":"static"/,
+  'File management must remain marked as a static page.'
+);
+assert.match(
+  migrationSource,
+  /page_code = null/,
+  'The static file manager must not be bound to a low-code page.'
+);
+assert.match(
+  routerSource,
+  /path: '\/dashboard\/files'[\s\S]*import\('\.\.\/pages\/dashboard\/files\.vue'\)/,
+  'The file manager must render its dedicated Vue page.'
+);
+const fileRouteLine = routerSource
+  .split(/\r?\n/)
+  .find((line) => line.includes("path: '/dashboard/files'"));
+assert.ok(fileRouteLine, 'The file manager route must be registered.');
+assert.doesNotMatch(
+  fileRouteLine,
+  /\[\.\.\.slug\]\.vue/,
+  'The file manager must not be routed through the low-code catch-all renderer.'
+);
+
+console.log('Database navigation regression test passed.');

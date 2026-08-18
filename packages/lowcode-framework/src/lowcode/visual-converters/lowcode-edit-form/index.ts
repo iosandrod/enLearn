@@ -5,18 +5,26 @@ import type {
 } from '../../../types/lowcode';
 import type { VisualToLowCodeConverter } from '../types';
 import {
-  isDefined,
+  createLowCodeFormSchema,
   isPlainRecord,
-  normalizeField,
   normalizeRows,
-  readFormDesignerLayout,
   readJsonArray,
   readJsonObject,
+  readLowCodeFormSchema,
   readString,
   readVisualBlockProps,
   toBlockId,
   upsertFormDataSource,
 } from '../helpers';
+
+type FormType = 'edit' | 'search' | 'default';
+
+function normalizeFormType(value: unknown): FormType {
+  const formType = readString(value, 'edit');
+  return formType === 'edit' || formType === 'search' || formType === 'default'
+    ? formType
+    : 'edit';
+}
 
 function normalizeActionStatus(value: unknown): LowCodeAction['status'] {
   const status = readString(value);
@@ -74,6 +82,7 @@ const converter: VisualToLowCodeConverter = {
   order: 20,
   defaultProps: {
     blockId: 'edit-form',
+    formType: 'edit',
     title: '编辑信息',
     sourceKey: 'record',
     submitSourceKey: 'record',
@@ -96,10 +105,15 @@ const converter: VisualToLowCodeConverter = {
   },
   toRuntimeBlock(block, context) {
     const props = readVisualBlockProps(block);
-    const fields = normalizeRows(props.fields).map(normalizeField).filter(isDefined);
+    const formType = normalizeFormType(props.formType);
+    const preservedSchema = readLowCodeFormSchema(props.schema);
+    const formSchema = createLowCodeFormSchema(
+      props.fields,
+      props.formDesignerModel,
+      props.schema,
+    );
     const sourceKey = readString(props.sourceKey);
     const submitSourceKey = readString(props.submitSourceKey, sourceKey);
-    const layout = readFormDesignerLayout(props.formDesignerModel);
     const submitLabel = readString(props.submitText, '保存');
     const resetLabel = readString(props.resetText, '重置');
     const initialValues = readJsonObject(props.initialValuesJson, {});
@@ -115,16 +129,24 @@ const converter: VisualToLowCodeConverter = {
     return {
       id: toBlockId(props.blockId, block._vid),
       kind: 'form',
+      formType,
       title: readString(props.title, 'Edit Form'),
       ...(sourceKey ? { sourceKey } : {}),
       ...(submitSourceKey ? { submitSourceKey } : {}),
       ...(Object.keys(initialValues).length ? { initialValues } : {}),
+      ...(isPlainRecord(props.formDesignerModel)
+        ? { formDesignerModel: props.formDesignerModel }
+        : {}),
+      ...(typeof props.formDesignerUpdatedAt === 'number'
+        ? { formDesignerUpdatedAt: props.formDesignerUpdatedAt }
+        : {}),
       schema: {
-        fields,
-        ...(layout ? { layout } : {}),
+        ...formSchema,
         actions: designedActions.length
           ? designedActions
-          : [
+          : preservedSchema
+            ? formSchema.actions
+            : [
               {
                 code: 'submit',
                 label: submitLabel,

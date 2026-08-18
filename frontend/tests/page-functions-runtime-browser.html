@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page functions runtime smoke</title>
+    <link rel="stylesheet" href="/node_modules/remixicon/fonts/remixicon.css" />
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      #result {
+        position: fixed;
+        z-index: -1;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <output id="result">pending</output>
+    <script type="module">
+      import { createApp, defineComponent, h, nextTick, ref } from 'vue';
+      import { install as installVxeUI } from 'vxe-pc-ui';
+      import VxeUITable from 'vxe-table';
+      import 'vxe-pc-ui/lib/style.css';
+      import 'vxe-table/lib/style.css';
+      import LowCodePageRenderer from '../../packages/lowcode-framework/src/components/LowCodePageRenderer.vue';
+
+      const renderer = ref(null);
+      const serviceCalls = [];
+      const page = {
+        id: 'page-functions-runtime',
+        code: 'page-functions-runtime',
+        route: '/page-functions-runtime',
+        title: '页面函数运行时',
+        description: null,
+        layout: 'dashboard',
+        status: 'published',
+        keep_alive: false,
+        page_type: 'custom',
+        edit_page_id: null,
+        schema: {
+          schemaVersion: 3,
+          code: 'page-functions-runtime',
+          route: '/page-functions-runtime',
+          title: '页面函数运行时',
+          pageType: 'custom',
+          layout: 'dashboard',
+          status: 'published',
+          keepAlive: false,
+          dataSources: {},
+          apis: {
+            doubleValue: {
+              serviceName: 'testService',
+              serviceMethod: 'doubleValue',
+              method: 'POST',
+              postData: { fixed: 'page-api' },
+              resultPath: 'data.value',
+            },
+          },
+          functions: [
+            {
+              name: 'applyValue',
+              label: '应用值',
+              description: '调用页面 API 并更新表单',
+              enabled: true,
+              script: `
+                async function main() {
+                  const doubled = await this.executeHttp({
+                    api: 'doubleValue',
+                    method: 'POST',
+                    body: { value: this.event.args.value },
+                  });
+                  await this.executeAction({
+                    node: 'edit-form',
+                    method: 'setData',
+                    data: {
+                      argument: this.event.args.value,
+                      doubled,
+                    },
+                  });
+                  return { doubled };
+                }
+              `,
+            },
+            {
+              name: 'recursive',
+              label: '递归函数',
+              enabled: true,
+              script: `
+                async function main() {
+                  return this.executeFunction({ name: 'recursive', args: {} });
+                }
+              `,
+            },
+          ],
+          scriptPolicy: {
+            apiNames: [],
+            capabilities: [],
+          },
+          blocks: [
+            {
+              id: 'runtime-actions',
+              kind: 'buttonGroup',
+              materialVersion: '1.0.0',
+              actions: [
+                {
+                  code: 'run-function',
+                  label: '运行页面函数',
+                  status: 'primary',
+                  script: `
+                    async function main() {
+                      const result = await this.executeFunction({
+                        name: 'applyValue',
+                        args: { value: 7 },
+                      });
+                      await this.executeAction({
+                        node: 'edit-form',
+                        method: 'setData',
+                        data: { returned: result.doubled },
+                      });
+                      return result;
+                    }
+                  `,
+                },
+                {
+                  code: 'run-recursive',
+                  label: '运行递归函数',
+                  script: `
+                    async function main() {
+                      return this.executeFunction({ name: 'recursive', args: {} });
+                    }
+                  `,
+                },
+              ],
+            },
+            {
+              id: 'edit-form',
+              kind: 'form',
+              materialVersion: '1.0.0',
+              initialValues: {},
+              schema: {
+                fields: [
+                  { field: 'argument', label: '参数', component: 'vxe-input' },
+                  { field: 'doubled', label: 'API 结果', component: 'vxe-input' },
+                  { field: 'returned', label: '函数返回值', component: 'vxe-input' },
+                ],
+                actions: [],
+              },
+            },
+          ],
+          overlays: [],
+        },
+        version: 1,
+        published_at: null,
+        created_at: '',
+        updated_at: '',
+      };
+      const serviceApi = {
+        async invoke(serviceName, serviceMethod, payload = {}) {
+          serviceCalls.push({ serviceName, serviceMethod, payload });
+          if (serviceName === 'testService' && serviceMethod === 'doubleValue') {
+            return { data: { value: Number(payload.value) * 2 } };
+          }
+          throw new Error(`Unexpected service call: ${serviceName}.${serviceMethod}`);
+        },
+      };
+
+      const App = defineComponent({
+        setup() {
+          return () => h(LowCodePageRenderer, {
+            ref: renderer,
+            page,
+            serviceApi,
+            route: { query: {}, params: {}, path: page.route, fullPath: page.route },
+          });
+        },
+      });
+
+      const app = createApp(App);
+      app.use(installVxeUI);
+      app.use(VxeUITable);
+      app.mount('#app');
+
+      window.__pageFunctionRuntimeSmoke = {
+        serviceCalls,
+        snapshot() {
+          return renderer.value?.getSnapshot?.() ?? null;
+        },
+      };
+
+      await nextTick();
+      document.querySelector('#result').textContent = JSON.stringify({ ok: true });
+    </script>
+  </body>
+</html>

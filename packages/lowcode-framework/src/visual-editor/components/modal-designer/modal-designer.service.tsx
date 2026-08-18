@@ -144,6 +144,7 @@ const ServiceComponent = defineComponent({
                 showPageSetting={false}
                 workbenchMode="page"
                 persistToSession={false}
+                showGlobalDialogHost={false}
               />
             </div>
           ),

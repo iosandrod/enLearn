@@ -1,13 +1,18 @@
 import { createApp, defineComponent } from 'vue';
-import VxeUI from 'vxe-pc-ui';
-import VxeUITable from 'vxe-table';
+import { install as installVxeUI } from 'vxe-pc-ui';
+import VxeUITable, { VxeUI } from 'vxe-table';
 import 'normalize.css';
 import 'animate.css/animate.min.css';
 import 'remixicon/fonts/remixicon.css';
 import 'vxe-pc-ui/lib/style.css';
 import 'vxe-table/lib/style.css';
+import 'vxe-table-plugin-advanced-filter/style.css';
+import 'vxe-table-plugin-search-panel/style.css';
 import '../assets/styles/app.css';
 import '../assets/styles/visual-editor-utilities.scss';
+
+import AdvancedFilterPlugin from 'vxe-table-plugin-advanced-filter';
+import TableSearchPanel from 'vxe-table-plugin-search-panel';
 
 import {
   LcVxeModalRenderer,
@@ -32,8 +37,55 @@ import DocsScreen from '../components/DocsScreen.vue';
 import NotificationBell from '../components/NotificationBell.vue';
 import SiteFooter from '../components/SiteFooter.vue';
 import SiteHeader from '../components/SiteHeader.vue';
-import { useAuth } from '../composables/useAuth';
+import {
+  initializeSystemSettings,
+  installSystemSettingsListeners,
+} from '../composables/useSystemSettings';
+import { installLowCodeScriptApis } from './lowcode-script-apis';
 import { router } from './router';
+import './mainStyle.ts'
+const DEV_SERVICE_WORKER_RELOAD_KEY = 'enlearn_dev_service_worker_reloaded';
+
+
+
+async function cleanupDevServiceWorkers() {
+  if (!import.meta.env.DEV || !('serviceWorker' in navigator)) return;
+
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    if (!registrations.length) return;
+
+    await Promise.all(registrations.map((registration) => registration.unregister()));
+
+    if ('caches' in window) {
+      const cacheKeys = await window.caches.keys();
+      await Promise.all(cacheKeys.map((key) => window.caches.delete(key)));
+    }
+
+    if (
+      navigator.serviceWorker.controller &&
+      window.sessionStorage.getItem(DEV_SERVICE_WORKER_RELOAD_KEY) !== '1'
+    ) {
+      window.sessionStorage.setItem(DEV_SERVICE_WORKER_RELOAD_KEY, '1');
+      window.location.reload();
+      await new Promise<void>(() => { });
+    }
+  } catch (error) {
+    console.warn('Dev service worker cleanup failed.', error);
+  }
+}
+
+await cleanupDevServiceWorkers();
+
+VxeUI.use(TableSearchPanel, {
+  defaultExpanded: true,
+});
+VxeUI.use(AdvancedFilterPlugin, {
+  autoEnable: true,
+  caseSensitive: false,
+  emptyLabel: '暂无',
+  maxVisibleOptions: 500,
+});
 
 const app = createApp(App);
 const refs: Record<string, unknown> = {};
@@ -45,7 +97,7 @@ const ClientOnly = defineComponent({
 });
 
 app.use(router);
-app.use(VxeUI);
+app.use(installVxeUI);
 app.use(VxeUITable);
 
 app.component('ChatPopup', ChatPopup);
@@ -71,8 +123,10 @@ app.component('VisualEditorProvider', VisualEditorProvider);
 app.config.globalProperties.$$refs = refs;
 window.$$refs = refs;
 
-if (import.meta.env.DEV) {
-  await useAuth().init();
-}
+installSystemSettingsListeners();
+installLowCodeScriptApis();
+await initializeSystemSettings().catch((error) => {
+  console.warn('System settings initialization failed.', error);
+});
 
 app.mount('#app');

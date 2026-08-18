@@ -6,6 +6,7 @@
     :allow-form-design="allowFormDesign"
     :show-page-setting="showPageSetting"
     :workbench-mode="workbenchMode"
+    :page-record="pageRecord"
   >
     <template v-if="hasMetaSlot" #meta>
       <slot name="meta" />
@@ -14,16 +15,19 @@
       <slot name="actions" />
     </template>
   </VisualEditor>
-  <GlobalDialogHost />
+  <GlobalDialogHost v-if="showGlobalDialogHost" />
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, provide, useSlots } from 'vue';
+import { computed, onBeforeUnmount, onMounted, provide, useSlots, watch } from 'vue';
 import VisualEditor from '../visual-editor/index.vue';
 import GlobalDialogHost from './GlobalDialogHost';
-import type {
-  VisualEditorModelValue,
-  VisualEditorPage
+import { useLowCodeHost } from '../core/host';
+import { loadDatabaseMaterialPropForms } from '../visual-editor/material-prop-forms';
+import {
+  ensureUniqueVisualBlockIds,
+  type VisualEditorModelValue,
+  type VisualEditorPage
 } from '../visual-editor/visual-editor.utils';
 import {
   initVisualData,
@@ -31,6 +35,7 @@ import {
   localKey
 } from '../visual-editor/hooks/useVisualData';
 import { provideVisualEditorPersistence } from '../visual-editor/hooks/useVisualPersistence';
+import type { LowCodePageRecord } from '../types/lowcode';
 
 const props = withDefaults(
   defineProps<{
@@ -43,7 +48,9 @@ const props = withDefaults(
     allowFormDesign?: boolean;
     showPageSetting?: boolean;
     workbenchMode?: 'page' | 'form';
+    pageRecord?: LowCodePageRecord | null;
     persistToSession?: boolean;
+    showGlobalDialogHost?: boolean;
   }>(),
   {
     initialData: null,
@@ -55,7 +62,9 @@ const props = withDefaults(
     allowFormDesign: true,
     showPageSetting: true,
     workbenchMode: 'page',
-    persistToSession: true
+    pageRecord: null,
+    persistToSession: true,
+    showGlobalDialogHost: true,
   }
 );
 
@@ -74,6 +83,16 @@ const visualData = initVisualData({
   initialPath: props.initialPath,
   routePath: props.routePath
 });
+
+watch(
+  () => props.initialData,
+  (nextData) => {
+    if (!nextData) return;
+    visualData.replaceProject(nextData);
+  },
+);
+
+const host = useLowCodeHost();
 const slots = useSlots();
 const hasMetaSlot = computed(() => Boolean(slots.meta));
 const hasActionsSlot = computed(() => Boolean(slots.actions));
@@ -90,10 +109,18 @@ function persistToSession() {
 }
 
 function getSnapshot() {
+  const model = ensureUniqueVisualBlockIds(cloneModel());
+  const currentPath = visualData.currentPath.value;
+  const currentPage = model.pages[currentPath] ?? model.pages['/'];
+
+  if (!currentPage) {
+    throw new Error('当前设计页面不存在，无法保存。');
+  }
+
   return {
-    model: cloneModel(),
-    currentPath: visualData.currentPath.value,
-    currentPage: JSON.parse(JSON.stringify(visualData.currentPage.value)) as VisualEditorPage
+    model,
+    currentPath,
+    currentPage: currentPage as VisualEditorPage
   };
 }
 
@@ -109,6 +136,14 @@ defineExpose({
 
 onMounted(() => {
   window.addEventListener('beforeunload', persistToSession);
+
+  try {
+    void loadDatabaseMaterialPropForms(host.getServiceApi()).catch((error) => {
+      console.warn('数据库物料属性表单加载失败，已继续使用内置定义。', error);
+    });
+  } catch (error) {
+    console.warn('未配置低代码服务，已继续使用内置物料属性定义。', error);
+  }
 });
 
 onBeforeUnmount(() => {

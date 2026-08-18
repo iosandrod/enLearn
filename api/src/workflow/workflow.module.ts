@@ -1,20 +1,13 @@
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { Module } from '@nestjs/common';
 
-import { getRedisConnectionConfig } from '../common/utils/redis';
-import { WORKFLOW_SERVICE_CLIENT } from './workflow.transport';
+import { DatabaseModule } from './common/database.module';
+import { DefinitionModule } from './definition/definition.module';
+import { JobModule } from './job/job.module';
+import { RuntimeModule } from './runtime/runtime.module';
 import { WorkflowService } from './workflow.service';
 
 @Module({
-  imports: [
-    ClientsModule.register([
-      {
-        name: WORKFLOW_SERVICE_CLIENT,
-        transport: Transport.REDIS,
-        options: getRedisConnectionConfig()
-      }
-    ])
-  ],
+  imports: [DatabaseModule, DefinitionModule, RuntimeModule, JobModule],
   providers: [WorkflowService],
   exports: [WorkflowService]
 })

@@ -25,14 +25,19 @@ type LowCodeFormProps = {
     className?: VxeLowCodeFormProps['className'];
     readonly?: VxeLowCodeFormProps['readonly'];
     disabled?: VxeLowCodeFormProps['disabled'];
+    mode?: import("../types/lowcode").LowCodeEditPageMode;
     rules?: VxeLowCodeFormProps['rules'];
+    fieldValidator?: (field: LowCodeField, value: unknown, values: Record<string, unknown>) => Promise<true | string> | true | string;
     preventSubmit?: VxeLowCodeFormProps['preventSubmit'];
     validConfig?: VxeLowCodeFormProps['validConfig'];
     tooltipConfig?: VxeLowCodeFormProps['tooltipConfig'];
     collapseConfig?: VxeLowCodeFormProps['collapseConfig'];
     params?: VxeLowCodeFormProps['params'];
+    labelContextMenu?: boolean;
 };
 declare function validate(): Promise<boolean>;
+declare function setValues(values: Record<string, unknown>): void;
+declare function clearValidation(): Promise<void>;
 declare function snapshot(): {
     [x: string]: unknown;
 };
@@ -40,7 +45,9 @@ declare function handleSubmit(): Promise<boolean>;
 declare const __VLS_export: import("vue").DefineComponent<LowCodeFormProps, {
     submit: typeof handleSubmit;
     validate: typeof validate;
+    setValues: typeof setValues;
     snapshot: typeof snapshot;
+    clearValidation: typeof clearValidation;
 }, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {
     submit: (value: Record<string, unknown>) => any;
     action: (action: LowCodeAction, value: Record<string, unknown>) => any;
@@ -51,6 +58,13 @@ declare const __VLS_export: import("vue").DefineComponent<LowCodeFormProps, {
         previousValue: unknown;
         values: Record<string, unknown>;
     }) => any;
+    relateSelect: (payload: {
+        field: LowCodeField;
+        row: Record<string, unknown>;
+        values: Record<string, unknown>;
+        formValues: Record<string, unknown>;
+    }) => any;
+    labelContextMenu: (event: MouseEvent, field: LowCodeField) => any;
 }, string, import("vue").PublicProps, Readonly<LowCodeFormProps> & Readonly<{
     onSubmit?: (value: Record<string, unknown>) => any;
     onAction?: (action: LowCodeAction, value: Record<string, unknown>) => any;
@@ -61,6 +75,13 @@ declare const __VLS_export: import("vue").DefineComponent<LowCodeFormProps, {
         previousValue: unknown;
         values: Record<string, unknown>;
     }) => any;
+    onRelateSelect?: (payload: {
+        field: LowCodeField;
+        row: Record<string, unknown>;
+        values: Record<string, unknown>;
+        formValues: Record<string, unknown>;
+    }) => any;
+    onLabelContextMenu?: (event: MouseEvent, field: LowCodeField) => any;
 }>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
 declare const _default: typeof __VLS_export;
 export default _default;

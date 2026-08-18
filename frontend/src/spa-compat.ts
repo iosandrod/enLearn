@@ -13,6 +13,7 @@ export type FetchOptions = Omit<RequestInit, 'body'> & {
 const stateStore = new Map<string, Ref<unknown>>();
 const ACCESS_TOKEN_KEY = 'enlearn_access_token';
 const REFRESH_TOKEN_KEY = 'enlearn_refresh_token';
+const ACTIVE_ACCOUNT_KEY = 'enlearn_active_account_id';
 let refreshSessionPromise: Promise<boolean> | null = null;
 
 function getApiBaseUrl() {
@@ -31,6 +32,10 @@ function getStoredRefreshToken() {
   return localStorage.getItem(REFRESH_TOKEN_KEY) || '';
 }
 
+function getStoredAccountId() {
+  return localStorage.getItem(ACTIVE_ACCOUNT_KEY) || '';
+}
+
 function persistAuthSession(payload: unknown) {
   const session = (payload as { session?: { access_token?: string; refresh_token?: string } | null })?.session;
   if (!session?.access_token) return;
@@ -41,6 +46,7 @@ function persistAuthSession(payload: unknown) {
 function clearAuthSession() {
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem(ACTIVE_ACCOUNT_KEY);
 }
 
 function withQuery(url: string, query?: Record<string, unknown>) {
@@ -90,7 +96,10 @@ function isAuthFailure(statusCode: number, message: string) {
 }
 
 function canRefreshForPath(apiPath: string) {
-  return !apiPath.startsWith('/auth/refresh') && !apiPath.startsWith('/auth/signin') && !apiPath.startsWith('/auth/signup');
+  return !apiPath.startsWith('/auth/refresh') &&
+    !apiPath.startsWith('/auth/signin') &&
+    !apiPath.startsWith('/auth/signup') &&
+    !apiPath.startsWith('/auth/account-options');
 }
 
 function resolveRequestMethod(
@@ -162,14 +171,28 @@ async function refreshStoredSession() {
   return refreshSessionPromise;
 }
 
-async function fetchBackend<T>(url: string, options: FetchOptions = {}, didRetryAuth = false) {
+export async function authenticatedFetchResponse(
+  url: string,
+  options: FetchOptions = {},
+  didRetryAuth = false
+): Promise<Response> {
   const apiPath = normalizeApiPath(withQuery(url, options.query));
   const { query: _query, body, ...requestOptions } = options;
   const headers = new Headers(options.headers);
   const token = getStoredAccessToken();
+  const accountId = getStoredAccountId();
 
   if (token && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  if (
+    accountId &&
+    !headers.has('X-Account-Id') &&
+    !apiPath.startsWith('/auth/select-account') &&
+    !apiPath.startsWith('/auth/account-options')
+  ) {
+    headers.set('X-Account-Id', accountId);
   }
 
   if (body !== undefined && !(body instanceof FormData)) {
@@ -186,15 +209,14 @@ async function fetchBackend<T>(url: string, options: FetchOptions = {}, didRetry
         : JSON.stringify(body),
   });
 
-  const payload = parseResponsePayload(await response.text());
-
   if (!response.ok) {
+    const payload = parseResponsePayload(await response.clone().text());
     const statusMessage = readPayloadMessage(payload, response.statusText);
 
     if (!didRetryAuth && isAuthFailure(response.status, statusMessage) && canRefreshForPath(apiPath)) {
       const refreshed = await refreshStoredSession();
       if (refreshed) {
-        return fetchBackend<T>(url, options, true);
+        return authenticatedFetchResponse(url, options, true);
       }
     }
 
@@ -207,6 +229,14 @@ async function fetchBackend<T>(url: string, options: FetchOptions = {}, didRetry
       statusMessage,
     });
   }
+
+  return response;
+}
+
+async function fetchBackend<T>(url: string, options: FetchOptions = {}) {
+  const apiPath = normalizeApiPath(withQuery(url, options.query));
+  const response = await authenticatedFetchResponse(url, options);
+  const payload = parseResponsePayload(await response.text());
 
   if (apiPath.startsWith('/auth/signin') || apiPath.startsWith('/auth/signup') || apiPath.startsWith('/auth/session')) {
     persistAuthSession(payload);

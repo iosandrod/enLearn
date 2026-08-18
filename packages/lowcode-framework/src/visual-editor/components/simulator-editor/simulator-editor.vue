@@ -72,15 +72,17 @@
 </template>
 
 <script lang="tsx" setup>
-  import { computed, ref, watch } from 'vue';
+  import { computed, provide, ref, watch } from 'vue';
   import { cloneDeep } from 'lodash-es';
   import DraggableTransitionGroup from './draggable-transition-group.vue';
   import CompRender from './comp-render';
   import SlotItem from './slot-item.vue';
   import type { VisualEditorBlockData } from '../../visual-editor.utils';
-  import { $$dropdown, DropdownOption } from '../../utils/dropdown-service';
+  import {VxeUI} from 'vxe-pc-ui';
   import MonacoEditor from '../common/monaco-editor/MonacoEditor';
   import { useGlobalProperties } from '../../../hooks/useGlobalProperties';
+  import { useLowCodeHost } from '../../../core/host';
+  import type { LowCodePageRecord } from '../../../types/lowcode';
   import { useVisualData } from '../../hooks/useVisualData';
   import { useModal } from '../../hooks/useModal';
   import { generateNanoid } from '../../utils';
@@ -97,6 +99,10 @@
     $$buttonGroupDesigner,
     type ButtonGroupDesignerResult,
   } from '../button-group-designer/button-group-designer.service';
+  import { convertVisualEditorToLowCode } from '../../../lowcode/visual-converters';
+  import type { LowCodeContextSource } from '../../../runtime/lowcode-context';
+  import { lowCodeScriptContextProviderKey } from '../../../runtime/script-context-provider';
+  import { createDesignerScriptContextSource } from '../../designer-script-context';
   import {
     $$modalDesigner,
     type ModalDesignerResult,
@@ -110,6 +116,7 @@
     defineProps<{
       allowFormDesign?: boolean;
       workbenchMode?: 'page' | 'form';
+      pageRecord?: LowCodePageRecord | null;
     }>(),
     {
       allowFormDesign: true,
@@ -117,12 +124,41 @@
     },
   );
 
-  const { currentPage, setCurrentBlock } = useVisualData();
+  const visualData = useVisualData();
+  const { currentPage, setCurrentBlock } = visualData;
+  const host = useLowCodeHost();
 
   const { globalProperties } = useGlobalProperties();
 
   const drag = ref(false);
   let normalizingOverlayPlacement = false;
+
+  const getOptionalServiceApi = () => {
+    try {
+      return host.getServiceApi();
+    } catch {
+      return undefined;
+    }
+  };
+
+  const createDesignerScriptContext = (): LowCodeContextSource => {
+    const model = cloneDeep(visualData.jsonData);
+    const page = cloneDeep(currentPage.value);
+    const converted = convertVisualEditorToLowCode({
+      model,
+      currentPage: page,
+    });
+    return createDesignerScriptContextSource({
+      pageRecord: props.pageRecord,
+      model,
+      currentPage: page,
+      converted,
+    });
+  };
+
+  provide(lowCodeScriptContextProviderKey, {
+    getSource: createDesignerScriptContext,
+  });
 
   type OverlayEntry = {
     block: VisualEditorBlockData;
@@ -461,8 +497,19 @@
     block: VisualEditorBlockData,
     result: FormDesignerResult,
   ) => {
+    const previousSchema = isRecord(block.props.schema)
+      ? cloneDeep(block.props.schema)
+      : {};
+    const designedSchema = createLowCodeFormSchemaFromDesignerResult(result);
     block.props.fields = cloneDeep(result.fields);
     delete block.props.columns;
+    block.props.schema = {
+      ...previousSchema,
+      ...designedSchema,
+      actions: Array.isArray(previousSchema.actions)
+        ? previousSchema.actions
+        : designedSchema.actions,
+    };
     block.props.formDesignerModel = cloneDeep(result.designerModel);
     block.props.formDesignerUpdatedAt = Date.now();
     selectComp(block);
@@ -497,8 +544,6 @@
   ) => {
     block.props.__lowcodeComponent = 'lc-sub-form';
     block.props.schema = createLowCodeFormSchemaFromDesignerResult(result);
-    delete block.props.fields;
-    delete block.props.layout;
     block.props.subFormDesignerModel = cloneDeep(result.designerModel);
     block.props.subFormDesignerUpdatedAt = Date.now();
     selectComp(block);
@@ -519,11 +564,22 @@
   const openFormDesigner = async (block: VisualEditorBlockData) => {
     selectComp(block);
     const isSearchForm = block.componentKey === 'lowcode-search-form';
+    const runtimeSchema = isRecord(block.props?.schema) ? block.props.schema : {};
+    const schemaColumns = Number(runtimeSchema.columns);
     const result = await $$formDesigner({
       title: `${block.label || '表单'}设计`,
       mode: isSearchForm ? 'search' : 'edit',
       fields: Array.isArray(block.props?.fields) ? block.props.fields : [],
+      layout: Array.isArray(runtimeSchema.layout)
+        ? cloneDeep(runtimeSchema.layout)
+        : undefined,
+      columns: Number.isFinite(schemaColumns) && schemaColumns > 0
+        ? schemaColumns
+        : undefined,
       designerModel: block.props?.formDesignerModel || null,
+      pageData: currentPage.value,
+      pageRecord: props.pageRecord,
+      serviceApi: getOptionalServiceApi(),
     });
 
     syncFormDesignToPageBlock(block, result);
@@ -531,11 +587,22 @@
 
   const openGridDesigner = async (block: VisualEditorBlockData) => {
     selectComp(block);
+    let serviceApi;
+    try {
+      serviceApi = host.getServiceApi();
+    } catch {
+      serviceApi = undefined;
+    }
     const result = await $$gridDesigner({
       title: `${block.label || '表格'}设计`,
+      serviceApi,
       business: {
         blockId: block.props?.blockId,
         title: block.props?.title,
+        tableType: block.props?.tableType,
+        sourceType: block.props?.sourceType,
+        tableName: block.props?.tableName,
+        viewName: block.props?.viewName,
         sourceKey: block.props?.sourceKey,
         serviceName: block.props?.serviceName,
         serviceMethod: block.props?.serviceMethod,
@@ -564,6 +631,7 @@
         gap: block.props?.gap,
       },
       buttons: Array.isArray(block.props?.buttons) ? block.props.buttons : [],
+      scriptContext: createDesignerScriptContext(),
     });
 
     syncButtonGroupDesignToPageBlock(block, result);
@@ -572,12 +640,20 @@
   const openSubFormDesigner = async (block: VisualEditorBlockData) => {
     selectComp(block);
     const schema = isRecord(block.props?.schema) ? block.props.schema : null;
-    const schemaFields = Array.isArray(schema?.fields) ? schema.fields : block.props?.fields;
+    const schemaFields = Array.isArray(schema?.fields) ? schema.fields : [];
+    const schemaColumns = Number(schema?.columns);
     const result = await $$formDesigner({
       title: `${block.props?.label || block.label || '子表单'}设计`,
       mode: 'edit',
       fields: Array.isArray(schemaFields) ? schemaFields : [],
+      layout: Array.isArray(schema?.layout) ? cloneDeep(schema.layout) : undefined,
+      columns: Number.isFinite(schemaColumns) && schemaColumns > 0
+        ? schemaColumns
+        : undefined,
       designerModel: block.props?.subFormDesignerModel || null,
+      pageData: currentPage.value,
+      pageRecord: props.pageRecord,
+      serviceApi: getOptionalServiceApi(),
     });
 
     syncSubFormDesignToFieldBlock(block, result);
@@ -601,108 +677,118 @@
     block: VisualEditorBlockData,
     parentBlocks = currentPage.value.blocks,
   ) => {
-    $$dropdown({
-      reference: e,
-      content: () => (
-        <>
-          {props.allowFormDesign && isModalDesignBlock(block) && (
-            <DropdownOption
-              label="进入设计"
-              icon="ri-edit-line"
-              {...{
-                onClick: () => void openModalDesigner(block),
-              }}
-            />
-          )}
-          {props.allowFormDesign &&
-            (isFormDesignBlock(block) ||
-              isGridDesignBlock(block) ||
-              isButtonGroupDesignBlock(block)) && (
-            <DropdownOption
-              label="进入设计"
-              icon="ri-edit-line"
-              {...{
-                onClick: () =>
-                  void (isButtonGroupDesignBlock(block)
-                    ? openButtonGroupDesigner(block)
-                    : isGridDesignBlock(block)
-                    ? openGridDesigner(block)
-                    : openFormDesigner(block)),
-              }}
-            />
-          )}
-          {isSubFormDesignBlock(block) && (
-            <DropdownOption
-              label="进入设计"
-              icon="ri-edit-line"
-              {...{
-                onClick: () => void openSubFormDesigner(block),
-              }}
-            />
-          )}
-          <DropdownOption
-            label="复制节点"
-            icon="ri-file-copy-line"
-            {...{
-              onClick: () => {
-                const index = parentBlocks.findIndex((item) => item._vid == block._vid);
-                if (index != -1) {
-                  const setBlockVid = (block: VisualEditorBlockData) => {
-                    block._vid = `vid_${generateNanoid()}`;
-                    block.focus = false;
-                    const slots = block?.props?.slots || {};
-                    const slotKeys = Object.keys(slots);
-                    if (slotKeys.length) {
-                      slotKeys.forEach((slotKey) => {
-                        slots[slotKey]?.children?.forEach((child) => setBlockVid(child));
-                      });
-                    }
-                    if (Array.isArray(block.props?.overlays)) {
-                      block.props.overlays.forEach((child) => setBlockVid(child));
-                    }
-                  };
-                  const blockCopy = cloneDeep(parentBlocks[index]);
-                  setBlockVid(blockCopy);
-                  parentBlocks.splice(index + 1, 0, blockCopy);
+    e.preventDefault();
+    e.stopPropagation();
+    const canOpenModalDesigner = props.allowFormDesign && isModalDesignBlock(block);
+    const canOpenBlockDesigner =
+      props.allowFormDesign &&
+      (isFormDesignBlock(block) ||
+        isGridDesignBlock(block) ||
+        isButtonGroupDesignBlock(block));
+    const canOpenSubFormDesigner = isSubFormDesignBlock(block);
+
+    VxeUI.contextMenu.open({
+      x: e.clientX,
+      y: e.clientY,
+      className: 'enlearn-context-menu',
+      options: [
+        [
+          {
+            code: 'open-modal-designer',
+            name: '进入设计',
+            prefixIcon: 'ri-edit-line',
+            visible: canOpenModalDesigner,
+          },
+          {
+            code: 'open-block-designer',
+            name: '进入设计',
+            prefixIcon: 'ri-edit-line',
+            visible: canOpenBlockDesigner,
+          },
+          {
+            code: 'open-sub-form-designer',
+            name: '进入设计',
+            prefixIcon: 'ri-edit-line',
+            visible: canOpenSubFormDesigner,
+          },
+          {
+            code: 'duplicate',
+            name: '复制节点',
+            prefixIcon: 'ri-file-copy-line',
+          },
+          {
+            code: 'view',
+            name: '查看节点',
+            prefixIcon: 'ri-eye-line',
+          },
+          {
+            code: 'delete',
+            name: '删除节点',
+            prefixIcon: 'ri-delete-bin-line',
+            className: 'enlearn-context-menu-option--danger',
+          },
+        ],
+      ],
+      events: {
+        optionClick({ option }) {
+          if (option.code === 'open-modal-designer') {
+            void openModalDesigner(block);
+          }
+          if (option.code === 'open-block-designer') {
+            void (isButtonGroupDesignBlock(block)
+              ? openButtonGroupDesigner(block)
+              : isGridDesignBlock(block)
+                ? openGridDesigner(block)
+                : openFormDesigner(block));
+          }
+          if (option.code === 'open-sub-form-designer') {
+            void openSubFormDesigner(block);
+          }
+          if (option.code === 'duplicate') {
+            const index = parentBlocks.findIndex((item) => item._vid == block._vid);
+            if (index !== -1) {
+              const setBlockVid = (target: VisualEditorBlockData) => {
+                target._vid = `vid_${generateNanoid()}`;
+                target.focus = false;
+                const slots = target.props?.slots || {};
+                Object.keys(slots).forEach((slotKey) => {
+                  slots[slotKey]?.children?.forEach((child) => setBlockVid(child));
+                });
+                if (Array.isArray(target.props?.overlays)) {
+                  target.props.overlays.forEach((child) => setBlockVid(child));
                 }
+              };
+              const blockCopy = cloneDeep(parentBlocks[index]);
+              setBlockVid(blockCopy);
+              parentBlocks.splice(index + 1, 0, blockCopy);
+            }
+          }
+          if (option.code === 'view') {
+            useModal({
+              title: '节点信息',
+              footer: null,
+              props: {
+                width: 600,
               },
-            }}
-          />
-          <DropdownOption
-            label="查看节点"
-            icon="ri-eye-line"
-            {...{
-              onClick: () =>
-                useModal({
-                  title: '节点信息',
-                  footer: null,
-                  props: {
-                    width: 600,
-                  },
-                  content: () => (
-                    <MonacoEditor
-                      code={JSON.stringify(block)}
-                      layout={{ width: 530, height: 600 }}
-                      vid={block._vid}
-                    />
-                  ),
-                }),
-            }}
-          />
-          <DropdownOption
-            label="删除节点"
-            icon="ri-delete-bin-line"
-            {...{
-              onClick: () => deleteComp(block, parentBlocks),
-            }}
-          />
-        </>
-      ),
+              content: () => (
+                <MonacoEditor
+                  code={JSON.stringify(block)}
+                  layout={{ width: 530, height: 600 }}
+                  vid={block._vid}
+                />
+              ),
+            });
+          }
+          if (option.code === 'delete') {
+            deleteComp(block, parentBlocks);
+          }
+        },
+      },
     });
   };
 </script>
 <style lang="scss" scoped>
-  @import './func.scss';
+  @use './func' as *;
 
   .simulator-container {
     display: flex;
@@ -802,7 +888,8 @@
     min-height: 0;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow: auto;
+    // overflow: hidden;
   }
 
   .simulator-overlay-shelf {

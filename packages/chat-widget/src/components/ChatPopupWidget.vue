@@ -257,7 +257,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import type {
   ChatWidgetApi,
   ChatWidgetConversation,
@@ -301,6 +301,7 @@ const conversationError = ref('');
 const messageError = ref('');
 const draft = ref('');
 const messageListEl = ref<HTMLElement | null>(null);
+let socketRetained = false;
 
 const socketStatus = computed(() => props.socket.status.value);
 const activeNavLabel = computed(() => navItems.find((item) => item.key === activeNav.value)?.label ?? '聊天');
@@ -365,9 +366,14 @@ async function toggleOpen() {
 }
 
 async function reconnect() {
-  props.socket.disconnect?.();
+  if (socketRetained) return props.socket.connect();
   await props.socket.connect();
+  socketRetained = true;
 }
+
+onBeforeUnmount(() => {
+  if (socketRetained) props.socket.release?.();
+});
 
 async function loadConversations() {
   loadingConversations.value = true;

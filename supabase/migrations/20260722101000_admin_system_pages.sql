@@ -723,28 +723,28 @@ insert into public.lowcode_pages (
               "field": "code",
               "label": "Code",
               "component": "vxe-input",
-              "props": { "clearable": true, "placeholder": "trial_bookings" },
+              "props": { "clearable": true, "placeholder": "sales_orders" },
               "rules": [{ "required": true, "message": "Code is required" }]
             },
             {
               "field": "title",
               "label": "Title",
               "component": "vxe-input",
-              "props": { "clearable": true, "placeholder": "Trial Bookings" },
+              "props": { "clearable": true, "placeholder": "Sales Orders" },
               "rules": [{ "required": true, "message": "Title is required" }]
             },
             {
               "field": "table_name",
               "label": "Table Name",
               "component": "vxe-input",
-              "props": { "clearable": true, "placeholder": "public.trial_bookings" },
+              "props": { "clearable": true, "placeholder": "public.sales_orders" },
               "rules": [{ "required": true, "message": "Table name is required" }]
             },
             {
               "field": "route_path",
               "label": "Route Path",
               "component": "vxe-input",
-              "props": { "clearable": true, "placeholder": "/dashboard/system/trial-bookings" },
+              "props": { "clearable": true, "placeholder": "/dashboard/sales/orders" },
               "rules": [{ "required": true, "message": "Route path is required" }]
             },
             {
@@ -964,7 +964,6 @@ insert into public.lowcode_pages (
               { "field": "full_name", "title": "Full Name", "minWidth": 160 },
               { "field": "nickname", "title": "Nickname", "minWidth": 140 },
               { "field": "role", "title": "Public Role", "width": 120 },
-              { "field": "lead_status", "title": "Lead Status", "width": 120 },
               { "field": "role_names", "title": "Backend Roles", "minWidth": 220 },
               { "title": "Actions", "width": 120, "fixed": "right", "slots": { "default": "actions" } }
             ]
