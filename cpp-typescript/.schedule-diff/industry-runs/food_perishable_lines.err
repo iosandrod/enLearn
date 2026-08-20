@@ -1,0 +1,11 @@
+file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:452
+    if (missingName) throw new Error(`Scenario '${missingName}' wasn't found`);
+                           ^
+
+Error: Scenario 'food_perishable_lines' wasn't found
+    at prepareDatabase (file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:452:28)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async main (file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:855:33)
+    at async file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:903:3
+
+Node.js v20.19.3

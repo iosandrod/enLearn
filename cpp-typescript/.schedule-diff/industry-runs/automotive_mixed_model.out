@@ -1,0 +1,141 @@
+{
+  "scenario": "automotive_mixed_model",
+  "industry": "汽车整车制造",
+  "description": "Forty-eight mixed-model vehicle orders use routings, alternate body lines, paint and body setups, skill pools and finite components",
+  "coverage": [
+    "多车型混线",
+    "三段 routing",
+    "备用焊装线",
+    "颜色/车型换型",
+    "技能资源池",
+    "有限零部件",
+    "批量上下限"
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 43200,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "rotateResources": true
+  },
+  "input": {
+    "demands": 48,
+    "items": 7,
+    "buffers": 7,
+    "operations": 20,
+    "resources": 7,
+    "loads": 16,
+    "flows": 20,
+    "skills": 1,
+    "setupMatrices": 2
+  },
+  "identical": false,
+  "nativeOperationPlans": 168,
+  "typescriptOperationPlans": 183,
+  "nativeDeliveries": 33,
+  "typescriptDeliveries": 48,
+  "differenceCount": 100,
+  "firstDifferences": [
+    {
+      "path": "$.deliveries.length",
+      "native": 33,
+      "typescript": 48
+    },
+    {
+      "path": "$.deliveries[7].demand",
+      "native": "vehicle order 011 SUV-BLK",
+      "typescript": "vehicle order 008 SUV-RED"
+    },
+    {
+      "path": "$.deliveries[7].end",
+      "native": "2026-01-29T08:00:00",
+      "typescript": "2030-12-31T00:00:00"
+    },
+    {
+      "path": "$.deliveries[7].quantity",
+      "native": 4,
+      "typescript": 2
+    },
+    {
+      "path": "$.deliveries[8].demand",
+      "native": "vehicle order 012 SUV-RED",
+      "typescript": "vehicle order 009 SEDAN-BLK"
+    },
+    {
+      "path": "$.deliveries[8].end",
+      "native": "2026-01-29T16:00:00",
+      "typescript": "2030-12-31T00:00:00"
+    },
+    {
+      "path": "$.deliveries[8].quantity",
+      "native": 2,
+      "typescript": 3
+    },
+    {
+      "path": "$.deliveries[9].demand",
+      "native": "vehicle order 013 SEDAN-BLK",
+      "typescript": "vehicle order 010 SEDAN-WHT"
+    },
+    {
+      "path": "$.deliveries[9].end",
+      "native": "2026-01-30T00:00:00",
+      "typescript": "2030-12-31T00:00:00"
+    },
+    {
+      "path": "$.deliveries[10].demand",
+      "native": "vehicle order 014 SEDAN-WHT",
+      "typescript": "vehicle order 011 SUV-BLK"
+    },
+    {
+      "path": "$.deliveries[10].end",
+      "native": "2026-01-30T08:00:00",
+      "typescript": "2026-01-29T08:00:00"
+    },
+    {
+      "path": "$.deliveries[10].quantity",
+      "native": 2,
+      "typescript": 4
+    },
+    {
+      "path": "$.deliveries[11].demand",
+      "native": "vehicle order 015 SUV-BLK",
+      "typescript": "vehicle order 012 SUV-RED"
+    },
+    {
+      "path": "$.deliveries[11].end",
+      "native": "2026-01-30T16:00:00",
+      "typescript": "2026-01-29T16:00:00"
+    },
+    {
+      "path": "$.deliveries[11].quantity",
+      "native": 3,
+      "typescript": 2
+    },
+    {
+      "path": "$.deliveries[12].demand",
+      "native": "vehicle order 016 SUV-RED",
+      "typescript": "vehicle order 013 SEDAN-BLK"
+    },
+    {
+      "path": "$.deliveries[12].end",
+      "native": "2026-01-31T00:00:00",
+      "typescript": "2026-01-30T00:00:00"
+    },
+    {
+      "path": "$.deliveries[13].demand",
+      "native": "vehicle order 017 SEDAN-BLK",
+      "typescript": "vehicle order 014 SEDAN-WHT"
+    },
+    {
+      "path": "$.deliveries[13].end",
+      "native": "2026-01-31T08:00:00",
+      "typescript": "2026-01-30T08:00:00"
+    },
+    {
+      "path": "$.deliveries[13].quantity",
+      "native": 4,
+      "typescript": 2
+    }
+  ],
+  "databaseSchema": "codex_schedule_diff"
+}

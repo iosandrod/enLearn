@@ -1,0 +1,200 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory group ready item",
+      "demand": null,
+      "quantity": 10,
+      "quantityCompleted": 0,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "STCK",
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "group ready item",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 10
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:Inventory group ready item|1971-01-01T00:00:00|1971-01-01T00:00:00||10||STCK|#1",
+      "reference": "auto:Inventory group ready item|1971-01-01T00:00:00|1971-01-01T00:00:00||10||STCK|#1"
+    },
+    {
+      "operation": "group make long lead",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-06T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "group long lead item",
+          "date": "2026-01-06T00:00:00",
+          "quantity": 6
+        }
+      ],
+      "operationCost": 120,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 120,
+      "setupPenalty": 0,
+      "planKey": "auto:group make long lead|2026-01-01T00:00:00|2026-01-06T00:00:00||6||MO|#1",
+      "reference": "auto:group make long lead|2026-01-01T00:00:00|2026-01-06T00:00:00||6||MO|#1"
+    },
+    {
+      "operation": "group ship long lead",
+      "demand": "alltogether long lead line",
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-06T00:00:00",
+      "end": "2026-01-06T01:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-06T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "group long lead item",
+          "date": "2026-01-06T00:00:00",
+          "quantity": -6
+        }
+      ],
+      "operationCost": 6,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 6,
+      "setupPenalty": 0,
+      "planKey": "auto:group ship long lead|2026-01-06T00:00:00|2026-01-06T01:00:00|alltogether long lead line|6||MO|#1",
+      "reference": "auto:group ship long lead|2026-01-06T00:00:00|2026-01-06T01:00:00|alltogether long lead line|6||MO|#1"
+    },
+    {
+      "operation": "group ship ready",
+      "demand": "alltogether ready line",
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-06T00:00:00",
+      "end": "2026-01-06T01:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-06T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "group ready item",
+          "date": "2026-01-06T00:00:00",
+          "quantity": -6
+        }
+      ],
+      "operationCost": 6,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 6,
+      "setupPenalty": 0,
+      "planKey": "auto:group ship ready|2026-01-06T00:00:00|2026-01-06T01:00:00|alltogether ready line|6||MO|#1",
+      "reference": "auto:group ship ready|2026-01-06T00:00:00|2026-01-06T01:00:00|alltogether ready line|6||MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "alltogether long lead line",
+      "quantity": 6,
+      "end": "2026-01-06T01:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:group ship long lead|2026-01-06T00:00:00|2026-01-06T01:00:00|alltogether long lead line|6||MO|#1"
+    },
+    {
+      "demand": "alltogether ready line",
+      "quantity": 6,
+      "end": "2026-01-06T01:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:group ship ready|2026-01-06T00:00:00|2026-01-06T01:00:00|alltogether ready line|6||MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [
+    {
+      "name": "invalid data",
+      "description": "No replenishment defined for 'group ready item'",
+      "start": "1971-01-01T00:00:00",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "owner": "group ready item",
+      "feasible": false
+    }
+  ],
+  "inventoryProfiles": [
+    {
+      "buffer": "group long lead item",
+      "bufferBatch": "",
+      "date": "2026-01-06T00:00:00",
+      "quantity": -6,
+      "onhand": 0,
+      "operationPlanKey": "auto:group ship long lead|2026-01-06T00:00:00|2026-01-06T01:00:00|alltogether long lead line|6||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "group long lead item",
+      "bufferBatch": "",
+      "date": "2026-01-06T00:00:00",
+      "quantity": 6,
+      "onhand": 6,
+      "operationPlanKey": "auto:group make long lead|2026-01-01T00:00:00|2026-01-06T00:00:00||6||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "group ready item",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "quantity": 10,
+      "onhand": 10,
+      "operationPlanKey": "auto:Inventory group ready item|1971-01-01T00:00:00|1971-01-01T00:00:00||10||STCK|#1",
+      "orderType": "STCK"
+    },
+    {
+      "buffer": "group ready item",
+      "bufferBatch": "",
+      "date": "2026-01-06T00:00:00",
+      "quantity": -6,
+      "onhand": 4,
+      "operationPlanKey": "auto:group ship ready|2026-01-06T00:00:00|2026-01-06T01:00:00|alltogether ready line|6||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [],
+  "costSummary": {
+    "operationCost": 132,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 132,
+    "setupPenalty": 0
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "milestone product A @ plant",
+      "quantity": 1,
+      "operation": "make milestone A"
+    },
+    {
+      "type": "end",
+      "buffer": "milestone product B @ plant",
+      "quantity": 1,
+      "operation": "make milestone B"
+    },
+    {
+      "type": "end",
+      "buffer": "milestone product C @ plant",
+      "quantity": 1,
+      "operation": "make milestone C"
+    },
+    {
+      "type": "start",
+      "buffer": "milestone product A @ plant",
+      "quantity": -1,
+      "operation": "ship milestone A"
+    },
+    {
+      "type": "start",
+      "buffer": "milestone product B @ plant",
+      "quantity": -1,
+      "operation": "ship milestone B"
+    },
+    {
+      "type": "start",
+      "buffer": "milestone product C @ plant",
+      "quantity": -1,
+      "operation": "ship milestone C"
+    }
+  ],
+  "items": [
+    {
+      "name": "milestone product A"
+    },
+    {
+      "name": "milestone product B"
+    },
+    {
+      "name": "milestone product C"
+    }
+  ],
+  "loads": [
+    {
+      "type": "bucketized_percentage",
+      "offset": 50,
+      "quantity": 2,
+      "resource": "milestone resource",
+      "operation": "make milestone A"
+    },
+    {
+      "type": "bucketized_from_start",
+      "offset": 86400,
+      "quantity": 1,
+      "resource": "milestone resource",
+      "operation": "make milestone B"
+    },
+    {
+      "type": "bucketized_from_end",
+      "offset": 43200,
+      "quantity": 1.5,
+      "resource": "milestone resource",
+      "operation": "make milestone C"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 7200,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "resourceIterationMax": 500
+  },
+  "buffers": [
+    {
+      "item": "milestone product A",
+      "name": "milestone product A @ plant",
+      "onhand": 0,
+      "location": "milestone plant",
+      "producing": "make milestone A"
+    },
+    {
+      "item": "milestone product B",
+      "name": "milestone product B @ plant",
+      "onhand": 0,
+      "location": "milestone plant",
+      "producing": "make milestone B"
+    },
+    {
+      "item": "milestone product C",
+      "name": "milestone product C @ plant",
+      "onhand": 0,
+      "location": "milestone plant",
+      "producing": "make milestone C"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-15T00:00:00",
+      "item": "milestone product A",
+      "name": "milestone order A1",
+      "location": "milestone plant",
+      "priority": 1,
+      "quantity": 8,
+      "operation": "ship milestone A",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-18T00:00:00",
+      "item": "milestone product B",
+      "name": "milestone order B1",
+      "location": "milestone plant",
+      "priority": 2,
+      "quantity": 9,
+      "operation": "ship milestone B",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-26T00:00:00",
+      "item": "milestone product C",
+      "name": "milestone order C1",
+      "location": "milestone plant",
+      "priority": 3,
+      "quantity": 10,
+      "operation": "ship milestone C",
+      "minShipment": 1
+    }
+  ],
+  "calendars": [
+    {
+      "name": "milestone quota",
+      "buckets": [
+        {
+          "end": "2026-01-09T00:00:00",
+          "start": "2026-01-01T00:00:00",
+          "value": 12,
+          "priority": 1
+        },
+        {
+          "end": "2026-01-17T00:00:00",
+          "start": "2026-01-09T00:00:00",
+          "value": 7,
+          "priority": 1
+        },
+        {
+          "end": "2026-01-25T00:00:00",
+          "start": "2026-01-17T00:00:00",
+          "value": 18,
+          "priority": 1
+        },
+        {
+          "end": "2026-02-10T00:00:00",
+          "start": "2026-01-25T00:00:00",
+          "value": 9,
+          "priority": 1
+        }
+      ],
+      "default": 0
+    }
+  ],
+  "locations": [
+    {
+      "name": "milestone plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "milestone resource",
+      "type": "buckets",
+      "maximum": 0,
+      "location": "milestone plant",
+      "maxearly": 2592000,
+      "efficiency": 100,
+      "maximumCalendar": "milestone quota"
+    }
+  ],
+  "operations": [
+    {
+      "cost": 3,
+      "name": "make milestone A",
+      "type": "time_per",
+      "duration": 86400,
+      "location": "milestone plant",
+      "durationPer": 14400,
+      "sizeMaximum": 20,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 3,
+      "name": "make milestone B",
+      "type": "time_per",
+      "duration": 43200,
+      "location": "milestone plant",
+      "durationPer": 10800,
+      "sizeMaximum": 20,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 3,
+      "name": "make milestone C",
+      "type": "time_per",
+      "duration": 64800,
+      "location": "milestone plant",
+      "durationPer": 7200,
+      "sizeMaximum": 20,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "name": "ship milestone A",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "milestone plant"
+    },
+    {
+      "name": "ship milestone B",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "milestone plant"
+    },
+    {
+      "name": "ship milestone C",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "milestone plant"
+    }
+  ]
+}

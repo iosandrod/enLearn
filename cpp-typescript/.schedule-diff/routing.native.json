@@ -1,0 +1,71 @@
+{
+  "deliveries": [
+    {
+      "demand": "routing order",
+      "end": "2009-01-20T00:00:00",
+      "quantity": 10.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "demand": "routing order",
+      "end": "2009-01-20T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "routed item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -10.0
+        }
+      ],
+      "operation": "delivery routed item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-19T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-19T00:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "make routed item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-16T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-18T00:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "routing step 1",
+      "ownerOperation": "make routed item",
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-16T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-19T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "routed item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 10.0
+        }
+      ],
+      "operation": "routing step 2",
+      "ownerOperation": "make routed item",
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-18T00:00:00",
+      "status": "proposed"
+    }
+  ]
+}

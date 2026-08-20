@@ -328,6 +328,7 @@ services:
 volumes:
   clickhouse:
   postgres:
+    name: ${TRIGGER_POSTGRES_VOLUME:-trigger_dev_codex_db}
   redis:
   shared:
   minio:

@@ -1,0 +1,221 @@
+{
+  "deliveries": [
+    {
+      "demand": "order 1",
+      "end": "2009-01-20T00:00:00",
+      "quantity": 10.0
+    },
+    {
+      "demand": "order 2",
+      "end": "2009-01-20T00:00:00",
+      "quantity": 10.0
+    },
+    {
+      "demand": "order 3",
+      "end": "2009-01-17T12:00:00",
+      "quantity": 10.0
+    },
+    {
+      "demand": "order 4",
+      "end": "2009-01-20T00:00:00",
+      "quantity": 10.0
+    },
+    {
+      "demand": "order 5",
+      "end": "2009-01-21T00:00:00",
+      "quantity": 10.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "demand": "order 3",
+      "end": "2009-01-17T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "end item",
+          "date": "2009-01-16T12:00:00",
+          "quantity": -10.0
+        }
+      ],
+      "operation": "delivery end item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-16T12:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "order 1",
+      "end": "2009-01-20T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "end item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -10.0
+        }
+      ],
+      "operation": "delivery end item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-19T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "order 2",
+      "end": "2009-01-20T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "end item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -10.0
+        }
+      ],
+      "operation": "delivery end item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-19T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "order 4",
+      "end": "2009-01-20T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "end item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -10.0
+        }
+      ],
+      "operation": "delivery end item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-19T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "order 5",
+      "end": "2009-01-21T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "end item",
+          "date": "2009-01-20T00:00:00",
+          "quantity": -10.0
+        }
+      ],
+      "operation": "delivery end item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-20T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-15T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "end item",
+          "date": "2009-01-15T12:00:00",
+          "quantity": 10.0
+        }
+      ],
+      "operation": "make end item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [
+        "Resource"
+      ],
+      "start": "2009-01-14T12:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-16T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "end item",
+          "date": "2009-01-16T12:00:00",
+          "quantity": 10.0
+        }
+      ],
+      "operation": "make end item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [
+        "Resource"
+      ],
+      "start": "2009-01-15T12:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-18T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "end item",
+          "date": "2009-01-18T00:00:00",
+          "quantity": 10.0
+        }
+      ],
+      "operation": "make end item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [
+        "Resource"
+      ],
+      "start": "2009-01-17T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-19T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "end item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 10.0
+        }
+      ],
+      "operation": "make end item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [
+        "Resource"
+      ],
+      "start": "2009-01-18T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-20T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "end item",
+          "date": "2009-01-20T00:00:00",
+          "quantity": 10.0
+        }
+      ],
+      "operation": "make end item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [
+        "Resource"
+      ],
+      "start": "2009-01-19T00:00:00",
+      "status": "proposed"
+    }
+  ]
+}

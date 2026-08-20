@@ -1,0 +1,111 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "skilled item",
+      "quantity": -1,
+      "operation": "delivery skilled item"
+    },
+    {
+      "type": "end",
+      "buffer": "skilled item",
+      "quantity": 1,
+      "operation": "make skilled item"
+    }
+  ],
+  "items": [
+    {
+      "name": "skilled item"
+    }
+  ],
+  "loads": [
+    {
+      "skill": "assembly qualification",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "operator pool",
+      "operation": "make skilled item"
+    }
+  ],
+  "skills": [
+    {
+      "name": "assembly qualification"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "skilled item",
+      "name": "skilled item",
+      "onhand": 0,
+      "producing": "make skilled item"
+    }
+  ],
+  "current": "2009-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "skilled item",
+      "name": "skilled order",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "delivery skilled item"
+    }
+  ],
+  "resources": [
+    {
+      "name": "operator pool",
+      "maximum": 1,
+      "maxearly": 0
+    },
+    {
+      "name": "operator A",
+      "owner": "operator pool",
+      "maximum": 1,
+      "maxearly": 0,
+      "efficiency": 100
+    },
+    {
+      "name": "operator B",
+      "owner": "operator pool",
+      "maximum": 1,
+      "maxearly": 0,
+      "efficiency": 100
+    },
+    {
+      "name": "operator unqualified",
+      "owner": "operator pool",
+      "maximum": 1,
+      "maxearly": 0,
+      "efficiency": 200
+    }
+  ],
+  "operations": [
+    {
+      "name": "make skilled item",
+      "type": "fixed_time",
+      "duration": 86400
+    },
+    {
+      "name": "delivery skilled item",
+      "type": "fixed_time",
+      "duration": 86400
+    }
+  ],
+  "resourceSkills": [
+    {
+      "skill": "assembly qualification",
+      "priority": 2,
+      "resource": "operator A"
+    },
+    {
+      "skill": "assembly qualification",
+      "priority": 1,
+      "resource": "operator B"
+    }
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "scenario": "food_fresh_batches",
+  "industry": "食品饮料",
+  "description": "Seventy-two fresh-food orders share processing tanks and fillers, use recipe cleanovers, finite ingredients and alternate recipes under an unconstrained plan parameter",
+  "coverage": [
+    "短交期高频需求",
+    "共享罐体和灌装",
+    "配方清洗",
+    "有限原料",
+    "替代配方",
+    "备用罐体",
+    "plantype=2"
+  ],
+  "solver": {
+    "plantype": 2,
+    "lazyDelay": 10800,
+    "constraints": 15,
+    "minimumDelay": 900,
+    "rotateResources": true
+  },
+  "input": {
+    "demands": 72,
+    "items": 12,
+    "buffers": 12,
+    "operations": 8,
+    "resources": 3,
+    "loads": 12,
+    "flows": 28,
+    "skills": 0,
+    "setupMatrices": 1
+  },
+  "identical": false,
+  "nativeOperationPlans": 152,
+  "typescriptOperationPlans": 152,
+  "nativeDeliveries": 72,
+  "typescriptDeliveries": 72,
+  "differenceCount": 66,
+  "firstDifferences": [
+    {
+      "path": "$.operationPlans[80].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[81].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[82].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[83].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[84].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[85].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[86].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[87].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[88].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[89].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[90].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[91].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[92].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[93].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[94].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[95].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[96].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[98].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[99].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[100].feasible",
+      "native": true,
+      "typescript": false
+    }
+  ],
+  "databaseSchema": "codex_schedule_diff"
+}

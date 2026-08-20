@@ -1,0 +1,134 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory component A",
+      "demand": null,
+      "quantity": 1,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "status": "closed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "component A",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "Inventory component B",
+      "demand": null,
+      "quantity": 2,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "status": "closed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "component B",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "operation": "delivery flow item",
+      "demand": "flow order 1",
+      "quantity": 1,
+      "start": "2009-01-19T00:00:00",
+      "end": "2009-01-20T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "flow item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "delivery flow item",
+      "demand": "flow order 2",
+      "quantity": 1,
+      "start": "2009-01-19T00:00:00",
+      "end": "2009-01-20T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "flow item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "make flow item",
+      "demand": null,
+      "quantity": 1,
+      "start": "2009-01-18T00:00:00",
+      "end": "2009-01-19T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "component A",
+          "date": "2009-01-18T00:00:00",
+          "quantity": -1
+        },
+        {
+          "buffer": "flow item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "make flow item",
+      "demand": null,
+      "quantity": 1,
+      "start": "2009-01-18T00:00:00",
+      "end": "2009-01-19T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "component B",
+          "date": "2009-01-18T00:00:00",
+          "quantity": -1
+        },
+        {
+          "buffer": "flow item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 1
+        }
+      ]
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "flow order 1",
+      "quantity": 1,
+      "end": "2009-01-20T00:00:00"
+    },
+    {
+      "demand": "flow order 2",
+      "quantity": 1,
+      "end": "2009-01-20T00:00:00"
+    }
+  ]
+}

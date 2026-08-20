@@ -1,0 +1,141 @@
+{
+  "scenario": "aerospace_mro",
+  "industry": "航空维修 MRO",
+  "description": "Thirty MRO jobs use serial routings, unit lot sizes, certification-specific resource pools, alternate bays, bay setups and substitute repair kits",
+  "coverage": [
+    "单件维修",
+    "诊断-维修-放行 routing",
+    "多资质技师",
+    "备用工位",
+    "工位换型",
+    "专用/通用备件替代",
+    "低产能长周期"
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 13,
+    "minimumDelay": 7200,
+    "rotateResources": false
+  },
+  "input": {
+    "demands": 30,
+    "items": 7,
+    "buffers": 7,
+    "operations": 15,
+    "resources": 10,
+    "loads": 12,
+    "flows": 12,
+    "skills": 3,
+    "setupMatrices": 1
+  },
+  "identical": false,
+  "nativeOperationPlans": 154,
+  "typescriptOperationPlans": 154,
+  "nativeDeliveries": 30,
+  "typescriptDeliveries": 30,
+  "differenceCount": 100,
+  "firstDifferences": [
+    {
+      "path": "$.operationPlans[4].end",
+      "native": "2026-02-05T12:00:00",
+      "typescript": "2026-02-02T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[4].setupEnd",
+      "native": "2026-02-05T05:20:00",
+      "typescript": "2026-02-01T17:20:00"
+    },
+    {
+      "path": "$.operationPlans[4].start",
+      "native": "2026-02-05T05:20:00",
+      "typescript": "2026-02-01T17:20:00"
+    },
+    {
+      "path": "$.operationPlans[5].end",
+      "native": "2026-02-06T14:00:00",
+      "typescript": "2026-02-02T15:00:00"
+    },
+    {
+      "path": "$.operationPlans[5].setupEnd",
+      "native": "2026-02-06T07:20:00",
+      "typescript": "2026-02-02T08:20:00"
+    },
+    {
+      "path": "$.operationPlans[5].start",
+      "native": "2026-02-06T07:20:00",
+      "typescript": "2026-02-02T08:20:00"
+    },
+    {
+      "path": "$.operationPlans[6].end",
+      "native": "2026-02-08T12:00:00",
+      "typescript": "2026-02-02T15:00:00"
+    },
+    {
+      "path": "$.operationPlans[6].setupEnd",
+      "native": "2026-02-08T05:20:00",
+      "typescript": "2026-02-02T08:20:00"
+    },
+    {
+      "path": "$.operationPlans[6].start",
+      "native": "2026-02-08T05:20:00",
+      "typescript": "2026-02-02T08:20:00"
+    },
+    {
+      "path": "$.operationPlans[7].end",
+      "native": "2026-02-09T14:00:00",
+      "typescript": "2026-02-03T12:00:00"
+    },
+    {
+      "path": "$.operationPlans[7].setupEnd",
+      "native": "2026-02-09T07:20:00",
+      "typescript": "2026-02-03T05:20:00"
+    },
+    {
+      "path": "$.operationPlans[7].start",
+      "native": "2026-02-09T07:20:00",
+      "typescript": "2026-02-03T05:20:00"
+    },
+    {
+      "path": "$.operationPlans[8].end",
+      "native": "2026-02-11T12:00:00",
+      "typescript": "2026-02-05T12:00:00"
+    },
+    {
+      "path": "$.operationPlans[8].setupEnd",
+      "native": "2026-02-11T05:20:00",
+      "typescript": "2026-02-05T05:20:00"
+    },
+    {
+      "path": "$.operationPlans[8].start",
+      "native": "2026-02-11T05:20:00",
+      "typescript": "2026-02-05T05:20:00"
+    },
+    {
+      "path": "$.operationPlans[9].end",
+      "native": "2026-02-12T14:00:00",
+      "typescript": "2026-02-08T12:00:00"
+    },
+    {
+      "path": "$.operationPlans[9].setupEnd",
+      "native": "2026-02-12T07:20:00",
+      "typescript": "2026-02-08T05:20:00"
+    },
+    {
+      "path": "$.operationPlans[9].start",
+      "native": "2026-02-12T07:20:00",
+      "typescript": "2026-02-08T05:20:00"
+    },
+    {
+      "path": "$.operationPlans[10].end",
+      "native": "2026-02-14T12:00:00",
+      "typescript": "2026-02-11T12:00:00"
+    },
+    {
+      "path": "$.operationPlans[10].setupEnd",
+      "native": "2026-02-14T05:20:00",
+      "typescript": "2026-02-11T05:20:00"
+    }
+  ],
+  "databaseSchema": "codex_schedule_diff"
+}

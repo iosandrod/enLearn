@@ -1,0 +1,930 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory forward repair raw @ plant",
+      "demand": null,
+      "quantity": 80,
+      "quantityCompleted": 0,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "STCK",
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "forward repair raw @ plant",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 80
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:Inventory forward repair raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1",
+      "reference": "auto:Inventory forward repair raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1"
+    },
+    {
+      "operation": "make forward repair product",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-04T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "confirmed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T00:00:00",
+      "resources": [
+        "forward repair bottleneck"
+      ],
+      "materials": [
+        {
+          "buffer": "forward repair raw @ plant",
+          "date": "2026-01-01T00:00:00",
+          "quantity": -5
+        },
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-04T00:00:00",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 30,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 30,
+      "setupPenalty": 0,
+      "planKey": "ref:MO-FORWARD-LOCKED",
+      "reference": "MO-FORWARD-LOCKED"
+    },
+    {
+      "operation": "make forward repair product",
+      "demand": null,
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-04T00:00:00",
+      "end": "2026-01-06T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-04T00:00:00",
+      "resources": [
+        "forward repair bottleneck"
+      ],
+      "materials": [
+        {
+          "buffer": "forward repair raw @ plant",
+          "date": "2026-01-04T00:00:00",
+          "quantity": -3
+        },
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-06T00:00:00",
+          "quantity": 3
+        }
+      ],
+      "operationCost": 18,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 18,
+      "setupPenalty": 0,
+      "planKey": "auto:make forward repair product|2026-01-04T00:00:00|2026-01-06T00:00:00||3||MO|#1",
+      "reference": "auto:make forward repair product|2026-01-04T00:00:00|2026-01-06T00:00:00||3||MO|#1"
+    },
+    {
+      "operation": "make forward repair product",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-06T00:00:00",
+      "end": "2026-01-08T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-06T00:00:00",
+      "resources": [
+        "forward repair bottleneck"
+      ],
+      "materials": [
+        {
+          "buffer": "forward repair raw @ plant",
+          "date": "2026-01-06T00:00:00",
+          "quantity": -5
+        },
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-08T00:00:00",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 30,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 30,
+      "setupPenalty": 0,
+      "planKey": "auto:make forward repair product|2026-01-06T00:00:00|2026-01-08T00:00:00||5||MO|#1",
+      "reference": "auto:make forward repair product|2026-01-06T00:00:00|2026-01-08T00:00:00||5||MO|#1"
+    },
+    {
+      "operation": "make forward repair product",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-08T00:00:00",
+      "end": "2026-01-10T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-08T00:00:00",
+      "resources": [
+        "forward repair bottleneck"
+      ],
+      "materials": [
+        {
+          "buffer": "forward repair raw @ plant",
+          "date": "2026-01-08T00:00:00",
+          "quantity": -5
+        },
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-10T00:00:00",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 30,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 30,
+      "setupPenalty": 0,
+      "planKey": "auto:make forward repair product|2026-01-08T00:00:00|2026-01-10T00:00:00||5||MO|#1",
+      "reference": "auto:make forward repair product|2026-01-08T00:00:00|2026-01-10T00:00:00||5||MO|#1"
+    },
+    {
+      "operation": "make forward repair product",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T00:00:00",
+      "end": "2026-01-12T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T00:00:00",
+      "resources": [
+        "forward repair bottleneck"
+      ],
+      "materials": [
+        {
+          "buffer": "forward repair raw @ plant",
+          "date": "2026-01-10T00:00:00",
+          "quantity": -5
+        },
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-12T00:00:00",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 30,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 30,
+      "setupPenalty": 0,
+      "planKey": "auto:make forward repair product|2026-01-10T00:00:00|2026-01-12T00:00:00||5||MO|#1",
+      "reference": "auto:make forward repair product|2026-01-10T00:00:00|2026-01-12T00:00:00||5||MO|#1"
+    },
+    {
+      "operation": "make forward repair product",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T00:00:00",
+      "end": "2026-01-14T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T00:00:00",
+      "resources": [
+        "forward repair bottleneck"
+      ],
+      "materials": [
+        {
+          "buffer": "forward repair raw @ plant",
+          "date": "2026-01-12T00:00:00",
+          "quantity": -5
+        },
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-14T00:00:00",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 30,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 30,
+      "setupPenalty": 0,
+      "planKey": "auto:make forward repair product|2026-01-12T00:00:00|2026-01-14T00:00:00||5||MO|#1",
+      "reference": "auto:make forward repair product|2026-01-12T00:00:00|2026-01-14T00:00:00||5||MO|#1"
+    },
+    {
+      "operation": "ship forward repair product",
+      "demand": "forward repair order 03",
+      "quantity": 4,
+      "quantityCompleted": 0,
+      "start": "2026-01-04T00:00:00",
+      "end": "2026-01-04T01:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": false,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-04T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-04T00:00:00",
+          "quantity": -4
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship forward repair product|2026-01-04T00:00:00|2026-01-04T01:00:00|forward repair order 03|4||MO|#1",
+      "reference": "auto:ship forward repair product|2026-01-04T00:00:00|2026-01-04T01:00:00|forward repair order 03|4||MO|#1"
+    },
+    {
+      "operation": "ship forward repair product",
+      "demand": "forward repair order 07",
+      "quantity": 4,
+      "quantityCompleted": 0,
+      "start": "2026-01-06T00:00:00",
+      "end": "2026-01-06T01:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": false,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-06T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-06T00:00:00",
+          "quantity": -4
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship forward repair product|2026-01-06T00:00:00|2026-01-06T01:00:00|forward repair order 07|4||MO|#1",
+      "reference": "auto:ship forward repair product|2026-01-06T00:00:00|2026-01-06T01:00:00|forward repair order 07|4||MO|#1"
+    },
+    {
+      "operation": "ship forward repair product",
+      "demand": "forward repair order 08",
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-08T00:00:00",
+      "end": "2026-01-08T01:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": false,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-08T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-08T00:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship forward repair product|2026-01-08T00:00:00|2026-01-08T01:00:00|forward repair order 08|5||MO|#1",
+      "reference": "auto:ship forward repair product|2026-01-08T00:00:00|2026-01-08T01:00:00|forward repair order 08|5||MO|#1"
+    },
+    {
+      "operation": "ship forward repair product",
+      "demand": "forward repair order 05",
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T00:00:00",
+      "end": "2026-01-10T01:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": false,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-10T00:00:00",
+          "quantity": -2
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 05|2||MO|#1",
+      "reference": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 05|2||MO|#1"
+    },
+    {
+      "operation": "ship forward repair product",
+      "demand": "forward repair order 06",
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T00:00:00",
+      "end": "2026-01-10T01:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": false,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-10T00:00:00",
+          "quantity": -3
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 06|3||MO|#1",
+      "reference": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 06|3||MO|#1"
+    },
+    {
+      "operation": "ship forward repair product",
+      "demand": "forward repair order 04",
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T00:00:00",
+      "end": "2026-01-12T01:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": false,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-12T00:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship forward repair product|2026-01-12T00:00:00|2026-01-12T01:00:00|forward repair order 04|5||MO|#1",
+      "reference": "auto:ship forward repair product|2026-01-12T00:00:00|2026-01-12T01:00:00|forward repair order 04|5||MO|#1"
+    },
+    {
+      "operation": "ship forward repair product",
+      "demand": "forward repair order 01",
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T00:00:00",
+      "end": "2026-01-14T01:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": false,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-14T00:00:00",
+          "quantity": -2
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 01|2||MO|#1",
+      "reference": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 01|2||MO|#1"
+    },
+    {
+      "operation": "ship forward repair product",
+      "demand": "forward repair order 02",
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T00:00:00",
+      "end": "2026-01-14T01:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": false,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "forward repair product @ plant",
+          "date": "2026-01-14T00:00:00",
+          "quantity": -3
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 02|3||MO|#1",
+      "reference": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 02|3||MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "forward repair order 01",
+      "quantity": 2,
+      "end": "2026-01-14T01:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 01|2||MO|#1"
+    },
+    {
+      "demand": "forward repair order 02",
+      "quantity": 3,
+      "end": "2026-01-14T01:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 02|3||MO|#1"
+    },
+    {
+      "demand": "forward repair order 03",
+      "quantity": 4,
+      "end": "2026-01-04T01:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship forward repair product|2026-01-04T00:00:00|2026-01-04T01:00:00|forward repair order 03|4||MO|#1"
+    },
+    {
+      "demand": "forward repair order 04",
+      "quantity": 5,
+      "end": "2026-01-12T01:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship forward repair product|2026-01-12T00:00:00|2026-01-12T01:00:00|forward repair order 04|5||MO|#1"
+    },
+    {
+      "demand": "forward repair order 05",
+      "quantity": 2,
+      "end": "2026-01-10T01:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 05|2||MO|#1"
+    },
+    {
+      "demand": "forward repair order 06",
+      "quantity": 3,
+      "end": "2026-01-10T01:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 06|3||MO|#1"
+    },
+    {
+      "demand": "forward repair order 07",
+      "quantity": 4,
+      "end": "2026-01-06T01:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship forward repair product|2026-01-06T00:00:00|2026-01-06T01:00:00|forward repair order 07|4||MO|#1"
+    },
+    {
+      "demand": "forward repair order 08",
+      "quantity": 5,
+      "end": "2026-01-08T01:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship forward repair product|2026-01-08T00:00:00|2026-01-08T01:00:00|forward repair order 08|5||MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [
+    {
+      "name": "invalid data",
+      "description": "No replenishment defined for 'forward repair raw @ plant'",
+      "start": "1971-01-01T00:00:00",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "owner": "forward repair raw @ plant",
+      "feasible": false
+    }
+  ],
+  "inventoryProfiles": [
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-04T00:00:00",
+      "quantity": -4,
+      "onhand": 1,
+      "operationPlanKey": "auto:ship forward repair product|2026-01-04T00:00:00|2026-01-04T01:00:00|forward repair order 03|4||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-04T00:00:00",
+      "quantity": 5,
+      "onhand": 5,
+      "operationPlanKey": "ref:MO-FORWARD-LOCKED",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-06T00:00:00",
+      "quantity": -4,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship forward repair product|2026-01-06T00:00:00|2026-01-06T01:00:00|forward repair order 07|4||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-06T00:00:00",
+      "quantity": 3,
+      "onhand": 4,
+      "operationPlanKey": "auto:make forward repair product|2026-01-04T00:00:00|2026-01-06T00:00:00||3||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T00:00:00",
+      "quantity": -5,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship forward repair product|2026-01-08T00:00:00|2026-01-08T01:00:00|forward repair order 08|5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T00:00:00",
+      "quantity": 5,
+      "onhand": 5,
+      "operationPlanKey": "auto:make forward repair product|2026-01-06T00:00:00|2026-01-08T00:00:00||5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T00:00:00",
+      "quantity": -3,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 06|3||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T00:00:00",
+      "quantity": -2,
+      "onhand": 3,
+      "operationPlanKey": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 05|2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T00:00:00",
+      "quantity": 5,
+      "onhand": 5,
+      "operationPlanKey": "auto:make forward repair product|2026-01-08T00:00:00|2026-01-10T00:00:00||5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T00:00:00",
+      "quantity": -5,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship forward repair product|2026-01-12T00:00:00|2026-01-12T01:00:00|forward repair order 04|5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T00:00:00",
+      "quantity": 5,
+      "onhand": 5,
+      "operationPlanKey": "auto:make forward repair product|2026-01-10T00:00:00|2026-01-12T00:00:00||5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T00:00:00",
+      "quantity": -3,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 02|3||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T00:00:00",
+      "quantity": -2,
+      "onhand": 3,
+      "operationPlanKey": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 01|2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T00:00:00",
+      "quantity": 5,
+      "onhand": 5,
+      "operationPlanKey": "auto:make forward repair product|2026-01-12T00:00:00|2026-01-14T00:00:00||5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair raw @ plant",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "quantity": 80,
+      "onhand": 80,
+      "operationPlanKey": "auto:Inventory forward repair raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1",
+      "orderType": "STCK"
+    },
+    {
+      "buffer": "forward repair raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-01T00:00:00",
+      "quantity": -5,
+      "onhand": 75,
+      "operationPlanKey": "ref:MO-FORWARD-LOCKED",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-04T00:00:00",
+      "quantity": -3,
+      "onhand": 72,
+      "operationPlanKey": "auto:make forward repair product|2026-01-04T00:00:00|2026-01-06T00:00:00||3||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-06T00:00:00",
+      "quantity": -5,
+      "onhand": 67,
+      "operationPlanKey": "auto:make forward repair product|2026-01-06T00:00:00|2026-01-08T00:00:00||5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T00:00:00",
+      "quantity": -5,
+      "onhand": 62,
+      "operationPlanKey": "auto:make forward repair product|2026-01-08T00:00:00|2026-01-10T00:00:00||5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T00:00:00",
+      "quantity": -5,
+      "onhand": 57,
+      "operationPlanKey": "auto:make forward repair product|2026-01-10T00:00:00|2026-01-12T00:00:00||5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "forward repair raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T00:00:00",
+      "quantity": -5,
+      "onhand": 52,
+      "operationPlanKey": "auto:make forward repair product|2026-01-12T00:00:00|2026-01-14T00:00:00||5||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "resource": "forward repair bottleneck",
+      "start": "1971-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "available": 482136,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 482136,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-04T00:00:00",
+      "available": 72,
+      "load": 72,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 72,
+      "utilization": 1
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-04T00:00:00",
+      "end": "2026-01-04T01:00:00",
+      "available": 1,
+      "load": 1,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-04T01:00:00",
+      "end": "2026-01-06T00:00:00",
+      "available": 47,
+      "load": 47,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-06T00:00:00",
+      "end": "2026-01-06T01:00:00",
+      "available": 1,
+      "load": 1,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-06T01:00:00",
+      "end": "2026-01-08T00:00:00",
+      "available": 47,
+      "load": 47,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-08T00:00:00",
+      "end": "2026-01-08T01:00:00",
+      "available": 1,
+      "load": 1,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-08T01:00:00",
+      "end": "2026-01-10T00:00:00",
+      "available": 47,
+      "load": 47,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-10T00:00:00",
+      "end": "2026-01-10T01:00:00",
+      "available": 1,
+      "load": 1,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-10T01:00:00",
+      "end": "2026-01-12T00:00:00",
+      "available": 47,
+      "load": 47,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-12T00:00:00",
+      "end": "2026-01-12T01:00:00",
+      "available": 1,
+      "load": 1,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-12T01:00:00",
+      "end": "2026-01-14T00:00:00",
+      "available": 47,
+      "load": 47,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "forward repair bottleneck",
+      "start": "2026-01-14T00:00:00",
+      "end": "2026-01-14T01:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    }
+  ],
+  "costSummary": {
+    "operationCost": 168,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 168,
+    "setupPenalty": 0
+  }
+}

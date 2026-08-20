@@ -1,0 +1,1095 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "small pouch",
+      "quantity": -1,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "type": "end",
+      "buffer": "small pouch",
+      "quantity": 1,
+      "operation": "convert POUCH-S"
+    },
+    {
+      "name": "substrate POUCH-S",
+      "type": "start",
+      "buffer": "film standard",
+      "priority": 1,
+      "quantity": -1,
+      "operation": "convert POUCH-S"
+    },
+    {
+      "name": "substrate POUCH-S",
+      "type": "start",
+      "buffer": "film recycled",
+      "priority": 2,
+      "quantity": -1,
+      "operation": "convert POUCH-S"
+    },
+    {
+      "type": "start",
+      "buffer": "ink",
+      "quantity": -0.5,
+      "operation": "convert POUCH-S"
+    },
+    {
+      "type": "start",
+      "buffer": "large pouch",
+      "quantity": -1,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "type": "end",
+      "buffer": "large pouch",
+      "quantity": 1,
+      "operation": "convert POUCH-L"
+    },
+    {
+      "name": "substrate POUCH-L",
+      "type": "start",
+      "buffer": "film standard",
+      "priority": 1,
+      "quantity": -1,
+      "operation": "convert POUCH-L"
+    },
+    {
+      "name": "substrate POUCH-L",
+      "type": "start",
+      "buffer": "film recycled",
+      "priority": 2,
+      "quantity": -1,
+      "operation": "convert POUCH-L"
+    },
+    {
+      "type": "start",
+      "buffer": "ink",
+      "quantity": -0.5,
+      "operation": "convert POUCH-L"
+    },
+    {
+      "type": "start",
+      "buffer": "small carton",
+      "quantity": -1,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "type": "end",
+      "buffer": "small carton",
+      "quantity": 1,
+      "operation": "convert CARTON-S"
+    },
+    {
+      "name": "substrate CARTON-S",
+      "type": "start",
+      "buffer": "board standard",
+      "priority": 1,
+      "quantity": -1,
+      "operation": "convert CARTON-S"
+    },
+    {
+      "name": "substrate CARTON-S",
+      "type": "start",
+      "buffer": "board substitute",
+      "priority": 2,
+      "quantity": -1,
+      "operation": "convert CARTON-S"
+    },
+    {
+      "type": "start",
+      "buffer": "ink",
+      "quantity": -0.5,
+      "operation": "convert CARTON-S"
+    },
+    {
+      "type": "start",
+      "buffer": "large carton",
+      "quantity": -1,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "type": "end",
+      "buffer": "large carton",
+      "quantity": 1,
+      "operation": "convert CARTON-L"
+    },
+    {
+      "name": "substrate CARTON-L",
+      "type": "start",
+      "buffer": "board premium",
+      "priority": 1,
+      "quantity": -1,
+      "operation": "convert CARTON-L"
+    },
+    {
+      "name": "substrate CARTON-L",
+      "type": "start",
+      "buffer": "board substitute",
+      "priority": 2,
+      "quantity": -1,
+      "operation": "convert CARTON-L"
+    },
+    {
+      "type": "start",
+      "buffer": "ink",
+      "quantity": -0.5,
+      "operation": "convert CARTON-L"
+    }
+  ],
+  "items": [
+    {
+      "name": "film standard"
+    },
+    {
+      "name": "film recycled"
+    },
+    {
+      "name": "board standard"
+    },
+    {
+      "name": "board premium"
+    },
+    {
+      "name": "board substitute"
+    },
+    {
+      "name": "ink"
+    },
+    {
+      "name": "small pouch"
+    },
+    {
+      "name": "large pouch"
+    },
+    {
+      "name": "small carton"
+    },
+    {
+      "name": "large carton"
+    }
+  ],
+  "loads": [
+    {
+      "name": "converter POUCH-S",
+      "setup": "pouch-small",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "converter A",
+      "operation": "convert POUCH-S"
+    },
+    {
+      "name": "converter POUCH-S",
+      "setup": "pouch-small",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "converter B",
+      "operation": "convert POUCH-S"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "print crew",
+      "operation": "convert POUCH-S"
+    },
+    {
+      "name": "converter POUCH-L",
+      "setup": "pouch-large",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "converter A",
+      "operation": "convert POUCH-L"
+    },
+    {
+      "name": "converter POUCH-L",
+      "setup": "pouch-large",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "converter B",
+      "operation": "convert POUCH-L"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "print crew",
+      "operation": "convert POUCH-L"
+    },
+    {
+      "name": "converter CARTON-S",
+      "setup": "carton-small",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "converter A",
+      "operation": "convert CARTON-S"
+    },
+    {
+      "name": "converter CARTON-S",
+      "setup": "carton-small",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "converter B",
+      "operation": "convert CARTON-S"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "print crew",
+      "operation": "convert CARTON-S"
+    },
+    {
+      "name": "converter CARTON-L",
+      "setup": "carton-large",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "converter A",
+      "operation": "convert CARTON-L"
+    },
+    {
+      "name": "converter CARTON-L",
+      "setup": "carton-large",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "converter B",
+      "operation": "convert CARTON-L"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "print crew",
+      "operation": "convert CARTON-L"
+    }
+  ],
+  "skills": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 14400,
+    "constraints": 11,
+    "minimumDelay": 1800,
+    "rotateResources": true
+  },
+  "buffers": [
+    {
+      "item": "film standard",
+      "name": "film standard",
+      "onhand": 300
+    },
+    {
+      "item": "film recycled",
+      "name": "film recycled",
+      "onhand": 180
+    },
+    {
+      "item": "board standard",
+      "name": "board standard",
+      "onhand": 260
+    },
+    {
+      "item": "board premium",
+      "name": "board premium",
+      "onhand": 75
+    },
+    {
+      "item": "board substitute",
+      "name": "board substitute",
+      "onhand": 180
+    },
+    {
+      "item": "ink",
+      "name": "ink",
+      "onhand": 500
+    },
+    {
+      "item": "small pouch",
+      "name": "small pouch",
+      "onhand": 0,
+      "producing": "convert POUCH-S"
+    },
+    {
+      "item": "large pouch",
+      "name": "large pouch",
+      "onhand": 0,
+      "producing": "convert POUCH-L"
+    },
+    {
+      "item": "small carton",
+      "name": "small carton",
+      "onhand": 0,
+      "producing": "convert CARTON-S"
+    },
+    {
+      "item": "large carton",
+      "name": "large carton",
+      "onhand": 0,
+      "producing": "convert CARTON-L"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-17T01:00:00",
+      "item": "small pouch",
+      "name": "packaging order 001 POUCH-S",
+      "priority": 1,
+      "quantity": 2,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-17T05:00:00",
+      "item": "large pouch",
+      "name": "packaging order 002 POUCH-L",
+      "priority": 2,
+      "quantity": 4,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-17T10:00:00",
+      "item": "small carton",
+      "name": "packaging order 003 CARTON-S",
+      "priority": 3,
+      "quantity": 6,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-17T15:00:00",
+      "item": "large carton",
+      "name": "packaging order 004 CARTON-L",
+      "priority": 4,
+      "quantity": 8,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-17T20:00:00",
+      "item": "small pouch",
+      "name": "packaging order 005 POUCH-S",
+      "priority": 5,
+      "quantity": 10,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-18T01:00:00",
+      "item": "large pouch",
+      "name": "packaging order 006 POUCH-L",
+      "priority": 6,
+      "quantity": 12,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-18T05:00:00",
+      "item": "small carton",
+      "name": "packaging order 007 CARTON-S",
+      "priority": 7,
+      "quantity": 2,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-18T10:00:00",
+      "item": "large carton",
+      "name": "packaging order 008 CARTON-L",
+      "priority": 8,
+      "quantity": 4,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-18T15:00:00",
+      "item": "small pouch",
+      "name": "packaging order 009 POUCH-S",
+      "priority": 9,
+      "quantity": 6,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-18T20:00:00",
+      "item": "large pouch",
+      "name": "packaging order 010 POUCH-L",
+      "priority": 10,
+      "quantity": 8,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-19T01:00:00",
+      "item": "small carton",
+      "name": "packaging order 011 CARTON-S",
+      "priority": 11,
+      "quantity": 10,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-19T05:00:00",
+      "item": "large carton",
+      "name": "packaging order 012 CARTON-L",
+      "priority": 12,
+      "quantity": 12,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-19T10:00:00",
+      "item": "small pouch",
+      "name": "packaging order 013 POUCH-S",
+      "priority": 13,
+      "quantity": 2,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-19T15:00:00",
+      "item": "large pouch",
+      "name": "packaging order 014 POUCH-L",
+      "priority": 14,
+      "quantity": 4,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-19T20:00:00",
+      "item": "small carton",
+      "name": "packaging order 015 CARTON-S",
+      "priority": 15,
+      "quantity": 6,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-20T01:00:00",
+      "item": "large carton",
+      "name": "packaging order 016 CARTON-L",
+      "priority": 16,
+      "quantity": 8,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-20T05:00:00",
+      "item": "small pouch",
+      "name": "packaging order 017 POUCH-S",
+      "priority": 17,
+      "quantity": 10,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-20T10:00:00",
+      "item": "large pouch",
+      "name": "packaging order 018 POUCH-L",
+      "priority": 18,
+      "quantity": 12,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-20T15:00:00",
+      "item": "small carton",
+      "name": "packaging order 019 CARTON-S",
+      "priority": 19,
+      "quantity": 2,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-20T20:00:00",
+      "item": "large carton",
+      "name": "packaging order 020 CARTON-L",
+      "priority": 20,
+      "quantity": 4,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-21T01:00:00",
+      "item": "small pouch",
+      "name": "packaging order 021 POUCH-S",
+      "priority": 1,
+      "quantity": 6,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-21T05:00:00",
+      "item": "large pouch",
+      "name": "packaging order 022 POUCH-L",
+      "priority": 2,
+      "quantity": 8,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-21T10:00:00",
+      "item": "small carton",
+      "name": "packaging order 023 CARTON-S",
+      "priority": 3,
+      "quantity": 10,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-21T15:00:00",
+      "item": "large carton",
+      "name": "packaging order 024 CARTON-L",
+      "priority": 4,
+      "quantity": 12,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-21T20:00:00",
+      "item": "small pouch",
+      "name": "packaging order 025 POUCH-S",
+      "priority": 5,
+      "quantity": 2,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-22T01:00:00",
+      "item": "large pouch",
+      "name": "packaging order 026 POUCH-L",
+      "priority": 6,
+      "quantity": 4,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-22T05:00:00",
+      "item": "small carton",
+      "name": "packaging order 027 CARTON-S",
+      "priority": 7,
+      "quantity": 6,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-22T10:00:00",
+      "item": "large carton",
+      "name": "packaging order 028 CARTON-L",
+      "priority": 8,
+      "quantity": 8,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-22T15:00:00",
+      "item": "small pouch",
+      "name": "packaging order 029 POUCH-S",
+      "priority": 9,
+      "quantity": 10,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-22T20:00:00",
+      "item": "large pouch",
+      "name": "packaging order 030 POUCH-L",
+      "priority": 10,
+      "quantity": 12,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-23T01:00:00",
+      "item": "small carton",
+      "name": "packaging order 031 CARTON-S",
+      "priority": 11,
+      "quantity": 2,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-23T05:00:00",
+      "item": "large carton",
+      "name": "packaging order 032 CARTON-L",
+      "priority": 12,
+      "quantity": 4,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-23T10:00:00",
+      "item": "small pouch",
+      "name": "packaging order 033 POUCH-S",
+      "priority": 13,
+      "quantity": 6,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-23T15:00:00",
+      "item": "large pouch",
+      "name": "packaging order 034 POUCH-L",
+      "priority": 14,
+      "quantity": 8,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-23T20:00:00",
+      "item": "small carton",
+      "name": "packaging order 035 CARTON-S",
+      "priority": 15,
+      "quantity": 10,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-24T01:00:00",
+      "item": "large carton",
+      "name": "packaging order 036 CARTON-L",
+      "priority": 16,
+      "quantity": 12,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-24T05:00:00",
+      "item": "small pouch",
+      "name": "packaging order 037 POUCH-S",
+      "priority": 17,
+      "quantity": 2,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-24T10:00:00",
+      "item": "large pouch",
+      "name": "packaging order 038 POUCH-L",
+      "priority": 18,
+      "quantity": 4,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-24T15:00:00",
+      "item": "small carton",
+      "name": "packaging order 039 CARTON-S",
+      "priority": 19,
+      "quantity": 6,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-24T20:00:00",
+      "item": "large carton",
+      "name": "packaging order 040 CARTON-L",
+      "priority": 20,
+      "quantity": 8,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-25T01:00:00",
+      "item": "small pouch",
+      "name": "packaging order 041 POUCH-S",
+      "priority": 1,
+      "quantity": 10,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-25T05:00:00",
+      "item": "large pouch",
+      "name": "packaging order 042 POUCH-L",
+      "priority": 2,
+      "quantity": 12,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-25T10:00:00",
+      "item": "small carton",
+      "name": "packaging order 043 CARTON-S",
+      "priority": 3,
+      "quantity": 2,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-25T15:00:00",
+      "item": "large carton",
+      "name": "packaging order 044 CARTON-L",
+      "priority": 4,
+      "quantity": 4,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-25T20:00:00",
+      "item": "small pouch",
+      "name": "packaging order 045 POUCH-S",
+      "priority": 5,
+      "quantity": 6,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-26T01:00:00",
+      "item": "large pouch",
+      "name": "packaging order 046 POUCH-L",
+      "priority": 6,
+      "quantity": 8,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-26T05:00:00",
+      "item": "small carton",
+      "name": "packaging order 047 CARTON-S",
+      "priority": 7,
+      "quantity": 10,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-26T10:00:00",
+      "item": "large carton",
+      "name": "packaging order 048 CARTON-L",
+      "priority": 8,
+      "quantity": 12,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-26T15:00:00",
+      "item": "small pouch",
+      "name": "packaging order 049 POUCH-S",
+      "priority": 9,
+      "quantity": 2,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-26T20:00:00",
+      "item": "large pouch",
+      "name": "packaging order 050 POUCH-L",
+      "priority": 10,
+      "quantity": 4,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-27T01:00:00",
+      "item": "small carton",
+      "name": "packaging order 051 CARTON-S",
+      "priority": 11,
+      "quantity": 6,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-27T05:00:00",
+      "item": "large carton",
+      "name": "packaging order 052 CARTON-L",
+      "priority": 12,
+      "quantity": 8,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-27T10:00:00",
+      "item": "small pouch",
+      "name": "packaging order 053 POUCH-S",
+      "priority": 13,
+      "quantity": 10,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-27T15:00:00",
+      "item": "large pouch",
+      "name": "packaging order 054 POUCH-L",
+      "priority": 14,
+      "quantity": 12,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-27T20:00:00",
+      "item": "small carton",
+      "name": "packaging order 055 CARTON-S",
+      "priority": 15,
+      "quantity": 2,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-28T01:00:00",
+      "item": "large carton",
+      "name": "packaging order 056 CARTON-L",
+      "priority": 16,
+      "quantity": 4,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-28T05:00:00",
+      "item": "small pouch",
+      "name": "packaging order 057 POUCH-S",
+      "priority": 17,
+      "quantity": 6,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-28T10:00:00",
+      "item": "large pouch",
+      "name": "packaging order 058 POUCH-L",
+      "priority": 18,
+      "quantity": 8,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-28T15:00:00",
+      "item": "small carton",
+      "name": "packaging order 059 CARTON-S",
+      "priority": 19,
+      "quantity": 10,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-28T20:00:00",
+      "item": "large carton",
+      "name": "packaging order 060 CARTON-L",
+      "priority": 20,
+      "quantity": 12,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-29T01:00:00",
+      "item": "small pouch",
+      "name": "packaging order 061 POUCH-S",
+      "priority": 1,
+      "quantity": 2,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-29T05:00:00",
+      "item": "large pouch",
+      "name": "packaging order 062 POUCH-L",
+      "priority": 2,
+      "quantity": 4,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-29T10:00:00",
+      "item": "small carton",
+      "name": "packaging order 063 CARTON-S",
+      "priority": 3,
+      "quantity": 6,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-29T15:00:00",
+      "item": "large carton",
+      "name": "packaging order 064 CARTON-L",
+      "priority": 4,
+      "quantity": 8,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-29T20:00:00",
+      "item": "small pouch",
+      "name": "packaging order 065 POUCH-S",
+      "priority": 5,
+      "quantity": 10,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-30T01:00:00",
+      "item": "large pouch",
+      "name": "packaging order 066 POUCH-L",
+      "priority": 6,
+      "quantity": 12,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-30T05:00:00",
+      "item": "small carton",
+      "name": "packaging order 067 CARTON-S",
+      "priority": 7,
+      "quantity": 2,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-30T10:00:00",
+      "item": "large carton",
+      "name": "packaging order 068 CARTON-L",
+      "priority": 8,
+      "quantity": 4,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-30T15:00:00",
+      "item": "small pouch",
+      "name": "packaging order 069 POUCH-S",
+      "priority": 9,
+      "quantity": 6,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-30T20:00:00",
+      "item": "large pouch",
+      "name": "packaging order 070 POUCH-L",
+      "priority": 10,
+      "quantity": 8,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-31T01:00:00",
+      "item": "small carton",
+      "name": "packaging order 071 CARTON-S",
+      "priority": 11,
+      "quantity": 10,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-01-31T05:00:00",
+      "item": "large carton",
+      "name": "packaging order 072 CARTON-L",
+      "priority": 12,
+      "quantity": 12,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-01-31T10:00:00",
+      "item": "small pouch",
+      "name": "packaging order 073 POUCH-S",
+      "priority": 13,
+      "quantity": 2,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-01-31T15:00:00",
+      "item": "large pouch",
+      "name": "packaging order 074 POUCH-L",
+      "priority": 14,
+      "quantity": 4,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-01-31T20:00:00",
+      "item": "small carton",
+      "name": "packaging order 075 CARTON-S",
+      "priority": 15,
+      "quantity": 6,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-02-01T01:00:00",
+      "item": "large carton",
+      "name": "packaging order 076 CARTON-L",
+      "priority": 16,
+      "quantity": 8,
+      "operation": "ship CARTON-L"
+    },
+    {
+      "due": "2026-02-01T05:00:00",
+      "item": "small pouch",
+      "name": "packaging order 077 POUCH-S",
+      "priority": 17,
+      "quantity": 10,
+      "operation": "ship POUCH-S"
+    },
+    {
+      "due": "2026-02-01T10:00:00",
+      "item": "large pouch",
+      "name": "packaging order 078 POUCH-L",
+      "priority": 18,
+      "quantity": 12,
+      "operation": "ship POUCH-L"
+    },
+    {
+      "due": "2026-02-01T15:00:00",
+      "item": "small carton",
+      "name": "packaging order 079 CARTON-S",
+      "priority": 19,
+      "quantity": 2,
+      "operation": "ship CARTON-S"
+    },
+    {
+      "due": "2026-02-01T20:00:00",
+      "item": "large carton",
+      "name": "packaging order 080 CARTON-L",
+      "priority": 20,
+      "quantity": 4,
+      "operation": "ship CARTON-L"
+    }
+  ],
+  "resources": [
+    {
+      "name": "converter A",
+      "setup": "idle",
+      "maximum": 6,
+      "maxearly": 3456000,
+      "efficiency": 105,
+      "setupMatrix": "converter format"
+    },
+    {
+      "name": "converter B",
+      "setup": "idle",
+      "maximum": 5,
+      "maxearly": 3456000,
+      "efficiency": 90,
+      "setupMatrix": "converter format"
+    },
+    {
+      "name": "print crew",
+      "maximum": 10,
+      "maxearly": 3456000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 40,
+      "name": "convert POUCH-S",
+      "type": "fixed_time",
+      "duration": 25200,
+      "sizeMaximum": 12,
+      "sizeMinimum": 2,
+      "sizeMultiple": 2
+    },
+    {
+      "cost": 4,
+      "name": "ship POUCH-S",
+      "type": "fixed_time",
+      "duration": 3600
+    },
+    {
+      "cost": 40,
+      "name": "convert POUCH-L",
+      "type": "fixed_time",
+      "duration": 32400,
+      "sizeMaximum": 12,
+      "sizeMinimum": 2,
+      "sizeMultiple": 2
+    },
+    {
+      "cost": 4,
+      "name": "ship POUCH-L",
+      "type": "fixed_time",
+      "duration": 3600
+    },
+    {
+      "cost": 40,
+      "name": "convert CARTON-S",
+      "type": "fixed_time",
+      "duration": 28800,
+      "sizeMaximum": 12,
+      "sizeMinimum": 2,
+      "sizeMultiple": 2
+    },
+    {
+      "cost": 4,
+      "name": "ship CARTON-S",
+      "type": "fixed_time",
+      "duration": 3600
+    },
+    {
+      "cost": 40,
+      "name": "convert CARTON-L",
+      "type": "fixed_time",
+      "duration": 39600,
+      "sizeMaximum": 12,
+      "sizeMinimum": 2,
+      "sizeMultiple": 2
+    },
+    {
+      "cost": 4,
+      "name": "ship CARTON-L",
+      "type": "fixed_time",
+      "duration": 3600
+    }
+  ],
+  "setupMatrices": [
+    {
+      "name": "converter format",
+      "rules": [
+        {
+          "to": "pouch-small|pouch-large|carton-small|carton-large",
+          "cost": 5,
+          "from": "idle",
+          "duration": 3600,
+          "priority": 1
+        },
+        {
+          "to": "carton-small|carton-large",
+          "cost": 28,
+          "from": "pouch-small|pouch-large",
+          "duration": 14400,
+          "priority": 2
+        },
+        {
+          "to": "pouch-small|pouch-large",
+          "cost": 32,
+          "from": "carton-small|carton-large",
+          "duration": 18000,
+          "priority": 3
+        },
+        {
+          "to": ".*",
+          "cost": 14,
+          "from": ".*",
+          "duration": 7200,
+          "priority": 99
+        }
+      ]
+    }
+  ],
+  "resourceSkills": []
+}

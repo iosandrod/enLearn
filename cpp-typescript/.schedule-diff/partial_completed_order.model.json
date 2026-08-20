@@ -1,0 +1,148 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "partial raw @ plant",
+      "quantity": -1,
+      "operation": "make partial product"
+    },
+    {
+      "type": "end",
+      "buffer": "partial product @ plant",
+      "quantity": 1,
+      "operation": "make partial product"
+    },
+    {
+      "type": "start",
+      "buffer": "partial product @ plant",
+      "quantity": -1,
+      "operation": "ship partial product"
+    }
+  ],
+  "items": [
+    {
+      "name": "partial raw"
+    },
+    {
+      "name": "partial product"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "partial machine",
+      "operation": "make partial product"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 7200,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "partial raw",
+      "name": "partial raw @ plant",
+      "onhand": 80,
+      "location": "partial plant"
+    },
+    {
+      "item": "partial product",
+      "name": "partial product @ plant",
+      "onhand": 0,
+      "location": "partial plant",
+      "producing": "make partial product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-08T00:00:00",
+      "item": "partial product",
+      "name": "partial demand A",
+      "batch": "PARTIAL-A",
+      "location": "partial plant",
+      "priority": 1,
+      "quantity": 9,
+      "operation": "ship partial product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "partial product",
+      "name": "partial demand B",
+      "batch": "PARTIAL-A",
+      "location": "partial plant",
+      "priority": 2,
+      "quantity": 12,
+      "operation": "ship partial product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-14T00:00:00",
+      "item": "partial product",
+      "name": "partial demand C",
+      "batch": "PARTIAL-A",
+      "location": "partial plant",
+      "priority": 3,
+      "quantity": 8,
+      "operation": "ship partial product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "partial plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "partial machine",
+      "maximum": 1,
+      "location": "partial plant",
+      "maxearly": 2160000,
+      "efficiency": 80
+    }
+  ],
+  "operations": [
+    {
+      "cost": 9,
+      "name": "make partial product",
+      "type": "time_per",
+      "duration": 14400,
+      "location": "partial plant",
+      "durationPer": 3600,
+      "sizeMaximum": 20,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 1,
+      "name": "ship partial product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "partial plant"
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "PARTIAL-A",
+      "start": "2026-01-02T06:00:00",
+      "status": "confirmed",
+      "quantity": 12,
+      "operation": "make partial product",
+      "reference": "WIP-CONFIRMED-001",
+      "quantityCompleted": 5
+    },
+    {
+      "end": "2026-01-06T00:00:00",
+      "batch": "PARTIAL-A",
+      "status": "approved",
+      "quantity": 10,
+      "operation": "make partial product",
+      "reference": "WIP-APPROVED-001",
+      "quantityCompleted": 4
+    }
+  ]
+}

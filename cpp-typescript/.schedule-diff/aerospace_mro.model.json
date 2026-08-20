@@ -1,0 +1,795 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "engine inspection",
+      "quantity": -1,
+      "operation": "return ENG-INSP"
+    },
+    {
+      "name": "repair material ENG-INSP",
+      "type": "start",
+      "buffer": "engine spares",
+      "priority": 1,
+      "quantity": -1,
+      "operation": "repair ENG-INSP"
+    },
+    {
+      "name": "repair material ENG-INSP",
+      "type": "start",
+      "buffer": "generic repair kit",
+      "priority": 2,
+      "quantity": -1,
+      "operation": "repair ENG-INSP"
+    },
+    {
+      "type": "end",
+      "buffer": "engine inspection",
+      "quantity": 1,
+      "operation": "signoff ENG-INSP"
+    },
+    {
+      "type": "start",
+      "buffer": "landing gear overhaul",
+      "quantity": -1,
+      "operation": "return GEAR-OH"
+    },
+    {
+      "name": "repair material GEAR-OH",
+      "type": "start",
+      "buffer": "structure spares",
+      "priority": 1,
+      "quantity": -1,
+      "operation": "repair GEAR-OH"
+    },
+    {
+      "name": "repair material GEAR-OH",
+      "type": "start",
+      "buffer": "generic repair kit",
+      "priority": 2,
+      "quantity": -1,
+      "operation": "repair GEAR-OH"
+    },
+    {
+      "type": "end",
+      "buffer": "landing gear overhaul",
+      "quantity": 1,
+      "operation": "signoff GEAR-OH"
+    },
+    {
+      "type": "start",
+      "buffer": "avionics repair",
+      "quantity": -1,
+      "operation": "return AVIO-REP"
+    },
+    {
+      "name": "repair material AVIO-REP",
+      "type": "start",
+      "buffer": "avionics modules",
+      "priority": 1,
+      "quantity": -1,
+      "operation": "repair AVIO-REP"
+    },
+    {
+      "name": "repair material AVIO-REP",
+      "type": "start",
+      "buffer": "generic repair kit",
+      "priority": 2,
+      "quantity": -1,
+      "operation": "repair AVIO-REP"
+    },
+    {
+      "type": "end",
+      "buffer": "avionics repair",
+      "quantity": 1,
+      "operation": "signoff AVIO-REP"
+    }
+  ],
+  "items": [
+    {
+      "name": "engine spares"
+    },
+    {
+      "name": "structure spares"
+    },
+    {
+      "name": "avionics modules"
+    },
+    {
+      "name": "generic repair kit"
+    },
+    {
+      "name": "engine inspection"
+    },
+    {
+      "name": "landing gear overhaul"
+    },
+    {
+      "name": "avionics repair"
+    }
+  ],
+  "loads": [
+    {
+      "skill": "engine cert",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "inspection pool",
+      "operation": "diagnose ENG-INSP"
+    },
+    {
+      "name": "bay ENG-INSP",
+      "setup": "engine",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "repair bay 1",
+      "operation": "repair ENG-INSP"
+    },
+    {
+      "name": "bay ENG-INSP",
+      "setup": "engine",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "repair bay 2",
+      "operation": "repair ENG-INSP"
+    },
+    {
+      "skill": "engine cert",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "signoff pool",
+      "operation": "signoff ENG-INSP"
+    },
+    {
+      "skill": "structures cert",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "inspection pool",
+      "operation": "diagnose GEAR-OH"
+    },
+    {
+      "name": "bay GEAR-OH",
+      "setup": "gear",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "repair bay 1",
+      "operation": "repair GEAR-OH"
+    },
+    {
+      "name": "bay GEAR-OH",
+      "setup": "gear",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "repair bay 2",
+      "operation": "repair GEAR-OH"
+    },
+    {
+      "skill": "structures cert",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "signoff pool",
+      "operation": "signoff GEAR-OH"
+    },
+    {
+      "skill": "avionics cert",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "inspection pool",
+      "operation": "diagnose AVIO-REP"
+    },
+    {
+      "name": "bay AVIO-REP",
+      "setup": "avionics",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "repair bay 1",
+      "operation": "repair AVIO-REP"
+    },
+    {
+      "name": "bay AVIO-REP",
+      "setup": "avionics",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "repair bay 2",
+      "operation": "repair AVIO-REP"
+    },
+    {
+      "skill": "avionics cert",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "signoff pool",
+      "operation": "signoff AVIO-REP"
+    }
+  ],
+  "skills": [
+    {
+      "name": "engine cert"
+    },
+    {
+      "name": "structures cert"
+    },
+    {
+      "name": "avionics cert"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 13,
+    "minimumDelay": 7200,
+    "rotateResources": false
+  },
+  "buffers": [
+    {
+      "item": "engine spares",
+      "name": "engine spares",
+      "onhand": 14
+    },
+    {
+      "item": "structure spares",
+      "name": "structure spares",
+      "onhand": 15
+    },
+    {
+      "item": "avionics modules",
+      "name": "avionics modules",
+      "onhand": 16
+    },
+    {
+      "item": "generic repair kit",
+      "name": "generic repair kit",
+      "onhand": 80
+    },
+    {
+      "item": "engine inspection",
+      "name": "engine inspection",
+      "onhand": 0,
+      "producing": "maintain ENG-INSP"
+    },
+    {
+      "item": "landing gear overhaul",
+      "name": "landing gear overhaul",
+      "onhand": 0,
+      "producing": "maintain GEAR-OH"
+    },
+    {
+      "item": "avionics repair",
+      "name": "avionics repair",
+      "onhand": 0,
+      "producing": "maintain AVIO-REP"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-02-05T08:00:00",
+      "item": "engine inspection",
+      "name": "mro work order 001 ENG-INSP",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "return ENG-INSP"
+    },
+    {
+      "due": "2026-02-05T20:00:00",
+      "item": "landing gear overhaul",
+      "name": "mro work order 002 GEAR-OH",
+      "priority": 2,
+      "quantity": 1,
+      "operation": "return GEAR-OH"
+    },
+    {
+      "due": "2026-02-06T08:00:00",
+      "item": "avionics repair",
+      "name": "mro work order 003 AVIO-REP",
+      "priority": 3,
+      "quantity": 1,
+      "operation": "return AVIO-REP"
+    },
+    {
+      "due": "2026-02-06T20:00:00",
+      "item": "engine inspection",
+      "name": "mro work order 004 ENG-INSP",
+      "priority": 4,
+      "quantity": 1,
+      "operation": "return ENG-INSP"
+    },
+    {
+      "due": "2026-02-07T08:00:00",
+      "item": "landing gear overhaul",
+      "name": "mro work order 005 GEAR-OH",
+      "priority": 5,
+      "quantity": 1,
+      "operation": "return GEAR-OH"
+    },
+    {
+      "due": "2026-02-07T20:00:00",
+      "item": "avionics repair",
+      "name": "mro work order 006 AVIO-REP",
+      "priority": 6,
+      "quantity": 1,
+      "operation": "return AVIO-REP"
+    },
+    {
+      "due": "2026-02-08T08:00:00",
+      "item": "engine inspection",
+      "name": "mro work order 007 ENG-INSP",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "return ENG-INSP"
+    },
+    {
+      "due": "2026-02-08T20:00:00",
+      "item": "landing gear overhaul",
+      "name": "mro work order 008 GEAR-OH",
+      "priority": 2,
+      "quantity": 1,
+      "operation": "return GEAR-OH"
+    },
+    {
+      "due": "2026-02-09T08:00:00",
+      "item": "avionics repair",
+      "name": "mro work order 009 AVIO-REP",
+      "priority": 3,
+      "quantity": 1,
+      "operation": "return AVIO-REP"
+    },
+    {
+      "due": "2026-02-09T20:00:00",
+      "item": "engine inspection",
+      "name": "mro work order 010 ENG-INSP",
+      "priority": 4,
+      "quantity": 1,
+      "operation": "return ENG-INSP"
+    },
+    {
+      "due": "2026-02-10T08:00:00",
+      "item": "landing gear overhaul",
+      "name": "mro work order 011 GEAR-OH",
+      "priority": 5,
+      "quantity": 1,
+      "operation": "return GEAR-OH"
+    },
+    {
+      "due": "2026-02-10T20:00:00",
+      "item": "avionics repair",
+      "name": "mro work order 012 AVIO-REP",
+      "priority": 6,
+      "quantity": 1,
+      "operation": "return AVIO-REP"
+    },
+    {
+      "due": "2026-02-11T08:00:00",
+      "item": "engine inspection",
+      "name": "mro work order 013 ENG-INSP",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "return ENG-INSP"
+    },
+    {
+      "due": "2026-02-11T20:00:00",
+      "item": "landing gear overhaul",
+      "name": "mro work order 014 GEAR-OH",
+      "priority": 2,
+      "quantity": 1,
+      "operation": "return GEAR-OH"
+    },
+    {
+      "due": "2026-02-12T08:00:00",
+      "item": "avionics repair",
+      "name": "mro work order 015 AVIO-REP",
+      "priority": 3,
+      "quantity": 1,
+      "operation": "return AVIO-REP"
+    },
+    {
+      "due": "2026-02-12T20:00:00",
+      "item": "engine inspection",
+      "name": "mro work order 016 ENG-INSP",
+      "priority": 4,
+      "quantity": 1,
+      "operation": "return ENG-INSP"
+    },
+    {
+      "due": "2026-02-13T08:00:00",
+      "item": "landing gear overhaul",
+      "name": "mro work order 017 GEAR-OH",
+      "priority": 5,
+      "quantity": 1,
+      "operation": "return GEAR-OH"
+    },
+    {
+      "due": "2026-02-13T20:00:00",
+      "item": "avionics repair",
+      "name": "mro work order 018 AVIO-REP",
+      "priority": 6,
+      "quantity": 1,
+      "operation": "return AVIO-REP"
+    },
+    {
+      "due": "2026-02-14T08:00:00",
+      "item": "engine inspection",
+      "name": "mro work order 019 ENG-INSP",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "return ENG-INSP"
+    },
+    {
+      "due": "2026-02-14T20:00:00",
+      "item": "landing gear overhaul",
+      "name": "mro work order 020 GEAR-OH",
+      "priority": 2,
+      "quantity": 1,
+      "operation": "return GEAR-OH"
+    },
+    {
+      "due": "2026-02-15T08:00:00",
+      "item": "avionics repair",
+      "name": "mro work order 021 AVIO-REP",
+      "priority": 3,
+      "quantity": 1,
+      "operation": "return AVIO-REP"
+    },
+    {
+      "due": "2026-02-15T20:00:00",
+      "item": "engine inspection",
+      "name": "mro work order 022 ENG-INSP",
+      "priority": 4,
+      "quantity": 1,
+      "operation": "return ENG-INSP"
+    },
+    {
+      "due": "2026-02-16T08:00:00",
+      "item": "landing gear overhaul",
+      "name": "mro work order 023 GEAR-OH",
+      "priority": 5,
+      "quantity": 1,
+      "operation": "return GEAR-OH"
+    },
+    {
+      "due": "2026-02-16T20:00:00",
+      "item": "avionics repair",
+      "name": "mro work order 024 AVIO-REP",
+      "priority": 6,
+      "quantity": 1,
+      "operation": "return AVIO-REP"
+    },
+    {
+      "due": "2026-02-17T08:00:00",
+      "item": "engine inspection",
+      "name": "mro work order 025 ENG-INSP",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "return ENG-INSP"
+    },
+    {
+      "due": "2026-02-17T20:00:00",
+      "item": "landing gear overhaul",
+      "name": "mro work order 026 GEAR-OH",
+      "priority": 2,
+      "quantity": 1,
+      "operation": "return GEAR-OH"
+    },
+    {
+      "due": "2026-02-18T08:00:00",
+      "item": "avionics repair",
+      "name": "mro work order 027 AVIO-REP",
+      "priority": 3,
+      "quantity": 1,
+      "operation": "return AVIO-REP"
+    },
+    {
+      "due": "2026-02-18T20:00:00",
+      "item": "engine inspection",
+      "name": "mro work order 028 ENG-INSP",
+      "priority": 4,
+      "quantity": 1,
+      "operation": "return ENG-INSP"
+    },
+    {
+      "due": "2026-02-19T08:00:00",
+      "item": "landing gear overhaul",
+      "name": "mro work order 029 GEAR-OH",
+      "priority": 5,
+      "quantity": 1,
+      "operation": "return GEAR-OH"
+    },
+    {
+      "due": "2026-02-19T20:00:00",
+      "item": "avionics repair",
+      "name": "mro work order 030 AVIO-REP",
+      "priority": 6,
+      "quantity": 1,
+      "operation": "return AVIO-REP"
+    }
+  ],
+  "resources": [
+    {
+      "name": "inspection pool",
+      "maximum": 1,
+      "maxearly": 8640000,
+      "efficiency": 100
+    },
+    {
+      "name": "inspector engine",
+      "owner": "inspection pool",
+      "maximum": 2,
+      "maxearly": 8640000,
+      "efficiency": 100
+    },
+    {
+      "name": "inspector structures",
+      "owner": "inspection pool",
+      "maximum": 2,
+      "maxearly": 8640000,
+      "efficiency": 95
+    },
+    {
+      "name": "inspector avionics",
+      "owner": "inspection pool",
+      "maximum": 2,
+      "maxearly": 8640000,
+      "efficiency": 105
+    },
+    {
+      "name": "repair bay 1",
+      "setup": "idle",
+      "maximum": 2,
+      "maxearly": 8640000,
+      "efficiency": 100,
+      "setupMatrix": "repair bay tooling"
+    },
+    {
+      "name": "repair bay 2",
+      "setup": "idle",
+      "maximum": 2,
+      "maxearly": 8640000,
+      "efficiency": 90,
+      "setupMatrix": "repair bay tooling"
+    },
+    {
+      "name": "signoff pool",
+      "maximum": 1,
+      "maxearly": 8640000,
+      "efficiency": 100
+    },
+    {
+      "name": "signoff engine",
+      "owner": "signoff pool",
+      "maximum": 2,
+      "maxearly": 8640000,
+      "efficiency": 100
+    },
+    {
+      "name": "signoff structures",
+      "owner": "signoff pool",
+      "maximum": 2,
+      "maxearly": 8640000,
+      "efficiency": 100
+    },
+    {
+      "name": "signoff avionics",
+      "owner": "signoff pool",
+      "maximum": 2,
+      "maxearly": 8640000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 250,
+      "name": "diagnose ENG-INSP",
+      "type": "fixed_time",
+      "duration": 32400,
+      "sizeMaximum": 1,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 500,
+      "name": "repair ENG-INSP",
+      "type": "fixed_time",
+      "duration": 61200,
+      "sizeMaximum": 1,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 180,
+      "name": "signoff ENG-INSP",
+      "type": "fixed_time",
+      "duration": 18000,
+      "sizeMaximum": 1,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "maintain ENG-INSP",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "diagnose ENG-INSP"
+        },
+        {
+          "priority": 2,
+          "operation": "repair ENG-INSP"
+        },
+        {
+          "priority": 3,
+          "operation": "signoff ENG-INSP"
+        }
+      ]
+    },
+    {
+      "cost": 30,
+      "name": "return ENG-INSP",
+      "type": "fixed_time",
+      "duration": 7200
+    },
+    {
+      "cost": 250,
+      "name": "diagnose GEAR-OH",
+      "type": "fixed_time",
+      "duration": 39600,
+      "sizeMaximum": 1,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 500,
+      "name": "repair GEAR-OH",
+      "type": "fixed_time",
+      "duration": 75600,
+      "sizeMaximum": 1,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 180,
+      "name": "signoff GEAR-OH",
+      "type": "fixed_time",
+      "duration": 21600,
+      "sizeMaximum": 1,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "maintain GEAR-OH",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "diagnose GEAR-OH"
+        },
+        {
+          "priority": 2,
+          "operation": "repair GEAR-OH"
+        },
+        {
+          "priority": 3,
+          "operation": "signoff GEAR-OH"
+        }
+      ]
+    },
+    {
+      "cost": 30,
+      "name": "return GEAR-OH",
+      "type": "fixed_time",
+      "duration": 7200
+    },
+    {
+      "cost": 250,
+      "name": "diagnose AVIO-REP",
+      "type": "fixed_time",
+      "duration": 25200,
+      "sizeMaximum": 1,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 500,
+      "name": "repair AVIO-REP",
+      "type": "fixed_time",
+      "duration": 43200,
+      "sizeMaximum": 1,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 180,
+      "name": "signoff AVIO-REP",
+      "type": "fixed_time",
+      "duration": 10800,
+      "sizeMaximum": 1,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "maintain AVIO-REP",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "diagnose AVIO-REP"
+        },
+        {
+          "priority": 2,
+          "operation": "repair AVIO-REP"
+        },
+        {
+          "priority": 3,
+          "operation": "signoff AVIO-REP"
+        }
+      ]
+    },
+    {
+      "cost": 30,
+      "name": "return AVIO-REP",
+      "type": "fixed_time",
+      "duration": 7200
+    }
+  ],
+  "setupMatrices": [
+    {
+      "name": "repair bay tooling",
+      "rules": [
+        {
+          "to": "engine|gear|avionics",
+          "cost": 15,
+          "from": "idle",
+          "duration": 7200,
+          "priority": 1
+        },
+        {
+          "to": "gear|avionics",
+          "cost": 45,
+          "from": "engine",
+          "duration": 21600,
+          "priority": 2
+        },
+        {
+          "to": "engine|avionics",
+          "cost": 40,
+          "from": "gear",
+          "duration": 18000,
+          "priority": 3
+        },
+        {
+          "to": ".*",
+          "cost": 25,
+          "from": ".*",
+          "duration": 10800,
+          "priority": 99
+        }
+      ]
+    }
+  ],
+  "resourceSkills": [
+    {
+      "skill": "engine cert",
+      "priority": 1,
+      "resource": "inspector engine"
+    },
+    {
+      "skill": "engine cert",
+      "priority": 1,
+      "resource": "signoff engine"
+    },
+    {
+      "skill": "structures cert",
+      "priority": 1,
+      "resource": "inspector structures"
+    },
+    {
+      "skill": "structures cert",
+      "priority": 1,
+      "resource": "signoff structures"
+    },
+    {
+      "skill": "avionics cert",
+      "priority": 1,
+      "resource": "inspector avionics"
+    },
+    {
+      "skill": "avionics cert",
+      "priority": 1,
+      "resource": "signoff avionics"
+    }
+  ]
+}

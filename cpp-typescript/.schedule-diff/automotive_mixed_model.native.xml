@@ -1,0 +1,1572 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2026-01-01T00:00:00</current>
+  <calendars>
+  </calendars>
+  <locations>
+  </locations>
+  <suppliers>
+  </suppliers>
+  <items>
+    <item name="automotive steel">
+      
+      
+      
+      
+    </item>
+    <item name="powertrain">
+      
+      
+      
+      
+    </item>
+    <item name="electronics kit">
+      
+      
+      
+      
+    </item>
+    <item name="black sedan">
+      
+      
+      
+      
+    </item>
+    <item name="white sedan">
+      
+      
+      
+      
+    </item>
+    <item name="black suv">
+      
+      
+      
+      
+    </item>
+    <item name="red suv">
+      
+      
+      
+      
+    </item>
+  </items>
+  <operations>
+    <operation name="weld SEDAN-BLK" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT14H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>120</cost>
+      
+      
+      
+    </operation>
+    <operation name="paint SEDAN-BLK" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT10H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>90</cost>
+      
+      
+      
+    </operation>
+    <operation name="assemble SEDAN-BLK" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT18H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>160</cost>
+      
+      
+      
+    </operation>
+    <operation name="build SEDAN-BLK" xsi:type="operation_routing">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="weld SEDAN-BLK" />
+          <priority>1</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="paint SEDAN-BLK" />
+          <priority>2</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="assemble SEDAN-BLK" />
+          <priority>3</priority>
+          
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="ship SEDAN-BLK" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT3H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>20</cost>
+      
+      
+      
+    </operation>
+    <operation name="weld SEDAN-WHT" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT14H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>120</cost>
+      
+      
+      
+    </operation>
+    <operation name="paint SEDAN-WHT" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT9H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>90</cost>
+      
+      
+      
+    </operation>
+    <operation name="assemble SEDAN-WHT" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT18H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>160</cost>
+      
+      
+      
+    </operation>
+    <operation name="build SEDAN-WHT" xsi:type="operation_routing">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="weld SEDAN-WHT" />
+          <priority>1</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="paint SEDAN-WHT" />
+          <priority>2</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="assemble SEDAN-WHT" />
+          <priority>3</priority>
+          
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="ship SEDAN-WHT" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT3H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>20</cost>
+      
+      
+      
+    </operation>
+    <operation name="weld SUV-BLK" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT18H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>120</cost>
+      
+      
+      
+    </operation>
+    <operation name="paint SUV-BLK" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT12H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>90</cost>
+      
+      
+      
+    </operation>
+    <operation name="assemble SUV-BLK" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT22H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>160</cost>
+      
+      
+      
+    </operation>
+    <operation name="build SUV-BLK" xsi:type="operation_routing">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="weld SUV-BLK" />
+          <priority>1</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="paint SUV-BLK" />
+          <priority>2</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="assemble SUV-BLK" />
+          <priority>3</priority>
+          
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="ship SUV-BLK" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT3H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>20</cost>
+      
+      
+      
+    </operation>
+    <operation name="weld SUV-RED" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT18H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>120</cost>
+      
+      
+      
+    </operation>
+    <operation name="paint SUV-RED" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT13H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>90</cost>
+      
+      
+      
+    </operation>
+    <operation name="assemble SUV-RED" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT22H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>4</size_maximum>
+      <cost>160</cost>
+      
+      
+      
+    </operation>
+    <operation name="build SUV-RED" xsi:type="operation_routing">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="weld SUV-RED" />
+          <priority>1</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="paint SUV-RED" />
+          <priority>2</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="assemble SUV-RED" />
+          <priority>3</priority>
+          
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="ship SUV-RED" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT3H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>20</cost>
+      
+      
+      
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="automotive steel">
+      
+      <item name="automotive steel" />
+      
+      
+      
+      
+      
+      
+      <onhand>180</onhand>
+    </buffer>
+    <buffer name="powertrain">
+      
+      <item name="powertrain" />
+      
+      
+      
+      
+      
+      
+      <onhand>105</onhand>
+    </buffer>
+    <buffer name="electronics kit">
+      
+      <item name="electronics kit" />
+      
+      
+      
+      
+      
+      
+      <onhand>120</onhand>
+    </buffer>
+    <buffer name="black sedan">
+      <producing name="build SEDAN-BLK" />
+      <item name="black sedan" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="white sedan">
+      <producing name="build SEDAN-WHT" />
+      <item name="white sedan" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="black suv">
+      <producing name="build SUV-BLK" />
+      <item name="black suv" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="red suv">
+      <producing name="build SUV-RED" />
+      <item name="red suv" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+    <setupmatrix name="body family change">
+      <rules>
+        <rule priority="1" fromsetup="idle" tosetup="sedan|suv"
+          duration="PT2H" cost="20" />
+        <rule priority="2" fromsetup="sedan" tosetup="suv"
+          duration="PT4H" cost="35" />
+        <rule priority="3" fromsetup="suv" tosetup="sedan"
+          duration="PT3H" cost="30" />
+        <rule priority="99" fromsetup=".*" tosetup=".*"
+          duration="PT1H" cost="10" />
+      </rules>
+    </setupmatrix>
+    <setupmatrix name="paint color change">
+      <rules>
+        <rule priority="1" fromsetup="clean" tosetup="white"
+          duration="PT1H" cost="10" />
+        <rule priority="2" fromsetup="clean" tosetup="black|red"
+          duration="PT2H" cost="18" />
+        <rule priority="3" fromsetup="black" tosetup="white|red"
+          duration="PT4H" cost="30" />
+        <rule priority="4" fromsetup="red" tosetup="white|black"
+          duration="PT5H" cost="35" />
+        <rule priority="99" fromsetup=".*" tosetup=".*"
+          duration="PT1H" cost="8" />
+      </rules>
+    </setupmatrix>
+  </setupmatrices>
+  <resources>
+    <resource name="body line A">
+      
+      <maximum>4</maximum>
+      <maxearly>P70D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="body family change" />
+      <setup>idle</setup>
+    </resource>
+    <resource name="body line B">
+      
+      <maximum>3</maximum>
+      <maxearly>P70D</maxearly>
+      
+      
+      
+      
+      <efficiency>88</efficiency>
+      <setupmatrix name="body family change" />
+      <setup>idle</setup>
+    </resource>
+    <resource name="paint booth">
+      
+      <maximum>3</maximum>
+      <maxearly>P70D</maxearly>
+      
+      
+      
+      
+      <efficiency>95</efficiency>
+      <setupmatrix name="paint color change" />
+      <setup>clean</setup>
+    </resource>
+    <resource name="assembly team pool">
+      
+      <maximum>1</maximum>
+      <maxearly>P70D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="assembly team east">
+      <owner name="assembly team pool" />
+      <maximum>4</maximum>
+      <maxearly>P70D</maxearly>
+      
+      
+      
+      
+      <efficiency>105</efficiency>
+      
+      
+    </resource>
+    <resource name="assembly team west">
+      <owner name="assembly team pool" />
+      <maximum>4</maximum>
+      <maxearly>P70D</maxearly>
+      
+      
+      
+      
+      <efficiency>95</efficiency>
+      
+      
+    </resource>
+    <resource name="assembly team flex">
+      <owner name="assembly team pool" />
+      <maximum>3</maximum>
+      <maxearly>P70D</maxearly>
+      
+      
+      
+      
+      <efficiency>85</efficiency>
+      
+      
+    </resource>
+  </resources>
+  <loads>
+    <load>
+      <operation name="weld SEDAN-BLK" />
+      <resource name="body line A" />
+      <quantity>1</quantity>
+      
+      <name>body line SEDAN-BLK</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>sedan</setup>
+    </load>
+    <load>
+      <operation name="weld SEDAN-BLK" />
+      <resource name="body line B" />
+      <quantity>1</quantity>
+      
+      <name>body line SEDAN-BLK</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>sedan</setup>
+    </load>
+    <load>
+      <operation name="paint SEDAN-BLK" />
+      <resource name="paint booth" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+      <setup>black</setup>
+    </load>
+    <load>
+      <operation name="assemble SEDAN-BLK" />
+      <resource name="assembly team pool" />
+      <quantity>1</quantity>
+      
+      
+      
+      <search>PRIORITY</search>
+      <skill name="vehicle assembly" />
+      
+    </load>
+    <load>
+      <operation name="weld SEDAN-WHT" />
+      <resource name="body line A" />
+      <quantity>1</quantity>
+      
+      <name>body line SEDAN-WHT</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>sedan</setup>
+    </load>
+    <load>
+      <operation name="weld SEDAN-WHT" />
+      <resource name="body line B" />
+      <quantity>1</quantity>
+      
+      <name>body line SEDAN-WHT</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>sedan</setup>
+    </load>
+    <load>
+      <operation name="paint SEDAN-WHT" />
+      <resource name="paint booth" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+      <setup>white</setup>
+    </load>
+    <load>
+      <operation name="assemble SEDAN-WHT" />
+      <resource name="assembly team pool" />
+      <quantity>1</quantity>
+      
+      
+      
+      <search>PRIORITY</search>
+      <skill name="vehicle assembly" />
+      
+    </load>
+    <load>
+      <operation name="weld SUV-BLK" />
+      <resource name="body line A" />
+      <quantity>1</quantity>
+      
+      <name>body line SUV-BLK</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>suv</setup>
+    </load>
+    <load>
+      <operation name="weld SUV-BLK" />
+      <resource name="body line B" />
+      <quantity>1</quantity>
+      
+      <name>body line SUV-BLK</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>suv</setup>
+    </load>
+    <load>
+      <operation name="paint SUV-BLK" />
+      <resource name="paint booth" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+      <setup>black</setup>
+    </load>
+    <load>
+      <operation name="assemble SUV-BLK" />
+      <resource name="assembly team pool" />
+      <quantity>1</quantity>
+      
+      
+      
+      <search>PRIORITY</search>
+      <skill name="vehicle assembly" />
+      
+    </load>
+    <load>
+      <operation name="weld SUV-RED" />
+      <resource name="body line A" />
+      <quantity>1</quantity>
+      
+      <name>body line SUV-RED</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>suv</setup>
+    </load>
+    <load>
+      <operation name="weld SUV-RED" />
+      <resource name="body line B" />
+      <quantity>1</quantity>
+      
+      <name>body line SUV-RED</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>suv</setup>
+    </load>
+    <load>
+      <operation name="paint SUV-RED" />
+      <resource name="paint booth" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+      <setup>red</setup>
+    </load>
+    <load>
+      <operation name="assemble SUV-RED" />
+      <resource name="assembly team pool" />
+      <quantity>1</quantity>
+      
+      
+      
+      <search>PRIORITY</search>
+      <skill name="vehicle assembly" />
+      
+    </load>
+  </loads>
+  <skills>
+    <skill name="vehicle assembly">
+      <resourceskills>
+        <resourceskill>
+          <resource name="assembly team east" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="assembly team west" />
+          <priority>2</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="assembly team flex" />
+          <priority>3</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="ship SEDAN-BLK" />
+      <buffer name="black sedan" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="weld SEDAN-BLK" />
+      <buffer name="automotive steel" />
+      <quantity>-2</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="assemble SEDAN-BLK" />
+      <buffer name="powertrain" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="assemble SEDAN-BLK" />
+      <buffer name="electronics kit" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="assemble SEDAN-BLK" />
+      <buffer name="black sedan" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship SEDAN-WHT" />
+      <buffer name="white sedan" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="weld SEDAN-WHT" />
+      <buffer name="automotive steel" />
+      <quantity>-2</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="assemble SEDAN-WHT" />
+      <buffer name="powertrain" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="assemble SEDAN-WHT" />
+      <buffer name="electronics kit" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="assemble SEDAN-WHT" />
+      <buffer name="white sedan" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship SUV-BLK" />
+      <buffer name="black suv" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="weld SUV-BLK" />
+      <buffer name="automotive steel" />
+      <quantity>-3</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="assemble SUV-BLK" />
+      <buffer name="powertrain" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="assemble SUV-BLK" />
+      <buffer name="electronics kit" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="assemble SUV-BLK" />
+      <buffer name="black suv" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship SUV-RED" />
+      <buffer name="red suv" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="weld SUV-RED" />
+      <buffer name="automotive steel" />
+      <quantity>-3</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="assemble SUV-RED" />
+      <buffer name="powertrain" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="assemble SUV-RED" />
+      <buffer name="electronics kit" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="assemble SUV-RED" />
+      <buffer name="red suv" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="vehicle order 001 SEDAN-BLK">
+      <quantity>1</quantity><due>2026-01-26T00:00:00</due><priority>1</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 002 SEDAN-WHT">
+      <quantity>2</quantity><due>2026-01-26T08:00:00</due><priority>2</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 003 SUV-BLK">
+      <quantity>3</quantity><due>2026-01-26T16:00:00</due><priority>3</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 004 SUV-RED">
+      <quantity>1</quantity><due>2026-01-27T00:00:00</due><priority>4</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 005 SEDAN-BLK">
+      <quantity>4</quantity><due>2026-01-27T08:00:00</due><priority>5</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 006 SEDAN-WHT">
+      <quantity>2</quantity><due>2026-01-27T16:00:00</due><priority>6</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 007 SUV-BLK">
+      <quantity>1</quantity><due>2026-01-28T00:00:00</due><priority>7</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 008 SUV-RED">
+      <quantity>2</quantity><due>2026-01-28T08:00:00</due><priority>8</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 009 SEDAN-BLK">
+      <quantity>3</quantity><due>2026-01-28T16:00:00</due><priority>9</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 010 SEDAN-WHT">
+      <quantity>1</quantity><due>2026-01-29T00:00:00</due><priority>10</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 011 SUV-BLK">
+      <quantity>4</quantity><due>2026-01-29T08:00:00</due><priority>1</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 012 SUV-RED">
+      <quantity>2</quantity><due>2026-01-29T16:00:00</due><priority>2</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 013 SEDAN-BLK">
+      <quantity>1</quantity><due>2026-01-30T00:00:00</due><priority>3</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 014 SEDAN-WHT">
+      <quantity>2</quantity><due>2026-01-30T08:00:00</due><priority>4</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 015 SUV-BLK">
+      <quantity>3</quantity><due>2026-01-30T16:00:00</due><priority>5</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 016 SUV-RED">
+      <quantity>1</quantity><due>2026-01-31T00:00:00</due><priority>6</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 017 SEDAN-BLK">
+      <quantity>4</quantity><due>2026-01-31T08:00:00</due><priority>7</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 018 SEDAN-WHT">
+      <quantity>2</quantity><due>2026-01-31T16:00:00</due><priority>8</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 019 SUV-BLK">
+      <quantity>1</quantity><due>2026-02-01T00:00:00</due><priority>9</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 020 SUV-RED">
+      <quantity>2</quantity><due>2026-02-01T08:00:00</due><priority>10</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 021 SEDAN-BLK">
+      <quantity>3</quantity><due>2026-02-01T16:00:00</due><priority>1</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 022 SEDAN-WHT">
+      <quantity>1</quantity><due>2026-02-02T00:00:00</due><priority>2</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 023 SUV-BLK">
+      <quantity>4</quantity><due>2026-02-02T08:00:00</due><priority>3</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 024 SUV-RED">
+      <quantity>2</quantity><due>2026-02-02T16:00:00</due><priority>4</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 025 SEDAN-BLK">
+      <quantity>1</quantity><due>2026-02-03T00:00:00</due><priority>5</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 026 SEDAN-WHT">
+      <quantity>2</quantity><due>2026-02-03T08:00:00</due><priority>6</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 027 SUV-BLK">
+      <quantity>3</quantity><due>2026-02-03T16:00:00</due><priority>7</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 028 SUV-RED">
+      <quantity>1</quantity><due>2026-02-04T00:00:00</due><priority>8</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 029 SEDAN-BLK">
+      <quantity>4</quantity><due>2026-02-04T08:00:00</due><priority>9</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 030 SEDAN-WHT">
+      <quantity>2</quantity><due>2026-02-04T16:00:00</due><priority>10</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 031 SUV-BLK">
+      <quantity>1</quantity><due>2026-02-05T00:00:00</due><priority>1</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 032 SUV-RED">
+      <quantity>2</quantity><due>2026-02-05T08:00:00</due><priority>2</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 033 SEDAN-BLK">
+      <quantity>3</quantity><due>2026-02-05T16:00:00</due><priority>3</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 034 SEDAN-WHT">
+      <quantity>1</quantity><due>2026-02-06T00:00:00</due><priority>4</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 035 SUV-BLK">
+      <quantity>4</quantity><due>2026-02-06T08:00:00</due><priority>5</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 036 SUV-RED">
+      <quantity>2</quantity><due>2026-02-06T16:00:00</due><priority>6</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 037 SEDAN-BLK">
+      <quantity>1</quantity><due>2026-02-07T00:00:00</due><priority>7</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 038 SEDAN-WHT">
+      <quantity>2</quantity><due>2026-02-07T08:00:00</due><priority>8</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 039 SUV-BLK">
+      <quantity>3</quantity><due>2026-02-07T16:00:00</due><priority>9</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 040 SUV-RED">
+      <quantity>1</quantity><due>2026-02-08T00:00:00</due><priority>10</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 041 SEDAN-BLK">
+      <quantity>4</quantity><due>2026-02-08T08:00:00</due><priority>1</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 042 SEDAN-WHT">
+      <quantity>2</quantity><due>2026-02-08T16:00:00</due><priority>2</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 043 SUV-BLK">
+      <quantity>1</quantity><due>2026-02-09T00:00:00</due><priority>3</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 044 SUV-RED">
+      <quantity>2</quantity><due>2026-02-09T08:00:00</due><priority>4</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 045 SEDAN-BLK">
+      <quantity>3</quantity><due>2026-02-09T16:00:00</due><priority>5</priority>
+      <item name="black sedan" /><operation name="ship SEDAN-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 046 SEDAN-WHT">
+      <quantity>1</quantity><due>2026-02-10T00:00:00</due><priority>6</priority>
+      <item name="white sedan" /><operation name="ship SEDAN-WHT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 047 SUV-BLK">
+      <quantity>4</quantity><due>2026-02-10T08:00:00</due><priority>7</priority>
+      <item name="black suv" /><operation name="ship SUV-BLK" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="vehicle order 048 SUV-RED">
+      <quantity>2</quantity><due>2026-02-10T16:00:00</due><priority>8</priority>
+      <item name="red suv" /><operation name="ship SUV-RED" />
+      
+      
+      
+      
+      
+    </demand>
+  </demands>
+  <operationplans>
+  </operationplans>
+<?python
+import datetime, frepple, json
+frepple.solver_mrp(**{"plantype":1,"constraints":15,"loglevel":0,"lazydelay":43200,"erasePreviousFirst":True,"minimumdelay":3600,"rotateresources":True}).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+def metric(value):
+    value = round(float(value), 9)
+    return 0.0 if abs(value) < 0.000000001 else value
+def number_key(value):
+    return ("%.9f" % metric(value)).rstrip("0").rstrip(".") or "0"
+explicit_references = set([])
+dependency_quantities = {}
+plan_rows = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity)})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    productive_seconds = max(0.0, (operationplan.end - operationplan.start).total_seconds() - operationplan.unavailable)
+    operation_cost = metric(operationplan.operation.cost * operationplan.quantity)
+    resource_cost = metric(operationplan.quantity * sum(resource.cost for resource in all_resources if resource.name in resources) * productive_seconds / 3600.0)
+    setup_cost = metric(getattr(getattr(operationplan, "rule", None), "cost", 0))
+    plan_rows.append((operationplan, {
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": metric(operationplan.quantity),
+        "quantityCompleted": metric(getattr(operationplan, "quantity_completed", 0)),
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "batch": getattr(operationplan, "batch", "") or "",
+        "orderType": getattr(operationplan, "ordertype", "") or "",
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "setupSeconds": operationplan.setup,
+        "setupEnd": stamp(operationplan.setupend),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+        "operationCost": operation_cost,
+        "resourceCost": resource_cost,
+        "setupCost": setup_cost,
+        "totalCost": metric(operation_cost + resource_cost),
+        "setupPenalty": setup_cost,
+    }))
+plan_rows.sort(key=lambda pair: (pair[1]["operation"], pair[1]["start"], pair[1]["end"], pair[1]["demand"] or "", pair[1]["quantity"], pair[1]["batch"], pair[1]["orderType"]))
+plan_keys = {}
+key_counts = {}
+plans = []
+for operationplan, row in plan_rows:
+    reference = str(getattr(operationplan, "reference", "") or "")
+    seed = "|".join((row["operation"], row["start"], row["end"], row["demand"] or "", number_key(row["quantity"]), row["batch"], row["orderType"], row["ownerOperation"] or ""))
+    key_counts[seed] = key_counts.get(seed, 0) + 1
+    plan_key = "ref:" + reference if reference in explicit_references else "auto:" + seed + "#" + str(key_counts[seed])
+    plan_keys[id(operationplan)] = plan_key
+    row["planKey"] = plan_key
+    row["reference"] = reference if reference in explicit_references else plan_key
+    plans.append(row)
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": metric(operationplan.quantity), "end": stamp(operationplan.end), "batch": getattr(operationplan, "batch", "") or "", "orderType": getattr(operationplan, "ordertype", "") or "", "operationPlanKey": plan_keys.get(id(operationplan))})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"], value["batch"], value["orderType"]))
+dependencies = []
+seen_dependencies = set()
+for operationplan in frepple.operationplans():
+    for dependency in getattr(operationplan, "blockedby", []):
+        if id(dependency) in seen_dependencies: continue
+        seen_dependencies.add(id(dependency))
+        first = dependency.first
+        second = dependency.second
+        ratio = dependency_quantities.get(second.operation.name + "\u0000" + first.operation.name, 1)
+        dependencies.append({"first": plan_keys.get(id(first)), "second": plan_keys.get(id(second)), "quantity": metric(min(first.quantity, second.quantity * ratio)), "operation": second.operation.name, "blockedBy": first.operation.name})
+dependencies.sort(key=lambda value: (value["second"] or "", value["first"] or "", value["operation"], value["blockedBy"], value["quantity"]))
+problems = []
+for problem in frepple.problems():
+    owner = getattr(problem, "owner", None)
+    owner_key = plan_keys.get(id(owner)) if owner is not None else None
+    problems.append({"name": problem.name, "description": problem.description, "start": stamp(problem.start), "end": stamp(problem.end), "entity": problem.entity, "owner": owner_key or name(owner), "feasible": bool(problem.feasible)})
+problems.sort(key=lambda value: (value["owner"] or "", value["name"], value["start"], value["end"], value["description"]))
+inventory_profiles = []
+for buffer in all_buffers:
+    for flowplan in buffer.flowplans:
+        operationplan = getattr(flowplan, "operationplan", None)
+        inventory_profiles.append({"buffer": buffer.name, "bufferBatch": getattr(buffer, "batch", "") or "", "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity), "onhand": metric(flowplan.onhand), "operationPlanKey": plan_keys.get(id(operationplan)) if operationplan is not None else None, "orderType": getattr(operationplan, "ordertype", "") if operationplan is not None else None})
+inventory_profiles.sort(key=lambda value: (value["buffer"], value["bufferBatch"], value["date"], value["quantity"], value["operationPlanKey"] or "", value["onhand"]))
+boundaries = sorted(set([frepple.settings.current] + [value for operationplan, row in plan_rows for value in (operationplan.start, operationplan.end)]))
+if len(boundaries) < 2: boundaries.append(boundaries[0] + datetime.timedelta(days=1))
+resource_plans = []
+for resource in all_resources:
+    for bucket in resource.plan(boundaries):
+        values = [metric(bucket[field]) for field in ("available", "load", "unavailable", "setup", "free", "load_confirmed")]
+        if not any(values): continue
+        available, load, unavailable, setup, free, load_confirmed = values
+        resource_plans.append({"resource": resource.name, "start": stamp(bucket["start"]), "end": stamp(bucket["end"]), "available": available, "load": load, "unavailable": unavailable, "setup": setup, "free": free, "loadConfirmed": load_confirmed, "utilization": metric((load + setup) / available) if available else metric(load + setup)})
+resource_plans.sort(key=lambda value: (value["resource"], value["start"], value["end"]))
+cost_summary = {"operationCost": metric(sum(value["operationCost"] for value in plans)), "resourceCost": metric(sum(value["resourceCost"] for value in plans)), "setupCost": metric(sum(value["setupCost"] for value in plans)), "totalCost": metric(sum(value["totalCost"] for value in plans)), "setupPenalty": metric(sum(value["setupPenalty"] for value in plans))}
+with open("/workspace/cpp-typescript/.schedule-diff/automotive_mixed_model.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries, "dependencies": dependencies, "problems": problems, "inventoryProfiles": inventory_profiles, "resourcePlans": resource_plans, "costSummary": cost_summary}, output, indent=2, sort_keys=True)
+?>
+</plan>

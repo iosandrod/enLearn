@@ -1,0 +1,1149 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "controller A",
+      "quantity": -1,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "type": "end",
+      "buffer": "controller A",
+      "quantity": 1,
+      "operation": "fast process CTRL-A"
+    },
+    {
+      "type": "start",
+      "buffer": "microcontroller premium",
+      "quantity": -1,
+      "operation": "fast process CTRL-A"
+    },
+    {
+      "type": "start",
+      "buffer": "pcb panel",
+      "quantity": -1,
+      "operation": "fast process CTRL-A"
+    },
+    {
+      "type": "end",
+      "buffer": "controller A",
+      "quantity": 1,
+      "operation": "standard process CTRL-A"
+    },
+    {
+      "type": "start",
+      "buffer": "microcontroller standard",
+      "quantity": -1,
+      "operation": "standard process CTRL-A"
+    },
+    {
+      "type": "start",
+      "buffer": "pcb panel",
+      "quantity": -1,
+      "operation": "standard process CTRL-A"
+    },
+    {
+      "type": "start",
+      "buffer": "controller B",
+      "quantity": -1,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "type": "end",
+      "buffer": "controller B",
+      "quantity": 1,
+      "operation": "fast process CTRL-B"
+    },
+    {
+      "type": "start",
+      "buffer": "microcontroller premium",
+      "quantity": -1,
+      "operation": "fast process CTRL-B"
+    },
+    {
+      "type": "start",
+      "buffer": "pcb panel",
+      "quantity": -1,
+      "operation": "fast process CTRL-B"
+    },
+    {
+      "type": "end",
+      "buffer": "controller B",
+      "quantity": 1,
+      "operation": "standard process CTRL-B"
+    },
+    {
+      "type": "start",
+      "buffer": "microcontroller standard",
+      "quantity": -1,
+      "operation": "standard process CTRL-B"
+    },
+    {
+      "type": "start",
+      "buffer": "pcb panel",
+      "quantity": -1,
+      "operation": "standard process CTRL-B"
+    },
+    {
+      "type": "start",
+      "buffer": "sensor C",
+      "quantity": -1,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "type": "end",
+      "buffer": "sensor C",
+      "quantity": 1,
+      "operation": "fast process SENSOR-C"
+    },
+    {
+      "type": "start",
+      "buffer": "microcontroller premium",
+      "quantity": -1,
+      "operation": "fast process SENSOR-C"
+    },
+    {
+      "type": "start",
+      "buffer": "pcb panel",
+      "quantity": -1,
+      "operation": "fast process SENSOR-C"
+    },
+    {
+      "type": "end",
+      "buffer": "sensor C",
+      "quantity": 1,
+      "operation": "standard process SENSOR-C"
+    },
+    {
+      "type": "start",
+      "buffer": "microcontroller standard",
+      "quantity": -1,
+      "operation": "standard process SENSOR-C"
+    },
+    {
+      "type": "start",
+      "buffer": "sensor die",
+      "quantity": -1,
+      "operation": "standard process SENSOR-C"
+    },
+    {
+      "type": "start",
+      "buffer": "sensor D",
+      "quantity": -1,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "type": "end",
+      "buffer": "sensor D",
+      "quantity": 1,
+      "operation": "fast process SENSOR-D"
+    },
+    {
+      "type": "start",
+      "buffer": "microcontroller premium",
+      "quantity": -1,
+      "operation": "fast process SENSOR-D"
+    },
+    {
+      "type": "start",
+      "buffer": "pcb panel",
+      "quantity": -1,
+      "operation": "fast process SENSOR-D"
+    },
+    {
+      "type": "end",
+      "buffer": "sensor D",
+      "quantity": 1,
+      "operation": "standard process SENSOR-D"
+    },
+    {
+      "type": "start",
+      "buffer": "microcontroller standard",
+      "quantity": -1,
+      "operation": "standard process SENSOR-D"
+    },
+    {
+      "type": "start",
+      "buffer": "sensor die",
+      "quantity": -1,
+      "operation": "standard process SENSOR-D"
+    }
+  ],
+  "items": [
+    {
+      "name": "microcontroller premium"
+    },
+    {
+      "name": "microcontroller standard"
+    },
+    {
+      "name": "pcb panel"
+    },
+    {
+      "name": "sensor die"
+    },
+    {
+      "name": "controller A"
+    },
+    {
+      "name": "controller B"
+    },
+    {
+      "name": "sensor C"
+    },
+    {
+      "name": "sensor D"
+    }
+  ],
+  "loads": [
+    {
+      "name": "smt CTRL-A",
+      "setup": "leadfree",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "smt highspeed",
+      "operation": "fast process CTRL-A"
+    },
+    {
+      "name": "smt CTRL-A",
+      "setup": "leadfree",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "smt flexible",
+      "operation": "fast process CTRL-A"
+    },
+    {
+      "skill": "advanced ict",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "ict pool",
+      "operation": "fast process CTRL-A"
+    },
+    {
+      "setup": "leadfree",
+      "quantity": 1,
+      "resource": "smt standard",
+      "operation": "standard process CTRL-A"
+    },
+    {
+      "quantity": 1,
+      "resource": "functional test",
+      "operation": "standard process CTRL-A"
+    },
+    {
+      "name": "smt CTRL-B",
+      "setup": "leadfree",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "smt highspeed",
+      "operation": "fast process CTRL-B"
+    },
+    {
+      "name": "smt CTRL-B",
+      "setup": "leadfree",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "smt flexible",
+      "operation": "fast process CTRL-B"
+    },
+    {
+      "skill": "advanced ict",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "ict pool",
+      "operation": "fast process CTRL-B"
+    },
+    {
+      "setup": "leadfree",
+      "quantity": 1,
+      "resource": "smt standard",
+      "operation": "standard process CTRL-B"
+    },
+    {
+      "quantity": 1,
+      "resource": "functional test",
+      "operation": "standard process CTRL-B"
+    },
+    {
+      "name": "smt SENSOR-C",
+      "setup": "lowtemp",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "smt highspeed",
+      "operation": "fast process SENSOR-C"
+    },
+    {
+      "name": "smt SENSOR-C",
+      "setup": "lowtemp",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "smt flexible",
+      "operation": "fast process SENSOR-C"
+    },
+    {
+      "skill": "advanced ict",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "ict pool",
+      "operation": "fast process SENSOR-C"
+    },
+    {
+      "setup": "lowtemp",
+      "quantity": 1,
+      "resource": "smt standard",
+      "operation": "standard process SENSOR-C"
+    },
+    {
+      "quantity": 1,
+      "resource": "functional test",
+      "operation": "standard process SENSOR-C"
+    },
+    {
+      "name": "smt SENSOR-D",
+      "setup": "lowtemp",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "smt highspeed",
+      "operation": "fast process SENSOR-D"
+    },
+    {
+      "name": "smt SENSOR-D",
+      "setup": "lowtemp",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "smt flexible",
+      "operation": "fast process SENSOR-D"
+    },
+    {
+      "skill": "advanced ict",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "ict pool",
+      "operation": "fast process SENSOR-D"
+    },
+    {
+      "setup": "lowtemp",
+      "quantity": 1,
+      "resource": "smt standard",
+      "operation": "standard process SENSOR-D"
+    },
+    {
+      "quantity": 1,
+      "resource": "functional test",
+      "operation": "standard process SENSOR-D"
+    }
+  ],
+  "skills": [
+    {
+      "name": "advanced ict"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 21600,
+    "constraints": 15,
+    "minimumDelay": 1800,
+    "rotateResources": false
+  },
+  "buffers": [
+    {
+      "item": "microcontroller premium",
+      "name": "microcontroller premium",
+      "onhand": 18
+    },
+    {
+      "item": "microcontroller standard",
+      "name": "microcontroller standard",
+      "onhand": 180
+    },
+    {
+      "item": "pcb panel",
+      "name": "pcb panel",
+      "onhand": 240
+    },
+    {
+      "item": "sensor die",
+      "name": "sensor die",
+      "onhand": 140
+    },
+    {
+      "item": "controller A",
+      "name": "controller A",
+      "onhand": 0,
+      "producing": "select process CTRL-A"
+    },
+    {
+      "item": "controller B",
+      "name": "controller B",
+      "onhand": 0,
+      "producing": "select process CTRL-B"
+    },
+    {
+      "item": "sensor C",
+      "name": "sensor C",
+      "onhand": 0,
+      "producing": "select process SENSOR-C"
+    },
+    {
+      "item": "sensor D",
+      "name": "sensor D",
+      "onhand": 0,
+      "producing": "select process SENSOR-D"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-19T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 001 CTRL-A",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-19T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 002 CTRL-B",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-19T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 003 SENSOR-C",
+      "priority": 3,
+      "quantity": 4,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-19T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 004 SENSOR-D",
+      "priority": 4,
+      "quantity": 3,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-20T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 005 CTRL-A",
+      "priority": 5,
+      "quantity": 2,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-20T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 006 CTRL-B",
+      "priority": 6,
+      "quantity": 5,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-20T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 007 SENSOR-C",
+      "priority": 7,
+      "quantity": 1,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-20T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 008 SENSOR-D",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-21T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 009 CTRL-A",
+      "priority": 9,
+      "quantity": 4,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-21T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 010 CTRL-B",
+      "priority": 10,
+      "quantity": 3,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-21T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 011 SENSOR-C",
+      "priority": 11,
+      "quantity": 2,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-21T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 012 SENSOR-D",
+      "priority": 12,
+      "quantity": 5,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-22T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 013 CTRL-A",
+      "priority": 13,
+      "quantity": 1,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-22T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 014 CTRL-B",
+      "priority": 14,
+      "quantity": 2,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-22T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 015 SENSOR-C",
+      "priority": 15,
+      "quantity": 4,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-22T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 016 SENSOR-D",
+      "priority": 1,
+      "quantity": 3,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-23T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 017 CTRL-A",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-23T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 018 CTRL-B",
+      "priority": 3,
+      "quantity": 5,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-23T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 019 SENSOR-C",
+      "priority": 4,
+      "quantity": 1,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-23T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 020 SENSOR-D",
+      "priority": 5,
+      "quantity": 2,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-24T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 021 CTRL-A",
+      "priority": 6,
+      "quantity": 4,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-24T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 022 CTRL-B",
+      "priority": 7,
+      "quantity": 3,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-24T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 023 SENSOR-C",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-24T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 024 SENSOR-D",
+      "priority": 9,
+      "quantity": 5,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-25T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 025 CTRL-A",
+      "priority": 10,
+      "quantity": 1,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-25T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 026 CTRL-B",
+      "priority": 11,
+      "quantity": 2,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-25T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 027 SENSOR-C",
+      "priority": 12,
+      "quantity": 4,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-25T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 028 SENSOR-D",
+      "priority": 13,
+      "quantity": 3,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-26T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 029 CTRL-A",
+      "priority": 14,
+      "quantity": 2,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-26T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 030 CTRL-B",
+      "priority": 15,
+      "quantity": 5,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-26T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 031 SENSOR-C",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-26T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 032 SENSOR-D",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-27T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 033 CTRL-A",
+      "priority": 3,
+      "quantity": 4,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-27T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 034 CTRL-B",
+      "priority": 4,
+      "quantity": 3,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-27T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 035 SENSOR-C",
+      "priority": 5,
+      "quantity": 2,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-27T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 036 SENSOR-D",
+      "priority": 6,
+      "quantity": 5,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-28T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 037 CTRL-A",
+      "priority": 7,
+      "quantity": 1,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-28T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 038 CTRL-B",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-28T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 039 SENSOR-C",
+      "priority": 9,
+      "quantity": 4,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-28T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 040 SENSOR-D",
+      "priority": 10,
+      "quantity": 3,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-29T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 041 CTRL-A",
+      "priority": 11,
+      "quantity": 2,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-29T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 042 CTRL-B",
+      "priority": 12,
+      "quantity": 5,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-29T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 043 SENSOR-C",
+      "priority": 13,
+      "quantity": 1,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-29T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 044 SENSOR-D",
+      "priority": 14,
+      "quantity": 2,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-30T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 045 CTRL-A",
+      "priority": 15,
+      "quantity": 4,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-30T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 046 CTRL-B",
+      "priority": 1,
+      "quantity": 3,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-30T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 047 SENSOR-C",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-30T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 048 SENSOR-D",
+      "priority": 3,
+      "quantity": 5,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-01-31T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 049 CTRL-A",
+      "priority": 4,
+      "quantity": 1,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-01-31T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 050 CTRL-B",
+      "priority": 5,
+      "quantity": 2,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-01-31T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 051 SENSOR-C",
+      "priority": 6,
+      "quantity": 4,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-01-31T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 052 SENSOR-D",
+      "priority": 7,
+      "quantity": 3,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-02-01T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 053 CTRL-A",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-02-01T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 054 CTRL-B",
+      "priority": 9,
+      "quantity": 5,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-02-01T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 055 SENSOR-C",
+      "priority": 10,
+      "quantity": 1,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-02-01T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 056 SENSOR-D",
+      "priority": 11,
+      "quantity": 2,
+      "operation": "ship SENSOR-D"
+    },
+    {
+      "due": "2026-02-02T02:00:00",
+      "item": "controller A",
+      "name": "electronics order 057 CTRL-A",
+      "priority": 12,
+      "quantity": 4,
+      "operation": "ship CTRL-A"
+    },
+    {
+      "due": "2026-02-02T08:00:00",
+      "item": "controller B",
+      "name": "electronics order 058 CTRL-B",
+      "priority": 13,
+      "quantity": 3,
+      "operation": "ship CTRL-B"
+    },
+    {
+      "due": "2026-02-02T14:00:00",
+      "item": "sensor C",
+      "name": "electronics order 059 SENSOR-C",
+      "priority": 14,
+      "quantity": 2,
+      "operation": "ship SENSOR-C"
+    },
+    {
+      "due": "2026-02-02T20:00:00",
+      "item": "sensor D",
+      "name": "electronics order 060 SENSOR-D",
+      "priority": 15,
+      "quantity": 5,
+      "operation": "ship SENSOR-D"
+    }
+  ],
+  "resources": [
+    {
+      "name": "smt highspeed",
+      "setup": "idle",
+      "maximum": 4,
+      "maxearly": 4320000,
+      "efficiency": 115,
+      "setupMatrix": "reflow profile"
+    },
+    {
+      "name": "smt flexible",
+      "setup": "idle",
+      "maximum": 3,
+      "maxearly": 4320000,
+      "efficiency": 92,
+      "setupMatrix": "reflow profile"
+    },
+    {
+      "name": "smt standard",
+      "setup": "idle",
+      "maximum": 4,
+      "maxearly": 4320000,
+      "efficiency": 85,
+      "setupMatrix": "reflow profile"
+    },
+    {
+      "name": "ict pool",
+      "maximum": 1,
+      "maxearly": 4320000,
+      "efficiency": 100
+    },
+    {
+      "name": "ict senior",
+      "owner": "ict pool",
+      "maximum": 3,
+      "maxearly": 4320000,
+      "efficiency": 110
+    },
+    {
+      "name": "ict regular",
+      "owner": "ict pool",
+      "maximum": 3,
+      "maxearly": 4320000,
+      "efficiency": 95
+    },
+    {
+      "name": "ict trainee",
+      "owner": "ict pool",
+      "maximum": 2,
+      "maxearly": 4320000,
+      "efficiency": 80
+    },
+    {
+      "name": "functional test",
+      "maximum": 5,
+      "maxearly": 4320000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 80,
+      "name": "fast process CTRL-A",
+      "type": "fixed_time",
+      "duration": 28800,
+      "sizeMaximum": 8,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 45,
+      "name": "standard process CTRL-A",
+      "type": "fixed_time",
+      "duration": 46800,
+      "sizeMaximum": 8,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "name": "select process CTRL-A",
+      "type": "alternate",
+      "search": "PRIORITY",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "fast process CTRL-A"
+        },
+        {
+          "priority": 2,
+          "operation": "standard process CTRL-A"
+        }
+      ]
+    },
+    {
+      "cost": 8,
+      "name": "ship CTRL-A",
+      "type": "fixed_time",
+      "duration": 7200
+    },
+    {
+      "cost": 80,
+      "name": "fast process CTRL-B",
+      "type": "fixed_time",
+      "duration": 32400,
+      "sizeMaximum": 8,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 45,
+      "name": "standard process CTRL-B",
+      "type": "fixed_time",
+      "duration": 50400,
+      "sizeMaximum": 8,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "name": "select process CTRL-B",
+      "type": "alternate",
+      "search": "PRIORITY",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "fast process CTRL-B"
+        },
+        {
+          "priority": 2,
+          "operation": "standard process CTRL-B"
+        }
+      ]
+    },
+    {
+      "cost": 8,
+      "name": "ship CTRL-B",
+      "type": "fixed_time",
+      "duration": 7200
+    },
+    {
+      "cost": 80,
+      "name": "fast process SENSOR-C",
+      "type": "fixed_time",
+      "duration": 36000,
+      "sizeMaximum": 8,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 45,
+      "name": "standard process SENSOR-C",
+      "type": "fixed_time",
+      "duration": 54000,
+      "sizeMaximum": 8,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "name": "select process SENSOR-C",
+      "type": "alternate",
+      "search": "PRIORITY",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "fast process SENSOR-C"
+        },
+        {
+          "priority": 2,
+          "operation": "standard process SENSOR-C"
+        }
+      ]
+    },
+    {
+      "cost": 8,
+      "name": "ship SENSOR-C",
+      "type": "fixed_time",
+      "duration": 7200
+    },
+    {
+      "cost": 80,
+      "name": "fast process SENSOR-D",
+      "type": "fixed_time",
+      "duration": 39600,
+      "sizeMaximum": 8,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 45,
+      "name": "standard process SENSOR-D",
+      "type": "fixed_time",
+      "duration": 57600,
+      "sizeMaximum": 8,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "name": "select process SENSOR-D",
+      "type": "alternate",
+      "search": "PRIORITY",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "fast process SENSOR-D"
+        },
+        {
+          "priority": 2,
+          "operation": "standard process SENSOR-D"
+        }
+      ]
+    },
+    {
+      "cost": 8,
+      "name": "ship SENSOR-D",
+      "type": "fixed_time",
+      "duration": 7200
+    }
+  ],
+  "setupMatrices": [
+    {
+      "name": "reflow profile",
+      "rules": [
+        {
+          "to": "leadfree|lowtemp",
+          "cost": 5,
+          "from": "idle",
+          "duration": 3600,
+          "priority": 1
+        },
+        {
+          "to": "lowtemp",
+          "cost": 16,
+          "from": "leadfree",
+          "duration": 10800,
+          "priority": 2
+        },
+        {
+          "to": "leadfree",
+          "cost": 12,
+          "from": "lowtemp",
+          "duration": 7200,
+          "priority": 3
+        },
+        {
+          "to": ".*",
+          "cost": 4,
+          "from": ".*",
+          "duration": 3600,
+          "priority": 99
+        }
+      ]
+    }
+  ],
+  "resourceSkills": [
+    {
+      "skill": "advanced ict",
+      "priority": 1,
+      "resource": "ict senior"
+    },
+    {
+      "skill": "advanced ict",
+      "priority": 2,
+      "resource": "ict regular"
+    }
+  ]
+}

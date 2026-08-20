@@ -1,0 +1,92 @@
+{
+  "operationPlans": [
+    {
+      "operation": "delivery blue item",
+      "demand": "blue order",
+      "quantity": 1,
+      "start": "2009-01-19T00:00:00",
+      "end": "2009-01-20T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "blue item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "delivery red item",
+      "demand": "red order",
+      "quantity": 1,
+      "start": "2009-01-19T00:00:00",
+      "end": "2009-01-20T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "make blue item",
+      "demand": null,
+      "quantity": 1,
+      "start": "2009-01-13T00:00:00",
+      "end": "2009-01-17T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [
+        "painting line"
+      ],
+      "materials": [
+        {
+          "buffer": "blue item",
+          "date": "2009-01-17T00:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "make red item",
+      "demand": null,
+      "quantity": 1,
+      "start": "2009-01-17T00:00:00",
+      "end": "2009-01-19T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [
+        "painting line"
+      ],
+      "materials": [
+        {
+          "buffer": "red item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 1
+        }
+      ]
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "blue order",
+      "quantity": 1,
+      "end": "2009-01-20T00:00:00"
+    },
+    {
+      "demand": "red order",
+      "quantity": 1,
+      "end": "2009-01-20T00:00:00"
+    }
+  ]
+}

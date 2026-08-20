@@ -1,0 +1,153 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "network product @ local east",
+      "quantity": -1,
+      "operation": "ship east demand"
+    },
+    {
+      "type": "start",
+      "buffer": "network product @ local west",
+      "quantity": -1,
+      "operation": "ship west demand"
+    }
+  ],
+  "items": [
+    {
+      "name": "network product"
+    }
+  ],
+  "loads": [],
+  "skills": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 21600,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "network product",
+      "name": "network product @ central warehouse",
+      "onhand": 40,
+      "location": "central warehouse"
+    },
+    {
+      "item": "network product",
+      "name": "network product @ regional hub",
+      "onhand": 2,
+      "location": "regional hub"
+    },
+    {
+      "item": "network product",
+      "name": "network product @ local east",
+      "onhand": 0,
+      "location": "local east"
+    },
+    {
+      "item": "network product",
+      "name": "network product @ local west",
+      "onhand": 0,
+      "location": "local west"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "network product",
+      "name": "east network order 1",
+      "location": "local east",
+      "priority": 1,
+      "quantity": 8,
+      "operation": "ship east demand"
+    },
+    {
+      "due": "2026-01-12T00:00:00",
+      "item": "network product",
+      "name": "west network order 1",
+      "location": "local west",
+      "priority": 2,
+      "quantity": 11,
+      "operation": "ship west demand"
+    },
+    {
+      "due": "2026-01-14T00:00:00",
+      "item": "network product",
+      "name": "east network order 2",
+      "location": "local east",
+      "priority": 3,
+      "quantity": 7,
+      "operation": "ship east demand"
+    }
+  ],
+  "locations": [
+    {
+      "name": "central warehouse"
+    },
+    {
+      "name": "regional hub"
+    },
+    {
+      "name": "local east"
+    },
+    {
+      "name": "local west"
+    }
+  ],
+  "resources": [],
+  "suppliers": [],
+  "operations": [
+    {
+      "cost": 1,
+      "name": "ship east demand",
+      "type": "fixed_time",
+      "duration": 3600
+    },
+    {
+      "cost": 1,
+      "name": "ship west demand",
+      "type": "fixed_time",
+      "duration": 3600
+    }
+  ],
+  "itemSuppliers": [],
+  "setupMatrices": [],
+  "resourceSkills": [],
+  "itemDistributions": [
+    {
+      "cost": 2,
+      "item": "network product",
+      "origin": "central warehouse",
+      "leadtime": 172800,
+      "priority": 1,
+      "destination": "regional hub",
+      "sizeMaximum": 50,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 1,
+      "item": "network product",
+      "origin": "regional hub",
+      "leadtime": 86400,
+      "priority": 1,
+      "destination": "local east",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 1.5,
+      "item": "network product",
+      "origin": "regional hub",
+      "leadtime": 129600,
+      "priority": 1,
+      "destination": "local west",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    }
+  ]
+}

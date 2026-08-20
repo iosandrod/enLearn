@@ -1,0 +1,158 @@
+{
+  "plan": {
+    "allowMergingOperationPlans": true
+  },
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "fixed flow product @ plant",
+      "quantity": 1,
+      "operation": "make fixed flow product",
+      "quantityFixed": 2
+    },
+    {
+      "type": "start",
+      "buffer": "fixed flow product @ plant",
+      "quantity": -1,
+      "operation": "ship fixed flow product"
+    },
+    {
+      "type": "end",
+      "buffer": "resource guard product @ plant",
+      "quantity": 1,
+      "operation": "make resource guard product"
+    },
+    {
+      "type": "start",
+      "buffer": "resource guard product @ plant",
+      "quantity": -1,
+      "operation": "ship resource guard product"
+    }
+  ],
+  "items": [
+    {
+      "name": "fixed flow product"
+    },
+    {
+      "name": "resource guard product"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "merge guard machine",
+      "operation": "make resource guard product"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "fixed flow product",
+      "name": "fixed flow product @ plant",
+      "onhand": 0,
+      "location": "merge guard plant",
+      "producing": "make fixed flow product"
+    },
+    {
+      "item": "resource guard product",
+      "name": "resource guard product @ plant",
+      "onhand": 0,
+      "location": "merge guard plant",
+      "producing": "make resource guard product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "fixed flow product",
+      "name": "fixed flow guard order A",
+      "location": "merge guard plant",
+      "priority": 1,
+      "quantity": 5,
+      "operation": "ship fixed flow product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "fixed flow product",
+      "name": "fixed flow guard order B",
+      "location": "merge guard plant",
+      "priority": 2,
+      "quantity": 5,
+      "operation": "ship fixed flow product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-13T00:00:00",
+      "item": "resource guard product",
+      "name": "resource guard order A",
+      "location": "merge guard plant",
+      "priority": 3,
+      "quantity": 2,
+      "operation": "ship resource guard product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-13T00:00:00",
+      "item": "resource guard product",
+      "name": "resource guard order B",
+      "location": "merge guard plant",
+      "priority": 4,
+      "quantity": 2,
+      "operation": "ship resource guard product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "merge guard plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "merge guard machine",
+      "maximum": 100,
+      "location": "merge guard plant",
+      "maxearly": 1728000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 3,
+      "name": "make fixed flow product",
+      "type": "fixed_time",
+      "duration": 14400,
+      "location": "merge guard plant",
+      "sizeMaximum": 50,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "ship fixed flow product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "merge guard plant"
+    },
+    {
+      "cost": 5,
+      "name": "make resource guard product",
+      "type": "fixed_time",
+      "duration": 14400,
+      "location": "merge guard plant",
+      "sizeMaximum": 50,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "ship resource guard product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "merge guard plant"
+    }
+  ]
+}

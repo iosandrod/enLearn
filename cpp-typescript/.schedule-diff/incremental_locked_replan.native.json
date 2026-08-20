@@ -1,0 +1,664 @@
+{
+  "costSummary": {
+    "operationCost": 84.0,
+    "resourceCost": 0.0,
+    "setupCost": 0.0,
+    "setupPenalty": 0.0,
+    "totalCost": 84.0
+  },
+  "deliveries": [
+    {
+      "batch": "",
+      "demand": "incremental order later",
+      "end": "2026-01-14T00:00:00",
+      "operationPlanKey": "auto:ship incremental product|2026-01-13T23:00:00|2026-01-14T00:00:00|incremental order later|6||MO|#1",
+      "orderType": "MO",
+      "quantity": 6.0
+    },
+    {
+      "batch": "",
+      "demand": "incremental order regular",
+      "end": "2026-01-10T00:00:00",
+      "operationPlanKey": "auto:ship incremental product|2026-01-09T23:00:00|2026-01-10T00:00:00|incremental order regular|10||MO|#1",
+      "orderType": "MO",
+      "quantity": 10.0
+    },
+    {
+      "batch": "",
+      "demand": "incremental order urgent",
+      "end": "2026-01-06T00:00:00",
+      "operationPlanKey": "auto:ship incremental product|2026-01-05T23:00:00|2026-01-06T00:00:00|incremental order urgent|5||MO|#1",
+      "orderType": "MO",
+      "quantity": 5.0
+    }
+  ],
+  "dependencies": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "incremental product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-03T00:00:00",
+      "onhand": 3.0,
+      "operationPlanKey": "ref:MO-INCREMENTAL-CONFIRMED",
+      "orderType": "MO",
+      "quantity": 3.0
+    },
+    {
+      "buffer": "incremental product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-05T00:00:00",
+      "onhand": 7.0,
+      "operationPlanKey": "ref:MO-INCREMENTAL-APPROVED",
+      "orderType": "MO",
+      "quantity": 4.0
+    },
+    {
+      "buffer": "incremental product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-05T23:00:00",
+      "onhand": 2.0,
+      "operationPlanKey": "auto:ship incremental product|2026-01-05T23:00:00|2026-01-06T00:00:00|incremental order urgent|5||MO|#1",
+      "orderType": "MO",
+      "quantity": -5.0
+    },
+    {
+      "buffer": "incremental product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T00:00:00",
+      "onhand": 7.0,
+      "operationPlanKey": "ref:MO-INCREMENTAL-PROPOSED",
+      "orderType": "MO",
+      "quantity": 5.0
+    },
+    {
+      "buffer": "incremental product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-09T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship incremental product|2026-01-09T23:00:00|2026-01-10T00:00:00|incremental order regular|10||MO|#1",
+      "orderType": "MO",
+      "quantity": -10.0
+    },
+    {
+      "buffer": "incremental product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-09T23:00:00",
+      "onhand": 10.0,
+      "operationPlanKey": "auto:make incremental product|2026-01-08T23:00:00|2026-01-09T23:00:00||3||MO|#1",
+      "orderType": "MO",
+      "quantity": 3.0
+    },
+    {
+      "buffer": "incremental product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship incremental product|2026-01-13T23:00:00|2026-01-14T00:00:00|incremental order later|6||MO|#1",
+      "orderType": "MO",
+      "quantity": -6.0
+    },
+    {
+      "buffer": "incremental product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T23:00:00",
+      "onhand": 6.0,
+      "operationPlanKey": "auto:make incremental product|2026-01-12T23:00:00|2026-01-13T23:00:00||6||MO|#1",
+      "orderType": "MO",
+      "quantity": 6.0
+    },
+    {
+      "buffer": "incremental raw @ plant",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "onhand": 100.0,
+      "operationPlanKey": "auto:Inventory incremental raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||100||STCK|#1",
+      "orderType": "STCK",
+      "quantity": 100.0
+    },
+    {
+      "buffer": "incremental raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-02T00:00:00",
+      "onhand": 97.0,
+      "operationPlanKey": "ref:MO-INCREMENTAL-CONFIRMED",
+      "orderType": "MO",
+      "quantity": -3.0
+    },
+    {
+      "buffer": "incremental raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-04T00:00:00",
+      "onhand": 93.0,
+      "operationPlanKey": "ref:MO-INCREMENTAL-APPROVED",
+      "orderType": "MO",
+      "quantity": -4.0
+    },
+    {
+      "buffer": "incremental raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-07T00:00:00",
+      "onhand": 88.0,
+      "operationPlanKey": "ref:MO-INCREMENTAL-PROPOSED",
+      "orderType": "MO",
+      "quantity": -5.0
+    },
+    {
+      "buffer": "incremental raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T23:00:00",
+      "onhand": 85.0,
+      "operationPlanKey": "auto:make incremental product|2026-01-08T23:00:00|2026-01-09T23:00:00||3||MO|#1",
+      "orderType": "MO",
+      "quantity": -3.0
+    },
+    {
+      "buffer": "incremental raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "onhand": 79.0,
+      "operationPlanKey": "auto:make incremental product|2026-01-12T23:00:00|2026-01-13T23:00:00||6||MO|#1",
+      "orderType": "MO",
+      "quantity": -6.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "incremental raw @ plant",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 100.0
+        }
+      ],
+      "operation": "Inventory incremental raw @ plant",
+      "operationCost": 0.0,
+      "orderType": "STCK",
+      "ownerOperation": null,
+      "planKey": "auto:Inventory incremental raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||100||STCK|#1",
+      "quantity": 100.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Inventory incremental raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||100||STCK|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "1971-01-01T00:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "1971-01-01T00:00:00",
+      "status": "closed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-03T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "incremental raw @ plant",
+          "date": "2026-01-02T00:00:00",
+          "quantity": -3.0
+        },
+        {
+          "buffer": "incremental product @ plant",
+          "date": "2026-01-03T00:00:00",
+          "quantity": 3.0
+        }
+      ],
+      "operation": "make incremental product",
+      "operationCost": 12.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "ref:MO-INCREMENTAL-CONFIRMED",
+      "quantity": 3.0,
+      "quantityCompleted": 0.0,
+      "reference": "MO-INCREMENTAL-CONFIRMED",
+      "resourceCost": 0.0,
+      "resources": [
+        "incremental line"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-02T00:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-02T00:00:00",
+      "status": "confirmed",
+      "totalCost": 12.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-05T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "incremental raw @ plant",
+          "date": "2026-01-04T00:00:00",
+          "quantity": -4.0
+        },
+        {
+          "buffer": "incremental product @ plant",
+          "date": "2026-01-05T00:00:00",
+          "quantity": 4.0
+        }
+      ],
+      "operation": "make incremental product",
+      "operationCost": 16.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "ref:MO-INCREMENTAL-APPROVED",
+      "quantity": 4.0,
+      "quantityCompleted": 0.0,
+      "reference": "MO-INCREMENTAL-APPROVED",
+      "resourceCost": 0.0,
+      "resources": [
+        "incremental line"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-04T00:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-04T00:00:00",
+      "status": "approved",
+      "totalCost": 16.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-08T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "incremental raw @ plant",
+          "date": "2026-01-07T00:00:00",
+          "quantity": -5.0
+        },
+        {
+          "buffer": "incremental product @ plant",
+          "date": "2026-01-08T00:00:00",
+          "quantity": 5.0
+        }
+      ],
+      "operation": "make incremental product",
+      "operationCost": 20.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "ref:MO-INCREMENTAL-PROPOSED",
+      "quantity": 5.0,
+      "quantityCompleted": 0.0,
+      "reference": "MO-INCREMENTAL-PROPOSED",
+      "resourceCost": 0.0,
+      "resources": [
+        "incremental line"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-07T00:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-07T00:00:00",
+      "status": "proposed",
+      "totalCost": 20.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-09T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "incremental raw @ plant",
+          "date": "2026-01-08T23:00:00",
+          "quantity": -3.0
+        },
+        {
+          "buffer": "incremental product @ plant",
+          "date": "2026-01-09T23:00:00",
+          "quantity": 3.0
+        }
+      ],
+      "operation": "make incremental product",
+      "operationCost": 12.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make incremental product|2026-01-08T23:00:00|2026-01-09T23:00:00||3||MO|#1",
+      "quantity": 3.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make incremental product|2026-01-08T23:00:00|2026-01-09T23:00:00||3||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "incremental line"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-08T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-08T23:00:00",
+      "status": "proposed",
+      "totalCost": 12.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-13T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "incremental raw @ plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": -6.0
+        },
+        {
+          "buffer": "incremental product @ plant",
+          "date": "2026-01-13T23:00:00",
+          "quantity": 6.0
+        }
+      ],
+      "operation": "make incremental product",
+      "operationCost": 24.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make incremental product|2026-01-12T23:00:00|2026-01-13T23:00:00||6||MO|#1",
+      "quantity": 6.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make incremental product|2026-01-12T23:00:00|2026-01-13T23:00:00||6||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "incremental line"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-12T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-12T23:00:00",
+      "status": "proposed",
+      "totalCost": 24.0
+    },
+    {
+      "batch": "",
+      "demand": "incremental order urgent",
+      "end": "2026-01-06T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "incremental product @ plant",
+          "date": "2026-01-05T23:00:00",
+          "quantity": -5.0
+        }
+      ],
+      "operation": "ship incremental product",
+      "operationCost": 0.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship incremental product|2026-01-05T23:00:00|2026-01-06T00:00:00|incremental order urgent|5||MO|#1",
+      "quantity": 5.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship incremental product|2026-01-05T23:00:00|2026-01-06T00:00:00|incremental order urgent|5||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-05T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-05T23:00:00",
+      "status": "proposed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": "incremental order regular",
+      "end": "2026-01-10T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "incremental product @ plant",
+          "date": "2026-01-09T23:00:00",
+          "quantity": -10.0
+        }
+      ],
+      "operation": "ship incremental product",
+      "operationCost": 0.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship incremental product|2026-01-09T23:00:00|2026-01-10T00:00:00|incremental order regular|10||MO|#1",
+      "quantity": 10.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship incremental product|2026-01-09T23:00:00|2026-01-10T00:00:00|incremental order regular|10||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-09T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-09T23:00:00",
+      "status": "proposed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": "incremental order later",
+      "end": "2026-01-14T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "incremental product @ plant",
+          "date": "2026-01-13T23:00:00",
+          "quantity": -6.0
+        }
+      ],
+      "operation": "ship incremental product",
+      "operationCost": 0.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship incremental product|2026-01-13T23:00:00|2026-01-14T00:00:00|incremental order later|6||MO|#1",
+      "quantity": 6.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship incremental product|2026-01-13T23:00:00|2026-01-14T00:00:00|incremental order later|6||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-13T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-13T23:00:00",
+      "status": "proposed",
+      "totalCost": 0.0
+    }
+  ],
+  "problems": [
+    {
+      "description": "No replenishment defined for 'incremental raw @ plant'",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "feasible": false,
+      "name": "invalid data",
+      "owner": "incremental raw @ plant",
+      "start": "1971-01-01T00:00:00"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "available": 482136.0,
+      "end": "2026-01-01T00:00:00",
+      "free": 482136.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "1971-01-01T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-02T00:00:00",
+      "free": 24.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-01T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-03T00:00:00",
+      "free": 0.0,
+      "load": 24.0,
+      "loadConfirmed": 24.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-02T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-04T00:00:00",
+      "free": 24.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-03T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-05T00:00:00",
+      "free": 0.0,
+      "load": 24.0,
+      "loadConfirmed": 24.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-04T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 23.0,
+      "end": "2026-01-05T23:00:00",
+      "free": 23.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-05T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-06T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-05T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-07T00:00:00",
+      "free": 24.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-06T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-08T00:00:00",
+      "free": 0.0,
+      "load": 24.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-07T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 23.0,
+      "end": "2026-01-08T23:00:00",
+      "free": 23.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-08T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-09T23:00:00",
+      "free": 0.0,
+      "load": 24.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-08T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-10T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-09T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 71.0,
+      "end": "2026-01-12T23:00:00",
+      "free": 71.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-10T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-13T23:00:00",
+      "free": 0.0,
+      "load": 24.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-12T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-14T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "incremental line",
+      "setup": 0.0,
+      "start": "2026-01-13T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    }
+  ]
+}

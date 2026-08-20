@@ -1,0 +1,820 @@
+[demand] attempt {"demand":"lot boundary 03 epsilon-above","attempt":1,"quantity":0.000002,"requestDate":"2026-01-08T12:00:00","lastDate":"2026-01-08T12:00:01"}
+[operation] ask {"demand":"lot boundary 03 epsilon-above","operation":"boundary lot ship","quantity":0.000002,"end":"2026-01-08T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":1,"date":"2026-01-08T11:59:59","onhand":200}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":1,"remainingShortage":0,"quantity":1,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 03 epsilon-above","operation":"boundary lot ship","quantity":1,"start":"2026-01-08T11:59:59","end":"2026-01-08T12:00:00"}
+[demand] reply {"demand":"lot boundary 03 epsilon-above","attempt":1,"result":true,"quantity":1,"date":"2026-01-08T12:00:00"}
+[demand] attempt {"demand":"lot boundary 04 below-min","attempt":1,"quantity":3,"requestDate":"2026-01-09T12:00:00","lastDate":"2026-01-12T12:00:00"}
+[operation] ask {"demand":"lot boundary 04 below-min","operation":"boundary lot ship","quantity":3,"end":"2026-01-09T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":3,"date":"2026-01-09T11:59:59","onhand":199}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":3,"remainingShortage":0,"quantity":3,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 04 below-min","operation":"boundary lot ship","quantity":3,"start":"2026-01-09T11:59:59","end":"2026-01-09T12:00:00"}
+[demand] reply {"demand":"lot boundary 04 below-min","attempt":1,"result":true,"quantity":3,"date":"2026-01-09T12:00:00"}
+[demand] attempt {"demand":"lot boundary 05 at-min","attempt":1,"quantity":4,"requestDate":"2026-01-10T12:00:00","lastDate":"2026-01-13T12:00:00"}
+[operation] ask {"demand":"lot boundary 05 at-min","operation":"boundary lot ship","quantity":4,"end":"2026-01-10T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":4,"date":"2026-01-10T11:59:59","onhand":196}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":4,"remainingShortage":0,"quantity":4,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 05 at-min","operation":"boundary lot ship","quantity":4,"start":"2026-01-10T11:59:59","end":"2026-01-10T12:00:00"}
+[demand] reply {"demand":"lot boundary 05 at-min","attempt":1,"result":true,"quantity":4,"date":"2026-01-10T12:00:00"}
+[demand] attempt {"demand":"lot boundary 06 at-max","attempt":1,"quantity":7,"requestDate":"2026-01-11T12:00:00","lastDate":"2026-01-14T12:00:00"}
+[operation] ask {"demand":"lot boundary 06 at-max","operation":"boundary lot ship","quantity":7,"end":"2026-01-11T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-11T11:59:59","onhand":192}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 06 at-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-11T11:59:59","end":"2026-01-11T12:00:00"}
+[demand] reply {"demand":"lot boundary 06 at-max","attempt":1,"result":true,"quantity":7,"date":"2026-01-11T12:00:00"}
+[demand] attempt {"demand":"lot boundary 07 max-plus-one","attempt":1,"quantity":8,"requestDate":"2026-01-12T12:00:00","lastDate":"2026-01-15T12:00:00"}
+[operation] ask {"demand":"lot boundary 07 max-plus-one","operation":"boundary lot ship","quantity":8,"end":"2026-01-12T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-12T11:59:59","onhand":185}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 07 max-plus-one","operation":"boundary lot ship","quantity":7,"start":"2026-01-12T11:59:59","end":"2026-01-12T12:00:00"}
+[demand] reply {"demand":"lot boundary 07 max-plus-one","attempt":1,"result":true,"quantity":7,"date":"2026-01-12T12:00:00"}
+[demand] attempt {"demand":"lot boundary 07 max-plus-one","attempt":2,"quantity":1,"requestDate":"2026-01-12T12:00:00","lastDate":"2026-01-15T12:00:00"}
+[operation] ask {"demand":"lot boundary 07 max-plus-one","operation":"boundary lot ship","quantity":1,"end":"2026-01-12T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":1,"date":"2026-01-12T11:59:59","onhand":185}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":1,"remainingShortage":0,"quantity":1,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 07 max-plus-one","operation":"boundary lot ship","quantity":1,"start":"2026-01-12T11:59:59","end":"2026-01-12T12:00:00"}
+[demand] reply {"demand":"lot boundary 07 max-plus-one","attempt":2,"result":true,"quantity":1,"date":"2026-01-12T12:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":1,"quantity":20,"requestDate":"2026-01-13T12:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":20,"end":"2026-01-13T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T11:59:59","onhand":184}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T11:59:59","end":"2026-01-13T12:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":1,"result":true,"quantity":7,"date":"2026-01-13T12:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":2,"quantity":13,"requestDate":"2026-01-13T12:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T11:59:59","onhand":184}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T11:59:59","end":"2026-01-13T12:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":2,"result":true,"quantity":7,"date":"2026-01-13T12:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":3,"quantity":13,"requestDate":"2026-01-13T13:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T13:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T12:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T12:59:59","end":"2026-01-13T13:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":3,"result":true,"quantity":7,"date":"2026-01-13T13:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":4,"quantity":13,"requestDate":"2026-01-13T14:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T14:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T13:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T13:59:59","end":"2026-01-13T14:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":4,"result":true,"quantity":7,"date":"2026-01-13T14:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":5,"quantity":13,"requestDate":"2026-01-13T15:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T15:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T14:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T14:59:59","end":"2026-01-13T15:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":5,"result":true,"quantity":7,"date":"2026-01-13T15:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":6,"quantity":13,"requestDate":"2026-01-13T16:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T15:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T15:59:59","end":"2026-01-13T16:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":6,"result":true,"quantity":7,"date":"2026-01-13T16:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":7,"quantity":13,"requestDate":"2026-01-13T17:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T17:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T16:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T16:59:59","end":"2026-01-13T17:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":7,"result":true,"quantity":7,"date":"2026-01-13T17:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":8,"quantity":13,"requestDate":"2026-01-13T18:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T18:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T17:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T17:59:59","end":"2026-01-13T18:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":8,"result":true,"quantity":7,"date":"2026-01-13T18:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":9,"quantity":13,"requestDate":"2026-01-13T19:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T19:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T18:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T18:59:59","end":"2026-01-13T19:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":9,"result":true,"quantity":7,"date":"2026-01-13T19:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":10,"quantity":13,"requestDate":"2026-01-13T20:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T20:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T19:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T19:59:59","end":"2026-01-13T20:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":10,"result":true,"quantity":7,"date":"2026-01-13T20:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":11,"quantity":13,"requestDate":"2026-01-13T21:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T21:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T20:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T20:59:59","end":"2026-01-13T21:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":11,"result":true,"quantity":7,"date":"2026-01-13T21:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":12,"quantity":13,"requestDate":"2026-01-13T22:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T22:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T21:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T21:59:59","end":"2026-01-13T22:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":12,"result":true,"quantity":7,"date":"2026-01-13T22:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":13,"quantity":13,"requestDate":"2026-01-13T23:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-13T23:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T22:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T22:59:59","end":"2026-01-13T23:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":13,"result":true,"quantity":7,"date":"2026-01-13T23:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":14,"quantity":13,"requestDate":"2026-01-14T00:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-13T23:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-13T23:59:59","end":"2026-01-14T00:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":14,"result":true,"quantity":7,"date":"2026-01-14T00:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":15,"quantity":13,"requestDate":"2026-01-14T01:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T01:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T00:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T00:59:59","end":"2026-01-14T01:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":15,"result":true,"quantity":7,"date":"2026-01-14T01:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":16,"quantity":13,"requestDate":"2026-01-14T02:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T02:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T01:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T01:59:59","end":"2026-01-14T02:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":16,"result":true,"quantity":7,"date":"2026-01-14T02:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":17,"quantity":13,"requestDate":"2026-01-14T03:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T03:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T02:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T02:59:59","end":"2026-01-14T03:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":17,"result":true,"quantity":7,"date":"2026-01-14T03:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":18,"quantity":13,"requestDate":"2026-01-14T04:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T04:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T03:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T03:59:59","end":"2026-01-14T04:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":18,"result":true,"quantity":7,"date":"2026-01-14T04:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":19,"quantity":13,"requestDate":"2026-01-14T05:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T05:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T04:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T04:59:59","end":"2026-01-14T05:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":19,"result":true,"quantity":7,"date":"2026-01-14T05:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":20,"quantity":13,"requestDate":"2026-01-14T06:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T06:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T05:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T05:59:59","end":"2026-01-14T06:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":20,"result":true,"quantity":7,"date":"2026-01-14T06:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":21,"quantity":13,"requestDate":"2026-01-14T07:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T07:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T06:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T06:59:59","end":"2026-01-14T07:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":21,"result":true,"quantity":7,"date":"2026-01-14T07:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":22,"quantity":13,"requestDate":"2026-01-14T08:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T08:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T07:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T07:59:59","end":"2026-01-14T08:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":22,"result":true,"quantity":7,"date":"2026-01-14T08:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":23,"quantity":13,"requestDate":"2026-01-14T09:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T09:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T08:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T08:59:59","end":"2026-01-14T09:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":23,"result":true,"quantity":7,"date":"2026-01-14T09:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":24,"quantity":13,"requestDate":"2026-01-14T10:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T10:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T09:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T09:59:59","end":"2026-01-14T10:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":24,"result":true,"quantity":7,"date":"2026-01-14T10:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":25,"quantity":13,"requestDate":"2026-01-14T11:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T11:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T10:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T10:59:59","end":"2026-01-14T11:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":25,"result":true,"quantity":7,"date":"2026-01-14T11:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":26,"quantity":13,"requestDate":"2026-01-14T12:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T11:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T11:59:59","end":"2026-01-14T12:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":26,"result":true,"quantity":7,"date":"2026-01-14T12:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":27,"quantity":13,"requestDate":"2026-01-14T13:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T13:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T12:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T12:59:59","end":"2026-01-14T13:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":27,"result":true,"quantity":7,"date":"2026-01-14T13:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":28,"quantity":13,"requestDate":"2026-01-14T14:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T14:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T13:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T13:59:59","end":"2026-01-14T14:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":28,"result":true,"quantity":7,"date":"2026-01-14T14:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":29,"quantity":13,"requestDate":"2026-01-14T15:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T15:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T14:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T14:59:59","end":"2026-01-14T15:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":29,"result":true,"quantity":7,"date":"2026-01-14T15:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":30,"quantity":13,"requestDate":"2026-01-14T16:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T15:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T15:59:59","end":"2026-01-14T16:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":30,"result":true,"quantity":7,"date":"2026-01-14T16:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":31,"quantity":13,"requestDate":"2026-01-14T17:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T17:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T16:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T16:59:59","end":"2026-01-14T17:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":31,"result":true,"quantity":7,"date":"2026-01-14T17:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":32,"quantity":13,"requestDate":"2026-01-14T18:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T18:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T17:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T17:59:59","end":"2026-01-14T18:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":32,"result":true,"quantity":7,"date":"2026-01-14T18:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":33,"quantity":13,"requestDate":"2026-01-14T19:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T19:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T18:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T18:59:59","end":"2026-01-14T19:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":33,"result":true,"quantity":7,"date":"2026-01-14T19:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":34,"quantity":13,"requestDate":"2026-01-14T20:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T20:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T19:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T19:59:59","end":"2026-01-14T20:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":34,"result":true,"quantity":7,"date":"2026-01-14T20:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":35,"quantity":13,"requestDate":"2026-01-14T21:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T21:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T20:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T20:59:59","end":"2026-01-14T21:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":35,"result":true,"quantity":7,"date":"2026-01-14T21:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":36,"quantity":13,"requestDate":"2026-01-14T22:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T22:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T21:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T21:59:59","end":"2026-01-14T22:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":36,"result":true,"quantity":7,"date":"2026-01-14T22:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":37,"quantity":13,"requestDate":"2026-01-14T23:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-14T23:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T22:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T22:59:59","end":"2026-01-14T23:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":37,"result":true,"quantity":7,"date":"2026-01-14T23:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":38,"quantity":13,"requestDate":"2026-01-15T00:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T23:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T23:59:59","end":"2026-01-15T00:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":38,"result":true,"quantity":7,"date":"2026-01-15T00:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":39,"quantity":13,"requestDate":"2026-01-15T01:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T01:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T00:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T00:59:59","end":"2026-01-15T01:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":39,"result":true,"quantity":7,"date":"2026-01-15T01:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":40,"quantity":13,"requestDate":"2026-01-15T02:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T02:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T01:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T01:59:59","end":"2026-01-15T02:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":40,"result":true,"quantity":7,"date":"2026-01-15T02:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":41,"quantity":13,"requestDate":"2026-01-15T03:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T03:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T02:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T02:59:59","end":"2026-01-15T03:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":41,"result":true,"quantity":7,"date":"2026-01-15T03:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":42,"quantity":13,"requestDate":"2026-01-15T04:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T04:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T03:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T03:59:59","end":"2026-01-15T04:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":42,"result":true,"quantity":7,"date":"2026-01-15T04:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":43,"quantity":13,"requestDate":"2026-01-15T05:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T05:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T04:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T04:59:59","end":"2026-01-15T05:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":43,"result":true,"quantity":7,"date":"2026-01-15T05:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":44,"quantity":13,"requestDate":"2026-01-15T06:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T06:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T05:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T05:59:59","end":"2026-01-15T06:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":44,"result":true,"quantity":7,"date":"2026-01-15T06:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":45,"quantity":13,"requestDate":"2026-01-15T07:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T07:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T06:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T06:59:59","end":"2026-01-15T07:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":45,"result":true,"quantity":7,"date":"2026-01-15T07:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":46,"quantity":13,"requestDate":"2026-01-15T08:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T08:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T07:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T07:59:59","end":"2026-01-15T08:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":46,"result":true,"quantity":7,"date":"2026-01-15T08:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":47,"quantity":13,"requestDate":"2026-01-15T09:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T09:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T08:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T08:59:59","end":"2026-01-15T09:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":47,"result":true,"quantity":7,"date":"2026-01-15T09:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":48,"quantity":13,"requestDate":"2026-01-15T10:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T10:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T09:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T09:59:59","end":"2026-01-15T10:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":48,"result":true,"quantity":7,"date":"2026-01-15T10:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":49,"quantity":13,"requestDate":"2026-01-15T11:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T11:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T10:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T10:59:59","end":"2026-01-15T11:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":49,"result":true,"quantity":7,"date":"2026-01-15T11:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":50,"quantity":13,"requestDate":"2026-01-15T12:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T11:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T11:59:59","end":"2026-01-15T12:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":50,"result":true,"quantity":7,"date":"2026-01-15T12:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":51,"quantity":13,"requestDate":"2026-01-15T13:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T13:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T12:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T12:59:59","end":"2026-01-15T13:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":51,"result":true,"quantity":7,"date":"2026-01-15T13:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":52,"quantity":13,"requestDate":"2026-01-15T14:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T14:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T13:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T13:59:59","end":"2026-01-15T14:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":52,"result":true,"quantity":7,"date":"2026-01-15T14:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":53,"quantity":13,"requestDate":"2026-01-15T15:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T15:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T14:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T14:59:59","end":"2026-01-15T15:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":53,"result":true,"quantity":7,"date":"2026-01-15T15:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":54,"quantity":13,"requestDate":"2026-01-15T16:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T15:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T15:59:59","end":"2026-01-15T16:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":54,"result":true,"quantity":7,"date":"2026-01-15T16:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":55,"quantity":13,"requestDate":"2026-01-15T17:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T17:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T16:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T16:59:59","end":"2026-01-15T17:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":55,"result":true,"quantity":7,"date":"2026-01-15T17:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":56,"quantity":13,"requestDate":"2026-01-15T18:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T18:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T17:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T17:59:59","end":"2026-01-15T18:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":56,"result":true,"quantity":7,"date":"2026-01-15T18:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":57,"quantity":13,"requestDate":"2026-01-15T19:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T19:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T18:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T18:59:59","end":"2026-01-15T19:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":57,"result":true,"quantity":7,"date":"2026-01-15T19:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":58,"quantity":13,"requestDate":"2026-01-15T20:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T20:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T19:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T19:59:59","end":"2026-01-15T20:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":58,"result":true,"quantity":7,"date":"2026-01-15T20:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":59,"quantity":13,"requestDate":"2026-01-15T21:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T21:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T20:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T20:59:59","end":"2026-01-15T21:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":59,"result":true,"quantity":7,"date":"2026-01-15T21:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":60,"quantity":13,"requestDate":"2026-01-15T22:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T22:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T21:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T21:59:59","end":"2026-01-15T22:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":60,"result":true,"quantity":7,"date":"2026-01-15T22:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":61,"quantity":13,"requestDate":"2026-01-15T23:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-15T23:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T22:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T22:59:59","end":"2026-01-15T23:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":61,"result":true,"quantity":7,"date":"2026-01-15T23:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":62,"quantity":13,"requestDate":"2026-01-16T00:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-16T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T23:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T23:59:59","end":"2026-01-16T00:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":62,"result":true,"quantity":7,"date":"2026-01-16T00:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":63,"quantity":13,"requestDate":"2026-01-16T01:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-16T01:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T00:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T00:59:59","end":"2026-01-16T01:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":63,"result":true,"quantity":7,"date":"2026-01-16T01:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":64,"quantity":13,"requestDate":"2026-01-16T02:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-16T02:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T01:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T01:59:59","end":"2026-01-16T02:00:00"}
+[demand] reply {"demand":"lot boundary 08 three-splits","attempt":64,"result":true,"quantity":7,"date":"2026-01-16T02:00:00"}
+[demand] attempt {"demand":"lot boundary 08 three-splits","attempt":65,"quantity":13,"requestDate":"2026-01-16T03:00:00","lastDate":"2026-01-16T12:00:00"}
+[operation] ask {"demand":"lot boundary 08 three-splits","operation":"boundary lot ship","quantity":13,"end":"2026-01-16T03:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":1,"quantity":20,"requestDate":"2026-01-14T12:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T11:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T11:59:59","end":"2026-01-14T12:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":1,"result":true,"quantity":7,"date":"2026-01-14T12:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":2,"quantity":20,"requestDate":"2026-01-14T13:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T13:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T12:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T12:59:59","end":"2026-01-14T13:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":2,"result":true,"quantity":7,"date":"2026-01-14T13:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":3,"quantity":20,"requestDate":"2026-01-14T14:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T14:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T13:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T13:59:59","end":"2026-01-14T14:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":3,"result":true,"quantity":7,"date":"2026-01-14T14:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":4,"quantity":20,"requestDate":"2026-01-14T15:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T15:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T14:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T14:59:59","end":"2026-01-14T15:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":4,"result":true,"quantity":7,"date":"2026-01-14T15:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":5,"quantity":20,"requestDate":"2026-01-14T16:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T15:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T15:59:59","end":"2026-01-14T16:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":5,"result":true,"quantity":7,"date":"2026-01-14T16:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":6,"quantity":20,"requestDate":"2026-01-14T17:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T17:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T16:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T16:59:59","end":"2026-01-14T17:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":6,"result":true,"quantity":7,"date":"2026-01-14T17:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":7,"quantity":20,"requestDate":"2026-01-14T18:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T18:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T17:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T17:59:59","end":"2026-01-14T18:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":7,"result":true,"quantity":7,"date":"2026-01-14T18:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":8,"quantity":20,"requestDate":"2026-01-14T19:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T19:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T18:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T18:59:59","end":"2026-01-14T19:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":8,"result":true,"quantity":7,"date":"2026-01-14T19:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":9,"quantity":20,"requestDate":"2026-01-14T20:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T20:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T19:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T19:59:59","end":"2026-01-14T20:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":9,"result":true,"quantity":7,"date":"2026-01-14T20:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":10,"quantity":20,"requestDate":"2026-01-14T21:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T21:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T20:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T20:59:59","end":"2026-01-14T21:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":10,"result":true,"quantity":7,"date":"2026-01-14T21:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":11,"quantity":20,"requestDate":"2026-01-14T22:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T22:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T21:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T21:59:59","end":"2026-01-14T22:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":11,"result":true,"quantity":7,"date":"2026-01-14T22:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":12,"quantity":20,"requestDate":"2026-01-14T23:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-14T23:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T22:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T22:59:59","end":"2026-01-14T23:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":12,"result":true,"quantity":7,"date":"2026-01-14T23:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":13,"quantity":20,"requestDate":"2026-01-15T00:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-14T23:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-14T23:59:59","end":"2026-01-15T00:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":13,"result":true,"quantity":7,"date":"2026-01-15T00:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":14,"quantity":20,"requestDate":"2026-01-15T01:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T01:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T00:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T00:59:59","end":"2026-01-15T01:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":14,"result":true,"quantity":7,"date":"2026-01-15T01:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":15,"quantity":20,"requestDate":"2026-01-15T02:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T02:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T01:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T01:59:59","end":"2026-01-15T02:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":15,"result":true,"quantity":7,"date":"2026-01-15T02:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":16,"quantity":20,"requestDate":"2026-01-15T03:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T03:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T02:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T02:59:59","end":"2026-01-15T03:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":16,"result":true,"quantity":7,"date":"2026-01-15T03:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":17,"quantity":20,"requestDate":"2026-01-15T04:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T04:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T03:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T03:59:59","end":"2026-01-15T04:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":17,"result":true,"quantity":7,"date":"2026-01-15T04:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":18,"quantity":20,"requestDate":"2026-01-15T05:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T05:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T04:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T04:59:59","end":"2026-01-15T05:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":18,"result":true,"quantity":7,"date":"2026-01-15T05:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":19,"quantity":20,"requestDate":"2026-01-15T06:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T06:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T05:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T05:59:59","end":"2026-01-15T06:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":19,"result":true,"quantity":7,"date":"2026-01-15T06:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":20,"quantity":20,"requestDate":"2026-01-15T07:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T07:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T06:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T06:59:59","end":"2026-01-15T07:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":20,"result":true,"quantity":7,"date":"2026-01-15T07:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":21,"quantity":20,"requestDate":"2026-01-15T08:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T08:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T07:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T07:59:59","end":"2026-01-15T08:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":21,"result":true,"quantity":7,"date":"2026-01-15T08:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":22,"quantity":20,"requestDate":"2026-01-15T09:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T09:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T08:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T08:59:59","end":"2026-01-15T09:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":22,"result":true,"quantity":7,"date":"2026-01-15T09:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":23,"quantity":20,"requestDate":"2026-01-15T10:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T10:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T09:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T09:59:59","end":"2026-01-15T10:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":23,"result":true,"quantity":7,"date":"2026-01-15T10:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":24,"quantity":20,"requestDate":"2026-01-15T11:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T11:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T10:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T10:59:59","end":"2026-01-15T11:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":24,"result":true,"quantity":7,"date":"2026-01-15T11:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":25,"quantity":20,"requestDate":"2026-01-15T12:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T11:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T11:59:59","end":"2026-01-15T12:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":25,"result":true,"quantity":7,"date":"2026-01-15T12:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":26,"quantity":20,"requestDate":"2026-01-15T13:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T13:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T12:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T12:59:59","end":"2026-01-15T13:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":26,"result":true,"quantity":7,"date":"2026-01-15T13:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":27,"quantity":20,"requestDate":"2026-01-15T14:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T14:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T13:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T13:59:59","end":"2026-01-15T14:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":27,"result":true,"quantity":7,"date":"2026-01-15T14:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":28,"quantity":20,"requestDate":"2026-01-15T15:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T15:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T14:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T14:59:59","end":"2026-01-15T15:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":28,"result":true,"quantity":7,"date":"2026-01-15T15:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":29,"quantity":20,"requestDate":"2026-01-15T16:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T15:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T15:59:59","end":"2026-01-15T16:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":29,"result":true,"quantity":7,"date":"2026-01-15T16:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":30,"quantity":20,"requestDate":"2026-01-15T17:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T17:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T16:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T16:59:59","end":"2026-01-15T17:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":30,"result":true,"quantity":7,"date":"2026-01-15T17:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":31,"quantity":20,"requestDate":"2026-01-15T18:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T18:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T17:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T17:59:59","end":"2026-01-15T18:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":31,"result":true,"quantity":7,"date":"2026-01-15T18:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":32,"quantity":20,"requestDate":"2026-01-15T19:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T19:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T18:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T18:59:59","end":"2026-01-15T19:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":32,"result":true,"quantity":7,"date":"2026-01-15T19:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":33,"quantity":20,"requestDate":"2026-01-15T20:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T20:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T19:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T19:59:59","end":"2026-01-15T20:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":33,"result":true,"quantity":7,"date":"2026-01-15T20:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":34,"quantity":20,"requestDate":"2026-01-15T21:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T21:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T20:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T20:59:59","end":"2026-01-15T21:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":34,"result":true,"quantity":7,"date":"2026-01-15T21:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":35,"quantity":20,"requestDate":"2026-01-15T22:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T22:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T21:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T21:59:59","end":"2026-01-15T22:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":35,"result":true,"quantity":7,"date":"2026-01-15T22:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":36,"quantity":20,"requestDate":"2026-01-15T23:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-15T23:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T22:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T22:59:59","end":"2026-01-15T23:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":36,"result":true,"quantity":7,"date":"2026-01-15T23:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":37,"quantity":20,"requestDate":"2026-01-16T00:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T23:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T23:59:59","end":"2026-01-16T00:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":37,"result":true,"quantity":7,"date":"2026-01-16T00:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":38,"quantity":20,"requestDate":"2026-01-16T01:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T01:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T00:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T00:59:59","end":"2026-01-16T01:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":38,"result":true,"quantity":7,"date":"2026-01-16T01:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":39,"quantity":20,"requestDate":"2026-01-16T02:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T02:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T01:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T01:59:59","end":"2026-01-16T02:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":39,"result":true,"quantity":7,"date":"2026-01-16T02:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":40,"quantity":20,"requestDate":"2026-01-16T03:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T03:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T02:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T02:59:59","end":"2026-01-16T03:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":40,"result":true,"quantity":7,"date":"2026-01-16T03:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":41,"quantity":20,"requestDate":"2026-01-16T04:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T04:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T03:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T03:59:59","end":"2026-01-16T04:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":41,"result":true,"quantity":7,"date":"2026-01-16T04:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":42,"quantity":20,"requestDate":"2026-01-16T05:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T05:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T04:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T04:59:59","end":"2026-01-16T05:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":42,"result":true,"quantity":7,"date":"2026-01-16T05:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":43,"quantity":20,"requestDate":"2026-01-16T06:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T06:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T05:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T05:59:59","end":"2026-01-16T06:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":43,"result":true,"quantity":7,"date":"2026-01-16T06:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":44,"quantity":20,"requestDate":"2026-01-16T07:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T07:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T06:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T06:59:59","end":"2026-01-16T07:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":44,"result":true,"quantity":7,"date":"2026-01-16T07:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":45,"quantity":20,"requestDate":"2026-01-16T08:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T08:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T07:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T07:59:59","end":"2026-01-16T08:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":45,"result":true,"quantity":7,"date":"2026-01-16T08:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":46,"quantity":20,"requestDate":"2026-01-16T09:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T09:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T08:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T08:59:59","end":"2026-01-16T09:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":46,"result":true,"quantity":7,"date":"2026-01-16T09:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":47,"quantity":20,"requestDate":"2026-01-16T10:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T10:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T09:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T09:59:59","end":"2026-01-16T10:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":47,"result":true,"quantity":7,"date":"2026-01-16T10:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":48,"quantity":20,"requestDate":"2026-01-16T11:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T11:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T10:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T10:59:59","end":"2026-01-16T11:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":48,"result":true,"quantity":7,"date":"2026-01-16T11:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":49,"quantity":20,"requestDate":"2026-01-16T12:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T11:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T11:59:59","end":"2026-01-16T12:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":49,"result":true,"quantity":7,"date":"2026-01-16T12:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":50,"quantity":20,"requestDate":"2026-01-16T13:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T13:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T12:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T12:59:59","end":"2026-01-16T13:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":50,"result":true,"quantity":7,"date":"2026-01-16T13:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":51,"quantity":20,"requestDate":"2026-01-16T14:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T14:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T13:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T13:59:59","end":"2026-01-16T14:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":51,"result":true,"quantity":7,"date":"2026-01-16T14:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":52,"quantity":20,"requestDate":"2026-01-16T15:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T15:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T14:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T14:59:59","end":"2026-01-16T15:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":52,"result":true,"quantity":7,"date":"2026-01-16T15:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":53,"quantity":20,"requestDate":"2026-01-16T16:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T15:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T15:59:59","end":"2026-01-16T16:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":53,"result":true,"quantity":7,"date":"2026-01-16T16:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":54,"quantity":20,"requestDate":"2026-01-16T17:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T17:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T16:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T16:59:59","end":"2026-01-16T17:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":54,"result":true,"quantity":7,"date":"2026-01-16T17:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":55,"quantity":20,"requestDate":"2026-01-16T18:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T18:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T17:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T17:59:59","end":"2026-01-16T18:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":55,"result":true,"quantity":7,"date":"2026-01-16T18:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":56,"quantity":20,"requestDate":"2026-01-16T19:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T19:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T18:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T18:59:59","end":"2026-01-16T19:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":56,"result":true,"quantity":7,"date":"2026-01-16T19:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":57,"quantity":20,"requestDate":"2026-01-16T20:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T20:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T19:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T19:59:59","end":"2026-01-16T20:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":57,"result":true,"quantity":7,"date":"2026-01-16T20:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":58,"quantity":20,"requestDate":"2026-01-16T21:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T21:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T20:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T20:59:59","end":"2026-01-16T21:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":58,"result":true,"quantity":7,"date":"2026-01-16T21:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":59,"quantity":20,"requestDate":"2026-01-16T22:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T22:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T21:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T21:59:59","end":"2026-01-16T22:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":59,"result":true,"quantity":7,"date":"2026-01-16T22:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":60,"quantity":20,"requestDate":"2026-01-16T23:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-16T23:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T22:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T22:59:59","end":"2026-01-16T23:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":60,"result":true,"quantity":7,"date":"2026-01-16T23:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":61,"quantity":20,"requestDate":"2026-01-17T00:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-17T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-16T23:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-16T23:59:59","end":"2026-01-17T00:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":61,"result":true,"quantity":7,"date":"2026-01-17T00:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":62,"quantity":20,"requestDate":"2026-01-17T01:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-17T01:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-17T00:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-17T00:59:59","end":"2026-01-17T01:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":62,"result":true,"quantity":7,"date":"2026-01-17T01:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":63,"quantity":20,"requestDate":"2026-01-17T02:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-17T02:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-17T01:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-17T01:59:59","end":"2026-01-17T02:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":63,"result":true,"quantity":7,"date":"2026-01-17T02:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":64,"quantity":20,"requestDate":"2026-01-17T03:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-17T03:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-17T02:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":7,"start":"2026-01-17T02:59:59","end":"2026-01-17T03:00:00"}
+[demand] reply {"demand":"lot boundary 09 min-above-max","attempt":64,"result":true,"quantity":7,"date":"2026-01-17T03:00:00"}
+[demand] attempt {"demand":"lot boundary 09 min-above-max","attempt":65,"quantity":20,"requestDate":"2026-01-17T04:00:00","lastDate":"2026-01-17T12:00:00"}
+[operation] ask {"demand":"lot boundary 09 min-above-max","operation":"boundary lot ship","quantity":20,"end":"2026-01-17T04:00:00"}
+[demand] attempt {"demand":"lot boundary 10 fractional","attempt":1,"quantity":9.75,"requestDate":"2026-01-15T12:00:00","lastDate":"2026-01-18T12:00:00"}
+[operation] ask {"demand":"lot boundary 10 fractional","operation":"boundary lot ship","quantity":9.75,"end":"2026-01-15T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":7,"date":"2026-01-15T11:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 10 fractional","operation":"boundary lot ship","quantity":7,"start":"2026-01-15T11:59:59","end":"2026-01-15T12:00:00"}
+[demand] reply {"demand":"lot boundary 10 fractional","attempt":1,"result":true,"quantity":7,"date":"2026-01-15T12:00:00"}
+[demand] attempt {"demand":"lot boundary 10 fractional","attempt":2,"quantity":2.75,"requestDate":"2026-01-15T12:00:00","lastDate":"2026-01-18T12:00:00"}
+[operation] ask {"demand":"lot boundary 10 fractional","operation":"boundary lot ship","quantity":2.75,"end":"2026-01-15T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"boundary lot item","requested":2.75,"date":"2026-01-15T11:59:59","onhand":170}
+[buffer] answer {"demand":null,"buffer":"boundary lot item","requested":2.75,"remainingShortage":0,"quantity":2.75,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"lot boundary 10 fractional","operation":"boundary lot ship","quantity":2.75,"start":"2026-01-15T11:59:59","end":"2026-01-15T12:00:00"}
+[demand] reply {"demand":"lot boundary 10 fractional","attempt":2,"result":true,"quantity":2.75,"date":"2026-01-15T12:00:00"}

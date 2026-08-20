@@ -1,0 +1,22 @@
+{
+  "calendar maximum product @ plant": [
+    {
+      "date": "1971-01-01T00:00:00",
+      "maximum": 3.0,
+      "minimum": 0.0,
+      "onhand": 3.0,
+      "operation": "Inventory calendar maximum product @ plant",
+      "quantity": 3.0,
+      "reference": "calendar maximum product @ plant"
+    },
+    {
+      "date": "2026-01-21T06:00:00",
+      "maximum": 6.0,
+      "minimum": 3.0,
+      "onhand": 5.0,
+      "operation": "make calendar maximum product",
+      "quantity": 2.0,
+      "reference": "MO-CALENDAR-MAXIMUM-LATER"
+    }
+  ]
+}

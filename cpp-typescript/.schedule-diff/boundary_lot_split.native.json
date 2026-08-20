@@ -1,0 +1,527 @@
+{
+  "costSummary": {
+    "operationCost": 46.75,
+    "resourceCost": 0.0,
+    "setupCost": 0.0,
+    "setupPenalty": 0.0,
+    "totalCost": 46.75
+  },
+  "deliveries": [
+    {
+      "batch": "lot-a",
+      "demand": "lot boundary 03 epsilon-above",
+      "end": "2026-01-08T12:00:00",
+      "operationPlanKey": "auto:boundary lot ship|2026-01-08T11:59:59|2026-01-08T12:00:00|lot boundary 03 epsilon-above|1|lot-a|MO|#1",
+      "orderType": "MO",
+      "quantity": 1.0
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 04 below-min",
+      "end": "2026-01-09T12:00:00",
+      "operationPlanKey": "auto:boundary lot ship|2026-01-09T11:59:59|2026-01-09T12:00:00|lot boundary 04 below-min|3|lot-b|MO|#1",
+      "orderType": "MO",
+      "quantity": 3.0
+    },
+    {
+      "batch": "lot-a",
+      "demand": "lot boundary 05 at-min",
+      "end": "2026-01-10T12:00:00",
+      "operationPlanKey": "auto:boundary lot ship|2026-01-10T11:59:59|2026-01-10T12:00:00|lot boundary 05 at-min|4|lot-a|MO|#1",
+      "orderType": "MO",
+      "quantity": 4.0
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 06 at-max",
+      "end": "2026-01-11T12:00:00",
+      "operationPlanKey": "auto:boundary lot ship|2026-01-11T11:59:59|2026-01-11T12:00:00|lot boundary 06 at-max|7|lot-b|MO|#1",
+      "orderType": "MO",
+      "quantity": 7.0
+    },
+    {
+      "batch": "lot-a",
+      "demand": "lot boundary 07 max-plus-one",
+      "end": "2026-01-12T12:00:00",
+      "operationPlanKey": "auto:boundary lot ship|2026-01-12T11:59:59|2026-01-12T12:00:00|lot boundary 07 max-plus-one|1|lot-a|MO|#1",
+      "orderType": "MO",
+      "quantity": 1.0
+    },
+    {
+      "batch": "lot-a",
+      "demand": "lot boundary 07 max-plus-one",
+      "end": "2026-01-12T12:00:00",
+      "operationPlanKey": "auto:boundary lot ship|2026-01-12T11:59:59|2026-01-12T12:00:00|lot boundary 07 max-plus-one|7|lot-a|MO|#1",
+      "orderType": "MO",
+      "quantity": 7.0
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 08 three-splits",
+      "end": "2026-01-13T12:00:00",
+      "operationPlanKey": "auto:boundary lot ship|2026-01-13T11:59:59|2026-01-13T12:00:00|lot boundary 08 three-splits|7|lot-b|MO|#1",
+      "orderType": "MO",
+      "quantity": 7.0
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 08 three-splits",
+      "end": "2026-01-13T12:00:00",
+      "operationPlanKey": "auto:boundary lot ship|2026-01-13T11:59:59|2026-01-13T12:00:00|lot boundary 08 three-splits|7|lot-b|MO|#2",
+      "orderType": "MO",
+      "quantity": 7.0
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 10 fractional",
+      "end": "2026-01-15T12:00:00",
+      "operationPlanKey": "auto:boundary lot ship|2026-01-15T11:59:59|2026-01-15T12:00:00|lot boundary 10 fractional|2.75|lot-b|MO|#1",
+      "orderType": "MO",
+      "quantity": 2.75
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 10 fractional",
+      "end": "2026-01-15T12:00:00",
+      "operationPlanKey": "auto:boundary lot ship|2026-01-15T11:59:59|2026-01-15T12:00:00|lot boundary 10 fractional|7|lot-b|MO|#1",
+      "orderType": "MO",
+      "quantity": 7.0
+    }
+  ],
+  "dependencies": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "boundary lot item",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "onhand": 200.0,
+      "operationPlanKey": "auto:Inventory boundary lot item|1971-01-01T00:00:00|1971-01-01T00:00:00||200||STCK|#1",
+      "orderType": "STCK",
+      "quantity": 200.0
+    },
+    {
+      "buffer": "boundary lot item",
+      "bufferBatch": "",
+      "date": "2026-01-08T11:59:59",
+      "onhand": 199.0,
+      "operationPlanKey": "auto:boundary lot ship|2026-01-08T11:59:59|2026-01-08T12:00:00|lot boundary 03 epsilon-above|1|lot-a|MO|#1",
+      "orderType": "MO",
+      "quantity": -1.0
+    },
+    {
+      "buffer": "boundary lot item",
+      "bufferBatch": "",
+      "date": "2026-01-09T11:59:59",
+      "onhand": 196.0,
+      "operationPlanKey": "auto:boundary lot ship|2026-01-09T11:59:59|2026-01-09T12:00:00|lot boundary 04 below-min|3|lot-b|MO|#1",
+      "orderType": "MO",
+      "quantity": -3.0
+    },
+    {
+      "buffer": "boundary lot item",
+      "bufferBatch": "",
+      "date": "2026-01-10T11:59:59",
+      "onhand": 192.0,
+      "operationPlanKey": "auto:boundary lot ship|2026-01-10T11:59:59|2026-01-10T12:00:00|lot boundary 05 at-min|4|lot-a|MO|#1",
+      "orderType": "MO",
+      "quantity": -4.0
+    },
+    {
+      "buffer": "boundary lot item",
+      "bufferBatch": "",
+      "date": "2026-01-11T11:59:59",
+      "onhand": 185.0,
+      "operationPlanKey": "auto:boundary lot ship|2026-01-11T11:59:59|2026-01-11T12:00:00|lot boundary 06 at-max|7|lot-b|MO|#1",
+      "orderType": "MO",
+      "quantity": -7.0
+    },
+    {
+      "buffer": "boundary lot item",
+      "bufferBatch": "",
+      "date": "2026-01-12T11:59:59",
+      "onhand": 177.0,
+      "operationPlanKey": "auto:boundary lot ship|2026-01-12T11:59:59|2026-01-12T12:00:00|lot boundary 07 max-plus-one|7|lot-a|MO|#1",
+      "orderType": "MO",
+      "quantity": -7.0
+    },
+    {
+      "buffer": "boundary lot item",
+      "bufferBatch": "",
+      "date": "2026-01-12T11:59:59",
+      "onhand": 184.0,
+      "operationPlanKey": "auto:boundary lot ship|2026-01-12T11:59:59|2026-01-12T12:00:00|lot boundary 07 max-plus-one|1|lot-a|MO|#1",
+      "orderType": "MO",
+      "quantity": -1.0
+    },
+    {
+      "buffer": "boundary lot item",
+      "bufferBatch": "",
+      "date": "2026-01-13T11:59:59",
+      "onhand": 170.0,
+      "operationPlanKey": "auto:boundary lot ship|2026-01-13T11:59:59|2026-01-13T12:00:00|lot boundary 08 three-splits|7|lot-b|MO|#1",
+      "orderType": "MO",
+      "quantity": -7.0
+    },
+    {
+      "buffer": "boundary lot item",
+      "bufferBatch": "",
+      "date": "2026-01-13T11:59:59",
+      "onhand": 163.0,
+      "operationPlanKey": "auto:boundary lot ship|2026-01-13T11:59:59|2026-01-13T12:00:00|lot boundary 08 three-splits|7|lot-b|MO|#2",
+      "orderType": "MO",
+      "quantity": -7.0
+    },
+    {
+      "buffer": "boundary lot item",
+      "bufferBatch": "",
+      "date": "2026-01-15T11:59:59",
+      "onhand": 153.25,
+      "operationPlanKey": "auto:boundary lot ship|2026-01-15T11:59:59|2026-01-15T12:00:00|lot boundary 10 fractional|7|lot-b|MO|#1",
+      "orderType": "MO",
+      "quantity": -7.0
+    },
+    {
+      "buffer": "boundary lot item",
+      "bufferBatch": "",
+      "date": "2026-01-15T11:59:59",
+      "onhand": 160.25,
+      "operationPlanKey": "auto:boundary lot ship|2026-01-15T11:59:59|2026-01-15T12:00:00|lot boundary 10 fractional|2.75|lot-b|MO|#1",
+      "orderType": "MO",
+      "quantity": -2.75
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "boundary lot item",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 200.0
+        }
+      ],
+      "operation": "Inventory boundary lot item",
+      "operationCost": 0.0,
+      "orderType": "STCK",
+      "ownerOperation": null,
+      "planKey": "auto:Inventory boundary lot item|1971-01-01T00:00:00|1971-01-01T00:00:00||200||STCK|#1",
+      "quantity": 200.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Inventory boundary lot item|1971-01-01T00:00:00|1971-01-01T00:00:00||200||STCK|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "1971-01-01T00:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "1971-01-01T00:00:00",
+      "status": "closed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "lot-a",
+      "demand": "lot boundary 03 epsilon-above",
+      "end": "2026-01-08T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "boundary lot item",
+          "date": "2026-01-08T11:59:59",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "boundary lot ship",
+      "operationCost": 1.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:boundary lot ship|2026-01-08T11:59:59|2026-01-08T12:00:00|lot boundary 03 epsilon-above|1|lot-a|MO|#1",
+      "quantity": 1.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:boundary lot ship|2026-01-08T11:59:59|2026-01-08T12:00:00|lot boundary 03 epsilon-above|1|lot-a|MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-08T11:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-08T11:59:59",
+      "status": "proposed",
+      "totalCost": 1.0
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 04 below-min",
+      "end": "2026-01-09T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "boundary lot item",
+          "date": "2026-01-09T11:59:59",
+          "quantity": -3.0
+        }
+      ],
+      "operation": "boundary lot ship",
+      "operationCost": 3.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:boundary lot ship|2026-01-09T11:59:59|2026-01-09T12:00:00|lot boundary 04 below-min|3|lot-b|MO|#1",
+      "quantity": 3.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:boundary lot ship|2026-01-09T11:59:59|2026-01-09T12:00:00|lot boundary 04 below-min|3|lot-b|MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-09T11:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-09T11:59:59",
+      "status": "proposed",
+      "totalCost": 3.0
+    },
+    {
+      "batch": "lot-a",
+      "demand": "lot boundary 05 at-min",
+      "end": "2026-01-10T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "boundary lot item",
+          "date": "2026-01-10T11:59:59",
+          "quantity": -4.0
+        }
+      ],
+      "operation": "boundary lot ship",
+      "operationCost": 4.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:boundary lot ship|2026-01-10T11:59:59|2026-01-10T12:00:00|lot boundary 05 at-min|4|lot-a|MO|#1",
+      "quantity": 4.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:boundary lot ship|2026-01-10T11:59:59|2026-01-10T12:00:00|lot boundary 05 at-min|4|lot-a|MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T11:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T11:59:59",
+      "status": "proposed",
+      "totalCost": 4.0
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 06 at-max",
+      "end": "2026-01-11T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "boundary lot item",
+          "date": "2026-01-11T11:59:59",
+          "quantity": -7.0
+        }
+      ],
+      "operation": "boundary lot ship",
+      "operationCost": 7.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:boundary lot ship|2026-01-11T11:59:59|2026-01-11T12:00:00|lot boundary 06 at-max|7|lot-b|MO|#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:boundary lot ship|2026-01-11T11:59:59|2026-01-11T12:00:00|lot boundary 06 at-max|7|lot-b|MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-11T11:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-11T11:59:59",
+      "status": "proposed",
+      "totalCost": 7.0
+    },
+    {
+      "batch": "lot-a",
+      "demand": "lot boundary 07 max-plus-one",
+      "end": "2026-01-12T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "boundary lot item",
+          "date": "2026-01-12T11:59:59",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "boundary lot ship",
+      "operationCost": 1.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:boundary lot ship|2026-01-12T11:59:59|2026-01-12T12:00:00|lot boundary 07 max-plus-one|1|lot-a|MO|#1",
+      "quantity": 1.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:boundary lot ship|2026-01-12T11:59:59|2026-01-12T12:00:00|lot boundary 07 max-plus-one|1|lot-a|MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-12T11:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-12T11:59:59",
+      "status": "proposed",
+      "totalCost": 1.0
+    },
+    {
+      "batch": "lot-a",
+      "demand": "lot boundary 07 max-plus-one",
+      "end": "2026-01-12T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "boundary lot item",
+          "date": "2026-01-12T11:59:59",
+          "quantity": -7.0
+        }
+      ],
+      "operation": "boundary lot ship",
+      "operationCost": 7.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:boundary lot ship|2026-01-12T11:59:59|2026-01-12T12:00:00|lot boundary 07 max-plus-one|7|lot-a|MO|#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:boundary lot ship|2026-01-12T11:59:59|2026-01-12T12:00:00|lot boundary 07 max-plus-one|7|lot-a|MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-12T11:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-12T11:59:59",
+      "status": "proposed",
+      "totalCost": 7.0
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 08 three-splits",
+      "end": "2026-01-13T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "boundary lot item",
+          "date": "2026-01-13T11:59:59",
+          "quantity": -7.0
+        }
+      ],
+      "operation": "boundary lot ship",
+      "operationCost": 7.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:boundary lot ship|2026-01-13T11:59:59|2026-01-13T12:00:00|lot boundary 08 three-splits|7|lot-b|MO|#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:boundary lot ship|2026-01-13T11:59:59|2026-01-13T12:00:00|lot boundary 08 three-splits|7|lot-b|MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-13T11:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-13T11:59:59",
+      "status": "proposed",
+      "totalCost": 7.0
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 08 three-splits",
+      "end": "2026-01-13T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "boundary lot item",
+          "date": "2026-01-13T11:59:59",
+          "quantity": -7.0
+        }
+      ],
+      "operation": "boundary lot ship",
+      "operationCost": 7.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:boundary lot ship|2026-01-13T11:59:59|2026-01-13T12:00:00|lot boundary 08 three-splits|7|lot-b|MO|#2",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:boundary lot ship|2026-01-13T11:59:59|2026-01-13T12:00:00|lot boundary 08 three-splits|7|lot-b|MO|#2",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-13T11:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-13T11:59:59",
+      "status": "proposed",
+      "totalCost": 7.0
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 10 fractional",
+      "end": "2026-01-15T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "boundary lot item",
+          "date": "2026-01-15T11:59:59",
+          "quantity": -2.75
+        }
+      ],
+      "operation": "boundary lot ship",
+      "operationCost": 2.75,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:boundary lot ship|2026-01-15T11:59:59|2026-01-15T12:00:00|lot boundary 10 fractional|2.75|lot-b|MO|#1",
+      "quantity": 2.75,
+      "quantityCompleted": 0.0,
+      "reference": "auto:boundary lot ship|2026-01-15T11:59:59|2026-01-15T12:00:00|lot boundary 10 fractional|2.75|lot-b|MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-15T11:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-15T11:59:59",
+      "status": "proposed",
+      "totalCost": 2.75
+    },
+    {
+      "batch": "lot-b",
+      "demand": "lot boundary 10 fractional",
+      "end": "2026-01-15T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "boundary lot item",
+          "date": "2026-01-15T11:59:59",
+          "quantity": -7.0
+        }
+      ],
+      "operation": "boundary lot ship",
+      "operationCost": 7.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:boundary lot ship|2026-01-15T11:59:59|2026-01-15T12:00:00|lot boundary 10 fractional|7|lot-b|MO|#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:boundary lot ship|2026-01-15T11:59:59|2026-01-15T12:00:00|lot boundary 10 fractional|7|lot-b|MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-15T11:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-15T11:59:59",
+      "status": "proposed",
+      "totalCost": 7.0
+    }
+  ],
+  "problems": [],
+  "resourcePlans": []
+}

@@ -1,0 +1,168 @@
+{
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "calendar minimum product @ plant",
+      "quantity": 1,
+      "operation": "make calendar minimum product"
+    },
+    {
+      "type": "start",
+      "buffer": "calendar minimum product @ plant",
+      "quantity": -1,
+      "operation": "ship calendar minimum product"
+    },
+    {
+      "type": "end",
+      "buffer": "calendar maximum product @ plant",
+      "quantity": 1,
+      "operation": "make calendar maximum product"
+    },
+    {
+      "type": "start",
+      "buffer": "calendar maximum product @ plant",
+      "quantity": -1,
+      "operation": "ship calendar maximum product"
+    }
+  ],
+  "items": [
+    {
+      "name": "calendar minimum product"
+    },
+    {
+      "name": "calendar maximum product"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "erasePreviousFirst": false
+  },
+  "buffers": [
+    {
+      "item": "calendar minimum product",
+      "name": "calendar minimum product @ plant",
+      "onhand": 3,
+      "location": "calendar inventory plant",
+      "producing": "make calendar minimum product",
+      "minimumCalendar": "minimum inventory band"
+    },
+    {
+      "item": "calendar maximum product",
+      "name": "calendar maximum product @ plant",
+      "onhand": 3,
+      "minimum": 3,
+      "location": "calendar inventory plant",
+      "producing": "make calendar maximum product",
+      "maximumCalendar": "maximum inventory band"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-16T00:00:00",
+      "item": "calendar minimum product",
+      "name": "calendar minimum replacement",
+      "location": "calendar inventory plant",
+      "priority": 1,
+      "quantity": 3,
+      "operation": "ship calendar minimum product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-16T00:00:00",
+      "item": "calendar maximum product",
+      "name": "calendar maximum replacement",
+      "location": "calendar inventory plant",
+      "priority": 2,
+      "quantity": 3,
+      "operation": "ship calendar maximum product",
+      "minShipment": 1
+    }
+  ],
+  "calendars": [
+    {
+      "name": "minimum inventory band",
+      "buckets": [
+        {
+          "end": "2026-01-23T00:00:00",
+          "start": "2026-01-19T00:00:00",
+          "value": 6,
+          "priority": 1
+        }
+      ],
+      "default": 3
+    },
+    {
+      "name": "maximum inventory band",
+      "buckets": [
+        {
+          "end": "2026-01-23T00:00:00",
+          "start": "2026-01-19T00:00:00",
+          "value": 6,
+          "priority": 1
+        }
+      ],
+      "default": 3
+    }
+  ],
+  "locations": [
+    {
+      "name": "calendar inventory plant"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "cost": 4,
+      "name": "make calendar minimum product",
+      "type": "fixed_time",
+      "duration": 21600,
+      "location": "calendar inventory plant",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "ship calendar minimum product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "calendar inventory plant"
+    },
+    {
+      "cost": 4,
+      "name": "make calendar maximum product",
+      "type": "fixed_time",
+      "duration": 21600,
+      "location": "calendar inventory plant",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "ship calendar maximum product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "calendar inventory plant"
+    }
+  ],
+  "operationPlans": [
+    {
+      "end": "2026-01-21T06:00:00",
+      "start": "2026-01-21T00:00:00",
+      "status": "proposed",
+      "quantity": 2,
+      "operation": "make calendar minimum product",
+      "reference": "MO-CALENDAR-MINIMUM-LATER"
+    },
+    {
+      "end": "2026-01-23T06:00:00",
+      "start": "2026-01-23T00:00:00",
+      "status": "proposed",
+      "quantity": 2,
+      "operation": "make calendar maximum product",
+      "reference": "MO-CALENDAR-MAXIMUM-LATER"
+    }
+  ]
+}

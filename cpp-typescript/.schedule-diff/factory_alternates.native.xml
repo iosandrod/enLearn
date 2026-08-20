@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2026-01-01T00:00:00</current>
+  <operations>
+    <operation name="premium process P" xsi:type="operation_fixed_time">
+      <duration>PT18H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="standard process P" xsi:type="operation_fixed_time">
+      <duration>P1DT4H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="choose process P" xsi:type="operation_alternate" search="PRIORITY">
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="premium process P" />
+          <priority>1</priority>
+        </suboperation>
+        <suboperation>
+          <operation name="standard process P" />
+          <priority>2</priority>
+        </suboperation>
+      </suboperations>
+    </operation>
+    <operation name="ship configured P" xsi:type="operation_fixed_time">
+      <duration>PT4H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="premium process Q" xsi:type="operation_fixed_time">
+      <duration>PT18H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="standard process Q" xsi:type="operation_fixed_time">
+      <duration>P1DT4H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="choose process Q" xsi:type="operation_alternate" search="PRIORITY">
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="premium process Q" />
+          <priority>1</priority>
+        </suboperation>
+        <suboperation>
+          <operation name="standard process Q" />
+          <priority>2</priority>
+        </suboperation>
+      </suboperations>
+    </operation>
+    <operation name="ship configured Q" xsi:type="operation_fixed_time">
+      <duration>PT4H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="make configured R" xsi:type="operation_fixed_time">
+      <duration>PT16H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="ship configured R" xsi:type="operation_fixed_time">
+      <duration>PT4H</duration>
+      
+      
+      
+      
+      
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="premium component P">
+      
+      <item name="premium component P" />
+      <onhand>5</onhand>
+    </buffer>
+    <buffer name="premium component Q">
+      
+      <item name="premium component Q" />
+      <onhand>4</onhand>
+    </buffer>
+    <buffer name="standard component">
+      
+      <item name="standard component" />
+      <onhand>80</onhand>
+    </buffer>
+    <buffer name="preferred resin">
+      
+      <item name="preferred resin" />
+      <onhand>4</onhand>
+    </buffer>
+    <buffer name="substitute resin">
+      
+      <item name="substitute resin" />
+      <onhand>40</onhand>
+    </buffer>
+    <buffer name="configured P">
+      <producing name="choose process P" />
+      <item name="configured P" />
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="configured Q">
+      <producing name="choose process Q" />
+      <item name="configured Q" />
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="configured R">
+      <producing name="make configured R" />
+      <item name="configured R" />
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+  </setupmatrices>
+  <resources>
+    <resource name="premium line">
+      
+      <maximum>2</maximum>
+      <maxearly>P45D</maxearly>
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="standard line A">
+      
+      <maximum>2</maximum>
+      <maxearly>P45D</maxearly>
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="standard line B">
+      
+      <maximum>2</maximum>
+      <maxearly>P45D</maxearly>
+      <efficiency>90</efficiency>
+      
+      
+    </resource>
+    <resource name="resin line">
+      
+      <maximum>1</maximum>
+      <maxearly>P45D</maxearly>
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+  </resources>
+  <loads>
+    <load>
+      <operation name="premium process P" />
+      <resource name="premium line" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="standard process P" />
+      <resource name="standard line A" />
+      <quantity>1</quantity>
+      <name>standard line</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      
+    </load>
+    <load>
+      <operation name="standard process P" />
+      <resource name="standard line B" />
+      <quantity>1</quantity>
+      <name>standard line</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      
+    </load>
+    <load>
+      <operation name="premium process Q" />
+      <resource name="premium line" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="standard process Q" />
+      <resource name="standard line A" />
+      <quantity>1</quantity>
+      <name>standard line</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      
+    </load>
+    <load>
+      <operation name="standard process Q" />
+      <resource name="standard line B" />
+      <quantity>1</quantity>
+      <name>standard line</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      
+    </load>
+    <load>
+      <operation name="make configured R" />
+      <resource name="resin line" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+    </load>
+  </loads>
+  <skills>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="ship configured P" />
+      <buffer name="configured P" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="premium process P" />
+      <buffer name="configured P" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="premium process P" />
+      <buffer name="premium component P" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="standard process P" />
+      <buffer name="configured P" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="standard process P" />
+      <buffer name="standard component" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship configured Q" />
+      <buffer name="configured Q" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="premium process Q" />
+      <buffer name="configured Q" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="premium process Q" />
+      <buffer name="premium component Q" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="standard process Q" />
+      <buffer name="configured Q" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="standard process Q" />
+      <buffer name="standard component" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship configured R" />
+      <buffer name="configured R" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="make configured R" />
+      <buffer name="configured R" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="make configured R" />
+      <buffer name="preferred resin" />
+      <quantity>-1</quantity>
+      <name>resin</name>
+      <priority>1</priority>
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="make configured R" />
+      <buffer name="substitute resin" />
+      <quantity>-1</quantity>
+      <name>resin</name>
+      <priority>2</priority>
+    </flow>
+  </flows>
+  <demands>
+    <demand name="process order 01 P">
+      <quantity>1</quantity><due>2026-01-21T00:00:00</due><priority>1</priority>
+      <item name="configured P" /><operation name="ship configured P" />
+    </demand>
+    <demand name="process order 02 Q">
+      <quantity>2</quantity><due>2026-01-21T12:00:00</due><priority>2</priority>
+      <item name="configured Q" /><operation name="ship configured Q" />
+    </demand>
+    <demand name="process order 03 P">
+      <quantity>1</quantity><due>2026-01-22T00:00:00</due><priority>3</priority>
+      <item name="configured P" /><operation name="ship configured P" />
+    </demand>
+    <demand name="process order 04 Q">
+      <quantity>2</quantity><due>2026-01-22T12:00:00</due><priority>4</priority>
+      <item name="configured Q" /><operation name="ship configured Q" />
+    </demand>
+    <demand name="process order 05 P">
+      <quantity>1</quantity><due>2026-01-23T00:00:00</due><priority>5</priority>
+      <item name="configured P" /><operation name="ship configured P" />
+    </demand>
+    <demand name="process order 06 Q">
+      <quantity>2</quantity><due>2026-01-23T12:00:00</due><priority>6</priority>
+      <item name="configured Q" /><operation name="ship configured Q" />
+    </demand>
+    <demand name="process order 07 P">
+      <quantity>1</quantity><due>2026-01-24T00:00:00</due><priority>7</priority>
+      <item name="configured P" /><operation name="ship configured P" />
+    </demand>
+    <demand name="process order 08 Q">
+      <quantity>2</quantity><due>2026-01-24T12:00:00</due><priority>8</priority>
+      <item name="configured Q" /><operation name="ship configured Q" />
+    </demand>
+    <demand name="process order 09 P">
+      <quantity>1</quantity><due>2026-01-25T00:00:00</due><priority>9</priority>
+      <item name="configured P" /><operation name="ship configured P" />
+    </demand>
+    <demand name="process order 10 Q">
+      <quantity>2</quantity><due>2026-01-25T12:00:00</due><priority>10</priority>
+      <item name="configured Q" /><operation name="ship configured Q" />
+    </demand>
+    <demand name="process order 11 P">
+      <quantity>1</quantity><due>2026-01-26T00:00:00</due><priority>11</priority>
+      <item name="configured P" /><operation name="ship configured P" />
+    </demand>
+    <demand name="process order 12 Q">
+      <quantity>2</quantity><due>2026-01-26T12:00:00</due><priority>12</priority>
+      <item name="configured Q" /><operation name="ship configured Q" />
+    </demand>
+    <demand name="resin order 01 R">
+      <quantity>1</quantity><due>2026-01-22T06:00:00</due><priority>13</priority>
+      <item name="configured R" /><operation name="ship configured R" />
+    </demand>
+    <demand name="resin order 02 R">
+      <quantity>1</quantity><due>2026-01-22T18:00:00</due><priority>14</priority>
+      <item name="configured R" /><operation name="ship configured R" />
+    </demand>
+    <demand name="resin order 03 R">
+      <quantity>1</quantity><due>2026-01-23T06:00:00</due><priority>15</priority>
+      <item name="configured R" /><operation name="ship configured R" />
+    </demand>
+    <demand name="resin order 04 R">
+      <quantity>1</quantity><due>2026-01-23T18:00:00</due><priority>16</priority>
+      <item name="configured R" /><operation name="ship configured R" />
+    </demand>
+    <demand name="resin order 05 R">
+      <quantity>1</quantity><due>2026-01-24T06:00:00</due><priority>17</priority>
+      <item name="configured R" /><operation name="ship configured R" />
+    </demand>
+    <demand name="resin order 06 R">
+      <quantity>1</quantity><due>2026-01-24T18:00:00</due><priority>18</priority>
+      <item name="configured R" /><operation name="ship configured R" />
+    </demand>
+    <demand name="resin order 07 R">
+      <quantity>1</quantity><due>2026-01-25T06:00:00</due><priority>19</priority>
+      <item name="configured R" /><operation name="ship configured R" />
+    </demand>
+    <demand name="resin order 08 R">
+      <quantity>1</quantity><due>2026-01-25T18:00:00</due><priority>20</priority>
+      <item name="configured R" /><operation name="ship configured R" />
+    </demand>
+    <demand name="resin order 09 R">
+      <quantity>1</quantity><due>2026-01-26T06:00:00</due><priority>21</priority>
+      <item name="configured R" /><operation name="ship configured R" />
+    </demand>
+    <demand name="resin order 10 R">
+      <quantity>1</quantity><due>2026-01-26T18:00:00</due><priority>22</priority>
+      <item name="configured R" /><operation name="ship configured R" />
+    </demand>
+  </demands>
+<?python
+import frepple, json
+frepple.solver_mrp(plantype=1, constraints=15, loglevel=0).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+plans = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": flowplan.quantity})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    plans.append({
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": operationplan.quantity,
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "setupSeconds": operationplan.setup,
+        "setupEnd": stamp(operationplan.setupend),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+    })
+plans.sort(key=lambda value: (value["operation"], value["start"], value["end"], value["demand"] or "", value["quantity"]))
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": operationplan.quantity, "end": stamp(operationplan.end)})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"]))
+with open("/workspace/cpp-typescript/.schedule-diff/factory_alternates.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries}, output, indent=2, sort_keys=True)
+?>
+</plan>

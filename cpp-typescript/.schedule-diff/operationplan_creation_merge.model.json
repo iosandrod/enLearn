@@ -1,0 +1,97 @@
+{
+  "plan": {
+    "allowMergingOperationPlans": false
+  },
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "merge product @ plant",
+      "quantity": 1,
+      "operation": "make merge product"
+    },
+    {
+      "type": "start",
+      "buffer": "merge product @ plant",
+      "quantity": -1,
+      "operation": "ship merge product"
+    }
+  ],
+  "items": [
+    {
+      "name": "merge product"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "merge product",
+      "name": "merge product @ plant",
+      "onhand": 0,
+      "location": "merge plant",
+      "producing": "make merge product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "merge product",
+      "name": "merge order A",
+      "location": "merge plant",
+      "priority": 1,
+      "quantity": 3,
+      "operation": "ship merge product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "merge product",
+      "name": "merge order B",
+      "location": "merge plant",
+      "priority": 2,
+      "quantity": 4,
+      "operation": "ship merge product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "merge product",
+      "name": "merge order C exact maximum",
+      "location": "merge plant",
+      "priority": 3,
+      "quantity": 3,
+      "operation": "ship merge product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "merge plant"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "cost": 4,
+      "name": "make merge product",
+      "type": "fixed_time",
+      "duration": 21600,
+      "location": "merge plant",
+      "sizeMaximum": 10,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 1,
+      "name": "ship merge product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "merge plant"
+    }
+  ]
+}

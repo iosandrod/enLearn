@@ -1,0 +1,194 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "transfer raw @ transfer plant",
+      "quantity": -1,
+      "operation": "continuous upstream"
+    },
+    {
+      "type": "transfer_batch",
+      "buffer": "transfer intermediate @ transfer plant",
+      "quantity": 1,
+      "operation": "continuous upstream",
+      "transferBatch": 3
+    },
+    {
+      "type": "start",
+      "buffer": "transfer intermediate @ transfer plant",
+      "quantity": -1,
+      "operation": "transfer finish step"
+    },
+    {
+      "type": "end",
+      "buffer": "transfer finished @ transfer plant",
+      "quantity": 1,
+      "operation": "transfer pack step"
+    },
+    {
+      "type": "start",
+      "buffer": "transfer finished @ transfer plant",
+      "quantity": -1,
+      "operation": "ship transfer finished"
+    }
+  ],
+  "items": [
+    {
+      "name": "transfer raw"
+    },
+    {
+      "name": "transfer intermediate"
+    },
+    {
+      "name": "transfer finished"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "transfer reactor",
+      "operation": "continuous upstream"
+    },
+    {
+      "quantity": 1,
+      "resource": "transfer finishing line",
+      "operation": "transfer finish step"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 7200,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "transfer raw",
+      "name": "transfer raw @ transfer plant",
+      "onhand": 80,
+      "location": "transfer plant"
+    },
+    {
+      "item": "transfer intermediate",
+      "name": "transfer intermediate @ transfer plant",
+      "onhand": 0,
+      "location": "transfer plant",
+      "producing": "continuous upstream"
+    },
+    {
+      "item": "transfer finished",
+      "name": "transfer finished @ transfer plant",
+      "onhand": 0,
+      "location": "transfer plant",
+      "producing": "transfer downstream routing"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-13T00:00:00",
+      "item": "transfer finished",
+      "name": "transfer order A",
+      "location": "transfer plant",
+      "priority": 1,
+      "quantity": 8,
+      "operation": "ship transfer finished",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-14T12:00:00",
+      "item": "transfer finished",
+      "name": "transfer order B",
+      "location": "transfer plant",
+      "priority": 2,
+      "quantity": 7,
+      "operation": "ship transfer finished",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-17T00:00:00",
+      "item": "transfer finished",
+      "name": "transfer order C",
+      "location": "transfer plant",
+      "priority": 3,
+      "quantity": 5,
+      "operation": "ship transfer finished",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "transfer plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "transfer reactor",
+      "maximum": 1,
+      "location": "transfer plant",
+      "maxearly": 3456000,
+      "efficiency": 100
+    },
+    {
+      "name": "transfer finishing line",
+      "maximum": 2,
+      "location": "transfer plant",
+      "maxearly": 3456000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 3,
+      "name": "continuous upstream",
+      "type": "time_per",
+      "duration": 14400,
+      "location": "transfer plant",
+      "durationPer": 7200,
+      "sizeMaximum": 20,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 4,
+      "name": "transfer finish step",
+      "type": "fixed_time",
+      "duration": 18000,
+      "location": "transfer plant",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 2,
+      "name": "transfer pack step",
+      "type": "fixed_time",
+      "duration": 7200,
+      "location": "transfer plant",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "name": "transfer downstream routing",
+      "type": "routing",
+      "location": "transfer plant",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "transfer finish step"
+        },
+        {
+          "priority": 2,
+          "operation": "transfer pack step"
+        }
+      ]
+    },
+    {
+      "name": "ship transfer finished",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "transfer plant"
+    }
+  ]
+}

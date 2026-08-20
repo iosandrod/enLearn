@@ -1,0 +1,40 @@
+{
+  "scenario": "electronics_high_mix",
+  "industry": "电子装配",
+  "description": "Sixty high-mix electronics orders exercise alternate processes, alternate SMT lines, scarce premium chips, skills, setup families and lot sizing",
+  "coverage": [
+    "高混低量",
+    "备用工艺",
+    "备用 SMT 线",
+    "稀缺芯片",
+    "检测技能",
+    "炉温换型",
+    "整数批量"
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 21600,
+    "constraints": 15,
+    "minimumDelay": 1800,
+    "rotateResources": false
+  },
+  "input": {
+    "demands": 60,
+    "items": 8,
+    "buffers": 8,
+    "operations": 16,
+    "resources": 8,
+    "loads": 20,
+    "flows": 28,
+    "skills": 1,
+    "setupMatrices": 1
+  },
+  "identical": true,
+  "nativeOperationPlans": 186,
+  "typescriptOperationPlans": 186,
+  "nativeDeliveries": 60,
+  "typescriptDeliveries": 60,
+  "differenceCount": 0,
+  "firstDifferences": [],
+  "databaseSchema": "codex_schedule_diff"
+}

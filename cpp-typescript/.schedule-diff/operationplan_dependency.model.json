@@ -1,0 +1,139 @@
+{
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "dependency deliverable @ project",
+      "quantity": 1,
+      "operation": "dependency successor"
+    },
+    {
+      "type": "start",
+      "buffer": "dependency deliverable @ project",
+      "quantity": -1,
+      "operation": "ship dependency deliverable"
+    }
+  ],
+  "items": [
+    {
+      "name": "dependency deliverable"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "dependency predecessor team",
+      "operation": "dependency predecessor"
+    },
+    {
+      "quantity": 1,
+      "resource": "dependency successor team",
+      "operation": "dependency successor"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 7200,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "dependency deliverable",
+      "name": "dependency deliverable @ project",
+      "onhand": 0,
+      "location": "dependency project",
+      "producing": "dependency successor"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "dependency deliverable",
+      "name": "dependency project order A",
+      "batch": "PROJECT-A",
+      "location": "dependency project",
+      "priority": 1,
+      "quantity": 7,
+      "operation": "ship dependency deliverable",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-15T00:00:00",
+      "item": "dependency deliverable",
+      "name": "dependency project order B",
+      "batch": "PROJECT-A",
+      "location": "dependency project",
+      "priority": 2,
+      "quantity": 5,
+      "operation": "ship dependency deliverable",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "dependency project"
+    }
+  ],
+  "resources": [
+    {
+      "name": "dependency predecessor team",
+      "maximum": 2,
+      "location": "dependency project",
+      "maxearly": 2592000,
+      "efficiency": 100
+    },
+    {
+      "name": "dependency successor team",
+      "maximum": 1,
+      "location": "dependency project",
+      "maxearly": 2592000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 4,
+      "name": "dependency predecessor",
+      "type": "fixed_time",
+      "duration": 86400,
+      "location": "dependency project",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 8,
+      "name": "dependency successor",
+      "type": "fixed_time",
+      "duration": 172800,
+      "location": "dependency project",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "ship dependency deliverable",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "dependency project"
+    }
+  ],
+  "dependencies": [
+    {
+      "quantity": 1.5,
+      "blockedBy": "dependency predecessor",
+      "operation": "dependency successor",
+      "safetyLeadtime": 21600,
+      "hardSafetyLeadtime": 43200
+    }
+  ],
+  "operationPlans": [
+    {
+      "end": "2026-01-06T00:00:00",
+      "batch": "PROJECT-A",
+      "status": "approved",
+      "quantity": 6,
+      "operation": "dependency predecessor",
+      "reference": "TASK-PREDECESSOR-WIP"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "deliveries": [
+    {
+      "demand": "skilled order",
+      "end": "2009-01-20T00:00:00",
+      "quantity": 1.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "demand": "skilled order",
+      "end": "2009-01-20T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "skilled item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "delivery skilled item",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "start": "2009-01-19T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-19T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "skilled item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make skilled item",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "operator B"
+      ],
+      "start": "2009-01-18T00:00:00",
+      "status": "proposed"
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2009-01-01T00:00:00</current>
+  <operations>
+    <operation name="make skilled item" xsi:type="operation_fixed_time">
+      <duration>P1D</duration>
+    </operation>
+    <operation name="delivery skilled item" xsi:type="operation_fixed_time">
+      <duration>P1D</duration>
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="skilled item">
+      <producing name="make skilled item" />
+      <item name="skilled item" />
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+  </setupmatrices>
+  <resources>
+    <resource name="operator pool">
+      
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      
+      
+      
+      <loads>
+        <load>
+          <operation name="make skilled item" /><quantity>1</quantity>
+          
+          
+          <search>PRIORITY</search>
+          <skill name="assembly qualification" />
+          
+        </load>
+      </loads>
+    </resource>
+    <resource name="operator A">
+      <owner name="operator pool" />
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <efficiency>100</efficiency>
+      
+      
+      <loads>
+      </loads>
+    </resource>
+    <resource name="operator B">
+      <owner name="operator pool" />
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <efficiency>100</efficiency>
+      
+      
+      <loads>
+      </loads>
+    </resource>
+    <resource name="operator unqualified">
+      <owner name="operator pool" />
+      <maximum>1</maximum>
+      <maxearly>PT0S</maxearly>
+      <efficiency>200</efficiency>
+      
+      
+      <loads>
+      </loads>
+    </resource>
+  </resources>
+  <skills>
+    <skill name="assembly qualification">
+      <resourceskills>
+        <resourceskill>
+          <resource name="operator A" />
+          <priority>2</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="operator B" />
+          <priority>1</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="delivery skilled item" />
+      <buffer name="skilled item" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="make skilled item" />
+      <buffer name="skilled item" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="skilled order">
+      <quantity>1</quantity><due>2009-01-20T00:00:00</due><priority>1</priority>
+      <item name="skilled item" /><operation name="delivery skilled item" />
+    </demand>
+  </demands>
+<?python
+import frepple, json
+frepple.solver_mrp(plantype=1, constraints=15, loglevel=0).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+plans = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": flowplan.quantity})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    plans.append({
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": operationplan.quantity,
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+    })
+plans.sort(key=lambda value: (value["operation"], value["start"], value["end"], value["demand"] or "", value["quantity"]))
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": operationplan.quantity, "end": stamp(operationplan.end)})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"]))
+with open("/workspace/cpp-typescript/.schedule-diff/skills.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries}, output, indent=2, sort_keys=True)
+?>
+</plan>

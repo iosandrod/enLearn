@@ -1,0 +1,220 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "setup raw @ plant",
+      "quantity": -1,
+      "operation": "make red setup product"
+    },
+    {
+      "type": "end",
+      "buffer": "red setup product @ plant",
+      "quantity": 1,
+      "operation": "make red setup product"
+    },
+    {
+      "type": "start",
+      "buffer": "setup raw @ plant",
+      "quantity": -1,
+      "operation": "make blue setup product"
+    },
+    {
+      "type": "end",
+      "buffer": "blue setup product @ plant",
+      "quantity": 1,
+      "operation": "make blue setup product"
+    },
+    {
+      "type": "start",
+      "buffer": "red setup product @ plant",
+      "quantity": -1,
+      "operation": "ship red setup product"
+    },
+    {
+      "type": "start",
+      "buffer": "blue setup product @ plant",
+      "quantity": -1,
+      "operation": "ship blue setup product"
+    }
+  ],
+  "items": [
+    {
+      "name": "setup raw"
+    },
+    {
+      "name": "red setup product"
+    },
+    {
+      "name": "blue setup product"
+    }
+  ],
+  "loads": [
+    {
+      "setup": "red",
+      "quantity": 1,
+      "resource": "locked setup line",
+      "operation": "make red setup product"
+    },
+    {
+      "setup": "blue",
+      "quantity": 1,
+      "resource": "locked setup line",
+      "operation": "make blue setup product"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "minimumDelay": 1800
+  },
+  "buffers": [
+    {
+      "item": "setup raw",
+      "name": "setup raw @ plant",
+      "onhand": 100,
+      "location": "setup plant"
+    },
+    {
+      "item": "red setup product",
+      "name": "red setup product @ plant",
+      "onhand": 0,
+      "location": "setup plant",
+      "producing": "make red setup product"
+    },
+    {
+      "item": "blue setup product",
+      "name": "blue setup product @ plant",
+      "onhand": 0,
+      "location": "setup plant",
+      "producing": "make blue setup product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-06T00:00:00",
+      "item": "red setup product",
+      "name": "locked setup red demand",
+      "location": "setup plant",
+      "priority": 1,
+      "quantity": 8,
+      "operation": "ship red setup product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-07T00:00:00",
+      "item": "blue setup product",
+      "name": "locked setup blue demand",
+      "location": "setup plant",
+      "priority": 2,
+      "quantity": 9,
+      "operation": "ship blue setup product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-09T00:00:00",
+      "item": "red setup product",
+      "name": "locked setup red followup",
+      "location": "setup plant",
+      "priority": 3,
+      "quantity": 7,
+      "operation": "ship red setup product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "setup plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "locked setup line",
+      "setup": "idle",
+      "maximum": 1,
+      "location": "setup plant",
+      "maxearly": 1728000,
+      "efficiency": 100,
+      "setupMatrix": "locked color matrix"
+    }
+  ],
+  "operations": [
+    {
+      "cost": 5,
+      "name": "make red setup product",
+      "type": "fixed_time",
+      "duration": 28800,
+      "location": "setup plant",
+      "sizeMaximum": 10,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 5,
+      "name": "make blue setup product",
+      "type": "fixed_time",
+      "duration": 36000,
+      "location": "setup plant",
+      "sizeMaximum": 10,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "ship red setup product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "setup plant"
+    },
+    {
+      "name": "ship blue setup product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "setup plant"
+    }
+  ],
+  "setupMatrices": [
+    {
+      "name": "locked color matrix",
+      "rules": [
+        {
+          "to": "red|blue",
+          "cost": 4,
+          "from": "idle",
+          "duration": 7200,
+          "priority": 1
+        },
+        {
+          "to": "blue",
+          "cost": 12,
+          "from": "red",
+          "duration": 18000,
+          "priority": 2
+        },
+        {
+          "to": "red",
+          "cost": 10,
+          "from": "blue",
+          "duration": 14400,
+          "priority": 3
+        },
+        {
+          "to": ".*",
+          "cost": 2,
+          "from": ".*",
+          "duration": 3600,
+          "priority": 99
+        }
+      ]
+    }
+  ],
+  "operationPlans": [
+    {
+      "end": "2026-01-03T11:00:00",
+      "start": "2026-01-03T03:00:00",
+      "status": "confirmed",
+      "quantity": 5,
+      "operation": "make red setup product",
+      "reference": "MO-LOCKED-SETUP-001",
+      "setupOverride": 10800
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "lot raw @ lot plant",
+      "quantity": -1,
+      "operation": "make lot product"
+    },
+    {
+      "type": "end",
+      "buffer": "lot product @ lot plant",
+      "quantity": 1,
+      "operation": "make lot product"
+    },
+    {
+      "type": "start",
+      "buffer": "lot product @ lot plant",
+      "quantity": -1,
+      "operation": "ship lot product"
+    }
+  ],
+  "items": [
+    {
+      "name": "lot raw"
+    },
+    {
+      "name": "lot product"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "lot machine",
+      "operation": "make lot product"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 7200,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "lot raw",
+      "name": "lot raw @ lot plant",
+      "onhand": 100,
+      "location": "lot plant"
+    },
+    {
+      "item": "lot product",
+      "name": "lot product @ lot plant",
+      "onhand": 0,
+      "location": "lot plant",
+      "producing": "make lot product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-09T00:00:00",
+      "item": "lot product",
+      "name": "lot order below minimum",
+      "location": "lot plant",
+      "priority": 1,
+      "quantity": 2,
+      "operation": "ship lot product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "lot product",
+      "name": "lot order between multiples",
+      "location": "lot plant",
+      "priority": 2,
+      "quantity": 8,
+      "operation": "ship lot product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-14T00:00:00",
+      "item": "lot product",
+      "name": "lot order above maximum",
+      "location": "lot plant",
+      "priority": 3,
+      "quantity": 29,
+      "operation": "ship lot product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-18T00:00:00",
+      "item": "lot product",
+      "name": "lot order exact multiple",
+      "location": "lot plant",
+      "priority": 4,
+      "quantity": 12,
+      "operation": "ship lot product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "lot plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "lot machine",
+      "maximum": 1,
+      "location": "lot plant",
+      "maxearly": 2160000,
+      "efficiency": 80
+    }
+  ],
+  "operations": [
+    {
+      "cost": 6,
+      "name": "make lot product",
+      "type": "time_per",
+      "duration": 18000,
+      "location": "lot plant",
+      "durationPer": 5400,
+      "sizeMaximum": 13,
+      "sizeMinimum": 4,
+      "sizeMultiple": 3
+    },
+    {
+      "cost": 1,
+      "name": "ship lot product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "lot plant"
+    }
+  ]
+}

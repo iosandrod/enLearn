@@ -1,0 +1,237 @@
+{
+  "costSummary": {
+    "operationCost": 50.0,
+    "resourceCost": 0.0,
+    "setupCost": 0.0,
+    "setupPenalty": 0.0,
+    "totalCost": 50.0
+  },
+  "deliveries": [
+    {
+      "batch": "",
+      "demand": "merge order A",
+      "end": "2026-01-11T00:00:00",
+      "operationPlanKey": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order A|3||MO|#1",
+      "orderType": "MO",
+      "quantity": 3.0
+    },
+    {
+      "batch": "",
+      "demand": "merge order B",
+      "end": "2026-01-11T00:00:00",
+      "operationPlanKey": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order B|4||MO|#1",
+      "orderType": "MO",
+      "quantity": 4.0
+    },
+    {
+      "batch": "",
+      "demand": "merge order C exact maximum",
+      "end": "2026-01-11T00:00:00",
+      "operationPlanKey": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order C exact maximum|3||MO|#1",
+      "orderType": "MO",
+      "quantity": 3.0
+    }
+  ],
+  "dependencies": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "merge product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order B|4||MO|#1",
+      "orderType": "MO",
+      "quantity": -4.0
+    },
+    {
+      "buffer": "merge product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 7.0,
+      "operationPlanKey": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order A|3||MO|#1",
+      "orderType": "MO",
+      "quantity": -3.0
+    },
+    {
+      "buffer": "merge product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 4.0,
+      "operationPlanKey": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order C exact maximum|3||MO|#1",
+      "orderType": "MO",
+      "quantity": -3.0
+    },
+    {
+      "buffer": "merge product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 10.0,
+      "operationPlanKey": "auto:make merge product|2026-01-10T17:00:00|2026-01-10T23:00:00||3||MO|#1",
+      "orderType": "MO",
+      "quantity": 3.0
+    },
+    {
+      "buffer": "merge product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 7.0,
+      "operationPlanKey": "auto:make merge product|2026-01-10T17:00:00|2026-01-10T23:00:00||7||MO|#1",
+      "orderType": "MO",
+      "quantity": 7.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-10T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "merge product @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": 3.0
+        }
+      ],
+      "operation": "make merge product",
+      "operationCost": 12.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make merge product|2026-01-10T17:00:00|2026-01-10T23:00:00||3||MO|#1",
+      "quantity": 3.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make merge product|2026-01-10T17:00:00|2026-01-10T23:00:00||3||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T17:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T17:00:00",
+      "status": "proposed",
+      "totalCost": 12.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-10T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "merge product @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": 7.0
+        }
+      ],
+      "operation": "make merge product",
+      "operationCost": 28.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make merge product|2026-01-10T17:00:00|2026-01-10T23:00:00||7||MO|#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make merge product|2026-01-10T17:00:00|2026-01-10T23:00:00||7||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T17:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T17:00:00",
+      "status": "proposed",
+      "totalCost": 28.0
+    },
+    {
+      "batch": "",
+      "demand": "merge order A",
+      "end": "2026-01-11T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "merge product @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -3.0
+        }
+      ],
+      "operation": "ship merge product",
+      "operationCost": 3.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order A|3||MO|#1",
+      "quantity": 3.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order A|3||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T23:00:00",
+      "status": "proposed",
+      "totalCost": 3.0
+    },
+    {
+      "batch": "",
+      "demand": "merge order B",
+      "end": "2026-01-11T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "merge product @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -4.0
+        }
+      ],
+      "operation": "ship merge product",
+      "operationCost": 4.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order B|4||MO|#1",
+      "quantity": 4.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order B|4||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T23:00:00",
+      "status": "proposed",
+      "totalCost": 4.0
+    },
+    {
+      "batch": "",
+      "demand": "merge order C exact maximum",
+      "end": "2026-01-11T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "merge product @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -3.0
+        }
+      ],
+      "operation": "ship merge product",
+      "operationCost": 3.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order C exact maximum|3||MO|#1",
+      "quantity": 3.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship merge product|2026-01-10T23:00:00|2026-01-11T00:00:00|merge order C exact maximum|3||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T23:00:00",
+      "status": "proposed",
+      "totalCost": 3.0
+    }
+  ],
+  "problems": [],
+  "resourcePlans": []
+}

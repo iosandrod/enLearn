@@ -1,0 +1,86 @@
+{
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "maximum product @ plant",
+      "quantity": 1,
+      "operation": "make maximum product"
+    },
+    {
+      "type": "start",
+      "buffer": "maximum product @ plant",
+      "quantity": -1,
+      "operation": "ship maximum product"
+    }
+  ],
+  "items": [
+    {
+      "name": "maximum product"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "erasePreviousFirst": false
+  },
+  "buffers": [
+    {
+      "item": "maximum product",
+      "name": "maximum product @ plant",
+      "onhand": 3,
+      "maximum": 3,
+      "minimum": 3,
+      "location": "maximum plant",
+      "producing": "make maximum product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-16T00:00:00",
+      "item": "maximum product",
+      "name": "maximum replacement order",
+      "location": "maximum plant",
+      "priority": 1,
+      "quantity": 3,
+      "operation": "ship maximum product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "maximum plant"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "cost": 4,
+      "name": "make maximum product",
+      "type": "fixed_time",
+      "duration": 21600,
+      "location": "maximum plant",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "ship maximum product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "maximum plant"
+    }
+  ],
+  "operationPlans": [
+    {
+      "end": "2026-01-21T06:00:00",
+      "start": "2026-01-21T00:00:00",
+      "status": "proposed",
+      "quantity": 2,
+      "operation": "make maximum product",
+      "reference": "MO-MAXIMUM-LATER"
+    }
+  ]
+}

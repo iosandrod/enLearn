@@ -1,0 +1,537 @@
+{
+  "costSummary": {
+    "operationCost": 72.0,
+    "resourceCost": 0.0,
+    "setupCost": 0.0,
+    "setupPenalty": 0.0,
+    "totalCost": 72.0
+  },
+  "deliveries": [
+    {
+      "batch": "",
+      "demand": "autofence customer order A",
+      "end": "2026-01-09T00:00:00",
+      "operationPlanKey": "auto:ship autofence product|2026-01-08T23:00:00|2026-01-09T00:00:00|autofence customer order A|5||MO|#1",
+      "orderType": "MO",
+      "quantity": 5.0
+    },
+    {
+      "batch": "",
+      "demand": "autofence customer order B",
+      "end": "2026-01-12T00:00:00",
+      "operationPlanKey": "auto:ship autofence product|2026-01-11T23:00:00|2026-01-12T00:00:00|autofence customer order B|4||MO|#1",
+      "orderType": "MO",
+      "quantity": 4.0
+    }
+  ],
+  "dependencies": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "autofence component @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-02T00:00:00",
+      "onhand": -8.0,
+      "operationPlanKey": "ref:AUTOFENCE-ISSUE",
+      "orderType": "MO",
+      "quantity": -8.0
+    },
+    {
+      "buffer": "autofence component @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-03T01:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "ref:AUTOFENCE-RECEIPT",
+      "orderType": "MO",
+      "quantity": 8.0
+    },
+    {
+      "buffer": "autofence component @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-07T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:make autofence product|2026-01-07T23:00:00|2026-01-08T23:00:00||5||MO|#1",
+      "orderType": "MO",
+      "quantity": -5.0
+    },
+    {
+      "buffer": "autofence component @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-07T23:00:00",
+      "onhand": 5.0,
+      "operationPlanKey": "auto:replenish autofence component|2026-01-06T23:00:00|2026-01-07T23:00:00||5||MO|#1",
+      "orderType": "MO",
+      "quantity": 5.0
+    },
+    {
+      "buffer": "autofence component @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:make autofence product|2026-01-10T23:00:00|2026-01-11T23:00:00||4||MO|#1",
+      "orderType": "MO",
+      "quantity": -4.0
+    },
+    {
+      "buffer": "autofence component @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 4.0,
+      "operationPlanKey": "auto:replenish autofence component|2026-01-09T23:00:00|2026-01-10T23:00:00||4||MO|#1",
+      "orderType": "MO",
+      "quantity": 4.0
+    },
+    {
+      "buffer": "autofence product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship autofence product|2026-01-08T23:00:00|2026-01-09T00:00:00|autofence customer order A|5||MO|#1",
+      "orderType": "MO",
+      "quantity": -5.0
+    },
+    {
+      "buffer": "autofence product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T23:00:00",
+      "onhand": 5.0,
+      "operationPlanKey": "auto:make autofence product|2026-01-07T23:00:00|2026-01-08T23:00:00||5||MO|#1",
+      "orderType": "MO",
+      "quantity": 5.0
+    },
+    {
+      "buffer": "autofence product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-11T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship autofence product|2026-01-11T23:00:00|2026-01-12T00:00:00|autofence customer order B|4||MO|#1",
+      "orderType": "MO",
+      "quantity": -4.0
+    },
+    {
+      "buffer": "autofence product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-11T23:00:00",
+      "onhand": 4.0,
+      "operationPlanKey": "auto:make autofence product|2026-01-10T23:00:00|2026-01-11T23:00:00||4||MO|#1",
+      "orderType": "MO",
+      "quantity": 4.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-02T01:00:00",
+      "feasible": false,
+      "materials": [
+        {
+          "buffer": "autofence component @ plant",
+          "date": "2026-01-02T00:00:00",
+          "quantity": -8.0
+        }
+      ],
+      "operation": "confirmed component issue",
+      "operationCost": 0.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "ref:AUTOFENCE-ISSUE",
+      "quantity": 8.0,
+      "quantityCompleted": 0.0,
+      "reference": "AUTOFENCE-ISSUE",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-02T00:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-02T00:00:00",
+      "status": "confirmed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-03T01:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "autofence component @ plant",
+          "date": "2026-01-03T01:00:00",
+          "quantity": 8.0
+        }
+      ],
+      "operation": "confirmed component receipt",
+      "operationCost": 0.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "ref:AUTOFENCE-RECEIPT",
+      "quantity": 8.0,
+      "quantityCompleted": 0.0,
+      "reference": "AUTOFENCE-RECEIPT",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-03T00:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-03T00:00:00",
+      "status": "confirmed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-08T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "autofence component @ plant",
+          "date": "2026-01-07T23:00:00",
+          "quantity": -5.0
+        },
+        {
+          "buffer": "autofence product @ plant",
+          "date": "2026-01-08T23:00:00",
+          "quantity": 5.0
+        }
+      ],
+      "operation": "make autofence product",
+      "operationCost": 25.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make autofence product|2026-01-07T23:00:00|2026-01-08T23:00:00||5||MO|#1",
+      "quantity": 5.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make autofence product|2026-01-07T23:00:00|2026-01-08T23:00:00||5||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "autofence production line"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-07T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-07T23:00:00",
+      "status": "proposed",
+      "totalCost": 25.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-11T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "autofence component @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -4.0
+        },
+        {
+          "buffer": "autofence product @ plant",
+          "date": "2026-01-11T23:00:00",
+          "quantity": 4.0
+        }
+      ],
+      "operation": "make autofence product",
+      "operationCost": 20.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make autofence product|2026-01-10T23:00:00|2026-01-11T23:00:00||4||MO|#1",
+      "quantity": 4.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make autofence product|2026-01-10T23:00:00|2026-01-11T23:00:00||4||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "autofence production line"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T23:00:00",
+      "status": "proposed",
+      "totalCost": 20.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-07T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "autofence component @ plant",
+          "date": "2026-01-07T23:00:00",
+          "quantity": 5.0
+        }
+      ],
+      "operation": "replenish autofence component",
+      "operationCost": 15.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:replenish autofence component|2026-01-06T23:00:00|2026-01-07T23:00:00||5||MO|#1",
+      "quantity": 5.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:replenish autofence component|2026-01-06T23:00:00|2026-01-07T23:00:00||5||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "autofence production line"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-06T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-06T23:00:00",
+      "status": "proposed",
+      "totalCost": 15.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-10T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "autofence component @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": 4.0
+        }
+      ],
+      "operation": "replenish autofence component",
+      "operationCost": 12.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:replenish autofence component|2026-01-09T23:00:00|2026-01-10T23:00:00||4||MO|#1",
+      "quantity": 4.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:replenish autofence component|2026-01-09T23:00:00|2026-01-10T23:00:00||4||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "autofence production line"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-09T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-09T23:00:00",
+      "status": "proposed",
+      "totalCost": 12.0
+    },
+    {
+      "batch": "",
+      "demand": "autofence customer order A",
+      "end": "2026-01-09T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "autofence product @ plant",
+          "date": "2026-01-08T23:00:00",
+          "quantity": -5.0
+        }
+      ],
+      "operation": "ship autofence product",
+      "operationCost": 0.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship autofence product|2026-01-08T23:00:00|2026-01-09T00:00:00|autofence customer order A|5||MO|#1",
+      "quantity": 5.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship autofence product|2026-01-08T23:00:00|2026-01-09T00:00:00|autofence customer order A|5||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-08T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-08T23:00:00",
+      "status": "proposed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": "autofence customer order B",
+      "end": "2026-01-12T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "autofence product @ plant",
+          "date": "2026-01-11T23:00:00",
+          "quantity": -4.0
+        }
+      ],
+      "operation": "ship autofence product",
+      "operationCost": 0.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship autofence product|2026-01-11T23:00:00|2026-01-12T00:00:00|autofence customer order B|4||MO|#1",
+      "quantity": 4.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship autofence product|2026-01-11T23:00:00|2026-01-12T00:00:00|autofence customer order B|4||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-11T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-11T23:00:00",
+      "status": "proposed",
+      "totalCost": 0.0
+    }
+  ],
+  "problems": [
+    {
+      "description": "Buffer 'autofence component @ plant' has material shortage of 8",
+      "end": "2026-01-03T01:00:00",
+      "entity": "material",
+      "feasible": false,
+      "name": "material shortage",
+      "owner": "autofence component @ plant",
+      "start": "2026-01-02T00:00:00"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "available": 24.0,
+      "end": "2026-01-02T00:00:00",
+      "free": 24.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-01T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-02T01:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-02T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 23.0,
+      "end": "2026-01-03T00:00:00",
+      "free": 23.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-02T01:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-03T01:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-03T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 94.0,
+      "end": "2026-01-06T23:00:00",
+      "free": 94.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-03T01:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-07T23:00:00",
+      "free": 0.0,
+      "load": 24.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-06T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-08T23:00:00",
+      "free": 0.0,
+      "load": 24.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-07T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-09T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-08T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 23.0,
+      "end": "2026-01-09T23:00:00",
+      "free": 23.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-09T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-10T23:00:00",
+      "free": 0.0,
+      "load": 24.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-09T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 24.0,
+      "end": "2026-01-11T23:00:00",
+      "free": 0.0,
+      "load": 24.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-10T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-12T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "autofence production line",
+      "setup": 0.0,
+      "start": "2026-01-11T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    }
+  ]
+}

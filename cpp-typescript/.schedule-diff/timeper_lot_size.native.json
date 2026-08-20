@@ -1,0 +1,766 @@
+{
+  "costSummary": {
+    "operationCost": 357.0,
+    "resourceCost": 0.0,
+    "setupCost": 0.0,
+    "setupPenalty": 0.0,
+    "totalCost": 357.0
+  },
+  "deliveries": [
+    {
+      "batch": "",
+      "demand": "lot order above maximum",
+      "end": "2026-01-14T00:00:00",
+      "operationPlanKey": "auto:ship lot product|2026-01-13T23:00:00|2026-01-14T00:00:00|lot order above maximum|29||MO|#1",
+      "orderType": "MO",
+      "quantity": 29.0
+    },
+    {
+      "batch": "",
+      "demand": "lot order below minimum",
+      "end": "2026-01-09T00:00:00",
+      "operationPlanKey": "auto:ship lot product|2026-01-08T23:00:00|2026-01-09T00:00:00|lot order below minimum|2||MO|#1",
+      "orderType": "MO",
+      "quantity": 2.0
+    },
+    {
+      "batch": "",
+      "demand": "lot order between multiples",
+      "end": "2026-01-11T00:00:00",
+      "operationPlanKey": "auto:ship lot product|2026-01-10T23:00:00|2026-01-11T00:00:00|lot order between multiples|8||MO|#1",
+      "orderType": "MO",
+      "quantity": 8.0
+    },
+    {
+      "batch": "",
+      "demand": "lot order exact multiple",
+      "end": "2026-01-18T00:00:00",
+      "operationPlanKey": "auto:ship lot product|2026-01-17T23:00:00|2026-01-18T00:00:00|lot order exact multiple|12||MO|#1",
+      "orderType": "MO",
+      "quantity": 12.0
+    }
+  ],
+  "dependencies": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "lot product @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T23:00:00",
+      "onhand": 4.0,
+      "operationPlanKey": "auto:ship lot product|2026-01-08T23:00:00|2026-01-09T00:00:00|lot order below minimum|2||MO|#1",
+      "orderType": "MO",
+      "quantity": -2.0
+    },
+    {
+      "buffer": "lot product @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T23:00:00",
+      "onhand": 6.0,
+      "operationPlanKey": "auto:make lot product|2026-01-08T05:30:00|2026-01-08T23:00:00||6||MO|#1",
+      "orderType": "MO",
+      "quantity": 6.0
+    },
+    {
+      "buffer": "lot product @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T05:30:00",
+      "onhand": 10.0,
+      "operationPlanKey": "auto:make lot product|2026-01-09T12:00:00|2026-01-10T05:30:00||6||MO|#1",
+      "orderType": "MO",
+      "quantity": 6.0
+    },
+    {
+      "buffer": "lot product @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 8.0,
+      "operationPlanKey": "auto:ship lot product|2026-01-10T23:00:00|2026-01-11T00:00:00|lot order between multiples|8||MO|#1",
+      "orderType": "MO",
+      "quantity": -8.0
+    },
+    {
+      "buffer": "lot product @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 16.0,
+      "operationPlanKey": "auto:make lot product|2026-01-10T05:30:00|2026-01-10T23:00:00||6||MO|#1",
+      "orderType": "MO",
+      "quantity": 6.0
+    },
+    {
+      "buffer": "lot product @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T18:15:00",
+      "onhand": 20.0,
+      "operationPlanKey": "auto:make lot product|2026-01-11T13:30:00|2026-01-12T18:15:00||12||MO|#1",
+      "orderType": "MO",
+      "quantity": 12.0
+    },
+    {
+      "buffer": "lot product @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T23:00:00",
+      "onhand": 3.0,
+      "operationPlanKey": "auto:ship lot product|2026-01-13T23:00:00|2026-01-14T00:00:00|lot order above maximum|29||MO|#1",
+      "orderType": "MO",
+      "quantity": -29.0
+    },
+    {
+      "buffer": "lot product @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T23:00:00",
+      "onhand": 32.0,
+      "operationPlanKey": "auto:make lot product|2026-01-12T18:15:00|2026-01-13T23:00:00||12||MO|#1",
+      "orderType": "MO",
+      "quantity": 12.0
+    },
+    {
+      "buffer": "lot product @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-17T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship lot product|2026-01-17T23:00:00|2026-01-18T00:00:00|lot order exact multiple|12||MO|#1",
+      "orderType": "MO",
+      "quantity": -12.0
+    },
+    {
+      "buffer": "lot product @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-17T23:00:00",
+      "onhand": 12.0,
+      "operationPlanKey": "auto:make lot product|2026-01-16T23:52:30|2026-01-17T23:00:00||9||MO|#1",
+      "orderType": "MO",
+      "quantity": 9.0
+    },
+    {
+      "buffer": "lot raw @ lot plant",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "onhand": 100.0,
+      "operationPlanKey": "auto:Inventory lot raw @ lot plant|1971-01-01T00:00:00|1971-01-01T00:00:00||100||STCK|#1",
+      "orderType": "STCK",
+      "quantity": 100.0
+    },
+    {
+      "buffer": "lot raw @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T05:30:00",
+      "onhand": 94.0,
+      "operationPlanKey": "auto:make lot product|2026-01-08T05:30:00|2026-01-08T23:00:00||6||MO|#1",
+      "orderType": "MO",
+      "quantity": -6.0
+    },
+    {
+      "buffer": "lot raw @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-09T12:00:00",
+      "onhand": 88.0,
+      "operationPlanKey": "auto:make lot product|2026-01-09T12:00:00|2026-01-10T05:30:00||6||MO|#1",
+      "orderType": "MO",
+      "quantity": -6.0
+    },
+    {
+      "buffer": "lot raw @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T05:30:00",
+      "onhand": 82.0,
+      "operationPlanKey": "auto:make lot product|2026-01-10T05:30:00|2026-01-10T23:00:00||6||MO|#1",
+      "orderType": "MO",
+      "quantity": -6.0
+    },
+    {
+      "buffer": "lot raw @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-11T13:30:00",
+      "onhand": 70.0,
+      "operationPlanKey": "auto:make lot product|2026-01-11T13:30:00|2026-01-12T18:15:00||12||MO|#1",
+      "orderType": "MO",
+      "quantity": -12.0
+    },
+    {
+      "buffer": "lot raw @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T18:15:00",
+      "onhand": 58.0,
+      "operationPlanKey": "auto:make lot product|2026-01-12T18:15:00|2026-01-13T23:00:00||12||MO|#1",
+      "orderType": "MO",
+      "quantity": -12.0
+    },
+    {
+      "buffer": "lot raw @ lot plant",
+      "bufferBatch": "",
+      "date": "2026-01-16T23:52:30",
+      "onhand": 49.0,
+      "operationPlanKey": "auto:make lot product|2026-01-16T23:52:30|2026-01-17T23:00:00||9||MO|#1",
+      "orderType": "MO",
+      "quantity": -9.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "lot raw @ lot plant",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 100.0
+        }
+      ],
+      "operation": "Inventory lot raw @ lot plant",
+      "operationCost": 0.0,
+      "orderType": "STCK",
+      "ownerOperation": null,
+      "planKey": "auto:Inventory lot raw @ lot plant|1971-01-01T00:00:00|1971-01-01T00:00:00||100||STCK|#1",
+      "quantity": 100.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Inventory lot raw @ lot plant|1971-01-01T00:00:00|1971-01-01T00:00:00||100||STCK|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "1971-01-01T00:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "1971-01-01T00:00:00",
+      "status": "closed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-08T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "lot raw @ lot plant",
+          "date": "2026-01-08T05:30:00",
+          "quantity": -6.0
+        },
+        {
+          "buffer": "lot product @ lot plant",
+          "date": "2026-01-08T23:00:00",
+          "quantity": 6.0
+        }
+      ],
+      "operation": "make lot product",
+      "operationCost": 36.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make lot product|2026-01-08T05:30:00|2026-01-08T23:00:00||6||MO|#1",
+      "quantity": 6.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make lot product|2026-01-08T05:30:00|2026-01-08T23:00:00||6||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "lot machine"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-08T05:30:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-08T05:30:00",
+      "status": "proposed",
+      "totalCost": 36.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-10T05:30:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "lot raw @ lot plant",
+          "date": "2026-01-09T12:00:00",
+          "quantity": -6.0
+        },
+        {
+          "buffer": "lot product @ lot plant",
+          "date": "2026-01-10T05:30:00",
+          "quantity": 6.0
+        }
+      ],
+      "operation": "make lot product",
+      "operationCost": 36.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make lot product|2026-01-09T12:00:00|2026-01-10T05:30:00||6||MO|#1",
+      "quantity": 6.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make lot product|2026-01-09T12:00:00|2026-01-10T05:30:00||6||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "lot machine"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-09T12:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-09T12:00:00",
+      "status": "proposed",
+      "totalCost": 36.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-10T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "lot raw @ lot plant",
+          "date": "2026-01-10T05:30:00",
+          "quantity": -6.0
+        },
+        {
+          "buffer": "lot product @ lot plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": 6.0
+        }
+      ],
+      "operation": "make lot product",
+      "operationCost": 36.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make lot product|2026-01-10T05:30:00|2026-01-10T23:00:00||6||MO|#1",
+      "quantity": 6.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make lot product|2026-01-10T05:30:00|2026-01-10T23:00:00||6||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "lot machine"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T05:30:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T05:30:00",
+      "status": "proposed",
+      "totalCost": 36.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-12T18:15:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "lot raw @ lot plant",
+          "date": "2026-01-11T13:30:00",
+          "quantity": -12.0
+        },
+        {
+          "buffer": "lot product @ lot plant",
+          "date": "2026-01-12T18:15:00",
+          "quantity": 12.0
+        }
+      ],
+      "operation": "make lot product",
+      "operationCost": 72.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make lot product|2026-01-11T13:30:00|2026-01-12T18:15:00||12||MO|#1",
+      "quantity": 12.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make lot product|2026-01-11T13:30:00|2026-01-12T18:15:00||12||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "lot machine"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-11T13:30:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-11T13:30:00",
+      "status": "proposed",
+      "totalCost": 72.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-13T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "lot raw @ lot plant",
+          "date": "2026-01-12T18:15:00",
+          "quantity": -12.0
+        },
+        {
+          "buffer": "lot product @ lot plant",
+          "date": "2026-01-13T23:00:00",
+          "quantity": 12.0
+        }
+      ],
+      "operation": "make lot product",
+      "operationCost": 72.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make lot product|2026-01-12T18:15:00|2026-01-13T23:00:00||12||MO|#1",
+      "quantity": 12.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make lot product|2026-01-12T18:15:00|2026-01-13T23:00:00||12||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "lot machine"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-12T18:15:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-12T18:15:00",
+      "status": "proposed",
+      "totalCost": 72.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-17T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "lot raw @ lot plant",
+          "date": "2026-01-16T23:52:30",
+          "quantity": -9.0
+        },
+        {
+          "buffer": "lot product @ lot plant",
+          "date": "2026-01-17T23:00:00",
+          "quantity": 9.0
+        }
+      ],
+      "operation": "make lot product",
+      "operationCost": 54.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make lot product|2026-01-16T23:52:30|2026-01-17T23:00:00||9||MO|#1",
+      "quantity": 9.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make lot product|2026-01-16T23:52:30|2026-01-17T23:00:00||9||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "lot machine"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-16T23:52:30",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-16T23:52:30",
+      "status": "proposed",
+      "totalCost": 54.0
+    },
+    {
+      "batch": "",
+      "demand": "lot order below minimum",
+      "end": "2026-01-09T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "lot product @ lot plant",
+          "date": "2026-01-08T23:00:00",
+          "quantity": -2.0
+        }
+      ],
+      "operation": "ship lot product",
+      "operationCost": 2.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship lot product|2026-01-08T23:00:00|2026-01-09T00:00:00|lot order below minimum|2||MO|#1",
+      "quantity": 2.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship lot product|2026-01-08T23:00:00|2026-01-09T00:00:00|lot order below minimum|2||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-08T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-08T23:00:00",
+      "status": "proposed",
+      "totalCost": 2.0
+    },
+    {
+      "batch": "",
+      "demand": "lot order between multiples",
+      "end": "2026-01-11T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "lot product @ lot plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -8.0
+        }
+      ],
+      "operation": "ship lot product",
+      "operationCost": 8.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship lot product|2026-01-10T23:00:00|2026-01-11T00:00:00|lot order between multiples|8||MO|#1",
+      "quantity": 8.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship lot product|2026-01-10T23:00:00|2026-01-11T00:00:00|lot order between multiples|8||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T23:00:00",
+      "status": "proposed",
+      "totalCost": 8.0
+    },
+    {
+      "batch": "",
+      "demand": "lot order above maximum",
+      "end": "2026-01-14T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "lot product @ lot plant",
+          "date": "2026-01-13T23:00:00",
+          "quantity": -29.0
+        }
+      ],
+      "operation": "ship lot product",
+      "operationCost": 29.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship lot product|2026-01-13T23:00:00|2026-01-14T00:00:00|lot order above maximum|29||MO|#1",
+      "quantity": 29.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship lot product|2026-01-13T23:00:00|2026-01-14T00:00:00|lot order above maximum|29||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-13T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-13T23:00:00",
+      "status": "proposed",
+      "totalCost": 29.0
+    },
+    {
+      "batch": "",
+      "demand": "lot order exact multiple",
+      "end": "2026-01-18T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "lot product @ lot plant",
+          "date": "2026-01-17T23:00:00",
+          "quantity": -12.0
+        }
+      ],
+      "operation": "ship lot product",
+      "operationCost": 12.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship lot product|2026-01-17T23:00:00|2026-01-18T00:00:00|lot order exact multiple|12||MO|#1",
+      "quantity": 12.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship lot product|2026-01-17T23:00:00|2026-01-18T00:00:00|lot order exact multiple|12||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-17T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-17T23:00:00",
+      "status": "proposed",
+      "totalCost": 12.0
+    }
+  ],
+  "problems": [
+    {
+      "description": "No replenishment defined for 'lot raw @ lot plant'",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "feasible": false,
+      "name": "invalid data",
+      "owner": "lot raw @ lot plant",
+      "start": "1971-01-01T00:00:00"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "available": 482136.0,
+      "end": "2026-01-01T00:00:00",
+      "free": 482136.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "1971-01-01T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 173.5,
+      "end": "2026-01-08T05:30:00",
+      "free": 173.5,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-01T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 17.5,
+      "end": "2026-01-08T23:00:00",
+      "free": 0.0,
+      "load": 17.5,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-08T05:30:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-09T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-08T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 12.0,
+      "end": "2026-01-09T12:00:00",
+      "free": 12.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-09T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 17.5,
+      "end": "2026-01-10T05:30:00",
+      "free": 0.0,
+      "load": 17.5,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-09T12:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 17.5,
+      "end": "2026-01-10T23:00:00",
+      "free": 0.0,
+      "load": 17.5,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-10T05:30:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-11T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-10T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 13.5,
+      "end": "2026-01-11T13:30:00",
+      "free": 13.5,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-11T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 28.75,
+      "end": "2026-01-12T18:15:00",
+      "free": 0.0,
+      "load": 28.75,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-11T13:30:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 28.75,
+      "end": "2026-01-13T23:00:00",
+      "free": 0.0,
+      "load": 28.75,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-12T18:15:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-14T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-13T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 71.875,
+      "end": "2026-01-16T23:52:30",
+      "free": 71.875,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-14T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 23.125,
+      "end": "2026-01-17T23:00:00",
+      "free": 0.0,
+      "load": 23.125,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-16T23:52:30",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-18T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "lot machine",
+      "setup": 0.0,
+      "start": "2026-01-17T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    }
+  ]
+}

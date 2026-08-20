@@ -1,0 +1,1551 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2026-01-01T00:00:00</current>
+  <calendars>
+  </calendars>
+  <locations>
+  </locations>
+  <suppliers>
+  </suppliers>
+  <items>
+    <item name="raw milk">
+      
+      
+      
+      
+    </item>
+    <item name="sugar">
+      
+      
+      
+      
+    </item>
+    <item name="natural culture">
+      
+      
+      
+      
+    </item>
+    <item name="berry culture">
+      
+      
+      
+      
+    </item>
+    <item name="mango concentrate">
+      
+      
+      
+      
+    </item>
+    <item name="peach concentrate">
+      
+      
+      
+      
+    </item>
+    <item name="generic fruit base">
+      
+      
+      
+      
+    </item>
+    <item name="cups">
+      
+      
+      
+      
+    </item>
+    <item name="natural yogurt">
+      
+      
+      
+      
+    </item>
+    <item name="berry yogurt">
+      
+      
+      
+      
+    </item>
+    <item name="mango drink">
+      
+      
+      
+      
+    </item>
+    <item name="peach drink">
+      
+      
+      
+      
+    </item>
+  </items>
+  <operations>
+    <operation name="process YOG-NAT" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT9H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>12</size_maximum>
+      <cost>35</cost>
+      
+      
+      
+    </operation>
+    <operation name="dispatch YOG-NAT" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT1H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>5</cost>
+      
+      
+      
+    </operation>
+    <operation name="process YOG-BRY" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT10H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>12</size_maximum>
+      <cost>35</cost>
+      
+      
+      
+    </operation>
+    <operation name="dispatch YOG-BRY" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT1H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>5</cost>
+      
+      
+      
+    </operation>
+    <operation name="process DRINK-MNG" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT8H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>12</size_maximum>
+      <cost>35</cost>
+      
+      
+      
+    </operation>
+    <operation name="dispatch DRINK-MNG" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT1H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>5</cost>
+      
+      
+      
+    </operation>
+    <operation name="process DRINK-PEA" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT8H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>12</size_maximum>
+      <cost>35</cost>
+      
+      
+      
+    </operation>
+    <operation name="dispatch DRINK-PEA" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT1H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>5</cost>
+      
+      
+      
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="raw milk">
+      
+      <item name="raw milk" />
+      
+      
+      
+      
+      
+      
+      <onhand>360</onhand>
+    </buffer>
+    <buffer name="sugar">
+      
+      <item name="sugar" />
+      
+      
+      
+      
+      
+      
+      <onhand>240</onhand>
+    </buffer>
+    <buffer name="natural culture">
+      
+      <item name="natural culture" />
+      
+      
+      
+      
+      
+      
+      <onhand>28</onhand>
+    </buffer>
+    <buffer name="berry culture">
+      
+      <item name="berry culture" />
+      
+      
+      
+      
+      
+      
+      <onhand>18</onhand>
+    </buffer>
+    <buffer name="mango concentrate">
+      
+      <item name="mango concentrate" />
+      
+      
+      
+      
+      
+      
+      <onhand>45</onhand>
+    </buffer>
+    <buffer name="peach concentrate">
+      
+      <item name="peach concentrate" />
+      
+      
+      
+      
+      
+      
+      <onhand>40</onhand>
+    </buffer>
+    <buffer name="generic fruit base">
+      
+      <item name="generic fruit base" />
+      
+      
+      
+      
+      
+      
+      <onhand>120</onhand>
+    </buffer>
+    <buffer name="cups">
+      
+      <item name="cups" />
+      
+      
+      
+      
+      
+      
+      <onhand>480</onhand>
+    </buffer>
+    <buffer name="natural yogurt">
+      <producing name="process YOG-NAT" />
+      <item name="natural yogurt" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="berry yogurt">
+      <producing name="process YOG-BRY" />
+      <item name="berry yogurt" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="mango drink">
+      <producing name="process DRINK-MNG" />
+      <item name="mango drink" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="peach drink">
+      <producing name="process DRINK-PEA" />
+      <item name="peach drink" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+    <setupmatrix name="recipe cleanover">
+      <rules>
+        <rule priority="1" fromsetup="clean" tosetup="natural|berry|mango|peach"
+          duration="PT30M" cost="3" />
+        <rule priority="2" fromsetup="natural|berry" tosetup="mango|peach"
+          duration="PT2H" cost="12" />
+        <rule priority="3" fromsetup="mango|peach" tosetup="natural|berry"
+          duration="PT3H" cost="18" />
+        <rule priority="99" fromsetup=".*" tosetup=".*"
+          duration="PT1H" cost="7" />
+      </rules>
+    </setupmatrix>
+  </setupmatrices>
+  <resources>
+    <resource name="process tank A">
+      
+      <maximum>5</maximum>
+      <maxearly>P20D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="recipe cleanover" />
+      <setup>clean</setup>
+    </resource>
+    <resource name="process tank B">
+      
+      <maximum>4</maximum>
+      <maxearly>P20D</maxearly>
+      
+      
+      
+      
+      <efficiency>88</efficiency>
+      <setupmatrix name="recipe cleanover" />
+      <setup>clean</setup>
+    </resource>
+    <resource name="filling crew">
+      
+      <maximum>8</maximum>
+      <maxearly>P20D</maxearly>
+      
+      
+      
+      
+      <efficiency>105</efficiency>
+      
+      
+    </resource>
+  </resources>
+  <loads>
+    <load>
+      <operation name="process YOG-NAT" />
+      <resource name="process tank A" />
+      <quantity>1</quantity>
+      
+      <name>tank YOG-NAT</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>natural</setup>
+    </load>
+    <load>
+      <operation name="process YOG-NAT" />
+      <resource name="process tank B" />
+      <quantity>1</quantity>
+      
+      <name>tank YOG-NAT</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>natural</setup>
+    </load>
+    <load>
+      <operation name="process YOG-NAT" />
+      <resource name="filling crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="process YOG-BRY" />
+      <resource name="process tank A" />
+      <quantity>1</quantity>
+      
+      <name>tank YOG-BRY</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>berry</setup>
+    </load>
+    <load>
+      <operation name="process YOG-BRY" />
+      <resource name="process tank B" />
+      <quantity>1</quantity>
+      
+      <name>tank YOG-BRY</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>berry</setup>
+    </load>
+    <load>
+      <operation name="process YOG-BRY" />
+      <resource name="filling crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="process DRINK-MNG" />
+      <resource name="process tank A" />
+      <quantity>1</quantity>
+      
+      <name>tank DRINK-MNG</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>mango</setup>
+    </load>
+    <load>
+      <operation name="process DRINK-MNG" />
+      <resource name="process tank B" />
+      <quantity>1</quantity>
+      
+      <name>tank DRINK-MNG</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>mango</setup>
+    </load>
+    <load>
+      <operation name="process DRINK-MNG" />
+      <resource name="filling crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="process DRINK-PEA" />
+      <resource name="process tank A" />
+      <quantity>1</quantity>
+      
+      <name>tank DRINK-PEA</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>peach</setup>
+    </load>
+    <load>
+      <operation name="process DRINK-PEA" />
+      <resource name="process tank B" />
+      <quantity>1</quantity>
+      
+      <name>tank DRINK-PEA</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>peach</setup>
+    </load>
+    <load>
+      <operation name="process DRINK-PEA" />
+      <resource name="filling crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+      
+    </load>
+  </loads>
+  <skills>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="dispatch YOG-NAT" />
+      <buffer name="natural yogurt" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="process YOG-NAT" />
+      <buffer name="natural yogurt" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process YOG-NAT" />
+      <buffer name="raw milk" />
+      <quantity>-2</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process YOG-NAT" />
+      <buffer name="sugar" />
+      <quantity>-0.5</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process YOG-NAT" />
+      <buffer name="cups" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process YOG-NAT" />
+      <buffer name="natural culture" />
+      <quantity>-0.25</quantity>
+      
+      <name>ingredient YOG-NAT</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process YOG-NAT" />
+      <buffer name="generic fruit base" />
+      <quantity>-0.25</quantity>
+      
+      <name>ingredient YOG-NAT</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="dispatch YOG-BRY" />
+      <buffer name="berry yogurt" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="process YOG-BRY" />
+      <buffer name="berry yogurt" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process YOG-BRY" />
+      <buffer name="raw milk" />
+      <quantity>-2</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process YOG-BRY" />
+      <buffer name="sugar" />
+      <quantity>-0.5</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process YOG-BRY" />
+      <buffer name="cups" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process YOG-BRY" />
+      <buffer name="berry culture" />
+      <quantity>-0.25</quantity>
+      
+      <name>ingredient YOG-BRY</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process YOG-BRY" />
+      <buffer name="generic fruit base" />
+      <quantity>-0.25</quantity>
+      
+      <name>ingredient YOG-BRY</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="dispatch DRINK-MNG" />
+      <buffer name="mango drink" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="process DRINK-MNG" />
+      <buffer name="mango drink" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process DRINK-MNG" />
+      <buffer name="raw milk" />
+      <quantity>-2</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process DRINK-MNG" />
+      <buffer name="sugar" />
+      <quantity>-0.5</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process DRINK-MNG" />
+      <buffer name="cups" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process DRINK-MNG" />
+      <buffer name="mango concentrate" />
+      <quantity>-0.25</quantity>
+      
+      <name>ingredient DRINK-MNG</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process DRINK-MNG" />
+      <buffer name="generic fruit base" />
+      <quantity>-0.25</quantity>
+      
+      <name>ingredient DRINK-MNG</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="dispatch DRINK-PEA" />
+      <buffer name="peach drink" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="process DRINK-PEA" />
+      <buffer name="peach drink" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process DRINK-PEA" />
+      <buffer name="raw milk" />
+      <quantity>-2</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process DRINK-PEA" />
+      <buffer name="sugar" />
+      <quantity>-0.5</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process DRINK-PEA" />
+      <buffer name="cups" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process DRINK-PEA" />
+      <buffer name="peach concentrate" />
+      <quantity>-0.25</quantity>
+      
+      <name>ingredient DRINK-PEA</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="process DRINK-PEA" />
+      <buffer name="generic fruit base" />
+      <quantity>-0.25</quantity>
+      
+      <name>ingredient DRINK-PEA</name>
+      <priority>2</priority>
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="fresh order 001 YOG-NAT">
+      <quantity>1</quantity><due>2026-01-11T02:00:00</due><priority>1</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 002 YOG-BRY">
+      <quantity>2</quantity><due>2026-01-11T06:00:00</due><priority>2</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 003 DRINK-MNG">
+      <quantity>3</quantity><due>2026-01-11T10:00:00</due><priority>3</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 004 DRINK-PEA">
+      <quantity>4</quantity><due>2026-01-11T14:00:00</due><priority>4</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 005 YOG-NAT">
+      <quantity>2</quantity><due>2026-01-11T18:00:00</due><priority>5</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 006 YOG-BRY">
+      <quantity>5</quantity><due>2026-01-11T22:00:00</due><priority>6</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 007 DRINK-MNG">
+      <quantity>1</quantity><due>2026-01-12T02:00:00</due><priority>7</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 008 DRINK-PEA">
+      <quantity>2</quantity><due>2026-01-12T06:00:00</due><priority>8</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 009 YOG-NAT">
+      <quantity>3</quantity><due>2026-01-12T10:00:00</due><priority>9</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 010 YOG-BRY">
+      <quantity>4</quantity><due>2026-01-12T14:00:00</due><priority>10</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 011 DRINK-MNG">
+      <quantity>2</quantity><due>2026-01-12T18:00:00</due><priority>11</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 012 DRINK-PEA">
+      <quantity>5</quantity><due>2026-01-12T22:00:00</due><priority>12</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 013 YOG-NAT">
+      <quantity>1</quantity><due>2026-01-13T02:00:00</due><priority>13</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 014 YOG-BRY">
+      <quantity>2</quantity><due>2026-01-13T06:00:00</due><priority>14</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 015 DRINK-MNG">
+      <quantity>3</quantity><due>2026-01-13T10:00:00</due><priority>15</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 016 DRINK-PEA">
+      <quantity>4</quantity><due>2026-01-13T14:00:00</due><priority>16</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 017 YOG-NAT">
+      <quantity>2</quantity><due>2026-01-13T18:00:00</due><priority>17</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 018 YOG-BRY">
+      <quantity>5</quantity><due>2026-01-13T22:00:00</due><priority>18</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 019 DRINK-MNG">
+      <quantity>1</quantity><due>2026-01-14T02:00:00</due><priority>1</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 020 DRINK-PEA">
+      <quantity>2</quantity><due>2026-01-14T06:00:00</due><priority>2</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 021 YOG-NAT">
+      <quantity>3</quantity><due>2026-01-14T10:00:00</due><priority>3</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 022 YOG-BRY">
+      <quantity>4</quantity><due>2026-01-14T14:00:00</due><priority>4</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 023 DRINK-MNG">
+      <quantity>2</quantity><due>2026-01-14T18:00:00</due><priority>5</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 024 DRINK-PEA">
+      <quantity>5</quantity><due>2026-01-14T22:00:00</due><priority>6</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 025 YOG-NAT">
+      <quantity>1</quantity><due>2026-01-15T02:00:00</due><priority>7</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 026 YOG-BRY">
+      <quantity>2</quantity><due>2026-01-15T06:00:00</due><priority>8</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 027 DRINK-MNG">
+      <quantity>3</quantity><due>2026-01-15T10:00:00</due><priority>9</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 028 DRINK-PEA">
+      <quantity>4</quantity><due>2026-01-15T14:00:00</due><priority>10</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 029 YOG-NAT">
+      <quantity>2</quantity><due>2026-01-15T18:00:00</due><priority>11</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 030 YOG-BRY">
+      <quantity>5</quantity><due>2026-01-15T22:00:00</due><priority>12</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 031 DRINK-MNG">
+      <quantity>1</quantity><due>2026-01-16T02:00:00</due><priority>13</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 032 DRINK-PEA">
+      <quantity>2</quantity><due>2026-01-16T06:00:00</due><priority>14</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 033 YOG-NAT">
+      <quantity>3</quantity><due>2026-01-16T10:00:00</due><priority>15</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 034 YOG-BRY">
+      <quantity>4</quantity><due>2026-01-16T14:00:00</due><priority>16</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 035 DRINK-MNG">
+      <quantity>2</quantity><due>2026-01-16T18:00:00</due><priority>17</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 036 DRINK-PEA">
+      <quantity>5</quantity><due>2026-01-16T22:00:00</due><priority>18</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 037 YOG-NAT">
+      <quantity>1</quantity><due>2026-01-17T02:00:00</due><priority>1</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 038 YOG-BRY">
+      <quantity>2</quantity><due>2026-01-17T06:00:00</due><priority>2</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 039 DRINK-MNG">
+      <quantity>3</quantity><due>2026-01-17T10:00:00</due><priority>3</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 040 DRINK-PEA">
+      <quantity>4</quantity><due>2026-01-17T14:00:00</due><priority>4</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 041 YOG-NAT">
+      <quantity>2</quantity><due>2026-01-17T18:00:00</due><priority>5</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 042 YOG-BRY">
+      <quantity>5</quantity><due>2026-01-17T22:00:00</due><priority>6</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 043 DRINK-MNG">
+      <quantity>1</quantity><due>2026-01-18T02:00:00</due><priority>7</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 044 DRINK-PEA">
+      <quantity>2</quantity><due>2026-01-18T06:00:00</due><priority>8</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 045 YOG-NAT">
+      <quantity>3</quantity><due>2026-01-18T10:00:00</due><priority>9</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 046 YOG-BRY">
+      <quantity>4</quantity><due>2026-01-18T14:00:00</due><priority>10</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 047 DRINK-MNG">
+      <quantity>2</quantity><due>2026-01-18T18:00:00</due><priority>11</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 048 DRINK-PEA">
+      <quantity>5</quantity><due>2026-01-18T22:00:00</due><priority>12</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 049 YOG-NAT">
+      <quantity>1</quantity><due>2026-01-19T02:00:00</due><priority>13</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 050 YOG-BRY">
+      <quantity>2</quantity><due>2026-01-19T06:00:00</due><priority>14</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 051 DRINK-MNG">
+      <quantity>3</quantity><due>2026-01-19T10:00:00</due><priority>15</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 052 DRINK-PEA">
+      <quantity>4</quantity><due>2026-01-19T14:00:00</due><priority>16</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 053 YOG-NAT">
+      <quantity>2</quantity><due>2026-01-19T18:00:00</due><priority>17</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 054 YOG-BRY">
+      <quantity>5</quantity><due>2026-01-19T22:00:00</due><priority>18</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 055 DRINK-MNG">
+      <quantity>1</quantity><due>2026-01-20T02:00:00</due><priority>1</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 056 DRINK-PEA">
+      <quantity>2</quantity><due>2026-01-20T06:00:00</due><priority>2</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 057 YOG-NAT">
+      <quantity>3</quantity><due>2026-01-20T10:00:00</due><priority>3</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 058 YOG-BRY">
+      <quantity>4</quantity><due>2026-01-20T14:00:00</due><priority>4</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 059 DRINK-MNG">
+      <quantity>2</quantity><due>2026-01-20T18:00:00</due><priority>5</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 060 DRINK-PEA">
+      <quantity>5</quantity><due>2026-01-20T22:00:00</due><priority>6</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 061 YOG-NAT">
+      <quantity>1</quantity><due>2026-01-21T02:00:00</due><priority>7</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 062 YOG-BRY">
+      <quantity>2</quantity><due>2026-01-21T06:00:00</due><priority>8</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 063 DRINK-MNG">
+      <quantity>3</quantity><due>2026-01-21T10:00:00</due><priority>9</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 064 DRINK-PEA">
+      <quantity>4</quantity><due>2026-01-21T14:00:00</due><priority>10</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 065 YOG-NAT">
+      <quantity>2</quantity><due>2026-01-21T18:00:00</due><priority>11</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 066 YOG-BRY">
+      <quantity>5</quantity><due>2026-01-21T22:00:00</due><priority>12</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 067 DRINK-MNG">
+      <quantity>1</quantity><due>2026-01-22T02:00:00</due><priority>13</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 068 DRINK-PEA">
+      <quantity>2</quantity><due>2026-01-22T06:00:00</due><priority>14</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 069 YOG-NAT">
+      <quantity>3</quantity><due>2026-01-22T10:00:00</due><priority>15</priority>
+      <item name="natural yogurt" /><operation name="dispatch YOG-NAT" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 070 YOG-BRY">
+      <quantity>4</quantity><due>2026-01-22T14:00:00</due><priority>16</priority>
+      <item name="berry yogurt" /><operation name="dispatch YOG-BRY" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 071 DRINK-MNG">
+      <quantity>2</quantity><due>2026-01-22T18:00:00</due><priority>17</priority>
+      <item name="mango drink" /><operation name="dispatch DRINK-MNG" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="fresh order 072 DRINK-PEA">
+      <quantity>5</quantity><due>2026-01-22T22:00:00</due><priority>18</priority>
+      <item name="peach drink" /><operation name="dispatch DRINK-PEA" />
+      
+      
+      
+      
+      
+    </demand>
+  </demands>
+  <operationplans>
+  </operationplans>
+<?python
+import datetime, frepple, json
+frepple.solver_mrp(**{"plantype":2,"constraints":15,"loglevel":0,"lazydelay":10800,"erasePreviousFirst":True,"minimumdelay":900,"rotateresources":True}).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+def metric(value):
+    value = round(float(value), 9)
+    return 0.0 if abs(value) < 0.000000001 else value
+def number_key(value):
+    return ("%.9f" % metric(value)).rstrip("0").rstrip(".") or "0"
+explicit_references = set([])
+dependency_quantities = {}
+plan_rows = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity)})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    productive_seconds = max(0.0, (operationplan.end - operationplan.start).total_seconds() - operationplan.unavailable)
+    operation_cost = metric(operationplan.operation.cost * operationplan.quantity)
+    resource_cost = metric(operationplan.quantity * sum(resource.cost for resource in all_resources if resource.name in resources) * productive_seconds / 3600.0)
+    setup_cost = metric(getattr(getattr(operationplan, "rule", None), "cost", 0))
+    plan_rows.append((operationplan, {
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": metric(operationplan.quantity),
+        "quantityCompleted": metric(getattr(operationplan, "quantity_completed", 0)),
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "batch": getattr(operationplan, "batch", "") or "",
+        "orderType": getattr(operationplan, "ordertype", "") or "",
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "setupSeconds": operationplan.setup,
+        "setupEnd": stamp(operationplan.setupend),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+        "operationCost": operation_cost,
+        "resourceCost": resource_cost,
+        "setupCost": setup_cost,
+        "totalCost": metric(operation_cost + resource_cost),
+        "setupPenalty": setup_cost,
+    }))
+plan_rows.sort(key=lambda pair: (pair[1]["operation"], pair[1]["start"], pair[1]["end"], pair[1]["demand"] or "", pair[1]["quantity"], pair[1]["batch"], pair[1]["orderType"]))
+plan_keys = {}
+key_counts = {}
+plans = []
+for operationplan, row in plan_rows:
+    reference = str(getattr(operationplan, "reference", "") or "")
+    seed = "|".join((row["operation"], row["start"], row["end"], row["demand"] or "", number_key(row["quantity"]), row["batch"], row["orderType"], row["ownerOperation"] or ""))
+    key_counts[seed] = key_counts.get(seed, 0) + 1
+    plan_key = "ref:" + reference if reference in explicit_references else "auto:" + seed + "#" + str(key_counts[seed])
+    plan_keys[id(operationplan)] = plan_key
+    row["planKey"] = plan_key
+    row["reference"] = reference if reference in explicit_references else plan_key
+    plans.append(row)
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": metric(operationplan.quantity), "end": stamp(operationplan.end), "batch": getattr(operationplan, "batch", "") or "", "orderType": getattr(operationplan, "ordertype", "") or "", "operationPlanKey": plan_keys.get(id(operationplan))})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"], value["batch"], value["orderType"]))
+dependencies = []
+seen_dependencies = set()
+for operationplan in frepple.operationplans():
+    for dependency in getattr(operationplan, "blockedby", []):
+        if id(dependency) in seen_dependencies: continue
+        seen_dependencies.add(id(dependency))
+        first = dependency.first
+        second = dependency.second
+        ratio = dependency_quantities.get(second.operation.name + "\u0000" + first.operation.name, 1)
+        dependencies.append({"first": plan_keys.get(id(first)), "second": plan_keys.get(id(second)), "quantity": metric(min(first.quantity, second.quantity * ratio)), "operation": second.operation.name, "blockedBy": first.operation.name})
+dependencies.sort(key=lambda value: (value["second"] or "", value["first"] or "", value["operation"], value["blockedBy"], value["quantity"]))
+problems = []
+for problem in frepple.problems():
+    owner = getattr(problem, "owner", None)
+    owner_key = plan_keys.get(id(owner)) if owner is not None else None
+    problems.append({"name": problem.name, "description": problem.description, "start": stamp(problem.start), "end": stamp(problem.end), "entity": problem.entity, "owner": owner_key or name(owner), "feasible": bool(problem.feasible)})
+problems.sort(key=lambda value: (value["owner"] or "", value["name"], value["start"], value["end"], value["description"]))
+inventory_profiles = []
+for buffer in all_buffers:
+    for flowplan in buffer.flowplans:
+        operationplan = getattr(flowplan, "operationplan", None)
+        inventory_profiles.append({"buffer": buffer.name, "bufferBatch": getattr(buffer, "batch", "") or "", "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity), "onhand": metric(flowplan.onhand), "operationPlanKey": plan_keys.get(id(operationplan)) if operationplan is not None else None, "orderType": getattr(operationplan, "ordertype", "") if operationplan is not None else None})
+inventory_profiles.sort(key=lambda value: (value["buffer"], value["bufferBatch"], value["date"], value["quantity"], value["operationPlanKey"] or "", value["onhand"]))
+boundaries = sorted(set([frepple.settings.current] + [value for operationplan, row in plan_rows for value in (operationplan.start, operationplan.end)]))
+if len(boundaries) < 2: boundaries.append(boundaries[0] + datetime.timedelta(days=1))
+resource_plans = []
+for resource in all_resources:
+    for bucket in resource.plan(boundaries):
+        values = [metric(bucket[field]) for field in ("available", "load", "unavailable", "setup", "free", "load_confirmed")]
+        if not any(values): continue
+        available, load, unavailable, setup, free, load_confirmed = values
+        resource_plans.append({"resource": resource.name, "start": stamp(bucket["start"]), "end": stamp(bucket["end"]), "available": available, "load": load, "unavailable": unavailable, "setup": setup, "free": free, "loadConfirmed": load_confirmed, "utilization": metric((load + setup) / available) if available else metric(load + setup)})
+resource_plans.sort(key=lambda value: (value["resource"], value["start"], value["end"]))
+cost_summary = {"operationCost": metric(sum(value["operationCost"] for value in plans)), "resourceCost": metric(sum(value["resourceCost"] for value in plans)), "setupCost": metric(sum(value["setupCost"] for value in plans)), "totalCost": metric(sum(value["totalCost"] for value in plans)), "setupPenalty": metric(sum(value["setupPenalty"] for value in plans))}
+with open("/workspace/cpp-typescript/.schedule-diff/food_fresh_batches.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries, "dependencies": dependencies, "problems": problems, "inventoryProfiles": inventory_profiles, "resourcePlans": resource_plans, "costSummary": cost_summary}, output, indent=2, sort_keys=True)
+?>
+</plan>

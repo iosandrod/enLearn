@@ -1,0 +1,1395 @@
+[
+  {
+    "scenario": "automotive_mixed_model",
+    "industry": "汽车整车制造",
+    "description": "Forty-eight mixed-model vehicle orders use routings, alternate body lines, paint and body setups, skill pools and finite components",
+    "coverage": [
+      "多车型混线",
+      "三段 routing",
+      "备用焊装线",
+      "颜色/车型换型",
+      "技能资源池",
+      "有限零部件",
+      "批量上下限"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 43200,
+      "constraints": 15,
+      "minimumDelay": 3600,
+      "rotateResources": true
+    },
+    "input": {
+      "demands": 48,
+      "items": 7,
+      "buffers": 7,
+      "operations": 20,
+      "resources": 7,
+      "loads": 16,
+      "flows": 20,
+      "skills": 1,
+      "setupMatrices": 2
+    },
+    "identical": true,
+    "nativeOperationPlans": 168,
+    "typescriptOperationPlans": 168,
+    "nativeDeliveries": 33,
+    "typescriptDeliveries": 33,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "electronics_high_mix",
+    "industry": "电子装配",
+    "description": "Sixty high-mix electronics orders exercise alternate processes, alternate SMT lines, scarce premium chips, skills, setup families and lot sizing",
+    "coverage": [
+      "高混低量",
+      "备用工艺",
+      "备用 SMT 线",
+      "稀缺芯片",
+      "检测技能",
+      "炉温换型",
+      "整数批量"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 21600,
+      "constraints": 15,
+      "minimumDelay": 1800,
+      "rotateResources": false
+    },
+    "input": {
+      "demands": 60,
+      "items": 8,
+      "buffers": 8,
+      "operations": 16,
+      "resources": 8,
+      "loads": 20,
+      "flows": 28,
+      "skills": 1,
+      "setupMatrices": 1
+    },
+    "identical": true,
+    "nativeOperationPlans": 186,
+    "typescriptOperationPlans": 186,
+    "nativeDeliveries": 60,
+    "typescriptDeliveries": 60,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "pharma_batch_release",
+    "industry": "制药批生产",
+    "description": "Thirty-six medicine demands combine batch-size rules, three-stage routings, sanitation and product setups, finite actives and qualified QA release",
+    "coverage": [
+      "批生产",
+      "最小/倍增/最大批量",
+      "三段工艺",
+      "清场换型",
+      "有限 API",
+      "QA 资质",
+      "备用成型线"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 172800,
+      "constraints": 15,
+      "minimumDelay": 14400,
+      "administrativeLeadTime": 86400
+    },
+    "input": {
+      "demands": 36,
+      "items": 8,
+      "buffers": 8,
+      "operations": 15,
+      "resources": 7,
+      "loads": 12,
+      "flows": 15,
+      "skills": 1,
+      "setupMatrices": 2
+    },
+    "identical": true,
+    "nativeOperationPlans": 185,
+    "typescriptOperationPlans": 185,
+    "nativeDeliveries": 36,
+    "typescriptDeliveries": 36,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "food_fresh_batches",
+    "industry": "食品饮料",
+    "description": "Seventy-two fresh-food orders share processing tanks and fillers, use recipe cleanovers, finite ingredients and alternate recipes under an unconstrained plan parameter",
+    "coverage": [
+      "短交期高频需求",
+      "共享罐体和灌装",
+      "配方清洗",
+      "有限原料",
+      "替代配方",
+      "备用罐体",
+      "plantype=2"
+    ],
+    "solver": {
+      "plantype": 2,
+      "lazyDelay": 10800,
+      "constraints": 15,
+      "minimumDelay": 900,
+      "rotateResources": true
+    },
+    "input": {
+      "demands": 72,
+      "items": 12,
+      "buffers": 12,
+      "operations": 8,
+      "resources": 3,
+      "loads": 12,
+      "flows": 28,
+      "skills": 0,
+      "setupMatrices": 1
+    },
+    "identical": true,
+    "nativeOperationPlans": 152,
+    "typescriptOperationPlans": 152,
+    "nativeDeliveries": 72,
+    "typescriptDeliveries": 72,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "aerospace_mro",
+    "industry": "航空维修 MRO",
+    "description": "Thirty MRO jobs use serial routings, unit lot sizes, certification-specific resource pools, alternate bays, bay setups and substitute repair kits",
+    "coverage": [
+      "单件维修",
+      "诊断-维修-放行 routing",
+      "多资质技师",
+      "备用工位",
+      "工位换型",
+      "专用/通用备件替代",
+      "低产能长周期"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 86400,
+      "constraints": 13,
+      "minimumDelay": 7200,
+      "rotateResources": false
+    },
+    "input": {
+      "demands": 30,
+      "items": 7,
+      "buffers": 7,
+      "operations": 15,
+      "resources": 10,
+      "loads": 12,
+      "flows": 12,
+      "skills": 3,
+      "setupMatrices": 1
+    },
+    "identical": true,
+    "nativeOperationPlans": 154,
+    "typescriptOperationPlans": 154,
+    "nativeDeliveries": 30,
+    "typescriptDeliveries": 30,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "packaging_campaigns",
+    "industry": "快消包装",
+    "description": "Eighty packaging orders combine campaign-like format setups, alternate converters, substitute substrates, shared printing and even-number lot sizing with capacity constraints disabled",
+    "coverage": [
+      "大需求量",
+      "规格换型",
+      "备用设备",
+      "替代基材",
+      "共享印刷",
+      "偶数批量",
+      "constraints=11"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 14400,
+      "constraints": 11,
+      "minimumDelay": 1800,
+      "rotateResources": true
+    },
+    "input": {
+      "demands": 80,
+      "items": 10,
+      "buffers": 10,
+      "operations": 8,
+      "resources": 3,
+      "loads": 12,
+      "flows": 20,
+      "skills": 0,
+      "setupMatrices": 1
+    },
+    "identical": true,
+    "nativeOperationPlans": 167,
+    "typescriptOperationPlans": 167,
+    "nativeDeliveries": 80,
+    "typescriptDeliveries": 80,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "boundary_peak_load",
+    "industry": "跨行业高峰负载边界",
+    "description": "One hundred eighty orders concentrate in six due-date windows and saturate alternate lines, setup families and finite substitute materials",
+    "coverage": [
+      "180 条需求",
+      "同窗高峰",
+      "精确产能饱和",
+      "备用设备",
+      "替代物料",
+      "换型传播",
+      "高优先级跨度"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 1800,
+      "constraints": 15,
+      "iterationMax": 400,
+      "minimumDelay": 60,
+      "rotateResources": true,
+      "resourceIterationMax": 800
+    },
+    "input": {
+      "demands": 180,
+      "items": 8,
+      "buffers": 8,
+      "operations": 12,
+      "resources": 2,
+      "loads": 12,
+      "flows": 24,
+      "skills": 0,
+      "setupMatrices": 1
+    },
+    "identical": true,
+    "nativeOperationPlans": 351,
+    "typescriptOperationPlans": 351,
+    "nativeDeliveries": 174,
+    "typescriptDeliveries": 174,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "boundary_lot_split",
+    "industry": "批量与拆单临界边界",
+    "description": "Demand quantities cross rounding error, minimum and maximum lot sizes while explicit minimum shipments force accepted and rejected split deliveries",
+    "coverage": [
+      "零需求",
+      "舍入误差上下界",
+      "最小批量",
+      "最大批量",
+      "多次拆单",
+      "最小发运等于/大于单批上限",
+      "小数数量"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 3600,
+      "constraints": 15,
+      "iterationMax": 64,
+      "minimumDelay": 1,
+      "rotateResources": false,
+      "resourceIterationMax": 64
+    },
+    "input": {
+      "demands": 10,
+      "items": 1,
+      "buffers": 1,
+      "operations": 2,
+      "resources": 0,
+      "loads": 0,
+      "flows": 1,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 11,
+    "typescriptOperationPlans": 11,
+    "nativeDeliveries": 10,
+    "typescriptDeliveries": 10,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "boundary_time_capacity",
+    "industry": "时间与产能临界边界",
+    "description": "Zero-second, one-second, exact-current and near-infinite-future dates share a half-unit load on a unit-capacity resource",
+    "coverage": [
+      "零工时",
+      "一秒工时",
+      "当前时刻",
+      "产能精确等于上限",
+      "零最大延期",
+      "2030 日期上限",
+      "超长工艺"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 1,
+      "constraints": 15,
+      "iterationMax": 32,
+      "minimumDelay": 0,
+      "rotateResources": false,
+      "resourceIterationMax": 256,
+      "administrativeLeadTime": 0
+    },
+    "input": {
+      "demands": 12,
+      "items": 4,
+      "buffers": 4,
+      "operations": 8,
+      "resources": 1,
+      "loads": 4,
+      "flows": 8,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 20,
+    "typescriptOperationPlans": 20,
+    "nativeDeliveries": 10,
+    "typescriptDeliveries": 10,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "boundary_unconstrained",
+    "industry": "无约束极值边界",
+    "description": "A constraints-zero run must plan through zero material and zero capacity, including a large quantity and closed or canceled demands",
+    "coverage": [
+      "constraints=0",
+      "零库存",
+      "零产能",
+      "大数量",
+      "closed/canceled 过滤",
+      "quote 排序",
+      "无约束单扫"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 1,
+      "constraints": 0,
+      "iterationMax": 8,
+      "minimumDelay": 0,
+      "rotateResources": true,
+      "resourceIterationMax": 1
+    },
+    "input": {
+      "demands": 5,
+      "items": 4,
+      "buffers": 4,
+      "operations": 6,
+      "resources": 1,
+      "loads": 3,
+      "flows": 9,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 6,
+    "typescriptOperationPlans": 6,
+    "nativeDeliveries": 3,
+    "typescriptDeliveries": 3,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "boundary_solver_modes",
+    "industry": "求解参数模式边界",
+    "description": "Heuristic two, plan type three and tight iteration controls are combined with exact capacity and material availability",
+    "coverage": [
+      "algorithm=heuristic_2",
+      "plantype=3",
+      "iterationMax",
+      "resourceIterationMax",
+      "迭代精度边界",
+      "精确物料",
+      "精确产能"
+    ],
+    "solver": {
+      "plantype": 3,
+      "algorithm": "heuristic_2",
+      "lazyDelay": 60,
+      "constraints": 15,
+      "iterationMax": 16,
+      "minimumDelay": 0,
+      "rotateResources": true,
+      "iterationAccuracy": 100,
+      "iterationThreshold": 0,
+      "resourceIterationMax": 16
+    },
+    "input": {
+      "demands": 12,
+      "items": 2,
+      "buffers": 2,
+      "operations": 2,
+      "resources": 1,
+      "loads": 1,
+      "flows": 3,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 25,
+    "typescriptOperationPlans": 25,
+    "nativeDeliveries": 12,
+    "typescriptDeliveries": 12,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "operation_split_ratio",
+    "industry": "流程工业分流",
+    "description": "A split operation distributes finished quantity over effective child operations in a 30/70 ratio",
+    "coverage": [
+      "operation_split",
+      "比例分流",
+      "子操作产出系数",
+      "子操作生效期"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 86400,
+      "constraints": 15
+    },
+    "input": {
+      "demands": 1,
+      "items": 1,
+      "buffers": 1,
+      "operations": 5,
+      "resources": 0,
+      "loads": 0,
+      "flows": 4,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 4,
+    "typescriptOperationPlans": 4,
+    "nativeDeliveries": 1,
+    "typescriptDeliveries": 1,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "dependency_hard_soft_leadtime",
+    "industry": "项目制造",
+    "description": "A successor operation recursively creates its predecessor with soft and hard safety lead times",
+    "coverage": [
+      "operation_dependency",
+      "soft leadtime",
+      "hard leadtime",
+      "递归前置工序"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 86400,
+      "constraints": 15
+    },
+    "input": {
+      "demands": 1,
+      "items": 1,
+      "buffers": 1,
+      "operations": 3,
+      "resources": 0,
+      "loads": 0,
+      "flows": 2,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 3,
+    "typescriptOperationPlans": 3,
+    "nativeDeliveries": 1,
+    "typescriptDeliveries": 1,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "demand_group_alltogether",
+    "industry": "成套交付",
+    "description": "Two order lines must be delivered together; one constrained long-lead component forces rollback and synchronized replanning",
+    "coverage": [
+      "demand_group",
+      "alltogether",
+      "整组回滚",
+      "统一延期",
+      "完整数量"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 86400,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 2,
+      "items": 2,
+      "buffers": 2,
+      "operations": 3,
+      "resources": 0,
+      "loads": 0,
+      "flows": 3,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 4,
+    "typescriptOperationPlans": 4,
+    "nativeDeliveries": 2,
+    "typescriptDeliveries": 2,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "demand_group_inratio",
+    "industry": "配套比例订单",
+    "description": "Three group lines follow the native in-ratio policy, sharing the earliest group date and stopping after one member pass",
+    "coverage": [
+      "demand_group",
+      "inratio",
+      "组最早日期",
+      "单轮求解",
+      "不同成员数量"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 86400,
+      "constraints": 15
+    },
+    "input": {
+      "demands": 3,
+      "items": 3,
+      "buffers": 3,
+      "operations": 3,
+      "resources": 0,
+      "loads": 0,
+      "flows": 3,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 6,
+    "typescriptOperationPlans": 6,
+    "nativeDeliveries": 3,
+    "typescriptDeliveries": 3,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "purchase_supplier_effectivity",
+    "industry": "多供应商采购",
+    "description": "Two supplier lanes with non-overlapping effectivity windows automatically create purchase replenishments",
+    "coverage": [
+      "自动采购操作",
+      "供应商生效期",
+      "采购提前期",
+      "最小/倍增采购量",
+      "采购硬安全提前期"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 21600,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 2,
+      "items": 1,
+      "buffers": 1,
+      "operations": 1,
+      "resources": 0,
+      "loads": 0,
+      "flows": 1,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 6,
+    "typescriptOperationPlans": 6,
+    "nativeDeliveries": 2,
+    "typescriptDeliveries": 2,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "purchase_resource_capacity",
+    "industry": "受限采购收货",
+    "description": "Automatically generated purchase operations load a finite receiving resource and serialize inbound orders",
+    "coverage": [
+      "采购自动 flow/load",
+      "采购资源数量",
+      "收货产能约束",
+      "采购拆批",
+      "多需求优先级"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 10800,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 5,
+      "items": 1,
+      "buffers": 1,
+      "operations": 1,
+      "resources": 1,
+      "loads": 0,
+      "flows": 1,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 10,
+    "typescriptOperationPlans": 10,
+    "nativeDeliveries": 5,
+    "typescriptDeliveries": 5,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "distribution_multilocation",
+    "industry": "多级配送网络",
+    "description": "Automatic distribution operations replenish two local sites through a regional hub from central inventory",
+    "coverage": [
+      "自动配送操作",
+      "多地点库存",
+      "两级配送",
+      "配送提前期",
+      "共享上游库存",
+      "配送订单类型"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 21600,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 3,
+      "items": 1,
+      "buffers": 4,
+      "operations": 2,
+      "resources": 0,
+      "loads": 0,
+      "flows": 2,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 11,
+    "typescriptOperationPlans": 11,
+    "nativeDeliveries": 3,
+    "typescriptDeliveries": 3,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "calendar_shift_shutdown",
+    "industry": "离散制造班次",
+    "description": "Operation, location and resource calendars combine weekday shifts, a lunch interruption and a plant shutdown",
+    "coverage": [
+      "工作日班次",
+      "午休",
+      "工厂停产",
+      "工序日历",
+      "地点日历",
+      "资源日历"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 14400,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 3,
+      "items": 1,
+      "buffers": 1,
+      "operations": 2,
+      "resources": 1,
+      "loads": 1,
+      "flows": 2,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 6,
+    "typescriptOperationPlans": 6,
+    "nativeDeliveries": 3,
+    "typescriptDeliveries": 3,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "calendar_dst_overlap",
+    "industry": "跨时区连续生产",
+    "description": "Weekly working windows cross both US daylight-saving transitions and an overlapping high-priority outage",
+    "coverage": [
+      "DST 春季跳时",
+      "DST 秋季重叠",
+      "周历",
+      "优先级覆盖",
+      "跨日历工时"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 3600,
+      "constraints": 15,
+      "minimumDelay": 1800
+    },
+    "input": {
+      "demands": 2,
+      "items": 1,
+      "buffers": 1,
+      "operations": 2,
+      "resources": 0,
+      "loads": 0,
+      "flows": 2,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 4,
+    "typescriptOperationPlans": 4,
+    "nativeDeliveries": 2,
+    "typescriptDeliveries": 2,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "bucketized_capacity",
+    "industry": "按日配额生产",
+    "description": "A bucketized resource with varying daily quotas must split, move early and move late across zero-capacity buckets",
+    "coverage": [
+      "桶化资源",
+      "变动日配额",
+      "零产能桶",
+      "部分数量",
+      "提前桶",
+      "延期桶"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 7200,
+      "constraints": 15,
+      "minimumDelay": 3600,
+      "resourceIterationMax": 500
+    },
+    "input": {
+      "demands": 3,
+      "items": 1,
+      "buffers": 1,
+      "operations": 2,
+      "resources": 1,
+      "loads": 1,
+      "flows": 2,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 9,
+    "typescriptOperationPlans": 9,
+    "nativeDeliveries": 4,
+    "typescriptDeliveries": 4,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "bucketized_percentage_load",
+    "industry": "项目里程碑配额",
+    "description": "Time-per operations consume bucket quotas at percentage, from-start and from-end milestones",
+    "coverage": [
+      "operation_time_per",
+      "百分比负荷",
+      "从开始偏移",
+      "从结束偏移",
+      "桶内压缩",
+      "跨桶移动"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 7200,
+      "constraints": 15,
+      "minimumDelay": 3600,
+      "resourceIterationMax": 500
+    },
+    "input": {
+      "demands": 3,
+      "items": 3,
+      "buffers": 3,
+      "operations": 6,
+      "resources": 1,
+      "loads": 3,
+      "flows": 6,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 8,
+    "typescriptOperationPlans": 8,
+    "nativeDeliveries": 3,
+    "typescriptDeliveries": 3,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "transfer_batch_routing",
+    "industry": "连续流程制造",
+    "description": "Transfer batches become available throughout a long upstream operation and feed a routed downstream process",
+    "coverage": [
+      "transfer batch",
+      "分批产出",
+      "routing",
+      "在制品衔接",
+      "多批需求",
+      "部分批次"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 7200,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 3,
+      "items": 3,
+      "buffers": 3,
+      "operations": 5,
+      "resources": 2,
+      "loads": 2,
+      "flows": 5,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 16,
+    "typescriptOperationPlans": 16,
+    "nativeDeliveries": 3,
+    "typescriptDeliveries": 3,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "mto_batch_isolation",
+    "industry": "按订单定制制造",
+    "description": "MTO supply and inventory remain isolated by demand batch even when item, operation and location are shared",
+    "coverage": [
+      "ItemMTO",
+      "batch buffer",
+      "批次隔离",
+      "共享工艺",
+      "同日需求",
+      "跨批不可借料"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 10800,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 4,
+      "items": 2,
+      "buffers": 2,
+      "operations": 2,
+      "resources": 1,
+      "loads": 1,
+      "flows": 3,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 9,
+    "typescriptOperationPlans": 9,
+    "nativeDeliveries": 4,
+    "typescriptDeliveries": 4,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "alternate_mincost_penalty",
+    "industry": "外协与自制决策",
+    "description": "MINCOSTPENALTY evaluates a cheap constrained process against a costly fast process and replans the selected alternate",
+    "coverage": [
+      "OperationAlternate",
+      "MINCOSTPENALTY",
+      "成本评估",
+      "延期惩罚",
+      "有限产能",
+      "择优重排"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 14400,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 3,
+      "items": 2,
+      "buffers": 2,
+      "operations": 4,
+      "resources": 2,
+      "loads": 2,
+      "flows": 5,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 12,
+    "typescriptOperationPlans": 12,
+    "nativeDeliveries": 3,
+    "typescriptDeliveries": 3,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "timeper_lot_size",
+    "industry": "批量加工制造",
+    "description": "Time-per production combines fixed and variable duration with minimum, multiple, maximum and partial demand quantities",
+    "coverage": [
+      "OperationTimePer",
+      "固定+单位工时",
+      "最小批量",
+      "批量倍数",
+      "最大批量",
+      "超量库存"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 7200,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 4,
+      "items": 2,
+      "buffers": 2,
+      "operations": 2,
+      "resources": 1,
+      "loads": 1,
+      "flows": 3,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 11,
+    "typescriptOperationPlans": 11,
+    "nativeDeliveries": 4,
+    "typescriptDeliveries": 4,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "confirmed_approved_orders",
+    "industry": "离散制造在制订单",
+    "description": "Confirmed and approved manufacturing orders coexist with new demand and remain available as locked supply",
+    "coverage": [
+      "confirmed MO",
+      "approved MO",
+      "锁定供给",
+      "资源占用",
+      "补充计划",
+      "多需求优先级"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 7200,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 3,
+      "items": 2,
+      "buffers": 2,
+      "operations": 2,
+      "resources": 1,
+      "loads": 1,
+      "flows": 3,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 8,
+    "typescriptOperationPlans": 8,
+    "nativeDeliveries": 3,
+    "typescriptDeliveries": 3,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "partial_completed_order",
+    "industry": "流程制造在制进度",
+    "description": "Partially completed time-per orders consume and produce only their remaining quantity while new supply fills the gap",
+    "coverage": [
+      "quantity_completed",
+      "confirmed WIP",
+      "approved WIP",
+      "剩余数量",
+      "time-per",
+      "流量缩放"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 7200,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 3,
+      "items": 2,
+      "buffers": 2,
+      "operations": 2,
+      "resources": 1,
+      "loads": 1,
+      "flows": 3,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 8,
+    "typescriptOperationPlans": 8,
+    "nativeDeliveries": 3,
+    "typescriptDeliveries": 3,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "locked_setup",
+    "industry": "涂装换型生产",
+    "description": "A locked manufacturing order preserves its overridden setup duration while adjacent proposed orders follow setup-matrix rules",
+    "coverage": [
+      "setup override",
+      "confirmed setup",
+      "setup matrix",
+      "相邻换型",
+      "初始 setup",
+      "锁定日期"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 3600,
+      "constraints": 15,
+      "minimumDelay": 1800
+    },
+    "input": {
+      "demands": 3,
+      "items": 3,
+      "buffers": 3,
+      "operations": 4,
+      "resources": 1,
+      "loads": 2,
+      "flows": 6,
+      "skills": 0,
+      "setupMatrices": 1
+    },
+    "identical": true,
+    "nativeOperationPlans": 8,
+    "typescriptOperationPlans": 8,
+    "nativeDeliveries": 3,
+    "typescriptDeliveries": 3,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "operationplan_dependency",
+    "industry": "工程任务排产",
+    "description": "Static operation dependencies allocate concrete predecessor plans, including approved WIP, to newly planned successor orders",
+    "coverage": [
+      "OperationPlanDependency",
+      "approved predecessor",
+      "依赖数量",
+      "hard leadtime",
+      "具体计划匹配",
+      "补充前置任务"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 7200,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 2,
+      "items": 1,
+      "buffers": 1,
+      "operations": 3,
+      "resources": 2,
+      "loads": 2,
+      "flows": 2,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 7,
+    "typescriptOperationPlans": 7,
+    "nativeDeliveries": 2,
+    "typescriptDeliveries": 2,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "operationplan_creation_merge",
+    "industry": "离散制造计划合并",
+    "description": "Equal-date fixed-time supply plans consolidate during creation below, but not exactly at, the strict maximum lot size",
+    "coverage": [
+      "创建阶段合并",
+      "严格 sizeMaximum",
+      "全局合并开关独立",
+      "同日期供给",
+      "需求隔离"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 3600,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 3,
+      "items": 1,
+      "buffers": 1,
+      "operations": 2,
+      "resources": 0,
+      "loads": 0,
+      "flows": 2,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 5,
+    "typescriptOperationPlans": 5,
+    "nativeDeliveries": 3,
+    "typescriptDeliveries": 3,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "operationplan_merge_guards",
+    "industry": "离散制造合并保护",
+    "description": "Fixed-quantity material flows and default resources keep otherwise equal fixed-time supply plans separate",
+    "coverage": [
+      "fixed flow guard",
+      "default resource guard",
+      "同日期计划",
+      "合并保护",
+      "固定产出"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 3600,
+      "constraints": 15,
+      "minimumDelay": 3600
+    },
+    "input": {
+      "demands": 4,
+      "items": 2,
+      "buffers": 2,
+      "operations": 4,
+      "resources": 1,
+      "loads": 1,
+      "flows": 4,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 8,
+    "typescriptOperationPlans": 8,
+    "nativeDeliveries": 4,
+    "typescriptDeliveries": 4,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "buffer_minimum_excess",
+    "industry": "库存安全量清理",
+    "description": "New demand supply preserves the buffer minimum and removes a later proposed plan that has become fully redundant",
+    "coverage": [
+      "buffer minimum",
+      "isExcess",
+      "后续冗余计划",
+      "安全库存",
+      "proposed 清理"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 3600,
+      "constraints": 15,
+      "minimumDelay": 3600,
+      "erasePreviousFirst": false
+    },
+    "input": {
+      "demands": 1,
+      "items": 1,
+      "buffers": 1,
+      "operations": 2,
+      "resources": 0,
+      "loads": 0,
+      "flows": 2,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 3,
+    "typescriptOperationPlans": 3,
+    "nativeDeliveries": 1,
+    "typescriptDeliveries": 1,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "buffer_maximum_excess",
+    "industry": "库存上限清理",
+    "description": "The positive buffer maximum takes precedence in excess evaluation and removes later supply above the inventory ceiling",
+    "coverage": [
+      "buffer maximum",
+      "maximum 优先",
+      "isExcess",
+      "库存上限",
+      "后续计划清理"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 3600,
+      "constraints": 15,
+      "minimumDelay": 3600,
+      "erasePreviousFirst": false
+    },
+    "input": {
+      "demands": 1,
+      "items": 1,
+      "buffers": 1,
+      "operations": 2,
+      "resources": 0,
+      "loads": 0,
+      "flows": 2,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 3,
+    "typescriptOperationPlans": 3,
+    "nativeDeliveries": 1,
+    "typescriptDeliveries": 1,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "calendar_minmax_excess",
+    "industry": "动态库存边界",
+    "description": "Minimum calendar transitions preserve required later supply, while maximum calendar targets don't create demand and redundant later supply is removed",
+    "coverage": [
+      "minimum calendar",
+      "maximum calendar",
+      "时间线事件",
+      "动态安全库存",
+      "动态库存上限",
+      "差异化 excess 语义"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 3600,
+      "constraints": 15,
+      "minimumDelay": 3600,
+      "erasePreviousFirst": false
+    },
+    "input": {
+      "demands": 2,
+      "items": 2,
+      "buffers": 2,
+      "operations": 4,
+      "resources": 0,
+      "loads": 0,
+      "flows": 4,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 7,
+    "typescriptOperationPlans": 7,
+    "nativeDeliveries": 2,
+    "typescriptDeliveries": 2,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  },
+  {
+    "scenario": "command_scoped_excess",
+    "industry": "事务范围库存清理",
+    "description": "Command-scoped cleanup handles active solver commands first, and the final cluster-wide pass removes unrelated proposed supply above its inventory target",
+    "coverage": [
+      "CommandManager scope",
+      "active command",
+      "unrelated proposed plan",
+      "事务清理",
+      "cluster-wide cleanup"
+    ],
+    "solver": {
+      "plantype": 1,
+      "lazyDelay": 3600,
+      "constraints": 15,
+      "minimumDelay": 3600,
+      "erasePreviousFirst": false
+    },
+    "input": {
+      "demands": 1,
+      "items": 2,
+      "buffers": 2,
+      "operations": 3,
+      "resources": 0,
+      "loads": 0,
+      "flows": 3,
+      "skills": 0,
+      "setupMatrices": 0
+    },
+    "identical": true,
+    "nativeOperationPlans": 3,
+    "typescriptOperationPlans": 3,
+    "nativeDeliveries": 1,
+    "typescriptDeliveries": 1,
+    "differenceCount": 0,
+    "firstDifferences": [],
+    "databaseSchema": "codex_schedule_diff"
+  }
+]

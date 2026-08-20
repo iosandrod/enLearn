@@ -18,6 +18,8 @@ const repoRoot = process.cwd().toLowerCase().endsWith('api')
 const migrationPaths = [
   'supabase/migrations/20260813120000_dynamic_crud_incremental_details.sql',
   'supabase/migrations/20260813121000_sales_order_incremental_detail_save.sql',
+  'supabase/migrations/20260820103000_sales_order_ordered_qty_validation.sql',
+  'supabase/migrations/20260820110000_sales_order_ordered_qty_field_binding.sql',
 ].map((path) => resolve(repoRoot, path));
 
 function connectionString(value: string) {

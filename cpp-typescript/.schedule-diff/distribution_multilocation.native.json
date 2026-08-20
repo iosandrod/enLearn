@@ -1,0 +1,565 @@
+{
+  "costSummary": {
+    "operationCost": 105.5,
+    "resourceCost": 0.0,
+    "setupCost": 0.0,
+    "setupPenalty": 0.0,
+    "totalCost": 105.5
+  },
+  "deliveries": [
+    {
+      "batch": "",
+      "demand": "east network order 1",
+      "end": "2026-01-11T00:00:00",
+      "operationPlanKey": "auto:ship east demand|2026-01-10T23:00:00|2026-01-11T00:00:00|east network order 1|8||MO|#1",
+      "orderType": "MO",
+      "quantity": 8.0
+    },
+    {
+      "batch": "",
+      "demand": "east network order 2",
+      "end": "2026-01-14T00:00:00",
+      "operationPlanKey": "auto:ship east demand|2026-01-13T23:00:00|2026-01-14T00:00:00|east network order 2|7||MO|#1",
+      "orderType": "MO",
+      "quantity": 7.0
+    },
+    {
+      "batch": "",
+      "demand": "west network order 1",
+      "end": "2026-01-12T00:00:00",
+      "operationPlanKey": "auto:ship west demand|2026-01-11T23:00:00|2026-01-12T00:00:00|west network order 1|11||MO|#1",
+      "orderType": "MO",
+      "quantity": 11.0
+    }
+  ],
+  "dependencies": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "network product @ central warehouse",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "onhand": 40.0,
+      "operationPlanKey": "auto:Inventory network product @ central warehouse|1971-01-01T00:00:00|1971-01-01T00:00:00||40||STCK|#1",
+      "orderType": "STCK",
+      "quantity": 40.0
+    },
+    {
+      "buffer": "network product @ central warehouse",
+      "bufferBatch": "",
+      "date": "2026-01-07T23:00:00",
+      "onhand": 34.0,
+      "operationPlanKey": "auto:Ship network product from central warehouse to regional hub|2026-01-07T23:00:00|2026-01-09T23:00:00||6||DO|#1",
+      "orderType": "DO",
+      "quantity": -6.0
+    },
+    {
+      "buffer": "network product @ central warehouse",
+      "bufferBatch": "",
+      "date": "2026-01-08T11:00:00",
+      "onhand": 23.0,
+      "operationPlanKey": "auto:Ship network product from central warehouse to regional hub|2026-01-08T11:00:00|2026-01-10T11:00:00||11||DO|#1",
+      "orderType": "DO",
+      "quantity": -11.0
+    },
+    {
+      "buffer": "network product @ central warehouse",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 16.0,
+      "operationPlanKey": "auto:Ship network product from central warehouse to regional hub|2026-01-10T23:00:00|2026-01-12T23:00:00||7||DO|#1",
+      "orderType": "DO",
+      "quantity": -7.0
+    },
+    {
+      "buffer": "network product @ local east",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship east demand|2026-01-10T23:00:00|2026-01-11T00:00:00|east network order 1|8||MO|#1",
+      "orderType": "MO",
+      "quantity": -8.0
+    },
+    {
+      "buffer": "network product @ local east",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "onhand": 8.0,
+      "operationPlanKey": "auto:Ship network product from regional hub to local east|2026-01-09T23:00:00|2026-01-10T23:00:00||8||DO|#1",
+      "orderType": "DO",
+      "quantity": 8.0
+    },
+    {
+      "buffer": "network product @ local east",
+      "bufferBatch": "",
+      "date": "2026-01-13T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship east demand|2026-01-13T23:00:00|2026-01-14T00:00:00|east network order 2|7||MO|#1",
+      "orderType": "MO",
+      "quantity": -7.0
+    },
+    {
+      "buffer": "network product @ local east",
+      "bufferBatch": "",
+      "date": "2026-01-13T23:00:00",
+      "onhand": 7.0,
+      "operationPlanKey": "auto:Ship network product from regional hub to local east|2026-01-12T23:00:00|2026-01-13T23:00:00||7||DO|#1",
+      "orderType": "DO",
+      "quantity": 7.0
+    },
+    {
+      "buffer": "network product @ local west",
+      "bufferBatch": "",
+      "date": "2026-01-11T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship west demand|2026-01-11T23:00:00|2026-01-12T00:00:00|west network order 1|11||MO|#1",
+      "orderType": "MO",
+      "quantity": -11.0
+    },
+    {
+      "buffer": "network product @ local west",
+      "bufferBatch": "",
+      "date": "2026-01-11T23:00:00",
+      "onhand": 11.0,
+      "operationPlanKey": "auto:Ship network product from regional hub to local west|2026-01-10T11:00:00|2026-01-11T23:00:00||11||DO|#1",
+      "orderType": "DO",
+      "quantity": 11.0
+    },
+    {
+      "buffer": "network product @ regional hub",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "onhand": 2.0,
+      "operationPlanKey": "auto:Inventory network product @ regional hub|1971-01-01T00:00:00|1971-01-01T00:00:00||2||STCK|#1",
+      "orderType": "STCK",
+      "quantity": 2.0
+    },
+    {
+      "buffer": "network product @ regional hub",
+      "bufferBatch": "",
+      "date": "2026-01-09T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:Ship network product from regional hub to local east|2026-01-09T23:00:00|2026-01-10T23:00:00||8||DO|#1",
+      "orderType": "DO",
+      "quantity": -8.0
+    },
+    {
+      "buffer": "network product @ regional hub",
+      "bufferBatch": "",
+      "date": "2026-01-09T23:00:00",
+      "onhand": 8.0,
+      "operationPlanKey": "auto:Ship network product from central warehouse to regional hub|2026-01-07T23:00:00|2026-01-09T23:00:00||6||DO|#1",
+      "orderType": "DO",
+      "quantity": 6.0
+    },
+    {
+      "buffer": "network product @ regional hub",
+      "bufferBatch": "",
+      "date": "2026-01-10T11:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:Ship network product from regional hub to local west|2026-01-10T11:00:00|2026-01-11T23:00:00||11||DO|#1",
+      "orderType": "DO",
+      "quantity": -11.0
+    },
+    {
+      "buffer": "network product @ regional hub",
+      "bufferBatch": "",
+      "date": "2026-01-10T11:00:00",
+      "onhand": 11.0,
+      "operationPlanKey": "auto:Ship network product from central warehouse to regional hub|2026-01-08T11:00:00|2026-01-10T11:00:00||11||DO|#1",
+      "orderType": "DO",
+      "quantity": 11.0
+    },
+    {
+      "buffer": "network product @ regional hub",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:Ship network product from regional hub to local east|2026-01-12T23:00:00|2026-01-13T23:00:00||7||DO|#1",
+      "orderType": "DO",
+      "quantity": -7.0
+    },
+    {
+      "buffer": "network product @ regional hub",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "onhand": 7.0,
+      "operationPlanKey": "auto:Ship network product from central warehouse to regional hub|2026-01-10T23:00:00|2026-01-12T23:00:00||7||DO|#1",
+      "orderType": "DO",
+      "quantity": 7.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "network product @ central warehouse",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 40.0
+        }
+      ],
+      "operation": "Inventory network product @ central warehouse",
+      "operationCost": 0.0,
+      "orderType": "STCK",
+      "ownerOperation": null,
+      "planKey": "auto:Inventory network product @ central warehouse|1971-01-01T00:00:00|1971-01-01T00:00:00||40||STCK|#1",
+      "quantity": 40.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Inventory network product @ central warehouse|1971-01-01T00:00:00|1971-01-01T00:00:00||40||STCK|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "1971-01-01T00:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "1971-01-01T00:00:00",
+      "status": "closed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "network product @ regional hub",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 2.0
+        }
+      ],
+      "operation": "Inventory network product @ regional hub",
+      "operationCost": 0.0,
+      "orderType": "STCK",
+      "ownerOperation": null,
+      "planKey": "auto:Inventory network product @ regional hub|1971-01-01T00:00:00|1971-01-01T00:00:00||2||STCK|#1",
+      "quantity": 2.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Inventory network product @ regional hub|1971-01-01T00:00:00|1971-01-01T00:00:00||2||STCK|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "1971-01-01T00:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "1971-01-01T00:00:00",
+      "status": "closed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-09T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "network product @ central warehouse",
+          "date": "2026-01-07T23:00:00",
+          "quantity": -6.0
+        },
+        {
+          "buffer": "network product @ regional hub",
+          "date": "2026-01-09T23:00:00",
+          "quantity": 6.0
+        }
+      ],
+      "operation": "Ship network product from central warehouse to regional hub",
+      "operationCost": 12.0,
+      "orderType": "DO",
+      "ownerOperation": null,
+      "planKey": "auto:Ship network product from central warehouse to regional hub|2026-01-07T23:00:00|2026-01-09T23:00:00||6||DO|#1",
+      "quantity": 6.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Ship network product from central warehouse to regional hub|2026-01-07T23:00:00|2026-01-09T23:00:00||6||DO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-07T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-07T23:00:00",
+      "status": "proposed",
+      "totalCost": 12.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-10T11:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "network product @ central warehouse",
+          "date": "2026-01-08T11:00:00",
+          "quantity": -11.0
+        },
+        {
+          "buffer": "network product @ regional hub",
+          "date": "2026-01-10T11:00:00",
+          "quantity": 11.0
+        }
+      ],
+      "operation": "Ship network product from central warehouse to regional hub",
+      "operationCost": 22.0,
+      "orderType": "DO",
+      "ownerOperation": null,
+      "planKey": "auto:Ship network product from central warehouse to regional hub|2026-01-08T11:00:00|2026-01-10T11:00:00||11||DO|#1",
+      "quantity": 11.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Ship network product from central warehouse to regional hub|2026-01-08T11:00:00|2026-01-10T11:00:00||11||DO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-08T11:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-08T11:00:00",
+      "status": "proposed",
+      "totalCost": 22.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-12T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "network product @ central warehouse",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -7.0
+        },
+        {
+          "buffer": "network product @ regional hub",
+          "date": "2026-01-12T23:00:00",
+          "quantity": 7.0
+        }
+      ],
+      "operation": "Ship network product from central warehouse to regional hub",
+      "operationCost": 14.0,
+      "orderType": "DO",
+      "ownerOperation": null,
+      "planKey": "auto:Ship network product from central warehouse to regional hub|2026-01-10T23:00:00|2026-01-12T23:00:00||7||DO|#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Ship network product from central warehouse to regional hub|2026-01-10T23:00:00|2026-01-12T23:00:00||7||DO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T23:00:00",
+      "status": "proposed",
+      "totalCost": 14.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-10T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "network product @ regional hub",
+          "date": "2026-01-09T23:00:00",
+          "quantity": -8.0
+        },
+        {
+          "buffer": "network product @ local east",
+          "date": "2026-01-10T23:00:00",
+          "quantity": 8.0
+        }
+      ],
+      "operation": "Ship network product from regional hub to local east",
+      "operationCost": 8.0,
+      "orderType": "DO",
+      "ownerOperation": null,
+      "planKey": "auto:Ship network product from regional hub to local east|2026-01-09T23:00:00|2026-01-10T23:00:00||8||DO|#1",
+      "quantity": 8.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Ship network product from regional hub to local east|2026-01-09T23:00:00|2026-01-10T23:00:00||8||DO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-09T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-09T23:00:00",
+      "status": "proposed",
+      "totalCost": 8.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-13T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "network product @ regional hub",
+          "date": "2026-01-12T23:00:00",
+          "quantity": -7.0
+        },
+        {
+          "buffer": "network product @ local east",
+          "date": "2026-01-13T23:00:00",
+          "quantity": 7.0
+        }
+      ],
+      "operation": "Ship network product from regional hub to local east",
+      "operationCost": 7.0,
+      "orderType": "DO",
+      "ownerOperation": null,
+      "planKey": "auto:Ship network product from regional hub to local east|2026-01-12T23:00:00|2026-01-13T23:00:00||7||DO|#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Ship network product from regional hub to local east|2026-01-12T23:00:00|2026-01-13T23:00:00||7||DO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-12T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-12T23:00:00",
+      "status": "proposed",
+      "totalCost": 7.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-11T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "network product @ regional hub",
+          "date": "2026-01-10T11:00:00",
+          "quantity": -11.0
+        },
+        {
+          "buffer": "network product @ local west",
+          "date": "2026-01-11T23:00:00",
+          "quantity": 11.0
+        }
+      ],
+      "operation": "Ship network product from regional hub to local west",
+      "operationCost": 16.5,
+      "orderType": "DO",
+      "ownerOperation": null,
+      "planKey": "auto:Ship network product from regional hub to local west|2026-01-10T11:00:00|2026-01-11T23:00:00||11||DO|#1",
+      "quantity": 11.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Ship network product from regional hub to local west|2026-01-10T11:00:00|2026-01-11T23:00:00||11||DO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T11:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T11:00:00",
+      "status": "proposed",
+      "totalCost": 16.5
+    },
+    {
+      "batch": "",
+      "demand": "east network order 1",
+      "end": "2026-01-11T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "network product @ local east",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -8.0
+        }
+      ],
+      "operation": "ship east demand",
+      "operationCost": 8.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship east demand|2026-01-10T23:00:00|2026-01-11T00:00:00|east network order 1|8||MO|#1",
+      "quantity": 8.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship east demand|2026-01-10T23:00:00|2026-01-11T00:00:00|east network order 1|8||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-10T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-10T23:00:00",
+      "status": "proposed",
+      "totalCost": 8.0
+    },
+    {
+      "batch": "",
+      "demand": "east network order 2",
+      "end": "2026-01-14T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "network product @ local east",
+          "date": "2026-01-13T23:00:00",
+          "quantity": -7.0
+        }
+      ],
+      "operation": "ship east demand",
+      "operationCost": 7.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship east demand|2026-01-13T23:00:00|2026-01-14T00:00:00|east network order 2|7||MO|#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship east demand|2026-01-13T23:00:00|2026-01-14T00:00:00|east network order 2|7||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-13T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-13T23:00:00",
+      "status": "proposed",
+      "totalCost": 7.0
+    },
+    {
+      "batch": "",
+      "demand": "west network order 1",
+      "end": "2026-01-12T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "network product @ local west",
+          "date": "2026-01-11T23:00:00",
+          "quantity": -11.0
+        }
+      ],
+      "operation": "ship west demand",
+      "operationCost": 11.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship west demand|2026-01-11T23:00:00|2026-01-12T00:00:00|west network order 1|11||MO|#1",
+      "quantity": 11.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship west demand|2026-01-11T23:00:00|2026-01-12T00:00:00|west network order 1|11||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-11T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-11T23:00:00",
+      "status": "proposed",
+      "totalCost": 11.0
+    }
+  ],
+  "problems": [
+    {
+      "description": "No replenishment defined for 'network product @ central warehouse'",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "feasible": false,
+      "name": "invalid data",
+      "owner": "network product @ central warehouse",
+      "start": "1971-01-01T00:00:00"
+    }
+  ],
+  "resourcePlans": []
+}

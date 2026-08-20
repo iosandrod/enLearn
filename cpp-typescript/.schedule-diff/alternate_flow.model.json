@@ -1,0 +1,99 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "flow item",
+      "quantity": -1,
+      "operation": "delivery flow item"
+    },
+    {
+      "type": "end",
+      "buffer": "flow item",
+      "quantity": 1,
+      "operation": "make flow item"
+    },
+    {
+      "name": "component",
+      "type": "start",
+      "buffer": "component A",
+      "priority": 1,
+      "quantity": -1,
+      "operation": "make flow item"
+    },
+    {
+      "name": "component",
+      "type": "start",
+      "buffer": "component B",
+      "priority": 2,
+      "quantity": -1,
+      "operation": "make flow item"
+    }
+  ],
+  "items": [
+    {
+      "name": "component A"
+    },
+    {
+      "name": "component B"
+    },
+    {
+      "name": "flow item"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "component A",
+      "name": "component A",
+      "onhand": 1
+    },
+    {
+      "item": "component B",
+      "name": "component B",
+      "onhand": 2
+    },
+    {
+      "item": "flow item",
+      "name": "flow item",
+      "onhand": 0,
+      "producing": "make flow item"
+    }
+  ],
+  "current": "2009-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "flow item",
+      "name": "flow order 1",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "delivery flow item"
+    },
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "flow item",
+      "name": "flow order 2",
+      "priority": 2,
+      "quantity": 1,
+      "operation": "delivery flow item"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "name": "make flow item",
+      "type": "fixed_time",
+      "duration": 86400
+    },
+    {
+      "name": "delivery flow item",
+      "type": "fixed_time",
+      "duration": 86400
+    }
+  ]
+}

@@ -1,0 +1,2471 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2026-01-01T00:00:00</current>
+  <calendars>
+  </calendars>
+  <locations>
+  </locations>
+  <suppliers>
+  </suppliers>
+  <items>
+    <item name="peak raw preferred">
+      
+      
+      
+      
+    </item>
+    <item name="peak raw substitute">
+      
+      
+      
+      
+    </item>
+    <item name="peak product 1">
+      
+      
+      
+      
+    </item>
+    <item name="peak product 2">
+      
+      
+      
+      
+    </item>
+    <item name="peak product 3">
+      
+      
+      
+      
+    </item>
+    <item name="peak product 4">
+      
+      
+      
+      
+    </item>
+    <item name="peak product 5">
+      
+      
+      
+      
+    </item>
+    <item name="peak product 6">
+      
+      
+      
+      
+    </item>
+  </items>
+  <operations>
+    <operation name="peak make PEAK-01" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT2H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>20</size_maximum>
+      <cost>20</cost>
+      
+      
+      
+    </operation>
+    <operation name="peak ship PEAK-01" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT15M</duration>
+      
+      
+      
+      
+      
+      <size_maximum>20</size_maximum>
+      <cost>2</cost>
+      
+      
+      
+    </operation>
+    <operation name="peak make PEAK-02" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT3H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>20</size_maximum>
+      <cost>21</cost>
+      
+      
+      
+    </operation>
+    <operation name="peak ship PEAK-02" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT15M</duration>
+      
+      
+      
+      
+      
+      <size_maximum>20</size_maximum>
+      <cost>2</cost>
+      
+      
+      
+    </operation>
+    <operation name="peak make PEAK-03" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT4H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>20</size_maximum>
+      <cost>22</cost>
+      
+      
+      
+    </operation>
+    <operation name="peak ship PEAK-03" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT15M</duration>
+      
+      
+      
+      
+      
+      <size_maximum>20</size_maximum>
+      <cost>2</cost>
+      
+      
+      
+    </operation>
+    <operation name="peak make PEAK-04" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT2H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>20</size_maximum>
+      <cost>23</cost>
+      
+      
+      
+    </operation>
+    <operation name="peak ship PEAK-04" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT15M</duration>
+      
+      
+      
+      
+      
+      <size_maximum>20</size_maximum>
+      <cost>2</cost>
+      
+      
+      
+    </operation>
+    <operation name="peak make PEAK-05" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT3H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>20</size_maximum>
+      <cost>24</cost>
+      
+      
+      
+    </operation>
+    <operation name="peak ship PEAK-05" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT15M</duration>
+      
+      
+      
+      
+      
+      <size_maximum>20</size_maximum>
+      <cost>2</cost>
+      
+      
+      
+    </operation>
+    <operation name="peak make PEAK-06" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT4H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      <size_multiple>1</size_multiple>
+      <size_maximum>20</size_maximum>
+      <cost>25</cost>
+      
+      
+      
+    </operation>
+    <operation name="peak ship PEAK-06" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT15M</duration>
+      
+      
+      
+      
+      
+      <size_maximum>20</size_maximum>
+      <cost>2</cost>
+      
+      
+      
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="peak raw preferred">
+      
+      <item name="peak raw preferred" />
+      
+      
+      
+      
+      
+      
+      <onhand>520</onhand>
+    </buffer>
+    <buffer name="peak raw substitute">
+      
+      <item name="peak raw substitute" />
+      
+      
+      
+      
+      
+      
+      <onhand>360</onhand>
+    </buffer>
+    <buffer name="peak product 1">
+      <producing name="peak make PEAK-01" />
+      <item name="peak product 1" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="peak product 2">
+      <producing name="peak make PEAK-02" />
+      <item name="peak product 2" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="peak product 3">
+      <producing name="peak make PEAK-03" />
+      <item name="peak product 3" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="peak product 4">
+      <producing name="peak make PEAK-04" />
+      <item name="peak product 4" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="peak product 5">
+      <producing name="peak make PEAK-05" />
+      <item name="peak product 5" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="peak product 6">
+      <producing name="peak make PEAK-06" />
+      <item name="peak product 6" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+    <setupmatrix name="peak family change">
+      <rules>
+        <rule priority="1" fromsetup="idle" tosetup="family-a|family-b"
+          duration="PT5M" cost="1" />
+        <rule priority="2" fromsetup="family-a" tosetup="family-b"
+          duration="PT45M" cost="8" />
+        <rule priority="3" fromsetup="family-b" tosetup="family-a"
+          duration="PT30M" cost="6" />
+        <rule priority="99" fromsetup=".*" tosetup=".*"
+          duration="PT5M" cost="1" />
+      </rules>
+    </setupmatrix>
+  </setupmatrices>
+  <resources>
+    <resource name="peak line A">
+      
+      <maximum>10</maximum>
+      <maxearly>P30D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="peak family change" />
+      <setup>idle</setup>
+    </resource>
+    <resource name="peak line B">
+      
+      <maximum>8</maximum>
+      <maxearly>P30D</maxearly>
+      
+      
+      
+      
+      <efficiency>90</efficiency>
+      <setupmatrix name="peak family change" />
+      <setup>idle</setup>
+    </resource>
+  </resources>
+  <loads>
+    <load>
+      <operation name="peak make PEAK-01" />
+      <resource name="peak line A" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-01</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-a</setup>
+    </load>
+    <load>
+      <operation name="peak make PEAK-01" />
+      <resource name="peak line B" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-01</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-a</setup>
+    </load>
+    <load>
+      <operation name="peak make PEAK-02" />
+      <resource name="peak line A" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-02</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-b</setup>
+    </load>
+    <load>
+      <operation name="peak make PEAK-02" />
+      <resource name="peak line B" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-02</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-b</setup>
+    </load>
+    <load>
+      <operation name="peak make PEAK-03" />
+      <resource name="peak line A" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-03</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-a</setup>
+    </load>
+    <load>
+      <operation name="peak make PEAK-03" />
+      <resource name="peak line B" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-03</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-a</setup>
+    </load>
+    <load>
+      <operation name="peak make PEAK-04" />
+      <resource name="peak line A" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-04</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-b</setup>
+    </load>
+    <load>
+      <operation name="peak make PEAK-04" />
+      <resource name="peak line B" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-04</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-b</setup>
+    </load>
+    <load>
+      <operation name="peak make PEAK-05" />
+      <resource name="peak line A" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-05</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-a</setup>
+    </load>
+    <load>
+      <operation name="peak make PEAK-05" />
+      <resource name="peak line B" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-05</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-a</setup>
+    </load>
+    <load>
+      <operation name="peak make PEAK-06" />
+      <resource name="peak line A" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-06</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-b</setup>
+    </load>
+    <load>
+      <operation name="peak make PEAK-06" />
+      <resource name="peak line B" />
+      <quantity>1</quantity>
+      
+      <name>peak line PEAK-06</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>family-b</setup>
+    </load>
+  </loads>
+  <skills>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="peak ship PEAK-01" />
+      <buffer name="peak product 1" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="peak make PEAK-01" />
+      <buffer name="peak product 1" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-01" />
+      <buffer name="peak raw preferred" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-01</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-01" />
+      <buffer name="peak raw substitute" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-01</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak ship PEAK-02" />
+      <buffer name="peak product 2" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="peak make PEAK-02" />
+      <buffer name="peak product 2" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-02" />
+      <buffer name="peak raw preferred" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-02</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-02" />
+      <buffer name="peak raw substitute" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-02</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak ship PEAK-03" />
+      <buffer name="peak product 3" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="peak make PEAK-03" />
+      <buffer name="peak product 3" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-03" />
+      <buffer name="peak raw preferred" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-03</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-03" />
+      <buffer name="peak raw substitute" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-03</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak ship PEAK-04" />
+      <buffer name="peak product 4" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="peak make PEAK-04" />
+      <buffer name="peak product 4" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-04" />
+      <buffer name="peak raw preferred" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-04</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-04" />
+      <buffer name="peak raw substitute" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-04</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak ship PEAK-05" />
+      <buffer name="peak product 5" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="peak make PEAK-05" />
+      <buffer name="peak product 5" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-05" />
+      <buffer name="peak raw preferred" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-05</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-05" />
+      <buffer name="peak raw substitute" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-05</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak ship PEAK-06" />
+      <buffer name="peak product 6" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="peak make PEAK-06" />
+      <buffer name="peak product 6" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-06" />
+      <buffer name="peak raw preferred" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-06</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="peak make PEAK-06" />
+      <buffer name="peak raw substitute" />
+      <quantity>-1</quantity>
+      
+      <name>peak substrate PEAK-06</name>
+      <priority>2</priority>
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="peak order 001 PEAK-01">
+      <quantity>1</quantity><due>2026-01-21T08:00:00</due><priority>1</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 002 PEAK-02">
+      <quantity>2</quantity><due>2026-01-21T08:00:00</due><priority>2</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 003 PEAK-03">
+      <quantity>3</quantity><due>2026-01-21T08:00:00</due><priority>3</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 004 PEAK-04">
+      <quantity>5</quantity><due>2026-01-21T12:00:00</due><priority>4</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 005 PEAK-05">
+      <quantity>8</quantity><due>2026-01-21T12:00:00</due><priority>5</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 006 PEAK-06">
+      <quantity>13</quantity><due>2026-01-21T12:00:00</due><priority>6</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 007 PEAK-01">
+      <quantity>1</quantity><due>2026-01-21T08:00:00</due><priority>7</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 008 PEAK-02">
+      <quantity>2</quantity><due>2026-01-21T08:00:00</due><priority>8</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 009 PEAK-03">
+      <quantity>3</quantity><due>2026-01-21T08:00:00</due><priority>9</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 010 PEAK-04">
+      <quantity>5</quantity><due>2026-01-21T12:00:00</due><priority>10</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 011 PEAK-05">
+      <quantity>8</quantity><due>2026-01-21T12:00:00</due><priority>11</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 012 PEAK-06">
+      <quantity>13</quantity><due>2026-01-21T12:00:00</due><priority>12</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 013 PEAK-01">
+      <quantity>1</quantity><due>2026-01-21T08:00:00</due><priority>13</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 014 PEAK-02">
+      <quantity>2</quantity><due>2026-01-21T08:00:00</due><priority>14</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 015 PEAK-03">
+      <quantity>3</quantity><due>2026-01-21T08:00:00</due><priority>15</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 016 PEAK-04">
+      <quantity>5</quantity><due>2026-01-21T12:00:00</due><priority>16</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 017 PEAK-05">
+      <quantity>8</quantity><due>2026-01-21T12:00:00</due><priority>17</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 018 PEAK-06">
+      <quantity>13</quantity><due>2026-01-21T12:00:00</due><priority>18</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 019 PEAK-01">
+      <quantity>1</quantity><due>2026-01-21T08:00:00</due><priority>19</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 020 PEAK-02">
+      <quantity>2</quantity><due>2026-01-21T08:00:00</due><priority>20</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 021 PEAK-03">
+      <quantity>3</quantity><due>2026-01-21T08:00:00</due><priority>21</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 022 PEAK-04">
+      <quantity>5</quantity><due>2026-01-21T12:00:00</due><priority>22</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 023 PEAK-05">
+      <quantity>8</quantity><due>2026-01-21T12:00:00</due><priority>23</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 024 PEAK-06">
+      <quantity>13</quantity><due>2026-01-21T12:00:00</due><priority>24</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 025 PEAK-01">
+      <quantity>1</quantity><due>2026-01-21T08:00:00</due><priority>25</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 026 PEAK-02">
+      <quantity>2</quantity><due>2026-01-21T08:00:00</due><priority>26</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 027 PEAK-03">
+      <quantity>3</quantity><due>2026-01-21T08:00:00</due><priority>27</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 028 PEAK-04">
+      <quantity>5</quantity><due>2026-01-21T12:00:00</due><priority>28</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 029 PEAK-05">
+      <quantity>8</quantity><due>2026-01-21T12:00:00</due><priority>29</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 030 PEAK-06">
+      <quantity>13</quantity><due>2026-01-21T12:00:00</due><priority>30</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 031 PEAK-01">
+      <quantity>1</quantity><due>2026-01-22T08:00:00</due><priority>1</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 032 PEAK-02">
+      <quantity>2</quantity><due>2026-01-22T08:00:00</due><priority>2</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 033 PEAK-03">
+      <quantity>3</quantity><due>2026-01-22T08:00:00</due><priority>3</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 034 PEAK-04">
+      <quantity>5</quantity><due>2026-01-22T12:00:00</due><priority>4</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 035 PEAK-05">
+      <quantity>8</quantity><due>2026-01-22T12:00:00</due><priority>5</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 036 PEAK-06">
+      <quantity>13</quantity><due>2026-01-22T12:00:00</due><priority>6</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 037 PEAK-01">
+      <quantity>1</quantity><due>2026-01-22T08:00:00</due><priority>7</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 038 PEAK-02">
+      <quantity>2</quantity><due>2026-01-22T08:00:00</due><priority>8</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 039 PEAK-03">
+      <quantity>3</quantity><due>2026-01-22T08:00:00</due><priority>9</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 040 PEAK-04">
+      <quantity>5</quantity><due>2026-01-22T12:00:00</due><priority>10</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 041 PEAK-05">
+      <quantity>8</quantity><due>2026-01-22T12:00:00</due><priority>11</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 042 PEAK-06">
+      <quantity>13</quantity><due>2026-01-22T12:00:00</due><priority>12</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 043 PEAK-01">
+      <quantity>1</quantity><due>2026-01-22T08:00:00</due><priority>13</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 044 PEAK-02">
+      <quantity>2</quantity><due>2026-01-22T08:00:00</due><priority>14</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 045 PEAK-03">
+      <quantity>3</quantity><due>2026-01-22T08:00:00</due><priority>15</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 046 PEAK-04">
+      <quantity>5</quantity><due>2026-01-22T12:00:00</due><priority>16</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 047 PEAK-05">
+      <quantity>8</quantity><due>2026-01-22T12:00:00</due><priority>17</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 048 PEAK-06">
+      <quantity>13</quantity><due>2026-01-22T12:00:00</due><priority>18</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 049 PEAK-01">
+      <quantity>1</quantity><due>2026-01-22T08:00:00</due><priority>19</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 050 PEAK-02">
+      <quantity>2</quantity><due>2026-01-22T08:00:00</due><priority>20</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 051 PEAK-03">
+      <quantity>3</quantity><due>2026-01-22T08:00:00</due><priority>21</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 052 PEAK-04">
+      <quantity>5</quantity><due>2026-01-22T12:00:00</due><priority>22</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 053 PEAK-05">
+      <quantity>8</quantity><due>2026-01-22T12:00:00</due><priority>23</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 054 PEAK-06">
+      <quantity>13</quantity><due>2026-01-22T12:00:00</due><priority>24</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 055 PEAK-01">
+      <quantity>1</quantity><due>2026-01-22T08:00:00</due><priority>25</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 056 PEAK-02">
+      <quantity>2</quantity><due>2026-01-22T08:00:00</due><priority>26</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 057 PEAK-03">
+      <quantity>3</quantity><due>2026-01-22T08:00:00</due><priority>27</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 058 PEAK-04">
+      <quantity>5</quantity><due>2026-01-22T12:00:00</due><priority>28</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 059 PEAK-05">
+      <quantity>8</quantity><due>2026-01-22T12:00:00</due><priority>29</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 060 PEAK-06">
+      <quantity>13</quantity><due>2026-01-22T12:00:00</due><priority>30</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 061 PEAK-01">
+      <quantity>1</quantity><due>2026-01-23T08:00:00</due><priority>1</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 062 PEAK-02">
+      <quantity>2</quantity><due>2026-01-23T08:00:00</due><priority>2</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 063 PEAK-03">
+      <quantity>3</quantity><due>2026-01-23T08:00:00</due><priority>3</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 064 PEAK-04">
+      <quantity>5</quantity><due>2026-01-23T12:00:00</due><priority>4</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 065 PEAK-05">
+      <quantity>8</quantity><due>2026-01-23T12:00:00</due><priority>5</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 066 PEAK-06">
+      <quantity>13</quantity><due>2026-01-23T12:00:00</due><priority>6</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 067 PEAK-01">
+      <quantity>1</quantity><due>2026-01-23T08:00:00</due><priority>7</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 068 PEAK-02">
+      <quantity>2</quantity><due>2026-01-23T08:00:00</due><priority>8</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 069 PEAK-03">
+      <quantity>3</quantity><due>2026-01-23T08:00:00</due><priority>9</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 070 PEAK-04">
+      <quantity>5</quantity><due>2026-01-23T12:00:00</due><priority>10</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 071 PEAK-05">
+      <quantity>8</quantity><due>2026-01-23T12:00:00</due><priority>11</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 072 PEAK-06">
+      <quantity>13</quantity><due>2026-01-23T12:00:00</due><priority>12</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 073 PEAK-01">
+      <quantity>1</quantity><due>2026-01-23T08:00:00</due><priority>13</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 074 PEAK-02">
+      <quantity>2</quantity><due>2026-01-23T08:00:00</due><priority>14</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 075 PEAK-03">
+      <quantity>3</quantity><due>2026-01-23T08:00:00</due><priority>15</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 076 PEAK-04">
+      <quantity>5</quantity><due>2026-01-23T12:00:00</due><priority>16</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 077 PEAK-05">
+      <quantity>8</quantity><due>2026-01-23T12:00:00</due><priority>17</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 078 PEAK-06">
+      <quantity>13</quantity><due>2026-01-23T12:00:00</due><priority>18</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 079 PEAK-01">
+      <quantity>1</quantity><due>2026-01-23T08:00:00</due><priority>19</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 080 PEAK-02">
+      <quantity>2</quantity><due>2026-01-23T08:00:00</due><priority>20</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 081 PEAK-03">
+      <quantity>3</quantity><due>2026-01-23T08:00:00</due><priority>21</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 082 PEAK-04">
+      <quantity>5</quantity><due>2026-01-23T12:00:00</due><priority>22</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 083 PEAK-05">
+      <quantity>8</quantity><due>2026-01-23T12:00:00</due><priority>23</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 084 PEAK-06">
+      <quantity>13</quantity><due>2026-01-23T12:00:00</due><priority>24</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 085 PEAK-01">
+      <quantity>1</quantity><due>2026-01-23T08:00:00</due><priority>25</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 086 PEAK-02">
+      <quantity>2</quantity><due>2026-01-23T08:00:00</due><priority>26</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 087 PEAK-03">
+      <quantity>3</quantity><due>2026-01-23T08:00:00</due><priority>27</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 088 PEAK-04">
+      <quantity>5</quantity><due>2026-01-23T12:00:00</due><priority>28</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 089 PEAK-05">
+      <quantity>8</quantity><due>2026-01-23T12:00:00</due><priority>29</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 090 PEAK-06">
+      <quantity>13</quantity><due>2026-01-23T12:00:00</due><priority>30</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 091 PEAK-01">
+      <quantity>1</quantity><due>2026-01-24T08:00:00</due><priority>1</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 092 PEAK-02">
+      <quantity>2</quantity><due>2026-01-24T08:00:00</due><priority>2</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 093 PEAK-03">
+      <quantity>3</quantity><due>2026-01-24T08:00:00</due><priority>3</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 094 PEAK-04">
+      <quantity>5</quantity><due>2026-01-24T12:00:00</due><priority>4</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 095 PEAK-05">
+      <quantity>8</quantity><due>2026-01-24T12:00:00</due><priority>5</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 096 PEAK-06">
+      <quantity>13</quantity><due>2026-01-24T12:00:00</due><priority>6</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 097 PEAK-01">
+      <quantity>1</quantity><due>2026-01-24T08:00:00</due><priority>7</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 098 PEAK-02">
+      <quantity>2</quantity><due>2026-01-24T08:00:00</due><priority>8</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 099 PEAK-03">
+      <quantity>3</quantity><due>2026-01-24T08:00:00</due><priority>9</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 100 PEAK-04">
+      <quantity>5</quantity><due>2026-01-24T12:00:00</due><priority>10</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 101 PEAK-05">
+      <quantity>8</quantity><due>2026-01-24T12:00:00</due><priority>11</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 102 PEAK-06">
+      <quantity>13</quantity><due>2026-01-24T12:00:00</due><priority>12</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 103 PEAK-01">
+      <quantity>1</quantity><due>2026-01-24T08:00:00</due><priority>13</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 104 PEAK-02">
+      <quantity>2</quantity><due>2026-01-24T08:00:00</due><priority>14</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 105 PEAK-03">
+      <quantity>3</quantity><due>2026-01-24T08:00:00</due><priority>15</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 106 PEAK-04">
+      <quantity>5</quantity><due>2026-01-24T12:00:00</due><priority>16</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 107 PEAK-05">
+      <quantity>8</quantity><due>2026-01-24T12:00:00</due><priority>17</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 108 PEAK-06">
+      <quantity>13</quantity><due>2026-01-24T12:00:00</due><priority>18</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 109 PEAK-01">
+      <quantity>1</quantity><due>2026-01-24T08:00:00</due><priority>19</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 110 PEAK-02">
+      <quantity>2</quantity><due>2026-01-24T08:00:00</due><priority>20</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 111 PEAK-03">
+      <quantity>3</quantity><due>2026-01-24T08:00:00</due><priority>21</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 112 PEAK-04">
+      <quantity>5</quantity><due>2026-01-24T12:00:00</due><priority>22</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 113 PEAK-05">
+      <quantity>8</quantity><due>2026-01-24T12:00:00</due><priority>23</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 114 PEAK-06">
+      <quantity>13</quantity><due>2026-01-24T12:00:00</due><priority>24</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 115 PEAK-01">
+      <quantity>1</quantity><due>2026-01-24T08:00:00</due><priority>25</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 116 PEAK-02">
+      <quantity>2</quantity><due>2026-01-24T08:00:00</due><priority>26</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 117 PEAK-03">
+      <quantity>3</quantity><due>2026-01-24T08:00:00</due><priority>27</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 118 PEAK-04">
+      <quantity>5</quantity><due>2026-01-24T12:00:00</due><priority>28</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 119 PEAK-05">
+      <quantity>8</quantity><due>2026-01-24T12:00:00</due><priority>29</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 120 PEAK-06">
+      <quantity>13</quantity><due>2026-01-24T12:00:00</due><priority>30</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 121 PEAK-01">
+      <quantity>1</quantity><due>2026-01-25T08:00:00</due><priority>1</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 122 PEAK-02">
+      <quantity>2</quantity><due>2026-01-25T08:00:00</due><priority>2</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 123 PEAK-03">
+      <quantity>3</quantity><due>2026-01-25T08:00:00</due><priority>3</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 124 PEAK-04">
+      <quantity>5</quantity><due>2026-01-25T12:00:00</due><priority>4</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 125 PEAK-05">
+      <quantity>8</quantity><due>2026-01-25T12:00:00</due><priority>5</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 126 PEAK-06">
+      <quantity>13</quantity><due>2026-01-25T12:00:00</due><priority>6</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 127 PEAK-01">
+      <quantity>1</quantity><due>2026-01-25T08:00:00</due><priority>7</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 128 PEAK-02">
+      <quantity>2</quantity><due>2026-01-25T08:00:00</due><priority>8</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 129 PEAK-03">
+      <quantity>3</quantity><due>2026-01-25T08:00:00</due><priority>9</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 130 PEAK-04">
+      <quantity>5</quantity><due>2026-01-25T12:00:00</due><priority>10</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 131 PEAK-05">
+      <quantity>8</quantity><due>2026-01-25T12:00:00</due><priority>11</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 132 PEAK-06">
+      <quantity>13</quantity><due>2026-01-25T12:00:00</due><priority>12</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 133 PEAK-01">
+      <quantity>1</quantity><due>2026-01-25T08:00:00</due><priority>13</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 134 PEAK-02">
+      <quantity>2</quantity><due>2026-01-25T08:00:00</due><priority>14</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 135 PEAK-03">
+      <quantity>3</quantity><due>2026-01-25T08:00:00</due><priority>15</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 136 PEAK-04">
+      <quantity>5</quantity><due>2026-01-25T12:00:00</due><priority>16</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 137 PEAK-05">
+      <quantity>8</quantity><due>2026-01-25T12:00:00</due><priority>17</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 138 PEAK-06">
+      <quantity>13</quantity><due>2026-01-25T12:00:00</due><priority>18</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 139 PEAK-01">
+      <quantity>1</quantity><due>2026-01-25T08:00:00</due><priority>19</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 140 PEAK-02">
+      <quantity>2</quantity><due>2026-01-25T08:00:00</due><priority>20</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 141 PEAK-03">
+      <quantity>3</quantity><due>2026-01-25T08:00:00</due><priority>21</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 142 PEAK-04">
+      <quantity>5</quantity><due>2026-01-25T12:00:00</due><priority>22</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 143 PEAK-05">
+      <quantity>8</quantity><due>2026-01-25T12:00:00</due><priority>23</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 144 PEAK-06">
+      <quantity>13</quantity><due>2026-01-25T12:00:00</due><priority>24</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 145 PEAK-01">
+      <quantity>1</quantity><due>2026-01-25T08:00:00</due><priority>25</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 146 PEAK-02">
+      <quantity>2</quantity><due>2026-01-25T08:00:00</due><priority>26</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 147 PEAK-03">
+      <quantity>3</quantity><due>2026-01-25T08:00:00</due><priority>27</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 148 PEAK-04">
+      <quantity>5</quantity><due>2026-01-25T12:00:00</due><priority>28</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 149 PEAK-05">
+      <quantity>8</quantity><due>2026-01-25T12:00:00</due><priority>29</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 150 PEAK-06">
+      <quantity>13</quantity><due>2026-01-25T12:00:00</due><priority>30</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 151 PEAK-01">
+      <quantity>1</quantity><due>2026-01-26T08:00:00</due><priority>1</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 152 PEAK-02">
+      <quantity>2</quantity><due>2026-01-26T08:00:00</due><priority>2</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 153 PEAK-03">
+      <quantity>3</quantity><due>2026-01-26T08:00:00</due><priority>3</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 154 PEAK-04">
+      <quantity>5</quantity><due>2026-01-26T12:00:00</due><priority>4</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 155 PEAK-05">
+      <quantity>8</quantity><due>2026-01-26T12:00:00</due><priority>5</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 156 PEAK-06">
+      <quantity>13</quantity><due>2026-01-26T12:00:00</due><priority>6</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 157 PEAK-01">
+      <quantity>1</quantity><due>2026-01-26T08:00:00</due><priority>7</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 158 PEAK-02">
+      <quantity>2</quantity><due>2026-01-26T08:00:00</due><priority>8</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 159 PEAK-03">
+      <quantity>3</quantity><due>2026-01-26T08:00:00</due><priority>9</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 160 PEAK-04">
+      <quantity>5</quantity><due>2026-01-26T12:00:00</due><priority>10</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 161 PEAK-05">
+      <quantity>8</quantity><due>2026-01-26T12:00:00</due><priority>11</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 162 PEAK-06">
+      <quantity>13</quantity><due>2026-01-26T12:00:00</due><priority>12</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 163 PEAK-01">
+      <quantity>1</quantity><due>2026-01-26T08:00:00</due><priority>13</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 164 PEAK-02">
+      <quantity>2</quantity><due>2026-01-26T08:00:00</due><priority>14</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 165 PEAK-03">
+      <quantity>3</quantity><due>2026-01-26T08:00:00</due><priority>15</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 166 PEAK-04">
+      <quantity>5</quantity><due>2026-01-26T12:00:00</due><priority>16</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 167 PEAK-05">
+      <quantity>8</quantity><due>2026-01-26T12:00:00</due><priority>17</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 168 PEAK-06">
+      <quantity>13</quantity><due>2026-01-26T12:00:00</due><priority>18</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 169 PEAK-01">
+      <quantity>1</quantity><due>2026-01-26T08:00:00</due><priority>19</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 170 PEAK-02">
+      <quantity>2</quantity><due>2026-01-26T08:00:00</due><priority>20</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 171 PEAK-03">
+      <quantity>3</quantity><due>2026-01-26T08:00:00</due><priority>21</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 172 PEAK-04">
+      <quantity>5</quantity><due>2026-01-26T12:00:00</due><priority>22</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 173 PEAK-05">
+      <quantity>8</quantity><due>2026-01-26T12:00:00</due><priority>23</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 174 PEAK-06">
+      <quantity>13</quantity><due>2026-01-26T12:00:00</due><priority>24</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 175 PEAK-01">
+      <quantity>1</quantity><due>2026-01-26T08:00:00</due><priority>25</priority>
+      <item name="peak product 1" /><operation name="peak ship PEAK-01" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 176 PEAK-02">
+      <quantity>2</quantity><due>2026-01-26T08:00:00</due><priority>26</priority>
+      <item name="peak product 2" /><operation name="peak ship PEAK-02" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 177 PEAK-03">
+      <quantity>3</quantity><due>2026-01-26T08:00:00</due><priority>27</priority>
+      <item name="peak product 3" /><operation name="peak ship PEAK-03" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 178 PEAK-04">
+      <quantity>5</quantity><due>2026-01-26T12:00:00</due><priority>28</priority>
+      <item name="peak product 4" /><operation name="peak ship PEAK-04" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 179 PEAK-05">
+      <quantity>8</quantity><due>2026-01-26T12:00:00</due><priority>29</priority>
+      <item name="peak product 5" /><operation name="peak ship PEAK-05" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="peak order 180 PEAK-06">
+      <quantity>13</quantity><due>2026-01-26T12:00:00</due><priority>30</priority>
+      <item name="peak product 6" /><operation name="peak ship PEAK-06" />
+      
+      
+      
+      
+      
+    </demand>
+  </demands>
+  <operationplans>
+  </operationplans>
+<?python
+import datetime, frepple, json
+frepple.solver_mrp(**{"plantype":1,"constraints":15,"loglevel":0,"lazydelay":1800,"erasePreviousFirst":True,"minimumdelay":60,"rotateresources":True,"iterationmax":400,"resourceiterationmax":800}).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+def metric(value):
+    value = round(float(value), 9)
+    return 0.0 if abs(value) < 0.000000001 else value
+def number_key(value):
+    return ("%.9f" % metric(value)).rstrip("0").rstrip(".") or "0"
+explicit_references = set([])
+dependency_quantities = {}
+plan_rows = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity)})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    productive_seconds = max(0.0, (operationplan.end - operationplan.start).total_seconds() - operationplan.unavailable)
+    operation_cost = metric(operationplan.operation.cost * operationplan.quantity)
+    resource_cost = metric(operationplan.quantity * sum(resource.cost for resource in all_resources if resource.name in resources) * productive_seconds / 3600.0)
+    setup_cost = metric(getattr(getattr(operationplan, "rule", None), "cost", 0))
+    plan_rows.append((operationplan, {
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": metric(operationplan.quantity),
+        "quantityCompleted": metric(getattr(operationplan, "quantity_completed", 0)),
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "batch": getattr(operationplan, "batch", "") or "",
+        "orderType": getattr(operationplan, "ordertype", "") or "",
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "setupSeconds": operationplan.setup,
+        "setupEnd": stamp(operationplan.setupend),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+        "operationCost": operation_cost,
+        "resourceCost": resource_cost,
+        "setupCost": setup_cost,
+        "totalCost": metric(operation_cost + resource_cost),
+        "setupPenalty": setup_cost,
+    }))
+plan_rows.sort(key=lambda pair: (pair[1]["operation"], pair[1]["start"], pair[1]["end"], pair[1]["demand"] or "", pair[1]["quantity"], pair[1]["batch"], pair[1]["orderType"]))
+plan_keys = {}
+key_counts = {}
+plans = []
+for operationplan, row in plan_rows:
+    reference = str(getattr(operationplan, "reference", "") or "")
+    seed = "|".join((row["operation"], row["start"], row["end"], row["demand"] or "", number_key(row["quantity"]), row["batch"], row["orderType"], row["ownerOperation"] or ""))
+    key_counts[seed] = key_counts.get(seed, 0) + 1
+    plan_key = "ref:" + reference if reference in explicit_references else "auto:" + seed + "#" + str(key_counts[seed])
+    plan_keys[id(operationplan)] = plan_key
+    row["planKey"] = plan_key
+    row["reference"] = reference if reference in explicit_references else plan_key
+    plans.append(row)
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": metric(operationplan.quantity), "end": stamp(operationplan.end), "batch": getattr(operationplan, "batch", "") or "", "orderType": getattr(operationplan, "ordertype", "") or "", "operationPlanKey": plan_keys.get(id(operationplan))})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"], value["batch"], value["orderType"]))
+dependencies = []
+seen_dependencies = set()
+for operationplan in frepple.operationplans():
+    for dependency in getattr(operationplan, "blockedby", []):
+        if id(dependency) in seen_dependencies: continue
+        seen_dependencies.add(id(dependency))
+        first = dependency.first
+        second = dependency.second
+        ratio = dependency_quantities.get(second.operation.name + "\u0000" + first.operation.name, 1)
+        dependencies.append({"first": plan_keys.get(id(first)), "second": plan_keys.get(id(second)), "quantity": metric(min(first.quantity, second.quantity * ratio)), "operation": second.operation.name, "blockedBy": first.operation.name})
+dependencies.sort(key=lambda value: (value["second"] or "", value["first"] or "", value["operation"], value["blockedBy"], value["quantity"]))
+problems = []
+for problem in frepple.problems():
+    owner = getattr(problem, "owner", None)
+    owner_key = plan_keys.get(id(owner)) if owner is not None else None
+    problems.append({"name": problem.name, "description": problem.description, "start": stamp(problem.start), "end": stamp(problem.end), "entity": problem.entity, "owner": owner_key or name(owner), "feasible": bool(problem.feasible)})
+problems.sort(key=lambda value: (value["owner"] or "", value["name"], value["start"], value["end"], value["description"]))
+inventory_profiles = []
+for buffer in all_buffers:
+    for flowplan in buffer.flowplans:
+        operationplan = getattr(flowplan, "operationplan", None)
+        inventory_profiles.append({"buffer": buffer.name, "bufferBatch": getattr(buffer, "batch", "") or "", "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity), "onhand": metric(flowplan.onhand), "operationPlanKey": plan_keys.get(id(operationplan)) if operationplan is not None else None, "orderType": getattr(operationplan, "ordertype", "") if operationplan is not None else None})
+inventory_profiles.sort(key=lambda value: (value["buffer"], value["bufferBatch"], value["date"], value["quantity"], value["operationPlanKey"] or "", value["onhand"]))
+boundaries = sorted(set([frepple.settings.current] + [value for operationplan, row in plan_rows for value in (operationplan.start, operationplan.end)]))
+if len(boundaries) < 2: boundaries.append(boundaries[0] + datetime.timedelta(days=1))
+resource_plans = []
+for resource in all_resources:
+    for bucket in resource.plan(boundaries):
+        values = [metric(bucket[field]) for field in ("available", "load", "unavailable", "setup", "free", "load_confirmed")]
+        if not any(values): continue
+        available, load, unavailable, setup, free, load_confirmed = values
+        resource_plans.append({"resource": resource.name, "start": stamp(bucket["start"]), "end": stamp(bucket["end"]), "available": available, "load": load, "unavailable": unavailable, "setup": setup, "free": free, "loadConfirmed": load_confirmed, "utilization": metric((load + setup) / available) if available else metric(load + setup)})
+resource_plans.sort(key=lambda value: (value["resource"], value["start"], value["end"]))
+cost_summary = {"operationCost": metric(sum(value["operationCost"] for value in plans)), "resourceCost": metric(sum(value["resourceCost"] for value in plans)), "setupCost": metric(sum(value["setupCost"] for value in plans)), "totalCost": metric(sum(value["totalCost"] for value in plans)), "setupPenalty": metric(sum(value["setupPenalty"] for value in plans))}
+with open("/workspace/cpp-typescript/.schedule-diff/boundary_peak_load.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries, "dependencies": dependencies, "problems": problems, "inventoryProfiles": inventory_profiles, "resourcePlans": resource_plans, "costSummary": cost_summary}, output, indent=2, sort_keys=True)
+?>
+</plan>

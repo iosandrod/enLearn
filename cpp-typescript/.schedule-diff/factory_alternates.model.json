@@ -1,0 +1,497 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "configured P",
+      "quantity": -1,
+      "operation": "ship configured P"
+    },
+    {
+      "type": "end",
+      "buffer": "configured P",
+      "quantity": 1,
+      "operation": "premium process P"
+    },
+    {
+      "type": "start",
+      "buffer": "premium component P",
+      "quantity": -1,
+      "operation": "premium process P"
+    },
+    {
+      "type": "end",
+      "buffer": "configured P",
+      "quantity": 1,
+      "operation": "standard process P"
+    },
+    {
+      "type": "start",
+      "buffer": "standard component",
+      "quantity": -1,
+      "operation": "standard process P"
+    },
+    {
+      "type": "start",
+      "buffer": "configured Q",
+      "quantity": -1,
+      "operation": "ship configured Q"
+    },
+    {
+      "type": "end",
+      "buffer": "configured Q",
+      "quantity": 1,
+      "operation": "premium process Q"
+    },
+    {
+      "type": "start",
+      "buffer": "premium component Q",
+      "quantity": -1,
+      "operation": "premium process Q"
+    },
+    {
+      "type": "end",
+      "buffer": "configured Q",
+      "quantity": 1,
+      "operation": "standard process Q"
+    },
+    {
+      "type": "start",
+      "buffer": "standard component",
+      "quantity": -1,
+      "operation": "standard process Q"
+    },
+    {
+      "type": "start",
+      "buffer": "configured R",
+      "quantity": -1,
+      "operation": "ship configured R"
+    },
+    {
+      "type": "end",
+      "buffer": "configured R",
+      "quantity": 1,
+      "operation": "make configured R"
+    },
+    {
+      "name": "resin",
+      "type": "start",
+      "buffer": "preferred resin",
+      "priority": 1,
+      "quantity": -1,
+      "operation": "make configured R"
+    },
+    {
+      "name": "resin",
+      "type": "start",
+      "buffer": "substitute resin",
+      "priority": 2,
+      "quantity": -1,
+      "operation": "make configured R"
+    }
+  ],
+  "items": [
+    {
+      "name": "premium component P"
+    },
+    {
+      "name": "premium component Q"
+    },
+    {
+      "name": "standard component"
+    },
+    {
+      "name": "preferred resin"
+    },
+    {
+      "name": "substitute resin"
+    },
+    {
+      "name": "configured P"
+    },
+    {
+      "name": "configured Q"
+    },
+    {
+      "name": "configured R"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "premium line",
+      "operation": "premium process P"
+    },
+    {
+      "name": "standard line",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "standard line A",
+      "operation": "standard process P"
+    },
+    {
+      "name": "standard line",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "standard line B",
+      "operation": "standard process P"
+    },
+    {
+      "quantity": 1,
+      "resource": "premium line",
+      "operation": "premium process Q"
+    },
+    {
+      "name": "standard line",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "standard line A",
+      "operation": "standard process Q"
+    },
+    {
+      "name": "standard line",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "standard line B",
+      "operation": "standard process Q"
+    },
+    {
+      "quantity": 1,
+      "resource": "resin line",
+      "operation": "make configured R"
+    }
+  ],
+  "skills": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "premium component P",
+      "name": "premium component P",
+      "onhand": 5
+    },
+    {
+      "item": "premium component Q",
+      "name": "premium component Q",
+      "onhand": 4
+    },
+    {
+      "item": "standard component",
+      "name": "standard component",
+      "onhand": 80
+    },
+    {
+      "item": "preferred resin",
+      "name": "preferred resin",
+      "onhand": 4
+    },
+    {
+      "item": "substitute resin",
+      "name": "substitute resin",
+      "onhand": 40
+    },
+    {
+      "item": "configured P",
+      "name": "configured P",
+      "onhand": 0,
+      "producing": "choose process P"
+    },
+    {
+      "item": "configured Q",
+      "name": "configured Q",
+      "onhand": 0,
+      "producing": "choose process Q"
+    },
+    {
+      "item": "configured R",
+      "name": "configured R",
+      "onhand": 0,
+      "producing": "make configured R"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-21T00:00:00",
+      "item": "configured P",
+      "name": "process order 01 P",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "ship configured P"
+    },
+    {
+      "due": "2026-01-21T12:00:00",
+      "item": "configured Q",
+      "name": "process order 02 Q",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "ship configured Q"
+    },
+    {
+      "due": "2026-01-22T00:00:00",
+      "item": "configured P",
+      "name": "process order 03 P",
+      "priority": 3,
+      "quantity": 1,
+      "operation": "ship configured P"
+    },
+    {
+      "due": "2026-01-22T12:00:00",
+      "item": "configured Q",
+      "name": "process order 04 Q",
+      "priority": 4,
+      "quantity": 2,
+      "operation": "ship configured Q"
+    },
+    {
+      "due": "2026-01-23T00:00:00",
+      "item": "configured P",
+      "name": "process order 05 P",
+      "priority": 5,
+      "quantity": 1,
+      "operation": "ship configured P"
+    },
+    {
+      "due": "2026-01-23T12:00:00",
+      "item": "configured Q",
+      "name": "process order 06 Q",
+      "priority": 6,
+      "quantity": 2,
+      "operation": "ship configured Q"
+    },
+    {
+      "due": "2026-01-24T00:00:00",
+      "item": "configured P",
+      "name": "process order 07 P",
+      "priority": 7,
+      "quantity": 1,
+      "operation": "ship configured P"
+    },
+    {
+      "due": "2026-01-24T12:00:00",
+      "item": "configured Q",
+      "name": "process order 08 Q",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "ship configured Q"
+    },
+    {
+      "due": "2026-01-25T00:00:00",
+      "item": "configured P",
+      "name": "process order 09 P",
+      "priority": 9,
+      "quantity": 1,
+      "operation": "ship configured P"
+    },
+    {
+      "due": "2026-01-25T12:00:00",
+      "item": "configured Q",
+      "name": "process order 10 Q",
+      "priority": 10,
+      "quantity": 2,
+      "operation": "ship configured Q"
+    },
+    {
+      "due": "2026-01-26T00:00:00",
+      "item": "configured P",
+      "name": "process order 11 P",
+      "priority": 11,
+      "quantity": 1,
+      "operation": "ship configured P"
+    },
+    {
+      "due": "2026-01-26T12:00:00",
+      "item": "configured Q",
+      "name": "process order 12 Q",
+      "priority": 12,
+      "quantity": 2,
+      "operation": "ship configured Q"
+    },
+    {
+      "due": "2026-01-22T06:00:00",
+      "item": "configured R",
+      "name": "resin order 01 R",
+      "priority": 13,
+      "quantity": 1,
+      "operation": "ship configured R"
+    },
+    {
+      "due": "2026-01-22T18:00:00",
+      "item": "configured R",
+      "name": "resin order 02 R",
+      "priority": 14,
+      "quantity": 1,
+      "operation": "ship configured R"
+    },
+    {
+      "due": "2026-01-23T06:00:00",
+      "item": "configured R",
+      "name": "resin order 03 R",
+      "priority": 15,
+      "quantity": 1,
+      "operation": "ship configured R"
+    },
+    {
+      "due": "2026-01-23T18:00:00",
+      "item": "configured R",
+      "name": "resin order 04 R",
+      "priority": 16,
+      "quantity": 1,
+      "operation": "ship configured R"
+    },
+    {
+      "due": "2026-01-24T06:00:00",
+      "item": "configured R",
+      "name": "resin order 05 R",
+      "priority": 17,
+      "quantity": 1,
+      "operation": "ship configured R"
+    },
+    {
+      "due": "2026-01-24T18:00:00",
+      "item": "configured R",
+      "name": "resin order 06 R",
+      "priority": 18,
+      "quantity": 1,
+      "operation": "ship configured R"
+    },
+    {
+      "due": "2026-01-25T06:00:00",
+      "item": "configured R",
+      "name": "resin order 07 R",
+      "priority": 19,
+      "quantity": 1,
+      "operation": "ship configured R"
+    },
+    {
+      "due": "2026-01-25T18:00:00",
+      "item": "configured R",
+      "name": "resin order 08 R",
+      "priority": 20,
+      "quantity": 1,
+      "operation": "ship configured R"
+    },
+    {
+      "due": "2026-01-26T06:00:00",
+      "item": "configured R",
+      "name": "resin order 09 R",
+      "priority": 21,
+      "quantity": 1,
+      "operation": "ship configured R"
+    },
+    {
+      "due": "2026-01-26T18:00:00",
+      "item": "configured R",
+      "name": "resin order 10 R",
+      "priority": 22,
+      "quantity": 1,
+      "operation": "ship configured R"
+    }
+  ],
+  "resources": [
+    {
+      "name": "premium line",
+      "maximum": 2,
+      "maxearly": 3888000,
+      "efficiency": 100
+    },
+    {
+      "name": "standard line A",
+      "maximum": 2,
+      "maxearly": 3888000,
+      "efficiency": 100
+    },
+    {
+      "name": "standard line B",
+      "maximum": 2,
+      "maxearly": 3888000,
+      "efficiency": 90
+    },
+    {
+      "name": "resin line",
+      "maximum": 1,
+      "maxearly": 3888000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "name": "premium process P",
+      "type": "fixed_time",
+      "duration": 64800
+    },
+    {
+      "name": "standard process P",
+      "type": "fixed_time",
+      "duration": 100800
+    },
+    {
+      "name": "choose process P",
+      "type": "alternate",
+      "search": "PRIORITY",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "premium process P"
+        },
+        {
+          "priority": 2,
+          "operation": "standard process P"
+        }
+      ]
+    },
+    {
+      "name": "ship configured P",
+      "type": "fixed_time",
+      "duration": 14400
+    },
+    {
+      "name": "premium process Q",
+      "type": "fixed_time",
+      "duration": 64800
+    },
+    {
+      "name": "standard process Q",
+      "type": "fixed_time",
+      "duration": 100800
+    },
+    {
+      "name": "choose process Q",
+      "type": "alternate",
+      "search": "PRIORITY",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "premium process Q"
+        },
+        {
+          "priority": 2,
+          "operation": "standard process Q"
+        }
+      ]
+    },
+    {
+      "name": "ship configured Q",
+      "type": "fixed_time",
+      "duration": 14400
+    },
+    {
+      "name": "make configured R",
+      "type": "fixed_time",
+      "duration": 57600
+    },
+    {
+      "name": "ship configured R",
+      "type": "fixed_time",
+      "duration": 14400
+    }
+  ],
+  "setupMatrices": [],
+  "resourceSkills": []
+}

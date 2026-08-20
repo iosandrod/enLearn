@@ -1,0 +1,37 @@
+file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:362
+  throw new Error(details ? `${message}\n${details}` : message);
+        ^
+
+Error: C:\Program Files\nodejs\node.exe exited with status 1
+file:///E:/frepple-master/cpp-typescript/dist/model/itemdistribution.js:186
+
+export class OperationItemDistribution extends OperationFixedTime {
+
+                                               ^
+
+
+
+ReferenceError: Cannot access 'OperationFixedTime' before initialization
+
+    at file:///E:/frepple-master/cpp-typescript/dist/model/itemdistribution.js:186:48
+
+    at ModuleJob.run (node:internal/modules/esm/module_job:329:25)
+
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+
+    at async Promise.all (index 8)
+
+    at async typescriptWorker (file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:953:7)
+
+    at async file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:1462:3
+
+
+
+Node.js v22.17.0
+    at fail (file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:362:9)
+    at run (file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:374:28)
+    at runTypescript (file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:885:20)
+    at async main (file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:1423:32)
+    at async file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:1464:3
+
+Node.js v22.17.0

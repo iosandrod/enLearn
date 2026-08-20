@@ -1,0 +1,460 @@
+{
+  "operationPlans": [
+    {
+      "operation": "make quota product",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-05T23:59:59",
+      "end": "2026-01-06T01:59:59",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-05T23:59:59",
+      "resources": [
+        "quota resource"
+      ],
+      "materials": [
+        {
+          "buffer": "quota product @ quota plant",
+          "date": "2026-01-06T01:59:59",
+          "quantity": 6
+        }
+      ],
+      "operationCost": 12,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 12,
+      "setupPenalty": 0,
+      "planKey": "auto:make quota product|2026-01-05T23:59:59|2026-01-06T01:59:59||6||MO|#1",
+      "reference": "auto:make quota product|2026-01-05T23:59:59|2026-01-06T01:59:59||6||MO|#1"
+    },
+    {
+      "operation": "make quota product",
+      "demand": null,
+      "quantity": 4,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T21:00:00",
+      "end": "2026-01-12T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T21:00:00",
+      "resources": [
+        "quota resource"
+      ],
+      "materials": [
+        {
+          "buffer": "quota product @ quota plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": 4
+        }
+      ],
+      "operationCost": 8,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 8,
+      "setupPenalty": 0,
+      "planKey": "auto:make quota product|2026-01-12T21:00:00|2026-01-12T23:00:00||4||MO|#1",
+      "reference": "auto:make quota product|2026-01-12T21:00:00|2026-01-12T23:00:00||4||MO|#1"
+    },
+    {
+      "operation": "make quota product",
+      "demand": null,
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-01-15T00:00:00",
+      "end": "2026-01-15T02:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-15T00:00:00",
+      "resources": [
+        "quota resource"
+      ],
+      "materials": [
+        {
+          "buffer": "quota product @ quota plant",
+          "date": "2026-01-15T02:00:00",
+          "quantity": 1
+        }
+      ],
+      "operationCost": 2,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 2,
+      "setupPenalty": 0,
+      "planKey": "auto:make quota product|2026-01-15T00:00:00|2026-01-15T02:00:00||1||MO|#1",
+      "reference": "auto:make quota product|2026-01-15T00:00:00|2026-01-15T02:00:00||1||MO|#1"
+    },
+    {
+      "operation": "make quota product",
+      "demand": null,
+      "quantity": 7,
+      "quantityCompleted": 0,
+      "start": "2026-01-15T21:00:00",
+      "end": "2026-01-15T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-15T21:00:00",
+      "resources": [
+        "quota resource"
+      ],
+      "materials": [
+        {
+          "buffer": "quota product @ quota plant",
+          "date": "2026-01-15T23:00:00",
+          "quantity": 7
+        }
+      ],
+      "operationCost": 14,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 14,
+      "setupPenalty": 0,
+      "planKey": "auto:make quota product|2026-01-15T21:00:00|2026-01-15T23:00:00||7||MO|#1",
+      "reference": "auto:make quota product|2026-01-15T21:00:00|2026-01-15T23:00:00||7||MO|#1"
+    },
+    {
+      "operation": "make quota product",
+      "demand": null,
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-23T00:00:00",
+      "end": "2026-01-23T02:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-23T00:00:00",
+      "resources": [
+        "quota resource"
+      ],
+      "materials": [
+        {
+          "buffer": "quota product @ quota plant",
+          "date": "2026-01-23T02:00:00",
+          "quantity": 3
+        }
+      ],
+      "operationCost": 6,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 6,
+      "setupPenalty": 0,
+      "planKey": "auto:make quota product|2026-01-23T00:00:00|2026-01-23T02:00:00||3||MO|#1",
+      "reference": "auto:make quota product|2026-01-23T00:00:00|2026-01-23T02:00:00||3||MO|#1"
+    },
+    {
+      "operation": "ship quota product",
+      "demand": "quota order A",
+      "quantity": 10,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-13T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "quota product @ quota plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": -10
+        }
+      ],
+      "operationCost": 10,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 10,
+      "setupPenalty": 0,
+      "planKey": "auto:ship quota product|2026-01-12T23:00:00|2026-01-13T00:00:00|quota order A|10||MO|#1",
+      "reference": "auto:ship quota product|2026-01-12T23:00:00|2026-01-13T00:00:00|quota order A|10||MO|#1"
+    },
+    {
+      "operation": "ship quota product",
+      "demand": "quota order A",
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-01-15T02:00:00",
+      "end": "2026-01-15T03:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-15T02:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "quota product @ quota plant",
+          "date": "2026-01-15T02:00:00",
+          "quantity": -1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:ship quota product|2026-01-15T02:00:00|2026-01-15T03:00:00|quota order A|1||MO|#1",
+      "reference": "auto:ship quota product|2026-01-15T02:00:00|2026-01-15T03:00:00|quota order A|1||MO|#1"
+    },
+    {
+      "operation": "ship quota product",
+      "demand": "quota order B",
+      "quantity": 7,
+      "quantityCompleted": 0,
+      "start": "2026-01-15T23:00:00",
+      "end": "2026-01-16T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-15T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "quota product @ quota plant",
+          "date": "2026-01-15T23:00:00",
+          "quantity": -7
+        }
+      ],
+      "operationCost": 7,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 7,
+      "setupPenalty": 0,
+      "planKey": "auto:ship quota product|2026-01-15T23:00:00|2026-01-16T00:00:00|quota order B|7||MO|#1",
+      "reference": "auto:ship quota product|2026-01-15T23:00:00|2026-01-16T00:00:00|quota order B|7||MO|#1"
+    },
+    {
+      "operation": "ship quota product",
+      "demand": "quota order B",
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-23T02:00:00",
+      "end": "2026-01-23T03:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-23T02:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "quota product @ quota plant",
+          "date": "2026-01-23T02:00:00",
+          "quantity": -3
+        }
+      ],
+      "operationCost": 3,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 3,
+      "setupPenalty": 0,
+      "planKey": "auto:ship quota product|2026-01-23T02:00:00|2026-01-23T03:00:00|quota order B|3||MO|#1",
+      "reference": "auto:ship quota product|2026-01-23T02:00:00|2026-01-23T03:00:00|quota order B|3||MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "quota order A",
+      "quantity": 10,
+      "end": "2026-01-13T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship quota product|2026-01-12T23:00:00|2026-01-13T00:00:00|quota order A|10||MO|#1"
+    },
+    {
+      "demand": "quota order A",
+      "quantity": 1,
+      "end": "2026-01-15T03:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship quota product|2026-01-15T02:00:00|2026-01-15T03:00:00|quota order A|1||MO|#1"
+    },
+    {
+      "demand": "quota order B",
+      "quantity": 7,
+      "end": "2026-01-16T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship quota product|2026-01-15T23:00:00|2026-01-16T00:00:00|quota order B|7||MO|#1"
+    },
+    {
+      "demand": "quota order B",
+      "quantity": 3,
+      "end": "2026-01-23T03:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship quota product|2026-01-23T02:00:00|2026-01-23T03:00:00|quota order B|3||MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "quota product @ quota plant",
+      "bufferBatch": "",
+      "date": "2026-01-06T01:59:59",
+      "quantity": 6,
+      "onhand": 6,
+      "operationPlanKey": "auto:make quota product|2026-01-05T23:59:59|2026-01-06T01:59:59||6||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "quota product @ quota plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "quantity": -10,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship quota product|2026-01-12T23:00:00|2026-01-13T00:00:00|quota order A|10||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "quota product @ quota plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "quantity": 4,
+      "onhand": 10,
+      "operationPlanKey": "auto:make quota product|2026-01-12T21:00:00|2026-01-12T23:00:00||4||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "quota product @ quota plant",
+      "bufferBatch": "",
+      "date": "2026-01-15T02:00:00",
+      "quantity": -1,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship quota product|2026-01-15T02:00:00|2026-01-15T03:00:00|quota order A|1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "quota product @ quota plant",
+      "bufferBatch": "",
+      "date": "2026-01-15T02:00:00",
+      "quantity": 1,
+      "onhand": 1,
+      "operationPlanKey": "auto:make quota product|2026-01-15T00:00:00|2026-01-15T02:00:00||1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "quota product @ quota plant",
+      "bufferBatch": "",
+      "date": "2026-01-15T23:00:00",
+      "quantity": -7,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship quota product|2026-01-15T23:00:00|2026-01-16T00:00:00|quota order B|7||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "quota product @ quota plant",
+      "bufferBatch": "",
+      "date": "2026-01-15T23:00:00",
+      "quantity": 7,
+      "onhand": 7,
+      "operationPlanKey": "auto:make quota product|2026-01-15T21:00:00|2026-01-15T23:00:00||7||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "quota product @ quota plant",
+      "bufferBatch": "",
+      "date": "2026-01-23T02:00:00",
+      "quantity": -3,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship quota product|2026-01-23T02:00:00|2026-01-23T03:00:00|quota order B|3||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "quota product @ quota plant",
+      "bufferBatch": "",
+      "date": "2026-01-23T02:00:00",
+      "quantity": 3,
+      "onhand": 3,
+      "operationPlanKey": "auto:make quota product|2026-01-23T00:00:00|2026-01-23T02:00:00||3||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "resource": "quota resource",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-05T23:59:59",
+      "available": 6,
+      "load": 6,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "quota resource",
+      "start": "2026-01-06T01:59:59",
+      "end": "2026-01-12T21:00:00",
+      "available": 4,
+      "load": 4,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "quota resource",
+      "start": "2026-01-15T00:00:00",
+      "end": "2026-01-15T02:00:00",
+      "available": 8,
+      "load": 8,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "quota resource",
+      "start": "2026-01-23T00:00:00",
+      "end": "2026-01-23T02:00:00",
+      "available": 3,
+      "load": 3,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    }
+  ],
+  "costSummary": {
+    "operationCost": 63,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 63,
+    "setupPenalty": 0
+  }
+}

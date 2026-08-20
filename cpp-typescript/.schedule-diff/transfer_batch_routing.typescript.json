@@ -1,0 +1,1140 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory transfer raw @ transfer plant",
+      "demand": null,
+      "quantity": 80,
+      "quantityCompleted": 0,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "STCK",
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "transfer raw @ transfer plant",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 80
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:Inventory transfer raw @ transfer plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1",
+      "reference": "auto:Inventory transfer raw @ transfer plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1"
+    },
+    {
+      "operation": "continuous upstream",
+      "demand": null,
+      "quantity": 8,
+      "quantityCompleted": 0,
+      "start": "2026-01-11T20:00:00",
+      "end": "2026-01-12T16:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-11T20:00:00",
+      "resources": [
+        "transfer reactor"
+      ],
+      "materials": [
+        {
+          "buffer": "transfer raw @ transfer plant",
+          "date": "2026-01-11T20:00:00",
+          "quantity": -8
+        },
+        {
+          "buffer": "transfer intermediate @ transfer plant",
+          "date": "2026-01-12T02:40:00",
+          "quantity": 3
+        },
+        {
+          "buffer": "transfer intermediate @ transfer plant",
+          "date": "2026-01-12T09:20:00",
+          "quantity": 3
+        },
+        {
+          "buffer": "transfer intermediate @ transfer plant",
+          "date": "2026-01-12T16:00:00",
+          "quantity": 2
+        }
+      ],
+      "operationCost": 24,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 24,
+      "setupPenalty": 0,
+      "planKey": "auto:continuous upstream|2026-01-11T20:00:00|2026-01-12T16:00:00||8||MO|#1",
+      "reference": "auto:continuous upstream|2026-01-11T20:00:00|2026-01-12T16:00:00||8||MO|#1"
+    },
+    {
+      "operation": "continuous upstream",
+      "demand": null,
+      "quantity": 7,
+      "quantityCompleted": 0,
+      "start": "2026-01-13T10:00:00",
+      "end": "2026-01-14T04:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-13T10:00:00",
+      "resources": [
+        "transfer reactor"
+      ],
+      "materials": [
+        {
+          "buffer": "transfer raw @ transfer plant",
+          "date": "2026-01-13T10:00:00",
+          "quantity": -7
+        },
+        {
+          "buffer": "transfer intermediate @ transfer plant",
+          "date": "2026-01-13T16:00:00",
+          "quantity": 3
+        },
+        {
+          "buffer": "transfer intermediate @ transfer plant",
+          "date": "2026-01-13T22:00:00",
+          "quantity": 3
+        },
+        {
+          "buffer": "transfer intermediate @ transfer plant",
+          "date": "2026-01-14T04:00:00",
+          "quantity": 1
+        }
+      ],
+      "operationCost": 21,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 21,
+      "setupPenalty": 0,
+      "planKey": "auto:continuous upstream|2026-01-13T10:00:00|2026-01-14T04:00:00||7||MO|#1",
+      "reference": "auto:continuous upstream|2026-01-13T10:00:00|2026-01-14T04:00:00||7||MO|#1"
+    },
+    {
+      "operation": "continuous upstream",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-16T02:00:00",
+      "end": "2026-01-16T16:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-16T02:00:00",
+      "resources": [
+        "transfer reactor"
+      ],
+      "materials": [
+        {
+          "buffer": "transfer raw @ transfer plant",
+          "date": "2026-01-16T02:00:00",
+          "quantity": -5
+        },
+        {
+          "buffer": "transfer intermediate @ transfer plant",
+          "date": "2026-01-16T09:00:00",
+          "quantity": 3
+        },
+        {
+          "buffer": "transfer intermediate @ transfer plant",
+          "date": "2026-01-16T16:00:00",
+          "quantity": 2
+        }
+      ],
+      "operationCost": 15,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 15,
+      "setupPenalty": 0,
+      "planKey": "auto:continuous upstream|2026-01-16T02:00:00|2026-01-16T16:00:00||5||MO|#1",
+      "reference": "auto:continuous upstream|2026-01-16T02:00:00|2026-01-16T16:00:00||5||MO|#1"
+    },
+    {
+      "operation": "ship transfer finished",
+      "demand": "transfer order A",
+      "quantity": 8,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-13T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "transfer finished @ transfer plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": -8
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship transfer finished|2026-01-12T23:00:00|2026-01-13T00:00:00|transfer order A|8||MO|#1",
+      "reference": "auto:ship transfer finished|2026-01-12T23:00:00|2026-01-13T00:00:00|transfer order A|8||MO|#1"
+    },
+    {
+      "operation": "ship transfer finished",
+      "demand": "transfer order B",
+      "quantity": 7,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T11:00:00",
+      "end": "2026-01-14T12:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T11:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "transfer finished @ transfer plant",
+          "date": "2026-01-14T11:00:00",
+          "quantity": -7
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship transfer finished|2026-01-14T11:00:00|2026-01-14T12:00:00|transfer order B|7||MO|#1",
+      "reference": "auto:ship transfer finished|2026-01-14T11:00:00|2026-01-14T12:00:00|transfer order B|7||MO|#1"
+    },
+    {
+      "operation": "ship transfer finished",
+      "demand": "transfer order C",
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-16T23:00:00",
+      "end": "2026-01-17T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-16T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "transfer finished @ transfer plant",
+          "date": "2026-01-16T23:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship transfer finished|2026-01-16T23:00:00|2026-01-17T00:00:00|transfer order C|5||MO|#1",
+      "reference": "auto:ship transfer finished|2026-01-16T23:00:00|2026-01-17T00:00:00|transfer order C|5||MO|#1"
+    },
+    {
+      "operation": "transfer downstream routing",
+      "demand": null,
+      "quantity": 8,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T16:00:00",
+      "end": "2026-01-12T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T16:00:00",
+      "resources": [],
+      "materials": [],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:transfer downstream routing|2026-01-12T16:00:00|2026-01-12T23:00:00||8||MO|#1",
+      "reference": "auto:transfer downstream routing|2026-01-12T16:00:00|2026-01-12T23:00:00||8||MO|#1"
+    },
+    {
+      "operation": "transfer downstream routing",
+      "demand": null,
+      "quantity": 7,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T04:00:00",
+      "end": "2026-01-14T11:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T04:00:00",
+      "resources": [],
+      "materials": [],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:transfer downstream routing|2026-01-14T04:00:00|2026-01-14T11:00:00||7||MO|#1",
+      "reference": "auto:transfer downstream routing|2026-01-14T04:00:00|2026-01-14T11:00:00||7||MO|#1"
+    },
+    {
+      "operation": "transfer downstream routing",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-16T16:00:00",
+      "end": "2026-01-16T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-16T16:00:00",
+      "resources": [],
+      "materials": [],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:transfer downstream routing|2026-01-16T16:00:00|2026-01-16T23:00:00||5||MO|#1",
+      "reference": "auto:transfer downstream routing|2026-01-16T16:00:00|2026-01-16T23:00:00||5||MO|#1"
+    },
+    {
+      "operation": "transfer finish step",
+      "demand": null,
+      "quantity": 8,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T16:00:00",
+      "end": "2026-01-12T21:00:00",
+      "ownerOperation": "transfer downstream routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T16:00:00",
+      "resources": [
+        "transfer finishing line"
+      ],
+      "materials": [
+        {
+          "buffer": "transfer intermediate @ transfer plant",
+          "date": "2026-01-12T16:00:00",
+          "quantity": -8
+        }
+      ],
+      "operationCost": 32,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 32,
+      "setupPenalty": 0,
+      "planKey": "auto:transfer finish step|2026-01-12T16:00:00|2026-01-12T21:00:00||8||MO|transfer downstream routing#1",
+      "reference": "auto:transfer finish step|2026-01-12T16:00:00|2026-01-12T21:00:00||8||MO|transfer downstream routing#1"
+    },
+    {
+      "operation": "transfer finish step",
+      "demand": null,
+      "quantity": 7,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T04:00:00",
+      "end": "2026-01-14T09:00:00",
+      "ownerOperation": "transfer downstream routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T04:00:00",
+      "resources": [
+        "transfer finishing line"
+      ],
+      "materials": [
+        {
+          "buffer": "transfer intermediate @ transfer plant",
+          "date": "2026-01-14T04:00:00",
+          "quantity": -7
+        }
+      ],
+      "operationCost": 28,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 28,
+      "setupPenalty": 0,
+      "planKey": "auto:transfer finish step|2026-01-14T04:00:00|2026-01-14T09:00:00||7||MO|transfer downstream routing#1",
+      "reference": "auto:transfer finish step|2026-01-14T04:00:00|2026-01-14T09:00:00||7||MO|transfer downstream routing#1"
+    },
+    {
+      "operation": "transfer finish step",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-16T16:00:00",
+      "end": "2026-01-16T21:00:00",
+      "ownerOperation": "transfer downstream routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-16T16:00:00",
+      "resources": [
+        "transfer finishing line"
+      ],
+      "materials": [
+        {
+          "buffer": "transfer intermediate @ transfer plant",
+          "date": "2026-01-16T16:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 20,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 20,
+      "setupPenalty": 0,
+      "planKey": "auto:transfer finish step|2026-01-16T16:00:00|2026-01-16T21:00:00||5||MO|transfer downstream routing#1",
+      "reference": "auto:transfer finish step|2026-01-16T16:00:00|2026-01-16T21:00:00||5||MO|transfer downstream routing#1"
+    },
+    {
+      "operation": "transfer pack step",
+      "demand": null,
+      "quantity": 8,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T21:00:00",
+      "end": "2026-01-12T23:00:00",
+      "ownerOperation": "transfer downstream routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "transfer finished @ transfer plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": 8
+        }
+      ],
+      "operationCost": 16,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 16,
+      "setupPenalty": 0,
+      "planKey": "auto:transfer pack step|2026-01-12T21:00:00|2026-01-12T23:00:00||8||MO|transfer downstream routing#1",
+      "reference": "auto:transfer pack step|2026-01-12T21:00:00|2026-01-12T23:00:00||8||MO|transfer downstream routing#1"
+    },
+    {
+      "operation": "transfer pack step",
+      "demand": null,
+      "quantity": 7,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T09:00:00",
+      "end": "2026-01-14T11:00:00",
+      "ownerOperation": "transfer downstream routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T09:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "transfer finished @ transfer plant",
+          "date": "2026-01-14T11:00:00",
+          "quantity": 7
+        }
+      ],
+      "operationCost": 14,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 14,
+      "setupPenalty": 0,
+      "planKey": "auto:transfer pack step|2026-01-14T09:00:00|2026-01-14T11:00:00||7||MO|transfer downstream routing#1",
+      "reference": "auto:transfer pack step|2026-01-14T09:00:00|2026-01-14T11:00:00||7||MO|transfer downstream routing#1"
+    },
+    {
+      "operation": "transfer pack step",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-16T21:00:00",
+      "end": "2026-01-16T23:00:00",
+      "ownerOperation": "transfer downstream routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-16T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "transfer finished @ transfer plant",
+          "date": "2026-01-16T23:00:00",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 10,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 10,
+      "setupPenalty": 0,
+      "planKey": "auto:transfer pack step|2026-01-16T21:00:00|2026-01-16T23:00:00||5||MO|transfer downstream routing#1",
+      "reference": "auto:transfer pack step|2026-01-16T21:00:00|2026-01-16T23:00:00||5||MO|transfer downstream routing#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "transfer order A",
+      "quantity": 8,
+      "end": "2026-01-13T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship transfer finished|2026-01-12T23:00:00|2026-01-13T00:00:00|transfer order A|8||MO|#1"
+    },
+    {
+      "demand": "transfer order B",
+      "quantity": 7,
+      "end": "2026-01-14T12:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship transfer finished|2026-01-14T11:00:00|2026-01-14T12:00:00|transfer order B|7||MO|#1"
+    },
+    {
+      "demand": "transfer order C",
+      "quantity": 5,
+      "end": "2026-01-17T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship transfer finished|2026-01-16T23:00:00|2026-01-17T00:00:00|transfer order C|5||MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [
+    {
+      "name": "invalid data",
+      "description": "No replenishment defined for 'transfer raw @ transfer plant'",
+      "start": "1971-01-01T00:00:00",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "owner": "transfer raw @ transfer plant",
+      "feasible": false
+    }
+  ],
+  "inventoryProfiles": [
+    {
+      "buffer": "transfer finished @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "quantity": -8,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship transfer finished|2026-01-12T23:00:00|2026-01-13T00:00:00|transfer order A|8||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer finished @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "quantity": 8,
+      "onhand": 8,
+      "operationPlanKey": "auto:transfer pack step|2026-01-12T21:00:00|2026-01-12T23:00:00||8||MO|transfer downstream routing#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer finished @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T11:00:00",
+      "quantity": -7,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship transfer finished|2026-01-14T11:00:00|2026-01-14T12:00:00|transfer order B|7||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer finished @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T11:00:00",
+      "quantity": 7,
+      "onhand": 7,
+      "operationPlanKey": "auto:transfer pack step|2026-01-14T09:00:00|2026-01-14T11:00:00||7||MO|transfer downstream routing#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer finished @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-16T23:00:00",
+      "quantity": -5,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship transfer finished|2026-01-16T23:00:00|2026-01-17T00:00:00|transfer order C|5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer finished @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-16T23:00:00",
+      "quantity": 5,
+      "onhand": 5,
+      "operationPlanKey": "auto:transfer pack step|2026-01-16T21:00:00|2026-01-16T23:00:00||5||MO|transfer downstream routing#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer intermediate @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T02:40:00",
+      "quantity": 3,
+      "onhand": 3,
+      "operationPlanKey": "auto:continuous upstream|2026-01-11T20:00:00|2026-01-12T16:00:00||8||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer intermediate @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T09:20:00",
+      "quantity": 3,
+      "onhand": 6,
+      "operationPlanKey": "auto:continuous upstream|2026-01-11T20:00:00|2026-01-12T16:00:00||8||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer intermediate @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T16:00:00",
+      "quantity": -8,
+      "onhand": 0,
+      "operationPlanKey": "auto:transfer finish step|2026-01-12T16:00:00|2026-01-12T21:00:00||8||MO|transfer downstream routing#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer intermediate @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T16:00:00",
+      "quantity": 2,
+      "onhand": 8,
+      "operationPlanKey": "auto:continuous upstream|2026-01-11T20:00:00|2026-01-12T16:00:00||8||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer intermediate @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T16:00:00",
+      "quantity": 3,
+      "onhand": 3,
+      "operationPlanKey": "auto:continuous upstream|2026-01-13T10:00:00|2026-01-14T04:00:00||7||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer intermediate @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T22:00:00",
+      "quantity": 3,
+      "onhand": 6,
+      "operationPlanKey": "auto:continuous upstream|2026-01-13T10:00:00|2026-01-14T04:00:00||7||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer intermediate @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T04:00:00",
+      "quantity": -7,
+      "onhand": 0,
+      "operationPlanKey": "auto:transfer finish step|2026-01-14T04:00:00|2026-01-14T09:00:00||7||MO|transfer downstream routing#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer intermediate @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T04:00:00",
+      "quantity": 1,
+      "onhand": 7,
+      "operationPlanKey": "auto:continuous upstream|2026-01-13T10:00:00|2026-01-14T04:00:00||7||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer intermediate @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-16T09:00:00",
+      "quantity": 3,
+      "onhand": 3,
+      "operationPlanKey": "auto:continuous upstream|2026-01-16T02:00:00|2026-01-16T16:00:00||5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer intermediate @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-16T16:00:00",
+      "quantity": -5,
+      "onhand": 0,
+      "operationPlanKey": "auto:transfer finish step|2026-01-16T16:00:00|2026-01-16T21:00:00||5||MO|transfer downstream routing#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer intermediate @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-16T16:00:00",
+      "quantity": 2,
+      "onhand": 5,
+      "operationPlanKey": "auto:continuous upstream|2026-01-16T02:00:00|2026-01-16T16:00:00||5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer raw @ transfer plant",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "quantity": 80,
+      "onhand": 80,
+      "operationPlanKey": "auto:Inventory transfer raw @ transfer plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1",
+      "orderType": "STCK"
+    },
+    {
+      "buffer": "transfer raw @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-11T20:00:00",
+      "quantity": -8,
+      "onhand": 72,
+      "operationPlanKey": "auto:continuous upstream|2026-01-11T20:00:00|2026-01-12T16:00:00||8||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer raw @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T10:00:00",
+      "quantity": -7,
+      "onhand": 65,
+      "operationPlanKey": "auto:continuous upstream|2026-01-13T10:00:00|2026-01-14T04:00:00||7||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "transfer raw @ transfer plant",
+      "bufferBatch": "",
+      "date": "2026-01-16T02:00:00",
+      "quantity": -5,
+      "onhand": 60,
+      "operationPlanKey": "auto:continuous upstream|2026-01-16T02:00:00|2026-01-16T16:00:00||5||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "resource": "transfer finishing line",
+      "start": "1971-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "available": 964272,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 964272,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-11T20:00:00",
+      "available": 520,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 520,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-11T20:00:00",
+      "end": "2026-01-12T16:00:00",
+      "available": 40,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 40,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-12T16:00:00",
+      "end": "2026-01-12T21:00:00",
+      "available": 10,
+      "load": 5,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 5,
+      "loadConfirmed": 0,
+      "utilization": 0.5
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-12T21:00:00",
+      "end": "2026-01-12T23:00:00",
+      "available": 4,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 4,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-13T00:00:00",
+      "available": 2,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 2,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-13T00:00:00",
+      "end": "2026-01-13T10:00:00",
+      "available": 20,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 20,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-13T10:00:00",
+      "end": "2026-01-14T04:00:00",
+      "available": 36,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 36,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-14T04:00:00",
+      "end": "2026-01-14T09:00:00",
+      "available": 10,
+      "load": 5,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 5,
+      "loadConfirmed": 0,
+      "utilization": 0.5
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-14T09:00:00",
+      "end": "2026-01-14T11:00:00",
+      "available": 4,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 4,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-14T11:00:00",
+      "end": "2026-01-14T12:00:00",
+      "available": 2,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 2,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-14T12:00:00",
+      "end": "2026-01-16T02:00:00",
+      "available": 76,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 76,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-16T02:00:00",
+      "end": "2026-01-16T16:00:00",
+      "available": 28,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 28,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-16T16:00:00",
+      "end": "2026-01-16T21:00:00",
+      "available": 10,
+      "load": 5,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 5,
+      "loadConfirmed": 0,
+      "utilization": 0.5
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-16T21:00:00",
+      "end": "2026-01-16T23:00:00",
+      "available": 4,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 4,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer finishing line",
+      "start": "2026-01-16T23:00:00",
+      "end": "2026-01-17T00:00:00",
+      "available": 2,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 2,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "1971-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "available": 482136,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 482136,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-11T20:00:00",
+      "available": 260,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 260,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-11T20:00:00",
+      "end": "2026-01-12T16:00:00",
+      "available": 20,
+      "load": 20,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-12T16:00:00",
+      "end": "2026-01-12T21:00:00",
+      "available": 5,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 5,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-12T21:00:00",
+      "end": "2026-01-12T23:00:00",
+      "available": 2,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 2,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-13T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-13T00:00:00",
+      "end": "2026-01-13T10:00:00",
+      "available": 10,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 10,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-13T10:00:00",
+      "end": "2026-01-14T04:00:00",
+      "available": 18,
+      "load": 18,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-14T04:00:00",
+      "end": "2026-01-14T09:00:00",
+      "available": 5,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 5,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-14T09:00:00",
+      "end": "2026-01-14T11:00:00",
+      "available": 2,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 2,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-14T11:00:00",
+      "end": "2026-01-14T12:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-14T12:00:00",
+      "end": "2026-01-16T02:00:00",
+      "available": 38,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 38,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-16T02:00:00",
+      "end": "2026-01-16T16:00:00",
+      "available": 14,
+      "load": 14,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-16T16:00:00",
+      "end": "2026-01-16T21:00:00",
+      "available": 5,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 5,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-16T21:00:00",
+      "end": "2026-01-16T23:00:00",
+      "available": 2,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 2,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "transfer reactor",
+      "start": "2026-01-16T23:00:00",
+      "end": "2026-01-17T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    }
+  ],
+  "costSummary": {
+    "operationCost": 180,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 180,
+    "setupPenalty": 0
+  }
+}

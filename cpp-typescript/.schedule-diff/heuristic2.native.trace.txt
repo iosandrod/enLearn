@@ -1,0 +1,321 @@
+
+> frepple-cpp-typescript@0.1.0 compare:scheduling
+> node scripts/compare-scheduling.mjs
+
+Deleting previous plan
+Start solving cluster 1
+  Operation 'ship forward repair product' is asked: 2  2026-01-03T00:00:00
+  Operation 'ship forward repair product' answers: 2
+  Operation 'ship forward repair product' is asked: 3  2026-01-03T12:00:00
+  Operation 'ship forward repair product' answers: 3
+  Operation 'ship forward repair product' is asked: 4  2026-01-04T00:00:00
+  Operation 'ship forward repair product' answers: 4
+  Operation 'ship forward repair product' is asked: 5  2026-01-04T12:00:00
+  Operation 'ship forward repair product' answers: 5
+  Operation 'ship forward repair product' is asked: 2  2026-01-05T00:00:00
+  Operation 'ship forward repair product' answers: 2
+  Operation 'ship forward repair product' is asked: 3  2026-01-05T12:00:00
+  Operation 'ship forward repair product' answers: 3
+  Operation 'ship forward repair product' is asked: 4  2026-01-06T00:00:00
+  Operation 'ship forward repair product' answers: 4
+  Operation 'ship forward repair product' is asked: 5  2026-01-06T12:00:00
+  Operation 'ship forward repair product' answers: 5
+PLANNING STEP 1: backward sweep
+  Buffer 'forward repair product @ plant' solves for safety stock
+    Operation 'make forward repair product' is asked: 2  2026-01-02T23:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-03T00:00:00
+    Operation 'make forward repair product' is asked: 2  2026-01-03T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-01T00:00:00 / 2026-01-03T00:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' is asked: 5  2026-01-03T11:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-01T11:00:00 / 2026-01-03T11:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' is asked: 9  2026-01-03T23:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-01T23:00:00 / 2026-01-03T23:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' is asked: 4  2026-01-04T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-02T00:00:00 / 2026-01-04T00:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' is asked: 9  2026-01-04T11:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-02T11:00:00 / 2026-01-04T11:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' is asked: 11  2026-01-04T23:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-02T23:00:00 / 2026-01-04T23:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' is asked: 14  2026-01-05T11:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-03T11:00:00 / 2026-01-05T11:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' is asked: 18  2026-01-05T23:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-03T23:00:00 / 2026-01-05T23:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-06T00:00:00
+    Operation 'make forward repair product' is asked: 18  2026-01-06T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-04T00:00:00 / 2026-01-06T00:00:00
+      Resource 'forward repair bottleneck' answers: 1  2026-01-06T00:00:00
+    Operation 'make forward repair product' answers: 5
+    Operation 'make forward repair product' is asked: 13  2026-01-06T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-04T00:00:00 / 2026-01-06T00:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-08T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-08T00:00:00
+    Operation 'make forward repair product' is asked: 18  2026-01-06T11:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-04T11:00:00 / 2026-01-06T11:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-08T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-08T00:00:00
+    Operation 'make forward repair product' is asked: 18  2026-01-08T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-06T00:00:00 / 2026-01-08T00:00:00
+      Resource 'forward repair bottleneck' answers: 1  2026-01-08T00:00:00
+    Operation 'make forward repair product' answers: 5
+    Operation 'make forward repair product' is asked: 13  2026-01-08T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-06T00:00:00 / 2026-01-08T00:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-10T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-10T00:00:00
+    Operation 'make forward repair product' is asked: 13  2026-01-10T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-08T00:00:00 / 2026-01-10T00:00:00
+      Resource 'forward repair bottleneck' answers: 1  2026-01-10T00:00:00
+    Operation 'make forward repair product' answers: 5
+    Operation 'make forward repair product' is asked: 8  2026-01-10T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-08T00:00:00 / 2026-01-10T00:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-12T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-12T00:00:00
+    Operation 'make forward repair product' is asked: 8  2026-01-12T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-10T00:00:00 / 2026-01-12T00:00:00
+      Resource 'forward repair bottleneck' answers: 1  2026-01-12T00:00:00
+    Operation 'make forward repair product' answers: 5
+    Operation 'make forward repair product' is asked: 3  2026-01-12T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-10T00:00:00 / 2026-01-12T00:00:00
+      Resource 'forward repair bottleneck' answers: 0  2026-01-14T00:00:00
+    Operation 'make forward repair product' answers: 0  2026-01-14T00:00:00
+    Operation 'make forward repair product' is asked: 3  2026-01-14T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-12T00:00:00 / 2026-01-14T00:00:00
+      Resource 'forward repair bottleneck' answers: 1  2026-01-14T00:00:00
+    Operation 'make forward repair product' answers: 3
+  Buffer 'forward repair product @ plant' solved for safety stock
+  Buffer 'forward repair raw @ plant' solves for safety stock
+     Warning: Can't replenish
+  Buffer 'forward repair raw @ plant' solved for safety stock
+PLANNING STEP 2: forward sweep
+Starting forward propagation in cluster 1
+  Forward propagation of buffer forward repair product @ plant
+  Moving operationplan 0x5d81a4382e60 (ship forward repair product, 2, 2026-01-02T23:00:00 - 2026-01-03T00:00:00) to start on 2026-01-04T00:00:00
+  Moving operationplan 0x5d81a42f6dd0 (ship forward repair product, 3, 2026-01-03T11:00:00 - 2026-01-03T12:00:00) to start on 2026-01-04T00:00:00
+  Moving operationplan 0x5d81a418e3f0 (ship forward repair product, 4, 2026-01-03T23:00:00 - 2026-01-04T00:00:00) to start on 2026-01-04T00:00:00
+  Moving operationplan 0x5d81a4382e60 (ship forward repair product, 2, 2026-01-04T00:00:00 - 2026-01-04T01:00:00) to start on 2026-01-06T00:00:00
+  Moving operationplan 0x5d81a42f6dd0 (ship forward repair product, 3, 2026-01-04T00:00:00 - 2026-01-04T01:00:00) to start on 2026-01-06T00:00:00
+  Moving operationplan 0x5d81a418e540 (ship forward repair product, 5, 2026-01-04T11:00:00 - 2026-01-04T12:00:00) to start on 2026-01-06T00:00:00
+  Moving operationplan 0x5d81a418e690 (ship forward repair product, 2, 2026-01-04T23:00:00 - 2026-01-05T00:00:00) to start on 2026-01-06T00:00:00
+  Moving operationplan 0x5d81a418e860 (ship forward repair product, 3, 2026-01-05T11:00:00 - 2026-01-05T12:00:00) to start on 2026-01-06T00:00:00
+  Moving operationplan 0x5d81a418ea30 (ship forward repair product, 4, 2026-01-05T23:00:00 - 2026-01-06T00:00:00) to start on 2026-01-06T00:00:00
+  Moving operationplan 0x5d81a4382e60 (ship forward repair product, 2, 2026-01-06T00:00:00 - 2026-01-06T01:00:00) to start on 2026-01-08T00:00:00
+  Moving operationplan 0x5d81a42f6dd0 (ship forward repair product, 3, 2026-01-06T00:00:00 - 2026-01-06T01:00:00) to start on 2026-01-08T00:00:00
+  Moving operationplan 0x5d81a418e540 (ship forward repair product, 5, 2026-01-06T00:00:00 - 2026-01-06T01:00:00) to start on 2026-01-08T00:00:00
+  Moving operationplan 0x5d81a418e690 (ship forward repair product, 2, 2026-01-06T00:00:00 - 2026-01-06T01:00:00) to start on 2026-01-08T00:00:00
+  Moving operationplan 0x5d81a418e860 (ship forward repair product, 3, 2026-01-06T00:00:00 - 2026-01-06T01:00:00) to start on 2026-01-08T00:00:00
+  Moving operationplan 0x5d81a418ec00 (ship forward repair product, 5, 2026-01-06T11:00:00 - 2026-01-06T12:00:00) to start on 2026-01-08T00:00:00
+  Moving operationplan 0x5d81a4382e60 (ship forward repair product, 2, 2026-01-08T00:00:00 - 2026-01-08T01:00:00) to start on 2026-01-10T00:00:00
+  Moving operationplan 0x5d81a42f6dd0 (ship forward repair product, 3, 2026-01-08T00:00:00 - 2026-01-08T01:00:00) to start on 2026-01-10T00:00:00
+  Moving operationplan 0x5d81a418e540 (ship forward repair product, 5, 2026-01-08T00:00:00 - 2026-01-08T01:00:00) to start on 2026-01-10T00:00:00
+  Moving operationplan 0x5d81a418e690 (ship forward repair product, 2, 2026-01-08T00:00:00 - 2026-01-08T01:00:00) to start on 2026-01-10T00:00:00
+  Moving operationplan 0x5d81a418e860 (ship forward repair product, 3, 2026-01-08T00:00:00 - 2026-01-08T01:00:00) to start on 2026-01-10T00:00:00
+  Moving operationplan 0x5d81a4382e60 (ship forward repair product, 2, 2026-01-10T00:00:00 - 2026-01-10T01:00:00) to start on 2026-01-12T00:00:00
+  Moving operationplan 0x5d81a42f6dd0 (ship forward repair product, 3, 2026-01-10T00:00:00 - 2026-01-10T01:00:00) to start on 2026-01-12T00:00:00
+  Moving operationplan 0x5d81a418e540 (ship forward repair product, 5, 2026-01-10T00:00:00 - 2026-01-10T01:00:00) to start on 2026-01-12T00:00:00
+  Moving operationplan 0x5d81a4382e60 (ship forward repair product, 2, 2026-01-12T00:00:00 - 2026-01-12T01:00:00) to start on 2026-01-14T00:00:00
+  Moving operationplan 0x5d81a42f6dd0 (ship forward repair product, 3, 2026-01-12T00:00:00 - 2026-01-12T01:00:00) to start on 2026-01-14T00:00:00
+Finished forward propagation in cluster 1
+PLANNING STEP 3: second backward sweep
+  Buffer 'forward repair product @ plant' solves for safety stock
+    Operation 'make forward repair product' is asked: 3  2026-01-06T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-04T00:00:00 / 2026-01-06T00:00:00
+      Resource 'forward repair bottleneck' answers: 1  2026-01-06T00:00:00
+    Operation 'make forward repair product' answers: 3
+    Operation 'make forward repair product' is asked: 5  2026-01-08T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-06T00:00:00 / 2026-01-08T00:00:00
+      Resource 'forward repair bottleneck' answers: 1  2026-01-08T00:00:00
+    Operation 'make forward repair product' answers: 5
+    Operation 'make forward repair product' is asked: 5  2026-01-10T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-08T00:00:00 / 2026-01-10T00:00:00
+      Resource 'forward repair bottleneck' answers: 1  2026-01-10T00:00:00
+    Operation 'make forward repair product' answers: 5
+    Operation 'make forward repair product' is asked: 5  2026-01-12T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-10T00:00:00 / 2026-01-12T00:00:00
+      Resource 'forward repair bottleneck' answers: 1  2026-01-12T00:00:00
+    Operation 'make forward repair product' answers: 5
+    Operation 'make forward repair product' is asked: 5  2026-01-14T00:00:00
+      Resource 'forward repair bottleneck' is asked: 1  2026-01-12T00:00:00 / 2026-01-14T00:00:00
+      Resource 'forward repair bottleneck' answers: 1  2026-01-14T00:00:00
+    Operation 'make forward repair product' answers: 5
+  Buffer 'forward repair product @ plant' solved for safety stock
+  Buffer 'forward repair raw @ plant' solves for safety stock
+     Warning: Can't replenish
+  Buffer 'forward repair raw @ plant' solved for safety stock
+PLANNING STEP 4: forward sweep
+Starting forward propagation in cluster 1
+Finished forward propagation in cluster 1
+PLANNING STEP 5: clean up excess inventory
+Start scanning excess in cluster 1
+Scanning buffer forward repair product @ plant
+Finished excess scan
+Start scanning excess in cluster 1
+Scanning buffer forward repair product @ plant
+Finished excess scan
+End solving cluster 1
+Start solving cluster 0
+PLANNING STEP 1: backward sweep
+PLANNING STEP 2: forward sweep
+Starting forward propagation in cluster 0
+Finished forward propagation in cluster 0
+PLANNING STEP 3: clean up excess inventory
+Start scanning excess in cluster 0
+Finished excess scan
+Start scanning excess in cluster 0
+Finished excess scan
+End solving cluster 0
+{
+  "scenario": "heuristic2_forward_repair",
+  "industry": "瓶颈产线前推修复",
+  "description": "Heuristic two repairs overloaded backward plans in repeated forward and batch-grouped backward sweeps",
+  "coverage": [
+    "algorithm=heuristic_2",
+    "plantype=1",
+    "forward repair",
+    "锁定产能",
+    "重复扫掠"
+  ],
+  "solver": {
+    "plantype": 1,
+    "algorithm": "heuristic_2",
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "iterationMax": 32,
+    "minimumDelay": 3600,
+    "erasePreviousFirst": false,
+    "resourceIterationMax": 32
+  },
+  "input": {
+    "demands": 8,
+    "items": 2,
+    "buffers": 2,
+    "operations": 2,
+    "resources": 1,
+    "loads": 1,
+    "flows": 3,
+    "skills": 0,
+    "setupMatrices": 0
+  },
+  "identical": false,
+  "nativeOperationPlans": 15,
+  "typescriptOperationPlans": 16,
+  "nativeDeliveries": 8,
+  "typescriptDeliveries": 8,
+  "differenceCount": 100,
+  "firstDifferences": [
+    {
+      "path": "$.deliveries[0].end",
+      "native": "2026-01-14T01:00:00",
+      "typescript": "2026-01-18T01:00:00"
+    },
+    {
+      "path": "$.deliveries[0].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 01|2||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-18T00:00:00|2026-01-18T01:00:00|forward repair order 01|2||MO|#1"
+    },
+    {
+      "path": "$.deliveries[1].end",
+      "native": "2026-01-14T01:00:00",
+      "typescript": "2026-01-18T01:00:00"
+    },
+    {
+      "path": "$.deliveries[1].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 02|3||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-18T00:00:00|2026-01-18T01:00:00|forward repair order 02|3||MO|#1"
+    },
+    {
+      "path": "$.deliveries[3].end",
+      "native": "2026-01-12T01:00:00",
+      "typescript": "2026-01-16T01:00:00"
+    },
+    {
+      "path": "$.deliveries[3].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-12T00:00:00|2026-01-12T01:00:00|forward repair order 04|5||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-16T00:00:00|2026-01-16T01:00:00|forward repair order 04|5||MO|#1"
+    },
+    {
+      "path": "$.deliveries[4].end",
+      "native": "2026-01-10T01:00:00",
+      "typescript": "2026-01-14T01:00:00"
+    },
+    {
+      "path": "$.deliveries[4].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 05|2||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 05|2||MO|#1"
+    },
+    {
+      "path": "$.deliveries[5].end",
+      "native": "2026-01-10T01:00:00",
+      "typescript": "2026-01-12T01:00:00"
+    },
+    {
+      "path": "$.deliveries[5].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 06|3||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-12T00:00:00|2026-01-12T01:00:00|forward repair order 06|3||MO|#1"
+    },
+    {
+      "path": "$.deliveries[6].end",
+      "native": "2026-01-06T01:00:00",
+      "typescript": "2026-01-10T01:00:00"
+    },
+    {
+      "path": "$.deliveries[6].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-06T00:00:00|2026-01-06T01:00:00|forward repair order 07|4||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 07|4||MO|#1"
+    },
+    {
+      "path": "$.inventoryProfiles.length",
+      "native": 21,
+      "typescript": 23
+    },
+    {
+      "path": "$.inventoryProfiles[2].date",
+      "native": "2026-01-06T00:00:00",
+      "typescript": "2026-01-08T00:00:00"
+    },
+    {
+      "path": "$.inventoryProfiles[2].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-06T00:00:00|2026-01-06T01:00:00|forward repair order 07|4||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-08T00:00:00|2026-01-08T01:00:00|forward repair order 08|5||MO|#1"
+    },
+    {
+      "path": "$.inventoryProfiles[2].quantity",
+      "native": -4,
+      "typescript": -5
+    },
+    {
+      "path": "$.inventoryProfiles[3].date",
+      "native": "2026-01-06T00:00:00",
+      "typescript": "2026-01-08T00:00:00"
+    },
+    {
+      "path": "$.inventoryProfiles[3].onhand",
+      "native": 4,
+      "typescript": 5
+    },
+    {
+      "path": "$.inventoryProfiles[3].operationPlanKey",
+      "native": "auto:make forward repair product|2026-01-04T00:00:00|2026-01-06T00:00:00||3||MO|#1",
+      "typescript": "auto:make forward repair product|2026-01-06T00:00:00|2026-01-08T00:00:00||4||MO|#1"
+    },
+    {
+      "path": "$.inventoryProfiles[3].quantity",
+      "native": 3,
+      "typescript": 4
+    }
+  ],
+  "databaseSchema": "codex_schedule_diff"
+}

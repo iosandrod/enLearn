@@ -1,0 +1,585 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory locked raw @ plant",
+      "demand": null,
+      "quantity": 80,
+      "quantityCompleted": 0,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "STCK",
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "locked raw @ plant",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 80
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:Inventory locked raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1",
+      "reference": "auto:Inventory locked raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1"
+    },
+    {
+      "operation": "make locked product",
+      "demand": null,
+      "quantity": 8,
+      "quantityCompleted": 0,
+      "start": "2026-01-03T00:00:00",
+      "end": "2026-01-05T00:00:00",
+      "ownerOperation": null,
+      "batch": "LOCKED-A",
+      "orderType": "MO",
+      "status": "confirmed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-03T00:00:00",
+      "resources": [
+        "locked order machine"
+      ],
+      "materials": [
+        {
+          "buffer": "locked raw @ plant",
+          "date": "2026-01-03T00:00:00",
+          "quantity": -8
+        },
+        {
+          "buffer": "locked product @ plant",
+          "date": "2026-01-05T00:00:00",
+          "quantity": 8
+        }
+      ],
+      "operationCost": 56,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 56,
+      "setupPenalty": 0,
+      "planKey": "ref:MO-CONFIRMED-001",
+      "reference": "MO-CONFIRMED-001"
+    },
+    {
+      "operation": "make locked product",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-06T00:00:00",
+      "end": "2026-01-08T00:00:00",
+      "ownerOperation": null,
+      "batch": "LOCKED-A",
+      "orderType": "MO",
+      "status": "approved",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-06T00:00:00",
+      "resources": [
+        "locked order machine"
+      ],
+      "materials": [
+        {
+          "buffer": "locked raw @ plant",
+          "date": "2026-01-06T00:00:00",
+          "quantity": -6
+        },
+        {
+          "buffer": "locked product @ plant",
+          "date": "2026-01-08T00:00:00",
+          "quantity": 6
+        }
+      ],
+      "operationCost": 42,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 42,
+      "setupPenalty": 0,
+      "planKey": "ref:MO-APPROVED-001",
+      "reference": "MO-APPROVED-001"
+    },
+    {
+      "operation": "make locked product",
+      "demand": null,
+      "quantity": 7,
+      "quantityCompleted": 0,
+      "start": "2026-01-09T23:00:00",
+      "end": "2026-01-11T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-09T23:00:00",
+      "resources": [
+        "locked order machine"
+      ],
+      "materials": [
+        {
+          "buffer": "locked raw @ plant",
+          "date": "2026-01-09T23:00:00",
+          "quantity": -7
+        },
+        {
+          "buffer": "locked product @ plant",
+          "date": "2026-01-11T23:00:00",
+          "quantity": 7
+        }
+      ],
+      "operationCost": 49,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 49,
+      "setupPenalty": 0,
+      "planKey": "auto:make locked product|2026-01-09T23:00:00|2026-01-11T23:00:00||7||MO|#1",
+      "reference": "auto:make locked product|2026-01-09T23:00:00|2026-01-11T23:00:00||7||MO|#1"
+    },
+    {
+      "operation": "make locked product",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-14T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T23:00:00",
+      "resources": [
+        "locked order machine"
+      ],
+      "materials": [
+        {
+          "buffer": "locked raw @ plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": -5
+        },
+        {
+          "buffer": "locked product @ plant",
+          "date": "2026-01-14T23:00:00",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 35,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 35,
+      "setupPenalty": 0,
+      "planKey": "auto:make locked product|2026-01-12T23:00:00|2026-01-14T23:00:00||5||MO|#1",
+      "reference": "auto:make locked product|2026-01-12T23:00:00|2026-01-14T23:00:00||5||MO|#1"
+    },
+    {
+      "operation": "ship locked product",
+      "demand": "locked order demand A",
+      "quantity": 12,
+      "quantityCompleted": 0,
+      "start": "2026-01-08T23:00:00",
+      "end": "2026-01-09T00:00:00",
+      "ownerOperation": null,
+      "batch": "LOCKED-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-08T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "locked product @ plant",
+          "date": "2026-01-08T23:00:00",
+          "quantity": -12
+        }
+      ],
+      "operationCost": 12,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 12,
+      "setupPenalty": 0,
+      "planKey": "auto:ship locked product|2026-01-08T23:00:00|2026-01-09T00:00:00|locked order demand A|12|LOCKED-A|MO|#1",
+      "reference": "auto:ship locked product|2026-01-08T23:00:00|2026-01-09T00:00:00|locked order demand A|12|LOCKED-A|MO|#1"
+    },
+    {
+      "operation": "ship locked product",
+      "demand": "locked order demand B",
+      "quantity": 9,
+      "quantityCompleted": 0,
+      "start": "2026-01-11T23:00:00",
+      "end": "2026-01-12T00:00:00",
+      "ownerOperation": null,
+      "batch": "LOCKED-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-11T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "locked product @ plant",
+          "date": "2026-01-11T23:00:00",
+          "quantity": -9
+        }
+      ],
+      "operationCost": 9,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 9,
+      "setupPenalty": 0,
+      "planKey": "auto:ship locked product|2026-01-11T23:00:00|2026-01-12T00:00:00|locked order demand B|9|LOCKED-A|MO|#1",
+      "reference": "auto:ship locked product|2026-01-11T23:00:00|2026-01-12T00:00:00|locked order demand B|9|LOCKED-A|MO|#1"
+    },
+    {
+      "operation": "ship locked product",
+      "demand": "locked order demand C",
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-15T00:00:00",
+      "ownerOperation": null,
+      "batch": "LOCKED-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "locked product @ plant",
+          "date": "2026-01-14T23:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 5,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 5,
+      "setupPenalty": 0,
+      "planKey": "auto:ship locked product|2026-01-14T23:00:00|2026-01-15T00:00:00|locked order demand C|5|LOCKED-A|MO|#1",
+      "reference": "auto:ship locked product|2026-01-14T23:00:00|2026-01-15T00:00:00|locked order demand C|5|LOCKED-A|MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "locked order demand A",
+      "quantity": 12,
+      "end": "2026-01-09T00:00:00",
+      "batch": "LOCKED-A",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship locked product|2026-01-08T23:00:00|2026-01-09T00:00:00|locked order demand A|12|LOCKED-A|MO|#1"
+    },
+    {
+      "demand": "locked order demand B",
+      "quantity": 9,
+      "end": "2026-01-12T00:00:00",
+      "batch": "LOCKED-A",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship locked product|2026-01-11T23:00:00|2026-01-12T00:00:00|locked order demand B|9|LOCKED-A|MO|#1"
+    },
+    {
+      "demand": "locked order demand C",
+      "quantity": 5,
+      "end": "2026-01-15T00:00:00",
+      "batch": "LOCKED-A",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship locked product|2026-01-14T23:00:00|2026-01-15T00:00:00|locked order demand C|5|LOCKED-A|MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [
+    {
+      "name": "invalid data",
+      "description": "No replenishment defined for 'locked raw @ plant'",
+      "start": "1971-01-01T00:00:00",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "owner": "locked raw @ plant",
+      "feasible": false
+    }
+  ],
+  "inventoryProfiles": [
+    {
+      "buffer": "locked product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-05T00:00:00",
+      "quantity": 8,
+      "onhand": 8,
+      "operationPlanKey": "ref:MO-CONFIRMED-001",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "locked product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T00:00:00",
+      "quantity": 6,
+      "onhand": 14,
+      "operationPlanKey": "ref:MO-APPROVED-001",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "locked product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T23:00:00",
+      "quantity": -12,
+      "onhand": 2,
+      "operationPlanKey": "auto:ship locked product|2026-01-08T23:00:00|2026-01-09T00:00:00|locked order demand A|12|LOCKED-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "locked product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-11T23:00:00",
+      "quantity": -9,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship locked product|2026-01-11T23:00:00|2026-01-12T00:00:00|locked order demand B|9|LOCKED-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "locked product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-11T23:00:00",
+      "quantity": 7,
+      "onhand": 9,
+      "operationPlanKey": "auto:make locked product|2026-01-09T23:00:00|2026-01-11T23:00:00||7||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "locked product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T23:00:00",
+      "quantity": -5,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship locked product|2026-01-14T23:00:00|2026-01-15T00:00:00|locked order demand C|5|LOCKED-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "locked product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T23:00:00",
+      "quantity": 5,
+      "onhand": 5,
+      "operationPlanKey": "auto:make locked product|2026-01-12T23:00:00|2026-01-14T23:00:00||5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "locked raw @ plant",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "quantity": 80,
+      "onhand": 80,
+      "operationPlanKey": "auto:Inventory locked raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1",
+      "orderType": "STCK"
+    },
+    {
+      "buffer": "locked raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-03T00:00:00",
+      "quantity": -8,
+      "onhand": 72,
+      "operationPlanKey": "ref:MO-CONFIRMED-001",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "locked raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-06T00:00:00",
+      "quantity": -6,
+      "onhand": 66,
+      "operationPlanKey": "ref:MO-APPROVED-001",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "locked raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-09T23:00:00",
+      "quantity": -7,
+      "onhand": 59,
+      "operationPlanKey": "auto:make locked product|2026-01-09T23:00:00|2026-01-11T23:00:00||7||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "locked raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "quantity": -5,
+      "onhand": 54,
+      "operationPlanKey": "auto:make locked product|2026-01-12T23:00:00|2026-01-14T23:00:00||5||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "resource": "locked order machine",
+      "start": "1971-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "available": 482136,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 482136,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-03T00:00:00",
+      "available": 48,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 48,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-03T00:00:00",
+      "end": "2026-01-05T00:00:00",
+      "available": 48,
+      "load": 48,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 48,
+      "utilization": 1
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-05T00:00:00",
+      "end": "2026-01-06T00:00:00",
+      "available": 24,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 24,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-06T00:00:00",
+      "end": "2026-01-08T00:00:00",
+      "available": 48,
+      "load": 48,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 48,
+      "utilization": 1
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-08T00:00:00",
+      "end": "2026-01-08T23:00:00",
+      "available": 23,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 23,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-08T23:00:00",
+      "end": "2026-01-09T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-09T00:00:00",
+      "end": "2026-01-09T23:00:00",
+      "available": 23,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 23,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-09T23:00:00",
+      "end": "2026-01-11T23:00:00",
+      "available": 48,
+      "load": 48,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-11T23:00:00",
+      "end": "2026-01-12T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-12T00:00:00",
+      "end": "2026-01-12T23:00:00",
+      "available": 23,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 23,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-14T23:00:00",
+      "available": 48,
+      "load": 48,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "locked order machine",
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-15T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    }
+  ],
+  "costSummary": {
+    "operationCost": 208,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 208,
+    "setupPenalty": 0
+  }
+}

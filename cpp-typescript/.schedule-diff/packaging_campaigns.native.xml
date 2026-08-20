@@ -1,0 +1,1517 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2026-01-01T00:00:00</current>
+  <calendars>
+  </calendars>
+  <locations>
+  </locations>
+  <suppliers>
+  </suppliers>
+  <items>
+    <item name="film standard">
+      
+      
+      
+      
+    </item>
+    <item name="film recycled">
+      
+      
+      
+      
+    </item>
+    <item name="board standard">
+      
+      
+      
+      
+    </item>
+    <item name="board premium">
+      
+      
+      
+      
+    </item>
+    <item name="board substitute">
+      
+      
+      
+      
+    </item>
+    <item name="ink">
+      
+      
+      
+      
+    </item>
+    <item name="small pouch">
+      
+      
+      
+      
+    </item>
+    <item name="large pouch">
+      
+      
+      
+      
+    </item>
+    <item name="small carton">
+      
+      
+      
+      
+    </item>
+    <item name="large carton">
+      
+      
+      
+      
+    </item>
+  </items>
+  <operations>
+    <operation name="convert POUCH-S" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT7H</duration>
+      
+      
+      
+      <size_minimum>2</size_minimum>
+      <size_multiple>2</size_multiple>
+      <size_maximum>12</size_maximum>
+      <cost>40</cost>
+      
+      
+      
+    </operation>
+    <operation name="ship POUCH-S" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT1H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>4</cost>
+      
+      
+      
+    </operation>
+    <operation name="convert POUCH-L" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT9H</duration>
+      
+      
+      
+      <size_minimum>2</size_minimum>
+      <size_multiple>2</size_multiple>
+      <size_maximum>12</size_maximum>
+      <cost>40</cost>
+      
+      
+      
+    </operation>
+    <operation name="ship POUCH-L" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT1H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>4</cost>
+      
+      
+      
+    </operation>
+    <operation name="convert CARTON-S" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT8H</duration>
+      
+      
+      
+      <size_minimum>2</size_minimum>
+      <size_multiple>2</size_multiple>
+      <size_maximum>12</size_maximum>
+      <cost>40</cost>
+      
+      
+      
+    </operation>
+    <operation name="ship CARTON-S" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT1H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>4</cost>
+      
+      
+      
+    </operation>
+    <operation name="convert CARTON-L" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT11H</duration>
+      
+      
+      
+      <size_minimum>2</size_minimum>
+      <size_multiple>2</size_multiple>
+      <size_maximum>12</size_maximum>
+      <cost>40</cost>
+      
+      
+      
+    </operation>
+    <operation name="ship CARTON-L" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT1H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>4</cost>
+      
+      
+      
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="film standard">
+      
+      <item name="film standard" />
+      
+      
+      
+      
+      
+      
+      <onhand>300</onhand>
+    </buffer>
+    <buffer name="film recycled">
+      
+      <item name="film recycled" />
+      
+      
+      
+      
+      
+      
+      <onhand>180</onhand>
+    </buffer>
+    <buffer name="board standard">
+      
+      <item name="board standard" />
+      
+      
+      
+      
+      
+      
+      <onhand>260</onhand>
+    </buffer>
+    <buffer name="board premium">
+      
+      <item name="board premium" />
+      
+      
+      
+      
+      
+      
+      <onhand>75</onhand>
+    </buffer>
+    <buffer name="board substitute">
+      
+      <item name="board substitute" />
+      
+      
+      
+      
+      
+      
+      <onhand>180</onhand>
+    </buffer>
+    <buffer name="ink">
+      
+      <item name="ink" />
+      
+      
+      
+      
+      
+      
+      <onhand>500</onhand>
+    </buffer>
+    <buffer name="small pouch">
+      <producing name="convert POUCH-S" />
+      <item name="small pouch" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="large pouch">
+      <producing name="convert POUCH-L" />
+      <item name="large pouch" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="small carton">
+      <producing name="convert CARTON-S" />
+      <item name="small carton" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="large carton">
+      <producing name="convert CARTON-L" />
+      <item name="large carton" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+    <setupmatrix name="converter format">
+      <rules>
+        <rule priority="1" fromsetup="idle" tosetup="pouch-small|pouch-large|carton-small|carton-large"
+          duration="PT1H" cost="5" />
+        <rule priority="2" fromsetup="pouch-small|pouch-large" tosetup="carton-small|carton-large"
+          duration="PT4H" cost="28" />
+        <rule priority="3" fromsetup="carton-small|carton-large" tosetup="pouch-small|pouch-large"
+          duration="PT5H" cost="32" />
+        <rule priority="99" fromsetup=".*" tosetup=".*"
+          duration="PT2H" cost="14" />
+      </rules>
+    </setupmatrix>
+  </setupmatrices>
+  <resources>
+    <resource name="converter A">
+      
+      <maximum>6</maximum>
+      <maxearly>P40D</maxearly>
+      
+      
+      
+      
+      <efficiency>105</efficiency>
+      <setupmatrix name="converter format" />
+      <setup>idle</setup>
+    </resource>
+    <resource name="converter B">
+      
+      <maximum>5</maximum>
+      <maxearly>P40D</maxearly>
+      
+      
+      
+      
+      <efficiency>90</efficiency>
+      <setupmatrix name="converter format" />
+      <setup>idle</setup>
+    </resource>
+    <resource name="print crew">
+      
+      <maximum>10</maximum>
+      <maxearly>P40D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+  </resources>
+  <loads>
+    <load>
+      <operation name="convert POUCH-S" />
+      <resource name="converter A" />
+      <quantity>1</quantity>
+      
+      <name>converter POUCH-S</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>pouch-small</setup>
+    </load>
+    <load>
+      <operation name="convert POUCH-S" />
+      <resource name="converter B" />
+      <quantity>1</quantity>
+      
+      <name>converter POUCH-S</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>pouch-small</setup>
+    </load>
+    <load>
+      <operation name="convert POUCH-S" />
+      <resource name="print crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="convert POUCH-L" />
+      <resource name="converter A" />
+      <quantity>1</quantity>
+      
+      <name>converter POUCH-L</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>pouch-large</setup>
+    </load>
+    <load>
+      <operation name="convert POUCH-L" />
+      <resource name="converter B" />
+      <quantity>1</quantity>
+      
+      <name>converter POUCH-L</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>pouch-large</setup>
+    </load>
+    <load>
+      <operation name="convert POUCH-L" />
+      <resource name="print crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="convert CARTON-S" />
+      <resource name="converter A" />
+      <quantity>1</quantity>
+      
+      <name>converter CARTON-S</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>carton-small</setup>
+    </load>
+    <load>
+      <operation name="convert CARTON-S" />
+      <resource name="converter B" />
+      <quantity>1</quantity>
+      
+      <name>converter CARTON-S</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>carton-small</setup>
+    </load>
+    <load>
+      <operation name="convert CARTON-S" />
+      <resource name="print crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="convert CARTON-L" />
+      <resource name="converter A" />
+      <quantity>1</quantity>
+      
+      <name>converter CARTON-L</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>carton-large</setup>
+    </load>
+    <load>
+      <operation name="convert CARTON-L" />
+      <resource name="converter B" />
+      <quantity>1</quantity>
+      
+      <name>converter CARTON-L</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>carton-large</setup>
+    </load>
+    <load>
+      <operation name="convert CARTON-L" />
+      <resource name="print crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+      
+    </load>
+  </loads>
+  <skills>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="ship POUCH-S" />
+      <buffer name="small pouch" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="convert POUCH-S" />
+      <buffer name="small pouch" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert POUCH-S" />
+      <buffer name="film standard" />
+      <quantity>-1</quantity>
+      
+      <name>substrate POUCH-S</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert POUCH-S" />
+      <buffer name="film recycled" />
+      <quantity>-1</quantity>
+      
+      <name>substrate POUCH-S</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert POUCH-S" />
+      <buffer name="ink" />
+      <quantity>-0.5</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship POUCH-L" />
+      <buffer name="large pouch" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="convert POUCH-L" />
+      <buffer name="large pouch" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert POUCH-L" />
+      <buffer name="film standard" />
+      <quantity>-1</quantity>
+      
+      <name>substrate POUCH-L</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert POUCH-L" />
+      <buffer name="film recycled" />
+      <quantity>-1</quantity>
+      
+      <name>substrate POUCH-L</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert POUCH-L" />
+      <buffer name="ink" />
+      <quantity>-0.5</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship CARTON-S" />
+      <buffer name="small carton" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="convert CARTON-S" />
+      <buffer name="small carton" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert CARTON-S" />
+      <buffer name="board standard" />
+      <quantity>-1</quantity>
+      
+      <name>substrate CARTON-S</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert CARTON-S" />
+      <buffer name="board substitute" />
+      <quantity>-1</quantity>
+      
+      <name>substrate CARTON-S</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert CARTON-S" />
+      <buffer name="ink" />
+      <quantity>-0.5</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship CARTON-L" />
+      <buffer name="large carton" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="convert CARTON-L" />
+      <buffer name="large carton" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert CARTON-L" />
+      <buffer name="board premium" />
+      <quantity>-1</quantity>
+      
+      <name>substrate CARTON-L</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert CARTON-L" />
+      <buffer name="board substitute" />
+      <quantity>-1</quantity>
+      
+      <name>substrate CARTON-L</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="convert CARTON-L" />
+      <buffer name="ink" />
+      <quantity>-0.5</quantity>
+      
+      
+      
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="packaging order 001 POUCH-S">
+      <quantity>2</quantity><due>2026-01-17T01:00:00</due><priority>1</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 002 POUCH-L">
+      <quantity>4</quantity><due>2026-01-17T05:00:00</due><priority>2</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 003 CARTON-S">
+      <quantity>6</quantity><due>2026-01-17T10:00:00</due><priority>3</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 004 CARTON-L">
+      <quantity>8</quantity><due>2026-01-17T15:00:00</due><priority>4</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 005 POUCH-S">
+      <quantity>10</quantity><due>2026-01-17T20:00:00</due><priority>5</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 006 POUCH-L">
+      <quantity>12</quantity><due>2026-01-18T01:00:00</due><priority>6</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 007 CARTON-S">
+      <quantity>2</quantity><due>2026-01-18T05:00:00</due><priority>7</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 008 CARTON-L">
+      <quantity>4</quantity><due>2026-01-18T10:00:00</due><priority>8</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 009 POUCH-S">
+      <quantity>6</quantity><due>2026-01-18T15:00:00</due><priority>9</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 010 POUCH-L">
+      <quantity>8</quantity><due>2026-01-18T20:00:00</due><priority>10</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 011 CARTON-S">
+      <quantity>10</quantity><due>2026-01-19T01:00:00</due><priority>11</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 012 CARTON-L">
+      <quantity>12</quantity><due>2026-01-19T05:00:00</due><priority>12</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 013 POUCH-S">
+      <quantity>2</quantity><due>2026-01-19T10:00:00</due><priority>13</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 014 POUCH-L">
+      <quantity>4</quantity><due>2026-01-19T15:00:00</due><priority>14</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 015 CARTON-S">
+      <quantity>6</quantity><due>2026-01-19T20:00:00</due><priority>15</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 016 CARTON-L">
+      <quantity>8</quantity><due>2026-01-20T01:00:00</due><priority>16</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 017 POUCH-S">
+      <quantity>10</quantity><due>2026-01-20T05:00:00</due><priority>17</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 018 POUCH-L">
+      <quantity>12</quantity><due>2026-01-20T10:00:00</due><priority>18</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 019 CARTON-S">
+      <quantity>2</quantity><due>2026-01-20T15:00:00</due><priority>19</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 020 CARTON-L">
+      <quantity>4</quantity><due>2026-01-20T20:00:00</due><priority>20</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 021 POUCH-S">
+      <quantity>6</quantity><due>2026-01-21T01:00:00</due><priority>1</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 022 POUCH-L">
+      <quantity>8</quantity><due>2026-01-21T05:00:00</due><priority>2</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 023 CARTON-S">
+      <quantity>10</quantity><due>2026-01-21T10:00:00</due><priority>3</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 024 CARTON-L">
+      <quantity>12</quantity><due>2026-01-21T15:00:00</due><priority>4</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 025 POUCH-S">
+      <quantity>2</quantity><due>2026-01-21T20:00:00</due><priority>5</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 026 POUCH-L">
+      <quantity>4</quantity><due>2026-01-22T01:00:00</due><priority>6</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 027 CARTON-S">
+      <quantity>6</quantity><due>2026-01-22T05:00:00</due><priority>7</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 028 CARTON-L">
+      <quantity>8</quantity><due>2026-01-22T10:00:00</due><priority>8</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 029 POUCH-S">
+      <quantity>10</quantity><due>2026-01-22T15:00:00</due><priority>9</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 030 POUCH-L">
+      <quantity>12</quantity><due>2026-01-22T20:00:00</due><priority>10</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 031 CARTON-S">
+      <quantity>2</quantity><due>2026-01-23T01:00:00</due><priority>11</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 032 CARTON-L">
+      <quantity>4</quantity><due>2026-01-23T05:00:00</due><priority>12</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 033 POUCH-S">
+      <quantity>6</quantity><due>2026-01-23T10:00:00</due><priority>13</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 034 POUCH-L">
+      <quantity>8</quantity><due>2026-01-23T15:00:00</due><priority>14</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 035 CARTON-S">
+      <quantity>10</quantity><due>2026-01-23T20:00:00</due><priority>15</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 036 CARTON-L">
+      <quantity>12</quantity><due>2026-01-24T01:00:00</due><priority>16</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 037 POUCH-S">
+      <quantity>2</quantity><due>2026-01-24T05:00:00</due><priority>17</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 038 POUCH-L">
+      <quantity>4</quantity><due>2026-01-24T10:00:00</due><priority>18</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 039 CARTON-S">
+      <quantity>6</quantity><due>2026-01-24T15:00:00</due><priority>19</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 040 CARTON-L">
+      <quantity>8</quantity><due>2026-01-24T20:00:00</due><priority>20</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 041 POUCH-S">
+      <quantity>10</quantity><due>2026-01-25T01:00:00</due><priority>1</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 042 POUCH-L">
+      <quantity>12</quantity><due>2026-01-25T05:00:00</due><priority>2</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 043 CARTON-S">
+      <quantity>2</quantity><due>2026-01-25T10:00:00</due><priority>3</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 044 CARTON-L">
+      <quantity>4</quantity><due>2026-01-25T15:00:00</due><priority>4</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 045 POUCH-S">
+      <quantity>6</quantity><due>2026-01-25T20:00:00</due><priority>5</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 046 POUCH-L">
+      <quantity>8</quantity><due>2026-01-26T01:00:00</due><priority>6</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 047 CARTON-S">
+      <quantity>10</quantity><due>2026-01-26T05:00:00</due><priority>7</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 048 CARTON-L">
+      <quantity>12</quantity><due>2026-01-26T10:00:00</due><priority>8</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 049 POUCH-S">
+      <quantity>2</quantity><due>2026-01-26T15:00:00</due><priority>9</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 050 POUCH-L">
+      <quantity>4</quantity><due>2026-01-26T20:00:00</due><priority>10</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 051 CARTON-S">
+      <quantity>6</quantity><due>2026-01-27T01:00:00</due><priority>11</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 052 CARTON-L">
+      <quantity>8</quantity><due>2026-01-27T05:00:00</due><priority>12</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 053 POUCH-S">
+      <quantity>10</quantity><due>2026-01-27T10:00:00</due><priority>13</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 054 POUCH-L">
+      <quantity>12</quantity><due>2026-01-27T15:00:00</due><priority>14</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 055 CARTON-S">
+      <quantity>2</quantity><due>2026-01-27T20:00:00</due><priority>15</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 056 CARTON-L">
+      <quantity>4</quantity><due>2026-01-28T01:00:00</due><priority>16</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 057 POUCH-S">
+      <quantity>6</quantity><due>2026-01-28T05:00:00</due><priority>17</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 058 POUCH-L">
+      <quantity>8</quantity><due>2026-01-28T10:00:00</due><priority>18</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 059 CARTON-S">
+      <quantity>10</quantity><due>2026-01-28T15:00:00</due><priority>19</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 060 CARTON-L">
+      <quantity>12</quantity><due>2026-01-28T20:00:00</due><priority>20</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 061 POUCH-S">
+      <quantity>2</quantity><due>2026-01-29T01:00:00</due><priority>1</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 062 POUCH-L">
+      <quantity>4</quantity><due>2026-01-29T05:00:00</due><priority>2</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 063 CARTON-S">
+      <quantity>6</quantity><due>2026-01-29T10:00:00</due><priority>3</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 064 CARTON-L">
+      <quantity>8</quantity><due>2026-01-29T15:00:00</due><priority>4</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 065 POUCH-S">
+      <quantity>10</quantity><due>2026-01-29T20:00:00</due><priority>5</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 066 POUCH-L">
+      <quantity>12</quantity><due>2026-01-30T01:00:00</due><priority>6</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 067 CARTON-S">
+      <quantity>2</quantity><due>2026-01-30T05:00:00</due><priority>7</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 068 CARTON-L">
+      <quantity>4</quantity><due>2026-01-30T10:00:00</due><priority>8</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 069 POUCH-S">
+      <quantity>6</quantity><due>2026-01-30T15:00:00</due><priority>9</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 070 POUCH-L">
+      <quantity>8</quantity><due>2026-01-30T20:00:00</due><priority>10</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 071 CARTON-S">
+      <quantity>10</quantity><due>2026-01-31T01:00:00</due><priority>11</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 072 CARTON-L">
+      <quantity>12</quantity><due>2026-01-31T05:00:00</due><priority>12</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 073 POUCH-S">
+      <quantity>2</quantity><due>2026-01-31T10:00:00</due><priority>13</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 074 POUCH-L">
+      <quantity>4</quantity><due>2026-01-31T15:00:00</due><priority>14</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 075 CARTON-S">
+      <quantity>6</quantity><due>2026-01-31T20:00:00</due><priority>15</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 076 CARTON-L">
+      <quantity>8</quantity><due>2026-02-01T01:00:00</due><priority>16</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 077 POUCH-S">
+      <quantity>10</quantity><due>2026-02-01T05:00:00</due><priority>17</priority>
+      <item name="small pouch" /><operation name="ship POUCH-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 078 POUCH-L">
+      <quantity>12</quantity><due>2026-02-01T10:00:00</due><priority>18</priority>
+      <item name="large pouch" /><operation name="ship POUCH-L" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 079 CARTON-S">
+      <quantity>2</quantity><due>2026-02-01T15:00:00</due><priority>19</priority>
+      <item name="small carton" /><operation name="ship CARTON-S" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="packaging order 080 CARTON-L">
+      <quantity>4</quantity><due>2026-02-01T20:00:00</due><priority>20</priority>
+      <item name="large carton" /><operation name="ship CARTON-L" />
+      
+      
+      
+      
+      
+    </demand>
+  </demands>
+  <operationplans>
+  </operationplans>
+<?python
+import datetime, frepple, json
+frepple.solver_mrp(**{"plantype":1,"constraints":11,"loglevel":0,"lazydelay":14400,"erasePreviousFirst":True,"minimumdelay":1800,"rotateresources":True}).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+def metric(value):
+    value = round(float(value), 9)
+    return 0.0 if abs(value) < 0.000000001 else value
+def number_key(value):
+    return ("%.9f" % metric(value)).rstrip("0").rstrip(".") or "0"
+explicit_references = set([])
+dependency_quantities = {}
+plan_rows = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity)})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    productive_seconds = max(0.0, (operationplan.end - operationplan.start).total_seconds() - operationplan.unavailable)
+    operation_cost = metric(operationplan.operation.cost * operationplan.quantity)
+    resource_cost = metric(operationplan.quantity * sum(resource.cost for resource in all_resources if resource.name in resources) * productive_seconds / 3600.0)
+    setup_cost = metric(getattr(getattr(operationplan, "rule", None), "cost", 0))
+    plan_rows.append((operationplan, {
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": metric(operationplan.quantity),
+        "quantityCompleted": metric(getattr(operationplan, "quantity_completed", 0)),
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "batch": getattr(operationplan, "batch", "") or "",
+        "orderType": getattr(operationplan, "ordertype", "") or "",
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "setupSeconds": operationplan.setup,
+        "setupEnd": stamp(operationplan.setupend),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+        "operationCost": operation_cost,
+        "resourceCost": resource_cost,
+        "setupCost": setup_cost,
+        "totalCost": metric(operation_cost + resource_cost),
+        "setupPenalty": setup_cost,
+    }))
+plan_rows.sort(key=lambda pair: (pair[1]["operation"], pair[1]["start"], pair[1]["end"], pair[1]["demand"] or "", pair[1]["quantity"], pair[1]["batch"], pair[1]["orderType"]))
+plan_keys = {}
+key_counts = {}
+plans = []
+for operationplan, row in plan_rows:
+    reference = str(getattr(operationplan, "reference", "") or "")
+    seed = "|".join((row["operation"], row["start"], row["end"], row["demand"] or "", number_key(row["quantity"]), row["batch"], row["orderType"], row["ownerOperation"] or ""))
+    key_counts[seed] = key_counts.get(seed, 0) + 1
+    plan_key = "ref:" + reference if reference in explicit_references else "auto:" + seed + "#" + str(key_counts[seed])
+    plan_keys[id(operationplan)] = plan_key
+    row["planKey"] = plan_key
+    row["reference"] = reference if reference in explicit_references else plan_key
+    plans.append(row)
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": metric(operationplan.quantity), "end": stamp(operationplan.end), "batch": getattr(operationplan, "batch", "") or "", "orderType": getattr(operationplan, "ordertype", "") or "", "operationPlanKey": plan_keys.get(id(operationplan))})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"], value["batch"], value["orderType"]))
+dependencies = []
+seen_dependencies = set()
+for operationplan in frepple.operationplans():
+    for dependency in getattr(operationplan, "blockedby", []):
+        if id(dependency) in seen_dependencies: continue
+        seen_dependencies.add(id(dependency))
+        first = dependency.first
+        second = dependency.second
+        ratio = dependency_quantities.get(second.operation.name + "\u0000" + first.operation.name, 1)
+        dependencies.append({"first": plan_keys.get(id(first)), "second": plan_keys.get(id(second)), "quantity": metric(min(first.quantity, second.quantity * ratio)), "operation": second.operation.name, "blockedBy": first.operation.name})
+dependencies.sort(key=lambda value: (value["second"] or "", value["first"] or "", value["operation"], value["blockedBy"], value["quantity"]))
+problems = []
+for problem in frepple.problems():
+    owner = getattr(problem, "owner", None)
+    owner_key = plan_keys.get(id(owner)) if owner is not None else None
+    problems.append({"name": problem.name, "description": problem.description, "start": stamp(problem.start), "end": stamp(problem.end), "entity": problem.entity, "owner": owner_key or name(owner), "feasible": bool(problem.feasible)})
+problems.sort(key=lambda value: (value["owner"] or "", value["name"], value["start"], value["end"], value["description"]))
+inventory_profiles = []
+for buffer in all_buffers:
+    for flowplan in buffer.flowplans:
+        operationplan = getattr(flowplan, "operationplan", None)
+        inventory_profiles.append({"buffer": buffer.name, "bufferBatch": getattr(buffer, "batch", "") or "", "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity), "onhand": metric(flowplan.onhand), "operationPlanKey": plan_keys.get(id(operationplan)) if operationplan is not None else None, "orderType": getattr(operationplan, "ordertype", "") if operationplan is not None else None})
+inventory_profiles.sort(key=lambda value: (value["buffer"], value["bufferBatch"], value["date"], value["quantity"], value["operationPlanKey"] or "", value["onhand"]))
+boundaries = sorted(set([frepple.settings.current] + [value for operationplan, row in plan_rows for value in (operationplan.start, operationplan.end)]))
+if len(boundaries) < 2: boundaries.append(boundaries[0] + datetime.timedelta(days=1))
+resource_plans = []
+for resource in all_resources:
+    for bucket in resource.plan(boundaries):
+        values = [metric(bucket[field]) for field in ("available", "load", "unavailable", "setup", "free", "load_confirmed")]
+        if not any(values): continue
+        available, load, unavailable, setup, free, load_confirmed = values
+        resource_plans.append({"resource": resource.name, "start": stamp(bucket["start"]), "end": stamp(bucket["end"]), "available": available, "load": load, "unavailable": unavailable, "setup": setup, "free": free, "loadConfirmed": load_confirmed, "utilization": metric((load + setup) / available) if available else metric(load + setup)})
+resource_plans.sort(key=lambda value: (value["resource"], value["start"], value["end"]))
+cost_summary = {"operationCost": metric(sum(value["operationCost"] for value in plans)), "resourceCost": metric(sum(value["resourceCost"] for value in plans)), "setupCost": metric(sum(value["setupCost"] for value in plans)), "totalCost": metric(sum(value["totalCost"] for value in plans)), "setupPenalty": metric(sum(value["setupPenalty"] for value in plans))}
+with open("/workspace/cpp-typescript/.schedule-diff/packaging_campaigns.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries, "dependencies": dependencies, "problems": problems, "inventoryProfiles": inventory_profiles, "resourcePlans": resource_plans, "costSummary": cost_summary}, output, indent=2, sort_keys=True)
+?>
+</plan>

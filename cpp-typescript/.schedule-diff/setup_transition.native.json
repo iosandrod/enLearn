@@ -1,0 +1,92 @@
+{
+  "deliveries": [
+    {
+      "demand": "blue order",
+      "end": "2009-01-20T00:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "red order",
+      "end": "2009-01-20T00:00:00",
+      "quantity": 1.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "demand": "blue order",
+      "end": "2009-01-20T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "blue item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "delivery blue item",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "start": "2009-01-19T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "red order",
+      "end": "2009-01-20T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "red item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "delivery red item",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "start": "2009-01-19T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-17T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "blue item",
+          "date": "2009-01-17T00:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make blue item",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "painting line"
+      ],
+      "start": "2009-01-13T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-19T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "red item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make red item",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "painting line"
+      ],
+      "start": "2009-01-17T00:00:00",
+      "status": "proposed"
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "solver modes item",
+      "quantity": -1,
+      "operation": "solver modes ship"
+    },
+    {
+      "type": "end",
+      "buffer": "solver modes item",
+      "quantity": 1,
+      "operation": "solver modes make"
+    },
+    {
+      "type": "start",
+      "buffer": "solver modes raw",
+      "quantity": -1,
+      "operation": "solver modes make"
+    }
+  ],
+  "items": [
+    {
+      "name": "solver modes item"
+    },
+    {
+      "name": "solver modes raw"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "solver modes resource",
+      "operation": "solver modes make"
+    }
+  ],
+  "skills": [],
+  "solver": {
+    "plantype": 3,
+    "algorithm": "heuristic_2",
+    "lazyDelay": 60,
+    "constraints": 15,
+    "iterationMax": 16,
+    "minimumDelay": 0,
+    "rotateResources": true,
+    "iterationAccuracy": 100,
+    "iterationThreshold": 0,
+    "resourceIterationMax": 16
+  },
+  "buffers": [
+    {
+      "item": "solver modes raw",
+      "name": "solver modes raw",
+      "onhand": 25
+    },
+    {
+      "item": "solver modes item",
+      "name": "solver modes item",
+      "onhand": 0,
+      "producing": "solver modes make"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-08T00:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 01",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "solver modes ship",
+      "maxLateness": 0,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-08T06:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 02",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "solver modes ship",
+      "maxLateness": 3600,
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-08T12:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 03",
+      "priority": 3,
+      "quantity": 3,
+      "operation": "solver modes ship",
+      "maxLateness": 0,
+      "minShipment": 2
+    },
+    {
+      "due": "2026-01-08T18:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 04",
+      "priority": 4,
+      "quantity": 4,
+      "operation": "solver modes ship",
+      "maxLateness": 3600,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-09T00:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 05",
+      "priority": 1,
+      "quantity": 5,
+      "operation": "solver modes ship",
+      "maxLateness": 0,
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-09T06:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 06",
+      "priority": 2,
+      "quantity": 1,
+      "operation": "solver modes ship",
+      "maxLateness": 3600,
+      "minShipment": 2
+    },
+    {
+      "due": "2026-01-09T12:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 07",
+      "priority": 3,
+      "quantity": 2,
+      "operation": "solver modes ship",
+      "maxLateness": 0,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-09T18:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 08",
+      "priority": 4,
+      "quantity": 3,
+      "operation": "solver modes ship",
+      "maxLateness": 3600,
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-10T00:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 09",
+      "priority": 1,
+      "quantity": 4,
+      "operation": "solver modes ship",
+      "maxLateness": 0,
+      "minShipment": 2
+    },
+    {
+      "due": "2026-01-10T06:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 10",
+      "priority": 2,
+      "quantity": 5,
+      "operation": "solver modes ship",
+      "maxLateness": 3600,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-10T12:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 11",
+      "priority": 3,
+      "quantity": 1,
+      "operation": "solver modes ship",
+      "maxLateness": 0,
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-10T18:00:00",
+      "item": "solver modes item",
+      "name": "solver modes order 12",
+      "priority": 4,
+      "quantity": 2,
+      "operation": "solver modes ship",
+      "maxLateness": 3600,
+      "minShipment": 2
+    }
+  ],
+  "resources": [
+    {
+      "name": "solver modes resource",
+      "maximum": 5,
+      "maxearly": 864000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 1,
+      "name": "solver modes make",
+      "type": "fixed_time",
+      "duration": 3600,
+      "sizeMaximum": 5,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 1,
+      "name": "solver modes ship",
+      "type": "fixed_time",
+      "duration": 1,
+      "sizeMaximum": 5
+    }
+  ],
+  "setupMatrices": [],
+  "resourceSkills": []
+}

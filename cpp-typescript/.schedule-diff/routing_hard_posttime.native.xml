@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2026-01-01T00:00:00</current>
+  <calendars>
+  </calendars>
+  <locations>
+    <location name="hard posttime plant">
+      
+      
+    </location>
+  </locations>
+  <suppliers>
+  </suppliers>
+  <items>
+    <item name="hard posttime raw">
+      
+      
+      
+      
+    </item>
+    <item name="hard posttime product">
+      
+      
+      
+      
+    </item>
+  </items>
+  <operations>
+    <operation name="hard posttime cure" xsi:type="operation_fixed_time">
+      
+      <location name="hard posttime plant" />
+      
+      <duration>P1D</duration>
+      <posttime>P2D</posttime>
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>8</size_maximum>
+      <cost>5</cost>
+      
+      
+      
+    </operation>
+    <operation name="hard posttime finish" xsi:type="operation_fixed_time">
+      
+      <location name="hard posttime plant" />
+      
+      <duration>P1D</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>8</size_maximum>
+      <cost>7</cost>
+      
+      
+      
+    </operation>
+    <operation name="hard posttime routing" xsi:type="operation_routing">
+      
+      <location name="hard posttime plant" />
+      
+      
+      
+      <hard_posttime>true</hard_posttime>
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="hard posttime cure" />
+          <priority>1</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="hard posttime finish" />
+          <priority>2</priority>
+          
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="ship hard posttime product" xsi:type="operation_fixed_time">
+      
+      <location name="hard posttime plant" />
+      
+      <duration>PT1H</duration>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="hard posttime raw @ plant">
+      
+      <item name="hard posttime raw" />
+      <location name="hard posttime plant" />
+      
+      
+      
+      
+      
+      <onhand>60</onhand>
+    </buffer>
+    <buffer name="hard posttime product @ plant">
+      <producing name="hard posttime routing" />
+      <item name="hard posttime product" />
+      <location name="hard posttime plant" />
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+  </setupmatrices>
+  <resources>
+    <resource name="hard posttime cure resource">
+      
+      <maximum>1</maximum>
+      <maxearly>P30D</maxearly>
+      
+      <location name="hard posttime plant" />
+      
+      
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="hard posttime finish resource">
+      
+      <maximum>1</maximum>
+      <maxearly>P30D</maxearly>
+      
+      <location name="hard posttime plant" />
+      
+      
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+  </resources>
+  <loads>
+    <load>
+      <operation name="hard posttime cure" />
+      <resource name="hard posttime cure resource" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="hard posttime finish" />
+      <resource name="hard posttime finish resource" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+      
+    </load>
+  </loads>
+  <skills>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="hard posttime cure" />
+      <buffer name="hard posttime raw @ plant" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="hard posttime finish" />
+      <buffer name="hard posttime product @ plant" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship hard posttime product" />
+      <buffer name="hard posttime product @ plant" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="hard posttime order A">
+      <quantity>4</quantity><due>2026-01-09T00:00:00</due><priority>1</priority>
+      <item name="hard posttime product" /><operation name="ship hard posttime product" />
+      <location name="hard posttime plant" />
+      
+      
+      <minshipment>1</minshipment>
+      
+    </demand>
+    <demand name="hard posttime order B">
+      <quantity>6</quantity><due>2026-01-12T00:00:00</due><priority>2</priority>
+      <item name="hard posttime product" /><operation name="ship hard posttime product" />
+      <location name="hard posttime plant" />
+      
+      
+      <minshipment>1</minshipment>
+      
+    </demand>
+    <demand name="hard posttime order C">
+      <quantity>5</quantity><due>2026-01-15T00:00:00</due><priority>3</priority>
+      <item name="hard posttime product" /><operation name="ship hard posttime product" />
+      <location name="hard posttime plant" />
+      
+      
+      <minshipment>1</minshipment>
+      
+    </demand>
+  </demands>
+  <operationplans>
+  </operationplans>
+<?python
+import datetime, frepple, json
+frepple.solver_mrp(**{"plantype":1,"constraints":15,"loglevel":0,"lazydelay":3600,"erasePreviousFirst":True,"minimumdelay":3600}).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+def metric(value):
+    value = round(float(value), 9)
+    return 0.0 if abs(value) < 0.000000001 else value
+def number_key(value):
+    return ("%.9f" % metric(value)).rstrip("0").rstrip(".") or "0"
+explicit_references = set([])
+dependency_quantities = {}
+plan_rows = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity)})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    productive_seconds = max(0.0, (operationplan.end - operationplan.start).total_seconds() - operationplan.unavailable)
+    operation_cost = metric(operationplan.operation.cost * operationplan.quantity)
+    resource_cost = metric(operationplan.quantity * sum(resource.cost for resource in all_resources if resource.name in resources) * productive_seconds / 3600.0)
+    setup_cost = metric(getattr(getattr(operationplan, "rule", None), "cost", 0))
+    plan_rows.append((operationplan, {
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": metric(operationplan.quantity),
+        "quantityCompleted": metric(getattr(operationplan, "quantity_completed", 0)),
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "batch": getattr(operationplan, "batch", "") or "",
+        "orderType": getattr(operationplan, "ordertype", "") or "",
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "setupSeconds": operationplan.setup,
+        "setupEnd": stamp(operationplan.setupend),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+        "operationCost": operation_cost,
+        "resourceCost": resource_cost,
+        "setupCost": setup_cost,
+        "totalCost": metric(operation_cost + resource_cost),
+        "setupPenalty": setup_cost,
+    }))
+plan_rows.sort(key=lambda pair: (pair[1]["operation"], pair[1]["start"], pair[1]["end"], pair[1]["demand"] or "", pair[1]["quantity"], pair[1]["batch"], pair[1]["orderType"]))
+plan_keys = {}
+key_counts = {}
+plans = []
+for operationplan, row in plan_rows:
+    reference = str(getattr(operationplan, "reference", "") or "")
+    seed = "|".join((row["operation"], row["start"], row["end"], row["demand"] or "", number_key(row["quantity"]), row["batch"], row["orderType"], row["ownerOperation"] or ""))
+    key_counts[seed] = key_counts.get(seed, 0) + 1
+    plan_key = "ref:" + reference if reference in explicit_references else "auto:" + seed + "#" + str(key_counts[seed])
+    plan_keys[id(operationplan)] = plan_key
+    row["planKey"] = plan_key
+    row["reference"] = reference if reference in explicit_references else plan_key
+    plans.append(row)
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": metric(operationplan.quantity), "end": stamp(operationplan.end), "batch": getattr(operationplan, "batch", "") or "", "orderType": getattr(operationplan, "ordertype", "") or "", "operationPlanKey": plan_keys.get(id(operationplan))})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"], value["batch"], value["orderType"]))
+dependencies = []
+seen_dependencies = set()
+for operationplan in frepple.operationplans():
+    for dependency in getattr(operationplan, "blockedby", []):
+        if id(dependency) in seen_dependencies: continue
+        seen_dependencies.add(id(dependency))
+        first = dependency.first
+        second = dependency.second
+        ratio = dependency_quantities.get(second.operation.name + "\u0000" + first.operation.name, 1)
+        dependencies.append({"first": plan_keys.get(id(first)), "second": plan_keys.get(id(second)), "quantity": metric(min(first.quantity, second.quantity * ratio)), "operation": second.operation.name, "blockedBy": first.operation.name})
+dependencies.sort(key=lambda value: (value["second"] or "", value["first"] or "", value["operation"], value["blockedBy"], value["quantity"]))
+problems = []
+for problem in frepple.problems():
+    owner = getattr(problem, "owner", None)
+    owner_key = plan_keys.get(id(owner)) if owner is not None else None
+    problems.append({"name": problem.name, "description": problem.description, "start": stamp(problem.start), "end": stamp(problem.end), "entity": problem.entity, "owner": owner_key or name(owner), "feasible": bool(problem.feasible)})
+problems.sort(key=lambda value: (value["owner"] or "", value["name"], value["start"], value["end"], value["description"]))
+inventory_profiles = []
+for buffer in all_buffers:
+    for flowplan in buffer.flowplans:
+        operationplan = getattr(flowplan, "operationplan", None)
+        inventory_profiles.append({"buffer": buffer.name, "bufferBatch": getattr(buffer, "batch", "") or "", "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity), "onhand": metric(flowplan.onhand), "operationPlanKey": plan_keys.get(id(operationplan)) if operationplan is not None else None, "orderType": getattr(operationplan, "ordertype", "") if operationplan is not None else None})
+inventory_profiles.sort(key=lambda value: (value["buffer"], value["bufferBatch"], value["date"], value["quantity"], value["operationPlanKey"] or "", value["onhand"]))
+boundaries = sorted(set([frepple.settings.current] + [value for operationplan, row in plan_rows for value in (operationplan.start, operationplan.end)]))
+if len(boundaries) < 2: boundaries.append(boundaries[0] + datetime.timedelta(days=1))
+resource_plans = []
+for resource in all_resources:
+    for bucket in resource.plan(boundaries):
+        values = [metric(bucket[field]) for field in ("available", "load", "unavailable", "setup", "free", "load_confirmed")]
+        if not any(values): continue
+        available, load, unavailable, setup, free, load_confirmed = values
+        resource_plans.append({"resource": resource.name, "start": stamp(bucket["start"]), "end": stamp(bucket["end"]), "available": available, "load": load, "unavailable": unavailable, "setup": setup, "free": free, "loadConfirmed": load_confirmed, "utilization": metric((load + setup) / available) if available else metric(load + setup)})
+resource_plans.sort(key=lambda value: (value["resource"], value["start"], value["end"]))
+cost_summary = {"operationCost": metric(sum(value["operationCost"] for value in plans)), "resourceCost": metric(sum(value["resourceCost"] for value in plans)), "setupCost": metric(sum(value["setupCost"] for value in plans)), "totalCost": metric(sum(value["totalCost"] for value in plans)), "setupPenalty": metric(sum(value["setupPenalty"] for value in plans))}
+with open("/workspace/cpp-typescript/.schedule-diff/routing_hard_posttime.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries, "dependencies": dependencies, "problems": problems, "inventoryProfiles": inventory_profiles, "resourcePlans": resource_plans, "costSummary": cost_summary}, output, indent=2, sort_keys=True)
+?>
+</plan>

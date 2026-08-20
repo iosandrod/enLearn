@@ -1,0 +1,4038 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory automotive steel",
+      "demand": null,
+      "quantity": 180,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 180
+        }
+      ]
+    },
+    {
+      "operation": "Inventory electronics kit",
+      "demand": null,
+      "quantity": 120,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 120
+        }
+      ]
+    },
+    {
+      "operation": "Inventory powertrain",
+      "demand": null,
+      "quantity": 105,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "powertrain",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 105
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-25T03:51:26",
+      "end": "2026-01-25T21:00:00",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-25T03:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-25T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-25T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "black sedan",
+          "date": "2026-01-25T21:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-26T11:51:26",
+      "end": "2026-01-27T05:00:00",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-26T11:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-26T11:51:26",
+          "quantity": -4
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-26T11:51:26",
+          "quantity": -4
+        },
+        {
+          "buffer": "black sedan",
+          "date": "2026-01-27T05:00:00",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-29T03:51:26",
+      "end": "2026-01-29T21:00:00",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-29T03:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-29T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-29T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "black sedan",
+          "date": "2026-01-29T21:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-30T11:51:26",
+      "end": "2026-01-31T05:00:00",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-30T11:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-30T11:51:26",
+          "quantity": -4
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-30T11:51:26",
+          "quantity": -4
+        },
+        {
+          "buffer": "black sedan",
+          "date": "2026-01-31T05:00:00",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-31T19:51:26",
+      "end": "2026-02-01T13:00:00",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-31T19:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-31T19:51:26",
+          "quantity": -3
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-31T19:51:26",
+          "quantity": -3
+        },
+        {
+          "buffer": "black sedan",
+          "date": "2026-02-01T13:00:00",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-02T03:51:26",
+      "end": "2026-02-02T21:00:00",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-02T03:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-02T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-02T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "black sedan",
+          "date": "2026-02-02T21:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-02-04T19:51:26",
+      "end": "2026-02-05T13:00:00",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-04T19:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-04T19:51:26",
+          "quantity": -3
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-04T19:51:26",
+          "quantity": -3
+        },
+        {
+          "buffer": "black sedan",
+          "date": "2026-02-05T13:00:00",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-02-07T11:51:26",
+      "end": "2026-02-08T05:00:00",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-07T11:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-07T11:51:26",
+          "quantity": -4
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-07T11:51:26",
+          "quantity": -4
+        },
+        {
+          "buffer": "black sedan",
+          "date": "2026-02-08T05:00:00",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-02-08T19:51:26",
+      "end": "2026-02-09T13:00:00",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-08T19:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-08T19:51:26",
+          "quantity": -3
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-08T19:51:26",
+          "quantity": -3
+        },
+        {
+          "buffer": "black sedan",
+          "date": "2026-02-09T13:00:00",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-25T11:51:26",
+      "end": "2026-01-26T05:00:00",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-25T11:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-25T11:51:26",
+          "quantity": -2
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-25T11:51:26",
+          "quantity": -2
+        },
+        {
+          "buffer": "white sedan",
+          "date": "2026-01-26T05:00:00",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-26T19:51:26",
+      "end": "2026-01-27T13:00:00",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-26T19:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-26T19:51:26",
+          "quantity": -2
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-26T19:51:26",
+          "quantity": -2
+        },
+        {
+          "buffer": "white sedan",
+          "date": "2026-01-27T13:00:00",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-29T11:51:26",
+      "end": "2026-01-30T05:00:00",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-29T11:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-29T11:51:26",
+          "quantity": -2
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-29T11:51:26",
+          "quantity": -2
+        },
+        {
+          "buffer": "white sedan",
+          "date": "2026-01-30T05:00:00",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-01T03:51:26",
+      "end": "2026-02-01T21:00:00",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-01T03:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-01T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-01T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "white sedan",
+          "date": "2026-02-01T21:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-02T11:51:26",
+      "end": "2026-02-03T05:00:00",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-02T11:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-02T11:51:26",
+          "quantity": -2
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-02T11:51:26",
+          "quantity": -2
+        },
+        {
+          "buffer": "white sedan",
+          "date": "2026-02-03T05:00:00",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-05T03:51:26",
+      "end": "2026-02-05T21:00:00",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-05T03:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-05T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-05T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "white sedan",
+          "date": "2026-02-05T21:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-07T19:51:26",
+      "end": "2026-02-08T13:00:00",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-07T19:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-07T19:51:26",
+          "quantity": -2
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-07T19:51:26",
+          "quantity": -2
+        },
+        {
+          "buffer": "white sedan",
+          "date": "2026-02-08T13:00:00",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "operation": "assemble SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-09T03:51:26",
+      "end": "2026-02-09T21:00:00",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-09T03:51:26",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-09T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-09T03:51:26",
+          "quantity": -1
+        },
+        {
+          "buffer": "white sedan",
+          "date": "2026-02-09T21:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-25T16:02:51",
+      "end": "2026-01-26T13:00:00",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-25T16:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-25T16:02:51",
+          "quantity": -3
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-25T16:02:51",
+          "quantity": -3
+        },
+        {
+          "buffer": "black suv",
+          "date": "2026-01-26T13:00:00",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-27T00:02:51",
+      "end": "2026-01-27T21:00:00",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-27T00:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-27T00:02:51",
+          "quantity": -1
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-27T00:02:51",
+          "quantity": -1
+        },
+        {
+          "buffer": "black suv",
+          "date": "2026-01-27T21:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-28T08:02:51",
+      "end": "2026-01-29T05:00:00",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-28T08:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-28T08:02:51",
+          "quantity": -4
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-28T08:02:51",
+          "quantity": -4
+        },
+        {
+          "buffer": "black suv",
+          "date": "2026-01-29T05:00:00",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-29T16:02:51",
+      "end": "2026-01-30T13:00:00",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-29T16:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-29T16:02:51",
+          "quantity": -3
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-29T16:02:51",
+          "quantity": -3
+        },
+        {
+          "buffer": "black suv",
+          "date": "2026-01-30T13:00:00",
+          "quantity": 3
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-02-01T08:02:51",
+      "end": "2026-02-02T05:00:00",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-01T08:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-01T08:02:51",
+          "quantity": -4
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-01T08:02:51",
+          "quantity": -4
+        },
+        {
+          "buffer": "black suv",
+          "date": "2026-02-02T05:00:00",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-BLK",
+      "demand": null,
+      "quantity": 2.3333333333333335,
+      "start": "2026-02-02T16:02:51",
+      "end": "2026-02-03T13:00:00",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-02T16:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-02T16:02:51",
+          "quantity": -2.3333333333333335
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-02T16:02:51",
+          "quantity": -2.3333333333333335
+        },
+        {
+          "buffer": "black suv",
+          "date": "2026-02-03T13:00:00",
+          "quantity": 2.3333333333333335
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-04T00:02:51",
+      "end": "2026-02-04T21:00:00",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-04T00:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-04T00:02:51",
+          "quantity": -1
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-04T00:02:51",
+          "quantity": -1
+        },
+        {
+          "buffer": "black suv",
+          "date": "2026-02-04T21:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-02-05T08:02:51",
+      "end": "2026-02-06T05:00:00",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-05T08:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-05T08:02:51",
+          "quantity": -4
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-05T08:02:51",
+          "quantity": -4
+        },
+        {
+          "buffer": "black suv",
+          "date": "2026-02-06T05:00:00",
+          "quantity": 4
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-08T00:02:51",
+      "end": "2026-02-08T21:00:00",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-08T00:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-08T00:02:51",
+          "quantity": -1
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-08T00:02:51",
+          "quantity": -1
+        },
+        {
+          "buffer": "black suv",
+          "date": "2026-02-08T21:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-RED",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-26T00:02:51",
+      "end": "2026-01-26T21:00:00",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-26T00:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-26T00:02:51",
+          "quantity": -1
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-26T00:02:51",
+          "quantity": -1
+        },
+        {
+          "buffer": "red suv",
+          "date": "2026-01-26T21:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-28T16:02:51",
+      "end": "2026-01-29T13:00:00",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-28T16:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-28T16:02:51",
+          "quantity": -2
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-28T16:02:51",
+          "quantity": -2
+        },
+        {
+          "buffer": "red suv",
+          "date": "2026-01-29T13:00:00",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-RED",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-30T00:02:51",
+      "end": "2026-01-30T21:00:00",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-30T00:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-01-30T00:02:51",
+          "quantity": -1
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-01-30T00:02:51",
+          "quantity": -1
+        },
+        {
+          "buffer": "red suv",
+          "date": "2026-01-30T21:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-01T16:02:51",
+      "end": "2026-02-02T13:00:00",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-01T16:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-01T16:02:51",
+          "quantity": -2
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-01T16:02:51",
+          "quantity": -2
+        },
+        {
+          "buffer": "red suv",
+          "date": "2026-02-02T13:00:00",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-04T08:02:51",
+      "end": "2026-02-05T05:00:00",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-04T08:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-04T08:02:51",
+          "quantity": -2
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-04T08:02:51",
+          "quantity": -2
+        },
+        {
+          "buffer": "red suv",
+          "date": "2026-02-05T05:00:00",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-05T16:02:51",
+      "end": "2026-02-06T13:00:00",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-05T16:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-05T16:02:51",
+          "quantity": -2
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-05T16:02:51",
+          "quantity": -2
+        },
+        {
+          "buffer": "red suv",
+          "date": "2026-02-06T13:00:00",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "operation": "assemble SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-08T08:02:51",
+      "end": "2026-02-09T05:00:00",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-08T08:02:51",
+      "resources": [
+        "assembly team east"
+      ],
+      "materials": [
+        {
+          "buffer": "electronics kit",
+          "date": "2026-02-08T08:02:51",
+          "quantity": -2
+        },
+        {
+          "buffer": "powertrain",
+          "date": "2026-02-08T08:02:51",
+          "quantity": -2
+        },
+        {
+          "buffer": "red suv",
+          "date": "2026-02-09T05:00:00",
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "operation": "build SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-23T23:19:51",
+      "end": "2026-01-25T21:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-23T23:19:51",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-25T07:19:51",
+      "end": "2026-01-27T05:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-25T07:19:51",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-27T23:19:51",
+      "end": "2026-01-29T21:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-27T23:19:51",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-29T07:19:51",
+      "end": "2026-01-31T05:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-29T07:19:51",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-30T19:19:51",
+      "end": "2026-02-01T13:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-30T19:19:51",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-31T23:19:51",
+      "end": "2026-02-02T21:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-31T23:19:51",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-02-03T15:19:51",
+      "end": "2026-02-05T13:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-03T15:19:51",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-02-06T08:19:51",
+      "end": "2026-02-08T05:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-06T08:19:51",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-02-07T15:19:51",
+      "end": "2026-02-09T13:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-07T15:19:51",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-24T08:23:01",
+      "end": "2026-01-26T05:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-24T08:23:01",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-25T16:23:01",
+      "end": "2026-01-27T13:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-25T16:23:01",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-28T08:23:01",
+      "end": "2026-01-30T05:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-28T08:23:01",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-31T00:23:01",
+      "end": "2026-02-01T21:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-31T00:23:01",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-01T08:23:01",
+      "end": "2026-02-03T05:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-01T08:23:01",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-04T00:23:01",
+      "end": "2026-02-05T21:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-04T00:23:01",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-06T16:23:01",
+      "end": "2026-02-08T13:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-06T16:23:01",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-08T00:23:01",
+      "end": "2026-02-09T21:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-08T00:23:01",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-24T04:24:57",
+      "end": "2026-01-26T13:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-24T04:24:57",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-25T12:24:57",
+      "end": "2026-01-27T21:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-25T12:24:57",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-27T01:24:57",
+      "end": "2026-01-29T05:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-27T01:24:57",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-28T04:24:57",
+      "end": "2026-01-30T13:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-28T04:24:57",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-30T20:24:57",
+      "end": "2026-02-02T05:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-30T20:24:57",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-BLK",
+      "demand": null,
+      "quantity": 2.3333333333333335,
+      "start": "2026-02-01T04:24:57",
+      "end": "2026-02-03T13:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-01T04:24:57",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-02T17:24:57",
+      "end": "2026-02-04T21:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-02T17:24:57",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-02-03T20:24:57",
+      "end": "2026-02-06T05:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-03T20:24:57",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-06T12:24:57",
+      "end": "2026-02-08T21:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-06T12:24:57",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-RED",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-24T15:21:48",
+      "end": "2026-01-26T21:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-24T15:21:48",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-27T07:21:48",
+      "end": "2026-01-29T13:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-27T07:21:48",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-RED",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-28T15:21:48",
+      "end": "2026-01-30T21:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-28T15:21:48",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-31T07:21:48",
+      "end": "2026-02-02T13:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-31T07:21:48",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-02T23:21:48",
+      "end": "2026-02-05T05:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-02T23:21:48",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-04T07:21:48",
+      "end": "2026-02-06T13:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-04T07:21:48",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "build SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-06T23:21:48",
+      "end": "2026-02-09T05:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-06T23:21:48",
+      "resources": [],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-24T15:19:51",
+      "end": "2026-01-25T03:51:26",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 7200,
+      "setupEnd": "2026-01-24T17:19:51",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-26T00:19:51",
+      "end": "2026-01-26T11:51:26",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-01-26T01:19:51",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-28T16:19:51",
+      "end": "2026-01-29T03:51:26",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-01-28T17:19:51",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-30T00:19:51",
+      "end": "2026-01-30T11:51:26",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-01-30T01:19:51",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-31T09:19:51",
+      "end": "2026-01-31T19:51:26",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-31T09:19:51",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-01T16:19:51",
+      "end": "2026-02-02T03:51:26",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-02-01T17:19:51",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-02-04T08:19:51",
+      "end": "2026-02-04T19:51:26",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-02-04T09:19:51",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-02-07T00:19:51",
+      "end": "2026-02-07T11:51:26",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-02-07T01:19:51",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-02-08T08:19:51",
+      "end": "2026-02-08T19:51:26",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-02-08T09:19:51",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-24T22:23:01",
+      "end": "2026-01-25T11:51:26",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-01-25T02:23:01",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-26T06:23:01",
+      "end": "2026-01-26T19:51:26",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-01-26T10:23:01",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-28T22:23:01",
+      "end": "2026-01-29T11:51:26",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-01-29T02:23:01",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-31T14:23:01",
+      "end": "2026-02-01T03:51:26",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-01-31T18:23:01",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-01T22:23:01",
+      "end": "2026-02-02T11:51:26",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-02-02T02:23:01",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-04T14:23:01",
+      "end": "2026-02-05T03:51:26",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-02-04T18:23:01",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-07T06:23:01",
+      "end": "2026-02-07T19:51:26",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-02-07T10:23:01",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-08T14:23:01",
+      "end": "2026-02-09T03:51:26",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-02-08T18:23:01",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-25T02:24:57",
+      "end": "2026-01-25T16:02:51",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-01-25T03:24:57",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-26T10:24:57",
+      "end": "2026-01-27T00:02:51",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-01-26T11:24:57",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-27T19:24:57",
+      "end": "2026-01-28T08:02:51",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-27T19:24:57",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-29T02:24:57",
+      "end": "2026-01-29T16:02:51",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-01-29T03:24:57",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-31T18:24:57",
+      "end": "2026-02-01T08:02:51",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-01-31T19:24:57",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-BLK",
+      "demand": null,
+      "quantity": 2.3333333333333335,
+      "start": "2026-02-02T02:24:57",
+      "end": "2026-02-02T16:02:51",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-02-02T03:24:57",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-03T11:24:57",
+      "end": "2026-02-04T00:02:51",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-02-03T11:24:57",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-02-04T18:24:57",
+      "end": "2026-02-05T08:02:51",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-02-04T19:24:57",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-07T10:24:57",
+      "end": "2026-02-08T00:02:51",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-02-07T11:24:57",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-RED",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-25T09:21:48",
+      "end": "2026-01-26T00:02:51",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-01-25T10:21:48",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-28T01:21:48",
+      "end": "2026-01-28T16:02:51",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-01-28T02:21:48",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-RED",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-29T09:21:48",
+      "end": "2026-01-30T00:02:51",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-01-29T10:21:48",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-01T01:21:48",
+      "end": "2026-02-01T16:02:51",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-02-01T02:21:48",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-03T17:21:48",
+      "end": "2026-02-04T08:02:51",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-02-03T18:21:48",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-05T01:21:48",
+      "end": "2026-02-05T16:02:51",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-02-05T02:21:48",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "paint SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-07T17:21:48",
+      "end": "2026-02-08T08:02:51",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 3600,
+      "setupEnd": "2026-02-07T18:21:48",
+      "resources": [
+        "paint booth"
+      ],
+      "materials": []
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 001 SEDAN-BLK",
+      "quantity": 1,
+      "start": "2026-01-25T21:00:00",
+      "end": "2026-01-26T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-25T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2026-01-25T21:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 005 SEDAN-BLK",
+      "quantity": 4,
+      "start": "2026-01-27T05:00:00",
+      "end": "2026-01-27T08:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-27T05:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2026-01-27T05:00:00",
+          "quantity": -4
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 013 SEDAN-BLK",
+      "quantity": 1,
+      "start": "2026-01-29T21:00:00",
+      "end": "2026-01-30T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-29T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2026-01-29T21:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 017 SEDAN-BLK",
+      "quantity": 4,
+      "start": "2026-01-31T05:00:00",
+      "end": "2026-01-31T08:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-31T05:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2026-01-31T05:00:00",
+          "quantity": -4
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 021 SEDAN-BLK",
+      "quantity": 3,
+      "start": "2026-02-01T13:00:00",
+      "end": "2026-02-01T16:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-01T13:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2026-02-01T13:00:00",
+          "quantity": -3
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 025 SEDAN-BLK",
+      "quantity": 1,
+      "start": "2026-02-02T21:00:00",
+      "end": "2026-02-03T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-02T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2026-02-02T21:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 033 SEDAN-BLK",
+      "quantity": 3,
+      "start": "2026-02-05T13:00:00",
+      "end": "2026-02-05T16:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-05T13:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2026-02-05T13:00:00",
+          "quantity": -3
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 041 SEDAN-BLK",
+      "quantity": 4,
+      "start": "2026-02-08T05:00:00",
+      "end": "2026-02-08T08:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-08T05:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2026-02-08T05:00:00",
+          "quantity": -4
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 045 SEDAN-BLK",
+      "quantity": 3,
+      "start": "2026-02-09T13:00:00",
+      "end": "2026-02-09T16:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-09T13:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2026-02-09T13:00:00",
+          "quantity": -3
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 009 SEDAN-BLK",
+      "quantity": 3,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 029 SEDAN-BLK",
+      "quantity": 4,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-BLK",
+      "demand": "vehicle order 037 SEDAN-BLK",
+      "quantity": 1,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black sedan",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 002 SEDAN-WHT",
+      "quantity": 2,
+      "start": "2026-01-26T05:00:00",
+      "end": "2026-01-26T08:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-26T05:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2026-01-26T05:00:00",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 006 SEDAN-WHT",
+      "quantity": 2,
+      "start": "2026-01-27T13:00:00",
+      "end": "2026-01-27T16:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-27T13:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2026-01-27T13:00:00",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 014 SEDAN-WHT",
+      "quantity": 2,
+      "start": "2026-01-30T05:00:00",
+      "end": "2026-01-30T08:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-30T05:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2026-01-30T05:00:00",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 022 SEDAN-WHT",
+      "quantity": 1,
+      "start": "2026-02-01T21:00:00",
+      "end": "2026-02-02T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-01T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2026-02-01T21:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 026 SEDAN-WHT",
+      "quantity": 2,
+      "start": "2026-02-03T05:00:00",
+      "end": "2026-02-03T08:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-03T05:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2026-02-03T05:00:00",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 034 SEDAN-WHT",
+      "quantity": 1,
+      "start": "2026-02-05T21:00:00",
+      "end": "2026-02-06T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-05T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2026-02-05T21:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 042 SEDAN-WHT",
+      "quantity": 2,
+      "start": "2026-02-08T13:00:00",
+      "end": "2026-02-08T16:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-08T13:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2026-02-08T13:00:00",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 046 SEDAN-WHT",
+      "quantity": 1,
+      "start": "2026-02-09T21:00:00",
+      "end": "2026-02-10T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-09T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2026-02-09T21:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 010 SEDAN-WHT",
+      "quantity": 1,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 018 SEDAN-WHT",
+      "quantity": 2,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 030 SEDAN-WHT",
+      "quantity": 2,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SEDAN-WHT",
+      "demand": "vehicle order 038 SEDAN-WHT",
+      "quantity": 2,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "white sedan",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 003 SUV-BLK",
+      "quantity": 3,
+      "start": "2026-01-26T13:00:00",
+      "end": "2026-01-26T16:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-26T13:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2026-01-26T13:00:00",
+          "quantity": -3
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 007 SUV-BLK",
+      "quantity": 1,
+      "start": "2026-01-27T21:00:00",
+      "end": "2026-01-28T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-27T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2026-01-27T21:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 011 SUV-BLK",
+      "quantity": 4,
+      "start": "2026-01-29T05:00:00",
+      "end": "2026-01-29T08:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-29T05:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2026-01-29T05:00:00",
+          "quantity": -4
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 015 SUV-BLK",
+      "quantity": 3,
+      "start": "2026-01-30T13:00:00",
+      "end": "2026-01-30T16:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-30T13:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2026-01-30T13:00:00",
+          "quantity": -3
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 023 SUV-BLK",
+      "quantity": 4,
+      "start": "2026-02-02T05:00:00",
+      "end": "2026-02-02T08:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-02T05:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2026-02-02T05:00:00",
+          "quantity": -4
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 027 SUV-BLK",
+      "quantity": 2.3333333333333335,
+      "start": "2026-02-03T13:00:00",
+      "end": "2026-02-03T16:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-03T13:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2026-02-03T13:00:00",
+          "quantity": -2.3333333333333335
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 031 SUV-BLK",
+      "quantity": 1,
+      "start": "2026-02-04T21:00:00",
+      "end": "2026-02-05T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-04T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2026-02-04T21:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 035 SUV-BLK",
+      "quantity": 4,
+      "start": "2026-02-06T05:00:00",
+      "end": "2026-02-06T08:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-06T05:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2026-02-06T05:00:00",
+          "quantity": -4
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 043 SUV-BLK",
+      "quantity": 1,
+      "start": "2026-02-08T21:00:00",
+      "end": "2026-02-09T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-08T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2026-02-08T21:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 019 SUV-BLK",
+      "quantity": 1,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 039 SUV-BLK",
+      "quantity": 3,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-BLK",
+      "demand": "vehicle order 047 SUV-BLK",
+      "quantity": 4,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "black suv",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 004 SUV-RED",
+      "quantity": 1,
+      "start": "2026-01-26T21:00:00",
+      "end": "2026-01-27T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-26T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2026-01-26T21:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 012 SUV-RED",
+      "quantity": 2,
+      "start": "2026-01-29T13:00:00",
+      "end": "2026-01-29T16:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-29T13:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2026-01-29T13:00:00",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 016 SUV-RED",
+      "quantity": 1,
+      "start": "2026-01-30T21:00:00",
+      "end": "2026-01-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2026-01-30T21:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 024 SUV-RED",
+      "quantity": 2,
+      "start": "2026-02-02T13:00:00",
+      "end": "2026-02-02T16:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-02T13:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2026-02-02T13:00:00",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 032 SUV-RED",
+      "quantity": 2,
+      "start": "2026-02-05T05:00:00",
+      "end": "2026-02-05T08:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-05T05:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2026-02-05T05:00:00",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 036 SUV-RED",
+      "quantity": 2,
+      "start": "2026-02-06T13:00:00",
+      "end": "2026-02-06T16:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-06T13:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2026-02-06T13:00:00",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 044 SUV-RED",
+      "quantity": 2,
+      "start": "2026-02-09T05:00:00",
+      "end": "2026-02-09T08:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-02-09T05:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2026-02-09T05:00:00",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 008 SUV-RED",
+      "quantity": 2,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 020 SUV-RED",
+      "quantity": 2,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 028 SUV-RED",
+      "quantity": 1,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 040 SUV-RED",
+      "quantity": 1,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "ship SUV-RED",
+      "demand": "vehicle order 048 SUV-RED",
+      "quantity": 2,
+      "start": "2030-12-30T21:00:00",
+      "end": "2030-12-31T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T21:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "red suv",
+          "date": "2030-12-30T21:00:00",
+          "quantity": 0
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-23T23:19:51",
+      "end": "2026-01-24T15:19:51",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 7200,
+      "setupEnd": "2026-01-24T01:19:51",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-24T01:19:51",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-25T07:19:51",
+      "end": "2026-01-26T00:19:51",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 10800,
+      "setupEnd": "2026-01-25T10:19:51",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-25T10:19:51",
+          "quantity": -8
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-27T23:19:51",
+      "end": "2026-01-28T16:19:51",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 10800,
+      "setupEnd": "2026-01-28T02:19:51",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-28T02:19:51",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-29T07:19:51",
+      "end": "2026-01-30T00:19:51",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 10800,
+      "setupEnd": "2026-01-29T10:19:51",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-29T10:19:51",
+          "quantity": -8
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-30T19:19:51",
+      "end": "2026-01-31T09:19:51",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-30T19:19:51",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-30T19:19:51",
+          "quantity": -6
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-31T23:19:51",
+      "end": "2026-02-01T16:19:51",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 10800,
+      "setupEnd": "2026-02-01T02:19:51",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-01T02:19:51",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-02-03T15:19:51",
+      "end": "2026-02-04T08:19:51",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 10800,
+      "setupEnd": "2026-02-03T18:19:51",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-03T18:19:51",
+          "quantity": -6
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-02-06T08:19:51",
+      "end": "2026-02-07T01:19:51",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 10800,
+      "setupEnd": "2026-02-06T11:19:51",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-06T11:19:51",
+          "quantity": -8
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-02-07T15:19:51",
+      "end": "2026-02-08T08:19:51",
+      "ownerOperation": "build SEDAN-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 10800,
+      "setupEnd": "2026-02-07T18:19:51",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-07T18:19:51",
+          "quantity": -6
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-24T08:23:01",
+      "end": "2026-01-24T22:23:01",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-24T08:23:01",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-24T08:23:01",
+          "quantity": -4
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-25T16:23:01",
+      "end": "2026-01-26T06:23:01",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-25T16:23:01",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-25T16:23:01",
+          "quantity": -4
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-28T08:23:01",
+      "end": "2026-01-28T22:23:01",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-28T08:23:01",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-28T08:23:01",
+          "quantity": -4
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-31T00:23:01",
+      "end": "2026-01-31T14:23:01",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-31T00:23:01",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-31T00:23:01",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-01T08:23:01",
+      "end": "2026-02-01T22:23:01",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-02-01T08:23:01",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-01T08:23:01",
+          "quantity": -4
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-04T00:23:01",
+      "end": "2026-02-04T14:23:01",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-02-04T00:23:01",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-04T00:23:01",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-WHT",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-06T16:23:01",
+      "end": "2026-02-07T06:23:01",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-02-06T16:23:01",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-06T16:23:01",
+          "quantity": -4
+        }
+      ]
+    },
+    {
+      "operation": "weld SEDAN-WHT",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-08T00:23:01",
+      "end": "2026-02-08T14:23:01",
+      "ownerOperation": "build SEDAN-WHT",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-02-08T00:23:01",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-08T00:23:01",
+          "quantity": -2
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-24T04:24:57",
+      "end": "2026-01-25T02:24:57",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-01-24T08:24:57",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-24T08:24:57",
+          "quantity": -9
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-25T12:24:57",
+      "end": "2026-01-26T10:24:57",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-01-25T16:24:57",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-25T16:24:57",
+          "quantity": -3
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-27T01:24:57",
+      "end": "2026-01-27T19:24:57",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-27T01:24:57",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-27T01:24:57",
+          "quantity": -12
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-BLK",
+      "demand": null,
+      "quantity": 3,
+      "start": "2026-01-28T04:24:57",
+      "end": "2026-01-29T02:24:57",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-01-28T08:24:57",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-28T08:24:57",
+          "quantity": -9
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-01-30T20:24:57",
+      "end": "2026-01-31T18:24:57",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-01-31T00:24:57",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-31T00:24:57",
+          "quantity": -12
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-BLK",
+      "demand": null,
+      "quantity": 2.3333333333333335,
+      "start": "2026-02-01T04:24:57",
+      "end": "2026-02-02T02:24:57",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-02-01T08:24:57",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-01T08:24:57",
+          "quantity": -7
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-02T17:24:57",
+      "end": "2026-02-03T11:24:57",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-02-02T17:24:57",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-02T17:24:57",
+          "quantity": -3
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-BLK",
+      "demand": null,
+      "quantity": 4,
+      "start": "2026-02-03T20:24:57",
+      "end": "2026-02-04T18:24:57",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-02-04T00:24:57",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-04T00:24:57",
+          "quantity": -12
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-BLK",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-02-06T12:24:57",
+      "end": "2026-02-07T10:24:57",
+      "ownerOperation": "build SUV-BLK",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 14400,
+      "setupEnd": "2026-02-06T16:24:57",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-06T16:24:57",
+          "quantity": -3
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-RED",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-24T15:21:48",
+      "end": "2026-01-25T09:21:48",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-24T15:21:48",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-24T15:21:48",
+          "quantity": -3
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-27T07:21:48",
+      "end": "2026-01-28T01:21:48",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-27T07:21:48",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-27T07:21:48",
+          "quantity": -6
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-RED",
+      "demand": null,
+      "quantity": 1,
+      "start": "2026-01-28T15:21:48",
+      "end": "2026-01-29T09:21:48",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-28T15:21:48",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-28T15:21:48",
+          "quantity": -3
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-01-31T07:21:48",
+      "end": "2026-02-01T01:21:48",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-01-31T07:21:48",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-01-31T07:21:48",
+          "quantity": -6
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-02T23:21:48",
+      "end": "2026-02-03T17:21:48",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-02-02T23:21:48",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-02T23:21:48",
+          "quantity": -6
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-04T07:21:48",
+      "end": "2026-02-05T01:21:48",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-02-04T07:21:48",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-04T07:21:48",
+          "quantity": -6
+        }
+      ]
+    },
+    {
+      "operation": "weld SUV-RED",
+      "demand": null,
+      "quantity": 2,
+      "start": "2026-02-06T23:21:48",
+      "end": "2026-02-07T17:21:48",
+      "ownerOperation": "build SUV-RED",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": 0,
+      "setupEnd": "2026-02-06T23:21:48",
+      "resources": [
+        "body line A"
+      ],
+      "materials": [
+        {
+          "buffer": "automotive steel",
+          "date": "2026-02-06T23:21:48",
+          "quantity": -6
+        }
+      ]
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "vehicle order 001 SEDAN-BLK",
+      "quantity": 1,
+      "end": "2026-01-26T00:00:00"
+    },
+    {
+      "demand": "vehicle order 002 SEDAN-WHT",
+      "quantity": 2,
+      "end": "2026-01-26T08:00:00"
+    },
+    {
+      "demand": "vehicle order 003 SUV-BLK",
+      "quantity": 3,
+      "end": "2026-01-26T16:00:00"
+    },
+    {
+      "demand": "vehicle order 004 SUV-RED",
+      "quantity": 1,
+      "end": "2026-01-27T00:00:00"
+    },
+    {
+      "demand": "vehicle order 005 SEDAN-BLK",
+      "quantity": 4,
+      "end": "2026-01-27T08:00:00"
+    },
+    {
+      "demand": "vehicle order 006 SEDAN-WHT",
+      "quantity": 2,
+      "end": "2026-01-27T16:00:00"
+    },
+    {
+      "demand": "vehicle order 007 SUV-BLK",
+      "quantity": 1,
+      "end": "2026-01-28T00:00:00"
+    },
+    {
+      "demand": "vehicle order 008 SUV-RED",
+      "quantity": 2,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 009 SEDAN-BLK",
+      "quantity": 3,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 010 SEDAN-WHT",
+      "quantity": 1,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 011 SUV-BLK",
+      "quantity": 4,
+      "end": "2026-01-29T08:00:00"
+    },
+    {
+      "demand": "vehicle order 012 SUV-RED",
+      "quantity": 2,
+      "end": "2026-01-29T16:00:00"
+    },
+    {
+      "demand": "vehicle order 013 SEDAN-BLK",
+      "quantity": 1,
+      "end": "2026-01-30T00:00:00"
+    },
+    {
+      "demand": "vehicle order 014 SEDAN-WHT",
+      "quantity": 2,
+      "end": "2026-01-30T08:00:00"
+    },
+    {
+      "demand": "vehicle order 015 SUV-BLK",
+      "quantity": 3,
+      "end": "2026-01-30T16:00:00"
+    },
+    {
+      "demand": "vehicle order 016 SUV-RED",
+      "quantity": 1,
+      "end": "2026-01-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 017 SEDAN-BLK",
+      "quantity": 4,
+      "end": "2026-01-31T08:00:00"
+    },
+    {
+      "demand": "vehicle order 018 SEDAN-WHT",
+      "quantity": 2,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 019 SUV-BLK",
+      "quantity": 1,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 020 SUV-RED",
+      "quantity": 2,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 021 SEDAN-BLK",
+      "quantity": 3,
+      "end": "2026-02-01T16:00:00"
+    },
+    {
+      "demand": "vehicle order 022 SEDAN-WHT",
+      "quantity": 1,
+      "end": "2026-02-02T00:00:00"
+    },
+    {
+      "demand": "vehicle order 023 SUV-BLK",
+      "quantity": 4,
+      "end": "2026-02-02T08:00:00"
+    },
+    {
+      "demand": "vehicle order 024 SUV-RED",
+      "quantity": 2,
+      "end": "2026-02-02T16:00:00"
+    },
+    {
+      "demand": "vehicle order 025 SEDAN-BLK",
+      "quantity": 1,
+      "end": "2026-02-03T00:00:00"
+    },
+    {
+      "demand": "vehicle order 026 SEDAN-WHT",
+      "quantity": 2,
+      "end": "2026-02-03T08:00:00"
+    },
+    {
+      "demand": "vehicle order 027 SUV-BLK",
+      "quantity": 2.3333333333333335,
+      "end": "2026-02-03T16:00:00"
+    },
+    {
+      "demand": "vehicle order 028 SUV-RED",
+      "quantity": 1,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 029 SEDAN-BLK",
+      "quantity": 4,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 030 SEDAN-WHT",
+      "quantity": 2,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 031 SUV-BLK",
+      "quantity": 1,
+      "end": "2026-02-05T00:00:00"
+    },
+    {
+      "demand": "vehicle order 032 SUV-RED",
+      "quantity": 2,
+      "end": "2026-02-05T08:00:00"
+    },
+    {
+      "demand": "vehicle order 033 SEDAN-BLK",
+      "quantity": 3,
+      "end": "2026-02-05T16:00:00"
+    },
+    {
+      "demand": "vehicle order 034 SEDAN-WHT",
+      "quantity": 1,
+      "end": "2026-02-06T00:00:00"
+    },
+    {
+      "demand": "vehicle order 035 SUV-BLK",
+      "quantity": 4,
+      "end": "2026-02-06T08:00:00"
+    },
+    {
+      "demand": "vehicle order 036 SUV-RED",
+      "quantity": 2,
+      "end": "2026-02-06T16:00:00"
+    },
+    {
+      "demand": "vehicle order 037 SEDAN-BLK",
+      "quantity": 1,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 038 SEDAN-WHT",
+      "quantity": 2,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 039 SUV-BLK",
+      "quantity": 3,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 040 SUV-RED",
+      "quantity": 1,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 041 SEDAN-BLK",
+      "quantity": 4,
+      "end": "2026-02-08T08:00:00"
+    },
+    {
+      "demand": "vehicle order 042 SEDAN-WHT",
+      "quantity": 2,
+      "end": "2026-02-08T16:00:00"
+    },
+    {
+      "demand": "vehicle order 043 SUV-BLK",
+      "quantity": 1,
+      "end": "2026-02-09T00:00:00"
+    },
+    {
+      "demand": "vehicle order 044 SUV-RED",
+      "quantity": 2,
+      "end": "2026-02-09T08:00:00"
+    },
+    {
+      "demand": "vehicle order 045 SEDAN-BLK",
+      "quantity": 3,
+      "end": "2026-02-09T16:00:00"
+    },
+    {
+      "demand": "vehicle order 046 SEDAN-WHT",
+      "quantity": 1,
+      "end": "2026-02-10T00:00:00"
+    },
+    {
+      "demand": "vehicle order 047 SUV-BLK",
+      "quantity": 4,
+      "end": "2030-12-31T00:00:00"
+    },
+    {
+      "demand": "vehicle order 048 SUV-RED",
+      "quantity": 2,
+      "end": "2030-12-31T00:00:00"
+    }
+  ]
+}

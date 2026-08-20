@@ -15,6 +15,20 @@ const originalMigration = await readFile(
   ),
   'utf8',
 );
+const quantityValidationMigration = await readFile(
+  new URL(
+    '../../supabase/migrations/20260820103000_sales_order_ordered_qty_validation.sql',
+    import.meta.url,
+  ),
+  'utf8',
+);
+const quantityFieldBindingMigration = await readFile(
+  new URL(
+    '../../supabase/migrations/20260820110000_sales_order_ordered_qty_field_binding.sql',
+    import.meta.url,
+  ),
+  'utf8',
+);
 
 function extractScript(variableName, source = migration) {
   const match = source.match(
@@ -143,6 +157,42 @@ function createSaveContext({ formValid = true, detailValid = true, creating = fa
 const saveScript = extractScript('v_save_script');
 const addDetailScript = extractScript('v_add_detail_script', originalMigration);
 const deleteDetailScript = extractScript('v_delete_detail_script', originalMigration);
+
+function applyOrderedQuantityValidation(script) {
+  const currentIdMarker = '  const currentId = String(form.id || this.route.query.id || "").trim();';
+  const detailsMarker = '  data.__details = [currentId';
+  assert.ok(script.includes(currentIdMarker));
+  assert.ok(script.includes(detailsMarker));
+  const validationDeclaration = `  const validateOrderedQuantities = (details) => {
+    for (const [index, detail] of details.entries()) {
+      const quantity = Number(detail.ordered_qty);
+      if (!Number.isFinite(quantity) || quantity <= 0 || quantity > 1000) {
+        return index + 1;
+      }
+    }
+    return 0;
+  };
+
+`;
+  const validationCall = `  const quantityRows = currentId
+    ? [...created, ...updated]
+    : created;
+  const invalidQuantityRow = validateOrderedQuantities(quantityRows);
+  if (invalidQuantityRow) {
+    await this.$message.warning(\`第 \${invalidQuantityRow} 条明细的订购数量必须大于 0 且不能大于 1000\`);
+    return false;
+  }
+
+`;
+  return script
+    .replace(
+      currentIdMarker,
+      `${validationDeclaration}${currentIdMarker}`,
+    )
+    .replace(detailsMarker, `${validationCall}${detailsMarker}`);
+}
+
+const quantityValidatedSaveScript = applyOrderedQuantityValidation(saveScript);
 
 {
   const { context, calls } = createSaveContext();
@@ -283,6 +333,25 @@ const deleteDetailScript = extractScript('v_delete_detail_script', originalMigra
   });
 }
 
+for (const invalidQuantity of [0, -1, 1000.01, 'not-a-number']) {
+  const { context, calls } = createSaveContext({ creating: true });
+  context.grids['sales-order-lines-grid'].rows[0].ordered_qty = invalidQuantity;
+  assert.equal(await executeScript(quantityValidatedSaveScript, context), false);
+  assert.deepEqual(
+    calls.map((call) => call.type),
+    ['action', 'action', 'action', 'message.warning'],
+    `Ordered quantity ${String(invalidQuantity)} must stop before HTTP execution.`,
+  );
+  assert.match(calls.at(-1).message, /第 1 条明细的订购数量必须大于 0 且不能大于 1000/);
+}
+
+{
+  const { context, calls } = createSaveContext({ creating: true });
+  context.grids['sales-order-lines-grid'].rows[0].ordered_qty = 1000;
+  assert.equal((await executeScript(quantityValidatedSaveScript, context)).id, 'order-created');
+  assert.equal(calls.some((call) => call.type === 'http'), true);
+}
+
 {
   const calls = [];
   const context = {
@@ -362,6 +431,23 @@ assert.match(originalMigration, /where entry\.action ->> 'code' = 'deleteDetail'
 assert.match(migration, /where entry\.action ->> 'code' = 'save'/);
 assert.match(migration, /jsonb_build_object\('script', v_save_script\)/);
 assert.match(migration, /mode: "changes"/);
+assert.match(quantityValidationMigration, /quantity <= 0 \|\| quantity > 1000/);
+assert.match(quantityValidationMigration, /第 \$\{invalidQuantityRow\} 条明细的订购数量必须大于 0 且不能大于 1000/);
+assert.match(
+  quantityFieldBindingMigration,
+  /'lowcodeField'[\s\S]*?'validationMessage'[\s\S]*?'validationScript', v_validation_script/,
+  'The ordered quantity field must persist its validation function in low-code field metadata.',
+);
+assert.match(
+  quantityFieldBindingMigration,
+  /Number\(event\.value\)[\s\S]*?quantity > 0 && quantity <= 1000/,
+  'The bound field validator must accept only quantities in the range (0, 1000].',
+);
+assert.match(
+  quantityFieldBindingMigration,
+  /'max', 1000/,
+  'The ordered quantity number input must expose the upper bound.',
+);
 assert.doesNotMatch(
   originalMigration,
   /method: "getChanges"/,

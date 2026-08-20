@@ -1,0 +1,40 @@
+{
+  "scenario": "packaging_campaigns",
+  "industry": "快消包装",
+  "description": "Eighty packaging orders combine campaign-like format setups, alternate converters, substitute substrates, shared printing and even-number lot sizing with capacity constraints disabled",
+  "coverage": [
+    "大需求量",
+    "规格换型",
+    "备用设备",
+    "替代基材",
+    "共享印刷",
+    "偶数批量",
+    "constraints=11"
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 14400,
+    "constraints": 11,
+    "minimumDelay": 1800,
+    "rotateResources": true
+  },
+  "input": {
+    "demands": 80,
+    "items": 10,
+    "buffers": 10,
+    "operations": 8,
+    "resources": 3,
+    "loads": 12,
+    "flows": 20,
+    "skills": 0,
+    "setupMatrices": 1
+  },
+  "identical": true,
+  "nativeOperationPlans": 167,
+  "typescriptOperationPlans": 167,
+  "nativeDeliveries": 80,
+  "typescriptDeliveries": 80,
+  "differenceCount": 0,
+  "firstDifferences": [],
+  "databaseSchema": "codex_schedule_diff"
+}

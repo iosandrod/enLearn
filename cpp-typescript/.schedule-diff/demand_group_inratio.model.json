@@ -1,0 +1,119 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "ratio item A",
+      "quantity": -1,
+      "operation": "ratio ship A"
+    },
+    {
+      "type": "start",
+      "buffer": "ratio item B",
+      "quantity": -1,
+      "operation": "ratio ship B"
+    },
+    {
+      "type": "start",
+      "buffer": "ratio item C",
+      "quantity": -1,
+      "operation": "ratio ship C"
+    }
+  ],
+  "items": [
+    {
+      "name": "ratio item A"
+    },
+    {
+      "name": "ratio item B"
+    },
+    {
+      "name": "ratio item C"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "ratio item A",
+      "name": "ratio item A",
+      "onhand": 20
+    },
+    {
+      "item": "ratio item B",
+      "name": "ratio item B",
+      "onhand": 20
+    },
+    {
+      "item": "ratio item C",
+      "name": "ratio item C",
+      "onhand": 20
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-06T00:00:00",
+      "item": "ratio item A",
+      "name": "inratio line A",
+      "group": "inratio order",
+      "priority": 1,
+      "quantity": 3,
+      "operation": "ratio ship A"
+    },
+    {
+      "due": "2026-01-07T00:00:00",
+      "item": "ratio item B",
+      "name": "inratio line B",
+      "group": "inratio order",
+      "priority": 1,
+      "quantity": 6,
+      "operation": "ratio ship B"
+    },
+    {
+      "due": "2026-01-08T00:00:00",
+      "item": "ratio item C",
+      "name": "inratio line C",
+      "group": "inratio order",
+      "priority": 1,
+      "quantity": 9,
+      "operation": "ratio ship C"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "cost": 1,
+      "name": "ratio ship A",
+      "type": "fixed_time",
+      "duration": 3600
+    },
+    {
+      "cost": 1,
+      "name": "ratio ship B",
+      "type": "fixed_time",
+      "duration": 3600
+    },
+    {
+      "cost": 1,
+      "name": "ratio ship C",
+      "type": "fixed_time",
+      "duration": 3600
+    }
+  ],
+  "demandGroups": [
+    {
+      "name": "inratio order",
+      "policy": "inratio",
+      "status": "open",
+      "members": [
+        "inratio line A",
+        "inratio line B",
+        "inratio line C"
+      ]
+    }
+  ]
+}

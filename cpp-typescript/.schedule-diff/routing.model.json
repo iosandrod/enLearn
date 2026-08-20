@@ -1,0 +1,78 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "routed item",
+      "quantity": -1,
+      "operation": "delivery routed item"
+    },
+    {
+      "type": "end",
+      "buffer": "routed item",
+      "quantity": 1,
+      "operation": "routing step 2"
+    }
+  ],
+  "items": [
+    {
+      "name": "routed item"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "routed item",
+      "name": "routed item",
+      "onhand": 0,
+      "producing": "make routed item"
+    }
+  ],
+  "current": "2009-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "routed item",
+      "name": "routing order",
+      "priority": 1,
+      "quantity": 10,
+      "operation": "delivery routed item"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "name": "routing step 1",
+      "type": "fixed_time",
+      "duration": 172800
+    },
+    {
+      "name": "routing step 2",
+      "type": "fixed_time",
+      "duration": 86400
+    },
+    {
+      "name": "make routed item",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "routing step 1"
+        },
+        {
+          "priority": 2,
+          "operation": "routing step 2"
+        }
+      ]
+    },
+    {
+      "name": "delivery routed item",
+      "type": "fixed_time",
+      "duration": 86400
+    }
+  ]
+}

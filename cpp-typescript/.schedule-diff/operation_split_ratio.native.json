@@ -1,0 +1,167 @@
+{
+  "costSummary": {
+    "operationCost": 84.0,
+    "resourceCost": 0.0,
+    "setupCost": 0.0,
+    "setupPenalty": 0.0,
+    "totalCost": 84.0
+  },
+  "deliveries": [
+    {
+      "batch": "",
+      "demand": "split order",
+      "end": "2026-01-21T00:00:00",
+      "operationPlanKey": "auto:split ship|2026-01-20T23:00:00|2026-01-21T00:00:00|split order|10||MO|#1",
+      "orderType": "MO",
+      "quantity": 10.0
+    }
+  ],
+  "dependencies": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "split finished",
+      "bufferBatch": "",
+      "date": "2026-01-20T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:split ship|2026-01-20T23:00:00|2026-01-21T00:00:00|split order|10||MO|#1",
+      "orderType": "MO",
+      "quantity": -10.0
+    },
+    {
+      "buffer": "split finished",
+      "bufferBatch": "",
+      "date": "2026-01-20T23:00:00",
+      "onhand": 10.0,
+      "operationPlanKey": "auto:split lane A|2026-01-18T23:00:00|2026-01-20T23:00:00||1.5||MO|split make#1",
+      "orderType": "MO",
+      "quantity": 3.0
+    },
+    {
+      "buffer": "split finished",
+      "bufferBatch": "",
+      "date": "2026-01-20T23:00:00",
+      "onhand": 7.0,
+      "operationPlanKey": "auto:split lane B|2026-01-17T23:00:00|2026-01-20T23:00:00||7||MO|split make#1",
+      "orderType": "MO",
+      "quantity": 7.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-20T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "split finished",
+          "date": "2026-01-20T23:00:00",
+          "quantity": 3.0
+        }
+      ],
+      "operation": "split lane A",
+      "operationCost": 18.0,
+      "orderType": "MO",
+      "ownerOperation": "split make",
+      "planKey": "auto:split lane A|2026-01-18T23:00:00|2026-01-20T23:00:00||1.5||MO|split make#1",
+      "quantity": 1.5,
+      "quantityCompleted": 0.0,
+      "reference": "auto:split lane A|2026-01-18T23:00:00|2026-01-20T23:00:00||1.5||MO|split make#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-18T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-18T23:00:00",
+      "status": "proposed",
+      "totalCost": 18.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-20T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "split finished",
+          "date": "2026-01-20T23:00:00",
+          "quantity": 7.0
+        }
+      ],
+      "operation": "split lane B",
+      "operationCost": 56.0,
+      "orderType": "MO",
+      "ownerOperation": "split make",
+      "planKey": "auto:split lane B|2026-01-17T23:00:00|2026-01-20T23:00:00||7||MO|split make#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:split lane B|2026-01-17T23:00:00|2026-01-20T23:00:00||7||MO|split make#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-17T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-17T23:00:00",
+      "status": "proposed",
+      "totalCost": 56.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-20T23:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "split make",
+      "operationCost": 0.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:split make|2026-01-17T23:00:00|2026-01-20T23:00:00||10||MO|#1",
+      "quantity": 10.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:split make|2026-01-17T23:00:00|2026-01-20T23:00:00||10||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-17T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-17T23:00:00",
+      "status": "proposed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": "split order",
+      "end": "2026-01-21T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "split finished",
+          "date": "2026-01-20T23:00:00",
+          "quantity": -10.0
+        }
+      ],
+      "operation": "split ship",
+      "operationCost": 10.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:split ship|2026-01-20T23:00:00|2026-01-21T00:00:00|split order|10||MO|#1",
+      "quantity": 10.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:split ship|2026-01-20T23:00:00|2026-01-21T00:00:00|split order|10||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-20T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-20T23:00:00",
+      "status": "proposed",
+      "totalCost": 10.0
+    }
+  ],
+  "problems": [],
+  "resourcePlans": []
+}

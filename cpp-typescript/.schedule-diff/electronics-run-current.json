@@ -1,0 +1,131 @@
+{
+  "scenario": "electronics_high_mix",
+  "description": "Sixty high-mix electronics orders exercise alternate processes, alternate SMT lines, scarce premium chips, skills, setup families and lot sizing",
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 21600,
+    "constraints": 15,
+    "minimumDelay": 1800,
+    "rotateResources": false
+  },
+  "input": {
+    "demands": 60,
+    "items": 8,
+    "buffers": 8,
+    "operations": 16,
+    "resources": 8,
+    "loads": 20,
+    "flows": 28,
+    "skills": 1,
+    "setupMatrices": 1
+  },
+  "identical": false,
+  "nativeOperationPlans": 186,
+  "typescriptOperationPlans": 184,
+  "nativeDeliveries": 60,
+  "typescriptDeliveries": 60,
+  "differenceCount": 100,
+  "firstDifferences": [
+    {
+      "path": "$.operationPlans.length",
+      "native": 186,
+      "typescript": 184
+    },
+    {
+      "path": "$.operationPlans[4].materials[0].date",
+      "native": "2026-01-18T16:43:38",
+      "typescript": "2026-01-18T14:43:38"
+    },
+    {
+      "path": "$.operationPlans[4].materials[1].date",
+      "native": "2026-01-18T16:43:38",
+      "typescript": "2026-01-18T14:43:38"
+    },
+    {
+      "path": "$.operationPlans[4].setupEnd",
+      "native": "2026-01-18T16:43:38",
+      "typescript": "2026-01-18T14:43:38"
+    },
+    {
+      "path": "$.operationPlans[4].start",
+      "native": "2026-01-18T15:43:38",
+      "typescript": "2026-01-18T13:43:38"
+    },
+    {
+      "path": "$.operationPlans[5].materials[0].date",
+      "native": "2026-01-22T16:43:38",
+      "typescript": "2026-01-22T12:43:38"
+    },
+    {
+      "path": "$.operationPlans[5].materials[1].date",
+      "native": "2026-01-22T16:43:38",
+      "typescript": "2026-01-22T12:43:38"
+    },
+    {
+      "path": "$.operationPlans[5].setupEnd",
+      "native": "2026-01-22T16:43:38",
+      "typescript": "2026-01-22T12:43:38"
+    },
+    {
+      "path": "$.operationPlans[5].start",
+      "native": "2026-01-22T14:43:38",
+      "typescript": "2026-01-22T10:43:38"
+    },
+    {
+      "path": "$.operationPlans[6].end",
+      "native": "2026-01-19T06:00:00",
+      "typescript": "2026-01-31T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[6].materials[0].date",
+      "native": "2026-01-18T21:49:05",
+      "typescript": "2026-01-30T12:43:38"
+    },
+    {
+      "path": "$.operationPlans[6].materials[0].quantity",
+      "native": -2,
+      "typescript": -1
+    },
+    {
+      "path": "$.operationPlans[6].materials[1].date",
+      "native": "2026-01-18T21:49:05",
+      "typescript": "2026-01-30T12:43:38"
+    },
+    {
+      "path": "$.operationPlans[6].materials[1].quantity",
+      "native": -2,
+      "typescript": -1
+    },
+    {
+      "path": "$.operationPlans[6].materials[2].buffer",
+      "native": "controller B",
+      "typescript": "controller A"
+    },
+    {
+      "path": "$.operationPlans[6].materials[2].date",
+      "native": "2026-01-19T06:00:00",
+      "typescript": "2026-01-31T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[6].materials[2].quantity",
+      "native": 2,
+      "typescript": 1
+    },
+    {
+      "path": "$.operationPlans[6].operation",
+      "native": "fast process CTRL-B",
+      "typescript": "fast process CTRL-A"
+    },
+    {
+      "path": "$.operationPlans[6].ownerOperation",
+      "native": "select process CTRL-B",
+      "typescript": "select process CTRL-A"
+    },
+    {
+      "path": "$.operationPlans[6].quantity",
+      "native": 2,
+      "typescript": 1
+    }
+  ],
+  "databaseSchema": "codex_schedule_diff"
+}

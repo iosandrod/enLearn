@@ -1,0 +1,232 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "unconstrained zero-stock",
+      "quantity": -1,
+      "operation": "unconstrained ship zero-stock"
+    },
+    {
+      "type": "end",
+      "buffer": "unconstrained zero-stock",
+      "quantity": 1,
+      "operation": "unconstrained make zero-stock"
+    },
+    {
+      "type": "start",
+      "buffer": "unconstrained raw",
+      "quantity": -1,
+      "operation": "unconstrained make zero-stock"
+    },
+    {
+      "type": "start",
+      "buffer": "unconstrained zero-capacity",
+      "quantity": -1,
+      "operation": "unconstrained ship zero-capacity"
+    },
+    {
+      "type": "end",
+      "buffer": "unconstrained zero-capacity",
+      "quantity": 1,
+      "operation": "unconstrained make zero-capacity"
+    },
+    {
+      "type": "start",
+      "buffer": "unconstrained raw",
+      "quantity": -1,
+      "operation": "unconstrained make zero-capacity"
+    },
+    {
+      "type": "start",
+      "buffer": "unconstrained huge-quantity",
+      "quantity": -1,
+      "operation": "unconstrained ship huge-quantity"
+    },
+    {
+      "type": "end",
+      "buffer": "unconstrained huge-quantity",
+      "quantity": 1,
+      "operation": "unconstrained make huge-quantity"
+    },
+    {
+      "type": "start",
+      "buffer": "unconstrained raw",
+      "quantity": -1,
+      "operation": "unconstrained make huge-quantity"
+    }
+  ],
+  "items": [
+    {
+      "name": "unconstrained raw"
+    },
+    {
+      "name": "unconstrained zero-stock"
+    },
+    {
+      "name": "unconstrained zero-capacity"
+    },
+    {
+      "name": "unconstrained huge-quantity"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "unconstrained zero resource",
+      "operation": "unconstrained make zero-stock"
+    },
+    {
+      "quantity": 1,
+      "resource": "unconstrained zero resource",
+      "operation": "unconstrained make zero-capacity"
+    },
+    {
+      "quantity": 1,
+      "resource": "unconstrained zero resource",
+      "operation": "unconstrained make huge-quantity"
+    }
+  ],
+  "skills": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 1,
+    "constraints": 0,
+    "iterationMax": 8,
+    "minimumDelay": 0,
+    "rotateResources": true,
+    "resourceIterationMax": 1
+  },
+  "buffers": [
+    {
+      "item": "unconstrained raw",
+      "name": "unconstrained raw",
+      "onhand": 0
+    },
+    {
+      "item": "unconstrained zero-stock",
+      "name": "unconstrained zero-stock",
+      "onhand": 0,
+      "producing": "unconstrained make zero-stock"
+    },
+    {
+      "item": "unconstrained zero-capacity",
+      "name": "unconstrained zero-capacity",
+      "onhand": 0,
+      "producing": "unconstrained make zero-capacity"
+    },
+    {
+      "item": "unconstrained huge-quantity",
+      "name": "unconstrained huge-quantity",
+      "onhand": 0,
+      "producing": "unconstrained make huge-quantity"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-03T00:00:00",
+      "item": "unconstrained zero-stock",
+      "name": "unconstrained open",
+      "status": "open",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "unconstrained ship zero-stock",
+      "maxLateness": 0
+    },
+    {
+      "due": "2026-01-03T00:00:00",
+      "item": "unconstrained zero-capacity",
+      "name": "unconstrained quote",
+      "status": "quote",
+      "priority": 1,
+      "quantity": 2,
+      "operation": "unconstrained ship zero-capacity",
+      "maxLateness": 0
+    },
+    {
+      "due": "2026-01-04T00:00:00",
+      "item": "unconstrained huge-quantity",
+      "name": "unconstrained huge",
+      "status": "open",
+      "priority": 2,
+      "quantity": 999.999,
+      "operation": "unconstrained ship huge-quantity",
+      "maxLateness": 0
+    },
+    {
+      "due": "2026-01-02T00:00:00",
+      "item": "unconstrained zero-stock",
+      "name": "unconstrained closed",
+      "status": "closed",
+      "priority": 0,
+      "quantity": 5,
+      "operation": "unconstrained ship zero-stock"
+    },
+    {
+      "due": "2026-01-02T00:00:00",
+      "item": "unconstrained zero-capacity",
+      "name": "unconstrained canceled",
+      "status": "canceled",
+      "priority": 0,
+      "quantity": 5,
+      "operation": "unconstrained ship zero-capacity"
+    }
+  ],
+  "resources": [
+    {
+      "name": "unconstrained zero resource",
+      "maximum": 0,
+      "maxearly": 0,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 1,
+      "name": "unconstrained make zero-stock",
+      "type": "fixed_time",
+      "duration": 3600,
+      "sizeMaximum": 1000,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 1,
+      "name": "unconstrained ship zero-stock",
+      "type": "fixed_time",
+      "duration": 1,
+      "sizeMaximum": 1000
+    },
+    {
+      "cost": 1,
+      "name": "unconstrained make zero-capacity",
+      "type": "fixed_time",
+      "duration": 7200,
+      "sizeMaximum": 1000,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 1,
+      "name": "unconstrained ship zero-capacity",
+      "type": "fixed_time",
+      "duration": 1,
+      "sizeMaximum": 1000
+    },
+    {
+      "cost": 1,
+      "name": "unconstrained make huge-quantity",
+      "type": "fixed_time",
+      "duration": 10800,
+      "sizeMaximum": 1000,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 1,
+      "name": "unconstrained ship huge-quantity",
+      "type": "fixed_time",
+      "duration": 1,
+      "sizeMaximum": 1000
+    }
+  ],
+  "setupMatrices": [],
+  "resourceSkills": []
+}

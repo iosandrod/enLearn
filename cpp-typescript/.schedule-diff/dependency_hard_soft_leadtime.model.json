@@ -1,0 +1,76 @@
+{
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "dependency project",
+      "quantity": 1,
+      "operation": "dependency successor"
+    },
+    {
+      "type": "start",
+      "buffer": "dependency project",
+      "quantity": -1,
+      "operation": "dependency ship"
+    }
+  ],
+  "items": [
+    {
+      "name": "dependency project"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "dependency project",
+      "name": "dependency project",
+      "onhand": 0,
+      "producing": "dependency successor"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-25T00:00:00",
+      "item": "dependency project",
+      "name": "dependency order",
+      "priority": 1,
+      "quantity": 6,
+      "operation": "dependency ship"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "cost": 7,
+      "name": "dependency predecessor",
+      "type": "fixed_time",
+      "duration": 259200
+    },
+    {
+      "cost": 11,
+      "name": "dependency successor",
+      "type": "fixed_time",
+      "duration": 172800
+    },
+    {
+      "cost": 1,
+      "name": "dependency ship",
+      "type": "fixed_time",
+      "duration": 3600
+    }
+  ],
+  "dependencies": [
+    {
+      "quantity": 1,
+      "blockedBy": "dependency predecessor",
+      "operation": "dependency successor",
+      "safetyLeadtime": 432000,
+      "hardSafetyLeadtime": 172800
+    }
+  ]
+}

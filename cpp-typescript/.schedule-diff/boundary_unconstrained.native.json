@@ -1,0 +1,398 @@
+{
+  "costSummary": {
+    "operationCost": 2005.998,
+    "resourceCost": 0.0,
+    "setupCost": 0.0,
+    "setupPenalty": 0.0,
+    "totalCost": 2005.998
+  },
+  "deliveries": [
+    {
+      "batch": "",
+      "demand": "unconstrained huge",
+      "end": "2026-01-04T00:00:00",
+      "operationPlanKey": "auto:unconstrained ship huge-quantity|2026-01-03T23:59:59|2026-01-04T00:00:00|unconstrained huge|999.999||MO|#1",
+      "orderType": "MO",
+      "quantity": 999.999
+    },
+    {
+      "batch": "",
+      "demand": "unconstrained open",
+      "end": "2026-01-03T00:00:00",
+      "operationPlanKey": "auto:unconstrained ship zero-stock|2026-01-02T23:59:59|2026-01-03T00:00:00|unconstrained open|1||MO|#1",
+      "orderType": "MO",
+      "quantity": 1.0
+    },
+    {
+      "batch": "",
+      "demand": "unconstrained quote",
+      "end": "2026-01-03T00:00:00",
+      "operationPlanKey": "auto:unconstrained ship zero-capacity|2026-01-02T23:59:59|2026-01-03T00:00:00|unconstrained quote|2||MO|#1",
+      "orderType": "MO",
+      "quantity": 2.0
+    }
+  ],
+  "dependencies": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "unconstrained huge-quantity",
+      "bufferBatch": "",
+      "date": "2026-01-03T23:59:59",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:unconstrained ship huge-quantity|2026-01-03T23:59:59|2026-01-04T00:00:00|unconstrained huge|999.999||MO|#1",
+      "orderType": "MO",
+      "quantity": -999.999
+    },
+    {
+      "buffer": "unconstrained huge-quantity",
+      "bufferBatch": "",
+      "date": "2026-01-03T23:59:59",
+      "onhand": 999.999,
+      "operationPlanKey": "auto:unconstrained make huge-quantity|2026-01-03T20:59:59|2026-01-03T23:59:59||999.999||MO|#1",
+      "orderType": "MO",
+      "quantity": 999.999
+    },
+    {
+      "buffer": "unconstrained raw",
+      "bufferBatch": "",
+      "date": "2026-01-02T21:59:59",
+      "onhand": -2.0,
+      "operationPlanKey": "auto:unconstrained make zero-capacity|2026-01-02T21:59:59|2026-01-02T23:59:59||2||MO|#1",
+      "orderType": "MO",
+      "quantity": -2.0
+    },
+    {
+      "buffer": "unconstrained raw",
+      "bufferBatch": "",
+      "date": "2026-01-02T22:59:59",
+      "onhand": -3.0,
+      "operationPlanKey": "auto:unconstrained make zero-stock|2026-01-02T22:59:59|2026-01-02T23:59:59||1||MO|#1",
+      "orderType": "MO",
+      "quantity": -1.0
+    },
+    {
+      "buffer": "unconstrained raw",
+      "bufferBatch": "",
+      "date": "2026-01-03T20:59:59",
+      "onhand": -1002.999,
+      "operationPlanKey": "auto:unconstrained make huge-quantity|2026-01-03T20:59:59|2026-01-03T23:59:59||999.999||MO|#1",
+      "orderType": "MO",
+      "quantity": -999.999
+    },
+    {
+      "buffer": "unconstrained zero-capacity",
+      "bufferBatch": "",
+      "date": "2026-01-02T23:59:59",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:unconstrained ship zero-capacity|2026-01-02T23:59:59|2026-01-03T00:00:00|unconstrained quote|2||MO|#1",
+      "orderType": "MO",
+      "quantity": -2.0
+    },
+    {
+      "buffer": "unconstrained zero-capacity",
+      "bufferBatch": "",
+      "date": "2026-01-02T23:59:59",
+      "onhand": 2.0,
+      "operationPlanKey": "auto:unconstrained make zero-capacity|2026-01-02T21:59:59|2026-01-02T23:59:59||2||MO|#1",
+      "orderType": "MO",
+      "quantity": 2.0
+    },
+    {
+      "buffer": "unconstrained zero-stock",
+      "bufferBatch": "",
+      "date": "2026-01-02T23:59:59",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:unconstrained ship zero-stock|2026-01-02T23:59:59|2026-01-03T00:00:00|unconstrained open|1||MO|#1",
+      "orderType": "MO",
+      "quantity": -1.0
+    },
+    {
+      "buffer": "unconstrained zero-stock",
+      "bufferBatch": "",
+      "date": "2026-01-02T23:59:59",
+      "onhand": 1.0,
+      "operationPlanKey": "auto:unconstrained make zero-stock|2026-01-02T22:59:59|2026-01-02T23:59:59||1||MO|#1",
+      "orderType": "MO",
+      "quantity": 1.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-03T23:59:59",
+      "feasible": false,
+      "materials": [
+        {
+          "buffer": "unconstrained raw",
+          "date": "2026-01-03T20:59:59",
+          "quantity": -999.999
+        },
+        {
+          "buffer": "unconstrained huge-quantity",
+          "date": "2026-01-03T23:59:59",
+          "quantity": 999.999
+        }
+      ],
+      "operation": "unconstrained make huge-quantity",
+      "operationCost": 999.999,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:unconstrained make huge-quantity|2026-01-03T20:59:59|2026-01-03T23:59:59||999.999||MO|#1",
+      "quantity": 999.999,
+      "quantityCompleted": 0.0,
+      "reference": "auto:unconstrained make huge-quantity|2026-01-03T20:59:59|2026-01-03T23:59:59||999.999||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "unconstrained zero resource"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-03T20:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-03T20:59:59",
+      "status": "proposed",
+      "totalCost": 999.999
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-02T23:59:59",
+      "feasible": false,
+      "materials": [
+        {
+          "buffer": "unconstrained raw",
+          "date": "2026-01-02T21:59:59",
+          "quantity": -2.0
+        },
+        {
+          "buffer": "unconstrained zero-capacity",
+          "date": "2026-01-02T23:59:59",
+          "quantity": 2.0
+        }
+      ],
+      "operation": "unconstrained make zero-capacity",
+      "operationCost": 2.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:unconstrained make zero-capacity|2026-01-02T21:59:59|2026-01-02T23:59:59||2||MO|#1",
+      "quantity": 2.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:unconstrained make zero-capacity|2026-01-02T21:59:59|2026-01-02T23:59:59||2||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "unconstrained zero resource"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-02T21:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-02T21:59:59",
+      "status": "proposed",
+      "totalCost": 2.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-02T23:59:59",
+      "feasible": false,
+      "materials": [
+        {
+          "buffer": "unconstrained raw",
+          "date": "2026-01-02T22:59:59",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "unconstrained zero-stock",
+          "date": "2026-01-02T23:59:59",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "unconstrained make zero-stock",
+      "operationCost": 1.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:unconstrained make zero-stock|2026-01-02T22:59:59|2026-01-02T23:59:59||1||MO|#1",
+      "quantity": 1.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:unconstrained make zero-stock|2026-01-02T22:59:59|2026-01-02T23:59:59||1||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "unconstrained zero resource"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-02T22:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-02T22:59:59",
+      "status": "proposed",
+      "totalCost": 1.0
+    },
+    {
+      "batch": "",
+      "demand": "unconstrained huge",
+      "end": "2026-01-04T00:00:00",
+      "feasible": false,
+      "materials": [
+        {
+          "buffer": "unconstrained huge-quantity",
+          "date": "2026-01-03T23:59:59",
+          "quantity": -999.999
+        }
+      ],
+      "operation": "unconstrained ship huge-quantity",
+      "operationCost": 999.999,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:unconstrained ship huge-quantity|2026-01-03T23:59:59|2026-01-04T00:00:00|unconstrained huge|999.999||MO|#1",
+      "quantity": 999.999,
+      "quantityCompleted": 0.0,
+      "reference": "auto:unconstrained ship huge-quantity|2026-01-03T23:59:59|2026-01-04T00:00:00|unconstrained huge|999.999||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-03T23:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-03T23:59:59",
+      "status": "proposed",
+      "totalCost": 999.999
+    },
+    {
+      "batch": "",
+      "demand": "unconstrained quote",
+      "end": "2026-01-03T00:00:00",
+      "feasible": false,
+      "materials": [
+        {
+          "buffer": "unconstrained zero-capacity",
+          "date": "2026-01-02T23:59:59",
+          "quantity": -2.0
+        }
+      ],
+      "operation": "unconstrained ship zero-capacity",
+      "operationCost": 2.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:unconstrained ship zero-capacity|2026-01-02T23:59:59|2026-01-03T00:00:00|unconstrained quote|2||MO|#1",
+      "quantity": 2.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:unconstrained ship zero-capacity|2026-01-02T23:59:59|2026-01-03T00:00:00|unconstrained quote|2||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-02T23:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-02T23:59:59",
+      "status": "proposed",
+      "totalCost": 2.0
+    },
+    {
+      "batch": "",
+      "demand": "unconstrained open",
+      "end": "2026-01-03T00:00:00",
+      "feasible": false,
+      "materials": [
+        {
+          "buffer": "unconstrained zero-stock",
+          "date": "2026-01-02T23:59:59",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "unconstrained ship zero-stock",
+      "operationCost": 1.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:unconstrained ship zero-stock|2026-01-02T23:59:59|2026-01-03T00:00:00|unconstrained open|1||MO|#1",
+      "quantity": 1.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:unconstrained ship zero-stock|2026-01-02T23:59:59|2026-01-03T00:00:00|unconstrained open|1||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-02T23:59:59",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-02T23:59:59",
+      "status": "proposed",
+      "totalCost": 1.0
+    }
+  ],
+  "problems": [
+    {
+      "description": "No replenishment defined for 'unconstrained raw'",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "feasible": false,
+      "name": "invalid data",
+      "owner": "unconstrained raw",
+      "start": "1971-01-01T00:00:00"
+    },
+    {
+      "description": "Buffer 'unconstrained raw' has material shortage of 1003",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "feasible": false,
+      "name": "material shortage",
+      "owner": "unconstrained raw",
+      "start": "2026-01-02T21:59:59"
+    },
+    {
+      "description": "Resource 'unconstrained zero resource' has capacity shortage of 2",
+      "end": "2026-01-02T23:59:59",
+      "entity": "capacity",
+      "feasible": false,
+      "name": "overload",
+      "owner": "unconstrained zero resource",
+      "start": "2026-01-02T21:59:59"
+    },
+    {
+      "description": "Resource 'unconstrained zero resource' has capacity shortage of 1",
+      "end": "2026-01-03T23:59:59",
+      "entity": "capacity",
+      "feasible": false,
+      "name": "overload",
+      "owner": "unconstrained zero resource",
+      "start": "2026-01-03T20:59:59"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "available": 0.0,
+      "end": "2026-01-02T22:59:59",
+      "free": -1.0,
+      "load": 1.0,
+      "loadConfirmed": 0.0,
+      "resource": "unconstrained zero resource",
+      "setup": 0.0,
+      "start": "2026-01-02T21:59:59",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 0.0,
+      "end": "2026-01-02T23:59:59",
+      "free": -2.0,
+      "load": 2.0,
+      "loadConfirmed": 0.0,
+      "resource": "unconstrained zero resource",
+      "setup": 0.0,
+      "start": "2026-01-02T22:59:59",
+      "unavailable": 0.0,
+      "utilization": 2.0
+    },
+    {
+      "available": 0.0,
+      "end": "2026-01-03T23:59:59",
+      "free": -3.0,
+      "load": 3.0,
+      "loadConfirmed": 0.0,
+      "resource": "unconstrained zero resource",
+      "setup": 0.0,
+      "start": "2026-01-03T20:59:59",
+      "unavailable": 0.0,
+      "utilization": 3.0
+    }
+  ]
+}

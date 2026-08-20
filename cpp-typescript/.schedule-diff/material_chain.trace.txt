@@ -1,0 +1,18 @@
+[demand] attempt {"demand":"chain order","attempt":1,"quantity":10,"requestDate":"2009-01-20T00:00:00","lastDate":"2014-01-19T00:00:00"}
+[operation] ask {"demand":"chain order","operation":"delivery finished item","quantity":10,"end":"2009-01-20T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished item","requested":10,"date":"2009-01-19T00:00:00","onhand":0}
+[buffer] shortage {"buffer":"finished item","iteration":0,"date":"2009-01-19T00:00:00","onhand":-10,"shortage":10}
+[operation] ask {"demand":null,"operation":"make finished item","quantity":10,"end":"2009-01-19T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"component","requested":10,"date":"2009-01-18T00:00:00","onhand":0}
+[buffer] shortage {"buffer":"component","iteration":0,"date":"2009-01-18T00:00:00","onhand":-10,"shortage":10}
+[operation] ask {"demand":null,"operation":"make component","quantity":10,"end":"2009-01-18T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"raw material","requested":20,"date":"2009-01-16T00:00:00","onhand":30}
+[buffer] answer {"demand":null,"buffer":"raw material","requested":20,"remainingShortage":0,"quantity":20,"date":"2009-01-16T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make component","quantity":10,"start":"2009-01-16T00:00:00","end":"2009-01-18T00:00:00"}
+[buffer] replenish {"buffer":"component","iteration":0,"requested":10,"replenished":10,"producerDate":"2009-01-18T00:00:00","eventCountBefore":1,"eventCountAfter":2,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"component","requested":10,"remainingShortage":0,"quantity":10,"date":"2009-01-18T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"make finished item","quantity":10,"start":"2009-01-18T00:00:00","end":"2009-01-19T00:00:00"}
+[buffer] replenish {"buffer":"finished item","iteration":0,"requested":10,"replenished":10,"producerDate":"2009-01-19T00:00:00","eventCountBefore":1,"eventCountAfter":2,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished item","requested":10,"remainingShortage":0,"quantity":10,"date":"2009-01-19T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"chain order","operation":"delivery finished item","quantity":10,"start":"2009-01-19T00:00:00","end":"2009-01-20T00:00:00"}
+[demand] reply {"demand":"chain order","attempt":1,"result":true,"quantity":10,"date":"2009-01-20T00:00:00"}

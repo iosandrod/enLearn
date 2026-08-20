@@ -1,0 +1,37 @@
+{
+  "name": "frepple-cpp-typescript",
+  "version": "0.1.0",
+  "description": "A semantic TypeScript port of the frePPLe C++ planning engine",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "generate:header-models": "node scripts/generate-header-models.mjs",
+    "extract-api": "node scripts/extract-api.mjs",
+    "build": "tsc -p tsconfig.json",
+    "clean": "node scripts/clean.mjs",
+    "test": "npm run build && node scripts/test.mjs",
+    "verify:file-count": "node scripts/verify.mjs file-count",
+    "verify:file-name": "node scripts/verify.mjs file-name",
+    "verify:line-count": "node scripts/verify.mjs line-count",
+    "verify:class-model": "node scripts/verify.mjs class-model",
+    "verify:public-api": "node scripts/verify.mjs public-api",
+    "verify:differential": "npm run build && node scripts/test.mjs",
+    "compare:scheduling": "node scripts/compare-scheduling.mjs",
+    "verify": "node scripts/verify.mjs all && npm run test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/pg": "^8.23.1",
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-cpp": "^0.23.4",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.11.0",
+    "pg": "^8.23.0"
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "purchased alloy @ purchase plant",
+      "quantity": -1,
+      "operation": "consume purchased alloy"
+    }
+  ],
+  "items": [
+    {
+      "name": "purchased alloy"
+    }
+  ],
+  "loads": [],
+  "skills": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 21600,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "purchased alloy",
+      "name": "purchased alloy @ purchase plant",
+      "onhand": 0,
+      "location": "purchase plant"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-16T00:00:00",
+      "item": "purchased alloy",
+      "name": "purchase effectivity order 1",
+      "location": "purchase plant",
+      "priority": 1,
+      "quantity": 7,
+      "operation": "consume purchased alloy"
+    },
+    {
+      "due": "2026-01-19T00:00:00",
+      "item": "purchased alloy",
+      "name": "purchase effectivity order 2",
+      "location": "purchase plant",
+      "priority": 2,
+      "quantity": 5,
+      "operation": "consume purchased alloy"
+    }
+  ],
+  "locations": [
+    {
+      "name": "purchase plant"
+    },
+    {
+      "name": "legacy supplier"
+    },
+    {
+      "name": "active supplier"
+    }
+  ],
+  "resources": [],
+  "suppliers": [
+    {
+      "name": "legacy supplier"
+    },
+    {
+      "name": "active supplier"
+    }
+  ],
+  "operations": [
+    {
+      "cost": 1,
+      "name": "consume purchased alloy",
+      "type": "fixed_time",
+      "duration": 3600
+    }
+  ],
+  "itemSuppliers": [
+    {
+      "cost": 8,
+      "item": "purchased alloy",
+      "leadtime": 172800,
+      "location": "purchase plant",
+      "priority": 1,
+      "supplier": "legacy supplier",
+      "sizeMaximum": 20,
+      "sizeMinimum": 2,
+      "effectiveEnd": "2025-12-31T00:00:00",
+      "sizeMultiple": 2,
+      "hardSafetyLeadtime": 21600
+    },
+    {
+      "cost": 6,
+      "item": "purchased alloy",
+      "leadtime": 345600,
+      "location": "purchase plant",
+      "priority": 2,
+      "supplier": "active supplier",
+      "sizeMaximum": 18,
+      "sizeMinimum": 3,
+      "effectiveEnd": "2026-04-01T00:00:00",
+      "sizeMultiple": 3,
+      "effectiveStart": "2026-01-01T00:00:00",
+      "hardSafetyLeadtime": 43200
+    }
+  ],
+  "setupMatrices": [],
+  "resourceSkills": [],
+  "itemDistributions": []
+}

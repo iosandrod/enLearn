@@ -1,0 +1,136 @@
+{
+  "costSummary": {
+    "operationCost": 114.0,
+    "resourceCost": 0.0,
+    "setupCost": 0.0,
+    "setupPenalty": 0.0,
+    "totalCost": 114.0
+  },
+  "deliveries": [
+    {
+      "batch": "",
+      "demand": "dependency order",
+      "end": "2026-01-25T00:00:00",
+      "operationPlanKey": "auto:dependency ship|2026-01-24T23:00:00|2026-01-25T00:00:00|dependency order|6||MO|#1",
+      "orderType": "MO",
+      "quantity": 6.0
+    }
+  ],
+  "dependencies": [
+    {
+      "blockedBy": "dependency predecessor",
+      "first": "auto:dependency predecessor|2026-01-14T23:00:00|2026-01-17T23:00:00||6||MO|#1",
+      "operation": "dependency successor",
+      "quantity": 6.0,
+      "second": "auto:dependency successor|2026-01-22T23:00:00|2026-01-24T23:00:00||6||MO|#1"
+    }
+  ],
+  "inventoryProfiles": [
+    {
+      "buffer": "dependency project",
+      "bufferBatch": "",
+      "date": "2026-01-24T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:dependency ship|2026-01-24T23:00:00|2026-01-25T00:00:00|dependency order|6||MO|#1",
+      "orderType": "MO",
+      "quantity": -6.0
+    },
+    {
+      "buffer": "dependency project",
+      "bufferBatch": "",
+      "date": "2026-01-24T23:00:00",
+      "onhand": 6.0,
+      "operationPlanKey": "auto:dependency successor|2026-01-22T23:00:00|2026-01-24T23:00:00||6||MO|#1",
+      "orderType": "MO",
+      "quantity": 6.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-17T23:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "dependency predecessor",
+      "operationCost": 42.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:dependency predecessor|2026-01-14T23:00:00|2026-01-17T23:00:00||6||MO|#1",
+      "quantity": 6.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:dependency predecessor|2026-01-14T23:00:00|2026-01-17T23:00:00||6||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-14T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-14T23:00:00",
+      "status": "proposed",
+      "totalCost": 42.0
+    },
+    {
+      "batch": "",
+      "demand": "dependency order",
+      "end": "2026-01-25T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "dependency project",
+          "date": "2026-01-24T23:00:00",
+          "quantity": -6.0
+        }
+      ],
+      "operation": "dependency ship",
+      "operationCost": 6.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:dependency ship|2026-01-24T23:00:00|2026-01-25T00:00:00|dependency order|6||MO|#1",
+      "quantity": 6.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:dependency ship|2026-01-24T23:00:00|2026-01-25T00:00:00|dependency order|6||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-24T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-24T23:00:00",
+      "status": "proposed",
+      "totalCost": 6.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-24T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "dependency project",
+          "date": "2026-01-24T23:00:00",
+          "quantity": 6.0
+        }
+      ],
+      "operation": "dependency successor",
+      "operationCost": 66.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:dependency successor|2026-01-22T23:00:00|2026-01-24T23:00:00||6||MO|#1",
+      "quantity": 6.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:dependency successor|2026-01-22T23:00:00|2026-01-24T23:00:00||6||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-22T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-22T23:00:00",
+      "status": "proposed",
+      "totalCost": 66.0
+    }
+  ],
+  "problems": [],
+  "resourcePlans": []
+}

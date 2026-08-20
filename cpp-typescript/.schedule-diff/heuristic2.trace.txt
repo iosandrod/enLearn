@@ -1,0 +1,260 @@
+
+> frepple-cpp-typescript@0.1.0 compare:scheduling
+> node scripts/compare-scheduling.mjs
+
+[operation] ask {"demand":"forward repair order 01","operation":"ship forward repair product","quantity":2,"operationQuantity":2,"end":"2026-01-03T00:00:00","operationEnd":"2026-01-03T00:00:00"}
+[operation] ask {"demand":"forward repair order 02","operation":"ship forward repair product","quantity":3,"operationQuantity":3,"end":"2026-01-03T12:00:00","operationEnd":"2026-01-03T12:00:00"}
+[operation] ask {"demand":"forward repair order 03","operation":"ship forward repair product","quantity":4,"operationQuantity":4,"end":"2026-01-04T00:00:00","operationEnd":"2026-01-04T00:00:00"}
+[operation] ask {"demand":"forward repair order 04","operation":"ship forward repair product","quantity":5,"operationQuantity":5,"end":"2026-01-04T12:00:00","operationEnd":"2026-01-04T12:00:00"}
+[operation] ask {"demand":"forward repair order 05","operation":"ship forward repair product","quantity":2,"operationQuantity":2,"end":"2026-01-05T00:00:00","operationEnd":"2026-01-05T00:00:00"}
+[operation] ask {"demand":"forward repair order 06","operation":"ship forward repair product","quantity":3,"operationQuantity":3,"end":"2026-01-05T12:00:00","operationEnd":"2026-01-05T12:00:00"}
+[operation] ask {"demand":"forward repair order 07","operation":"ship forward repair product","quantity":4,"operationQuantity":4,"end":"2026-01-06T00:00:00","operationEnd":"2026-01-06T00:00:00"}
+[operation] ask {"demand":"forward repair order 08","operation":"ship forward repair product","quantity":5,"operationQuantity":5,"end":"2026-01-06T12:00:00","operationEnd":"2026-01-06T12:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":2,"operationQuantity":2,"end":"2026-01-02T23:00:00","operationEnd":"2026-01-02T23:00:00"}
+[operation] leadtime-reject {"operation":"make forward repair product","originalStart":"2025-12-31T23:00:00","threshold":"2026-01-01T00:00:00","nextDate":"2026-01-03T00:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-02T23:00:00","nextDate":"2026-01-03T11:00:00","requested":2,"askDate":"2026-01-02T23:00:00","replyQuantity":0,"replyDate":"2026-01-03T00:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":2,"operationQuantity":2,"end":"2026-01-03T00:00:00","operationEnd":"2026-01-03T00:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-02T23:00:00","nextDate":"2026-01-03T11:00:00","requested":2,"askDate":"2026-01-03T00:00:00","replyQuantity":2,"replyDate":"2026-01-03T00:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":3,"operationQuantity":3,"end":"2026-01-03T11:00:00","operationEnd":"2026-01-03T11:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-03T11:00:00","nextDate":"2026-01-03T23:00:00","requested":3,"askDate":"2026-01-03T11:00:00","replyQuantity":3,"replyDate":"2026-01-03T11:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":4,"operationQuantity":4,"end":"2026-01-03T23:00:00","operationEnd":"2026-01-03T23:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-03T23:00:00","nextDate":"2026-01-04T00:00:00","requested":4,"askDate":"2026-01-03T23:00:00","replyQuantity":4,"replyDate":"2026-01-03T23:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":2,"operationQuantity":2,"end":"2026-01-04T23:00:00","operationEnd":"2026-01-04T23:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-04T23:00:00","nextDate":"2026-01-05T11:00:00","requested":2,"askDate":"2026-01-04T23:00:00","replyQuantity":2,"replyDate":"2026-01-04T23:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":3,"operationQuantity":3,"end":"2026-01-05T11:00:00","operationEnd":"2026-01-05T11:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-05T11:00:00","nextDate":"2026-01-05T23:00:00","requested":3,"askDate":"2026-01-05T11:00:00","replyQuantity":3,"replyDate":"2026-01-05T11:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":4,"operationQuantity":4,"end":"2026-01-05T23:00:00","operationEnd":"2026-01-05T23:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-05T23:00:00","nextDate":"2026-01-06T11:00:00","requested":4,"askDate":"2026-01-05T23:00:00","replyQuantity":4,"replyDate":"2026-01-05T23:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":5,"operationQuantity":5,"end":"2026-01-06T11:00:00","operationEnd":"2026-01-06T11:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-06T11:00:00","nextDate":"2030-12-31T00:00:00","requested":5,"askDate":"2026-01-06T11:00:00","replyQuantity":5,"replyDate":"2026-01-06T11:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-01T00:00:00","totalLoad":2,"acceptedLoad":1,"maximum":1,"candidates":[{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-01T00:00:00","end":"2026-01-03T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"10","quantity":1,"operationQuantity":2,"from":"2026-01-01T00:00:00","to":"2026-01-01T11:00:00","resultingStart":"2026-01-01T11:00:00","resultingEnd":"2026-01-03T11:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-01T11:00:00","totalLoad":3,"acceptedLoad":1,"maximum":1,"candidates":[{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-01T11:00:00","end":"2026-01-03T11:00:00"},{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-01T11:00:00","end":"2026-01-03T11:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"10","quantity":1,"operationQuantity":2,"from":"2026-01-01T00:00:00","to":"2026-01-01T23:00:00","resultingStart":"2026-01-01T23:00:00","resultingEnd":"2026-01-03T23:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"11","quantity":1,"operationQuantity":3,"from":"2026-01-01T11:00:00","to":"2026-01-01T23:00:00","resultingStart":"2026-01-01T23:00:00","resultingEnd":"2026-01-03T23:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-01T23:00:00","totalLoad":4,"acceptedLoad":1,"maximum":1,"candidates":[{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-01T23:00:00","end":"2026-01-03T23:00:00"},{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-01T23:00:00","end":"2026-01-03T23:00:00"},{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-01T23:00:00","end":"2026-01-03T23:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"10","quantity":1,"operationQuantity":2,"from":"2026-01-01T00:00:00","to":"2026-01-02T23:00:00","resultingStart":"2026-01-02T23:00:00","resultingEnd":"2026-01-04T23:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"11","quantity":1,"operationQuantity":3,"from":"2026-01-01T11:00:00","to":"2026-01-02T23:00:00","resultingStart":"2026-01-02T23:00:00","resultingEnd":"2026-01-04T23:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"12","quantity":1,"operationQuantity":4,"from":"2026-01-01T23:00:00","to":"2026-01-02T23:00:00","resultingStart":"2026-01-02T23:00:00","resultingEnd":"2026-01-04T23:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-02T23:00:00","totalLoad":5,"acceptedLoad":1,"maximum":1,"candidates":[{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-02T23:00:00","end":"2026-01-04T23:00:00"},{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-02T23:00:00","end":"2026-01-04T23:00:00"},{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-02T23:00:00","end":"2026-01-04T23:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-02T23:00:00","end":"2026-01-04T23:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"10","quantity":1,"operationQuantity":2,"from":"2026-01-01T00:00:00","to":"2026-01-03T11:00:00","resultingStart":"2026-01-03T11:00:00","resultingEnd":"2026-01-05T11:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"11","quantity":1,"operationQuantity":3,"from":"2026-01-01T11:00:00","to":"2026-01-03T11:00:00","resultingStart":"2026-01-03T11:00:00","resultingEnd":"2026-01-05T11:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"12","quantity":1,"operationQuantity":4,"from":"2026-01-01T23:00:00","to":"2026-01-03T11:00:00","resultingStart":"2026-01-03T11:00:00","resultingEnd":"2026-01-05T11:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"13","quantity":1,"operationQuantity":2,"from":"2026-01-02T23:00:00","to":"2026-01-03T11:00:00","resultingStart":"2026-01-03T11:00:00","resultingEnd":"2026-01-05T11:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-03T11:00:00","totalLoad":6,"acceptedLoad":1,"maximum":1,"candidates":[{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-03T11:00:00","end":"2026-01-05T11:00:00"},{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-03T11:00:00","end":"2026-01-05T11:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-03T11:00:00","end":"2026-01-05T11:00:00"},{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-03T11:00:00","end":"2026-01-05T11:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-03T11:00:00","end":"2026-01-05T11:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"10","quantity":1,"operationQuantity":2,"from":"2026-01-01T00:00:00","to":"2026-01-03T23:00:00","resultingStart":"2026-01-03T23:00:00","resultingEnd":"2026-01-05T23:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"11","quantity":1,"operationQuantity":3,"from":"2026-01-01T11:00:00","to":"2026-01-03T23:00:00","resultingStart":"2026-01-03T23:00:00","resultingEnd":"2026-01-05T23:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"12","quantity":1,"operationQuantity":4,"from":"2026-01-01T23:00:00","to":"2026-01-03T23:00:00","resultingStart":"2026-01-03T23:00:00","resultingEnd":"2026-01-05T23:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"13","quantity":1,"operationQuantity":2,"from":"2026-01-02T23:00:00","to":"2026-01-03T23:00:00","resultingStart":"2026-01-03T23:00:00","resultingEnd":"2026-01-05T23:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"14","quantity":1,"operationQuantity":3,"from":"2026-01-03T11:00:00","to":"2026-01-03T23:00:00","resultingStart":"2026-01-03T23:00:00","resultingEnd":"2026-01-05T23:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-03T23:00:00","totalLoad":7,"acceptedLoad":1,"maximum":1,"candidates":[{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"},{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"},{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"10","quantity":1,"operationQuantity":2,"from":"2026-01-01T00:00:00","to":"2026-01-04T00:00:00","resultingStart":"2026-01-04T00:00:00","resultingEnd":"2026-01-06T00:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"11","quantity":1,"operationQuantity":3,"from":"2026-01-01T11:00:00","to":"2026-01-04T00:00:00","resultingStart":"2026-01-04T00:00:00","resultingEnd":"2026-01-06T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-03T23:00:00","totalLoad":5,"acceptedLoad":1,"maximum":1,"candidates":[{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"12","quantity":1,"operationQuantity":4,"from":"2026-01-01T23:00:00","to":"2026-01-04T00:00:00","resultingStart":"2026-01-04T00:00:00","resultingEnd":"2026-01-06T00:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"13","quantity":1,"operationQuantity":2,"from":"2026-01-02T23:00:00","to":"2026-01-04T00:00:00","resultingStart":"2026-01-04T00:00:00","resultingEnd":"2026-01-06T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-03T23:00:00","totalLoad":3,"acceptedLoad":1,"maximum":1,"candidates":[{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-03T23:00:00","end":"2026-01-05T23:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"14","quantity":1,"operationQuantity":3,"from":"2026-01-03T11:00:00","to":"2026-01-04T00:00:00","resultingStart":"2026-01-04T00:00:00","resultingEnd":"2026-01-06T00:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"15","quantity":1,"operationQuantity":4,"from":"2026-01-03T23:00:00","to":"2026-01-04T00:00:00","resultingStart":"2026-01-04T00:00:00","resultingEnd":"2026-01-06T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-04T00:00:00","totalLoad":6,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"},{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"},{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"11","quantity":1,"operationQuantity":3,"from":"2026-01-01T11:00:00","to":"2026-01-04T11:00:00","resultingStart":"2026-01-04T11:00:00","resultingEnd":"2026-01-06T11:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"12","quantity":1,"operationQuantity":4,"from":"2026-01-01T23:00:00","to":"2026-01-04T11:00:00","resultingStart":"2026-01-04T11:00:00","resultingEnd":"2026-01-06T11:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"13","quantity":1,"operationQuantity":2,"from":"2026-01-02T23:00:00","to":"2026-01-04T11:00:00","resultingStart":"2026-01-04T11:00:00","resultingEnd":"2026-01-06T11:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"14","quantity":1,"operationQuantity":3,"from":"2026-01-03T11:00:00","to":"2026-01-04T11:00:00","resultingStart":"2026-01-04T11:00:00","resultingEnd":"2026-01-06T11:00:00"}
+[forward] move {"resource":"forward repair bottleneck","reference":"15","quantity":1,"operationQuantity":4,"from":"2026-01-03T23:00:00","to":"2026-01-04T11:00:00","resultingStart":"2026-01-04T11:00:00","resultingEnd":"2026-01-06T11:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-04T11:00:00","totalLoad":7,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"},{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"11","quantity":1,"operationQuantity":3,"from":"2026-01-01T11:00:00","to":"2026-01-06T00:00:00","resultingStart":"2026-01-06T00:00:00","resultingEnd":"2026-01-08T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-04T11:00:00","totalLoad":6,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"},{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"12","quantity":1,"operationQuantity":4,"from":"2026-01-01T23:00:00","to":"2026-01-06T00:00:00","resultingStart":"2026-01-06T00:00:00","resultingEnd":"2026-01-08T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-04T11:00:00","totalLoad":5,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"},{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"13","quantity":1,"operationQuantity":2,"from":"2026-01-02T23:00:00","to":"2026-01-06T00:00:00","resultingStart":"2026-01-06T00:00:00","resultingEnd":"2026-01-08T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-04T11:00:00","totalLoad":4,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"},{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"14","quantity":1,"operationQuantity":3,"from":"2026-01-03T11:00:00","to":"2026-01-06T00:00:00","resultingStart":"2026-01-06T00:00:00","resultingEnd":"2026-01-08T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-04T11:00:00","totalLoad":3,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"},{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"15","quantity":1,"operationQuantity":4,"from":"2026-01-03T23:00:00","to":"2026-01-06T00:00:00","resultingStart":"2026-01-06T00:00:00","resultingEnd":"2026-01-08T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-04T11:00:00","totalLoad":2,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"10","quantity":1,"operationQuantity":2,"start":"2026-01-04T00:00:00","end":"2026-01-06T00:00:00"},{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-04T11:00:00","end":"2026-01-06T11:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"16","quantity":1,"operationQuantity":5,"from":"2026-01-04T11:00:00","to":"2026-01-06T00:00:00","resultingStart":"2026-01-06T00:00:00","resultingEnd":"2026-01-08T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-06T00:00:00","totalLoad":6,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"12","quantity":1,"operationQuantity":4,"from":"2026-01-01T23:00:00","to":"2026-01-08T00:00:00","resultingStart":"2026-01-08T00:00:00","resultingEnd":"2026-01-10T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-06T00:00:00","totalLoad":5,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"13","quantity":1,"operationQuantity":2,"from":"2026-01-02T23:00:00","to":"2026-01-08T00:00:00","resultingStart":"2026-01-08T00:00:00","resultingEnd":"2026-01-10T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-06T00:00:00","totalLoad":4,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"14","quantity":1,"operationQuantity":3,"from":"2026-01-03T11:00:00","to":"2026-01-08T00:00:00","resultingStart":"2026-01-08T00:00:00","resultingEnd":"2026-01-10T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-06T00:00:00","totalLoad":3,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"15","quantity":1,"operationQuantity":4,"from":"2026-01-03T23:00:00","to":"2026-01-08T00:00:00","resultingStart":"2026-01-08T00:00:00","resultingEnd":"2026-01-10T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-06T00:00:00","totalLoad":2,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"},{"reference":"11","quantity":1,"operationQuantity":3,"start":"2026-01-06T00:00:00","end":"2026-01-08T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"16","quantity":1,"operationQuantity":5,"from":"2026-01-04T11:00:00","to":"2026-01-08T00:00:00","resultingStart":"2026-01-08T00:00:00","resultingEnd":"2026-01-10T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-08T00:00:00","totalLoad":5,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"},{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"13","quantity":1,"operationQuantity":2,"from":"2026-01-02T23:00:00","to":"2026-01-10T00:00:00","resultingStart":"2026-01-10T00:00:00","resultingEnd":"2026-01-12T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-08T00:00:00","totalLoad":4,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"},{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"14","quantity":1,"operationQuantity":3,"from":"2026-01-03T11:00:00","to":"2026-01-10T00:00:00","resultingStart":"2026-01-10T00:00:00","resultingEnd":"2026-01-12T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-08T00:00:00","totalLoad":3,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"},{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"15","quantity":1,"operationQuantity":4,"from":"2026-01-03T23:00:00","to":"2026-01-10T00:00:00","resultingStart":"2026-01-10T00:00:00","resultingEnd":"2026-01-12T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-08T00:00:00","totalLoad":2,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"},{"reference":"12","quantity":1,"operationQuantity":4,"start":"2026-01-08T00:00:00","end":"2026-01-10T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"16","quantity":1,"operationQuantity":5,"from":"2026-01-04T11:00:00","to":"2026-01-10T00:00:00","resultingStart":"2026-01-10T00:00:00","resultingEnd":"2026-01-12T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-10T00:00:00","totalLoad":4,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-10T00:00:00","end":"2026-01-12T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-10T00:00:00","end":"2026-01-12T00:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-10T00:00:00","end":"2026-01-12T00:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-10T00:00:00","end":"2026-01-12T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"14","quantity":1,"operationQuantity":3,"from":"2026-01-03T11:00:00","to":"2026-01-12T00:00:00","resultingStart":"2026-01-12T00:00:00","resultingEnd":"2026-01-14T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-10T00:00:00","totalLoad":3,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-10T00:00:00","end":"2026-01-12T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-10T00:00:00","end":"2026-01-12T00:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-10T00:00:00","end":"2026-01-12T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"15","quantity":1,"operationQuantity":4,"from":"2026-01-03T23:00:00","to":"2026-01-12T00:00:00","resultingStart":"2026-01-12T00:00:00","resultingEnd":"2026-01-14T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-10T00:00:00","totalLoad":2,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-10T00:00:00","end":"2026-01-12T00:00:00"},{"reference":"13","quantity":1,"operationQuantity":2,"start":"2026-01-10T00:00:00","end":"2026-01-12T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"16","quantity":1,"operationQuantity":5,"from":"2026-01-04T11:00:00","to":"2026-01-12T00:00:00","resultingStart":"2026-01-12T00:00:00","resultingEnd":"2026-01-14T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-12T00:00:00","totalLoad":3,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-12T00:00:00","end":"2026-01-14T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-12T00:00:00","end":"2026-01-14T00:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-12T00:00:00","end":"2026-01-14T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"15","quantity":1,"operationQuantity":4,"from":"2026-01-03T23:00:00","to":"2026-01-14T00:00:00","resultingStart":"2026-01-14T00:00:00","resultingEnd":"2026-01-16T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-12T00:00:00","totalLoad":2,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-12T00:00:00","end":"2026-01-14T00:00:00"},{"reference":"14","quantity":1,"operationQuantity":3,"start":"2026-01-12T00:00:00","end":"2026-01-14T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"16","quantity":1,"operationQuantity":5,"from":"2026-01-04T11:00:00","to":"2026-01-14T00:00:00","resultingStart":"2026-01-14T00:00:00","resultingEnd":"2026-01-16T00:00:00"}
+[forward] overload {"resource":"forward repair bottleneck","date":"2026-01-14T00:00:00","totalLoad":2,"acceptedLoad":0,"maximum":1,"candidates":[{"reference":"16","quantity":1,"operationQuantity":5,"start":"2026-01-14T00:00:00","end":"2026-01-16T00:00:00"},{"reference":"15","quantity":1,"operationQuantity":4,"start":"2026-01-14T00:00:00","end":"2026-01-16T00:00:00"}]}
+[forward] move {"resource":"forward repair bottleneck","reference":"16","quantity":1,"operationQuantity":5,"from":"2026-01-04T11:00:00","to":"2026-01-16T00:00:00","resultingStart":"2026-01-16T00:00:00","resultingEnd":"2026-01-18T00:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":4,"operationQuantity":4,"end":"2026-01-08T00:00:00","operationEnd":"2026-01-08T00:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-08T00:00:00","nextDate":"2026-01-10T00:00:00","requested":4,"askDate":"2026-01-08T00:00:00","replyQuantity":4,"replyDate":"2026-01-08T00:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":4,"operationQuantity":4,"end":"2026-01-10T00:00:00","operationEnd":"2026-01-10T00:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-10T00:00:00","nextDate":"2026-01-12T00:00:00","requested":4,"askDate":"2026-01-10T00:00:00","replyQuantity":4,"replyDate":"2026-01-10T00:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":3,"operationQuantity":3,"end":"2026-01-12T00:00:00","operationEnd":"2026-01-12T00:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-12T00:00:00","nextDate":"2026-01-14T00:00:00","requested":3,"askDate":"2026-01-12T00:00:00","replyQuantity":3,"replyDate":"2026-01-12T00:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":2,"operationQuantity":2,"end":"2026-01-14T00:00:00","operationEnd":"2026-01-14T00:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-14T00:00:00","nextDate":"2026-01-16T00:00:00","requested":2,"askDate":"2026-01-14T00:00:00","replyQuantity":2,"replyDate":"2026-01-14T00:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":5,"operationQuantity":5,"end":"2026-01-16T00:00:00","operationEnd":"2026-01-16T00:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-16T00:00:00","nextDate":"2026-01-18T00:00:00","requested":5,"askDate":"2026-01-16T00:00:00","replyQuantity":5,"replyDate":"2026-01-16T00:00:00"}
+[operation] ask {"demand":null,"operation":"make forward repair product","quantity":5,"operationQuantity":5,"end":"2026-01-18T00:00:00","operationEnd":"2026-01-18T00:00:00"}
+[buffer] safety-stock-replenish {"buffer":"forward repair product @ plant","date":"2026-01-18T00:00:00","nextDate":"2030-12-31T00:00:00","requested":5,"askDate":"2026-01-18T00:00:00","replyQuantity":5,"replyDate":"2026-01-18T00:00:00"}
+{
+  "scenario": "heuristic2_forward_repair",
+  "industry": "瓶颈产线前推修复",
+  "description": "Heuristic two repairs overloaded backward plans in repeated forward and batch-grouped backward sweeps",
+  "coverage": [
+    "algorithm=heuristic_2",
+    "plantype=1",
+    "forward repair",
+    "锁定产能",
+    "重复扫掠"
+  ],
+  "solver": {
+    "plantype": 1,
+    "algorithm": "heuristic_2",
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "iterationMax": 32,
+    "minimumDelay": 3600,
+    "erasePreviousFirst": false,
+    "resourceIterationMax": 32
+  },
+  "input": {
+    "demands": 8,
+    "items": 2,
+    "buffers": 2,
+    "operations": 2,
+    "resources": 1,
+    "loads": 1,
+    "flows": 3,
+    "skills": 0,
+    "setupMatrices": 0
+  },
+  "identical": false,
+  "nativeOperationPlans": 15,
+  "typescriptOperationPlans": 16,
+  "nativeDeliveries": 8,
+  "typescriptDeliveries": 8,
+  "differenceCount": 100,
+  "firstDifferences": [
+    {
+      "path": "$.deliveries[0].end",
+      "native": "2026-01-14T01:00:00",
+      "typescript": "2026-01-18T01:00:00"
+    },
+    {
+      "path": "$.deliveries[0].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 01|2||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-18T00:00:00|2026-01-18T01:00:00|forward repair order 01|2||MO|#1"
+    },
+    {
+      "path": "$.deliveries[1].end",
+      "native": "2026-01-14T01:00:00",
+      "typescript": "2026-01-18T01:00:00"
+    },
+    {
+      "path": "$.deliveries[1].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 02|3||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-18T00:00:00|2026-01-18T01:00:00|forward repair order 02|3||MO|#1"
+    },
+    {
+      "path": "$.deliveries[3].end",
+      "native": "2026-01-12T01:00:00",
+      "typescript": "2026-01-16T01:00:00"
+    },
+    {
+      "path": "$.deliveries[3].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-12T00:00:00|2026-01-12T01:00:00|forward repair order 04|5||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-16T00:00:00|2026-01-16T01:00:00|forward repair order 04|5||MO|#1"
+    },
+    {
+      "path": "$.deliveries[4].end",
+      "native": "2026-01-10T01:00:00",
+      "typescript": "2026-01-14T01:00:00"
+    },
+    {
+      "path": "$.deliveries[4].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 05|2||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-14T00:00:00|2026-01-14T01:00:00|forward repair order 05|2||MO|#1"
+    },
+    {
+      "path": "$.deliveries[5].end",
+      "native": "2026-01-10T01:00:00",
+      "typescript": "2026-01-12T01:00:00"
+    },
+    {
+      "path": "$.deliveries[5].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 06|3||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-12T00:00:00|2026-01-12T01:00:00|forward repair order 06|3||MO|#1"
+    },
+    {
+      "path": "$.deliveries[6].end",
+      "native": "2026-01-06T01:00:00",
+      "typescript": "2026-01-10T01:00:00"
+    },
+    {
+      "path": "$.deliveries[6].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-06T00:00:00|2026-01-06T01:00:00|forward repair order 07|4||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-10T00:00:00|2026-01-10T01:00:00|forward repair order 07|4||MO|#1"
+    },
+    {
+      "path": "$.inventoryProfiles.length",
+      "native": 21,
+      "typescript": 23
+    },
+    {
+      "path": "$.inventoryProfiles[2].date",
+      "native": "2026-01-06T00:00:00",
+      "typescript": "2026-01-08T00:00:00"
+    },
+    {
+      "path": "$.inventoryProfiles[2].operationPlanKey",
+      "native": "auto:ship forward repair product|2026-01-06T00:00:00|2026-01-06T01:00:00|forward repair order 07|4||MO|#1",
+      "typescript": "auto:ship forward repair product|2026-01-08T00:00:00|2026-01-08T01:00:00|forward repair order 08|5||MO|#1"
+    },
+    {
+      "path": "$.inventoryProfiles[2].quantity",
+      "native": -4,
+      "typescript": -5
+    },
+    {
+      "path": "$.inventoryProfiles[3].date",
+      "native": "2026-01-06T00:00:00",
+      "typescript": "2026-01-08T00:00:00"
+    },
+    {
+      "path": "$.inventoryProfiles[3].onhand",
+      "native": 4,
+      "typescript": 5
+    },
+    {
+      "path": "$.inventoryProfiles[3].operationPlanKey",
+      "native": "auto:make forward repair product|2026-01-04T00:00:00|2026-01-06T00:00:00||3||MO|#1",
+      "typescript": "auto:make forward repair product|2026-01-06T00:00:00|2026-01-08T00:00:00||4||MO|#1"
+    },
+    {
+      "path": "$.inventoryProfiles[3].quantity",
+      "native": 3,
+      "typescript": 4
+    }
+  ],
+  "databaseSchema": "codex_schedule_diff"
+}

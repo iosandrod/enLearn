@@ -1,0 +1,320 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "zero duration item",
+      "quantity": -1,
+      "operation": "time ship ZERO"
+    },
+    {
+      "type": "end",
+      "buffer": "zero duration item",
+      "quantity": 1,
+      "operation": "time make ZERO"
+    },
+    {
+      "type": "start",
+      "buffer": "one second item",
+      "quantity": -1,
+      "operation": "time ship ONESEC"
+    },
+    {
+      "type": "end",
+      "buffer": "one second item",
+      "quantity": 1,
+      "operation": "time make ONESEC"
+    },
+    {
+      "type": "start",
+      "buffer": "one hour item",
+      "quantity": -1,
+      "operation": "time ship HOUR"
+    },
+    {
+      "type": "end",
+      "buffer": "one hour item",
+      "quantity": 1,
+      "operation": "time make HOUR"
+    },
+    {
+      "type": "start",
+      "buffer": "long horizon item",
+      "quantity": -1,
+      "operation": "time ship LONG"
+    },
+    {
+      "type": "end",
+      "buffer": "long horizon item",
+      "quantity": 1,
+      "operation": "time make LONG"
+    }
+  ],
+  "items": [
+    {
+      "name": "zero duration item"
+    },
+    {
+      "name": "one second item"
+    },
+    {
+      "name": "one hour item"
+    },
+    {
+      "name": "long horizon item"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 0.5,
+      "resource": "time boundary resource",
+      "operation": "time make ZERO"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "time boundary resource",
+      "operation": "time make ONESEC"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "time boundary resource",
+      "operation": "time make HOUR"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "time boundary resource",
+      "operation": "time make LONG"
+    }
+  ],
+  "skills": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 1,
+    "constraints": 15,
+    "iterationMax": 32,
+    "minimumDelay": 0,
+    "rotateResources": false,
+    "resourceIterationMax": 256,
+    "administrativeLeadTime": 0
+  },
+  "buffers": [
+    {
+      "item": "zero duration item",
+      "name": "zero duration item",
+      "onhand": 0,
+      "producing": "time make ZERO"
+    },
+    {
+      "item": "one second item",
+      "name": "one second item",
+      "onhand": 0,
+      "producing": "time make ONESEC"
+    },
+    {
+      "item": "one hour item",
+      "name": "one hour item",
+      "onhand": 0,
+      "producing": "time make HOUR"
+    },
+    {
+      "item": "long horizon item",
+      "name": "long horizon item",
+      "onhand": 0,
+      "producing": "time make LONG"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-01T00:00:00",
+      "item": "zero duration item",
+      "name": "time boundary ZERO 1",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "time ship ZERO",
+      "maxLateness": 0,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-01T00:00:00",
+      "item": "zero duration item",
+      "name": "time boundary ZERO 2",
+      "priority": 2,
+      "quantity": 1,
+      "operation": "time ship ZERO",
+      "maxLateness": 1,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-01T00:00:00",
+      "item": "zero duration item",
+      "name": "time boundary ZERO 3",
+      "priority": 3,
+      "quantity": 2,
+      "operation": "time ship ZERO",
+      "maxLateness": 86400,
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-01T00:00:01",
+      "item": "one second item",
+      "name": "time boundary ONESEC 1",
+      "priority": 4,
+      "quantity": 1,
+      "operation": "time ship ONESEC",
+      "maxLateness": 0,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-01T00:00:01",
+      "item": "one second item",
+      "name": "time boundary ONESEC 2",
+      "priority": 5,
+      "quantity": 1,
+      "operation": "time ship ONESEC",
+      "maxLateness": 1,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-01T00:00:01",
+      "item": "one second item",
+      "name": "time boundary ONESEC 3",
+      "priority": 6,
+      "quantity": 2,
+      "operation": "time ship ONESEC",
+      "maxLateness": 86400,
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-02T00:00:00",
+      "item": "one hour item",
+      "name": "time boundary HOUR 1",
+      "priority": 7,
+      "quantity": 1,
+      "operation": "time ship HOUR",
+      "maxLateness": 0,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-02T00:00:00",
+      "item": "one hour item",
+      "name": "time boundary HOUR 2",
+      "priority": 8,
+      "quantity": 1,
+      "operation": "time ship HOUR",
+      "maxLateness": 1,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-02T00:00:00",
+      "item": "one hour item",
+      "name": "time boundary HOUR 3",
+      "priority": 9,
+      "quantity": 2,
+      "operation": "time ship HOUR",
+      "maxLateness": 86400,
+      "minShipment": 1
+    },
+    {
+      "due": "2030-12-30T23:59:59",
+      "item": "long horizon item",
+      "name": "time boundary LONG 1",
+      "priority": 10,
+      "quantity": 1,
+      "operation": "time ship LONG",
+      "maxLateness": 0,
+      "minShipment": 0
+    },
+    {
+      "due": "2030-12-30T23:59:59",
+      "item": "long horizon item",
+      "name": "time boundary LONG 2",
+      "priority": 11,
+      "quantity": 1,
+      "operation": "time ship LONG",
+      "maxLateness": 1,
+      "minShipment": 0
+    },
+    {
+      "due": "2030-12-30T23:59:59",
+      "item": "long horizon item",
+      "name": "time boundary LONG 3",
+      "priority": 12,
+      "quantity": 2,
+      "operation": "time ship LONG",
+      "maxLateness": 86400,
+      "minShipment": 1
+    }
+  ],
+  "resources": [
+    {
+      "name": "time boundary resource",
+      "maximum": 1,
+      "maxearly": 315360000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 1,
+      "name": "time make ZERO",
+      "type": "fixed_time",
+      "duration": 0,
+      "sizeMaximum": 2,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 1,
+      "name": "time ship ZERO",
+      "type": "fixed_time",
+      "duration": 0,
+      "sizeMaximum": 2
+    },
+    {
+      "cost": 1,
+      "name": "time make ONESEC",
+      "type": "fixed_time",
+      "duration": 1,
+      "sizeMaximum": 2,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 1,
+      "name": "time ship ONESEC",
+      "type": "fixed_time",
+      "duration": 1,
+      "sizeMaximum": 2
+    },
+    {
+      "cost": 1,
+      "name": "time make HOUR",
+      "type": "fixed_time",
+      "duration": 3600,
+      "sizeMaximum": 2,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 1,
+      "name": "time ship HOUR",
+      "type": "fixed_time",
+      "duration": 1,
+      "sizeMaximum": 2
+    },
+    {
+      "cost": 1,
+      "name": "time make LONG",
+      "type": "fixed_time",
+      "duration": 15552000,
+      "sizeMaximum": 2,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 1,
+      "name": "time ship LONG",
+      "type": "fixed_time",
+      "duration": 1,
+      "sizeMaximum": 2
+    }
+  ],
+  "setupMatrices": [],
+  "resourceSkills": []
+}

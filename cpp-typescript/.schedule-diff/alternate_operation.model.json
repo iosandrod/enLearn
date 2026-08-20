@@ -1,0 +1,113 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "alternate process item",
+      "quantity": -1,
+      "operation": "delivery alternate process item"
+    },
+    {
+      "type": "end",
+      "buffer": "alternate process item",
+      "quantity": 1,
+      "operation": "preferred process"
+    },
+    {
+      "type": "start",
+      "buffer": "preferred component",
+      "quantity": -1,
+      "operation": "preferred process"
+    },
+    {
+      "type": "end",
+      "buffer": "alternate process item",
+      "quantity": 1,
+      "operation": "fallback process"
+    },
+    {
+      "type": "start",
+      "buffer": "fallback component",
+      "quantity": -1,
+      "operation": "fallback process"
+    }
+  ],
+  "items": [
+    {
+      "name": "alternate process item"
+    },
+    {
+      "name": "preferred component"
+    },
+    {
+      "name": "fallback component"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "alternate process item",
+      "name": "alternate process item",
+      "onhand": 0,
+      "producing": "make alternate process item"
+    },
+    {
+      "item": "preferred component",
+      "name": "preferred component",
+      "onhand": 0
+    },
+    {
+      "item": "fallback component",
+      "name": "fallback component",
+      "onhand": 1
+    }
+  ],
+  "current": "2009-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "alternate process item",
+      "name": "alternate process order",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "delivery alternate process item"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "name": "preferred process",
+      "type": "fixed_time",
+      "duration": 172800
+    },
+    {
+      "name": "fallback process",
+      "type": "fixed_time",
+      "duration": 86400
+    },
+    {
+      "name": "make alternate process item",
+      "type": "alternate",
+      "search": "PRIORITY",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "preferred process"
+        },
+        {
+          "priority": 2,
+          "operation": "fallback process"
+        }
+      ]
+    },
+    {
+      "name": "delivery alternate process item",
+      "type": "fixed_time",
+      "duration": 86400
+    }
+  ]
+}

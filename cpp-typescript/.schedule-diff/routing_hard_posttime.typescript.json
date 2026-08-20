@@ -1,0 +1,815 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory hard posttime raw @ plant",
+      "demand": null,
+      "quantity": 60,
+      "quantityCompleted": 0,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "STCK",
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "hard posttime raw @ plant",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 60
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:Inventory hard posttime raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||60||STCK|#1",
+      "reference": "auto:Inventory hard posttime raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||60||STCK|#1"
+    },
+    {
+      "operation": "hard posttime cure",
+      "demand": null,
+      "quantity": 4,
+      "quantityCompleted": 0,
+      "start": "2026-01-04T23:00:00",
+      "end": "2026-01-05T23:00:00",
+      "ownerOperation": "hard posttime routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-04T23:00:00",
+      "resources": [
+        "hard posttime cure resource"
+      ],
+      "materials": [
+        {
+          "buffer": "hard posttime raw @ plant",
+          "date": "2026-01-04T23:00:00",
+          "quantity": -4
+        }
+      ],
+      "operationCost": 20,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 20,
+      "setupPenalty": 0,
+      "planKey": "auto:hard posttime cure|2026-01-04T23:00:00|2026-01-05T23:00:00||4||MO|hard posttime routing#1",
+      "reference": "auto:hard posttime cure|2026-01-04T23:00:00|2026-01-05T23:00:00||4||MO|hard posttime routing#1"
+    },
+    {
+      "operation": "hard posttime cure",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-07T23:00:00",
+      "end": "2026-01-08T23:00:00",
+      "ownerOperation": "hard posttime routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-07T23:00:00",
+      "resources": [
+        "hard posttime cure resource"
+      ],
+      "materials": [
+        {
+          "buffer": "hard posttime raw @ plant",
+          "date": "2026-01-07T23:00:00",
+          "quantity": -6
+        }
+      ],
+      "operationCost": 30,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 30,
+      "setupPenalty": 0,
+      "planKey": "auto:hard posttime cure|2026-01-07T23:00:00|2026-01-08T23:00:00||6||MO|hard posttime routing#1",
+      "reference": "auto:hard posttime cure|2026-01-07T23:00:00|2026-01-08T23:00:00||6||MO|hard posttime routing#1"
+    },
+    {
+      "operation": "hard posttime cure",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T23:00:00",
+      "ownerOperation": "hard posttime routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T23:00:00",
+      "resources": [
+        "hard posttime cure resource"
+      ],
+      "materials": [
+        {
+          "buffer": "hard posttime raw @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 25,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 25,
+      "setupPenalty": 0,
+      "planKey": "auto:hard posttime cure|2026-01-10T23:00:00|2026-01-11T23:00:00||5||MO|hard posttime routing#1",
+      "reference": "auto:hard posttime cure|2026-01-10T23:00:00|2026-01-11T23:00:00||5||MO|hard posttime routing#1"
+    },
+    {
+      "operation": "hard posttime finish",
+      "demand": null,
+      "quantity": 4,
+      "quantityCompleted": 0,
+      "start": "2026-01-07T23:00:00",
+      "end": "2026-01-08T23:00:00",
+      "ownerOperation": "hard posttime routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-07T23:00:00",
+      "resources": [
+        "hard posttime finish resource"
+      ],
+      "materials": [
+        {
+          "buffer": "hard posttime product @ plant",
+          "date": "2026-01-08T23:00:00",
+          "quantity": 4
+        }
+      ],
+      "operationCost": 28,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 28,
+      "setupPenalty": 0,
+      "planKey": "auto:hard posttime finish|2026-01-07T23:00:00|2026-01-08T23:00:00||4||MO|hard posttime routing#1",
+      "reference": "auto:hard posttime finish|2026-01-07T23:00:00|2026-01-08T23:00:00||4||MO|hard posttime routing#1"
+    },
+    {
+      "operation": "hard posttime finish",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T23:00:00",
+      "ownerOperation": "hard posttime routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T23:00:00",
+      "resources": [
+        "hard posttime finish resource"
+      ],
+      "materials": [
+        {
+          "buffer": "hard posttime product @ plant",
+          "date": "2026-01-11T23:00:00",
+          "quantity": 6
+        }
+      ],
+      "operationCost": 42,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 42,
+      "setupPenalty": 0,
+      "planKey": "auto:hard posttime finish|2026-01-10T23:00:00|2026-01-11T23:00:00||6||MO|hard posttime routing#1",
+      "reference": "auto:hard posttime finish|2026-01-10T23:00:00|2026-01-11T23:00:00||6||MO|hard posttime routing#1"
+    },
+    {
+      "operation": "hard posttime finish",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-13T23:00:00",
+      "end": "2026-01-14T23:00:00",
+      "ownerOperation": "hard posttime routing",
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-13T23:00:00",
+      "resources": [
+        "hard posttime finish resource"
+      ],
+      "materials": [
+        {
+          "buffer": "hard posttime product @ plant",
+          "date": "2026-01-14T23:00:00",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 35,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 35,
+      "setupPenalty": 0,
+      "planKey": "auto:hard posttime finish|2026-01-13T23:00:00|2026-01-14T23:00:00||5||MO|hard posttime routing#1",
+      "reference": "auto:hard posttime finish|2026-01-13T23:00:00|2026-01-14T23:00:00||5||MO|hard posttime routing#1"
+    },
+    {
+      "operation": "hard posttime routing",
+      "demand": null,
+      "quantity": 4,
+      "quantityCompleted": 0,
+      "start": "2026-01-04T23:00:00",
+      "end": "2026-01-08T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-04T23:00:00",
+      "resources": [],
+      "materials": [],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:hard posttime routing|2026-01-04T23:00:00|2026-01-08T23:00:00||4||MO|#1",
+      "reference": "auto:hard posttime routing|2026-01-04T23:00:00|2026-01-08T23:00:00||4||MO|#1"
+    },
+    {
+      "operation": "hard posttime routing",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-07T23:00:00",
+      "end": "2026-01-11T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-07T23:00:00",
+      "resources": [],
+      "materials": [],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:hard posttime routing|2026-01-07T23:00:00|2026-01-11T23:00:00||6||MO|#1",
+      "reference": "auto:hard posttime routing|2026-01-07T23:00:00|2026-01-11T23:00:00||6||MO|#1"
+    },
+    {
+      "operation": "hard posttime routing",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-14T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T23:00:00",
+      "resources": [],
+      "materials": [],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:hard posttime routing|2026-01-10T23:00:00|2026-01-14T23:00:00||5||MO|#1",
+      "reference": "auto:hard posttime routing|2026-01-10T23:00:00|2026-01-14T23:00:00||5||MO|#1"
+    },
+    {
+      "operation": "ship hard posttime product",
+      "demand": "hard posttime order A",
+      "quantity": 4,
+      "quantityCompleted": 0,
+      "start": "2026-01-08T23:00:00",
+      "end": "2026-01-09T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-08T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "hard posttime product @ plant",
+          "date": "2026-01-08T23:00:00",
+          "quantity": -4
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship hard posttime product|2026-01-08T23:00:00|2026-01-09T00:00:00|hard posttime order A|4||MO|#1",
+      "reference": "auto:ship hard posttime product|2026-01-08T23:00:00|2026-01-09T00:00:00|hard posttime order A|4||MO|#1"
+    },
+    {
+      "operation": "ship hard posttime product",
+      "demand": "hard posttime order B",
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-11T23:00:00",
+      "end": "2026-01-12T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-11T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "hard posttime product @ plant",
+          "date": "2026-01-11T23:00:00",
+          "quantity": -6
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship hard posttime product|2026-01-11T23:00:00|2026-01-12T00:00:00|hard posttime order B|6||MO|#1",
+      "reference": "auto:ship hard posttime product|2026-01-11T23:00:00|2026-01-12T00:00:00|hard posttime order B|6||MO|#1"
+    },
+    {
+      "operation": "ship hard posttime product",
+      "demand": "hard posttime order C",
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-15T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "hard posttime product @ plant",
+          "date": "2026-01-14T23:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship hard posttime product|2026-01-14T23:00:00|2026-01-15T00:00:00|hard posttime order C|5||MO|#1",
+      "reference": "auto:ship hard posttime product|2026-01-14T23:00:00|2026-01-15T00:00:00|hard posttime order C|5||MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "hard posttime order A",
+      "quantity": 4,
+      "end": "2026-01-09T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship hard posttime product|2026-01-08T23:00:00|2026-01-09T00:00:00|hard posttime order A|4||MO|#1"
+    },
+    {
+      "demand": "hard posttime order B",
+      "quantity": 6,
+      "end": "2026-01-12T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship hard posttime product|2026-01-11T23:00:00|2026-01-12T00:00:00|hard posttime order B|6||MO|#1"
+    },
+    {
+      "demand": "hard posttime order C",
+      "quantity": 5,
+      "end": "2026-01-15T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship hard posttime product|2026-01-14T23:00:00|2026-01-15T00:00:00|hard posttime order C|5||MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [
+    {
+      "name": "invalid data",
+      "description": "No replenishment defined for 'hard posttime raw @ plant'",
+      "start": "1971-01-01T00:00:00",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "owner": "hard posttime raw @ plant",
+      "feasible": false
+    }
+  ],
+  "inventoryProfiles": [
+    {
+      "buffer": "hard posttime product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T23:00:00",
+      "quantity": -4,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship hard posttime product|2026-01-08T23:00:00|2026-01-09T00:00:00|hard posttime order A|4||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "hard posttime product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T23:00:00",
+      "quantity": 4,
+      "onhand": 4,
+      "operationPlanKey": "auto:hard posttime finish|2026-01-07T23:00:00|2026-01-08T23:00:00||4||MO|hard posttime routing#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "hard posttime product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-11T23:00:00",
+      "quantity": -6,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship hard posttime product|2026-01-11T23:00:00|2026-01-12T00:00:00|hard posttime order B|6||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "hard posttime product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-11T23:00:00",
+      "quantity": 6,
+      "onhand": 6,
+      "operationPlanKey": "auto:hard posttime finish|2026-01-10T23:00:00|2026-01-11T23:00:00||6||MO|hard posttime routing#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "hard posttime product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T23:00:00",
+      "quantity": -5,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship hard posttime product|2026-01-14T23:00:00|2026-01-15T00:00:00|hard posttime order C|5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "hard posttime product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T23:00:00",
+      "quantity": 5,
+      "onhand": 5,
+      "operationPlanKey": "auto:hard posttime finish|2026-01-13T23:00:00|2026-01-14T23:00:00||5||MO|hard posttime routing#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "hard posttime raw @ plant",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "quantity": 60,
+      "onhand": 60,
+      "operationPlanKey": "auto:Inventory hard posttime raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||60||STCK|#1",
+      "orderType": "STCK"
+    },
+    {
+      "buffer": "hard posttime raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-04T23:00:00",
+      "quantity": -4,
+      "onhand": 56,
+      "operationPlanKey": "auto:hard posttime cure|2026-01-04T23:00:00|2026-01-05T23:00:00||4||MO|hard posttime routing#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "hard posttime raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-07T23:00:00",
+      "quantity": -6,
+      "onhand": 50,
+      "operationPlanKey": "auto:hard posttime cure|2026-01-07T23:00:00|2026-01-08T23:00:00||6||MO|hard posttime routing#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "hard posttime raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "quantity": -5,
+      "onhand": 45,
+      "operationPlanKey": "auto:hard posttime cure|2026-01-10T23:00:00|2026-01-11T23:00:00||5||MO|hard posttime routing#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "resource": "hard posttime cure resource",
+      "start": "1971-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "available": 482136,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 482136,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime cure resource",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-04T23:00:00",
+      "available": 95,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 95,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime cure resource",
+      "start": "2026-01-04T23:00:00",
+      "end": "2026-01-05T23:00:00",
+      "available": 24,
+      "load": 24,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "hard posttime cure resource",
+      "start": "2026-01-05T23:00:00",
+      "end": "2026-01-07T23:00:00",
+      "available": 48,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 48,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime cure resource",
+      "start": "2026-01-07T23:00:00",
+      "end": "2026-01-08T23:00:00",
+      "available": 24,
+      "load": 24,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "hard posttime cure resource",
+      "start": "2026-01-08T23:00:00",
+      "end": "2026-01-09T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime cure resource",
+      "start": "2026-01-09T00:00:00",
+      "end": "2026-01-10T23:00:00",
+      "available": 47,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 47,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime cure resource",
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T23:00:00",
+      "available": 24,
+      "load": 24,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "hard posttime cure resource",
+      "start": "2026-01-11T23:00:00",
+      "end": "2026-01-12T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime cure resource",
+      "start": "2026-01-12T00:00:00",
+      "end": "2026-01-13T23:00:00",
+      "available": 47,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 47,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime cure resource",
+      "start": "2026-01-13T23:00:00",
+      "end": "2026-01-14T23:00:00",
+      "available": 24,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 24,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime cure resource",
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-15T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "1971-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "available": 482136,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 482136,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-04T23:00:00",
+      "available": 95,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 95,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "2026-01-04T23:00:00",
+      "end": "2026-01-05T23:00:00",
+      "available": 24,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 24,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "2026-01-05T23:00:00",
+      "end": "2026-01-07T23:00:00",
+      "available": 48,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 48,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "2026-01-07T23:00:00",
+      "end": "2026-01-08T23:00:00",
+      "available": 24,
+      "load": 24,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "2026-01-08T23:00:00",
+      "end": "2026-01-09T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "2026-01-09T00:00:00",
+      "end": "2026-01-10T23:00:00",
+      "available": 47,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 47,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T23:00:00",
+      "available": 24,
+      "load": 24,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "2026-01-11T23:00:00",
+      "end": "2026-01-12T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "2026-01-12T00:00:00",
+      "end": "2026-01-13T23:00:00",
+      "available": 47,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 47,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "2026-01-13T23:00:00",
+      "end": "2026-01-14T23:00:00",
+      "available": 24,
+      "load": 24,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "hard posttime finish resource",
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-15T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    }
+  ],
+  "costSummary": {
+    "operationCost": 180,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 180,
+    "setupPenalty": 0
+  }
+}

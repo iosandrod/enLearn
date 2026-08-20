@@ -1,0 +1,1019 @@
+{
+  "operationPlans": [
+    {
+      "operation": "time make HOUR",
+      "demand": null,
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T21:59:59",
+      "end": "2026-01-01T22:59:59",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T21:59:59",
+      "resources": [
+        "time boundary resource"
+      ],
+      "materials": [
+        {
+          "buffer": "one hour item",
+          "date": "2026-01-01T22:59:59",
+          "quantity": 2
+        }
+      ],
+      "operationCost": 2,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 2,
+      "setupPenalty": 0,
+      "planKey": "auto:time make HOUR|2026-01-01T21:59:59|2026-01-01T22:59:59||2||MO|#1",
+      "reference": "auto:time make HOUR|2026-01-01T21:59:59|2026-01-01T22:59:59||2||MO|#1"
+    },
+    {
+      "operation": "time make HOUR",
+      "demand": null,
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T22:59:59",
+      "end": "2026-01-01T23:59:59",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T22:59:59",
+      "resources": [
+        "time boundary resource"
+      ],
+      "materials": [
+        {
+          "buffer": "one hour item",
+          "date": "2026-01-01T23:59:59",
+          "quantity": 1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time make HOUR|2026-01-01T22:59:59|2026-01-01T23:59:59||1||MO|#1",
+      "reference": "auto:time make HOUR|2026-01-01T22:59:59|2026-01-01T23:59:59||1||MO|#1"
+    },
+    {
+      "operation": "time make HOUR",
+      "demand": null,
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T22:59:59",
+      "end": "2026-01-01T23:59:59",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T22:59:59",
+      "resources": [
+        "time boundary resource"
+      ],
+      "materials": [
+        {
+          "buffer": "one hour item",
+          "date": "2026-01-01T23:59:59",
+          "quantity": 1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time make HOUR|2026-01-01T22:59:59|2026-01-01T23:59:59||1||MO|#2",
+      "reference": "auto:time make HOUR|2026-01-01T22:59:59|2026-01-01T23:59:59||1||MO|#2"
+    },
+    {
+      "operation": "time make LONG",
+      "demand": null,
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2030-01-04T23:59:58",
+      "end": "2030-07-03T23:59:58",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-01-04T23:59:58",
+      "resources": [
+        "time boundary resource"
+      ],
+      "materials": [
+        {
+          "buffer": "long horizon item",
+          "date": "2030-07-03T23:59:58",
+          "quantity": 2
+        }
+      ],
+      "operationCost": 2,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 2,
+      "setupPenalty": 0,
+      "planKey": "auto:time make LONG|2030-01-04T23:59:58|2030-07-03T23:59:58||2||MO|#1",
+      "reference": "auto:time make LONG|2030-01-04T23:59:58|2030-07-03T23:59:58||2||MO|#1"
+    },
+    {
+      "operation": "time make LONG",
+      "demand": null,
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2030-07-03T23:59:58",
+      "end": "2030-12-30T23:59:58",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-07-03T23:59:58",
+      "resources": [
+        "time boundary resource"
+      ],
+      "materials": [
+        {
+          "buffer": "long horizon item",
+          "date": "2030-12-30T23:59:58",
+          "quantity": 1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time make LONG|2030-07-03T23:59:58|2030-12-30T23:59:58||1||MO|#1",
+      "reference": "auto:time make LONG|2030-07-03T23:59:58|2030-12-30T23:59:58||1||MO|#1"
+    },
+    {
+      "operation": "time make LONG",
+      "demand": null,
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2030-07-03T23:59:58",
+      "end": "2030-12-30T23:59:58",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-07-03T23:59:58",
+      "resources": [
+        "time boundary resource"
+      ],
+      "materials": [
+        {
+          "buffer": "long horizon item",
+          "date": "2030-12-30T23:59:58",
+          "quantity": 1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time make LONG|2030-07-03T23:59:58|2030-12-30T23:59:58||1||MO|#2",
+      "reference": "auto:time make LONG|2030-07-03T23:59:58|2030-12-30T23:59:58||1||MO|#2"
+    },
+    {
+      "operation": "time make ONESEC",
+      "demand": null,
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-01T00:00:01",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T00:00:00",
+      "resources": [
+        "time boundary resource"
+      ],
+      "materials": [
+        {
+          "buffer": "one second item",
+          "date": "2026-01-01T00:00:01",
+          "quantity": 2
+        }
+      ],
+      "operationCost": 2,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 2,
+      "setupPenalty": 0,
+      "planKey": "auto:time make ONESEC|2026-01-01T00:00:00|2026-01-01T00:00:01||2||MO|#1",
+      "reference": "auto:time make ONESEC|2026-01-01T00:00:00|2026-01-01T00:00:01||2||MO|#1"
+    },
+    {
+      "operation": "time make ZERO",
+      "demand": null,
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T00:00:00",
+      "resources": [
+        "time boundary resource"
+      ],
+      "materials": [
+        {
+          "buffer": "zero duration item",
+          "date": "2026-01-01T00:00:00",
+          "quantity": 1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time make ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00||1||MO|#1",
+      "reference": "auto:time make ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00||1||MO|#1"
+    },
+    {
+      "operation": "time make ZERO",
+      "demand": null,
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T00:00:00",
+      "resources": [
+        "time boundary resource"
+      ],
+      "materials": [
+        {
+          "buffer": "zero duration item",
+          "date": "2026-01-01T00:00:00",
+          "quantity": 1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time make ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00||1||MO|#2",
+      "reference": "auto:time make ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00||1||MO|#2"
+    },
+    {
+      "operation": "time make ZERO",
+      "demand": null,
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T00:00:00",
+      "resources": [
+        "time boundary resource"
+      ],
+      "materials": [
+        {
+          "buffer": "zero duration item",
+          "date": "2026-01-01T00:00:00",
+          "quantity": 2
+        }
+      ],
+      "operationCost": 2,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 2,
+      "setupPenalty": 0,
+      "planKey": "auto:time make ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00||2||MO|#1",
+      "reference": "auto:time make ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00||2||MO|#1"
+    },
+    {
+      "operation": "time ship HOUR",
+      "demand": "time boundary HOUR 1",
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T23:59:59",
+      "end": "2026-01-02T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T23:59:59",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "one hour item",
+          "date": "2026-01-01T23:59:59",
+          "quantity": -1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 1|1||MO|#1",
+      "reference": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 1|1||MO|#1"
+    },
+    {
+      "operation": "time ship HOUR",
+      "demand": "time boundary HOUR 2",
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T23:59:59",
+      "end": "2026-01-02T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T23:59:59",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "one hour item",
+          "date": "2026-01-01T23:59:59",
+          "quantity": -1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 2|1||MO|#1",
+      "reference": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 2|1||MO|#1"
+    },
+    {
+      "operation": "time ship HOUR",
+      "demand": "time boundary HOUR 3",
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T23:59:59",
+      "end": "2026-01-02T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T23:59:59",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "one hour item",
+          "date": "2026-01-01T23:59:59",
+          "quantity": -2
+        }
+      ],
+      "operationCost": 2,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 2,
+      "setupPenalty": 0,
+      "planKey": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 3|2||MO|#1",
+      "reference": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 3|2||MO|#1"
+    },
+    {
+      "operation": "time ship LONG",
+      "demand": "time boundary LONG 1",
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2030-12-30T23:59:58",
+      "end": "2030-12-30T23:59:59",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T23:59:58",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "long horizon item",
+          "date": "2030-12-30T23:59:58",
+          "quantity": -1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 1|1||MO|#1",
+      "reference": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 1|1||MO|#1"
+    },
+    {
+      "operation": "time ship LONG",
+      "demand": "time boundary LONG 2",
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2030-12-30T23:59:58",
+      "end": "2030-12-30T23:59:59",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T23:59:58",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "long horizon item",
+          "date": "2030-12-30T23:59:58",
+          "quantity": -1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 2|1||MO|#1",
+      "reference": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 2|1||MO|#1"
+    },
+    {
+      "operation": "time ship LONG",
+      "demand": "time boundary LONG 3",
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2030-12-30T23:59:58",
+      "end": "2030-12-30T23:59:59",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2030-12-30T23:59:58",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "long horizon item",
+          "date": "2030-12-30T23:59:58",
+          "quantity": -2
+        }
+      ],
+      "operationCost": 2,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 2,
+      "setupPenalty": 0,
+      "planKey": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 3|2||MO|#1",
+      "reference": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 3|2||MO|#1"
+    },
+    {
+      "operation": "time ship ONESEC",
+      "demand": "time boundary ONESEC 3",
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T00:00:01",
+      "end": "2026-01-01T00:00:02",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T00:00:01",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "one second item",
+          "date": "2026-01-01T00:00:01",
+          "quantity": -2
+        }
+      ],
+      "operationCost": 2,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 2,
+      "setupPenalty": 0,
+      "planKey": "auto:time ship ONESEC|2026-01-01T00:00:01|2026-01-01T00:00:02|time boundary ONESEC 3|2||MO|#1",
+      "reference": "auto:time ship ONESEC|2026-01-01T00:00:01|2026-01-01T00:00:02|time boundary ONESEC 3|2||MO|#1"
+    },
+    {
+      "operation": "time ship ZERO",
+      "demand": "time boundary ZERO 1",
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "zero duration item",
+          "date": "2026-01-01T00:00:00",
+          "quantity": -1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 1|1||MO|#1",
+      "reference": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 1|1||MO|#1"
+    },
+    {
+      "operation": "time ship ZERO",
+      "demand": "time boundary ZERO 2",
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "zero duration item",
+          "date": "2026-01-01T00:00:00",
+          "quantity": -1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 2|1||MO|#1",
+      "reference": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 2|1||MO|#1"
+    },
+    {
+      "operation": "time ship ZERO",
+      "demand": "time boundary ZERO 3",
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "zero duration item",
+          "date": "2026-01-01T00:00:00",
+          "quantity": -2
+        }
+      ],
+      "operationCost": 2,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 2,
+      "setupPenalty": 0,
+      "planKey": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 3|2||MO|#1",
+      "reference": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 3|2||MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "time boundary HOUR 1",
+      "quantity": 1,
+      "end": "2026-01-02T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 1|1||MO|#1"
+    },
+    {
+      "demand": "time boundary HOUR 2",
+      "quantity": 1,
+      "end": "2026-01-02T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 2|1||MO|#1"
+    },
+    {
+      "demand": "time boundary HOUR 3",
+      "quantity": 2,
+      "end": "2026-01-02T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 3|2||MO|#1"
+    },
+    {
+      "demand": "time boundary LONG 1",
+      "quantity": 1,
+      "end": "2030-12-30T23:59:59",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 1|1||MO|#1"
+    },
+    {
+      "demand": "time boundary LONG 2",
+      "quantity": 1,
+      "end": "2030-12-30T23:59:59",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 2|1||MO|#1"
+    },
+    {
+      "demand": "time boundary LONG 3",
+      "quantity": 2,
+      "end": "2030-12-30T23:59:59",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 3|2||MO|#1"
+    },
+    {
+      "demand": "time boundary ONESEC 3",
+      "quantity": 2,
+      "end": "2026-01-01T00:00:02",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:time ship ONESEC|2026-01-01T00:00:01|2026-01-01T00:00:02|time boundary ONESEC 3|2||MO|#1"
+    },
+    {
+      "demand": "time boundary ZERO 1",
+      "quantity": 1,
+      "end": "2026-01-01T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 1|1||MO|#1"
+    },
+    {
+      "demand": "time boundary ZERO 2",
+      "quantity": 1,
+      "end": "2026-01-01T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 2|1||MO|#1"
+    },
+    {
+      "demand": "time boundary ZERO 3",
+      "quantity": 2,
+      "end": "2026-01-01T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 3|2||MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "long horizon item",
+      "bufferBatch": "",
+      "date": "2030-07-03T23:59:58",
+      "quantity": 2,
+      "onhand": 2,
+      "operationPlanKey": "auto:time make LONG|2030-01-04T23:59:58|2030-07-03T23:59:58||2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "long horizon item",
+      "bufferBatch": "",
+      "date": "2030-12-30T23:59:58",
+      "quantity": -2,
+      "onhand": 0,
+      "operationPlanKey": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 3|2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "long horizon item",
+      "bufferBatch": "",
+      "date": "2030-12-30T23:59:58",
+      "quantity": -1,
+      "onhand": 3,
+      "operationPlanKey": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 1|1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "long horizon item",
+      "bufferBatch": "",
+      "date": "2030-12-30T23:59:58",
+      "quantity": -1,
+      "onhand": 2,
+      "operationPlanKey": "auto:time ship LONG|2030-12-30T23:59:58|2030-12-30T23:59:59|time boundary LONG 2|1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "long horizon item",
+      "bufferBatch": "",
+      "date": "2030-12-30T23:59:58",
+      "quantity": 1,
+      "onhand": 3,
+      "operationPlanKey": "auto:time make LONG|2030-07-03T23:59:58|2030-12-30T23:59:58||1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "long horizon item",
+      "bufferBatch": "",
+      "date": "2030-12-30T23:59:58",
+      "quantity": 1,
+      "onhand": 4,
+      "operationPlanKey": "auto:time make LONG|2030-07-03T23:59:58|2030-12-30T23:59:58||1||MO|#2",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "one hour item",
+      "bufferBatch": "",
+      "date": "2026-01-01T22:59:59",
+      "quantity": 2,
+      "onhand": 2,
+      "operationPlanKey": "auto:time make HOUR|2026-01-01T21:59:59|2026-01-01T22:59:59||2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "one hour item",
+      "bufferBatch": "",
+      "date": "2026-01-01T23:59:59",
+      "quantity": -2,
+      "onhand": 0,
+      "operationPlanKey": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 3|2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "one hour item",
+      "bufferBatch": "",
+      "date": "2026-01-01T23:59:59",
+      "quantity": -1,
+      "onhand": 3,
+      "operationPlanKey": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 1|1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "one hour item",
+      "bufferBatch": "",
+      "date": "2026-01-01T23:59:59",
+      "quantity": -1,
+      "onhand": 2,
+      "operationPlanKey": "auto:time ship HOUR|2026-01-01T23:59:59|2026-01-02T00:00:00|time boundary HOUR 2|1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "one hour item",
+      "bufferBatch": "",
+      "date": "2026-01-01T23:59:59",
+      "quantity": 1,
+      "onhand": 3,
+      "operationPlanKey": "auto:time make HOUR|2026-01-01T22:59:59|2026-01-01T23:59:59||1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "one hour item",
+      "bufferBatch": "",
+      "date": "2026-01-01T23:59:59",
+      "quantity": 1,
+      "onhand": 4,
+      "operationPlanKey": "auto:time make HOUR|2026-01-01T22:59:59|2026-01-01T23:59:59||1||MO|#2",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "one second item",
+      "bufferBatch": "",
+      "date": "2026-01-01T00:00:01",
+      "quantity": -2,
+      "onhand": 0,
+      "operationPlanKey": "auto:time ship ONESEC|2026-01-01T00:00:01|2026-01-01T00:00:02|time boundary ONESEC 3|2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "one second item",
+      "bufferBatch": "",
+      "date": "2026-01-01T00:00:01",
+      "quantity": 2,
+      "onhand": 2,
+      "operationPlanKey": "auto:time make ONESEC|2026-01-01T00:00:00|2026-01-01T00:00:01||2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "zero duration item",
+      "bufferBatch": "",
+      "date": "2026-01-01T00:00:00",
+      "quantity": -2,
+      "onhand": 0,
+      "operationPlanKey": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 3|2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "zero duration item",
+      "bufferBatch": "",
+      "date": "2026-01-01T00:00:00",
+      "quantity": -1,
+      "onhand": 3,
+      "operationPlanKey": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 1|1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "zero duration item",
+      "bufferBatch": "",
+      "date": "2026-01-01T00:00:00",
+      "quantity": -1,
+      "onhand": 2,
+      "operationPlanKey": "auto:time ship ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00|time boundary ZERO 2|1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "zero duration item",
+      "bufferBatch": "",
+      "date": "2026-01-01T00:00:00",
+      "quantity": 1,
+      "onhand": 3,
+      "operationPlanKey": "auto:time make ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00||1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "zero duration item",
+      "bufferBatch": "",
+      "date": "2026-01-01T00:00:00",
+      "quantity": 1,
+      "onhand": 4,
+      "operationPlanKey": "auto:time make ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00||1||MO|#2",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "zero duration item",
+      "bufferBatch": "",
+      "date": "2026-01-01T00:00:00",
+      "quantity": 2,
+      "onhand": 2,
+      "operationPlanKey": "auto:time make ZERO|2026-01-01T00:00:00|2026-01-01T00:00:00||2||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "resource": "time boundary resource",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-01T00:00:01",
+      "available": 0.000277778,
+      "load": 0.000138889,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0.000138889,
+      "loadConfirmed": 0,
+      "utilization": 0.5
+    },
+    {
+      "resource": "time boundary resource",
+      "start": "2026-01-01T00:00:01",
+      "end": "2026-01-01T00:00:02",
+      "available": 0.000277778,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0.000277778,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "time boundary resource",
+      "start": "2026-01-01T00:00:02",
+      "end": "2026-01-01T21:59:59",
+      "available": 21.999166667,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 21.999166667,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "time boundary resource",
+      "start": "2026-01-01T21:59:59",
+      "end": "2026-01-01T22:59:59",
+      "available": 1,
+      "load": 0.5,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0.5,
+      "loadConfirmed": 0,
+      "utilization": 0.5
+    },
+    {
+      "resource": "time boundary resource",
+      "start": "2026-01-01T22:59:59",
+      "end": "2026-01-01T23:59:59",
+      "available": 1,
+      "load": 1,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "time boundary resource",
+      "start": "2026-01-01T23:59:59",
+      "end": "2026-01-02T00:00:00",
+      "available": 0.000277778,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0.000277778,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "time boundary resource",
+      "start": "2026-01-02T00:00:00",
+      "end": "2030-01-04T23:59:58",
+      "available": 35135.999444444,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 35135.999444444,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "time boundary resource",
+      "start": "2030-01-04T23:59:58",
+      "end": "2030-07-03T23:59:58",
+      "available": 4320,
+      "load": 2160,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 2160,
+      "loadConfirmed": 0,
+      "utilization": 0.5
+    },
+    {
+      "resource": "time boundary resource",
+      "start": "2030-07-03T23:59:58",
+      "end": "2030-12-30T23:59:58",
+      "available": 4320,
+      "load": 4320,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "time boundary resource",
+      "start": "2030-12-30T23:59:58",
+      "end": "2030-12-30T23:59:59",
+      "available": 0.000277778,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0.000277778,
+      "loadConfirmed": 0,
+      "utilization": 0
+    }
+  ],
+  "costSummary": {
+    "operationCost": 28,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 28,
+    "setupPenalty": 0
+  }
+}

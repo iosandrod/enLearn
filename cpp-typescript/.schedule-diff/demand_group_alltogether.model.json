@@ -1,0 +1,105 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "group ready item",
+      "quantity": -1,
+      "operation": "group ship ready"
+    },
+    {
+      "type": "end",
+      "buffer": "group long lead item",
+      "quantity": 1,
+      "operation": "group make long lead"
+    },
+    {
+      "type": "start",
+      "buffer": "group long lead item",
+      "quantity": -1,
+      "operation": "group ship long lead"
+    }
+  ],
+  "items": [
+    {
+      "name": "group ready item"
+    },
+    {
+      "name": "group long lead item"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "group ready item",
+      "name": "group ready item",
+      "onhand": 10
+    },
+    {
+      "item": "group long lead item",
+      "name": "group long lead item",
+      "onhand": 0,
+      "producing": "group make long lead"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-03T00:00:00",
+      "item": "group ready item",
+      "name": "alltogether ready line",
+      "group": "alltogether order",
+      "priority": 1,
+      "quantity": 6,
+      "operation": "group ship ready",
+      "maxLateness": 1728000
+    },
+    {
+      "due": "2026-01-04T00:00:00",
+      "item": "group long lead item",
+      "name": "alltogether long lead line",
+      "group": "alltogether order",
+      "priority": 1,
+      "quantity": 6,
+      "operation": "group ship long lead",
+      "maxLateness": 1728000
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "cost": 20,
+      "name": "group make long lead",
+      "type": "fixed_time",
+      "duration": 432000
+    },
+    {
+      "cost": 1,
+      "name": "group ship ready",
+      "type": "fixed_time",
+      "duration": 3600
+    },
+    {
+      "cost": 1,
+      "name": "group ship long lead",
+      "type": "fixed_time",
+      "duration": 3600
+    }
+  ],
+  "demandGroups": [
+    {
+      "name": "alltogether order",
+      "policy": "alltogether",
+      "status": "open",
+      "members": [
+        "alltogether ready line",
+        "alltogether long lead line"
+      ]
+    }
+  ]
+}

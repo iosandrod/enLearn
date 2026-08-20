@@ -1,0 +1,449 @@
+[demand] attempt {"demand":"process order 01 P","attempt":1,"quantity":1,"requestDate":"2026-01-21T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 01 P","operation":"ship configured P","quantity":1,"end":"2026-01-21T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured P","requested":1,"date":"2026-01-20T20:00:00","onhand":0}
+[buffer] shortage {"buffer":"configured P","iteration":0,"date":"2026-01-20T20:00:00","onhand":-1,"shortage":1}
+[operation] alternate-ask {"demand":null,"operation":"choose process P","quantity":1,"end":"2026-01-20T20:00:00","alternates":["premium process P","standard process P"]}
+[operation] alternate-try {"operation":"choose process P","alternate":"premium process P","requestedQuantity":1,"childQuantity":1}
+[operation] ask {"demand":null,"operation":"premium process P","quantity":1,"end":"2026-01-20T20:00:00"}
+[resource] ask {"demand":null,"operation":"premium process P","resource":"premium line","start":"2026-01-20T02:00:00","end":"2026-01-20T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-20T02:00:00","end":"2026-01-20T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component P","requested":1,"date":"2026-01-20T02:00:00","onhand":5}
+[buffer] answer {"demand":null,"buffer":"premium component P","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-20T02:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"premium process P","quantity":1,"start":"2026-01-20T02:00:00","end":"2026-01-20T20:00:00"}
+[operation] alternate-answer {"operation":"choose process P","alternate":"premium process P","quantity":1,"start":"2026-01-20T02:00:00","end":"2026-01-20T20:00:00"}
+[buffer] replenish {"buffer":"configured P","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-20T20:00:00","eventCountBefore":1,"eventCountAfter":2,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured P","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-20T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 01 P","operation":"ship configured P","quantity":1,"start":"2026-01-20T20:00:00","end":"2026-01-21T00:00:00"}
+[demand] reply {"demand":"process order 01 P","attempt":1,"result":true,"quantity":1,"date":"2026-01-21T00:00:00"}
+[demand] attempt {"demand":"process order 02 Q","attempt":1,"quantity":2,"requestDate":"2026-01-21T12:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 02 Q","operation":"ship configured Q","quantity":2,"end":"2026-01-21T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured Q","requested":2,"date":"2026-01-21T08:00:00","onhand":0}
+[buffer] shortage {"buffer":"configured Q","iteration":0,"date":"2026-01-21T08:00:00","onhand":-2,"shortage":2}
+[operation] alternate-ask {"demand":null,"operation":"choose process Q","quantity":2,"end":"2026-01-21T08:00:00","alternates":["premium process Q","standard process Q"]}
+[operation] alternate-try {"operation":"choose process Q","alternate":"premium process Q","requestedQuantity":2,"childQuantity":2}
+[operation] ask {"demand":null,"operation":"premium process Q","quantity":2,"end":"2026-01-21T08:00:00"}
+[resource] ask {"demand":null,"operation":"premium process Q","resource":"premium line","start":"2026-01-20T14:00:00","end":"2026-01-21T08:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-20T14:00:00","end":"2026-01-21T08:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component Q","requested":2,"date":"2026-01-20T14:00:00","onhand":4}
+[buffer] answer {"demand":null,"buffer":"premium component Q","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-20T14:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"premium process Q","quantity":2,"start":"2026-01-20T14:00:00","end":"2026-01-21T08:00:00"}
+[operation] alternate-answer {"operation":"choose process Q","alternate":"premium process Q","quantity":2,"start":"2026-01-20T14:00:00","end":"2026-01-21T08:00:00"}
+[buffer] replenish {"buffer":"configured Q","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-21T08:00:00","eventCountBefore":1,"eventCountAfter":2,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured Q","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-21T08:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 02 Q","operation":"ship configured Q","quantity":2,"start":"2026-01-21T08:00:00","end":"2026-01-21T12:00:00"}
+[demand] reply {"demand":"process order 02 Q","attempt":1,"result":true,"quantity":2,"date":"2026-01-21T12:00:00"}
+[demand] attempt {"demand":"process order 03 P","attempt":1,"quantity":1,"requestDate":"2026-01-22T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 03 P","operation":"ship configured P","quantity":1,"end":"2026-01-22T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured P","requested":1,"date":"2026-01-21T20:00:00","onhand":1}
+[buffer] shortage {"buffer":"configured P","iteration":0,"date":"2026-01-21T20:00:00","onhand":-1,"shortage":1}
+[operation] alternate-ask {"demand":null,"operation":"choose process P","quantity":1,"end":"2026-01-21T20:00:00","alternates":["premium process P","standard process P"]}
+[operation] alternate-try {"operation":"choose process P","alternate":"premium process P","requestedQuantity":1,"childQuantity":1}
+[operation] ask {"demand":null,"operation":"premium process P","quantity":1,"end":"2026-01-21T20:00:00"}
+[resource] ask {"demand":null,"operation":"premium process P","resource":"premium line","start":"2026-01-21T02:00:00","end":"2026-01-21T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-21T02:00:00","end":"2026-01-21T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component P","requested":1,"date":"2026-01-21T02:00:00","onhand":4}
+[buffer] answer {"demand":null,"buffer":"premium component P","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-21T02:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"premium process P","quantity":1,"start":"2026-01-21T02:00:00","end":"2026-01-21T20:00:00"}
+[operation] alternate-answer {"operation":"choose process P","alternate":"premium process P","quantity":1,"start":"2026-01-21T02:00:00","end":"2026-01-21T20:00:00"}
+[buffer] replenish {"buffer":"configured P","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-21T20:00:00","eventCountBefore":3,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured P","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-21T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 03 P","operation":"ship configured P","quantity":1,"start":"2026-01-21T20:00:00","end":"2026-01-22T00:00:00"}
+[demand] reply {"demand":"process order 03 P","attempt":1,"result":true,"quantity":1,"date":"2026-01-22T00:00:00"}
+[demand] attempt {"demand":"process order 04 Q","attempt":1,"quantity":2,"requestDate":"2026-01-22T12:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 04 Q","operation":"ship configured Q","quantity":2,"end":"2026-01-22T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured Q","requested":2,"date":"2026-01-22T08:00:00","onhand":2}
+[buffer] shortage {"buffer":"configured Q","iteration":0,"date":"2026-01-22T08:00:00","onhand":-2,"shortage":2}
+[operation] alternate-ask {"demand":null,"operation":"choose process Q","quantity":2,"end":"2026-01-22T08:00:00","alternates":["premium process Q","standard process Q"]}
+[operation] alternate-try {"operation":"choose process Q","alternate":"premium process Q","requestedQuantity":2,"childQuantity":2}
+[operation] ask {"demand":null,"operation":"premium process Q","quantity":2,"end":"2026-01-22T08:00:00"}
+[resource] ask {"demand":null,"operation":"premium process Q","resource":"premium line","start":"2026-01-21T14:00:00","end":"2026-01-22T08:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-21T14:00:00","end":"2026-01-22T08:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component Q","requested":2,"date":"2026-01-21T14:00:00","onhand":2}
+[buffer] answer {"demand":null,"buffer":"premium component Q","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-21T14:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"premium process Q","quantity":2,"start":"2026-01-21T14:00:00","end":"2026-01-22T08:00:00"}
+[operation] alternate-answer {"operation":"choose process Q","alternate":"premium process Q","quantity":2,"start":"2026-01-21T14:00:00","end":"2026-01-22T08:00:00"}
+[buffer] replenish {"buffer":"configured Q","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-22T08:00:00","eventCountBefore":3,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured Q","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-22T08:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 04 Q","operation":"ship configured Q","quantity":2,"start":"2026-01-22T08:00:00","end":"2026-01-22T12:00:00"}
+[demand] reply {"demand":"process order 04 Q","attempt":1,"result":true,"quantity":2,"date":"2026-01-22T12:00:00"}
+[demand] attempt {"demand":"process order 05 P","attempt":1,"quantity":1,"requestDate":"2026-01-23T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 05 P","operation":"ship configured P","quantity":1,"end":"2026-01-23T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured P","requested":1,"date":"2026-01-22T20:00:00","onhand":1}
+[buffer] shortage {"buffer":"configured P","iteration":0,"date":"2026-01-22T20:00:00","onhand":-1,"shortage":1}
+[operation] alternate-ask {"demand":null,"operation":"choose process P","quantity":1,"end":"2026-01-22T20:00:00","alternates":["premium process P","standard process P"]}
+[operation] alternate-try {"operation":"choose process P","alternate":"premium process P","requestedQuantity":1,"childQuantity":1}
+[operation] ask {"demand":null,"operation":"premium process P","quantity":1,"end":"2026-01-22T20:00:00"}
+[resource] ask {"demand":null,"operation":"premium process P","resource":"premium line","start":"2026-01-22T02:00:00","end":"2026-01-22T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-22T02:00:00","end":"2026-01-22T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component P","requested":1,"date":"2026-01-22T02:00:00","onhand":3}
+[buffer] answer {"demand":null,"buffer":"premium component P","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-22T02:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"premium process P","quantity":1,"start":"2026-01-22T02:00:00","end":"2026-01-22T20:00:00"}
+[operation] alternate-answer {"operation":"choose process P","alternate":"premium process P","quantity":1,"start":"2026-01-22T02:00:00","end":"2026-01-22T20:00:00"}
+[buffer] replenish {"buffer":"configured P","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-22T20:00:00","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured P","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-22T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 05 P","operation":"ship configured P","quantity":1,"start":"2026-01-22T20:00:00","end":"2026-01-23T00:00:00"}
+[demand] reply {"demand":"process order 05 P","attempt":1,"result":true,"quantity":1,"date":"2026-01-23T00:00:00"}
+[demand] attempt {"demand":"process order 06 Q","attempt":1,"quantity":2,"requestDate":"2026-01-23T12:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 06 Q","operation":"ship configured Q","quantity":2,"end":"2026-01-23T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured Q","requested":2,"date":"2026-01-23T08:00:00","onhand":2}
+[buffer] shortage {"buffer":"configured Q","iteration":0,"date":"2026-01-23T08:00:00","onhand":-2,"shortage":2}
+[operation] alternate-ask {"demand":null,"operation":"choose process Q","quantity":2,"end":"2026-01-23T08:00:00","alternates":["premium process Q","standard process Q"]}
+[operation] alternate-try {"operation":"choose process Q","alternate":"premium process Q","requestedQuantity":2,"childQuantity":2}
+[operation] ask {"demand":null,"operation":"premium process Q","quantity":2,"end":"2026-01-23T08:00:00"}
+[resource] ask {"demand":null,"operation":"premium process Q","resource":"premium line","start":"2026-01-22T14:00:00","end":"2026-01-23T08:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-22T14:00:00","end":"2026-01-23T08:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component Q","requested":2,"date":"2026-01-22T14:00:00","onhand":0}
+[buffer] shortage {"buffer":"premium component Q","iteration":0,"date":"2026-01-22T14:00:00","onhand":-2,"shortage":2}
+[buffer] answer {"demand":null,"buffer":"premium component Q","requested":2,"remainingShortage":2,"quantity":0,"date":"2030-12-31T00:00:00","plan":null}
+[operation] material-reject {"demand":null,"operation":"premium process Q","start":"2026-01-22T14:00:00","end":"2026-01-23T08:00:00","asked":2,"answerQuantity":0,"answerDate":"2030-12-31T00:00:00"}
+[operation] alternate-reject {"operation":"choose process Q","alternate":"premium process Q","quantity":0,"nextDate":"2026-01-24T08:00:00"}
+[operation] alternate-try {"operation":"choose process Q","alternate":"standard process Q","requestedQuantity":2,"childQuantity":2}
+[operation] ask {"demand":null,"operation":"standard process Q","quantity":2,"end":"2026-01-23T08:00:00"}
+[resource] ask {"demand":null,"operation":"standard process Q","resource":"standard line A","start":"2026-01-22T04:00:00","end":"2026-01-23T08:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-22T04:00:00","end":"2026-01-23T08:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"standard component","requested":2,"date":"2026-01-22T04:00:00","onhand":80}
+[buffer] answer {"demand":null,"buffer":"standard component","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-22T04:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"standard process Q","quantity":2,"start":"2026-01-22T04:00:00","end":"2026-01-23T08:00:00"}
+[operation] alternate-answer {"operation":"choose process Q","alternate":"standard process Q","quantity":2,"start":"2026-01-22T04:00:00","end":"2026-01-23T08:00:00"}
+[buffer] replenish {"buffer":"configured Q","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-23T08:00:00","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured Q","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-23T08:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 06 Q","operation":"ship configured Q","quantity":2,"start":"2026-01-23T08:00:00","end":"2026-01-23T12:00:00"}
+[demand] reply {"demand":"process order 06 Q","attempt":1,"result":true,"quantity":2,"date":"2026-01-23T12:00:00"}
+[demand] attempt {"demand":"process order 07 P","attempt":1,"quantity":1,"requestDate":"2026-01-24T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 07 P","operation":"ship configured P","quantity":1,"end":"2026-01-24T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured P","requested":1,"date":"2026-01-23T20:00:00","onhand":1}
+[buffer] shortage {"buffer":"configured P","iteration":0,"date":"2026-01-23T20:00:00","onhand":-1,"shortage":1}
+[operation] alternate-ask {"demand":null,"operation":"choose process P","quantity":1,"end":"2026-01-23T20:00:00","alternates":["premium process P","standard process P"]}
+[operation] alternate-try {"operation":"choose process P","alternate":"premium process P","requestedQuantity":1,"childQuantity":1}
+[operation] ask {"demand":null,"operation":"premium process P","quantity":1,"end":"2026-01-23T20:00:00"}
+[resource] ask {"demand":null,"operation":"premium process P","resource":"premium line","start":"2026-01-23T02:00:00","end":"2026-01-23T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-23T02:00:00","end":"2026-01-23T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component P","requested":1,"date":"2026-01-23T02:00:00","onhand":2}
+[buffer] answer {"demand":null,"buffer":"premium component P","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-23T02:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"premium process P","quantity":1,"start":"2026-01-23T02:00:00","end":"2026-01-23T20:00:00"}
+[operation] alternate-answer {"operation":"choose process P","alternate":"premium process P","quantity":1,"start":"2026-01-23T02:00:00","end":"2026-01-23T20:00:00"}
+[buffer] replenish {"buffer":"configured P","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-23T20:00:00","eventCountBefore":7,"eventCountAfter":8,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured P","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-23T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 07 P","operation":"ship configured P","quantity":1,"start":"2026-01-23T20:00:00","end":"2026-01-24T00:00:00"}
+[demand] reply {"demand":"process order 07 P","attempt":1,"result":true,"quantity":1,"date":"2026-01-24T00:00:00"}
+[demand] attempt {"demand":"process order 08 Q","attempt":1,"quantity":2,"requestDate":"2026-01-24T12:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 08 Q","operation":"ship configured Q","quantity":2,"end":"2026-01-24T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured Q","requested":2,"date":"2026-01-24T08:00:00","onhand":2}
+[buffer] shortage {"buffer":"configured Q","iteration":0,"date":"2026-01-24T08:00:00","onhand":-2,"shortage":2}
+[operation] alternate-ask {"demand":null,"operation":"choose process Q","quantity":2,"end":"2026-01-24T08:00:00","alternates":["premium process Q","standard process Q"]}
+[operation] alternate-try {"operation":"choose process Q","alternate":"premium process Q","requestedQuantity":2,"childQuantity":2}
+[operation] ask {"demand":null,"operation":"premium process Q","quantity":2,"end":"2026-01-24T08:00:00"}
+[resource] ask {"demand":null,"operation":"premium process Q","resource":"premium line","start":"2026-01-23T14:00:00","end":"2026-01-24T08:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-23T14:00:00","end":"2026-01-24T08:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component Q","requested":2,"date":"2026-01-23T14:00:00","onhand":0}
+[buffer] shortage {"buffer":"premium component Q","iteration":0,"date":"2026-01-23T14:00:00","onhand":-2,"shortage":2}
+[buffer] answer {"demand":null,"buffer":"premium component Q","requested":2,"remainingShortage":2,"quantity":0,"date":"2030-12-31T00:00:00","plan":null}
+[operation] material-reject {"demand":null,"operation":"premium process Q","start":"2026-01-23T14:00:00","end":"2026-01-24T08:00:00","asked":2,"answerQuantity":0,"answerDate":"2030-12-31T00:00:00"}
+[operation] alternate-reject {"operation":"choose process Q","alternate":"premium process Q","quantity":0,"nextDate":"2026-01-25T08:00:00"}
+[operation] alternate-try {"operation":"choose process Q","alternate":"standard process Q","requestedQuantity":2,"childQuantity":2}
+[operation] ask {"demand":null,"operation":"standard process Q","quantity":2,"end":"2026-01-24T08:00:00"}
+[resource] ask {"demand":null,"operation":"standard process Q","resource":"standard line A","start":"2026-01-23T04:00:00","end":"2026-01-24T08:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-23T04:00:00","end":"2026-01-24T08:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"standard component","requested":2,"date":"2026-01-23T04:00:00","onhand":78}
+[buffer] answer {"demand":null,"buffer":"standard component","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-23T04:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"standard process Q","quantity":2,"start":"2026-01-23T04:00:00","end":"2026-01-24T08:00:00"}
+[operation] alternate-answer {"operation":"choose process Q","alternate":"standard process Q","quantity":2,"start":"2026-01-23T04:00:00","end":"2026-01-24T08:00:00"}
+[buffer] replenish {"buffer":"configured Q","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-24T08:00:00","eventCountBefore":7,"eventCountAfter":8,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured Q","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-24T08:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 08 Q","operation":"ship configured Q","quantity":2,"start":"2026-01-24T08:00:00","end":"2026-01-24T12:00:00"}
+[demand] reply {"demand":"process order 08 Q","attempt":1,"result":true,"quantity":2,"date":"2026-01-24T12:00:00"}
+[demand] attempt {"demand":"process order 09 P","attempt":1,"quantity":1,"requestDate":"2026-01-25T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 09 P","operation":"ship configured P","quantity":1,"end":"2026-01-25T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured P","requested":1,"date":"2026-01-24T20:00:00","onhand":1}
+[buffer] shortage {"buffer":"configured P","iteration":0,"date":"2026-01-24T20:00:00","onhand":-1,"shortage":1}
+[operation] alternate-ask {"demand":null,"operation":"choose process P","quantity":1,"end":"2026-01-24T20:00:00","alternates":["premium process P","standard process P"]}
+[operation] alternate-try {"operation":"choose process P","alternate":"premium process P","requestedQuantity":1,"childQuantity":1}
+[operation] ask {"demand":null,"operation":"premium process P","quantity":1,"end":"2026-01-24T20:00:00"}
+[resource] ask {"demand":null,"operation":"premium process P","resource":"premium line","start":"2026-01-24T02:00:00","end":"2026-01-24T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T02:00:00","end":"2026-01-24T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component P","requested":1,"date":"2026-01-24T02:00:00","onhand":1}
+[buffer] answer {"demand":null,"buffer":"premium component P","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-24T02:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"premium process P","quantity":1,"start":"2026-01-24T02:00:00","end":"2026-01-24T20:00:00"}
+[operation] alternate-answer {"operation":"choose process P","alternate":"premium process P","quantity":1,"start":"2026-01-24T02:00:00","end":"2026-01-24T20:00:00"}
+[buffer] replenish {"buffer":"configured P","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-24T20:00:00","eventCountBefore":9,"eventCountAfter":10,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured P","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-24T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 09 P","operation":"ship configured P","quantity":1,"start":"2026-01-24T20:00:00","end":"2026-01-25T00:00:00"}
+[demand] reply {"demand":"process order 09 P","attempt":1,"result":true,"quantity":1,"date":"2026-01-25T00:00:00"}
+[demand] attempt {"demand":"process order 10 Q","attempt":1,"quantity":2,"requestDate":"2026-01-25T12:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 10 Q","operation":"ship configured Q","quantity":2,"end":"2026-01-25T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured Q","requested":2,"date":"2026-01-25T08:00:00","onhand":2}
+[buffer] shortage {"buffer":"configured Q","iteration":0,"date":"2026-01-25T08:00:00","onhand":-2,"shortage":2}
+[operation] alternate-ask {"demand":null,"operation":"choose process Q","quantity":2,"end":"2026-01-25T08:00:00","alternates":["premium process Q","standard process Q"]}
+[operation] alternate-try {"operation":"choose process Q","alternate":"premium process Q","requestedQuantity":2,"childQuantity":2}
+[operation] ask {"demand":null,"operation":"premium process Q","quantity":2,"end":"2026-01-25T08:00:00"}
+[resource] ask {"demand":null,"operation":"premium process Q","resource":"premium line","start":"2026-01-24T14:00:00","end":"2026-01-25T08:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T14:00:00","end":"2026-01-25T08:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component Q","requested":2,"date":"2026-01-24T14:00:00","onhand":0}
+[buffer] shortage {"buffer":"premium component Q","iteration":0,"date":"2026-01-24T14:00:00","onhand":-2,"shortage":2}
+[buffer] answer {"demand":null,"buffer":"premium component Q","requested":2,"remainingShortage":2,"quantity":0,"date":"2030-12-31T00:00:00","plan":null}
+[operation] material-reject {"demand":null,"operation":"premium process Q","start":"2026-01-24T14:00:00","end":"2026-01-25T08:00:00","asked":2,"answerQuantity":0,"answerDate":"2030-12-31T00:00:00"}
+[operation] alternate-reject {"operation":"choose process Q","alternate":"premium process Q","quantity":0,"nextDate":"2026-01-26T08:00:00"}
+[operation] alternate-try {"operation":"choose process Q","alternate":"standard process Q","requestedQuantity":2,"childQuantity":2}
+[operation] ask {"demand":null,"operation":"standard process Q","quantity":2,"end":"2026-01-25T08:00:00"}
+[resource] ask {"demand":null,"operation":"standard process Q","resource":"standard line A","start":"2026-01-24T04:00:00","end":"2026-01-25T08:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T04:00:00","end":"2026-01-25T08:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"standard component","requested":2,"date":"2026-01-24T04:00:00","onhand":76}
+[buffer] answer {"demand":null,"buffer":"standard component","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-24T04:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"standard process Q","quantity":2,"start":"2026-01-24T04:00:00","end":"2026-01-25T08:00:00"}
+[operation] alternate-answer {"operation":"choose process Q","alternate":"standard process Q","quantity":2,"start":"2026-01-24T04:00:00","end":"2026-01-25T08:00:00"}
+[buffer] replenish {"buffer":"configured Q","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-25T08:00:00","eventCountBefore":9,"eventCountAfter":10,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured Q","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-25T08:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 10 Q","operation":"ship configured Q","quantity":2,"start":"2026-01-25T08:00:00","end":"2026-01-25T12:00:00"}
+[demand] reply {"demand":"process order 10 Q","attempt":1,"result":true,"quantity":2,"date":"2026-01-25T12:00:00"}
+[demand] attempt {"demand":"process order 11 P","attempt":1,"quantity":1,"requestDate":"2026-01-26T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 11 P","operation":"ship configured P","quantity":1,"end":"2026-01-26T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured P","requested":1,"date":"2026-01-25T20:00:00","onhand":1}
+[buffer] shortage {"buffer":"configured P","iteration":0,"date":"2026-01-25T20:00:00","onhand":-1,"shortage":1}
+[operation] alternate-ask {"demand":null,"operation":"choose process P","quantity":1,"end":"2026-01-25T20:00:00","alternates":["premium process P","standard process P"]}
+[operation] alternate-try {"operation":"choose process P","alternate":"premium process P","requestedQuantity":1,"childQuantity":1}
+[operation] ask {"demand":null,"operation":"premium process P","quantity":1,"end":"2026-01-25T20:00:00"}
+[resource] ask {"demand":null,"operation":"premium process P","resource":"premium line","start":"2026-01-25T02:00:00","end":"2026-01-25T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-25T02:00:00","end":"2026-01-25T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component P","requested":1,"date":"2026-01-25T02:00:00","onhand":0}
+[buffer] shortage {"buffer":"premium component P","iteration":0,"date":"2026-01-25T02:00:00","onhand":-1,"shortage":1}
+[buffer] answer {"demand":null,"buffer":"premium component P","requested":1,"remainingShortage":1,"quantity":0,"date":"2030-12-31T00:00:00","plan":null}
+[operation] material-reject {"demand":null,"operation":"premium process P","start":"2026-01-25T02:00:00","end":"2026-01-25T20:00:00","asked":1,"answerQuantity":0,"answerDate":"2030-12-31T00:00:00"}
+[operation] alternate-reject {"operation":"choose process P","alternate":"premium process P","quantity":0,"nextDate":"2026-01-26T20:00:00"}
+[operation] alternate-try {"operation":"choose process P","alternate":"standard process P","requestedQuantity":1,"childQuantity":1}
+[operation] ask {"demand":null,"operation":"standard process P","quantity":1,"end":"2026-01-25T20:00:00"}
+[resource] ask {"demand":null,"operation":"standard process P","resource":"standard line A","start":"2026-01-24T16:00:00","end":"2026-01-25T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T16:00:00","end":"2026-01-25T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"standard component","requested":1,"date":"2026-01-24T16:00:00","onhand":74}
+[buffer] answer {"demand":null,"buffer":"standard component","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-24T16:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"standard process P","quantity":1,"start":"2026-01-24T16:00:00","end":"2026-01-25T20:00:00"}
+[operation] alternate-answer {"operation":"choose process P","alternate":"standard process P","quantity":1,"start":"2026-01-24T16:00:00","end":"2026-01-25T20:00:00"}
+[buffer] replenish {"buffer":"configured P","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-25T20:00:00","eventCountBefore":11,"eventCountAfter":12,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured P","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-25T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 11 P","operation":"ship configured P","quantity":1,"start":"2026-01-25T20:00:00","end":"2026-01-26T00:00:00"}
+[demand] reply {"demand":"process order 11 P","attempt":1,"result":true,"quantity":1,"date":"2026-01-26T00:00:00"}
+[demand] attempt {"demand":"process order 12 Q","attempt":1,"quantity":2,"requestDate":"2026-01-26T12:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"process order 12 Q","operation":"ship configured Q","quantity":2,"end":"2026-01-26T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured Q","requested":2,"date":"2026-01-26T08:00:00","onhand":2}
+[buffer] shortage {"buffer":"configured Q","iteration":0,"date":"2026-01-26T08:00:00","onhand":-2,"shortage":2}
+[operation] alternate-ask {"demand":null,"operation":"choose process Q","quantity":2,"end":"2026-01-26T08:00:00","alternates":["premium process Q","standard process Q"]}
+[operation] alternate-try {"operation":"choose process Q","alternate":"premium process Q","requestedQuantity":2,"childQuantity":2}
+[operation] ask {"demand":null,"operation":"premium process Q","quantity":2,"end":"2026-01-26T08:00:00"}
+[resource] ask {"demand":null,"operation":"premium process Q","resource":"premium line","start":"2026-01-25T14:00:00","end":"2026-01-26T08:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-25T14:00:00","end":"2026-01-26T08:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"premium component Q","requested":2,"date":"2026-01-25T14:00:00","onhand":0}
+[buffer] shortage {"buffer":"premium component Q","iteration":0,"date":"2026-01-25T14:00:00","onhand":-2,"shortage":2}
+[buffer] answer {"demand":null,"buffer":"premium component Q","requested":2,"remainingShortage":2,"quantity":0,"date":"2030-12-31T00:00:00","plan":null}
+[operation] material-reject {"demand":null,"operation":"premium process Q","start":"2026-01-25T14:00:00","end":"2026-01-26T08:00:00","asked":2,"answerQuantity":0,"answerDate":"2030-12-31T00:00:00"}
+[operation] alternate-reject {"operation":"choose process Q","alternate":"premium process Q","quantity":0,"nextDate":"2026-01-27T08:00:00"}
+[operation] alternate-try {"operation":"choose process Q","alternate":"standard process Q","requestedQuantity":2,"childQuantity":2}
+[operation] ask {"demand":null,"operation":"standard process Q","quantity":2,"end":"2026-01-26T08:00:00"}
+[resource] ask {"demand":null,"operation":"standard process Q","resource":"standard line A","start":"2026-01-25T04:00:00","end":"2026-01-26T08:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-25T04:00:00","end":"2026-01-26T08:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"standard process Q","loadPlanIndex":10,"overloadIndex":7,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":0,"maximum":2,"operation":""},{"index":1,"date":"2026-01-22T04:00:00","type":1,"quantity":1,"onhand":1,"maximum":2,"operation":"standard process Q"},{"index":2,"date":"2026-01-23T04:00:00","type":1,"quantity":1,"onhand":2,"maximum":2,"operation":"standard process Q"},{"index":3,"date":"2026-01-23T08:00:00","type":1,"quantity":-1,"onhand":1,"maximum":2,"operation":"standard process Q"},{"index":4,"date":"2026-01-24T04:00:00","type":1,"quantity":1,"onhand":2,"maximum":2,"operation":"standard process Q"},{"index":5,"date":"2026-01-24T08:00:00","type":1,"quantity":-1,"onhand":1,"maximum":2,"operation":"standard process Q"},{"index":6,"date":"2026-01-24T16:00:00","type":1,"quantity":1,"onhand":2,"maximum":2,"operation":"standard process P"},{"index":7,"date":"2026-01-25T04:00:00","type":1,"quantity":1,"onhand":3,"maximum":2,"operation":"standard process Q"},{"index":8,"date":"2026-01-25T08:00:00","type":1,"quantity":-1,"onhand":2,"maximum":2,"operation":"standard process Q"},{"index":9,"date":"2026-01-25T20:00:00","type":1,"quantity":-1,"onhand":1,"maximum":2,"operation":"standard process P"},{"index":10,"date":"2026-01-26T08:00:00","type":1,"quantity":-1,"onhand":0,"maximum":2,"operation":"standard process Q"}]}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-24T16:00:00","start":"2026-01-23T12:00:00","end":"2026-01-24T16:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"standard process Q","loadPlanIndex":8,"overloadIndex":5,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":0,"maximum":2,"operation":""},{"index":1,"date":"2026-01-22T04:00:00","type":1,"quantity":1,"onhand":1,"maximum":2,"operation":"standard process Q"},{"index":2,"date":"2026-01-23T04:00:00","type":1,"quantity":1,"onhand":2,"maximum":2,"operation":"standard process Q"},{"index":3,"date":"2026-01-23T08:00:00","type":1,"quantity":-1,"onhand":1,"maximum":2,"operation":"standard process Q"},{"index":4,"date":"2026-01-23T12:00:00","type":1,"quantity":1,"onhand":2,"maximum":2,"operation":"standard process Q"},{"index":5,"date":"2026-01-24T04:00:00","type":1,"quantity":1,"onhand":3,"maximum":2,"operation":"standard process Q"},{"index":6,"date":"2026-01-24T08:00:00","type":1,"quantity":-1,"onhand":2,"maximum":2,"operation":"standard process Q"},{"index":7,"date":"2026-01-24T16:00:00","type":1,"quantity":1,"onhand":3,"maximum":2,"operation":"standard process P"},{"index":8,"date":"2026-01-24T16:00:00","type":1,"quantity":-1,"onhand":2,"maximum":2,"operation":"standard process Q"},{"index":9,"date":"2026-01-25T08:00:00","type":1,"quantity":-1,"onhand":1,"maximum":2,"operation":"standard process Q"},{"index":10,"date":"2026-01-25T20:00:00","type":1,"quantity":-1,"onhand":0,"maximum":2,"operation":"standard process P"}]}
+[resource] candidate {"demand":null,"iteration":2,"boundary":"2026-01-23T12:00:00","start":"2026-01-22T08:00:00","end":"2026-01-23T12:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"standard process Q","loadPlanIndex":5,"overloadIndex":3,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":0,"maximum":2,"operation":""},{"index":1,"date":"2026-01-22T04:00:00","type":1,"quantity":1,"onhand":1,"maximum":2,"operation":"standard process Q"},{"index":2,"date":"2026-01-22T08:00:00","type":1,"quantity":1,"onhand":2,"maximum":2,"operation":"standard process Q"},{"index":3,"date":"2026-01-23T04:00:00","type":1,"quantity":1,"onhand":3,"maximum":2,"operation":"standard process Q"},{"index":4,"date":"2026-01-23T08:00:00","type":1,"quantity":-1,"onhand":2,"maximum":2,"operation":"standard process Q"},{"index":5,"date":"2026-01-23T12:00:00","type":1,"quantity":-1,"onhand":1,"maximum":2,"operation":"standard process Q"},{"index":6,"date":"2026-01-24T04:00:00","type":1,"quantity":1,"onhand":2,"maximum":2,"operation":"standard process Q"},{"index":7,"date":"2026-01-24T08:00:00","type":1,"quantity":-1,"onhand":1,"maximum":2,"operation":"standard process Q"}]}
+[resource] candidate {"demand":null,"iteration":3,"boundary":"2026-01-22T08:00:00","start":"2026-01-21T04:00:00","end":"2026-01-22T08:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":4,"boundary":"2026-01-21T04:00:00","start":"2026-01-21T04:00:00","end":"2026-01-22T08:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"standard component","requested":2,"date":"2026-01-21T04:00:00","onhand":80}
+[buffer] answer {"demand":null,"buffer":"standard component","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-21T04:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"standard process Q","quantity":2,"start":"2026-01-21T04:00:00","end":"2026-01-22T08:00:00"}
+[operation] alternate-answer {"operation":"choose process Q","alternate":"standard process Q","quantity":2,"start":"2026-01-21T04:00:00","end":"2026-01-22T08:00:00"}
+[buffer] replenish {"buffer":"configured Q","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-22T08:00:00","eventCountBefore":11,"eventCountAfter":12,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured Q","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-26T08:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"process order 12 Q","operation":"ship configured Q","quantity":2,"start":"2026-01-26T08:00:00","end":"2026-01-26T12:00:00"}
+[demand] reply {"demand":"process order 12 Q","attempt":1,"result":true,"quantity":2,"date":"2026-01-26T12:00:00"}
+[demand] attempt {"demand":"resin order 01 R","attempt":1,"quantity":1,"requestDate":"2026-01-22T06:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"resin order 01 R","operation":"ship configured R","quantity":1,"end":"2026-01-22T06:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured R","requested":1,"date":"2026-01-22T02:00:00","onhand":0}
+[buffer] shortage {"buffer":"configured R","iteration":0,"date":"2026-01-22T02:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make configured R","quantity":1,"end":"2026-01-22T02:00:00"}
+[resource] ask {"demand":null,"operation":"make configured R","resource":"resin line","start":"2026-01-21T10:00:00","end":"2026-01-22T02:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-21T10:00:00","end":"2026-01-22T02:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"preferred resin","requested":1,"date":"2026-01-21T10:00:00","onhand":4}
+[buffer] answer {"demand":null,"buffer":"preferred resin","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-21T10:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make configured R","quantity":1,"start":"2026-01-21T10:00:00","end":"2026-01-22T02:00:00"}
+[buffer] replenish {"buffer":"configured R","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-22T02:00:00","eventCountBefore":1,"eventCountAfter":2,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured R","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-22T02:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"resin order 01 R","operation":"ship configured R","quantity":1,"start":"2026-01-22T02:00:00","end":"2026-01-22T06:00:00"}
+[demand] reply {"demand":"resin order 01 R","attempt":1,"result":true,"quantity":1,"date":"2026-01-22T06:00:00"}
+[demand] attempt {"demand":"resin order 02 R","attempt":1,"quantity":1,"requestDate":"2026-01-22T18:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"resin order 02 R","operation":"ship configured R","quantity":1,"end":"2026-01-22T18:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured R","requested":1,"date":"2026-01-22T14:00:00","onhand":1}
+[buffer] shortage {"buffer":"configured R","iteration":0,"date":"2026-01-22T14:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make configured R","quantity":1,"end":"2026-01-22T14:00:00"}
+[resource] ask {"demand":null,"operation":"make configured R","resource":"resin line","start":"2026-01-21T22:00:00","end":"2026-01-22T14:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-21T22:00:00","end":"2026-01-22T14:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":4,"overloadIndex":2,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":0,"maximum":1,"operation":""},{"index":1,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":2,"date":"2026-01-21T22:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":3,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":4,"date":"2026-01-22T14:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-21T10:00:00","start":"2026-01-20T18:00:00","end":"2026-01-21T10:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":2,"boundary":"2026-01-20T18:00:00","start":"2026-01-20T18:00:00","end":"2026-01-21T10:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"preferred resin","requested":1,"date":"2026-01-20T18:00:00","onhand":4}
+[buffer] answer {"demand":null,"buffer":"preferred resin","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-20T18:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make configured R","quantity":1,"start":"2026-01-20T18:00:00","end":"2026-01-21T10:00:00"}
+[buffer] replenish {"buffer":"configured R","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-21T10:00:00","eventCountBefore":3,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured R","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-22T14:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"resin order 02 R","operation":"ship configured R","quantity":1,"start":"2026-01-22T14:00:00","end":"2026-01-22T18:00:00"}
+[demand] reply {"demand":"resin order 02 R","attempt":1,"result":true,"quantity":1,"date":"2026-01-22T18:00:00"}
+[demand] attempt {"demand":"resin order 03 R","attempt":1,"quantity":1,"requestDate":"2026-01-23T06:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"resin order 03 R","operation":"ship configured R","quantity":1,"end":"2026-01-23T06:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured R","requested":1,"date":"2026-01-23T02:00:00","onhand":0}
+[buffer] shortage {"buffer":"configured R","iteration":0,"date":"2026-01-23T02:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make configured R","quantity":1,"end":"2026-01-23T02:00:00"}
+[resource] ask {"demand":null,"operation":"make configured R","resource":"resin line","start":"2026-01-22T10:00:00","end":"2026-01-23T02:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-22T10:00:00","end":"2026-01-23T02:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"preferred resin","requested":1,"date":"2026-01-22T10:00:00","onhand":2}
+[buffer] answer {"demand":null,"buffer":"preferred resin","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-22T10:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make configured R","quantity":1,"start":"2026-01-22T10:00:00","end":"2026-01-23T02:00:00"}
+[buffer] replenish {"buffer":"configured R","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-23T02:00:00","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured R","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-23T02:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"resin order 03 R","operation":"ship configured R","quantity":1,"start":"2026-01-23T02:00:00","end":"2026-01-23T06:00:00"}
+[demand] reply {"demand":"resin order 03 R","attempt":1,"result":true,"quantity":1,"date":"2026-01-23T06:00:00"}
+[demand] attempt {"demand":"resin order 04 R","attempt":1,"quantity":1,"requestDate":"2026-01-23T18:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"resin order 04 R","operation":"ship configured R","quantity":1,"end":"2026-01-23T18:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured R","requested":1,"date":"2026-01-23T14:00:00","onhand":1}
+[buffer] shortage {"buffer":"configured R","iteration":0,"date":"2026-01-23T14:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make configured R","quantity":1,"end":"2026-01-23T14:00:00"}
+[resource] ask {"demand":null,"operation":"make configured R","resource":"resin line","start":"2026-01-22T22:00:00","end":"2026-01-23T14:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-22T22:00:00","end":"2026-01-23T14:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":8,"overloadIndex":6,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":0,"maximum":1,"operation":""},{"index":1,"date":"2026-01-20T18:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":2,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":3,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":4,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":5,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":6,"date":"2026-01-22T22:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-23T14:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-22T10:00:00","start":"2026-01-21T18:00:00","end":"2026-01-22T10:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":7,"overloadIndex":4,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":0,"maximum":1,"operation":""},{"index":1,"date":"2026-01-20T18:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":2,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":3,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":4,"date":"2026-01-21T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":5,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":6,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-22T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":2,"boundary":"2026-01-20T18:00:00","start":"2026-01-20T02:00:00","end":"2026-01-20T18:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":3,"boundary":"2026-01-20T02:00:00","start":"2026-01-20T02:00:00","end":"2026-01-20T18:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"preferred resin","requested":1,"date":"2026-01-20T02:00:00","onhand":4}
+[buffer] answer {"demand":null,"buffer":"preferred resin","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-20T02:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make configured R","quantity":1,"start":"2026-01-20T02:00:00","end":"2026-01-20T18:00:00"}
+[buffer] replenish {"buffer":"configured R","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-20T18:00:00","eventCountBefore":7,"eventCountAfter":8,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured R","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-23T14:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"resin order 04 R","operation":"ship configured R","quantity":1,"start":"2026-01-23T14:00:00","end":"2026-01-23T18:00:00"}
+[demand] reply {"demand":"resin order 04 R","attempt":1,"result":true,"quantity":1,"date":"2026-01-23T18:00:00"}
+[demand] attempt {"demand":"resin order 05 R","attempt":1,"quantity":1,"requestDate":"2026-01-24T06:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"resin order 05 R","operation":"ship configured R","quantity":1,"end":"2026-01-24T06:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured R","requested":1,"date":"2026-01-24T02:00:00","onhand":0}
+[buffer] shortage {"buffer":"configured R","iteration":0,"date":"2026-01-24T02:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make configured R","quantity":1,"end":"2026-01-24T02:00:00"}
+[resource] ask {"demand":null,"operation":"make configured R","resource":"resin line","start":"2026-01-23T10:00:00","end":"2026-01-24T02:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-23T10:00:00","end":"2026-01-24T02:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"preferred resin","requested":1,"date":"2026-01-23T10:00:00","onhand":0}
+[buffer] shortage {"buffer":"preferred resin","iteration":0,"date":"2026-01-23T10:00:00","onhand":-1,"shortage":1}
+[buffer] answer {"demand":null,"buffer":"preferred resin","requested":1,"remainingShortage":1,"quantity":0,"date":"2030-12-31T00:00:00","plan":null}
+[buffer] ask {"demand":null,"buffer":"substitute resin","requested":1,"date":"2026-01-23T10:00:00","onhand":40}
+[buffer] answer {"demand":null,"buffer":"substitute resin","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-23T10:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make configured R","quantity":1,"start":"2026-01-23T10:00:00","end":"2026-01-24T02:00:00"}
+[buffer] replenish {"buffer":"configured R","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-24T02:00:00","eventCountBefore":9,"eventCountAfter":10,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured R","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-24T02:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"resin order 05 R","operation":"ship configured R","quantity":1,"start":"2026-01-24T02:00:00","end":"2026-01-24T06:00:00"}
+[demand] reply {"demand":"resin order 05 R","attempt":1,"result":true,"quantity":1,"date":"2026-01-24T06:00:00"}
+[demand] attempt {"demand":"resin order 06 R","attempt":1,"quantity":1,"requestDate":"2026-01-24T18:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"resin order 06 R","operation":"ship configured R","quantity":1,"end":"2026-01-24T18:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured R","requested":1,"date":"2026-01-24T14:00:00","onhand":1}
+[buffer] shortage {"buffer":"configured R","iteration":0,"date":"2026-01-24T14:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make configured R","quantity":1,"end":"2026-01-24T14:00:00"}
+[resource] ask {"demand":null,"operation":"make configured R","resource":"resin line","start":"2026-01-23T22:00:00","end":"2026-01-24T14:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-23T22:00:00","end":"2026-01-24T14:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":12,"overloadIndex":10,"events":[{"index":2,"date":"2026-01-20T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":3,"date":"2026-01-20T18:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":4,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":5,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":6,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":9,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":10,"date":"2026-01-23T22:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-24T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":12,"date":"2026-01-24T14:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-23T10:00:00","start":"2026-01-22T18:00:00","end":"2026-01-23T10:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":11,"overloadIndex":8,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":0,"maximum":1,"operation":""},{"index":1,"date":"2026-01-20T02:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":2,"date":"2026-01-20T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":3,"date":"2026-01-20T18:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":4,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":5,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":6,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-22T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":9,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":10,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-23T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":12,"date":"2026-01-24T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":2,"boundary":"2026-01-22T10:00:00","start":"2026-01-21T18:00:00","end":"2026-01-22T10:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":9,"overloadIndex":6,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":0,"maximum":1,"operation":""},{"index":1,"date":"2026-01-20T02:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":2,"date":"2026-01-20T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":3,"date":"2026-01-20T18:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":4,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":5,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":6,"date":"2026-01-21T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":9,"date":"2026-01-22T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":10,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":3,"boundary":"2026-01-20T02:00:00","start":"2026-01-19T10:00:00","end":"2026-01-20T02:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":4,"boundary":"2026-01-19T10:00:00","start":"2026-01-19T10:00:00","end":"2026-01-20T02:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"preferred resin","requested":1,"date":"2026-01-19T10:00:00","onhand":4}
+[buffer] shortage {"buffer":"preferred resin","iteration":0,"date":"2026-01-22T10:00:00","onhand":-1,"shortage":1}
+[buffer] answer {"demand":null,"buffer":"preferred resin","requested":1,"remainingShortage":1,"quantity":0,"date":"2030-12-31T00:00:00","plan":null}
+[buffer] ask {"demand":null,"buffer":"substitute resin","requested":1,"date":"2026-01-19T10:00:00","onhand":40}
+[buffer] answer {"demand":null,"buffer":"substitute resin","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-19T10:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make configured R","quantity":1,"start":"2026-01-19T10:00:00","end":"2026-01-20T02:00:00"}
+[buffer] replenish {"buffer":"configured R","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-20T02:00:00","eventCountBefore":11,"eventCountAfter":12,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured R","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-24T14:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"resin order 06 R","operation":"ship configured R","quantity":1,"start":"2026-01-24T14:00:00","end":"2026-01-24T18:00:00"}
+[demand] reply {"demand":"resin order 06 R","attempt":1,"result":true,"quantity":1,"date":"2026-01-24T18:00:00"}
+[demand] attempt {"demand":"resin order 07 R","attempt":1,"quantity":1,"requestDate":"2026-01-25T06:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"resin order 07 R","operation":"ship configured R","quantity":1,"end":"2026-01-25T06:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured R","requested":1,"date":"2026-01-25T02:00:00","onhand":0}
+[buffer] shortage {"buffer":"configured R","iteration":0,"date":"2026-01-25T02:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make configured R","quantity":1,"end":"2026-01-25T02:00:00"}
+[resource] ask {"demand":null,"operation":"make configured R","resource":"resin line","start":"2026-01-24T10:00:00","end":"2026-01-25T02:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T10:00:00","end":"2026-01-25T02:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"preferred resin","requested":1,"date":"2026-01-24T10:00:00","onhand":0}
+[buffer] shortage {"buffer":"preferred resin","iteration":0,"date":"2026-01-24T10:00:00","onhand":-1,"shortage":1}
+[buffer] answer {"demand":null,"buffer":"preferred resin","requested":1,"remainingShortage":1,"quantity":0,"date":"2030-12-31T00:00:00","plan":null}
+[buffer] ask {"demand":null,"buffer":"substitute resin","requested":1,"date":"2026-01-24T10:00:00","onhand":38}
+[buffer] answer {"demand":null,"buffer":"substitute resin","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-24T10:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make configured R","quantity":1,"start":"2026-01-24T10:00:00","end":"2026-01-25T02:00:00"}
+[buffer] replenish {"buffer":"configured R","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-25T02:00:00","eventCountBefore":13,"eventCountAfter":14,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured R","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-25T02:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"resin order 07 R","operation":"ship configured R","quantity":1,"start":"2026-01-25T02:00:00","end":"2026-01-25T06:00:00"}
+[demand] reply {"demand":"resin order 07 R","attempt":1,"result":true,"quantity":1,"date":"2026-01-25T06:00:00"}
+[demand] attempt {"demand":"resin order 08 R","attempt":1,"quantity":1,"requestDate":"2026-01-25T18:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"resin order 08 R","operation":"ship configured R","quantity":1,"end":"2026-01-25T18:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured R","requested":1,"date":"2026-01-25T14:00:00","onhand":1}
+[buffer] shortage {"buffer":"configured R","iteration":0,"date":"2026-01-25T14:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make configured R","quantity":1,"end":"2026-01-25T14:00:00"}
+[resource] ask {"demand":null,"operation":"make configured R","resource":"resin line","start":"2026-01-24T22:00:00","end":"2026-01-25T14:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T22:00:00","end":"2026-01-25T14:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":16,"overloadIndex":14,"events":[{"index":6,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":9,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":10,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":12,"date":"2026-01-24T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":13,"date":"2026-01-24T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":14,"date":"2026-01-24T22:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":15,"date":"2026-01-25T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":16,"date":"2026-01-25T14:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-24T10:00:00","start":"2026-01-23T18:00:00","end":"2026-01-24T10:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":15,"overloadIndex":12,"events":[{"index":4,"date":"2026-01-20T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":5,"date":"2026-01-20T18:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":6,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":9,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":10,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":12,"date":"2026-01-23T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":13,"date":"2026-01-24T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":14,"date":"2026-01-24T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":15,"date":"2026-01-24T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":16,"date":"2026-01-25T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":2,"boundary":"2026-01-23T10:00:00","start":"2026-01-22T18:00:00","end":"2026-01-23T10:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":13,"overloadIndex":10,"events":[{"index":2,"date":"2026-01-20T02:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":3,"date":"2026-01-20T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":4,"date":"2026-01-20T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":5,"date":"2026-01-20T18:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":6,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":9,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":10,"date":"2026-01-22T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":12,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":13,"date":"2026-01-23T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":14,"date":"2026-01-24T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":15,"date":"2026-01-24T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":3,"boundary":"2026-01-22T10:00:00","start":"2026-01-21T18:00:00","end":"2026-01-22T10:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":11,"overloadIndex":8,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":0,"maximum":1,"operation":""},{"index":1,"date":"2026-01-19T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":2,"date":"2026-01-20T02:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":3,"date":"2026-01-20T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":4,"date":"2026-01-20T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":5,"date":"2026-01-20T18:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":6,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-21T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":9,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":10,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-22T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":12,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":13,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":4,"boundary":"2026-01-19T10:00:00","start":"2026-01-18T18:00:00","end":"2026-01-19T10:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":5,"boundary":"2026-01-18T18:00:00","start":"2026-01-18T18:00:00","end":"2026-01-19T10:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"preferred resin","requested":1,"date":"2026-01-18T18:00:00","onhand":4}
+[buffer] shortage {"buffer":"preferred resin","iteration":0,"date":"2026-01-22T10:00:00","onhand":-1,"shortage":1}
+[buffer] answer {"demand":null,"buffer":"preferred resin","requested":1,"remainingShortage":1,"quantity":0,"date":"2030-12-31T00:00:00","plan":null}
+[buffer] ask {"demand":null,"buffer":"substitute resin","requested":1,"date":"2026-01-18T18:00:00","onhand":40}
+[buffer] answer {"demand":null,"buffer":"substitute resin","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-18T18:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make configured R","quantity":1,"start":"2026-01-18T18:00:00","end":"2026-01-19T10:00:00"}
+[buffer] replenish {"buffer":"configured R","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-19T10:00:00","eventCountBefore":15,"eventCountAfter":16,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured R","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-25T14:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"resin order 08 R","operation":"ship configured R","quantity":1,"start":"2026-01-25T14:00:00","end":"2026-01-25T18:00:00"}
+[demand] reply {"demand":"resin order 08 R","attempt":1,"result":true,"quantity":1,"date":"2026-01-25T18:00:00"}
+[demand] attempt {"demand":"resin order 09 R","attempt":1,"quantity":1,"requestDate":"2026-01-26T06:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"resin order 09 R","operation":"ship configured R","quantity":1,"end":"2026-01-26T06:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured R","requested":1,"date":"2026-01-26T02:00:00","onhand":0}
+[buffer] shortage {"buffer":"configured R","iteration":0,"date":"2026-01-26T02:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make configured R","quantity":1,"end":"2026-01-26T02:00:00"}
+[resource] ask {"demand":null,"operation":"make configured R","resource":"resin line","start":"2026-01-25T10:00:00","end":"2026-01-26T02:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-25T10:00:00","end":"2026-01-26T02:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"preferred resin","requested":1,"date":"2026-01-25T10:00:00","onhand":0}
+[buffer] shortage {"buffer":"preferred resin","iteration":0,"date":"2026-01-25T10:00:00","onhand":-1,"shortage":1}
+[buffer] answer {"demand":null,"buffer":"preferred resin","requested":1,"remainingShortage":1,"quantity":0,"date":"2030-12-31T00:00:00","plan":null}
+[buffer] ask {"demand":null,"buffer":"substitute resin","requested":1,"date":"2026-01-25T10:00:00","onhand":36}
+[buffer] answer {"demand":null,"buffer":"substitute resin","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-25T10:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make configured R","quantity":1,"start":"2026-01-25T10:00:00","end":"2026-01-26T02:00:00"}
+[buffer] replenish {"buffer":"configured R","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-26T02:00:00","eventCountBefore":17,"eventCountAfter":18,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured R","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-26T02:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"resin order 09 R","operation":"ship configured R","quantity":1,"start":"2026-01-26T02:00:00","end":"2026-01-26T06:00:00"}
+[demand] reply {"demand":"resin order 09 R","attempt":1,"result":true,"quantity":1,"date":"2026-01-26T06:00:00"}
+[demand] attempt {"demand":"resin order 10 R","attempt":1,"quantity":1,"requestDate":"2026-01-26T18:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"resin order 10 R","operation":"ship configured R","quantity":1,"end":"2026-01-26T18:00:00"}
+[buffer] ask {"demand":null,"buffer":"configured R","requested":1,"date":"2026-01-26T14:00:00","onhand":1}
+[buffer] shortage {"buffer":"configured R","iteration":0,"date":"2026-01-26T14:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make configured R","quantity":1,"end":"2026-01-26T14:00:00"}
+[resource] ask {"demand":null,"operation":"make configured R","resource":"resin line","start":"2026-01-25T22:00:00","end":"2026-01-26T14:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-25T22:00:00","end":"2026-01-26T14:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":20,"overloadIndex":18,"events":[{"index":10,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":12,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":13,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":14,"date":"2026-01-24T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":15,"date":"2026-01-24T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":16,"date":"2026-01-25T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":17,"date":"2026-01-25T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":18,"date":"2026-01-25T22:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":19,"date":"2026-01-26T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":20,"date":"2026-01-26T14:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-25T10:00:00","start":"2026-01-24T18:00:00","end":"2026-01-25T10:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":19,"overloadIndex":16,"events":[{"index":8,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":9,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":10,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":12,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":13,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":14,"date":"2026-01-24T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":15,"date":"2026-01-24T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":16,"date":"2026-01-24T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":17,"date":"2026-01-25T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":18,"date":"2026-01-25T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":19,"date":"2026-01-25T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":20,"date":"2026-01-26T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":2,"boundary":"2026-01-24T10:00:00","start":"2026-01-23T18:00:00","end":"2026-01-24T10:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":17,"overloadIndex":14,"events":[{"index":6,"date":"2026-01-20T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-20T18:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":9,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":10,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":12,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":13,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":14,"date":"2026-01-23T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":15,"date":"2026-01-24T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":16,"date":"2026-01-24T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":17,"date":"2026-01-24T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":18,"date":"2026-01-25T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":19,"date":"2026-01-25T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":3,"boundary":"2026-01-23T10:00:00","start":"2026-01-22T18:00:00","end":"2026-01-23T10:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":15,"overloadIndex":12,"events":[{"index":4,"date":"2026-01-20T02:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":5,"date":"2026-01-20T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":6,"date":"2026-01-20T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-20T18:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":9,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":10,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":12,"date":"2026-01-22T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":13,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":14,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":15,"date":"2026-01-23T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":16,"date":"2026-01-24T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":17,"date":"2026-01-24T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":4,"boundary":"2026-01-22T10:00:00","start":"2026-01-21T18:00:00","end":"2026-01-22T10:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make configured R","loadPlanIndex":13,"overloadIndex":10,"events":[{"index":2,"date":"2026-01-19T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":3,"date":"2026-01-19T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":4,"date":"2026-01-20T02:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":5,"date":"2026-01-20T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":6,"date":"2026-01-20T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":7,"date":"2026-01-20T18:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":8,"date":"2026-01-21T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":9,"date":"2026-01-21T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":10,"date":"2026-01-21T18:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":11,"date":"2026-01-22T02:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":12,"date":"2026-01-22T10:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make configured R"},{"index":13,"date":"2026-01-22T10:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make configured R"},{"index":14,"date":"2026-01-23T02:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make configured R"},{"index":15,"date":"2026-01-23T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make configured R"}]}
+[resource] candidate {"demand":null,"iteration":5,"boundary":"2026-01-18T18:00:00","start":"2026-01-18T02:00:00","end":"2026-01-18T18:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":6,"boundary":"2026-01-18T02:00:00","start":"2026-01-18T02:00:00","end":"2026-01-18T18:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"preferred resin","requested":1,"date":"2026-01-18T02:00:00","onhand":4}
+[buffer] shortage {"buffer":"preferred resin","iteration":0,"date":"2026-01-22T10:00:00","onhand":-1,"shortage":1}
+[buffer] answer {"demand":null,"buffer":"preferred resin","requested":1,"remainingShortage":1,"quantity":0,"date":"2030-12-31T00:00:00","plan":null}
+[buffer] ask {"demand":null,"buffer":"substitute resin","requested":1,"date":"2026-01-18T02:00:00","onhand":40}
+[buffer] answer {"demand":null,"buffer":"substitute resin","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-18T02:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make configured R","quantity":1,"start":"2026-01-18T02:00:00","end":"2026-01-18T18:00:00"}
+[buffer] replenish {"buffer":"configured R","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-18T18:00:00","eventCountBefore":19,"eventCountAfter":20,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"configured R","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-26T14:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"resin order 10 R","operation":"ship configured R","quantity":1,"start":"2026-01-26T14:00:00","end":"2026-01-26T18:00:00"}
+[demand] reply {"demand":"resin order 10 R","attempt":1,"result":true,"quantity":1,"date":"2026-01-26T18:00:00"}

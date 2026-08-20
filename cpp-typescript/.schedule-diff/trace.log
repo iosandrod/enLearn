@@ -1,0 +1,110 @@
+{
+  "scenario": "resource_capacity",
+  "identical": false,
+  "nativeOperationPlans": 10,
+  "typescriptOperationPlans": 8,
+  "differenceCount": 22,
+  "firstDifferences": [
+    {
+      "path": "$.deliveries.length",
+      "native": 5,
+      "typescript": 4
+    },
+    {
+      "path": "$.deliveries[3].end",
+      "native": "2009-01-20T00:00:00",
+      "typescript": "2009-01-21T00:00:00"
+    },
+    {
+      "path": "$.operationPlans.length",
+      "native": 10,
+      "typescript": 8
+    },
+    {
+      "path": "$.operationPlans[3].end",
+      "native": "2009-01-20T00:00:00",
+      "typescript": "2009-01-21T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[3].materials[0].date",
+      "native": "2009-01-19T00:00:00",
+      "typescript": "2009-01-20T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[3].start",
+      "native": "2009-01-19T00:00:00",
+      "typescript": "2009-01-20T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[4].demand",
+      "native": "order 5",
+      "typescript": null
+    },
+    {
+      "path": "$.operationPlans[4].end",
+      "native": "2009-01-21T00:00:00",
+      "typescript": "2009-01-16T12:00:00"
+    },
+    {
+      "path": "$.operationPlans[4].materials[0].date",
+      "native": "2009-01-20T00:00:00",
+      "typescript": "2009-01-16T12:00:00"
+    },
+    {
+      "path": "$.operationPlans[4].materials[0].quantity",
+      "native": -10,
+      "typescript": 10
+    },
+    {
+      "path": "$.operationPlans[4].operation",
+      "native": "delivery end item",
+      "typescript": "make end item"
+    },
+    {
+      "path": "$.operationPlans[4].resources.length",
+      "native": 0,
+      "typescript": 1
+    },
+    {
+      "path": "$.operationPlans[4].start",
+      "native": "2009-01-20T00:00:00",
+      "typescript": "2009-01-15T12:00:00"
+    },
+    {
+      "path": "$.operationPlans[5].end",
+      "native": "2009-01-15T12:00:00",
+      "typescript": "2009-01-18T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[5].materials[0].date",
+      "native": "2009-01-15T12:00:00",
+      "typescript": "2009-01-18T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[5].start",
+      "native": "2009-01-14T12:00:00",
+      "typescript": "2009-01-17T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[6].end",
+      "native": "2009-01-16T12:00:00",
+      "typescript": "2009-01-19T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[6].materials[0].date",
+      "native": "2009-01-16T12:00:00",
+      "typescript": "2009-01-19T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[6].start",
+      "native": "2009-01-15T12:00:00",
+      "typescript": "2009-01-18T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[7].end",
+      "native": "2009-01-18T00:00:00",
+      "typescript": "2009-01-20T00:00:00"
+    }
+  ],
+  "databaseSchema": "codex_schedule_diff"
+}

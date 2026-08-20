@@ -1,0 +1,238 @@
+{
+  "costSummary": {
+    "operationCost": 84.0,
+    "resourceCost": 0.0,
+    "setupCost": 0.0,
+    "setupPenalty": 0.0,
+    "totalCost": 84.0
+  },
+  "deliveries": [
+    {
+      "batch": "",
+      "demand": "purchase effectivity order 1",
+      "end": "2026-01-16T00:00:00",
+      "operationPlanKey": "auto:consume purchased alloy|2026-01-15T23:00:00|2026-01-16T00:00:00|purchase effectivity order 1|7||MO|#1",
+      "orderType": "MO",
+      "quantity": 7.0
+    },
+    {
+      "batch": "",
+      "demand": "purchase effectivity order 2",
+      "end": "2026-01-19T00:00:00",
+      "operationPlanKey": "auto:consume purchased alloy|2026-01-18T23:00:00|2026-01-19T00:00:00|purchase effectivity order 2|5||MO|#1",
+      "orderType": "MO",
+      "quantity": 5.0
+    }
+  ],
+  "dependencies": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "purchased alloy @ purchase plant",
+      "bufferBatch": "",
+      "date": "2026-01-15T23:00:00",
+      "onhand": 2.0,
+      "operationPlanKey": "auto:consume purchased alloy|2026-01-15T23:00:00|2026-01-16T00:00:00|purchase effectivity order 1|7||MO|#1",
+      "orderType": "MO",
+      "quantity": -7.0
+    },
+    {
+      "buffer": "purchased alloy @ purchase plant",
+      "bufferBatch": "",
+      "date": "2026-01-15T23:00:00",
+      "onhand": 9.0,
+      "operationPlanKey": "auto:Purchase purchased alloy @ purchase plant from active supplier valid from 2026-01-01T00:00:00|2026-01-11T11:00:00|2026-01-15T11:00:00||9||PO|Replenish purchased alloy @ purchase plant#1",
+      "orderType": "PO",
+      "quantity": 9.0
+    },
+    {
+      "buffer": "purchased alloy @ purchase plant",
+      "bufferBatch": "",
+      "date": "2026-01-18T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:consume purchased alloy|2026-01-18T23:00:00|2026-01-19T00:00:00|purchase effectivity order 2|5||MO|#1",
+      "orderType": "MO",
+      "quantity": -5.0
+    },
+    {
+      "buffer": "purchased alloy @ purchase plant",
+      "bufferBatch": "",
+      "date": "2026-01-18T23:00:00",
+      "onhand": 5.0,
+      "operationPlanKey": "auto:Purchase purchased alloy @ purchase plant from active supplier valid from 2026-01-01T00:00:00|2026-01-14T11:00:00|2026-01-18T11:00:00||3||PO|Replenish purchased alloy @ purchase plant#1",
+      "orderType": "PO",
+      "quantity": 3.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-15T11:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "purchased alloy @ purchase plant",
+          "date": "2026-01-15T23:00:00",
+          "quantity": 9.0
+        }
+      ],
+      "operation": "Purchase purchased alloy @ purchase plant from active supplier valid from 2026-01-01T00:00:00",
+      "operationCost": 54.0,
+      "orderType": "PO",
+      "ownerOperation": "Replenish purchased alloy @ purchase plant",
+      "planKey": "auto:Purchase purchased alloy @ purchase plant from active supplier valid from 2026-01-01T00:00:00|2026-01-11T11:00:00|2026-01-15T11:00:00||9||PO|Replenish purchased alloy @ purchase plant#1",
+      "quantity": 9.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Purchase purchased alloy @ purchase plant from active supplier valid from 2026-01-01T00:00:00|2026-01-11T11:00:00|2026-01-15T11:00:00||9||PO|Replenish purchased alloy @ purchase plant#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-11T11:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-11T11:00:00",
+      "status": "proposed",
+      "totalCost": 54.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-18T11:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "purchased alloy @ purchase plant",
+          "date": "2026-01-18T23:00:00",
+          "quantity": 3.0
+        }
+      ],
+      "operation": "Purchase purchased alloy @ purchase plant from active supplier valid from 2026-01-01T00:00:00",
+      "operationCost": 18.0,
+      "orderType": "PO",
+      "ownerOperation": "Replenish purchased alloy @ purchase plant",
+      "planKey": "auto:Purchase purchased alloy @ purchase plant from active supplier valid from 2026-01-01T00:00:00|2026-01-14T11:00:00|2026-01-18T11:00:00||3||PO|Replenish purchased alloy @ purchase plant#1",
+      "quantity": 3.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Purchase purchased alloy @ purchase plant from active supplier valid from 2026-01-01T00:00:00|2026-01-14T11:00:00|2026-01-18T11:00:00||3||PO|Replenish purchased alloy @ purchase plant#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-14T11:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-14T11:00:00",
+      "status": "proposed",
+      "totalCost": 18.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-15T11:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "Replenish purchased alloy @ purchase plant",
+      "operationCost": 0.0,
+      "orderType": "ALT",
+      "ownerOperation": null,
+      "planKey": "auto:Replenish purchased alloy @ purchase plant|2026-01-11T11:00:00|2026-01-15T11:00:00||9||ALT|#1",
+      "quantity": 9.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Replenish purchased alloy @ purchase plant|2026-01-11T11:00:00|2026-01-15T11:00:00||9||ALT|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-11T11:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-11T11:00:00",
+      "status": "proposed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-18T11:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "Replenish purchased alloy @ purchase plant",
+      "operationCost": 0.0,
+      "orderType": "ALT",
+      "ownerOperation": null,
+      "planKey": "auto:Replenish purchased alloy @ purchase plant|2026-01-14T11:00:00|2026-01-18T11:00:00||3||ALT|#1",
+      "quantity": 3.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Replenish purchased alloy @ purchase plant|2026-01-14T11:00:00|2026-01-18T11:00:00||3||ALT|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-14T11:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-14T11:00:00",
+      "status": "proposed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": "purchase effectivity order 1",
+      "end": "2026-01-16T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "purchased alloy @ purchase plant",
+          "date": "2026-01-15T23:00:00",
+          "quantity": -7.0
+        }
+      ],
+      "operation": "consume purchased alloy",
+      "operationCost": 7.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:consume purchased alloy|2026-01-15T23:00:00|2026-01-16T00:00:00|purchase effectivity order 1|7||MO|#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:consume purchased alloy|2026-01-15T23:00:00|2026-01-16T00:00:00|purchase effectivity order 1|7||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-15T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-15T23:00:00",
+      "status": "proposed",
+      "totalCost": 7.0
+    },
+    {
+      "batch": "",
+      "demand": "purchase effectivity order 2",
+      "end": "2026-01-19T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "purchased alloy @ purchase plant",
+          "date": "2026-01-18T23:00:00",
+          "quantity": -5.0
+        }
+      ],
+      "operation": "consume purchased alloy",
+      "operationCost": 5.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:consume purchased alloy|2026-01-18T23:00:00|2026-01-19T00:00:00|purchase effectivity order 2|5||MO|#1",
+      "quantity": 5.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:consume purchased alloy|2026-01-18T23:00:00|2026-01-19T00:00:00|purchase effectivity order 2|5||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-18T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-18T23:00:00",
+      "status": "proposed",
+      "totalCost": 5.0
+    }
+  ],
+  "problems": [],
+  "resourcePlans": []
+}

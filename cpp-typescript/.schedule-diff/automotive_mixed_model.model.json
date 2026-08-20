@@ -1,0 +1,1052 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "black sedan",
+      "quantity": -1,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "type": "start",
+      "buffer": "automotive steel",
+      "quantity": -2,
+      "operation": "weld SEDAN-BLK"
+    },
+    {
+      "type": "start",
+      "buffer": "powertrain",
+      "quantity": -1,
+      "operation": "assemble SEDAN-BLK"
+    },
+    {
+      "type": "start",
+      "buffer": "electronics kit",
+      "quantity": -1,
+      "operation": "assemble SEDAN-BLK"
+    },
+    {
+      "type": "end",
+      "buffer": "black sedan",
+      "quantity": 1,
+      "operation": "assemble SEDAN-BLK"
+    },
+    {
+      "type": "start",
+      "buffer": "white sedan",
+      "quantity": -1,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "type": "start",
+      "buffer": "automotive steel",
+      "quantity": -2,
+      "operation": "weld SEDAN-WHT"
+    },
+    {
+      "type": "start",
+      "buffer": "powertrain",
+      "quantity": -1,
+      "operation": "assemble SEDAN-WHT"
+    },
+    {
+      "type": "start",
+      "buffer": "electronics kit",
+      "quantity": -1,
+      "operation": "assemble SEDAN-WHT"
+    },
+    {
+      "type": "end",
+      "buffer": "white sedan",
+      "quantity": 1,
+      "operation": "assemble SEDAN-WHT"
+    },
+    {
+      "type": "start",
+      "buffer": "black suv",
+      "quantity": -1,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "type": "start",
+      "buffer": "automotive steel",
+      "quantity": -3,
+      "operation": "weld SUV-BLK"
+    },
+    {
+      "type": "start",
+      "buffer": "powertrain",
+      "quantity": -1,
+      "operation": "assemble SUV-BLK"
+    },
+    {
+      "type": "start",
+      "buffer": "electronics kit",
+      "quantity": -1,
+      "operation": "assemble SUV-BLK"
+    },
+    {
+      "type": "end",
+      "buffer": "black suv",
+      "quantity": 1,
+      "operation": "assemble SUV-BLK"
+    },
+    {
+      "type": "start",
+      "buffer": "red suv",
+      "quantity": -1,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "type": "start",
+      "buffer": "automotive steel",
+      "quantity": -3,
+      "operation": "weld SUV-RED"
+    },
+    {
+      "type": "start",
+      "buffer": "powertrain",
+      "quantity": -1,
+      "operation": "assemble SUV-RED"
+    },
+    {
+      "type": "start",
+      "buffer": "electronics kit",
+      "quantity": -1,
+      "operation": "assemble SUV-RED"
+    },
+    {
+      "type": "end",
+      "buffer": "red suv",
+      "quantity": 1,
+      "operation": "assemble SUV-RED"
+    }
+  ],
+  "items": [
+    {
+      "name": "automotive steel"
+    },
+    {
+      "name": "powertrain"
+    },
+    {
+      "name": "electronics kit"
+    },
+    {
+      "name": "black sedan"
+    },
+    {
+      "name": "white sedan"
+    },
+    {
+      "name": "black suv"
+    },
+    {
+      "name": "red suv"
+    }
+  ],
+  "loads": [
+    {
+      "name": "body line SEDAN-BLK",
+      "setup": "sedan",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "body line A",
+      "operation": "weld SEDAN-BLK"
+    },
+    {
+      "name": "body line SEDAN-BLK",
+      "setup": "sedan",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "body line B",
+      "operation": "weld SEDAN-BLK"
+    },
+    {
+      "setup": "black",
+      "quantity": 1,
+      "resource": "paint booth",
+      "operation": "paint SEDAN-BLK"
+    },
+    {
+      "skill": "vehicle assembly",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "assembly team pool",
+      "operation": "assemble SEDAN-BLK"
+    },
+    {
+      "name": "body line SEDAN-WHT",
+      "setup": "sedan",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "body line A",
+      "operation": "weld SEDAN-WHT"
+    },
+    {
+      "name": "body line SEDAN-WHT",
+      "setup": "sedan",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "body line B",
+      "operation": "weld SEDAN-WHT"
+    },
+    {
+      "setup": "white",
+      "quantity": 1,
+      "resource": "paint booth",
+      "operation": "paint SEDAN-WHT"
+    },
+    {
+      "skill": "vehicle assembly",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "assembly team pool",
+      "operation": "assemble SEDAN-WHT"
+    },
+    {
+      "name": "body line SUV-BLK",
+      "setup": "suv",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "body line A",
+      "operation": "weld SUV-BLK"
+    },
+    {
+      "name": "body line SUV-BLK",
+      "setup": "suv",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "body line B",
+      "operation": "weld SUV-BLK"
+    },
+    {
+      "setup": "black",
+      "quantity": 1,
+      "resource": "paint booth",
+      "operation": "paint SUV-BLK"
+    },
+    {
+      "skill": "vehicle assembly",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "assembly team pool",
+      "operation": "assemble SUV-BLK"
+    },
+    {
+      "name": "body line SUV-RED",
+      "setup": "suv",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "body line A",
+      "operation": "weld SUV-RED"
+    },
+    {
+      "name": "body line SUV-RED",
+      "setup": "suv",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "body line B",
+      "operation": "weld SUV-RED"
+    },
+    {
+      "setup": "red",
+      "quantity": 1,
+      "resource": "paint booth",
+      "operation": "paint SUV-RED"
+    },
+    {
+      "skill": "vehicle assembly",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "assembly team pool",
+      "operation": "assemble SUV-RED"
+    }
+  ],
+  "skills": [
+    {
+      "name": "vehicle assembly"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 43200,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "rotateResources": true
+  },
+  "buffers": [
+    {
+      "item": "automotive steel",
+      "name": "automotive steel",
+      "onhand": 180
+    },
+    {
+      "item": "powertrain",
+      "name": "powertrain",
+      "onhand": 105
+    },
+    {
+      "item": "electronics kit",
+      "name": "electronics kit",
+      "onhand": 120
+    },
+    {
+      "item": "black sedan",
+      "name": "black sedan",
+      "onhand": 0,
+      "producing": "build SEDAN-BLK"
+    },
+    {
+      "item": "white sedan",
+      "name": "white sedan",
+      "onhand": 0,
+      "producing": "build SEDAN-WHT"
+    },
+    {
+      "item": "black suv",
+      "name": "black suv",
+      "onhand": 0,
+      "producing": "build SUV-BLK"
+    },
+    {
+      "item": "red suv",
+      "name": "red suv",
+      "onhand": 0,
+      "producing": "build SUV-RED"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-26T00:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 001 SEDAN-BLK",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-01-26T08:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 002 SEDAN-WHT",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-01-26T16:00:00",
+      "item": "black suv",
+      "name": "vehicle order 003 SUV-BLK",
+      "priority": 3,
+      "quantity": 3,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-01-27T00:00:00",
+      "item": "red suv",
+      "name": "vehicle order 004 SUV-RED",
+      "priority": 4,
+      "quantity": 1,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "due": "2026-01-27T08:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 005 SEDAN-BLK",
+      "priority": 5,
+      "quantity": 4,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-01-27T16:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 006 SEDAN-WHT",
+      "priority": 6,
+      "quantity": 2,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-01-28T00:00:00",
+      "item": "black suv",
+      "name": "vehicle order 007 SUV-BLK",
+      "priority": 7,
+      "quantity": 1,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-01-28T08:00:00",
+      "item": "red suv",
+      "name": "vehicle order 008 SUV-RED",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "due": "2026-01-28T16:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 009 SEDAN-BLK",
+      "priority": 9,
+      "quantity": 3,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-01-29T00:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 010 SEDAN-WHT",
+      "priority": 10,
+      "quantity": 1,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-01-29T08:00:00",
+      "item": "black suv",
+      "name": "vehicle order 011 SUV-BLK",
+      "priority": 1,
+      "quantity": 4,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-01-29T16:00:00",
+      "item": "red suv",
+      "name": "vehicle order 012 SUV-RED",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "due": "2026-01-30T00:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 013 SEDAN-BLK",
+      "priority": 3,
+      "quantity": 1,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-01-30T08:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 014 SEDAN-WHT",
+      "priority": 4,
+      "quantity": 2,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-01-30T16:00:00",
+      "item": "black suv",
+      "name": "vehicle order 015 SUV-BLK",
+      "priority": 5,
+      "quantity": 3,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-01-31T00:00:00",
+      "item": "red suv",
+      "name": "vehicle order 016 SUV-RED",
+      "priority": 6,
+      "quantity": 1,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "due": "2026-01-31T08:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 017 SEDAN-BLK",
+      "priority": 7,
+      "quantity": 4,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-01-31T16:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 018 SEDAN-WHT",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-02-01T00:00:00",
+      "item": "black suv",
+      "name": "vehicle order 019 SUV-BLK",
+      "priority": 9,
+      "quantity": 1,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-02-01T08:00:00",
+      "item": "red suv",
+      "name": "vehicle order 020 SUV-RED",
+      "priority": 10,
+      "quantity": 2,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "due": "2026-02-01T16:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 021 SEDAN-BLK",
+      "priority": 1,
+      "quantity": 3,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-02-02T00:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 022 SEDAN-WHT",
+      "priority": 2,
+      "quantity": 1,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-02-02T08:00:00",
+      "item": "black suv",
+      "name": "vehicle order 023 SUV-BLK",
+      "priority": 3,
+      "quantity": 4,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-02-02T16:00:00",
+      "item": "red suv",
+      "name": "vehicle order 024 SUV-RED",
+      "priority": 4,
+      "quantity": 2,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "due": "2026-02-03T00:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 025 SEDAN-BLK",
+      "priority": 5,
+      "quantity": 1,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-02-03T08:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 026 SEDAN-WHT",
+      "priority": 6,
+      "quantity": 2,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-02-03T16:00:00",
+      "item": "black suv",
+      "name": "vehicle order 027 SUV-BLK",
+      "priority": 7,
+      "quantity": 3,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-02-04T00:00:00",
+      "item": "red suv",
+      "name": "vehicle order 028 SUV-RED",
+      "priority": 8,
+      "quantity": 1,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "due": "2026-02-04T08:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 029 SEDAN-BLK",
+      "priority": 9,
+      "quantity": 4,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-02-04T16:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 030 SEDAN-WHT",
+      "priority": 10,
+      "quantity": 2,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-02-05T00:00:00",
+      "item": "black suv",
+      "name": "vehicle order 031 SUV-BLK",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-02-05T08:00:00",
+      "item": "red suv",
+      "name": "vehicle order 032 SUV-RED",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "due": "2026-02-05T16:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 033 SEDAN-BLK",
+      "priority": 3,
+      "quantity": 3,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-02-06T00:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 034 SEDAN-WHT",
+      "priority": 4,
+      "quantity": 1,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-02-06T08:00:00",
+      "item": "black suv",
+      "name": "vehicle order 035 SUV-BLK",
+      "priority": 5,
+      "quantity": 4,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-02-06T16:00:00",
+      "item": "red suv",
+      "name": "vehicle order 036 SUV-RED",
+      "priority": 6,
+      "quantity": 2,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "due": "2026-02-07T00:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 037 SEDAN-BLK",
+      "priority": 7,
+      "quantity": 1,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-02-07T08:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 038 SEDAN-WHT",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-02-07T16:00:00",
+      "item": "black suv",
+      "name": "vehicle order 039 SUV-BLK",
+      "priority": 9,
+      "quantity": 3,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-02-08T00:00:00",
+      "item": "red suv",
+      "name": "vehicle order 040 SUV-RED",
+      "priority": 10,
+      "quantity": 1,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "due": "2026-02-08T08:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 041 SEDAN-BLK",
+      "priority": 1,
+      "quantity": 4,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-02-08T16:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 042 SEDAN-WHT",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-02-09T00:00:00",
+      "item": "black suv",
+      "name": "vehicle order 043 SUV-BLK",
+      "priority": 3,
+      "quantity": 1,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-02-09T08:00:00",
+      "item": "red suv",
+      "name": "vehicle order 044 SUV-RED",
+      "priority": 4,
+      "quantity": 2,
+      "operation": "ship SUV-RED"
+    },
+    {
+      "due": "2026-02-09T16:00:00",
+      "item": "black sedan",
+      "name": "vehicle order 045 SEDAN-BLK",
+      "priority": 5,
+      "quantity": 3,
+      "operation": "ship SEDAN-BLK"
+    },
+    {
+      "due": "2026-02-10T00:00:00",
+      "item": "white sedan",
+      "name": "vehicle order 046 SEDAN-WHT",
+      "priority": 6,
+      "quantity": 1,
+      "operation": "ship SEDAN-WHT"
+    },
+    {
+      "due": "2026-02-10T08:00:00",
+      "item": "black suv",
+      "name": "vehicle order 047 SUV-BLK",
+      "priority": 7,
+      "quantity": 4,
+      "operation": "ship SUV-BLK"
+    },
+    {
+      "due": "2026-02-10T16:00:00",
+      "item": "red suv",
+      "name": "vehicle order 048 SUV-RED",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "ship SUV-RED"
+    }
+  ],
+  "resources": [
+    {
+      "name": "body line A",
+      "setup": "idle",
+      "maximum": 4,
+      "maxearly": 6048000,
+      "efficiency": 100,
+      "setupMatrix": "body family change"
+    },
+    {
+      "name": "body line B",
+      "setup": "idle",
+      "maximum": 3,
+      "maxearly": 6048000,
+      "efficiency": 88,
+      "setupMatrix": "body family change"
+    },
+    {
+      "name": "paint booth",
+      "setup": "clean",
+      "maximum": 3,
+      "maxearly": 6048000,
+      "efficiency": 95,
+      "setupMatrix": "paint color change"
+    },
+    {
+      "name": "assembly team pool",
+      "maximum": 1,
+      "maxearly": 6048000,
+      "efficiency": 100
+    },
+    {
+      "name": "assembly team east",
+      "owner": "assembly team pool",
+      "maximum": 4,
+      "maxearly": 6048000,
+      "efficiency": 105
+    },
+    {
+      "name": "assembly team west",
+      "owner": "assembly team pool",
+      "maximum": 4,
+      "maxearly": 6048000,
+      "efficiency": 95
+    },
+    {
+      "name": "assembly team flex",
+      "owner": "assembly team pool",
+      "maximum": 3,
+      "maxearly": 6048000,
+      "efficiency": 85
+    }
+  ],
+  "operations": [
+    {
+      "cost": 120,
+      "name": "weld SEDAN-BLK",
+      "type": "fixed_time",
+      "duration": 50400,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 90,
+      "name": "paint SEDAN-BLK",
+      "type": "fixed_time",
+      "duration": 36000,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 160,
+      "name": "assemble SEDAN-BLK",
+      "type": "fixed_time",
+      "duration": 64800,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "build SEDAN-BLK",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "weld SEDAN-BLK"
+        },
+        {
+          "priority": 2,
+          "operation": "paint SEDAN-BLK"
+        },
+        {
+          "priority": 3,
+          "operation": "assemble SEDAN-BLK"
+        }
+      ]
+    },
+    {
+      "cost": 20,
+      "name": "ship SEDAN-BLK",
+      "type": "fixed_time",
+      "duration": 10800
+    },
+    {
+      "cost": 120,
+      "name": "weld SEDAN-WHT",
+      "type": "fixed_time",
+      "duration": 50400,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 90,
+      "name": "paint SEDAN-WHT",
+      "type": "fixed_time",
+      "duration": 32400,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 160,
+      "name": "assemble SEDAN-WHT",
+      "type": "fixed_time",
+      "duration": 64800,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "build SEDAN-WHT",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "weld SEDAN-WHT"
+        },
+        {
+          "priority": 2,
+          "operation": "paint SEDAN-WHT"
+        },
+        {
+          "priority": 3,
+          "operation": "assemble SEDAN-WHT"
+        }
+      ]
+    },
+    {
+      "cost": 20,
+      "name": "ship SEDAN-WHT",
+      "type": "fixed_time",
+      "duration": 10800
+    },
+    {
+      "cost": 120,
+      "name": "weld SUV-BLK",
+      "type": "fixed_time",
+      "duration": 64800,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 90,
+      "name": "paint SUV-BLK",
+      "type": "fixed_time",
+      "duration": 43200,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 160,
+      "name": "assemble SUV-BLK",
+      "type": "fixed_time",
+      "duration": 79200,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "build SUV-BLK",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "weld SUV-BLK"
+        },
+        {
+          "priority": 2,
+          "operation": "paint SUV-BLK"
+        },
+        {
+          "priority": 3,
+          "operation": "assemble SUV-BLK"
+        }
+      ]
+    },
+    {
+      "cost": 20,
+      "name": "ship SUV-BLK",
+      "type": "fixed_time",
+      "duration": 10800
+    },
+    {
+      "cost": 120,
+      "name": "weld SUV-RED",
+      "type": "fixed_time",
+      "duration": 64800,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 90,
+      "name": "paint SUV-RED",
+      "type": "fixed_time",
+      "duration": 46800,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 160,
+      "name": "assemble SUV-RED",
+      "type": "fixed_time",
+      "duration": 79200,
+      "sizeMaximum": 4,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "build SUV-RED",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "weld SUV-RED"
+        },
+        {
+          "priority": 2,
+          "operation": "paint SUV-RED"
+        },
+        {
+          "priority": 3,
+          "operation": "assemble SUV-RED"
+        }
+      ]
+    },
+    {
+      "cost": 20,
+      "name": "ship SUV-RED",
+      "type": "fixed_time",
+      "duration": 10800
+    }
+  ],
+  "setupMatrices": [
+    {
+      "name": "body family change",
+      "rules": [
+        {
+          "to": "sedan|suv",
+          "cost": 20,
+          "from": "idle",
+          "duration": 7200,
+          "priority": 1
+        },
+        {
+          "to": "suv",
+          "cost": 35,
+          "from": "sedan",
+          "duration": 14400,
+          "priority": 2
+        },
+        {
+          "to": "sedan",
+          "cost": 30,
+          "from": "suv",
+          "duration": 10800,
+          "priority": 3
+        },
+        {
+          "to": ".*",
+          "cost": 10,
+          "from": ".*",
+          "duration": 3600,
+          "priority": 99
+        }
+      ]
+    },
+    {
+      "name": "paint color change",
+      "rules": [
+        {
+          "to": "white",
+          "cost": 10,
+          "from": "clean",
+          "duration": 3600,
+          "priority": 1
+        },
+        {
+          "to": "black|red",
+          "cost": 18,
+          "from": "clean",
+          "duration": 7200,
+          "priority": 2
+        },
+        {
+          "to": "white|red",
+          "cost": 30,
+          "from": "black",
+          "duration": 14400,
+          "priority": 3
+        },
+        {
+          "to": "white|black",
+          "cost": 35,
+          "from": "red",
+          "duration": 18000,
+          "priority": 4
+        },
+        {
+          "to": ".*",
+          "cost": 8,
+          "from": ".*",
+          "duration": 3600,
+          "priority": 99
+        }
+      ]
+    }
+  ],
+  "resourceSkills": [
+    {
+      "skill": "vehicle assembly",
+      "priority": 1,
+      "resource": "assembly team east"
+    },
+    {
+      "skill": "vehicle assembly",
+      "priority": 2,
+      "resource": "assembly team west"
+    },
+    {
+      "skill": "vehicle assembly",
+      "priority": 3,
+      "resource": "assembly team flex"
+    }
+  ]
+}

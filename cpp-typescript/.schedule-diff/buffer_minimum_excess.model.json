@@ -1,0 +1,85 @@
+{
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "minimum product @ plant",
+      "quantity": 1,
+      "operation": "make minimum product"
+    },
+    {
+      "type": "start",
+      "buffer": "minimum product @ plant",
+      "quantity": -1,
+      "operation": "ship minimum product"
+    }
+  ],
+  "items": [
+    {
+      "name": "minimum product"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "erasePreviousFirst": false
+  },
+  "buffers": [
+    {
+      "item": "minimum product",
+      "name": "minimum product @ plant",
+      "onhand": 3,
+      "minimum": 3,
+      "location": "minimum plant",
+      "producing": "make minimum product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-16T00:00:00",
+      "item": "minimum product",
+      "name": "minimum replacement order",
+      "location": "minimum plant",
+      "priority": 1,
+      "quantity": 3,
+      "operation": "ship minimum product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "minimum plant"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "cost": 4,
+      "name": "make minimum product",
+      "type": "fixed_time",
+      "duration": 21600,
+      "location": "minimum plant",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "ship minimum product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "minimum plant"
+    }
+  ],
+  "operationPlans": [
+    {
+      "end": "2026-01-21T06:00:00",
+      "start": "2026-01-21T00:00:00",
+      "status": "proposed",
+      "quantity": 2,
+      "operation": "make minimum product",
+      "reference": "MO-MINIMUM-LATER"
+    }
+  ]
+}

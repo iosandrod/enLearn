@@ -1,0 +1,1091 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "natural yogurt",
+      "quantity": -1,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "type": "end",
+      "buffer": "natural yogurt",
+      "quantity": 1,
+      "operation": "process YOG-NAT"
+    },
+    {
+      "type": "start",
+      "buffer": "raw milk",
+      "quantity": -2,
+      "operation": "process YOG-NAT"
+    },
+    {
+      "type": "start",
+      "buffer": "sugar",
+      "quantity": -0.5,
+      "operation": "process YOG-NAT"
+    },
+    {
+      "type": "start",
+      "buffer": "cups",
+      "quantity": -1,
+      "operation": "process YOG-NAT"
+    },
+    {
+      "name": "ingredient YOG-NAT",
+      "type": "start",
+      "buffer": "natural culture",
+      "priority": 1,
+      "quantity": -0.25,
+      "operation": "process YOG-NAT"
+    },
+    {
+      "name": "ingredient YOG-NAT",
+      "type": "start",
+      "buffer": "generic fruit base",
+      "priority": 2,
+      "quantity": -0.25,
+      "operation": "process YOG-NAT"
+    },
+    {
+      "type": "start",
+      "buffer": "berry yogurt",
+      "quantity": -1,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "type": "end",
+      "buffer": "berry yogurt",
+      "quantity": 1,
+      "operation": "process YOG-BRY"
+    },
+    {
+      "type": "start",
+      "buffer": "raw milk",
+      "quantity": -2,
+      "operation": "process YOG-BRY"
+    },
+    {
+      "type": "start",
+      "buffer": "sugar",
+      "quantity": -0.5,
+      "operation": "process YOG-BRY"
+    },
+    {
+      "type": "start",
+      "buffer": "cups",
+      "quantity": -1,
+      "operation": "process YOG-BRY"
+    },
+    {
+      "name": "ingredient YOG-BRY",
+      "type": "start",
+      "buffer": "berry culture",
+      "priority": 1,
+      "quantity": -0.25,
+      "operation": "process YOG-BRY"
+    },
+    {
+      "name": "ingredient YOG-BRY",
+      "type": "start",
+      "buffer": "generic fruit base",
+      "priority": 2,
+      "quantity": -0.25,
+      "operation": "process YOG-BRY"
+    },
+    {
+      "type": "start",
+      "buffer": "mango drink",
+      "quantity": -1,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "type": "end",
+      "buffer": "mango drink",
+      "quantity": 1,
+      "operation": "process DRINK-MNG"
+    },
+    {
+      "type": "start",
+      "buffer": "raw milk",
+      "quantity": -2,
+      "operation": "process DRINK-MNG"
+    },
+    {
+      "type": "start",
+      "buffer": "sugar",
+      "quantity": -0.5,
+      "operation": "process DRINK-MNG"
+    },
+    {
+      "type": "start",
+      "buffer": "cups",
+      "quantity": -1,
+      "operation": "process DRINK-MNG"
+    },
+    {
+      "name": "ingredient DRINK-MNG",
+      "type": "start",
+      "buffer": "mango concentrate",
+      "priority": 1,
+      "quantity": -0.25,
+      "operation": "process DRINK-MNG"
+    },
+    {
+      "name": "ingredient DRINK-MNG",
+      "type": "start",
+      "buffer": "generic fruit base",
+      "priority": 2,
+      "quantity": -0.25,
+      "operation": "process DRINK-MNG"
+    },
+    {
+      "type": "start",
+      "buffer": "peach drink",
+      "quantity": -1,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "type": "end",
+      "buffer": "peach drink",
+      "quantity": 1,
+      "operation": "process DRINK-PEA"
+    },
+    {
+      "type": "start",
+      "buffer": "raw milk",
+      "quantity": -2,
+      "operation": "process DRINK-PEA"
+    },
+    {
+      "type": "start",
+      "buffer": "sugar",
+      "quantity": -0.5,
+      "operation": "process DRINK-PEA"
+    },
+    {
+      "type": "start",
+      "buffer": "cups",
+      "quantity": -1,
+      "operation": "process DRINK-PEA"
+    },
+    {
+      "name": "ingredient DRINK-PEA",
+      "type": "start",
+      "buffer": "peach concentrate",
+      "priority": 1,
+      "quantity": -0.25,
+      "operation": "process DRINK-PEA"
+    },
+    {
+      "name": "ingredient DRINK-PEA",
+      "type": "start",
+      "buffer": "generic fruit base",
+      "priority": 2,
+      "quantity": -0.25,
+      "operation": "process DRINK-PEA"
+    }
+  ],
+  "items": [
+    {
+      "name": "raw milk"
+    },
+    {
+      "name": "sugar"
+    },
+    {
+      "name": "natural culture"
+    },
+    {
+      "name": "berry culture"
+    },
+    {
+      "name": "mango concentrate"
+    },
+    {
+      "name": "peach concentrate"
+    },
+    {
+      "name": "generic fruit base"
+    },
+    {
+      "name": "cups"
+    },
+    {
+      "name": "natural yogurt"
+    },
+    {
+      "name": "berry yogurt"
+    },
+    {
+      "name": "mango drink"
+    },
+    {
+      "name": "peach drink"
+    }
+  ],
+  "loads": [
+    {
+      "name": "tank YOG-NAT",
+      "setup": "natural",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "process tank A",
+      "operation": "process YOG-NAT"
+    },
+    {
+      "name": "tank YOG-NAT",
+      "setup": "natural",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "process tank B",
+      "operation": "process YOG-NAT"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "filling crew",
+      "operation": "process YOG-NAT"
+    },
+    {
+      "name": "tank YOG-BRY",
+      "setup": "berry",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "process tank A",
+      "operation": "process YOG-BRY"
+    },
+    {
+      "name": "tank YOG-BRY",
+      "setup": "berry",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "process tank B",
+      "operation": "process YOG-BRY"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "filling crew",
+      "operation": "process YOG-BRY"
+    },
+    {
+      "name": "tank DRINK-MNG",
+      "setup": "mango",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "process tank A",
+      "operation": "process DRINK-MNG"
+    },
+    {
+      "name": "tank DRINK-MNG",
+      "setup": "mango",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "process tank B",
+      "operation": "process DRINK-MNG"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "filling crew",
+      "operation": "process DRINK-MNG"
+    },
+    {
+      "name": "tank DRINK-PEA",
+      "setup": "peach",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "process tank A",
+      "operation": "process DRINK-PEA"
+    },
+    {
+      "name": "tank DRINK-PEA",
+      "setup": "peach",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "process tank B",
+      "operation": "process DRINK-PEA"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "filling crew",
+      "operation": "process DRINK-PEA"
+    }
+  ],
+  "skills": [],
+  "solver": {
+    "plantype": 2,
+    "lazyDelay": 10800,
+    "constraints": 15,
+    "minimumDelay": 900,
+    "rotateResources": true
+  },
+  "buffers": [
+    {
+      "item": "raw milk",
+      "name": "raw milk",
+      "onhand": 360
+    },
+    {
+      "item": "sugar",
+      "name": "sugar",
+      "onhand": 240
+    },
+    {
+      "item": "natural culture",
+      "name": "natural culture",
+      "onhand": 28
+    },
+    {
+      "item": "berry culture",
+      "name": "berry culture",
+      "onhand": 18
+    },
+    {
+      "item": "mango concentrate",
+      "name": "mango concentrate",
+      "onhand": 45
+    },
+    {
+      "item": "peach concentrate",
+      "name": "peach concentrate",
+      "onhand": 40
+    },
+    {
+      "item": "generic fruit base",
+      "name": "generic fruit base",
+      "onhand": 120
+    },
+    {
+      "item": "cups",
+      "name": "cups",
+      "onhand": 480
+    },
+    {
+      "item": "natural yogurt",
+      "name": "natural yogurt",
+      "onhand": 0,
+      "producing": "process YOG-NAT"
+    },
+    {
+      "item": "berry yogurt",
+      "name": "berry yogurt",
+      "onhand": 0,
+      "producing": "process YOG-BRY"
+    },
+    {
+      "item": "mango drink",
+      "name": "mango drink",
+      "onhand": 0,
+      "producing": "process DRINK-MNG"
+    },
+    {
+      "item": "peach drink",
+      "name": "peach drink",
+      "onhand": 0,
+      "producing": "process DRINK-PEA"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-11T02:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 001 YOG-NAT",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-11T06:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 002 YOG-BRY",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-11T10:00:00",
+      "item": "mango drink",
+      "name": "fresh order 003 DRINK-MNG",
+      "priority": 3,
+      "quantity": 3,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-11T14:00:00",
+      "item": "peach drink",
+      "name": "fresh order 004 DRINK-PEA",
+      "priority": 4,
+      "quantity": 4,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-11T18:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 005 YOG-NAT",
+      "priority": 5,
+      "quantity": 2,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-11T22:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 006 YOG-BRY",
+      "priority": 6,
+      "quantity": 5,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-12T02:00:00",
+      "item": "mango drink",
+      "name": "fresh order 007 DRINK-MNG",
+      "priority": 7,
+      "quantity": 1,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-12T06:00:00",
+      "item": "peach drink",
+      "name": "fresh order 008 DRINK-PEA",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-12T10:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 009 YOG-NAT",
+      "priority": 9,
+      "quantity": 3,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-12T14:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 010 YOG-BRY",
+      "priority": 10,
+      "quantity": 4,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-12T18:00:00",
+      "item": "mango drink",
+      "name": "fresh order 011 DRINK-MNG",
+      "priority": 11,
+      "quantity": 2,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-12T22:00:00",
+      "item": "peach drink",
+      "name": "fresh order 012 DRINK-PEA",
+      "priority": 12,
+      "quantity": 5,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-13T02:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 013 YOG-NAT",
+      "priority": 13,
+      "quantity": 1,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-13T06:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 014 YOG-BRY",
+      "priority": 14,
+      "quantity": 2,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-13T10:00:00",
+      "item": "mango drink",
+      "name": "fresh order 015 DRINK-MNG",
+      "priority": 15,
+      "quantity": 3,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-13T14:00:00",
+      "item": "peach drink",
+      "name": "fresh order 016 DRINK-PEA",
+      "priority": 16,
+      "quantity": 4,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-13T18:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 017 YOG-NAT",
+      "priority": 17,
+      "quantity": 2,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-13T22:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 018 YOG-BRY",
+      "priority": 18,
+      "quantity": 5,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-14T02:00:00",
+      "item": "mango drink",
+      "name": "fresh order 019 DRINK-MNG",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-14T06:00:00",
+      "item": "peach drink",
+      "name": "fresh order 020 DRINK-PEA",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-14T10:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 021 YOG-NAT",
+      "priority": 3,
+      "quantity": 3,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-14T14:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 022 YOG-BRY",
+      "priority": 4,
+      "quantity": 4,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-14T18:00:00",
+      "item": "mango drink",
+      "name": "fresh order 023 DRINK-MNG",
+      "priority": 5,
+      "quantity": 2,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-14T22:00:00",
+      "item": "peach drink",
+      "name": "fresh order 024 DRINK-PEA",
+      "priority": 6,
+      "quantity": 5,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-15T02:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 025 YOG-NAT",
+      "priority": 7,
+      "quantity": 1,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-15T06:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 026 YOG-BRY",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-15T10:00:00",
+      "item": "mango drink",
+      "name": "fresh order 027 DRINK-MNG",
+      "priority": 9,
+      "quantity": 3,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-15T14:00:00",
+      "item": "peach drink",
+      "name": "fresh order 028 DRINK-PEA",
+      "priority": 10,
+      "quantity": 4,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-15T18:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 029 YOG-NAT",
+      "priority": 11,
+      "quantity": 2,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-15T22:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 030 YOG-BRY",
+      "priority": 12,
+      "quantity": 5,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-16T02:00:00",
+      "item": "mango drink",
+      "name": "fresh order 031 DRINK-MNG",
+      "priority": 13,
+      "quantity": 1,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-16T06:00:00",
+      "item": "peach drink",
+      "name": "fresh order 032 DRINK-PEA",
+      "priority": 14,
+      "quantity": 2,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-16T10:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 033 YOG-NAT",
+      "priority": 15,
+      "quantity": 3,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-16T14:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 034 YOG-BRY",
+      "priority": 16,
+      "quantity": 4,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-16T18:00:00",
+      "item": "mango drink",
+      "name": "fresh order 035 DRINK-MNG",
+      "priority": 17,
+      "quantity": 2,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-16T22:00:00",
+      "item": "peach drink",
+      "name": "fresh order 036 DRINK-PEA",
+      "priority": 18,
+      "quantity": 5,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-17T02:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 037 YOG-NAT",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-17T06:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 038 YOG-BRY",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-17T10:00:00",
+      "item": "mango drink",
+      "name": "fresh order 039 DRINK-MNG",
+      "priority": 3,
+      "quantity": 3,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-17T14:00:00",
+      "item": "peach drink",
+      "name": "fresh order 040 DRINK-PEA",
+      "priority": 4,
+      "quantity": 4,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-17T18:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 041 YOG-NAT",
+      "priority": 5,
+      "quantity": 2,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-17T22:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 042 YOG-BRY",
+      "priority": 6,
+      "quantity": 5,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-18T02:00:00",
+      "item": "mango drink",
+      "name": "fresh order 043 DRINK-MNG",
+      "priority": 7,
+      "quantity": 1,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-18T06:00:00",
+      "item": "peach drink",
+      "name": "fresh order 044 DRINK-PEA",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-18T10:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 045 YOG-NAT",
+      "priority": 9,
+      "quantity": 3,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-18T14:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 046 YOG-BRY",
+      "priority": 10,
+      "quantity": 4,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-18T18:00:00",
+      "item": "mango drink",
+      "name": "fresh order 047 DRINK-MNG",
+      "priority": 11,
+      "quantity": 2,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-18T22:00:00",
+      "item": "peach drink",
+      "name": "fresh order 048 DRINK-PEA",
+      "priority": 12,
+      "quantity": 5,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-19T02:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 049 YOG-NAT",
+      "priority": 13,
+      "quantity": 1,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-19T06:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 050 YOG-BRY",
+      "priority": 14,
+      "quantity": 2,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-19T10:00:00",
+      "item": "mango drink",
+      "name": "fresh order 051 DRINK-MNG",
+      "priority": 15,
+      "quantity": 3,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-19T14:00:00",
+      "item": "peach drink",
+      "name": "fresh order 052 DRINK-PEA",
+      "priority": 16,
+      "quantity": 4,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-19T18:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 053 YOG-NAT",
+      "priority": 17,
+      "quantity": 2,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-19T22:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 054 YOG-BRY",
+      "priority": 18,
+      "quantity": 5,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-20T02:00:00",
+      "item": "mango drink",
+      "name": "fresh order 055 DRINK-MNG",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-20T06:00:00",
+      "item": "peach drink",
+      "name": "fresh order 056 DRINK-PEA",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-20T10:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 057 YOG-NAT",
+      "priority": 3,
+      "quantity": 3,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-20T14:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 058 YOG-BRY",
+      "priority": 4,
+      "quantity": 4,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-20T18:00:00",
+      "item": "mango drink",
+      "name": "fresh order 059 DRINK-MNG",
+      "priority": 5,
+      "quantity": 2,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-20T22:00:00",
+      "item": "peach drink",
+      "name": "fresh order 060 DRINK-PEA",
+      "priority": 6,
+      "quantity": 5,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-21T02:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 061 YOG-NAT",
+      "priority": 7,
+      "quantity": 1,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-21T06:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 062 YOG-BRY",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-21T10:00:00",
+      "item": "mango drink",
+      "name": "fresh order 063 DRINK-MNG",
+      "priority": 9,
+      "quantity": 3,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-21T14:00:00",
+      "item": "peach drink",
+      "name": "fresh order 064 DRINK-PEA",
+      "priority": 10,
+      "quantity": 4,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-21T18:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 065 YOG-NAT",
+      "priority": 11,
+      "quantity": 2,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-21T22:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 066 YOG-BRY",
+      "priority": 12,
+      "quantity": 5,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-22T02:00:00",
+      "item": "mango drink",
+      "name": "fresh order 067 DRINK-MNG",
+      "priority": 13,
+      "quantity": 1,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-22T06:00:00",
+      "item": "peach drink",
+      "name": "fresh order 068 DRINK-PEA",
+      "priority": 14,
+      "quantity": 2,
+      "operation": "dispatch DRINK-PEA"
+    },
+    {
+      "due": "2026-01-22T10:00:00",
+      "item": "natural yogurt",
+      "name": "fresh order 069 YOG-NAT",
+      "priority": 15,
+      "quantity": 3,
+      "operation": "dispatch YOG-NAT"
+    },
+    {
+      "due": "2026-01-22T14:00:00",
+      "item": "berry yogurt",
+      "name": "fresh order 070 YOG-BRY",
+      "priority": 16,
+      "quantity": 4,
+      "operation": "dispatch YOG-BRY"
+    },
+    {
+      "due": "2026-01-22T18:00:00",
+      "item": "mango drink",
+      "name": "fresh order 071 DRINK-MNG",
+      "priority": 17,
+      "quantity": 2,
+      "operation": "dispatch DRINK-MNG"
+    },
+    {
+      "due": "2026-01-22T22:00:00",
+      "item": "peach drink",
+      "name": "fresh order 072 DRINK-PEA",
+      "priority": 18,
+      "quantity": 5,
+      "operation": "dispatch DRINK-PEA"
+    }
+  ],
+  "resources": [
+    {
+      "name": "process tank A",
+      "setup": "clean",
+      "maximum": 5,
+      "maxearly": 1728000,
+      "efficiency": 100,
+      "setupMatrix": "recipe cleanover"
+    },
+    {
+      "name": "process tank B",
+      "setup": "clean",
+      "maximum": 4,
+      "maxearly": 1728000,
+      "efficiency": 88,
+      "setupMatrix": "recipe cleanover"
+    },
+    {
+      "name": "filling crew",
+      "maximum": 8,
+      "maxearly": 1728000,
+      "efficiency": 105
+    }
+  ],
+  "operations": [
+    {
+      "cost": 35,
+      "name": "process YOG-NAT",
+      "type": "fixed_time",
+      "duration": 32400,
+      "sizeMaximum": 12,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 5,
+      "name": "dispatch YOG-NAT",
+      "type": "fixed_time",
+      "duration": 3600
+    },
+    {
+      "cost": 35,
+      "name": "process YOG-BRY",
+      "type": "fixed_time",
+      "duration": 36000,
+      "sizeMaximum": 12,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 5,
+      "name": "dispatch YOG-BRY",
+      "type": "fixed_time",
+      "duration": 3600
+    },
+    {
+      "cost": 35,
+      "name": "process DRINK-MNG",
+      "type": "fixed_time",
+      "duration": 28800,
+      "sizeMaximum": 12,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 5,
+      "name": "dispatch DRINK-MNG",
+      "type": "fixed_time",
+      "duration": 3600
+    },
+    {
+      "cost": 35,
+      "name": "process DRINK-PEA",
+      "type": "fixed_time",
+      "duration": 28800,
+      "sizeMaximum": 12,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 5,
+      "name": "dispatch DRINK-PEA",
+      "type": "fixed_time",
+      "duration": 3600
+    }
+  ],
+  "setupMatrices": [
+    {
+      "name": "recipe cleanover",
+      "rules": [
+        {
+          "to": "natural|berry|mango|peach",
+          "cost": 3,
+          "from": "clean",
+          "duration": 1800,
+          "priority": 1
+        },
+        {
+          "to": "mango|peach",
+          "cost": 12,
+          "from": "natural|berry",
+          "duration": 7200,
+          "priority": 2
+        },
+        {
+          "to": "natural|berry",
+          "cost": 18,
+          "from": "mango|peach",
+          "duration": 10800,
+          "priority": 3
+        },
+        {
+          "to": ".*",
+          "cost": 7,
+          "from": ".*",
+          "duration": 3600,
+          "priority": 99
+        }
+      ]
+    }
+  ],
+  "resourceSkills": []
+}

@@ -1,0 +1,95 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "alternate item",
+      "quantity": -1,
+      "operation": "delivery alternate item"
+    },
+    {
+      "type": "end",
+      "buffer": "alternate item",
+      "quantity": 1,
+      "operation": "make alternate item"
+    }
+  ],
+  "items": [
+    {
+      "name": "alternate item"
+    }
+  ],
+  "loads": [
+    {
+      "name": "machine",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "Resource A",
+      "operation": "make alternate item"
+    },
+    {
+      "name": "machine",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "Resource B",
+      "operation": "make alternate item"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "alternate item",
+      "name": "alternate item",
+      "onhand": 0,
+      "producing": "make alternate item"
+    }
+  ],
+  "current": "2009-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "alternate item",
+      "name": "alternate order 1",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "delivery alternate item"
+    },
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "alternate item",
+      "name": "alternate order 2",
+      "priority": 2,
+      "quantity": 1,
+      "operation": "delivery alternate item"
+    }
+  ],
+  "resources": [
+    {
+      "name": "Resource A",
+      "maximum": 1,
+      "maxearly": 0
+    },
+    {
+      "name": "Resource B",
+      "maximum": 1,
+      "maxearly": 0
+    }
+  ],
+  "operations": [
+    {
+      "name": "make alternate item",
+      "type": "fixed_time",
+      "duration": 86400
+    },
+    {
+      "name": "delivery alternate item",
+      "type": "fixed_time",
+      "duration": 86400
+    }
+  ]
+}

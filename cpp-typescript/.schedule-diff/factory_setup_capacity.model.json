@@ -1,0 +1,517 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "painted red",
+      "quantity": -1,
+      "operation": "ship red"
+    },
+    {
+      "type": "end",
+      "buffer": "painted red",
+      "quantity": 1,
+      "operation": "coat and pack red"
+    },
+    {
+      "type": "start",
+      "buffer": "painted blue",
+      "quantity": -1,
+      "operation": "ship blue"
+    },
+    {
+      "type": "end",
+      "buffer": "painted blue",
+      "quantity": 1,
+      "operation": "coat and pack blue"
+    },
+    {
+      "type": "start",
+      "buffer": "painted green",
+      "quantity": -1,
+      "operation": "ship green"
+    },
+    {
+      "type": "end",
+      "buffer": "painted green",
+      "quantity": 1,
+      "operation": "coat and pack green"
+    },
+    {
+      "type": "start",
+      "buffer": "painted white",
+      "quantity": -1,
+      "operation": "ship white"
+    },
+    {
+      "type": "end",
+      "buffer": "painted white",
+      "quantity": 1,
+      "operation": "coat and pack white"
+    }
+  ],
+  "items": [
+    {
+      "name": "painted red"
+    },
+    {
+      "name": "painted blue"
+    },
+    {
+      "name": "painted green"
+    },
+    {
+      "name": "painted white"
+    }
+  ],
+  "loads": [
+    {
+      "name": "coater",
+      "setup": "red",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "coater A",
+      "operation": "coat and pack red"
+    },
+    {
+      "name": "coater",
+      "setup": "red",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "coater B",
+      "operation": "coat and pack red"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "packing crew",
+      "operation": "coat and pack red"
+    },
+    {
+      "name": "coater",
+      "setup": "blue",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "coater A",
+      "operation": "coat and pack blue"
+    },
+    {
+      "name": "coater",
+      "setup": "blue",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "coater B",
+      "operation": "coat and pack blue"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "packing crew",
+      "operation": "coat and pack blue"
+    },
+    {
+      "name": "coater",
+      "setup": "green",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "coater A",
+      "operation": "coat and pack green"
+    },
+    {
+      "name": "coater",
+      "setup": "green",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "coater B",
+      "operation": "coat and pack green"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "packing crew",
+      "operation": "coat and pack green"
+    },
+    {
+      "name": "coater",
+      "setup": "white",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "coater A",
+      "operation": "coat and pack white"
+    },
+    {
+      "name": "coater",
+      "setup": "white",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "coater B",
+      "operation": "coat and pack white"
+    },
+    {
+      "quantity": 0.5,
+      "resource": "packing crew",
+      "operation": "coat and pack white"
+    }
+  ],
+  "skills": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "painted red",
+      "name": "painted red",
+      "onhand": 0,
+      "producing": "coat and pack red"
+    },
+    {
+      "item": "painted blue",
+      "name": "painted blue",
+      "onhand": 0,
+      "producing": "coat and pack blue"
+    },
+    {
+      "item": "painted green",
+      "name": "painted green",
+      "onhand": 0,
+      "producing": "coat and pack green"
+    },
+    {
+      "item": "painted white",
+      "name": "painted white",
+      "onhand": 0,
+      "producing": "coat and pack white"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-19T00:00:00",
+      "item": "painted red",
+      "name": "paint order 01 RED",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "ship red"
+    },
+    {
+      "due": "2026-01-19T06:00:00",
+      "item": "painted blue",
+      "name": "paint order 02 BLUE",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "ship blue"
+    },
+    {
+      "due": "2026-01-20T12:00:00",
+      "item": "painted green",
+      "name": "paint order 03 GREEN",
+      "priority": 3,
+      "quantity": 3,
+      "operation": "ship green"
+    },
+    {
+      "due": "2026-01-20T18:00:00",
+      "item": "painted white",
+      "name": "paint order 04 WHITE",
+      "priority": 4,
+      "quantity": 2,
+      "operation": "ship white"
+    },
+    {
+      "due": "2026-01-21T00:00:00",
+      "item": "painted red",
+      "name": "paint order 05 RED",
+      "priority": 5,
+      "quantity": 1,
+      "operation": "ship red"
+    },
+    {
+      "due": "2026-01-21T06:00:00",
+      "item": "painted blue",
+      "name": "paint order 06 BLUE",
+      "priority": 6,
+      "quantity": 3,
+      "operation": "ship blue"
+    },
+    {
+      "due": "2026-01-22T12:00:00",
+      "item": "painted green",
+      "name": "paint order 07 GREEN",
+      "priority": 7,
+      "quantity": 1,
+      "operation": "ship green"
+    },
+    {
+      "due": "2026-01-22T18:00:00",
+      "item": "painted white",
+      "name": "paint order 08 WHITE",
+      "priority": 8,
+      "quantity": 2,
+      "operation": "ship white"
+    },
+    {
+      "due": "2026-01-23T00:00:00",
+      "item": "painted red",
+      "name": "paint order 09 RED",
+      "priority": 9,
+      "quantity": 3,
+      "operation": "ship red"
+    },
+    {
+      "due": "2026-01-23T06:00:00",
+      "item": "painted blue",
+      "name": "paint order 10 BLUE",
+      "priority": 10,
+      "quantity": 2,
+      "operation": "ship blue"
+    },
+    {
+      "due": "2026-01-24T12:00:00",
+      "item": "painted green",
+      "name": "paint order 11 GREEN",
+      "priority": 11,
+      "quantity": 1,
+      "operation": "ship green"
+    },
+    {
+      "due": "2026-01-24T18:00:00",
+      "item": "painted white",
+      "name": "paint order 12 WHITE",
+      "priority": 12,
+      "quantity": 3,
+      "operation": "ship white"
+    },
+    {
+      "due": "2026-01-25T00:00:00",
+      "item": "painted red",
+      "name": "paint order 13 RED",
+      "priority": 13,
+      "quantity": 1,
+      "operation": "ship red"
+    },
+    {
+      "due": "2026-01-25T06:00:00",
+      "item": "painted blue",
+      "name": "paint order 14 BLUE",
+      "priority": 14,
+      "quantity": 2,
+      "operation": "ship blue"
+    },
+    {
+      "due": "2026-01-26T12:00:00",
+      "item": "painted green",
+      "name": "paint order 15 GREEN",
+      "priority": 15,
+      "quantity": 3,
+      "operation": "ship green"
+    },
+    {
+      "due": "2026-01-26T18:00:00",
+      "item": "painted white",
+      "name": "paint order 16 WHITE",
+      "priority": 16,
+      "quantity": 2,
+      "operation": "ship white"
+    },
+    {
+      "due": "2026-01-27T00:00:00",
+      "item": "painted red",
+      "name": "paint order 17 RED",
+      "priority": 17,
+      "quantity": 1,
+      "operation": "ship red"
+    },
+    {
+      "due": "2026-01-27T06:00:00",
+      "item": "painted blue",
+      "name": "paint order 18 BLUE",
+      "priority": 18,
+      "quantity": 3,
+      "operation": "ship blue"
+    },
+    {
+      "due": "2026-01-28T12:00:00",
+      "item": "painted green",
+      "name": "paint order 19 GREEN",
+      "priority": 19,
+      "quantity": 1,
+      "operation": "ship green"
+    },
+    {
+      "due": "2026-01-28T18:00:00",
+      "item": "painted white",
+      "name": "paint order 20 WHITE",
+      "priority": 20,
+      "quantity": 2,
+      "operation": "ship white"
+    },
+    {
+      "due": "2026-01-29T00:00:00",
+      "item": "painted red",
+      "name": "paint order 21 RED",
+      "priority": 21,
+      "quantity": 3,
+      "operation": "ship red"
+    },
+    {
+      "due": "2026-01-29T06:00:00",
+      "item": "painted blue",
+      "name": "paint order 22 BLUE",
+      "priority": 22,
+      "quantity": 2,
+      "operation": "ship blue"
+    },
+    {
+      "due": "2026-01-30T12:00:00",
+      "item": "painted green",
+      "name": "paint order 23 GREEN",
+      "priority": 23,
+      "quantity": 1,
+      "operation": "ship green"
+    },
+    {
+      "due": "2026-01-30T18:00:00",
+      "item": "painted white",
+      "name": "paint order 24 WHITE",
+      "priority": 24,
+      "quantity": 3,
+      "operation": "ship white"
+    }
+  ],
+  "resources": [
+    {
+      "name": "coater A",
+      "setup": "clean",
+      "maximum": 3,
+      "maxearly": 3888000,
+      "efficiency": 100,
+      "setupMatrix": "paint family change"
+    },
+    {
+      "name": "coater B",
+      "setup": "clean",
+      "maximum": 3,
+      "maxearly": 3888000,
+      "efficiency": 90,
+      "setupMatrix": "paint family change"
+    },
+    {
+      "name": "packing crew",
+      "maximum": 6,
+      "maxearly": 3888000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "name": "coat and pack red",
+      "type": "fixed_time",
+      "duration": 64800
+    },
+    {
+      "name": "ship red",
+      "type": "fixed_time",
+      "duration": 14400
+    },
+    {
+      "name": "coat and pack blue",
+      "type": "fixed_time",
+      "duration": 50400
+    },
+    {
+      "name": "ship blue",
+      "type": "fixed_time",
+      "duration": 14400
+    },
+    {
+      "name": "coat and pack green",
+      "type": "fixed_time",
+      "duration": 72000
+    },
+    {
+      "name": "ship green",
+      "type": "fixed_time",
+      "duration": 14400
+    },
+    {
+      "name": "coat and pack white",
+      "type": "fixed_time",
+      "duration": 43200
+    },
+    {
+      "name": "ship white",
+      "type": "fixed_time",
+      "duration": 14400
+    }
+  ],
+  "setupMatrices": [
+    {
+      "name": "paint family change",
+      "rules": [
+        {
+          "to": "white",
+          "cost": 5,
+          "from": "clean",
+          "duration": 7200,
+          "priority": 1
+        },
+        {
+          "to": "red|blue|green",
+          "cost": 10,
+          "from": "clean",
+          "duration": 14400,
+          "priority": 2
+        },
+        {
+          "to": "red|blue|green",
+          "cost": 20,
+          "from": "white",
+          "duration": 21600,
+          "priority": 3
+        },
+        {
+          "to": "white",
+          "cost": 25,
+          "from": "red|blue|green",
+          "duration": 28800,
+          "priority": 4
+        },
+        {
+          "to": "blue",
+          "cost": 12,
+          "from": "red",
+          "duration": 10800,
+          "priority": 5
+        },
+        {
+          "to": "green",
+          "cost": 14,
+          "from": "blue",
+          "duration": 18000,
+          "priority": 6
+        },
+        {
+          "to": "red",
+          "cost": 13,
+          "from": "green",
+          "duration": 14400,
+          "priority": 7
+        },
+        {
+          "to": ".*",
+          "cost": 4,
+          "from": ".*",
+          "duration": 3600,
+          "priority": 99
+        }
+      ]
+    }
+  ],
+  "resourceSkills": []
+}

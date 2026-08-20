@@ -1,0 +1,141 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "mto raw @ mto plant",
+      "quantity": -1,
+      "operation": "make custom assembly"
+    },
+    {
+      "type": "end",
+      "buffer": "custom assembly @ mto plant",
+      "quantity": 1,
+      "operation": "make custom assembly"
+    },
+    {
+      "type": "start",
+      "buffer": "custom assembly @ mto plant",
+      "quantity": -1,
+      "operation": "ship custom assembly"
+    }
+  ],
+  "items": [
+    {
+      "name": "mto raw"
+    },
+    {
+      "name": "custom assembly",
+      "type": "mto"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "mto cell",
+      "operation": "make custom assembly"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 10800,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "mto raw",
+      "name": "mto raw @ mto plant",
+      "onhand": 60,
+      "location": "mto plant"
+    },
+    {
+      "item": "custom assembly",
+      "name": "custom assembly @ mto plant",
+      "onhand": 0,
+      "location": "mto plant",
+      "producing": "make custom assembly"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "custom assembly",
+      "name": "mto order A1",
+      "batch": "CONFIG-A",
+      "location": "mto plant",
+      "priority": 1,
+      "quantity": 5,
+      "operation": "ship custom assembly",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "custom assembly",
+      "name": "mto order B1",
+      "batch": "CONFIG-B",
+      "location": "mto plant",
+      "priority": 2,
+      "quantity": 5,
+      "operation": "ship custom assembly",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-13T00:00:00",
+      "item": "custom assembly",
+      "name": "mto order A2",
+      "batch": "CONFIG-A",
+      "location": "mto plant",
+      "priority": 3,
+      "quantity": 3,
+      "operation": "ship custom assembly",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-15T00:00:00",
+      "item": "custom assembly",
+      "name": "mto order C1",
+      "batch": "CONFIG-C",
+      "location": "mto plant",
+      "priority": 4,
+      "quantity": 7,
+      "operation": "ship custom assembly",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "mto plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "mto cell",
+      "maximum": 1,
+      "location": "mto plant",
+      "maxearly": 2592000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 8,
+      "item": "custom assembly",
+      "name": "make custom assembly",
+      "type": "time_per",
+      "duration": 10800,
+      "location": "mto plant",
+      "durationPer": 3600,
+      "sizeMaximum": 12,
+      "sizeMinimum": 2,
+      "sizeMultiple": 2
+    },
+    {
+      "cost": 1,
+      "name": "ship custom assembly",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "mto plant"
+    }
+  ]
+}

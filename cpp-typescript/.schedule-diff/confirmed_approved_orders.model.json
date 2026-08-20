@@ -1,0 +1,146 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "locked raw @ plant",
+      "quantity": -1,
+      "operation": "make locked product"
+    },
+    {
+      "type": "end",
+      "buffer": "locked product @ plant",
+      "quantity": 1,
+      "operation": "make locked product"
+    },
+    {
+      "type": "start",
+      "buffer": "locked product @ plant",
+      "quantity": -1,
+      "operation": "ship locked product"
+    }
+  ],
+  "items": [
+    {
+      "name": "locked raw"
+    },
+    {
+      "name": "locked product"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "locked order machine",
+      "operation": "make locked product"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 7200,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "locked raw",
+      "name": "locked raw @ plant",
+      "onhand": 80,
+      "location": "locked order plant"
+    },
+    {
+      "item": "locked product",
+      "name": "locked product @ plant",
+      "onhand": 0,
+      "location": "locked order plant",
+      "producing": "make locked product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-09T00:00:00",
+      "item": "locked product",
+      "name": "locked order demand A",
+      "batch": "LOCKED-A",
+      "location": "locked order plant",
+      "priority": 1,
+      "quantity": 12,
+      "operation": "ship locked product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-12T00:00:00",
+      "item": "locked product",
+      "name": "locked order demand B",
+      "batch": "LOCKED-A",
+      "location": "locked order plant",
+      "priority": 2,
+      "quantity": 9,
+      "operation": "ship locked product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-15T00:00:00",
+      "item": "locked product",
+      "name": "locked order demand C",
+      "batch": "LOCKED-A",
+      "location": "locked order plant",
+      "priority": 3,
+      "quantity": 5,
+      "operation": "ship locked product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "locked order plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "locked order machine",
+      "maximum": 1,
+      "location": "locked order plant",
+      "maxearly": 2592000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 7,
+      "name": "make locked product",
+      "type": "fixed_time",
+      "duration": 172800,
+      "location": "locked order plant",
+      "sizeMaximum": 10,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 1,
+      "name": "ship locked product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "locked order plant"
+    }
+  ],
+  "operationPlans": [
+    {
+      "end": "2026-01-05T00:00:00",
+      "batch": "LOCKED-A",
+      "start": "2026-01-03T00:00:00",
+      "status": "confirmed",
+      "quantity": 8,
+      "operation": "make locked product",
+      "reference": "MO-CONFIRMED-001"
+    },
+    {
+      "batch": "LOCKED-A",
+      "start": "2026-01-06T00:00:00",
+      "status": "approved",
+      "quantity": 6,
+      "operation": "make locked product",
+      "reference": "MO-APPROVED-001"
+    }
+  ]
+}

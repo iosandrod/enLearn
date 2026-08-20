@@ -1,0 +1,608 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory mto raw @ mto plant",
+      "demand": null,
+      "quantity": 60,
+      "quantityCompleted": 0,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "STCK",
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "mto raw @ mto plant",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 60
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:Inventory mto raw @ mto plant|1971-01-01T00:00:00|1971-01-01T00:00:00||60||STCK|#1",
+      "reference": "auto:Inventory mto raw @ mto plant|1971-01-01T00:00:00|1971-01-01T00:00:00||60||STCK|#1"
+    },
+    {
+      "operation": "make custom assembly",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T05:00:00",
+      "end": "2026-01-10T14:00:00",
+      "ownerOperation": null,
+      "batch": "CONFIG-B",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T05:00:00",
+      "resources": [
+        "mto cell"
+      ],
+      "materials": [
+        {
+          "buffer": "mto raw @ mto plant",
+          "date": "2026-01-10T05:00:00",
+          "quantity": -6
+        },
+        {
+          "buffer": "custom assembly @ CONFIG-B @ mto plant",
+          "date": "2026-01-10T14:00:00",
+          "quantity": 6
+        }
+      ],
+      "operationCost": 48,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 48,
+      "setupPenalty": 0,
+      "planKey": "auto:make custom assembly|2026-01-10T05:00:00|2026-01-10T14:00:00||6|CONFIG-B|MO|#1",
+      "reference": "auto:make custom assembly|2026-01-10T05:00:00|2026-01-10T14:00:00||6|CONFIG-B|MO|#1"
+    },
+    {
+      "operation": "make custom assembly",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T14:00:00",
+      "end": "2026-01-10T23:00:00",
+      "ownerOperation": null,
+      "batch": "CONFIG-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T14:00:00",
+      "resources": [
+        "mto cell"
+      ],
+      "materials": [
+        {
+          "buffer": "mto raw @ mto plant",
+          "date": "2026-01-10T14:00:00",
+          "quantity": -6
+        },
+        {
+          "buffer": "custom assembly @ CONFIG-A @ mto plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": 6
+        }
+      ],
+      "operationCost": 48,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 48,
+      "setupPenalty": 0,
+      "planKey": "auto:make custom assembly|2026-01-10T14:00:00|2026-01-10T23:00:00||6|CONFIG-A|MO|#1",
+      "reference": "auto:make custom assembly|2026-01-10T14:00:00|2026-01-10T23:00:00||6|CONFIG-A|MO|#1"
+    },
+    {
+      "operation": "make custom assembly",
+      "demand": null,
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T18:00:00",
+      "end": "2026-01-12T23:00:00",
+      "ownerOperation": null,
+      "batch": "CONFIG-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T18:00:00",
+      "resources": [
+        "mto cell"
+      ],
+      "materials": [
+        {
+          "buffer": "mto raw @ mto plant",
+          "date": "2026-01-12T18:00:00",
+          "quantity": -2
+        },
+        {
+          "buffer": "custom assembly @ CONFIG-A @ mto plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": 2
+        }
+      ],
+      "operationCost": 16,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 16,
+      "setupPenalty": 0,
+      "planKey": "auto:make custom assembly|2026-01-12T18:00:00|2026-01-12T23:00:00||2|CONFIG-A|MO|#1",
+      "reference": "auto:make custom assembly|2026-01-12T18:00:00|2026-01-12T23:00:00||2|CONFIG-A|MO|#1"
+    },
+    {
+      "operation": "make custom assembly",
+      "demand": null,
+      "quantity": 8,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T12:00:00",
+      "end": "2026-01-14T23:00:00",
+      "ownerOperation": null,
+      "batch": "CONFIG-C",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T12:00:00",
+      "resources": [
+        "mto cell"
+      ],
+      "materials": [
+        {
+          "buffer": "mto raw @ mto plant",
+          "date": "2026-01-14T12:00:00",
+          "quantity": -8
+        },
+        {
+          "buffer": "custom assembly @ CONFIG-C @ mto plant",
+          "date": "2026-01-14T23:00:00",
+          "quantity": 8
+        }
+      ],
+      "operationCost": 64,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 64,
+      "setupPenalty": 0,
+      "planKey": "auto:make custom assembly|2026-01-14T12:00:00|2026-01-14T23:00:00||8|CONFIG-C|MO|#1",
+      "reference": "auto:make custom assembly|2026-01-14T12:00:00|2026-01-14T23:00:00||8|CONFIG-C|MO|#1"
+    },
+    {
+      "operation": "ship custom assembly",
+      "demand": "mto order A1",
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T00:00:00",
+      "ownerOperation": null,
+      "batch": "CONFIG-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "custom assembly @ CONFIG-A @ mto plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 5,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 5,
+      "setupPenalty": 0,
+      "planKey": "auto:ship custom assembly|2026-01-10T23:00:00|2026-01-11T00:00:00|mto order A1|5|CONFIG-A|MO|#1",
+      "reference": "auto:ship custom assembly|2026-01-10T23:00:00|2026-01-11T00:00:00|mto order A1|5|CONFIG-A|MO|#1"
+    },
+    {
+      "operation": "ship custom assembly",
+      "demand": "mto order B1",
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T00:00:00",
+      "ownerOperation": null,
+      "batch": "CONFIG-B",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "custom assembly @ CONFIG-B @ mto plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 5,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 5,
+      "setupPenalty": 0,
+      "planKey": "auto:ship custom assembly|2026-01-10T23:00:00|2026-01-11T00:00:00|mto order B1|5|CONFIG-B|MO|#1",
+      "reference": "auto:ship custom assembly|2026-01-10T23:00:00|2026-01-11T00:00:00|mto order B1|5|CONFIG-B|MO|#1"
+    },
+    {
+      "operation": "ship custom assembly",
+      "demand": "mto order A2",
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-13T00:00:00",
+      "ownerOperation": null,
+      "batch": "CONFIG-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "custom assembly @ CONFIG-A @ mto plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": -3
+        }
+      ],
+      "operationCost": 3,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 3,
+      "setupPenalty": 0,
+      "planKey": "auto:ship custom assembly|2026-01-12T23:00:00|2026-01-13T00:00:00|mto order A2|3|CONFIG-A|MO|#1",
+      "reference": "auto:ship custom assembly|2026-01-12T23:00:00|2026-01-13T00:00:00|mto order A2|3|CONFIG-A|MO|#1"
+    },
+    {
+      "operation": "ship custom assembly",
+      "demand": "mto order C1",
+      "quantity": 7,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-15T00:00:00",
+      "ownerOperation": null,
+      "batch": "CONFIG-C",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "custom assembly @ CONFIG-C @ mto plant",
+          "date": "2026-01-14T23:00:00",
+          "quantity": -7
+        }
+      ],
+      "operationCost": 7,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 7,
+      "setupPenalty": 0,
+      "planKey": "auto:ship custom assembly|2026-01-14T23:00:00|2026-01-15T00:00:00|mto order C1|7|CONFIG-C|MO|#1",
+      "reference": "auto:ship custom assembly|2026-01-14T23:00:00|2026-01-15T00:00:00|mto order C1|7|CONFIG-C|MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "mto order A1",
+      "quantity": 5,
+      "end": "2026-01-11T00:00:00",
+      "batch": "CONFIG-A",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship custom assembly|2026-01-10T23:00:00|2026-01-11T00:00:00|mto order A1|5|CONFIG-A|MO|#1"
+    },
+    {
+      "demand": "mto order A2",
+      "quantity": 3,
+      "end": "2026-01-13T00:00:00",
+      "batch": "CONFIG-A",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship custom assembly|2026-01-12T23:00:00|2026-01-13T00:00:00|mto order A2|3|CONFIG-A|MO|#1"
+    },
+    {
+      "demand": "mto order B1",
+      "quantity": 5,
+      "end": "2026-01-11T00:00:00",
+      "batch": "CONFIG-B",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship custom assembly|2026-01-10T23:00:00|2026-01-11T00:00:00|mto order B1|5|CONFIG-B|MO|#1"
+    },
+    {
+      "demand": "mto order C1",
+      "quantity": 7,
+      "end": "2026-01-15T00:00:00",
+      "batch": "CONFIG-C",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship custom assembly|2026-01-14T23:00:00|2026-01-15T00:00:00|mto order C1|7|CONFIG-C|MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [
+    {
+      "name": "invalid data",
+      "description": "No replenishment defined for 'mto raw @ mto plant'",
+      "start": "1971-01-01T00:00:00",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "owner": "mto raw @ mto plant",
+      "feasible": false
+    }
+  ],
+  "inventoryProfiles": [
+    {
+      "buffer": "custom assembly @ CONFIG-A @ mto plant",
+      "bufferBatch": "CONFIG-A",
+      "date": "2026-01-10T23:00:00",
+      "quantity": -5,
+      "onhand": 1,
+      "operationPlanKey": "auto:ship custom assembly|2026-01-10T23:00:00|2026-01-11T00:00:00|mto order A1|5|CONFIG-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "custom assembly @ CONFIG-A @ mto plant",
+      "bufferBatch": "CONFIG-A",
+      "date": "2026-01-10T23:00:00",
+      "quantity": 6,
+      "onhand": 6,
+      "operationPlanKey": "auto:make custom assembly|2026-01-10T14:00:00|2026-01-10T23:00:00||6|CONFIG-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "custom assembly @ CONFIG-A @ mto plant",
+      "bufferBatch": "CONFIG-A",
+      "date": "2026-01-12T23:00:00",
+      "quantity": -3,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship custom assembly|2026-01-12T23:00:00|2026-01-13T00:00:00|mto order A2|3|CONFIG-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "custom assembly @ CONFIG-A @ mto plant",
+      "bufferBatch": "CONFIG-A",
+      "date": "2026-01-12T23:00:00",
+      "quantity": 2,
+      "onhand": 3,
+      "operationPlanKey": "auto:make custom assembly|2026-01-12T18:00:00|2026-01-12T23:00:00||2|CONFIG-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "custom assembly @ CONFIG-B @ mto plant",
+      "bufferBatch": "CONFIG-B",
+      "date": "2026-01-10T14:00:00",
+      "quantity": 6,
+      "onhand": 6,
+      "operationPlanKey": "auto:make custom assembly|2026-01-10T05:00:00|2026-01-10T14:00:00||6|CONFIG-B|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "custom assembly @ CONFIG-B @ mto plant",
+      "bufferBatch": "CONFIG-B",
+      "date": "2026-01-10T23:00:00",
+      "quantity": -5,
+      "onhand": 1,
+      "operationPlanKey": "auto:ship custom assembly|2026-01-10T23:00:00|2026-01-11T00:00:00|mto order B1|5|CONFIG-B|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "custom assembly @ CONFIG-C @ mto plant",
+      "bufferBatch": "CONFIG-C",
+      "date": "2026-01-14T23:00:00",
+      "quantity": -7,
+      "onhand": 1,
+      "operationPlanKey": "auto:ship custom assembly|2026-01-14T23:00:00|2026-01-15T00:00:00|mto order C1|7|CONFIG-C|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "custom assembly @ CONFIG-C @ mto plant",
+      "bufferBatch": "CONFIG-C",
+      "date": "2026-01-14T23:00:00",
+      "quantity": 8,
+      "onhand": 8,
+      "operationPlanKey": "auto:make custom assembly|2026-01-14T12:00:00|2026-01-14T23:00:00||8|CONFIG-C|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "mto raw @ mto plant",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "quantity": 60,
+      "onhand": 60,
+      "operationPlanKey": "auto:Inventory mto raw @ mto plant|1971-01-01T00:00:00|1971-01-01T00:00:00||60||STCK|#1",
+      "orderType": "STCK"
+    },
+    {
+      "buffer": "mto raw @ mto plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T05:00:00",
+      "quantity": -6,
+      "onhand": 54,
+      "operationPlanKey": "auto:make custom assembly|2026-01-10T05:00:00|2026-01-10T14:00:00||6|CONFIG-B|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "mto raw @ mto plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T14:00:00",
+      "quantity": -6,
+      "onhand": 48,
+      "operationPlanKey": "auto:make custom assembly|2026-01-10T14:00:00|2026-01-10T23:00:00||6|CONFIG-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "mto raw @ mto plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T18:00:00",
+      "quantity": -2,
+      "onhand": 46,
+      "operationPlanKey": "auto:make custom assembly|2026-01-12T18:00:00|2026-01-12T23:00:00||2|CONFIG-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "mto raw @ mto plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T12:00:00",
+      "quantity": -8,
+      "onhand": 38,
+      "operationPlanKey": "auto:make custom assembly|2026-01-14T12:00:00|2026-01-14T23:00:00||8|CONFIG-C|MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "resource": "mto cell",
+      "start": "1971-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "available": 482136,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 482136,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "mto cell",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-10T05:00:00",
+      "available": 221,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 221,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "mto cell",
+      "start": "2026-01-10T05:00:00",
+      "end": "2026-01-10T14:00:00",
+      "available": 9,
+      "load": 9,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "mto cell",
+      "start": "2026-01-10T14:00:00",
+      "end": "2026-01-10T23:00:00",
+      "available": 9,
+      "load": 9,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "mto cell",
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "mto cell",
+      "start": "2026-01-11T00:00:00",
+      "end": "2026-01-12T18:00:00",
+      "available": 42,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 42,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "mto cell",
+      "start": "2026-01-12T18:00:00",
+      "end": "2026-01-12T23:00:00",
+      "available": 5,
+      "load": 5,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "mto cell",
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-13T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "mto cell",
+      "start": "2026-01-13T00:00:00",
+      "end": "2026-01-14T12:00:00",
+      "available": 36,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 36,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "mto cell",
+      "start": "2026-01-14T12:00:00",
+      "end": "2026-01-14T23:00:00",
+      "available": 11,
+      "load": 11,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "mto cell",
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-15T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    }
+  ],
+  "costSummary": {
+    "operationCost": 196,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 196,
+    "setupPenalty": 0
+  }
+}

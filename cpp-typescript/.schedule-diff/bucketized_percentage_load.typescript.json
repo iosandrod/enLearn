@@ -1,0 +1,413 @@
+{
+  "operationPlans": [
+    {
+      "operation": "make milestone A",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-08T01:59:59",
+      "end": "2026-01-09T21:59:59",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-08T01:59:59",
+      "resources": [
+        "milestone resource"
+      ],
+      "materials": [
+        {
+          "buffer": "milestone product A @ plant",
+          "date": "2026-01-09T21:59:59",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 15,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 15,
+      "setupPenalty": 0,
+      "planKey": "auto:make milestone A|2026-01-08T01:59:59|2026-01-09T21:59:59||5||MO|#1",
+      "reference": "auto:make milestone A|2026-01-08T01:59:59|2026-01-09T21:59:59||5||MO|#1"
+    },
+    {
+      "operation": "make milestone A",
+      "demand": null,
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-13T11:00:00",
+      "end": "2026-01-14T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-13T11:00:00",
+      "resources": [
+        "milestone resource"
+      ],
+      "materials": [
+        {
+          "buffer": "milestone product A @ plant",
+          "date": "2026-01-14T23:00:00",
+          "quantity": 3
+        }
+      ],
+      "operationCost": 9,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 9,
+      "setupPenalty": 0,
+      "planKey": "auto:make milestone A|2026-01-13T11:00:00|2026-01-14T23:00:00||3||MO|#1",
+      "reference": "auto:make milestone A|2026-01-13T11:00:00|2026-01-14T23:00:00||3||MO|#1"
+    },
+    {
+      "operation": "make milestone B",
+      "demand": null,
+      "quantity": 9,
+      "quantityCompleted": 0,
+      "start": "2026-01-16T08:00:00",
+      "end": "2026-01-17T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-16T08:00:00",
+      "resources": [
+        "milestone resource"
+      ],
+      "materials": [
+        {
+          "buffer": "milestone product B @ plant",
+          "date": "2026-01-17T23:00:00",
+          "quantity": 9
+        }
+      ],
+      "operationCost": 27,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 27,
+      "setupPenalty": 0,
+      "planKey": "auto:make milestone B|2026-01-16T08:00:00|2026-01-17T23:00:00||9||MO|#1",
+      "reference": "auto:make milestone B|2026-01-16T08:00:00|2026-01-17T23:00:00||9||MO|#1"
+    },
+    {
+      "operation": "make milestone C",
+      "demand": null,
+      "quantity": 4,
+      "quantityCompleted": 0,
+      "start": "2026-01-24T09:59:59",
+      "end": "2026-01-25T11:59:59",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-24T09:59:59",
+      "resources": [
+        "milestone resource"
+      ],
+      "materials": [
+        {
+          "buffer": "milestone product C @ plant",
+          "date": "2026-01-25T11:59:59",
+          "quantity": 4
+        }
+      ],
+      "operationCost": 12,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 12,
+      "setupPenalty": 0,
+      "planKey": "auto:make milestone C|2026-01-24T09:59:59|2026-01-25T11:59:59||4||MO|#1",
+      "reference": "auto:make milestone C|2026-01-24T09:59:59|2026-01-25T11:59:59||4||MO|#1"
+    },
+    {
+      "operation": "make milestone C",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-24T17:00:00",
+      "end": "2026-01-25T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-24T17:00:00",
+      "resources": [
+        "milestone resource"
+      ],
+      "materials": [
+        {
+          "buffer": "milestone product C @ plant",
+          "date": "2026-01-25T23:00:00",
+          "quantity": 6
+        }
+      ],
+      "operationCost": 18,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 18,
+      "setupPenalty": 0,
+      "planKey": "auto:make milestone C|2026-01-24T17:00:00|2026-01-25T23:00:00||6||MO|#1",
+      "reference": "auto:make milestone C|2026-01-24T17:00:00|2026-01-25T23:00:00||6||MO|#1"
+    },
+    {
+      "operation": "ship milestone A",
+      "demand": "milestone order A1",
+      "quantity": 8,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-15T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "milestone product A @ plant",
+          "date": "2026-01-14T23:00:00",
+          "quantity": -8
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship milestone A|2026-01-14T23:00:00|2026-01-15T00:00:00|milestone order A1|8||MO|#1",
+      "reference": "auto:ship milestone A|2026-01-14T23:00:00|2026-01-15T00:00:00|milestone order A1|8||MO|#1"
+    },
+    {
+      "operation": "ship milestone B",
+      "demand": "milestone order B1",
+      "quantity": 9,
+      "quantityCompleted": 0,
+      "start": "2026-01-17T23:00:00",
+      "end": "2026-01-18T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-17T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "milestone product B @ plant",
+          "date": "2026-01-17T23:00:00",
+          "quantity": -9
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship milestone B|2026-01-17T23:00:00|2026-01-18T00:00:00|milestone order B1|9||MO|#1",
+      "reference": "auto:ship milestone B|2026-01-17T23:00:00|2026-01-18T00:00:00|milestone order B1|9||MO|#1"
+    },
+    {
+      "operation": "ship milestone C",
+      "demand": "milestone order C1",
+      "quantity": 10,
+      "quantityCompleted": 0,
+      "start": "2026-01-25T23:00:00",
+      "end": "2026-01-26T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-25T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "milestone product C @ plant",
+          "date": "2026-01-25T23:00:00",
+          "quantity": -10
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship milestone C|2026-01-25T23:00:00|2026-01-26T00:00:00|milestone order C1|10||MO|#1",
+      "reference": "auto:ship milestone C|2026-01-25T23:00:00|2026-01-26T00:00:00|milestone order C1|10||MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "milestone order A1",
+      "quantity": 8,
+      "end": "2026-01-15T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship milestone A|2026-01-14T23:00:00|2026-01-15T00:00:00|milestone order A1|8||MO|#1"
+    },
+    {
+      "demand": "milestone order B1",
+      "quantity": 9,
+      "end": "2026-01-18T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship milestone B|2026-01-17T23:00:00|2026-01-18T00:00:00|milestone order B1|9||MO|#1"
+    },
+    {
+      "demand": "milestone order C1",
+      "quantity": 10,
+      "end": "2026-01-26T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship milestone C|2026-01-25T23:00:00|2026-01-26T00:00:00|milestone order C1|10||MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "milestone product A @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-09T21:59:59",
+      "quantity": 5,
+      "onhand": 5,
+      "operationPlanKey": "auto:make milestone A|2026-01-08T01:59:59|2026-01-09T21:59:59||5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "milestone product A @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T23:00:00",
+      "quantity": -8,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship milestone A|2026-01-14T23:00:00|2026-01-15T00:00:00|milestone order A1|8||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "milestone product A @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-14T23:00:00",
+      "quantity": 3,
+      "onhand": 8,
+      "operationPlanKey": "auto:make milestone A|2026-01-13T11:00:00|2026-01-14T23:00:00||3||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "milestone product B @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-17T23:00:00",
+      "quantity": -9,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship milestone B|2026-01-17T23:00:00|2026-01-18T00:00:00|milestone order B1|9||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "milestone product B @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-17T23:00:00",
+      "quantity": 9,
+      "onhand": 9,
+      "operationPlanKey": "auto:make milestone B|2026-01-16T08:00:00|2026-01-17T23:00:00||9||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "milestone product C @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-25T11:59:59",
+      "quantity": 4,
+      "onhand": 4,
+      "operationPlanKey": "auto:make milestone C|2026-01-24T09:59:59|2026-01-25T11:59:59||4||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "milestone product C @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-25T23:00:00",
+      "quantity": -10,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship milestone C|2026-01-25T23:00:00|2026-01-26T00:00:00|milestone order C1|10||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "milestone product C @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-25T23:00:00",
+      "quantity": 6,
+      "onhand": 10,
+      "operationPlanKey": "auto:make milestone C|2026-01-24T17:00:00|2026-01-25T23:00:00||6||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "resource": "milestone resource",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-08T01:59:59",
+      "available": 12,
+      "load": 10,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 2,
+      "loadConfirmed": 0,
+      "utilization": 0.833333333
+    },
+    {
+      "resource": "milestone resource",
+      "start": "2026-01-08T01:59:59",
+      "end": "2026-01-09T21:59:59",
+      "available": 7,
+      "load": 6,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0.857142857
+    },
+    {
+      "resource": "milestone resource",
+      "start": "2026-01-16T08:00:00",
+      "end": "2026-01-17T23:00:00",
+      "available": 18,
+      "load": 15,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 3,
+      "loadConfirmed": 0,
+      "utilization": 0.833333333
+    },
+    {
+      "resource": "milestone resource",
+      "start": "2026-01-24T17:00:00",
+      "end": "2026-01-25T11:59:59",
+      "available": 9,
+      "load": 9,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    }
+  ],
+  "costSummary": {
+    "operationCost": 81,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 81,
+    "setupPenalty": 0
+  }
+}

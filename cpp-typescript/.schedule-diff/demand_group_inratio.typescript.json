@@ -1,0 +1,304 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory ratio item A",
+      "demand": null,
+      "quantity": 20,
+      "quantityCompleted": 0,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "STCK",
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "ratio item A",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 20
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:Inventory ratio item A|1971-01-01T00:00:00|1971-01-01T00:00:00||20||STCK|#1",
+      "reference": "auto:Inventory ratio item A|1971-01-01T00:00:00|1971-01-01T00:00:00||20||STCK|#1"
+    },
+    {
+      "operation": "Inventory ratio item B",
+      "demand": null,
+      "quantity": 20,
+      "quantityCompleted": 0,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "STCK",
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "ratio item B",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 20
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:Inventory ratio item B|1971-01-01T00:00:00|1971-01-01T00:00:00||20||STCK|#1",
+      "reference": "auto:Inventory ratio item B|1971-01-01T00:00:00|1971-01-01T00:00:00||20||STCK|#1"
+    },
+    {
+      "operation": "Inventory ratio item C",
+      "demand": null,
+      "quantity": 20,
+      "quantityCompleted": 0,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "STCK",
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "ratio item C",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 20
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:Inventory ratio item C|1971-01-01T00:00:00|1971-01-01T00:00:00||20||STCK|#1",
+      "reference": "auto:Inventory ratio item C|1971-01-01T00:00:00|1971-01-01T00:00:00||20||STCK|#1"
+    },
+    {
+      "operation": "ratio ship A",
+      "demand": "inratio line A",
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-05T23:00:00",
+      "end": "2026-01-06T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-05T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "ratio item A",
+          "date": "2026-01-05T23:00:00",
+          "quantity": -3
+        }
+      ],
+      "operationCost": 3,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 3,
+      "setupPenalty": 0,
+      "planKey": "auto:ratio ship A|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line A|3||MO|#1",
+      "reference": "auto:ratio ship A|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line A|3||MO|#1"
+    },
+    {
+      "operation": "ratio ship B",
+      "demand": "inratio line B",
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-05T23:00:00",
+      "end": "2026-01-06T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-05T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "ratio item B",
+          "date": "2026-01-05T23:00:00",
+          "quantity": -6
+        }
+      ],
+      "operationCost": 6,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 6,
+      "setupPenalty": 0,
+      "planKey": "auto:ratio ship B|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line B|6||MO|#1",
+      "reference": "auto:ratio ship B|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line B|6||MO|#1"
+    },
+    {
+      "operation": "ratio ship C",
+      "demand": "inratio line C",
+      "quantity": 9,
+      "quantityCompleted": 0,
+      "start": "2026-01-05T23:00:00",
+      "end": "2026-01-06T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-05T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "ratio item C",
+          "date": "2026-01-05T23:00:00",
+          "quantity": -9
+        }
+      ],
+      "operationCost": 9,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 9,
+      "setupPenalty": 0,
+      "planKey": "auto:ratio ship C|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line C|9||MO|#1",
+      "reference": "auto:ratio ship C|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line C|9||MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "inratio line A",
+      "quantity": 3,
+      "end": "2026-01-06T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ratio ship A|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line A|3||MO|#1"
+    },
+    {
+      "demand": "inratio line B",
+      "quantity": 6,
+      "end": "2026-01-06T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ratio ship B|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line B|6||MO|#1"
+    },
+    {
+      "demand": "inratio line C",
+      "quantity": 9,
+      "end": "2026-01-06T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ratio ship C|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line C|9||MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [
+    {
+      "name": "invalid data",
+      "description": "No replenishment defined for 'ratio item A'",
+      "start": "1971-01-01T00:00:00",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "owner": "ratio item A",
+      "feasible": false
+    },
+    {
+      "name": "invalid data",
+      "description": "No replenishment defined for 'ratio item B'",
+      "start": "1971-01-01T00:00:00",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "owner": "ratio item B",
+      "feasible": false
+    },
+    {
+      "name": "invalid data",
+      "description": "No replenishment defined for 'ratio item C'",
+      "start": "1971-01-01T00:00:00",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "owner": "ratio item C",
+      "feasible": false
+    }
+  ],
+  "inventoryProfiles": [
+    {
+      "buffer": "ratio item A",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "quantity": 20,
+      "onhand": 20,
+      "operationPlanKey": "auto:Inventory ratio item A|1971-01-01T00:00:00|1971-01-01T00:00:00||20||STCK|#1",
+      "orderType": "STCK"
+    },
+    {
+      "buffer": "ratio item A",
+      "bufferBatch": "",
+      "date": "2026-01-05T23:00:00",
+      "quantity": -3,
+      "onhand": 17,
+      "operationPlanKey": "auto:ratio ship A|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line A|3||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "ratio item B",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "quantity": 20,
+      "onhand": 20,
+      "operationPlanKey": "auto:Inventory ratio item B|1971-01-01T00:00:00|1971-01-01T00:00:00||20||STCK|#1",
+      "orderType": "STCK"
+    },
+    {
+      "buffer": "ratio item B",
+      "bufferBatch": "",
+      "date": "2026-01-05T23:00:00",
+      "quantity": -6,
+      "onhand": 14,
+      "operationPlanKey": "auto:ratio ship B|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line B|6||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "ratio item C",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "quantity": 20,
+      "onhand": 20,
+      "operationPlanKey": "auto:Inventory ratio item C|1971-01-01T00:00:00|1971-01-01T00:00:00||20||STCK|#1",
+      "orderType": "STCK"
+    },
+    {
+      "buffer": "ratio item C",
+      "bufferBatch": "",
+      "date": "2026-01-05T23:00:00",
+      "quantity": -9,
+      "onhand": 11,
+      "operationPlanKey": "auto:ratio ship C|2026-01-05T23:00:00|2026-01-06T00:00:00|inratio line C|9||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [],
+  "costSummary": {
+    "operationCost": 18,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 18,
+    "setupPenalty": 0
+  }
+}

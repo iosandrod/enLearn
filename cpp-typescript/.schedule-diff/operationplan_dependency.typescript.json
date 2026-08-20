@@ -1,0 +1,583 @@
+{
+  "operationPlans": [
+    {
+      "operation": "dependency predecessor",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-05T00:00:00",
+      "end": "2026-01-06T00:00:00",
+      "ownerOperation": null,
+      "batch": "PROJECT-A",
+      "orderType": "MO",
+      "status": "approved",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-05T00:00:00",
+      "resources": [
+        "dependency predecessor team"
+      ],
+      "materials": [],
+      "operationCost": 24,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 24,
+      "setupPenalty": 0,
+      "planKey": "ref:TASK-PREDECESSOR-WIP",
+      "reference": "TASK-PREDECESSOR-WIP"
+    },
+    {
+      "operation": "dependency predecessor",
+      "demand": null,
+      "quantity": 4.5,
+      "quantityCompleted": 0,
+      "start": "2026-01-07T11:00:00",
+      "end": "2026-01-08T11:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-07T11:00:00",
+      "resources": [
+        "dependency predecessor team"
+      ],
+      "materials": [],
+      "operationCost": 18,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 18,
+      "setupPenalty": 0,
+      "planKey": "auto:dependency predecessor|2026-01-07T11:00:00|2026-01-08T11:00:00||4.5||MO|#1",
+      "reference": "auto:dependency predecessor|2026-01-07T11:00:00|2026-01-08T11:00:00||4.5||MO|#1"
+    },
+    {
+      "operation": "dependency predecessor",
+      "demand": null,
+      "quantity": 7.5,
+      "quantityCompleted": 0,
+      "start": "2026-01-11T11:00:00",
+      "end": "2026-01-12T11:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-11T11:00:00",
+      "resources": [
+        "dependency predecessor team"
+      ],
+      "materials": [],
+      "operationCost": 30,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 30,
+      "setupPenalty": 0,
+      "planKey": "auto:dependency predecessor|2026-01-11T11:00:00|2026-01-12T11:00:00||7.5||MO|#1",
+      "reference": "auto:dependency predecessor|2026-01-11T11:00:00|2026-01-12T11:00:00||7.5||MO|#1"
+    },
+    {
+      "operation": "dependency successor",
+      "demand": null,
+      "quantity": 7,
+      "quantityCompleted": 0,
+      "start": "2026-01-08T23:00:00",
+      "end": "2026-01-10T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-08T23:00:00",
+      "resources": [
+        "dependency successor team"
+      ],
+      "materials": [
+        {
+          "buffer": "dependency deliverable @ project",
+          "date": "2026-01-10T23:00:00",
+          "quantity": 7
+        }
+      ],
+      "operationCost": 56,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 56,
+      "setupPenalty": 0,
+      "planKey": "auto:dependency successor|2026-01-08T23:00:00|2026-01-10T23:00:00||7||MO|#1",
+      "reference": "auto:dependency successor|2026-01-08T23:00:00|2026-01-10T23:00:00||7||MO|#1"
+    },
+    {
+      "operation": "dependency successor",
+      "demand": null,
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-14T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T23:00:00",
+      "resources": [
+        "dependency successor team"
+      ],
+      "materials": [
+        {
+          "buffer": "dependency deliverable @ project",
+          "date": "2026-01-14T23:00:00",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 40,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 40,
+      "setupPenalty": 0,
+      "planKey": "auto:dependency successor|2026-01-12T23:00:00|2026-01-14T23:00:00||5||MO|#1",
+      "reference": "auto:dependency successor|2026-01-12T23:00:00|2026-01-14T23:00:00||5||MO|#1"
+    },
+    {
+      "operation": "ship dependency deliverable",
+      "demand": "dependency project order A",
+      "quantity": 7,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T00:00:00",
+      "ownerOperation": null,
+      "batch": "PROJECT-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "dependency deliverable @ project",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -7
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship dependency deliverable|2026-01-10T23:00:00|2026-01-11T00:00:00|dependency project order A|7|PROJECT-A|MO|#1",
+      "reference": "auto:ship dependency deliverable|2026-01-10T23:00:00|2026-01-11T00:00:00|dependency project order A|7|PROJECT-A|MO|#1"
+    },
+    {
+      "operation": "ship dependency deliverable",
+      "demand": "dependency project order B",
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-15T00:00:00",
+      "ownerOperation": null,
+      "batch": "PROJECT-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "dependency deliverable @ project",
+          "date": "2026-01-14T23:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship dependency deliverable|2026-01-14T23:00:00|2026-01-15T00:00:00|dependency project order B|5|PROJECT-A|MO|#1",
+      "reference": "auto:ship dependency deliverable|2026-01-14T23:00:00|2026-01-15T00:00:00|dependency project order B|5|PROJECT-A|MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "dependency project order A",
+      "quantity": 7,
+      "end": "2026-01-11T00:00:00",
+      "batch": "PROJECT-A",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship dependency deliverable|2026-01-10T23:00:00|2026-01-11T00:00:00|dependency project order A|7|PROJECT-A|MO|#1"
+    },
+    {
+      "demand": "dependency project order B",
+      "quantity": 5,
+      "end": "2026-01-15T00:00:00",
+      "batch": "PROJECT-A",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship dependency deliverable|2026-01-14T23:00:00|2026-01-15T00:00:00|dependency project order B|5|PROJECT-A|MO|#1"
+    }
+  ],
+  "dependencies": [
+    {
+      "first": "auto:dependency predecessor|2026-01-07T11:00:00|2026-01-08T11:00:00||4.5||MO|#1",
+      "second": "auto:dependency successor|2026-01-08T23:00:00|2026-01-10T23:00:00||7||MO|#1",
+      "quantity": 4.5,
+      "operation": "dependency successor",
+      "blockedBy": "dependency predecessor"
+    },
+    {
+      "first": "ref:TASK-PREDECESSOR-WIP",
+      "second": "auto:dependency successor|2026-01-08T23:00:00|2026-01-10T23:00:00||7||MO|#1",
+      "quantity": 6,
+      "operation": "dependency successor",
+      "blockedBy": "dependency predecessor"
+    },
+    {
+      "first": "auto:dependency predecessor|2026-01-11T11:00:00|2026-01-12T11:00:00||7.5||MO|#1",
+      "second": "auto:dependency successor|2026-01-12T23:00:00|2026-01-14T23:00:00||5||MO|#1",
+      "quantity": 7.5,
+      "operation": "dependency successor",
+      "blockedBy": "dependency predecessor"
+    }
+  ],
+  "problems": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "dependency deliverable @ project",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "quantity": -7,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship dependency deliverable|2026-01-10T23:00:00|2026-01-11T00:00:00|dependency project order A|7|PROJECT-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "dependency deliverable @ project",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "quantity": 7,
+      "onhand": 7,
+      "operationPlanKey": "auto:dependency successor|2026-01-08T23:00:00|2026-01-10T23:00:00||7||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "dependency deliverable @ project",
+      "bufferBatch": "",
+      "date": "2026-01-14T23:00:00",
+      "quantity": -5,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship dependency deliverable|2026-01-14T23:00:00|2026-01-15T00:00:00|dependency project order B|5|PROJECT-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "dependency deliverable @ project",
+      "bufferBatch": "",
+      "date": "2026-01-14T23:00:00",
+      "quantity": 5,
+      "onhand": 5,
+      "operationPlanKey": "auto:dependency successor|2026-01-12T23:00:00|2026-01-14T23:00:00||5||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-05T00:00:00",
+      "available": 192,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 192,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-05T00:00:00",
+      "end": "2026-01-06T00:00:00",
+      "available": 48,
+      "load": 24,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 24,
+      "loadConfirmed": 24,
+      "utilization": 0.5
+    },
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-06T00:00:00",
+      "end": "2026-01-07T11:00:00",
+      "available": 70,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 70,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-07T11:00:00",
+      "end": "2026-01-08T11:00:00",
+      "available": 48,
+      "load": 24,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 24,
+      "loadConfirmed": 0,
+      "utilization": 0.5
+    },
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-08T11:00:00",
+      "end": "2026-01-08T23:00:00",
+      "available": 24,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 24,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-08T23:00:00",
+      "end": "2026-01-10T23:00:00",
+      "available": 96,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 96,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T00:00:00",
+      "available": 2,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 2,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-11T00:00:00",
+      "end": "2026-01-11T11:00:00",
+      "available": 22,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 22,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-11T11:00:00",
+      "end": "2026-01-12T11:00:00",
+      "available": 48,
+      "load": 24,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 24,
+      "loadConfirmed": 0,
+      "utilization": 0.5
+    },
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-12T11:00:00",
+      "end": "2026-01-12T23:00:00",
+      "available": 24,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 24,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-14T23:00:00",
+      "available": 96,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 96,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency predecessor team",
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-15T00:00:00",
+      "available": 2,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 2,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-05T00:00:00",
+      "available": 96,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 96,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-05T00:00:00",
+      "end": "2026-01-06T00:00:00",
+      "available": 24,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 24,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-06T00:00:00",
+      "end": "2026-01-07T11:00:00",
+      "available": 35,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 35,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-07T11:00:00",
+      "end": "2026-01-08T11:00:00",
+      "available": 24,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 24,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-08T11:00:00",
+      "end": "2026-01-08T23:00:00",
+      "available": 12,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 12,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-08T23:00:00",
+      "end": "2026-01-10T23:00:00",
+      "available": 48,
+      "load": 48,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-11T00:00:00",
+      "end": "2026-01-11T11:00:00",
+      "available": 11,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 11,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-11T11:00:00",
+      "end": "2026-01-12T11:00:00",
+      "available": 24,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 24,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-12T11:00:00",
+      "end": "2026-01-12T23:00:00",
+      "available": 12,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 12,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-14T23:00:00",
+      "available": 48,
+      "load": 48,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "dependency successor team",
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-15T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    }
+  ],
+  "costSummary": {
+    "operationCost": 168,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 168,
+    "setupPenalty": 0
+  }
+}

@@ -1,0 +1,391 @@
+{
+  "costSummary": {
+    "operationCost": 30.0,
+    "resourceCost": 0.0,
+    "setupCost": 0.0,
+    "setupPenalty": 0.0,
+    "totalCost": 30.0
+  },
+  "deliveries": [
+    {
+      "batch": "",
+      "demand": "shift order across shutdown",
+      "end": "2026-01-13T18:00:00",
+      "operationPlanKey": "auto:ship shift product|2026-01-13T17:00:00|2026-01-13T18:00:00|shift order across shutdown|1||MO|#1",
+      "orderType": "MO",
+      "quantity": 1.0
+    },
+    {
+      "batch": "",
+      "demand": "shift order before shutdown",
+      "end": "2026-01-13T16:00:00",
+      "operationPlanKey": "auto:ship shift product|2026-01-13T15:00:00|2026-01-13T16:00:00|shift order before shutdown|1||MO|#1",
+      "orderType": "MO",
+      "quantity": 1.0
+    },
+    {
+      "batch": "",
+      "demand": "shift order maintenance",
+      "end": "2026-01-23T12:00:00",
+      "operationPlanKey": "auto:ship shift product|2026-01-23T11:00:00|2026-01-23T12:00:00|shift order maintenance|1||MO|#1",
+      "orderType": "MO",
+      "quantity": 1.0
+    }
+  ],
+  "dependencies": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "shift product @ shift plant",
+      "bufferBatch": "",
+      "date": "2026-01-07T17:00:00",
+      "onhand": 1.0,
+      "operationPlanKey": "auto:make shift product|2026-01-02T16:00:00|2026-01-07T17:00:00||1||MO|#1",
+      "orderType": "MO",
+      "quantity": 1.0
+    },
+    {
+      "buffer": "shift product @ shift plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T15:00:00",
+      "onhand": 1.0,
+      "operationPlanKey": "auto:ship shift product|2026-01-13T15:00:00|2026-01-13T16:00:00|shift order before shutdown|1||MO|#1",
+      "orderType": "MO",
+      "quantity": -1.0
+    },
+    {
+      "buffer": "shift product @ shift plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T15:00:00",
+      "onhand": 2.0,
+      "operationPlanKey": "auto:make shift product|2026-01-08T09:00:00|2026-01-13T15:00:00||1||MO|#1",
+      "orderType": "MO",
+      "quantity": 1.0
+    },
+    {
+      "buffer": "shift product @ shift plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T17:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship shift product|2026-01-13T17:00:00|2026-01-13T18:00:00|shift order across shutdown|1||MO|#1",
+      "orderType": "MO",
+      "quantity": -1.0
+    },
+    {
+      "buffer": "shift product @ shift plant",
+      "bufferBatch": "",
+      "date": "2026-01-23T11:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship shift product|2026-01-23T11:00:00|2026-01-23T12:00:00|shift order maintenance|1||MO|#1",
+      "orderType": "MO",
+      "quantity": -1.0
+    },
+    {
+      "buffer": "shift product @ shift plant",
+      "bufferBatch": "",
+      "date": "2026-01-23T11:00:00",
+      "onhand": 1.0,
+      "operationPlanKey": "auto:make shift product|2026-01-13T15:00:00|2026-01-23T11:00:00||1||MO|#1",
+      "orderType": "MO",
+      "quantity": 1.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-07T17:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "shift product @ shift plant",
+          "date": "2026-01-07T17:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make shift product",
+      "operationCost": 9.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make shift product|2026-01-02T16:00:00|2026-01-07T17:00:00||1||MO|#1",
+      "quantity": 1.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make shift product|2026-01-02T16:00:00|2026-01-07T17:00:00||1||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "shift machine"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-02T16:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-02T16:00:00",
+      "status": "proposed",
+      "totalCost": 9.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-13T15:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "shift product @ shift plant",
+          "date": "2026-01-13T15:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make shift product",
+      "operationCost": 9.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make shift product|2026-01-08T09:00:00|2026-01-13T15:00:00||1||MO|#1",
+      "quantity": 1.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make shift product|2026-01-08T09:00:00|2026-01-13T15:00:00||1||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "shift machine"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-08T09:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-08T09:00:00",
+      "status": "proposed",
+      "totalCost": 9.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-23T11:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "shift product @ shift plant",
+          "date": "2026-01-23T11:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make shift product",
+      "operationCost": 9.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make shift product|2026-01-13T15:00:00|2026-01-23T11:00:00||1||MO|#1",
+      "quantity": 1.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make shift product|2026-01-13T15:00:00|2026-01-23T11:00:00||1||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "shift machine"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-13T15:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-13T15:00:00",
+      "status": "proposed",
+      "totalCost": 9.0
+    },
+    {
+      "batch": "",
+      "demand": "shift order before shutdown",
+      "end": "2026-01-13T16:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "shift product @ shift plant",
+          "date": "2026-01-13T15:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship shift product",
+      "operationCost": 1.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship shift product|2026-01-13T15:00:00|2026-01-13T16:00:00|shift order before shutdown|1||MO|#1",
+      "quantity": 1.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship shift product|2026-01-13T15:00:00|2026-01-13T16:00:00|shift order before shutdown|1||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-13T15:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-13T15:00:00",
+      "status": "proposed",
+      "totalCost": 1.0
+    },
+    {
+      "batch": "",
+      "demand": "shift order across shutdown",
+      "end": "2026-01-13T18:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "shift product @ shift plant",
+          "date": "2026-01-13T17:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship shift product",
+      "operationCost": 1.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship shift product|2026-01-13T17:00:00|2026-01-13T18:00:00|shift order across shutdown|1||MO|#1",
+      "quantity": 1.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship shift product|2026-01-13T17:00:00|2026-01-13T18:00:00|shift order across shutdown|1||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-13T17:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-13T17:00:00",
+      "status": "proposed",
+      "totalCost": 1.0
+    },
+    {
+      "batch": "",
+      "demand": "shift order maintenance",
+      "end": "2026-01-23T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "shift product @ shift plant",
+          "date": "2026-01-23T11:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship shift product",
+      "operationCost": 1.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship shift product|2026-01-23T11:00:00|2026-01-23T12:00:00|shift order maintenance|1||MO|#1",
+      "quantity": 1.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship shift product|2026-01-23T11:00:00|2026-01-23T12:00:00|shift order maintenance|1||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-23T11:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-23T11:00:00",
+      "status": "proposed",
+      "totalCost": 1.0
+    }
+  ],
+  "problems": [],
+  "resourcePlans": [
+    {
+      "available": 16.0,
+      "end": "2026-01-02T16:00:00",
+      "free": 16.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "shift machine",
+      "setup": 0.0,
+      "start": "2026-01-01T00:00:00",
+      "unavailable": 24.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 28.0,
+      "end": "2026-01-07T17:00:00",
+      "free": 0.0,
+      "load": 28.0,
+      "loadConfirmed": 0.0,
+      "resource": "shift machine",
+      "setup": 0.0,
+      "start": "2026-01-02T16:00:00",
+      "unavailable": 93.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 2.0,
+      "end": "2026-01-08T09:00:00",
+      "free": 2.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "shift machine",
+      "setup": 0.0,
+      "start": "2026-01-07T17:00:00",
+      "unavailable": 14.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 28.0,
+      "end": "2026-01-13T15:00:00",
+      "free": 0.0,
+      "load": 28.0,
+      "loadConfirmed": 0.0,
+      "resource": "shift machine",
+      "setup": 0.0,
+      "start": "2026-01-08T09:00:00",
+      "unavailable": 98.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-13T16:00:00",
+      "free": 0.0,
+      "load": 1.0,
+      "loadConfirmed": 0.0,
+      "resource": "shift machine",
+      "setup": 0.0,
+      "start": "2026-01-13T15:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-13T17:00:00",
+      "free": 0.0,
+      "load": 1.0,
+      "loadConfirmed": 0.0,
+      "resource": "shift machine",
+      "setup": 0.0,
+      "start": "2026-01-13T16:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-13T18:00:00",
+      "free": 0.0,
+      "load": 1.0,
+      "loadConfirmed": 0.0,
+      "resource": "shift machine",
+      "setup": 0.0,
+      "start": "2026-01-13T17:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 26.0,
+      "end": "2026-01-23T11:00:00",
+      "free": 0.0,
+      "load": 26.0,
+      "loadConfirmed": 0.0,
+      "resource": "shift machine",
+      "setup": 0.0,
+      "start": "2026-01-13T18:00:00",
+      "unavailable": 207.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-23T12:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "shift machine",
+      "setup": 0.0,
+      "start": "2026-01-23T11:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    }
+  ]
+}

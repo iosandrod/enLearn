@@ -1,0 +1,96 @@
+[demand] attempt {"demand":"shift order before shutdown","attempt":1,"quantity":1,"requestDate":"2026-01-13T16:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"shift order before shutdown","operation":"ship shift product","quantity":1,"operationQuantity":1,"end":"2026-01-13T16:00:00","operationEnd":"2026-01-13T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"shift product @ shift plant","requested":1,"date":"2026-01-13T15:00:00","onhand":0}
+[buffer] shortage {"buffer":"shift product @ shift plant","iteration":0,"date":"2026-01-13T15:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make shift product","quantity":1,"operationQuantity":1,"end":"2026-01-13T15:00:00","operationEnd":"2026-01-13T15:00:00"}
+[resource] ask {"demand":null,"operation":"make shift product","resource":"shift machine","start":"2026-01-08T09:00:00","end":"2026-01-13T15:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-08T09:00:00","end":"2026-01-13T15:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"make shift product","quantity":1,"start":"2026-01-08T09:00:00","end":"2026-01-13T15:00:00"}
+[buffer] replenish {"buffer":"shift product @ shift plant","iteration":0,"requested":1,"replenished":1,"producerDate":"2030-12-31T00:00:00","eventCountBefore":1,"eventCountAfter":2,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"shift product @ shift plant","requested":1,"remainingShortage":0,"quantity":1,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"shift order before shutdown","operation":"ship shift product","quantity":1,"start":"2026-01-13T15:00:00","end":"2026-01-13T16:00:00"}
+[demand] reply {"demand":"shift order before shutdown","attempt":1,"result":true,"quantity":1,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"shift order across shutdown","attempt":1,"quantity":1,"requestDate":"2026-01-18T10:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"shift order across shutdown","operation":"ship shift product","quantity":1,"operationQuantity":1,"end":"2026-01-18T10:00:00","operationEnd":"2026-01-18T10:00:00"}
+[buffer] ask {"demand":null,"buffer":"shift product @ shift plant","requested":1,"date":"2026-01-13T17:00:00","onhand":1}
+[buffer] shortage {"buffer":"shift product @ shift plant","iteration":0,"date":"2026-01-13T17:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make shift product","quantity":1,"operationQuantity":1,"end":"2026-01-13T17:00:00","operationEnd":"2026-01-13T17:00:00"}
+[resource] ask {"demand":null,"operation":"make shift product","resource":"shift machine","start":"2026-01-08T11:00:00","end":"2026-01-13T17:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-08T11:00:00","end":"2026-01-13T17:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make shift product","loadPlanIndex":4,"overloadIndex":2,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":1,"maximum":1,"operation":""},{"index":1,"date":"2026-01-08T09:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":2,"date":"2026-01-08T11:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make shift product"},{"index":3,"date":"2026-01-13T15:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":4,"date":"2026-01-13T17:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make shift product"}]}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-08T11:00:00","start":"2026-01-05T10:00:00","end":"2026-01-08T11:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make shift product","loadPlanIndex":3,"overloadIndex":2,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":1,"maximum":1,"operation":""},{"index":1,"date":"2026-01-05T10:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":2,"date":"2026-01-08T09:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make shift product"},{"index":3,"date":"2026-01-08T11:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":4,"date":"2026-01-13T15:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make shift product"}]}
+[resource] candidate {"demand":null,"iteration":2,"boundary":"2026-01-08T09:00:00","start":"2026-01-02T16:00:00","end":"2026-01-07T17:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":3,"boundary":"2026-01-02T16:00:00","start":"2026-01-02T16:00:00","end":"2026-01-07T17:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"make shift product","quantity":1,"start":"2026-01-02T16:00:00","end":"2026-01-07T17:00:00"}
+[buffer] replenish {"buffer":"shift product @ shift plant","iteration":0,"requested":1,"replenished":1,"producerDate":"2030-12-31T00:00:00","eventCountBefore":3,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"shift product @ shift plant","requested":1,"remainingShortage":0,"quantity":1,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"shift order across shutdown","operation":"ship shift product","quantity":1,"start":"2026-01-13T17:00:00","end":"2026-01-13T18:00:00"}
+[demand] reply {"demand":"shift order across shutdown","attempt":1,"result":true,"quantity":1,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"shift order maintenance","attempt":1,"quantity":1,"requestDate":"2026-01-23T09:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"shift order maintenance","operation":"ship shift product","quantity":1,"operationQuantity":1,"end":"2026-01-23T09:00:00","operationEnd":"2026-01-23T09:00:00"}
+[buffer] ask {"demand":null,"buffer":"shift product @ shift plant","requested":1,"date":"2026-01-23T08:00:00","onhand":0}
+[buffer] shortage {"buffer":"shift product @ shift plant","iteration":0,"date":"2026-01-23T08:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make shift product","quantity":1,"operationQuantity":1,"end":"2026-01-23T08:00:00","operationEnd":"2026-01-23T08:00:00"}
+[resource] ask {"demand":null,"operation":"make shift product","resource":"shift machine","start":"2026-01-13T13:00:00","end":"2026-01-22T17:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-13T13:00:00","end":"2026-01-22T17:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make shift product","loadPlanIndex":6,"overloadIndex":4,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":1,"maximum":1,"operation":""},{"index":1,"date":"2026-01-02T16:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":2,"date":"2026-01-07T17:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make shift product"},{"index":3,"date":"2026-01-08T09:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":4,"date":"2026-01-13T13:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make shift product"},{"index":5,"date":"2026-01-13T15:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":6,"date":"2026-01-22T17:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make shift product"}]}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-13T13:00:00","start":"2026-01-07T15:00:00","end":"2026-01-13T12:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make shift product","loadPlanIndex":5,"overloadIndex":4,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":1,"maximum":1,"operation":""},{"index":1,"date":"2026-01-02T16:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":2,"date":"2026-01-07T15:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make shift product"},{"index":3,"date":"2026-01-07T17:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":4,"date":"2026-01-08T09:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make shift product"},{"index":5,"date":"2026-01-13T12:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":6,"date":"2026-01-13T15:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make shift product"}]}
+[resource] candidate {"demand":null,"iteration":2,"boundary":"2026-01-08T09:00:00","start":"2026-01-02T16:00:00","end":"2026-01-07T17:00:00","feasible":false}
+[resource] overload {"demand":null,"operation":"make shift product","loadPlanIndex":4,"overloadIndex":2,"events":[{"index":0,"date":"1971-01-01T00:00:00","type":4,"quantity":0,"onhand":1,"maximum":1,"operation":""},{"index":1,"date":"2026-01-02T16:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":2,"date":"2026-01-02T16:00:00","type":1,"quantity":1,"onhand":2,"maximum":1,"operation":"make shift product"},{"index":3,"date":"2026-01-07T17:00:00","type":1,"quantity":-1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":4,"date":"2026-01-07T17:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make shift product"},{"index":5,"date":"2026-01-08T09:00:00","type":1,"quantity":1,"onhand":1,"maximum":1,"operation":"make shift product"},{"index":6,"date":"2026-01-13T15:00:00","type":1,"quantity":-1,"onhand":0,"maximum":1,"operation":"make shift product"}]}
+[operation] capacity-reject {"demand":null,"operation":"make shift product","start":"2026-01-13T13:00:00","end":"2026-01-22T17:00:00","answerQuantity":0,"answerDate":"2030-12-31T00:00:00"}
+[buffer] replenish {"buffer":"shift product @ shift plant","iteration":0,"requested":1,"replenished":0,"producerDate":"2026-01-23T12:00:00","eventCountBefore":5,"eventCountAfter":5,"remaining":1}
+[buffer] answer {"demand":null,"buffer":"shift product @ shift plant","requested":1,"remainingShortage":1,"quantity":0,"date":"2026-01-23T12:00:00","plan":null}
+[operation] material-reject {"demand":"shift order maintenance","operation":"ship shift product","start":"2026-01-23T08:00:00","end":"2026-01-23T09:00:00","asked":1,"answerQuantity":0,"answerDate":"2026-01-23T12:00:00"}
+[demand] reply {"demand":"shift order maintenance","attempt":1,"result":false,"quantity":0,"date":"2026-01-23T12:00:00"}
+[demand] attempt {"demand":"shift order maintenance","attempt":2,"quantity":1,"requestDate":"2026-01-23T12:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"shift order maintenance","operation":"ship shift product","quantity":1,"operationQuantity":1,"end":"2026-01-23T12:00:00","operationEnd":"2026-01-23T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"shift product @ shift plant","requested":1,"date":"2026-01-23T11:00:00","onhand":0}
+[buffer] shortage {"buffer":"shift product @ shift plant","iteration":0,"date":"2026-01-23T11:00:00","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make shift product","quantity":1,"operationQuantity":1,"end":"2026-01-23T11:00:00","operationEnd":"2026-01-23T11:00:00"}
+[resource] ask {"demand":null,"operation":"make shift product","resource":"shift machine","start":"2026-01-13T15:00:00","end":"2026-01-23T11:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-13T15:00:00","end":"2026-01-23T11:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"make shift product","quantity":1,"start":"2026-01-13T15:00:00","end":"2026-01-23T11:00:00"}
+[buffer] replenish {"buffer":"shift product @ shift plant","iteration":0,"requested":1,"replenished":1,"producerDate":"2030-12-31T00:00:00","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"shift product @ shift plant","requested":1,"remainingShortage":0,"quantity":1,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"shift order maintenance","operation":"ship shift product","quantity":1,"start":"2026-01-23T11:00:00","end":"2026-01-23T12:00:00"}
+[demand] reply {"demand":"shift order maintenance","attempt":2,"result":true,"quantity":1,"date":"2030-12-31T00:00:00"}
+{
+  "scenario": "calendar_shift_shutdown",
+  "industry": "离散制造班次",
+  "description": "Operation, location and resource calendars combine weekday shifts, a lunch interruption and a plant shutdown",
+  "coverage": [
+    "工作日班次",
+    "午休",
+    "工厂停产",
+    "工序日历",
+    "地点日历",
+    "资源日历"
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 14400,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "input": {
+    "demands": 3,
+    "items": 1,
+    "buffers": 1,
+    "operations": 2,
+    "resources": 1,
+    "loads": 1,
+    "flows": 2,
+    "skills": 0,
+    "setupMatrices": 0
+  },
+  "identical": true,
+  "nativeOperationPlans": 6,
+  "typescriptOperationPlans": 6,
+  "nativeDeliveries": 3,
+  "typescriptDeliveries": 3,
+  "differenceCount": 0,
+  "firstDifferences": [],
+  "databaseSchema": "codex_schedule_diff"
+}

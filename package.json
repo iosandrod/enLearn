@@ -19,7 +19,7 @@
     "api:dev": "pnpm --dir api dev",
     "api:build": "pnpm --dir api build",
     "api:start": "pnpm --dir api start",
-    "backend:dev": "node ./scripts/run-api-tsx.mjs watch src/standalone.ts --with-trigger-worker",
+    "backend:dev": "node --experimental-websocket ./scripts/run-api-tsx.mjs watch src/standalone.ts --with-trigger-worker",
     "backend:start": "pnpm --dir api standalone:start",
     "mobile:dev": "pnpm --dir mobile-app web:dev",
     "mobile:typecheck": "pnpm --dir mobile-app typecheck",

@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2026-01-01T00:00:00</current>
+  <operations>
+    <operation name="coat and pack red" xsi:type="operation_fixed_time">
+      <duration>PT18H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="ship red" xsi:type="operation_fixed_time">
+      <duration>PT4H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="coat and pack blue" xsi:type="operation_fixed_time">
+      <duration>PT14H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="ship blue" xsi:type="operation_fixed_time">
+      <duration>PT4H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="coat and pack green" xsi:type="operation_fixed_time">
+      <duration>PT20H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="ship green" xsi:type="operation_fixed_time">
+      <duration>PT4H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="coat and pack white" xsi:type="operation_fixed_time">
+      <duration>PT12H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="ship white" xsi:type="operation_fixed_time">
+      <duration>PT4H</duration>
+      
+      
+      
+      
+      
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="painted red">
+      <producing name="coat and pack red" />
+      <item name="painted red" />
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="painted blue">
+      <producing name="coat and pack blue" />
+      <item name="painted blue" />
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="painted green">
+      <producing name="coat and pack green" />
+      <item name="painted green" />
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="painted white">
+      <producing name="coat and pack white" />
+      <item name="painted white" />
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+    <setupmatrix name="paint family change">
+      <rules>
+        <rule priority="1" fromsetup="clean" tosetup="white"
+          duration="PT2H" cost="5" />
+        <rule priority="2" fromsetup="clean" tosetup="red|blue|green"
+          duration="PT4H" cost="10" />
+        <rule priority="3" fromsetup="white" tosetup="red|blue|green"
+          duration="PT6H" cost="20" />
+        <rule priority="4" fromsetup="red|blue|green" tosetup="white"
+          duration="PT8H" cost="25" />
+        <rule priority="5" fromsetup="red" tosetup="blue"
+          duration="PT3H" cost="12" />
+        <rule priority="6" fromsetup="blue" tosetup="green"
+          duration="PT5H" cost="14" />
+        <rule priority="7" fromsetup="green" tosetup="red"
+          duration="PT4H" cost="13" />
+        <rule priority="99" fromsetup=".*" tosetup=".*"
+          duration="PT1H" cost="4" />
+      </rules>
+    </setupmatrix>
+  </setupmatrices>
+  <resources>
+    <resource name="coater A">
+      
+      <maximum>3</maximum>
+      <maxearly>P45D</maxearly>
+      <efficiency>100</efficiency>
+      <setupmatrix name="paint family change" />
+      <setup>clean</setup>
+    </resource>
+    <resource name="coater B">
+      
+      <maximum>3</maximum>
+      <maxearly>P45D</maxearly>
+      <efficiency>90</efficiency>
+      <setupmatrix name="paint family change" />
+      <setup>clean</setup>
+    </resource>
+    <resource name="packing crew">
+      
+      <maximum>6</maximum>
+      <maxearly>P45D</maxearly>
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+  </resources>
+  <loads>
+    <load>
+      <operation name="coat and pack red" />
+      <resource name="coater A" />
+      <quantity>1</quantity>
+      <name>coater</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>red</setup>
+    </load>
+    <load>
+      <operation name="coat and pack red" />
+      <resource name="coater B" />
+      <quantity>1</quantity>
+      <name>coater</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>red</setup>
+    </load>
+    <load>
+      <operation name="coat and pack red" />
+      <resource name="packing crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="coat and pack blue" />
+      <resource name="coater A" />
+      <quantity>1</quantity>
+      <name>coater</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>blue</setup>
+    </load>
+    <load>
+      <operation name="coat and pack blue" />
+      <resource name="coater B" />
+      <quantity>1</quantity>
+      <name>coater</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>blue</setup>
+    </load>
+    <load>
+      <operation name="coat and pack blue" />
+      <resource name="packing crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="coat and pack green" />
+      <resource name="coater A" />
+      <quantity>1</quantity>
+      <name>coater</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>green</setup>
+    </load>
+    <load>
+      <operation name="coat and pack green" />
+      <resource name="coater B" />
+      <quantity>1</quantity>
+      <name>coater</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>green</setup>
+    </load>
+    <load>
+      <operation name="coat and pack green" />
+      <resource name="packing crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="coat and pack white" />
+      <resource name="coater A" />
+      <quantity>1</quantity>
+      <name>coater</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>white</setup>
+    </load>
+    <load>
+      <operation name="coat and pack white" />
+      <resource name="coater B" />
+      <quantity>1</quantity>
+      <name>coater</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>white</setup>
+    </load>
+    <load>
+      <operation name="coat and pack white" />
+      <resource name="packing crew" />
+      <quantity>0.5</quantity>
+      
+      
+      
+      
+      
+    </load>
+  </loads>
+  <skills>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="ship red" />
+      <buffer name="painted red" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="coat and pack red" />
+      <buffer name="painted red" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship blue" />
+      <buffer name="painted blue" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="coat and pack blue" />
+      <buffer name="painted blue" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship green" />
+      <buffer name="painted green" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="coat and pack green" />
+      <buffer name="painted green" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship white" />
+      <buffer name="painted white" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="coat and pack white" />
+      <buffer name="painted white" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="paint order 01 RED">
+      <quantity>1</quantity><due>2026-01-19T00:00:00</due><priority>1</priority>
+      <item name="painted red" /><operation name="ship red" />
+    </demand>
+    <demand name="paint order 02 BLUE">
+      <quantity>2</quantity><due>2026-01-19T06:00:00</due><priority>2</priority>
+      <item name="painted blue" /><operation name="ship blue" />
+    </demand>
+    <demand name="paint order 03 GREEN">
+      <quantity>3</quantity><due>2026-01-20T12:00:00</due><priority>3</priority>
+      <item name="painted green" /><operation name="ship green" />
+    </demand>
+    <demand name="paint order 04 WHITE">
+      <quantity>2</quantity><due>2026-01-20T18:00:00</due><priority>4</priority>
+      <item name="painted white" /><operation name="ship white" />
+    </demand>
+    <demand name="paint order 05 RED">
+      <quantity>1</quantity><due>2026-01-21T00:00:00</due><priority>5</priority>
+      <item name="painted red" /><operation name="ship red" />
+    </demand>
+    <demand name="paint order 06 BLUE">
+      <quantity>3</quantity><due>2026-01-21T06:00:00</due><priority>6</priority>
+      <item name="painted blue" /><operation name="ship blue" />
+    </demand>
+    <demand name="paint order 07 GREEN">
+      <quantity>1</quantity><due>2026-01-22T12:00:00</due><priority>7</priority>
+      <item name="painted green" /><operation name="ship green" />
+    </demand>
+    <demand name="paint order 08 WHITE">
+      <quantity>2</quantity><due>2026-01-22T18:00:00</due><priority>8</priority>
+      <item name="painted white" /><operation name="ship white" />
+    </demand>
+    <demand name="paint order 09 RED">
+      <quantity>3</quantity><due>2026-01-23T00:00:00</due><priority>9</priority>
+      <item name="painted red" /><operation name="ship red" />
+    </demand>
+    <demand name="paint order 10 BLUE">
+      <quantity>2</quantity><due>2026-01-23T06:00:00</due><priority>10</priority>
+      <item name="painted blue" /><operation name="ship blue" />
+    </demand>
+    <demand name="paint order 11 GREEN">
+      <quantity>1</quantity><due>2026-01-24T12:00:00</due><priority>11</priority>
+      <item name="painted green" /><operation name="ship green" />
+    </demand>
+    <demand name="paint order 12 WHITE">
+      <quantity>3</quantity><due>2026-01-24T18:00:00</due><priority>12</priority>
+      <item name="painted white" /><operation name="ship white" />
+    </demand>
+    <demand name="paint order 13 RED">
+      <quantity>1</quantity><due>2026-01-25T00:00:00</due><priority>13</priority>
+      <item name="painted red" /><operation name="ship red" />
+    </demand>
+    <demand name="paint order 14 BLUE">
+      <quantity>2</quantity><due>2026-01-25T06:00:00</due><priority>14</priority>
+      <item name="painted blue" /><operation name="ship blue" />
+    </demand>
+    <demand name="paint order 15 GREEN">
+      <quantity>3</quantity><due>2026-01-26T12:00:00</due><priority>15</priority>
+      <item name="painted green" /><operation name="ship green" />
+    </demand>
+    <demand name="paint order 16 WHITE">
+      <quantity>2</quantity><due>2026-01-26T18:00:00</due><priority>16</priority>
+      <item name="painted white" /><operation name="ship white" />
+    </demand>
+    <demand name="paint order 17 RED">
+      <quantity>1</quantity><due>2026-01-27T00:00:00</due><priority>17</priority>
+      <item name="painted red" /><operation name="ship red" />
+    </demand>
+    <demand name="paint order 18 BLUE">
+      <quantity>3</quantity><due>2026-01-27T06:00:00</due><priority>18</priority>
+      <item name="painted blue" /><operation name="ship blue" />
+    </demand>
+    <demand name="paint order 19 GREEN">
+      <quantity>1</quantity><due>2026-01-28T12:00:00</due><priority>19</priority>
+      <item name="painted green" /><operation name="ship green" />
+    </demand>
+    <demand name="paint order 20 WHITE">
+      <quantity>2</quantity><due>2026-01-28T18:00:00</due><priority>20</priority>
+      <item name="painted white" /><operation name="ship white" />
+    </demand>
+    <demand name="paint order 21 RED">
+      <quantity>3</quantity><due>2026-01-29T00:00:00</due><priority>21</priority>
+      <item name="painted red" /><operation name="ship red" />
+    </demand>
+    <demand name="paint order 22 BLUE">
+      <quantity>2</quantity><due>2026-01-29T06:00:00</due><priority>22</priority>
+      <item name="painted blue" /><operation name="ship blue" />
+    </demand>
+    <demand name="paint order 23 GREEN">
+      <quantity>1</quantity><due>2026-01-30T12:00:00</due><priority>23</priority>
+      <item name="painted green" /><operation name="ship green" />
+    </demand>
+    <demand name="paint order 24 WHITE">
+      <quantity>3</quantity><due>2026-01-30T18:00:00</due><priority>24</priority>
+      <item name="painted white" /><operation name="ship white" />
+    </demand>
+  </demands>
+<?python
+import frepple, json
+frepple.solver_mrp(plantype=1, constraints=15, loglevel=0).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+plans = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": flowplan.quantity})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    plans.append({
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": operationplan.quantity,
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "setupSeconds": operationplan.setup,
+        "setupEnd": stamp(operationplan.setupend),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+    })
+plans.sort(key=lambda value: (value["operation"], value["start"], value["end"], value["demand"] or "", value["quantity"]))
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": operationplan.quantity, "end": stamp(operationplan.end)})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"]))
+with open("/workspace/cpp-typescript/.schedule-diff/factory_setup_capacity.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries}, output, indent=2, sort_keys=True)
+?>
+</plan>

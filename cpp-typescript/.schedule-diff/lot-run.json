@@ -1,0 +1,118 @@
+{
+  "scenario": "boundary_lot_split",
+  "industry": "批量与拆单临界边界",
+  "description": "Demand quantities cross rounding error, minimum and maximum lot sizes while explicit minimum shipments force accepted and rejected split deliveries",
+  "coverage": [
+    "零需求",
+    "舍入误差上下界",
+    "最小批量",
+    "最大批量",
+    "多次拆单",
+    "最小发运等于/大于单批上限",
+    "小数数量"
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "iterationMax": 64,
+    "minimumDelay": 1,
+    "rotateResources": false,
+    "resourceIterationMax": 64
+  },
+  "input": {
+    "demands": 10,
+    "items": 1,
+    "buffers": 1,
+    "operations": 2,
+    "resources": 0,
+    "loads": 0,
+    "flows": 1,
+    "skills": 0,
+    "setupMatrices": 0
+  },
+  "identical": false,
+  "nativeOperationPlans": 11,
+  "typescriptOperationPlans": 10,
+  "nativeDeliveries": 10,
+  "typescriptDeliveries": 9,
+  "differenceCount": 15,
+  "firstDifferences": [
+    {
+      "path": "$.deliveries.length",
+      "native": 10,
+      "typescript": 9
+    },
+    {
+      "path": "$.deliveries[7].demand",
+      "native": "lot boundary 08 three-splits",
+      "typescript": "lot boundary 10 fractional"
+    },
+    {
+      "path": "$.deliveries[7].end",
+      "native": "2026-01-13T12:00:00",
+      "typescript": "2026-01-15T12:00:00"
+    },
+    {
+      "path": "$.deliveries[7].quantity",
+      "native": 7,
+      "typescript": 2.75
+    },
+    {
+      "path": "$.deliveries[8].quantity",
+      "native": 2.75,
+      "typescript": 7
+    },
+    {
+      "path": "$.operationPlans.length",
+      "native": 11,
+      "typescript": 10
+    },
+    {
+      "path": "$.operationPlans[8].demand",
+      "native": "lot boundary 08 three-splits",
+      "typescript": "lot boundary 10 fractional"
+    },
+    {
+      "path": "$.operationPlans[8].end",
+      "native": "2026-01-13T12:00:00",
+      "typescript": "2026-01-15T12:00:00"
+    },
+    {
+      "path": "$.operationPlans[8].materials[0].date",
+      "native": "2026-01-13T11:59:59",
+      "typescript": "2026-01-15T11:59:59"
+    },
+    {
+      "path": "$.operationPlans[8].materials[0].quantity",
+      "native": -7,
+      "typescript": -2.75
+    },
+    {
+      "path": "$.operationPlans[8].quantity",
+      "native": 7,
+      "typescript": 2.75
+    },
+    {
+      "path": "$.operationPlans[8].setupEnd",
+      "native": "2026-01-13T11:59:59",
+      "typescript": "2026-01-15T11:59:59"
+    },
+    {
+      "path": "$.operationPlans[8].start",
+      "native": "2026-01-13T11:59:59",
+      "typescript": "2026-01-15T11:59:59"
+    },
+    {
+      "path": "$.operationPlans[9].materials[0].quantity",
+      "native": -2.75,
+      "typescript": -7
+    },
+    {
+      "path": "$.operationPlans[9].quantity",
+      "native": 2.75,
+      "typescript": 7
+    }
+  ],
+  "databaseSchema": "codex_schedule_diff"
+}

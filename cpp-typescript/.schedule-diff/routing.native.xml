@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2009-01-01T00:00:00</current>
+  <operations>
+    <operation name="routing step 1" xsi:type="operation_fixed_time">
+      <duration>P2D</duration>
+    </operation>
+    <operation name="routing step 2" xsi:type="operation_fixed_time">
+      <duration>P1D</duration>
+    </operation>
+    <operation name="make routed item" xsi:type="operation_routing">
+      
+      <suboperations>
+        <suboperation>
+          <operation name="routing step 1" />
+          <priority>1</priority>
+        </suboperation>
+        <suboperation>
+          <operation name="routing step 2" />
+          <priority>2</priority>
+        </suboperation>
+      </suboperations>
+    </operation>
+    <operation name="delivery routed item" xsi:type="operation_fixed_time">
+      <duration>P1D</duration>
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="routed item">
+      <producing name="make routed item" />
+      <item name="routed item" />
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+  </setupmatrices>
+  <resources>
+  </resources>
+  <skills>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="delivery routed item" />
+      <buffer name="routed item" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="routing step 2" />
+      <buffer name="routed item" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="routing order">
+      <quantity>10</quantity><due>2009-01-20T00:00:00</due><priority>1</priority>
+      <item name="routed item" /><operation name="delivery routed item" />
+    </demand>
+  </demands>
+<?python
+import frepple, json
+frepple.solver_mrp(plantype=1, constraints=15, loglevel=0).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+plans = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": flowplan.quantity})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    plans.append({
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": operationplan.quantity,
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+    })
+plans.sort(key=lambda value: (value["operation"], value["start"], value["end"], value["demand"] or "", value["quantity"]))
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": operationplan.quantity, "end": stamp(operationplan.end)})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"]))
+with open("/workspace/cpp-typescript/.schedule-diff/routing.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries}, output, indent=2, sort_keys=True)
+?>
+</plan>

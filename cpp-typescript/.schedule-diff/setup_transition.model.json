@@ -1,0 +1,161 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "red item",
+      "quantity": -1,
+      "operation": "delivery red item"
+    },
+    {
+      "type": "end",
+      "buffer": "red item",
+      "quantity": 1,
+      "operation": "make red item"
+    },
+    {
+      "type": "start",
+      "buffer": "blue item",
+      "quantity": -1,
+      "operation": "delivery blue item"
+    },
+    {
+      "type": "end",
+      "buffer": "blue item",
+      "quantity": 1,
+      "operation": "make blue item"
+    }
+  ],
+  "items": [
+    {
+      "name": "red item"
+    },
+    {
+      "name": "blue item"
+    }
+  ],
+  "loads": [
+    {
+      "setup": "red",
+      "quantity": 1,
+      "resource": "painting line",
+      "operation": "make red item"
+    },
+    {
+      "setup": "blue",
+      "quantity": 1,
+      "resource": "painting line",
+      "operation": "make blue item"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "red item",
+      "name": "red item",
+      "onhand": 0,
+      "producing": "make red item"
+    },
+    {
+      "item": "blue item",
+      "name": "blue item",
+      "onhand": 0,
+      "producing": "make blue item"
+    }
+  ],
+  "current": "2009-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "red item",
+      "name": "red order",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "delivery red item"
+    },
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "blue item",
+      "name": "blue order",
+      "priority": 2,
+      "quantity": 1,
+      "operation": "delivery blue item"
+    }
+  ],
+  "resources": [
+    {
+      "name": "painting line",
+      "setup": "green",
+      "maximum": 1,
+      "maxearly": 2592000,
+      "setupMatrix": "color changeover"
+    }
+  ],
+  "operations": [
+    {
+      "name": "make red item",
+      "type": "fixed_time",
+      "duration": 86400
+    },
+    {
+      "name": "make blue item",
+      "type": "fixed_time",
+      "duration": 86400
+    },
+    {
+      "name": "delivery red item",
+      "type": "fixed_time",
+      "duration": 86400
+    },
+    {
+      "name": "delivery blue item",
+      "type": "fixed_time",
+      "duration": 86400
+    }
+  ],
+  "setupMatrices": [
+    {
+      "name": "color changeover",
+      "rules": [
+        {
+          "to": "red",
+          "cost": 10,
+          "from": "green",
+          "duration": 172800,
+          "priority": 1
+        },
+        {
+          "to": "blue",
+          "cost": 20,
+          "from": "red",
+          "duration": 86400,
+          "priority": 2
+        },
+        {
+          "to": "blue",
+          "cost": 30,
+          "from": "green",
+          "duration": 259200,
+          "priority": 3
+        },
+        {
+          "to": "red",
+          "cost": 20,
+          "from": "blue",
+          "duration": 86400,
+          "priority": 4
+        },
+        {
+          "to": ".*",
+          "cost": 50,
+          "from": ".*",
+          "duration": 43200,
+          "priority": 99
+        }
+      ]
+    }
+  ]
+}

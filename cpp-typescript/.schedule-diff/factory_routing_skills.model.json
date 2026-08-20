@@ -1,0 +1,563 @@
+{
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "machined module",
+      "quantity": 1,
+      "operation": "make machined module"
+    },
+    {
+      "type": "start",
+      "buffer": "metal stock",
+      "quantity": -2,
+      "operation": "make machined module"
+    },
+    {
+      "type": "end",
+      "buffer": "electrical module",
+      "quantity": 1,
+      "operation": "make electrical module"
+    },
+    {
+      "type": "start",
+      "buffer": "electrical stock",
+      "quantity": -1,
+      "operation": "make electrical module"
+    },
+    {
+      "type": "start",
+      "buffer": "finished X",
+      "quantity": -1,
+      "operation": "ship finished X"
+    },
+    {
+      "type": "start",
+      "buffer": "machined module",
+      "quantity": -1,
+      "operation": "machine X"
+    },
+    {
+      "type": "start",
+      "buffer": "electrical module",
+      "quantity": -1,
+      "operation": "assemble X"
+    },
+    {
+      "type": "end",
+      "buffer": "finished X",
+      "quantity": 1,
+      "operation": "test X"
+    },
+    {
+      "type": "start",
+      "buffer": "finished Y",
+      "quantity": -1,
+      "operation": "ship finished Y"
+    },
+    {
+      "type": "start",
+      "buffer": "machined module",
+      "quantity": -1,
+      "operation": "machine Y"
+    },
+    {
+      "type": "start",
+      "buffer": "electrical module",
+      "quantity": -1,
+      "operation": "assemble Y"
+    },
+    {
+      "type": "end",
+      "buffer": "finished Y",
+      "quantity": 1,
+      "operation": "test Y"
+    }
+  ],
+  "items": [
+    {
+      "name": "metal stock"
+    },
+    {
+      "name": "electrical stock"
+    },
+    {
+      "name": "machined module"
+    },
+    {
+      "name": "electrical module"
+    },
+    {
+      "name": "finished X"
+    },
+    {
+      "name": "finished Y"
+    }
+  ],
+  "loads": [
+    {
+      "name": "press",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "press A",
+      "operation": "make machined module"
+    },
+    {
+      "name": "press",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "press B",
+      "operation": "make machined module"
+    },
+    {
+      "quantity": 1,
+      "resource": "electronics cell",
+      "operation": "make electrical module"
+    },
+    {
+      "setup": "family-x",
+      "quantity": 1,
+      "resource": "machining center",
+      "operation": "machine X"
+    },
+    {
+      "skill": "certified assembler",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "assembly pool",
+      "operation": "assemble X"
+    },
+    {
+      "quantity": 1,
+      "resource": "test bench",
+      "operation": "test X"
+    },
+    {
+      "setup": "family-y",
+      "quantity": 1,
+      "resource": "machining center",
+      "operation": "machine Y"
+    },
+    {
+      "skill": "certified assembler",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "assembly pool",
+      "operation": "assemble Y"
+    },
+    {
+      "quantity": 1,
+      "resource": "test bench",
+      "operation": "test Y"
+    }
+  ],
+  "skills": [
+    {
+      "name": "certified assembler"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "metal stock",
+      "name": "metal stock",
+      "onhand": 90
+    },
+    {
+      "item": "electrical stock",
+      "name": "electrical stock",
+      "onhand": 60
+    },
+    {
+      "item": "machined module",
+      "name": "machined module",
+      "onhand": 2,
+      "producing": "make machined module"
+    },
+    {
+      "item": "electrical module",
+      "name": "electrical module",
+      "onhand": 1,
+      "producing": "make electrical module"
+    },
+    {
+      "item": "finished X",
+      "name": "finished X",
+      "onhand": 0,
+      "producing": "build finished X"
+    },
+    {
+      "item": "finished Y",
+      "name": "finished Y",
+      "onhand": 0,
+      "producing": "build finished Y"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-25T00:00:00",
+      "item": "finished X",
+      "name": "routing order 01 X",
+      "priority": 1,
+      "quantity": 1,
+      "operation": "ship finished X"
+    },
+    {
+      "due": "2026-01-25T08:00:00",
+      "item": "finished Y",
+      "name": "routing order 02 Y",
+      "priority": 2,
+      "quantity": 2,
+      "operation": "ship finished Y"
+    },
+    {
+      "due": "2026-01-26T16:00:00",
+      "item": "finished X",
+      "name": "routing order 03 X",
+      "priority": 3,
+      "quantity": 3,
+      "operation": "ship finished X"
+    },
+    {
+      "due": "2026-01-26T00:00:00",
+      "item": "finished Y",
+      "name": "routing order 04 Y",
+      "priority": 4,
+      "quantity": 1,
+      "operation": "ship finished Y"
+    },
+    {
+      "due": "2026-01-27T08:00:00",
+      "item": "finished X",
+      "name": "routing order 05 X",
+      "priority": 5,
+      "quantity": 2,
+      "operation": "ship finished X"
+    },
+    {
+      "due": "2026-01-27T16:00:00",
+      "item": "finished Y",
+      "name": "routing order 06 Y",
+      "priority": 6,
+      "quantity": 1,
+      "operation": "ship finished Y"
+    },
+    {
+      "due": "2026-01-28T00:00:00",
+      "item": "finished X",
+      "name": "routing order 07 X",
+      "priority": 7,
+      "quantity": 2,
+      "operation": "ship finished X"
+    },
+    {
+      "due": "2026-01-28T08:00:00",
+      "item": "finished Y",
+      "name": "routing order 08 Y",
+      "priority": 8,
+      "quantity": 3,
+      "operation": "ship finished Y"
+    },
+    {
+      "due": "2026-01-29T16:00:00",
+      "item": "finished X",
+      "name": "routing order 09 X",
+      "priority": 9,
+      "quantity": 1,
+      "operation": "ship finished X"
+    },
+    {
+      "due": "2026-01-29T00:00:00",
+      "item": "finished Y",
+      "name": "routing order 10 Y",
+      "priority": 10,
+      "quantity": 2,
+      "operation": "ship finished Y"
+    },
+    {
+      "due": "2026-01-30T08:00:00",
+      "item": "finished X",
+      "name": "routing order 11 X",
+      "priority": 11,
+      "quantity": 1,
+      "operation": "ship finished X"
+    },
+    {
+      "due": "2026-01-30T16:00:00",
+      "item": "finished Y",
+      "name": "routing order 12 Y",
+      "priority": 12,
+      "quantity": 2,
+      "operation": "ship finished Y"
+    },
+    {
+      "due": "2026-01-31T00:00:00",
+      "item": "finished X",
+      "name": "routing order 13 X",
+      "priority": 13,
+      "quantity": 3,
+      "operation": "ship finished X"
+    },
+    {
+      "due": "2026-01-31T08:00:00",
+      "item": "finished Y",
+      "name": "routing order 14 Y",
+      "priority": 14,
+      "quantity": 1,
+      "operation": "ship finished Y"
+    },
+    {
+      "due": "2026-02-01T16:00:00",
+      "item": "finished X",
+      "name": "routing order 15 X",
+      "priority": 15,
+      "quantity": 2,
+      "operation": "ship finished X"
+    },
+    {
+      "due": "2026-02-01T00:00:00",
+      "item": "finished Y",
+      "name": "routing order 16 Y",
+      "priority": 16,
+      "quantity": 1,
+      "operation": "ship finished Y"
+    },
+    {
+      "due": "2026-02-02T08:00:00",
+      "item": "finished X",
+      "name": "routing order 17 X",
+      "priority": 17,
+      "quantity": 2,
+      "operation": "ship finished X"
+    },
+    {
+      "due": "2026-02-02T16:00:00",
+      "item": "finished Y",
+      "name": "routing order 18 Y",
+      "priority": 18,
+      "quantity": 3,
+      "operation": "ship finished Y"
+    }
+  ],
+  "resources": [
+    {
+      "name": "press A",
+      "maximum": 3,
+      "maxearly": 5184000,
+      "efficiency": 100
+    },
+    {
+      "name": "press B",
+      "maximum": 3,
+      "maxearly": 5184000,
+      "efficiency": 85
+    },
+    {
+      "name": "electronics cell",
+      "maximum": 3,
+      "maxearly": 5184000,
+      "efficiency": 100
+    },
+    {
+      "name": "machining center",
+      "setup": "idle",
+      "maximum": 3,
+      "maxearly": 5184000,
+      "efficiency": 100,
+      "setupMatrix": "machining family change"
+    },
+    {
+      "name": "assembly pool",
+      "maximum": 1,
+      "maxearly": 5184000,
+      "efficiency": 100
+    },
+    {
+      "name": "assembler A",
+      "owner": "assembly pool",
+      "maximum": 3,
+      "maxearly": 5184000,
+      "efficiency": 100
+    },
+    {
+      "name": "assembler B",
+      "owner": "assembly pool",
+      "maximum": 3,
+      "maxearly": 5184000,
+      "efficiency": 110
+    },
+    {
+      "name": "assembler C",
+      "owner": "assembly pool",
+      "maximum": 3,
+      "maxearly": 5184000,
+      "efficiency": 90
+    },
+    {
+      "name": "assembler trainee",
+      "owner": "assembly pool",
+      "maximum": 3,
+      "maxearly": 5184000,
+      "efficiency": 150
+    },
+    {
+      "name": "test bench",
+      "maximum": 3,
+      "maxearly": 5184000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "name": "make machined module",
+      "type": "fixed_time",
+      "duration": 50400
+    },
+    {
+      "name": "make electrical module",
+      "type": "fixed_time",
+      "duration": 36000
+    },
+    {
+      "name": "machine X",
+      "type": "fixed_time",
+      "duration": 57600
+    },
+    {
+      "name": "assemble X",
+      "type": "fixed_time",
+      "duration": 43200
+    },
+    {
+      "name": "test X",
+      "type": "fixed_time",
+      "duration": 28800
+    },
+    {
+      "name": "build finished X",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "machine X"
+        },
+        {
+          "priority": 2,
+          "operation": "assemble X"
+        },
+        {
+          "priority": 3,
+          "operation": "test X"
+        }
+      ]
+    },
+    {
+      "name": "ship finished X",
+      "type": "fixed_time",
+      "duration": 14400
+    },
+    {
+      "name": "machine Y",
+      "type": "fixed_time",
+      "duration": 72000
+    },
+    {
+      "name": "assemble Y",
+      "type": "fixed_time",
+      "duration": 54000
+    },
+    {
+      "name": "test Y",
+      "type": "fixed_time",
+      "duration": 28800
+    },
+    {
+      "name": "build finished Y",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "machine Y"
+        },
+        {
+          "priority": 2,
+          "operation": "assemble Y"
+        },
+        {
+          "priority": 3,
+          "operation": "test Y"
+        }
+      ]
+    },
+    {
+      "name": "ship finished Y",
+      "type": "fixed_time",
+      "duration": 14400
+    }
+  ],
+  "setupMatrices": [
+    {
+      "name": "machining family change",
+      "rules": [
+        {
+          "to": "family-x",
+          "cost": 8,
+          "from": "idle",
+          "duration": 10800,
+          "priority": 1
+        },
+        {
+          "to": "family-y",
+          "cost": 9,
+          "from": "idle",
+          "duration": 14400,
+          "priority": 2
+        },
+        {
+          "to": "family-y",
+          "cost": 15,
+          "from": "family-x",
+          "duration": 21600,
+          "priority": 3
+        },
+        {
+          "to": "family-x",
+          "cost": 14,
+          "from": "family-y",
+          "duration": 18000,
+          "priority": 4
+        },
+        {
+          "to": ".*",
+          "cost": 2,
+          "from": ".*",
+          "duration": 3600,
+          "priority": 99
+        }
+      ]
+    }
+  ],
+  "resourceSkills": [
+    {
+      "skill": "certified assembler",
+      "priority": 2,
+      "resource": "assembler A"
+    },
+    {
+      "skill": "certified assembler",
+      "priority": 1,
+      "resource": "assembler B"
+    },
+    {
+      "skill": "certified assembler",
+      "priority": 3,
+      "resource": "assembler C"
+    }
+  ]
+}

@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2026-01-01T00:00:00</current>
+  <operations>
+    <operation name="make machined module" xsi:type="operation_fixed_time">
+      <duration>PT14H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="make electrical module" xsi:type="operation_fixed_time">
+      <duration>PT10H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="machine X" xsi:type="operation_fixed_time">
+      <duration>PT16H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="assemble X" xsi:type="operation_fixed_time">
+      <duration>PT12H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="test X" xsi:type="operation_fixed_time">
+      <duration>PT8H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="build finished X" xsi:type="operation_routing">
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="machine X" />
+          <priority>1</priority>
+        </suboperation>
+        <suboperation>
+          <operation name="assemble X" />
+          <priority>2</priority>
+        </suboperation>
+        <suboperation>
+          <operation name="test X" />
+          <priority>3</priority>
+        </suboperation>
+      </suboperations>
+    </operation>
+    <operation name="ship finished X" xsi:type="operation_fixed_time">
+      <duration>PT4H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="machine Y" xsi:type="operation_fixed_time">
+      <duration>PT20H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="assemble Y" xsi:type="operation_fixed_time">
+      <duration>PT15H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="test Y" xsi:type="operation_fixed_time">
+      <duration>PT8H</duration>
+      
+      
+      
+      
+      
+    </operation>
+    <operation name="build finished Y" xsi:type="operation_routing">
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="machine Y" />
+          <priority>1</priority>
+        </suboperation>
+        <suboperation>
+          <operation name="assemble Y" />
+          <priority>2</priority>
+        </suboperation>
+        <suboperation>
+          <operation name="test Y" />
+          <priority>3</priority>
+        </suboperation>
+      </suboperations>
+    </operation>
+    <operation name="ship finished Y" xsi:type="operation_fixed_time">
+      <duration>PT4H</duration>
+      
+      
+      
+      
+      
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="metal stock">
+      
+      <item name="metal stock" />
+      <onhand>90</onhand>
+    </buffer>
+    <buffer name="electrical stock">
+      
+      <item name="electrical stock" />
+      <onhand>60</onhand>
+    </buffer>
+    <buffer name="machined module">
+      <producing name="make machined module" />
+      <item name="machined module" />
+      <onhand>2</onhand>
+    </buffer>
+    <buffer name="electrical module">
+      <producing name="make electrical module" />
+      <item name="electrical module" />
+      <onhand>1</onhand>
+    </buffer>
+    <buffer name="finished X">
+      <producing name="build finished X" />
+      <item name="finished X" />
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="finished Y">
+      <producing name="build finished Y" />
+      <item name="finished Y" />
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+    <setupmatrix name="machining family change">
+      <rules>
+        <rule priority="1" fromsetup="idle" tosetup="family-x"
+          duration="PT3H" cost="8" />
+        <rule priority="2" fromsetup="idle" tosetup="family-y"
+          duration="PT4H" cost="9" />
+        <rule priority="3" fromsetup="family-x" tosetup="family-y"
+          duration="PT6H" cost="15" />
+        <rule priority="4" fromsetup="family-y" tosetup="family-x"
+          duration="PT5H" cost="14" />
+        <rule priority="99" fromsetup=".*" tosetup=".*"
+          duration="PT1H" cost="2" />
+      </rules>
+    </setupmatrix>
+  </setupmatrices>
+  <resources>
+    <resource name="press A">
+      
+      <maximum>3</maximum>
+      <maxearly>P60D</maxearly>
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="press B">
+      
+      <maximum>3</maximum>
+      <maxearly>P60D</maxearly>
+      <efficiency>85</efficiency>
+      
+      
+    </resource>
+    <resource name="electronics cell">
+      
+      <maximum>3</maximum>
+      <maxearly>P60D</maxearly>
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="machining center">
+      
+      <maximum>3</maximum>
+      <maxearly>P60D</maxearly>
+      <efficiency>100</efficiency>
+      <setupmatrix name="machining family change" />
+      <setup>idle</setup>
+    </resource>
+    <resource name="assembly pool">
+      
+      <maximum>1</maximum>
+      <maxearly>P60D</maxearly>
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="assembler A">
+      <owner name="assembly pool" />
+      <maximum>3</maximum>
+      <maxearly>P60D</maxearly>
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="assembler B">
+      <owner name="assembly pool" />
+      <maximum>3</maximum>
+      <maxearly>P60D</maxearly>
+      <efficiency>110</efficiency>
+      
+      
+    </resource>
+    <resource name="assembler C">
+      <owner name="assembly pool" />
+      <maximum>3</maximum>
+      <maxearly>P60D</maxearly>
+      <efficiency>90</efficiency>
+      
+      
+    </resource>
+    <resource name="assembler trainee">
+      <owner name="assembly pool" />
+      <maximum>3</maximum>
+      <maxearly>P60D</maxearly>
+      <efficiency>150</efficiency>
+      
+      
+    </resource>
+    <resource name="test bench">
+      
+      <maximum>3</maximum>
+      <maxearly>P60D</maxearly>
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+  </resources>
+  <loads>
+    <load>
+      <operation name="make machined module" />
+      <resource name="press A" />
+      <quantity>1</quantity>
+      <name>press</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      
+    </load>
+    <load>
+      <operation name="make machined module" />
+      <resource name="press B" />
+      <quantity>1</quantity>
+      <name>press</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      
+    </load>
+    <load>
+      <operation name="make electrical module" />
+      <resource name="electronics cell" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="machine X" />
+      <resource name="machining center" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      <setup>family-x</setup>
+    </load>
+    <load>
+      <operation name="assemble X" />
+      <resource name="assembly pool" />
+      <quantity>1</quantity>
+      
+      
+      <search>PRIORITY</search>
+      <skill name="certified assembler" />
+      
+    </load>
+    <load>
+      <operation name="test X" />
+      <resource name="test bench" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+    </load>
+    <load>
+      <operation name="machine Y" />
+      <resource name="machining center" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      <setup>family-y</setup>
+    </load>
+    <load>
+      <operation name="assemble Y" />
+      <resource name="assembly pool" />
+      <quantity>1</quantity>
+      
+      
+      <search>PRIORITY</search>
+      <skill name="certified assembler" />
+      
+    </load>
+    <load>
+      <operation name="test Y" />
+      <resource name="test bench" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+      
+    </load>
+  </loads>
+  <skills>
+    <skill name="certified assembler">
+      <resourceskills>
+        <resourceskill>
+          <resource name="assembler A" />
+          <priority>2</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="assembler B" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="assembler C" />
+          <priority>3</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_end">
+      <operation name="make machined module" />
+      <buffer name="machined module" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="make machined module" />
+      <buffer name="metal stock" />
+      <quantity>-2</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="make electrical module" />
+      <buffer name="electrical module" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="make electrical module" />
+      <buffer name="electrical stock" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship finished X" />
+      <buffer name="finished X" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="machine X" />
+      <buffer name="machined module" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="assemble X" />
+      <buffer name="electrical module" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="test X" />
+      <buffer name="finished X" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="ship finished Y" />
+      <buffer name="finished Y" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="machine Y" />
+      <buffer name="machined module" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="assemble Y" />
+      <buffer name="electrical module" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="test Y" />
+      <buffer name="finished Y" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="routing order 01 X">
+      <quantity>1</quantity><due>2026-01-25T00:00:00</due><priority>1</priority>
+      <item name="finished X" /><operation name="ship finished X" />
+    </demand>
+    <demand name="routing order 02 Y">
+      <quantity>2</quantity><due>2026-01-25T08:00:00</due><priority>2</priority>
+      <item name="finished Y" /><operation name="ship finished Y" />
+    </demand>
+    <demand name="routing order 03 X">
+      <quantity>3</quantity><due>2026-01-26T16:00:00</due><priority>3</priority>
+      <item name="finished X" /><operation name="ship finished X" />
+    </demand>
+    <demand name="routing order 04 Y">
+      <quantity>1</quantity><due>2026-01-26T00:00:00</due><priority>4</priority>
+      <item name="finished Y" /><operation name="ship finished Y" />
+    </demand>
+    <demand name="routing order 05 X">
+      <quantity>2</quantity><due>2026-01-27T08:00:00</due><priority>5</priority>
+      <item name="finished X" /><operation name="ship finished X" />
+    </demand>
+    <demand name="routing order 06 Y">
+      <quantity>1</quantity><due>2026-01-27T16:00:00</due><priority>6</priority>
+      <item name="finished Y" /><operation name="ship finished Y" />
+    </demand>
+    <demand name="routing order 07 X">
+      <quantity>2</quantity><due>2026-01-28T00:00:00</due><priority>7</priority>
+      <item name="finished X" /><operation name="ship finished X" />
+    </demand>
+    <demand name="routing order 08 Y">
+      <quantity>3</quantity><due>2026-01-28T08:00:00</due><priority>8</priority>
+      <item name="finished Y" /><operation name="ship finished Y" />
+    </demand>
+    <demand name="routing order 09 X">
+      <quantity>1</quantity><due>2026-01-29T16:00:00</due><priority>9</priority>
+      <item name="finished X" /><operation name="ship finished X" />
+    </demand>
+    <demand name="routing order 10 Y">
+      <quantity>2</quantity><due>2026-01-29T00:00:00</due><priority>10</priority>
+      <item name="finished Y" /><operation name="ship finished Y" />
+    </demand>
+    <demand name="routing order 11 X">
+      <quantity>1</quantity><due>2026-01-30T08:00:00</due><priority>11</priority>
+      <item name="finished X" /><operation name="ship finished X" />
+    </demand>
+    <demand name="routing order 12 Y">
+      <quantity>2</quantity><due>2026-01-30T16:00:00</due><priority>12</priority>
+      <item name="finished Y" /><operation name="ship finished Y" />
+    </demand>
+    <demand name="routing order 13 X">
+      <quantity>3</quantity><due>2026-01-31T00:00:00</due><priority>13</priority>
+      <item name="finished X" /><operation name="ship finished X" />
+    </demand>
+    <demand name="routing order 14 Y">
+      <quantity>1</quantity><due>2026-01-31T08:00:00</due><priority>14</priority>
+      <item name="finished Y" /><operation name="ship finished Y" />
+    </demand>
+    <demand name="routing order 15 X">
+      <quantity>2</quantity><due>2026-02-01T16:00:00</due><priority>15</priority>
+      <item name="finished X" /><operation name="ship finished X" />
+    </demand>
+    <demand name="routing order 16 Y">
+      <quantity>1</quantity><due>2026-02-01T00:00:00</due><priority>16</priority>
+      <item name="finished Y" /><operation name="ship finished Y" />
+    </demand>
+    <demand name="routing order 17 X">
+      <quantity>2</quantity><due>2026-02-02T08:00:00</due><priority>17</priority>
+      <item name="finished X" /><operation name="ship finished X" />
+    </demand>
+    <demand name="routing order 18 Y">
+      <quantity>3</quantity><due>2026-02-02T16:00:00</due><priority>18</priority>
+      <item name="finished Y" /><operation name="ship finished Y" />
+    </demand>
+  </demands>
+<?python
+import frepple, json
+frepple.solver_mrp(plantype=1, constraints=15, loglevel=0).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+plans = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": flowplan.quantity})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    plans.append({
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": operationplan.quantity,
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "setupSeconds": operationplan.setup,
+        "setupEnd": stamp(operationplan.setupend),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+    })
+plans.sort(key=lambda value: (value["operation"], value["start"], value["end"], value["demand"] or "", value["quantity"]))
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": operationplan.quantity, "end": stamp(operationplan.end)})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"]))
+with open("/workspace/cpp-typescript/.schedule-diff/factory_routing_skills.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries}, output, indent=2, sort_keys=True)
+?>
+</plan>

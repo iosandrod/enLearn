@@ -1,0 +1,103 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "end item",
+      "quantity": -1,
+      "operation": "delivery end item"
+    },
+    {
+      "type": "end",
+      "buffer": "end item",
+      "quantity": 1,
+      "operation": "make end item"
+    }
+  ],
+  "items": [
+    {
+      "name": "end item"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "Resource",
+      "operation": "make end item"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "end item",
+      "name": "end item",
+      "onhand": 0,
+      "producing": "make end item"
+    }
+  ],
+  "current": "2009-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "end item",
+      "name": "order 1",
+      "priority": 1,
+      "quantity": 10,
+      "operation": "delivery end item"
+    },
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "end item",
+      "name": "order 2",
+      "priority": 2,
+      "quantity": 10,
+      "operation": "delivery end item"
+    },
+    {
+      "due": "2009-01-17T12:00:00",
+      "item": "end item",
+      "name": "order 3",
+      "priority": 3,
+      "quantity": 10,
+      "operation": "delivery end item"
+    },
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "end item",
+      "name": "order 4",
+      "priority": 4,
+      "quantity": 10,
+      "operation": "delivery end item"
+    },
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "end item",
+      "name": "order 5",
+      "priority": 5,
+      "quantity": 10,
+      "operation": "delivery end item"
+    }
+  ],
+  "resources": [
+    {
+      "name": "Resource",
+      "maximum": 1,
+      "maxearly": 345600
+    }
+  ],
+  "operations": [
+    {
+      "name": "make end item",
+      "type": "fixed_time",
+      "duration": 86400
+    },
+    {
+      "name": "delivery end item",
+      "type": "fixed_time",
+      "duration": 86400
+    }
+  ]
+}

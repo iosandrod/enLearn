@@ -1,0 +1,573 @@
+{
+  "costSummary": {
+    "operationCost": 120.0,
+    "resourceCost": 0.0,
+    "setupCost": 26.0,
+    "setupPenalty": 26.0,
+    "totalCost": 120.0
+  },
+  "deliveries": [
+    {
+      "batch": "",
+      "demand": "locked setup blue demand",
+      "end": "2026-01-07T00:00:00",
+      "operationPlanKey": "auto:ship blue setup product|2026-01-06T23:00:00|2026-01-07T00:00:00|locked setup blue demand|9||MO|#1",
+      "orderType": "MO",
+      "quantity": 9.0
+    },
+    {
+      "batch": "",
+      "demand": "locked setup red demand",
+      "end": "2026-01-06T00:00:00",
+      "operationPlanKey": "auto:ship red setup product|2026-01-05T23:00:00|2026-01-06T00:00:00|locked setup red demand|8||MO|#1",
+      "orderType": "MO",
+      "quantity": 8.0
+    },
+    {
+      "batch": "",
+      "demand": "locked setup red followup",
+      "end": "2026-01-09T00:00:00",
+      "operationPlanKey": "auto:ship red setup product|2026-01-08T23:00:00|2026-01-09T00:00:00|locked setup red followup|7||MO|#1",
+      "orderType": "MO",
+      "quantity": 7.0
+    }
+  ],
+  "dependencies": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "blue setup product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-06T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship blue setup product|2026-01-06T23:00:00|2026-01-07T00:00:00|locked setup blue demand|9||MO|#1",
+      "orderType": "MO",
+      "quantity": -9.0
+    },
+    {
+      "buffer": "blue setup product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-06T23:00:00",
+      "onhand": 9.0,
+      "operationPlanKey": "auto:make blue setup product|2026-01-06T08:00:00|2026-01-06T23:00:00||9||MO|#1",
+      "orderType": "MO",
+      "quantity": 9.0
+    },
+    {
+      "buffer": "red setup product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-03T11:00:00",
+      "onhand": 5.0,
+      "operationPlanKey": "ref:MO-LOCKED-SETUP-001",
+      "orderType": "MO",
+      "quantity": 5.0
+    },
+    {
+      "buffer": "red setup product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-05T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship red setup product|2026-01-05T23:00:00|2026-01-06T00:00:00|locked setup red demand|8||MO|#1",
+      "orderType": "MO",
+      "quantity": -8.0
+    },
+    {
+      "buffer": "red setup product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-05T23:00:00",
+      "onhand": 8.0,
+      "operationPlanKey": "auto:make red setup product|2026-01-05T15:00:00|2026-01-05T23:00:00||3||MO|#1",
+      "orderType": "MO",
+      "quantity": 3.0
+    },
+    {
+      "buffer": "red setup product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T23:00:00",
+      "onhand": 0.0,
+      "operationPlanKey": "auto:ship red setup product|2026-01-08T23:00:00|2026-01-09T00:00:00|locked setup red followup|7||MO|#1",
+      "orderType": "MO",
+      "quantity": -7.0
+    },
+    {
+      "buffer": "red setup product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T23:00:00",
+      "onhand": 7.0,
+      "operationPlanKey": "auto:make red setup product|2026-01-08T11:00:00|2026-01-08T23:00:00||7||MO|#1",
+      "orderType": "MO",
+      "quantity": 7.0
+    },
+    {
+      "buffer": "setup raw @ plant",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "onhand": 100.0,
+      "operationPlanKey": "auto:Inventory setup raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||100||STCK|#1",
+      "orderType": "STCK",
+      "quantity": 100.0
+    },
+    {
+      "buffer": "setup raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-03T03:00:00",
+      "onhand": 95.0,
+      "operationPlanKey": "ref:MO-LOCKED-SETUP-001",
+      "orderType": "MO",
+      "quantity": -5.0
+    },
+    {
+      "buffer": "setup raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-05T15:00:00",
+      "onhand": 92.0,
+      "operationPlanKey": "auto:make red setup product|2026-01-05T15:00:00|2026-01-05T23:00:00||3||MO|#1",
+      "orderType": "MO",
+      "quantity": -3.0
+    },
+    {
+      "buffer": "setup raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-06T13:00:00",
+      "onhand": 83.0,
+      "operationPlanKey": "auto:make blue setup product|2026-01-06T08:00:00|2026-01-06T23:00:00||9||MO|#1",
+      "orderType": "MO",
+      "quantity": -9.0
+    },
+    {
+      "buffer": "setup raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-08T15:00:00",
+      "onhand": 76.0,
+      "operationPlanKey": "auto:make red setup product|2026-01-08T11:00:00|2026-01-08T23:00:00||7||MO|#1",
+      "orderType": "MO",
+      "quantity": -7.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "batch": "",
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "setup raw @ plant",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 100.0
+        }
+      ],
+      "operation": "Inventory setup raw @ plant",
+      "operationCost": 0.0,
+      "orderType": "STCK",
+      "ownerOperation": null,
+      "planKey": "auto:Inventory setup raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||100||STCK|#1",
+      "quantity": 100.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:Inventory setup raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||100||STCK|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "1971-01-01T00:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "1971-01-01T00:00:00",
+      "status": "closed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-06T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "setup raw @ plant",
+          "date": "2026-01-06T13:00:00",
+          "quantity": -9.0
+        },
+        {
+          "buffer": "blue setup product @ plant",
+          "date": "2026-01-06T23:00:00",
+          "quantity": 9.0
+        }
+      ],
+      "operation": "make blue setup product",
+      "operationCost": 45.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make blue setup product|2026-01-06T08:00:00|2026-01-06T23:00:00||9||MO|#1",
+      "quantity": 9.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make blue setup product|2026-01-06T08:00:00|2026-01-06T23:00:00||9||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "locked setup line"
+      ],
+      "setupCost": 12.0,
+      "setupEnd": "2026-01-06T13:00:00",
+      "setupPenalty": 12.0,
+      "setupSeconds": 18000,
+      "start": "2026-01-06T08:00:00",
+      "status": "proposed",
+      "totalCost": 45.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-03T11:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "setup raw @ plant",
+          "date": "2026-01-03T03:00:00",
+          "quantity": -5.0
+        },
+        {
+          "buffer": "red setup product @ plant",
+          "date": "2026-01-03T11:00:00",
+          "quantity": 5.0
+        }
+      ],
+      "operation": "make red setup product",
+      "operationCost": 25.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "ref:MO-LOCKED-SETUP-001",
+      "quantity": 5.0,
+      "quantityCompleted": 0.0,
+      "reference": "MO-LOCKED-SETUP-001",
+      "resourceCost": 0.0,
+      "resources": [
+        "locked setup line"
+      ],
+      "setupCost": 4.0,
+      "setupEnd": "2026-01-03T03:00:00",
+      "setupPenalty": 4.0,
+      "setupSeconds": 10800,
+      "start": "2026-01-03T03:00:00",
+      "status": "confirmed",
+      "totalCost": 25.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-05T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "setup raw @ plant",
+          "date": "2026-01-05T15:00:00",
+          "quantity": -3.0
+        },
+        {
+          "buffer": "red setup product @ plant",
+          "date": "2026-01-05T23:00:00",
+          "quantity": 3.0
+        }
+      ],
+      "operation": "make red setup product",
+      "operationCost": 15.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make red setup product|2026-01-05T15:00:00|2026-01-05T23:00:00||3||MO|#1",
+      "quantity": 3.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make red setup product|2026-01-05T15:00:00|2026-01-05T23:00:00||3||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "locked setup line"
+      ],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-05T15:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": 0,
+      "start": "2026-01-05T15:00:00",
+      "status": "proposed",
+      "totalCost": 15.0
+    },
+    {
+      "batch": "",
+      "demand": null,
+      "end": "2026-01-08T23:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "setup raw @ plant",
+          "date": "2026-01-08T15:00:00",
+          "quantity": -7.0
+        },
+        {
+          "buffer": "red setup product @ plant",
+          "date": "2026-01-08T23:00:00",
+          "quantity": 7.0
+        }
+      ],
+      "operation": "make red setup product",
+      "operationCost": 35.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:make red setup product|2026-01-08T11:00:00|2026-01-08T23:00:00||7||MO|#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:make red setup product|2026-01-08T11:00:00|2026-01-08T23:00:00||7||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [
+        "locked setup line"
+      ],
+      "setupCost": 10.0,
+      "setupEnd": "2026-01-08T15:00:00",
+      "setupPenalty": 10.0,
+      "setupSeconds": 14400,
+      "start": "2026-01-08T11:00:00",
+      "status": "proposed",
+      "totalCost": 35.0
+    },
+    {
+      "batch": "",
+      "demand": "locked setup blue demand",
+      "end": "2026-01-07T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "blue setup product @ plant",
+          "date": "2026-01-06T23:00:00",
+          "quantity": -9.0
+        }
+      ],
+      "operation": "ship blue setup product",
+      "operationCost": 0.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship blue setup product|2026-01-06T23:00:00|2026-01-07T00:00:00|locked setup blue demand|9||MO|#1",
+      "quantity": 9.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship blue setup product|2026-01-06T23:00:00|2026-01-07T00:00:00|locked setup blue demand|9||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-06T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-06T23:00:00",
+      "status": "proposed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": "locked setup red demand",
+      "end": "2026-01-06T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "red setup product @ plant",
+          "date": "2026-01-05T23:00:00",
+          "quantity": -8.0
+        }
+      ],
+      "operation": "ship red setup product",
+      "operationCost": 0.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship red setup product|2026-01-05T23:00:00|2026-01-06T00:00:00|locked setup red demand|8||MO|#1",
+      "quantity": 8.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship red setup product|2026-01-05T23:00:00|2026-01-06T00:00:00|locked setup red demand|8||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-05T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-05T23:00:00",
+      "status": "proposed",
+      "totalCost": 0.0
+    },
+    {
+      "batch": "",
+      "demand": "locked setup red followup",
+      "end": "2026-01-09T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "red setup product @ plant",
+          "date": "2026-01-08T23:00:00",
+          "quantity": -7.0
+        }
+      ],
+      "operation": "ship red setup product",
+      "operationCost": 0.0,
+      "orderType": "MO",
+      "ownerOperation": null,
+      "planKey": "auto:ship red setup product|2026-01-08T23:00:00|2026-01-09T00:00:00|locked setup red followup|7||MO|#1",
+      "quantity": 7.0,
+      "quantityCompleted": 0.0,
+      "reference": "auto:ship red setup product|2026-01-08T23:00:00|2026-01-09T00:00:00|locked setup red followup|7||MO|#1",
+      "resourceCost": 0.0,
+      "resources": [],
+      "setupCost": 0.0,
+      "setupEnd": "2026-01-08T23:00:00",
+      "setupPenalty": 0.0,
+      "setupSeconds": -1,
+      "start": "2026-01-08T23:00:00",
+      "status": "proposed",
+      "totalCost": 0.0
+    }
+  ],
+  "problems": [
+    {
+      "description": "No replenishment defined for 'setup raw @ plant'",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "feasible": false,
+      "name": "invalid data",
+      "owner": "setup raw @ plant",
+      "start": "1971-01-01T00:00:00"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "available": 482136.0,
+      "end": "2026-01-01T00:00:00",
+      "free": 482136.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "locked setup line",
+      "setup": 0.0,
+      "start": "1971-01-01T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 51.0,
+      "end": "2026-01-03T03:00:00",
+      "free": 51.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "locked setup line",
+      "setup": 0.0,
+      "start": "2026-01-01T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 8.0,
+      "end": "2026-01-03T11:00:00",
+      "free": 0.0,
+      "load": 8.0,
+      "loadConfirmed": 8.0,
+      "resource": "locked setup line",
+      "setup": 0.0,
+      "start": "2026-01-03T03:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 52.0,
+      "end": "2026-01-05T15:00:00",
+      "free": 52.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "locked setup line",
+      "setup": 0.0,
+      "start": "2026-01-03T11:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 8.0,
+      "end": "2026-01-05T23:00:00",
+      "free": 0.0,
+      "load": 8.0,
+      "loadConfirmed": 0.0,
+      "resource": "locked setup line",
+      "setup": 0.0,
+      "start": "2026-01-05T15:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-06T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "locked setup line",
+      "setup": 0.0,
+      "start": "2026-01-05T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 8.0,
+      "end": "2026-01-06T08:00:00",
+      "free": 8.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "locked setup line",
+      "setup": 0.0,
+      "start": "2026-01-06T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 15.0,
+      "end": "2026-01-06T23:00:00",
+      "free": 0.0,
+      "load": 10.0,
+      "loadConfirmed": 0.0,
+      "resource": "locked setup line",
+      "setup": 5.0,
+      "start": "2026-01-06T08:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-07T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "locked setup line",
+      "setup": 0.0,
+      "start": "2026-01-06T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 35.0,
+      "end": "2026-01-08T11:00:00",
+      "free": 35.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "locked setup line",
+      "setup": 0.0,
+      "start": "2026-01-07T00:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    },
+    {
+      "available": 12.0,
+      "end": "2026-01-08T23:00:00",
+      "free": 0.0,
+      "load": 8.0,
+      "loadConfirmed": 0.0,
+      "resource": "locked setup line",
+      "setup": 4.0,
+      "start": "2026-01-08T11:00:00",
+      "unavailable": 0.0,
+      "utilization": 1.0
+    },
+    {
+      "available": 1.0,
+      "end": "2026-01-09T00:00:00",
+      "free": 1.0,
+      "load": 0.0,
+      "loadConfirmed": 0.0,
+      "resource": "locked setup line",
+      "setup": 0.0,
+      "start": "2026-01-08T23:00:00",
+      "unavailable": 0.0,
+      "utilization": 0.0
+    }
+  ]
+}

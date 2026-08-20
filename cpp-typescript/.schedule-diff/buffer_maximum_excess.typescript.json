@@ -1,0 +1,143 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory maximum product @ plant",
+      "demand": null,
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "STCK",
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "maximum product @ plant",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 3
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:Inventory maximum product @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||3||STCK|#1",
+      "reference": "auto:Inventory maximum product @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||3||STCK|#1"
+    },
+    {
+      "operation": "make maximum product",
+      "demand": null,
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-15T17:00:00",
+      "end": "2026-01-15T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-15T17:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "maximum product @ plant",
+          "date": "2026-01-15T23:00:00",
+          "quantity": 3
+        }
+      ],
+      "operationCost": 12,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 12,
+      "setupPenalty": 0,
+      "planKey": "auto:make maximum product|2026-01-15T17:00:00|2026-01-15T23:00:00||3||MO|#1",
+      "reference": "auto:make maximum product|2026-01-15T17:00:00|2026-01-15T23:00:00||3||MO|#1"
+    },
+    {
+      "operation": "ship maximum product",
+      "demand": "maximum replacement order",
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-15T23:00:00",
+      "end": "2026-01-16T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-15T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "maximum product @ plant",
+          "date": "2026-01-15T23:00:00",
+          "quantity": -3
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship maximum product|2026-01-15T23:00:00|2026-01-16T00:00:00|maximum replacement order|3||MO|#1",
+      "reference": "auto:ship maximum product|2026-01-15T23:00:00|2026-01-16T00:00:00|maximum replacement order|3||MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "maximum replacement order",
+      "quantity": 3,
+      "end": "2026-01-16T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship maximum product|2026-01-15T23:00:00|2026-01-16T00:00:00|maximum replacement order|3||MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "maximum product @ plant",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "quantity": 3,
+      "onhand": 3,
+      "operationPlanKey": "auto:Inventory maximum product @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||3||STCK|#1",
+      "orderType": "STCK"
+    },
+    {
+      "buffer": "maximum product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-15T23:00:00",
+      "quantity": -3,
+      "onhand": 3,
+      "operationPlanKey": "auto:ship maximum product|2026-01-15T23:00:00|2026-01-16T00:00:00|maximum replacement order|3||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "maximum product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-15T23:00:00",
+      "quantity": 3,
+      "onhand": 6,
+      "operationPlanKey": "auto:make maximum product|2026-01-15T17:00:00|2026-01-15T23:00:00||3||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [],
+  "costSummary": {
+    "operationCost": 12,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 12,
+    "setupPenalty": 0
+  }
+}

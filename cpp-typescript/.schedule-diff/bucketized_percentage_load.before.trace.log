@@ -1,0 +1,13 @@
+file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:362
+  throw new Error(details ? `${message}\n${details}` : message);
+        ^
+
+Error: docker exited with status 1
+Error: Error during XML parsing: element 'location' is not allowed for content model '(name|category|subcategory|description|source|booleanproperty|stringproperty|doubleproperty|dateproperty|item|priority|effective_start|effective_end|duration|owner|detectproblems|posttime|fence|batchwindow|size_minimum|size_minimum_calendar|size_multiple|size_maximum|cost|loads|flows|operationplans|location|available|search|nolocationcalendar|resetshelflife|dependencies)' at line 67
+    at fail (file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:362:9)
+    at run (file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:374:28)
+    at runNative (file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:766:3)
+    at async main (file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:1120:28)
+    at async file:///E:/frepple-master/cpp-typescript/scripts/compare-scheduling.mjs:1162:3
+
+Node.js v20.19.3

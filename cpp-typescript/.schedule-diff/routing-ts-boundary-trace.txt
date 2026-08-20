@@ -1,0 +1,850 @@
+[demand] attempt {"demand":"routing order 01 X","attempt":1,"quantity":1,"requestDate":"2026-01-25T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 01 X","operation":"ship finished X","quantity":1,"end":"2026-01-25T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished X","requested":1,"date":"2026-01-24T20:00:00","onhand":0}
+[buffer] shortage {"buffer":"finished X","iteration":0,"date":"2026-01-24T20:00:00","onhand":-1,"shortage":1}
+[operation] routing-ask {"demand":null,"operation":"build finished X","quantity":1,"operationPlanQuantity":1,"end":"2026-01-24T20:00:00","steps":["machine X","assemble X","test X"]}
+[operation] ask {"demand":null,"operation":"test X","quantity":1,"end":"2026-01-24T20:00:00"}
+[resource] ask {"demand":null,"operation":"test X","resource":"test bench","start":"2026-01-24T12:00:00","end":"2026-01-24T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T12:00:00","end":"2026-01-24T20:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test X","quantity":1,"start":"2026-01-24T12:00:00","end":"2026-01-24T20:00:00"}
+[operation] ask {"demand":null,"operation":"assemble X","quantity":1,"end":"2026-01-24T12:00:00"}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-24T01:05:27","end":"2026-01-24T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T01:05:27","end":"2026-01-24T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler A","start":"2026-01-24T01:05:27","end":"2026-01-24T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T01:05:27","end":"2026-01-24T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler C","start":"2026-01-24T01:05:27","end":"2026-01-24T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T01:05:27","end":"2026-01-24T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-24T01:05:27","end":"2026-01-24T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T01:05:27","end":"2026-01-24T12:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":1,"date":"2026-01-24T01:05:27","onhand":1}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-24T01:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"assemble X","quantity":1,"start":"2026-01-24T01:05:27","end":"2026-01-24T12:00:00"}
+[operation] ask {"demand":null,"operation":"machine X","quantity":1,"end":"2026-01-24T01:05:27"}
+[resource] ask {"demand":null,"operation":"machine X","resource":"machining center","start":"2026-01-23T06:05:27","end":"2026-01-24T01:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-23T06:05:27","end":"2026-01-24T01:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":1,"date":"2026-01-23T09:05:27","onhand":2}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-23T09:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"machine X","quantity":1,"start":"2026-01-23T06:05:27","end":"2026-01-24T01:05:27"}
+[operation] routing-answer {"demand":null,"operation":"build finished X","quantity":1,"start":"2026-01-23T06:05:27","end":"2026-01-24T20:00:00"}
+[buffer] replenish {"buffer":"finished X","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-24T20:00:00","eventCountBefore":1,"eventCountAfter":2,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished X","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-24T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 01 X","operation":"ship finished X","quantity":1,"start":"2026-01-24T20:00:00","end":"2026-01-25T00:00:00"}
+[demand] reply {"demand":"routing order 01 X","attempt":1,"result":true,"quantity":1,"date":"2026-01-25T00:00:00"}
+[demand] attempt {"demand":"routing order 02 Y","attempt":1,"quantity":2,"requestDate":"2026-01-25T08:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 02 Y","operation":"ship finished Y","quantity":2,"end":"2026-01-25T08:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished Y","requested":2,"date":"2026-01-25T04:00:00","onhand":0}
+[buffer] shortage {"buffer":"finished Y","iteration":0,"date":"2026-01-25T04:00:00","onhand":-2,"shortage":2}
+[operation] routing-ask {"demand":null,"operation":"build finished Y","quantity":2,"operationPlanQuantity":2,"end":"2026-01-25T04:00:00","steps":["machine Y","assemble Y","test Y"]}
+[operation] ask {"demand":null,"operation":"test Y","quantity":2,"end":"2026-01-25T04:00:00"}
+[resource] ask {"demand":null,"operation":"test Y","resource":"test bench","start":"2026-01-24T20:00:00","end":"2026-01-25T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T20:00:00","end":"2026-01-25T04:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test Y","quantity":2,"start":"2026-01-24T20:00:00","end":"2026-01-25T04:00:00"}
+[operation] ask {"demand":null,"operation":"assemble Y","quantity":2,"end":"2026-01-24T20:00:00"}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-24T06:21:49","end":"2026-01-24T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T06:21:49","end":"2026-01-24T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler A","start":"2026-01-24T06:21:49","end":"2026-01-24T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T06:21:49","end":"2026-01-24T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler C","start":"2026-01-24T06:21:49","end":"2026-01-24T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T06:21:49","end":"2026-01-24T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-24T06:21:49","end":"2026-01-24T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T06:21:49","end":"2026-01-24T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":2,"date":"2026-01-24T06:21:49","onhand":0}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-24T06:21:49","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":2,"end":"2026-01-24T06:21:49"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-23T20:21:49","end":"2026-01-24T06:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-23T20:21:49","end":"2026-01-24T06:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":2,"date":"2026-01-23T20:21:49","onhand":60}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-23T20:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":2,"start":"2026-01-23T20:21:49","end":"2026-01-24T06:21:49"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-24T06:21:49","eventCountBefore":3,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-24T06:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble Y","quantity":2,"start":"2026-01-24T06:21:49","end":"2026-01-24T20:00:00"}
+[operation] ask {"demand":null,"operation":"machine Y","quantity":2,"end":"2026-01-24T06:21:49"}
+[resource] ask {"demand":null,"operation":"machine Y","resource":"machining center","start":"2026-01-23T04:21:49","end":"2026-01-24T06:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-23T04:21:49","end":"2026-01-24T06:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":2,"date":"2026-01-23T10:21:49","onhand":1}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-23T10:21:49","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":1,"end":"2026-01-23T10:21:49"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-22T20:21:49","end":"2026-01-23T10:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-22T20:21:49","end":"2026-01-23T10:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":2,"date":"2026-01-22T20:21:49","onhand":90}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-22T20:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":1,"start":"2026-01-22T20:21:49","end":"2026-01-23T10:21:49"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-23T10:21:49","eventCountBefore":3,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-23T10:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine Y","quantity":2,"start":"2026-01-23T04:21:49","end":"2026-01-24T06:21:49"}
+[operation] routing-answer {"demand":null,"operation":"build finished Y","quantity":2,"start":"2026-01-23T04:21:49","end":"2026-01-25T04:00:00"}
+[buffer] replenish {"buffer":"finished Y","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-25T04:00:00","eventCountBefore":1,"eventCountAfter":2,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished Y","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-25T04:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 02 Y","operation":"ship finished Y","quantity":2,"start":"2026-01-25T04:00:00","end":"2026-01-25T08:00:00"}
+[demand] reply {"demand":"routing order 02 Y","attempt":1,"result":true,"quantity":2,"date":"2026-01-25T08:00:00"}
+[demand] attempt {"demand":"routing order 03 X","attempt":1,"quantity":3,"requestDate":"2026-01-26T16:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 03 X","operation":"ship finished X","quantity":3,"end":"2026-01-26T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished X","requested":3,"date":"2026-01-26T12:00:00","onhand":1}
+[buffer] shortage {"buffer":"finished X","iteration":0,"date":"2026-01-26T12:00:00","onhand":-3,"shortage":3}
+[operation] routing-ask {"demand":null,"operation":"build finished X","quantity":3,"operationPlanQuantity":3,"end":"2026-01-26T12:00:00","steps":["machine X","assemble X","test X"]}
+[operation] ask {"demand":null,"operation":"test X","quantity":3,"end":"2026-01-26T12:00:00"}
+[resource] ask {"demand":null,"operation":"test X","resource":"test bench","start":"2026-01-26T04:00:00","end":"2026-01-26T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-26T04:00:00","end":"2026-01-26T12:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test X","quantity":3,"start":"2026-01-26T04:00:00","end":"2026-01-26T12:00:00"}
+[operation] ask {"demand":null,"operation":"assemble X","quantity":3,"end":"2026-01-26T04:00:00"}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-25T17:05:27","end":"2026-01-26T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-25T17:05:27","end":"2026-01-26T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler A","start":"2026-01-25T17:05:27","end":"2026-01-26T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-25T17:05:27","end":"2026-01-26T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler C","start":"2026-01-25T17:05:27","end":"2026-01-26T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-25T17:05:27","end":"2026-01-26T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-25T17:05:27","end":"2026-01-26T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-25T17:05:27","end":"2026-01-26T04:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":3,"date":"2026-01-25T17:05:27","onhand":2}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-25T17:05:27","onhand":-3,"shortage":3}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":3,"end":"2026-01-25T17:05:27"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-25T07:05:27","end":"2026-01-25T17:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-25T07:05:27","end":"2026-01-25T17:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":3,"date":"2026-01-25T07:05:27","onhand":58}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-25T07:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":3,"start":"2026-01-25T07:05:27","end":"2026-01-25T17:05:27"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-01-25T17:05:27","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-25T17:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble X","quantity":3,"start":"2026-01-25T17:05:27","end":"2026-01-26T04:00:00"}
+[operation] ask {"demand":null,"operation":"machine X","quantity":3,"end":"2026-01-25T17:05:27"}
+[resource] ask {"demand":null,"operation":"machine X","resource":"machining center","start":"2026-01-24T20:05:27","end":"2026-01-25T17:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-24T20:05:27","end":"2026-01-25T17:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":3,"date":"2026-01-25T01:05:27","onhand":2}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-25T01:05:27","onhand":-3,"shortage":3}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":3,"end":"2026-01-25T01:05:27"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-24T11:05:27","end":"2026-01-25T01:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-24T11:05:27","end":"2026-01-25T01:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":6,"date":"2026-01-24T11:05:27","onhand":88}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":6,"remainingShortage":0,"quantity":6,"date":"2026-01-24T11:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":3,"start":"2026-01-24T11:05:27","end":"2026-01-25T01:05:27"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-01-25T01:05:27","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-25T01:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine X","quantity":3,"start":"2026-01-24T20:05:27","end":"2026-01-25T17:05:27"}
+[operation] routing-answer {"demand":null,"operation":"build finished X","quantity":3,"start":"2026-01-24T20:05:27","end":"2026-01-26T12:00:00"}
+[buffer] replenish {"buffer":"finished X","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-01-26T12:00:00","eventCountBefore":3,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished X","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-26T12:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 03 X","operation":"ship finished X","quantity":3,"start":"2026-01-26T12:00:00","end":"2026-01-26T16:00:00"}
+[demand] reply {"demand":"routing order 03 X","attempt":1,"result":true,"quantity":3,"date":"2026-01-26T16:00:00"}
+[demand] attempt {"demand":"routing order 04 Y","attempt":1,"quantity":1,"requestDate":"2026-01-26T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 04 Y","operation":"ship finished Y","quantity":1,"end":"2026-01-26T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished Y","requested":1,"date":"2026-01-25T20:00:00","onhand":2}
+[buffer] shortage {"buffer":"finished Y","iteration":0,"date":"2026-01-25T20:00:00","onhand":-1,"shortage":1}
+[operation] routing-ask {"demand":null,"operation":"build finished Y","quantity":1,"operationPlanQuantity":1,"end":"2026-01-25T20:00:00","steps":["machine Y","assemble Y","test Y"]}
+[operation] ask {"demand":null,"operation":"test Y","quantity":1,"end":"2026-01-25T20:00:00"}
+[resource] ask {"demand":null,"operation":"test Y","resource":"test bench","start":"2026-01-25T12:00:00","end":"2026-01-25T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-25T12:00:00","end":"2026-01-25T20:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test Y","quantity":1,"start":"2026-01-25T12:00:00","end":"2026-01-25T20:00:00"}
+[operation] ask {"demand":null,"operation":"assemble Y","quantity":1,"end":"2026-01-25T12:00:00"}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-24T22:21:49","end":"2026-01-25T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T22:21:49","end":"2026-01-25T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler A","start":"2026-01-24T22:21:49","end":"2026-01-25T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T22:21:49","end":"2026-01-25T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler C","start":"2026-01-24T22:21:49","end":"2026-01-25T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T22:21:49","end":"2026-01-25T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-24T22:21:49","end":"2026-01-25T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-24T22:21:49","end":"2026-01-25T12:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":1,"date":"2026-01-24T22:21:49","onhand":2}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-24T22:21:49","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":1,"end":"2026-01-24T22:21:49"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-24T12:21:49","end":"2026-01-24T22:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-24T12:21:49","end":"2026-01-24T22:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":1,"date":"2026-01-24T12:21:49","onhand":58}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-24T12:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":1,"start":"2026-01-24T12:21:49","end":"2026-01-24T22:21:49"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-24T22:21:49","eventCountBefore":7,"eventCountAfter":8,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-24T22:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble Y","quantity":1,"start":"2026-01-24T22:21:49","end":"2026-01-25T12:00:00"}
+[operation] ask {"demand":null,"operation":"machine Y","quantity":1,"end":"2026-01-24T22:21:49"}
+[resource] ask {"demand":null,"operation":"machine Y","resource":"machining center","start":"2026-01-24T02:21:49","end":"2026-01-24T22:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-24T02:21:49","end":"2026-01-24T22:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":1,"date":"2026-01-24T02:21:49","onhand":2}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-24T02:21:49","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":1,"end":"2026-01-24T02:21:49"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-23T12:21:49","end":"2026-01-24T02:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-23T12:21:49","end":"2026-01-24T02:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":2,"date":"2026-01-23T12:21:49","onhand":88}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-23T12:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":1,"start":"2026-01-23T12:21:49","end":"2026-01-24T02:21:49"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-24T02:21:49","eventCountBefore":7,"eventCountAfter":8,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-24T02:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine Y","quantity":1,"start":"2026-01-24T02:21:49","end":"2026-01-24T22:21:49"}
+[operation] routing-answer {"demand":null,"operation":"build finished Y","quantity":1,"start":"2026-01-24T02:21:49","end":"2026-01-25T20:00:00"}
+[buffer] replenish {"buffer":"finished Y","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-25T20:00:00","eventCountBefore":3,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished Y","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-25T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 04 Y","operation":"ship finished Y","quantity":1,"start":"2026-01-25T20:00:00","end":"2026-01-26T00:00:00"}
+[demand] reply {"demand":"routing order 04 Y","attempt":1,"result":true,"quantity":1,"date":"2026-01-26T00:00:00"}
+[demand] attempt {"demand":"routing order 05 X","attempt":1,"quantity":2,"requestDate":"2026-01-27T08:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 05 X","operation":"ship finished X","quantity":2,"end":"2026-01-27T08:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished X","requested":2,"date":"2026-01-27T04:00:00","onhand":3}
+[buffer] shortage {"buffer":"finished X","iteration":0,"date":"2026-01-27T04:00:00","onhand":-2,"shortage":2}
+[operation] routing-ask {"demand":null,"operation":"build finished X","quantity":2,"operationPlanQuantity":2,"end":"2026-01-27T04:00:00","steps":["machine X","assemble X","test X"]}
+[operation] ask {"demand":null,"operation":"test X","quantity":2,"end":"2026-01-27T04:00:00"}
+[resource] ask {"demand":null,"operation":"test X","resource":"test bench","start":"2026-01-26T20:00:00","end":"2026-01-27T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-26T20:00:00","end":"2026-01-27T04:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test X","quantity":2,"start":"2026-01-26T20:00:00","end":"2026-01-27T04:00:00"}
+[operation] ask {"demand":null,"operation":"assemble X","quantity":2,"end":"2026-01-26T20:00:00"}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-26T09:05:27","end":"2026-01-26T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-26T09:05:27","end":"2026-01-26T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler A","start":"2026-01-26T09:05:27","end":"2026-01-26T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-26T09:05:27","end":"2026-01-26T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler C","start":"2026-01-26T09:05:27","end":"2026-01-26T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-26T09:05:27","end":"2026-01-26T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-26T09:05:27","end":"2026-01-26T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-26T09:05:27","end":"2026-01-26T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":2,"date":"2026-01-26T09:05:27","onhand":3}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-26T09:05:27","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":2,"end":"2026-01-26T09:05:27"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-25T23:05:27","end":"2026-01-26T09:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-25T23:05:27","end":"2026-01-26T09:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":2,"date":"2026-01-25T23:05:27","onhand":54}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-25T23:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":2,"start":"2026-01-25T23:05:27","end":"2026-01-26T09:05:27"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-26T09:05:27","eventCountBefore":9,"eventCountAfter":10,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-26T09:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble X","quantity":2,"start":"2026-01-26T09:05:27","end":"2026-01-26T20:00:00"}
+[operation] ask {"demand":null,"operation":"machine X","quantity":2,"end":"2026-01-26T09:05:27"}
+[resource] ask {"demand":null,"operation":"machine X","resource":"machining center","start":"2026-01-25T17:05:27","end":"2026-01-26T09:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-25T17:05:27","end":"2026-01-26T09:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":2,"date":"2026-01-25T17:05:27","onhand":3}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-25T17:05:27","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":2,"end":"2026-01-25T17:05:27"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-25T03:05:27","end":"2026-01-25T17:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-25T03:05:27","end":"2026-01-25T17:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":4,"date":"2026-01-25T03:05:27","onhand":80}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":4,"remainingShortage":0,"quantity":4,"date":"2026-01-25T03:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":2,"start":"2026-01-25T03:05:27","end":"2026-01-25T17:05:27"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-25T17:05:27","eventCountBefore":9,"eventCountAfter":10,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-25T17:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine X","quantity":2,"start":"2026-01-25T17:05:27","end":"2026-01-26T09:05:27"}
+[operation] routing-answer {"demand":null,"operation":"build finished X","quantity":2,"start":"2026-01-25T17:05:27","end":"2026-01-27T04:00:00"}
+[buffer] replenish {"buffer":"finished X","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-27T04:00:00","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished X","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-27T04:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 05 X","operation":"ship finished X","quantity":2,"start":"2026-01-27T04:00:00","end":"2026-01-27T08:00:00"}
+[demand] reply {"demand":"routing order 05 X","attempt":1,"result":true,"quantity":2,"date":"2026-01-27T08:00:00"}
+[demand] attempt {"demand":"routing order 06 Y","attempt":1,"quantity":1,"requestDate":"2026-01-27T16:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 06 Y","operation":"ship finished Y","quantity":1,"end":"2026-01-27T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished Y","requested":1,"date":"2026-01-27T12:00:00","onhand":1}
+[buffer] shortage {"buffer":"finished Y","iteration":0,"date":"2026-01-27T12:00:00","onhand":-1,"shortage":1}
+[operation] routing-ask {"demand":null,"operation":"build finished Y","quantity":1,"operationPlanQuantity":1,"end":"2026-01-27T12:00:00","steps":["machine Y","assemble Y","test Y"]}
+[operation] ask {"demand":null,"operation":"test Y","quantity":1,"end":"2026-01-27T12:00:00"}
+[resource] ask {"demand":null,"operation":"test Y","resource":"test bench","start":"2026-01-27T04:00:00","end":"2026-01-27T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T04:00:00","end":"2026-01-27T12:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test Y","quantity":1,"start":"2026-01-27T04:00:00","end":"2026-01-27T12:00:00"}
+[operation] ask {"demand":null,"operation":"assemble Y","quantity":1,"end":"2026-01-27T04:00:00"}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-26T14:21:49","end":"2026-01-27T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-26T14:21:49","end":"2026-01-27T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler A","start":"2026-01-26T14:21:49","end":"2026-01-27T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-26T14:21:49","end":"2026-01-27T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler C","start":"2026-01-26T14:21:49","end":"2026-01-27T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-26T14:21:49","end":"2026-01-27T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-26T14:21:49","end":"2026-01-27T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-26T14:21:49","end":"2026-01-27T04:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":1,"date":"2026-01-26T14:21:49","onhand":2}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-26T14:21:49","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":1,"end":"2026-01-26T14:21:49"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-26T04:21:49","end":"2026-01-26T14:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-26T04:21:49","end":"2026-01-26T14:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":1,"date":"2026-01-26T04:21:49","onhand":52}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-26T04:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":1,"start":"2026-01-26T04:21:49","end":"2026-01-26T14:21:49"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-26T14:21:49","eventCountBefore":11,"eventCountAfter":12,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-26T14:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble Y","quantity":1,"start":"2026-01-26T14:21:49","end":"2026-01-27T04:00:00"}
+[operation] ask {"demand":null,"operation":"machine Y","quantity":1,"end":"2026-01-26T14:21:49"}
+[resource] ask {"demand":null,"operation":"machine Y","resource":"machining center","start":"2026-01-25T12:21:49","end":"2026-01-26T14:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-25T12:21:49","end":"2026-01-26T14:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":1,"date":"2026-01-25T18:21:49","onhand":2}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-25T18:21:49","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":1,"end":"2026-01-25T18:21:49"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-25T04:21:49","end":"2026-01-25T18:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-25T04:21:49","end":"2026-01-25T18:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":2,"date":"2026-01-25T04:21:49","onhand":76}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-25T04:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":1,"start":"2026-01-25T04:21:49","end":"2026-01-25T18:21:49"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-25T18:21:49","eventCountBefore":11,"eventCountAfter":12,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-25T18:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine Y","quantity":1,"start":"2026-01-25T12:21:49","end":"2026-01-26T14:21:49"}
+[operation] routing-answer {"demand":null,"operation":"build finished Y","quantity":1,"start":"2026-01-25T12:21:49","end":"2026-01-27T12:00:00"}
+[buffer] replenish {"buffer":"finished Y","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-27T12:00:00","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished Y","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-27T12:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 06 Y","operation":"ship finished Y","quantity":1,"start":"2026-01-27T12:00:00","end":"2026-01-27T16:00:00"}
+[demand] reply {"demand":"routing order 06 Y","attempt":1,"result":true,"quantity":1,"date":"2026-01-27T16:00:00"}
+[demand] attempt {"demand":"routing order 07 X","attempt":1,"quantity":2,"requestDate":"2026-01-28T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 07 X","operation":"ship finished X","quantity":2,"end":"2026-01-28T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished X","requested":2,"date":"2026-01-27T20:00:00","onhand":2}
+[buffer] shortage {"buffer":"finished X","iteration":0,"date":"2026-01-27T20:00:00","onhand":-2,"shortage":2}
+[operation] routing-ask {"demand":null,"operation":"build finished X","quantity":2,"operationPlanQuantity":2,"end":"2026-01-27T20:00:00","steps":["machine X","assemble X","test X"]}
+[operation] ask {"demand":null,"operation":"test X","quantity":2,"end":"2026-01-27T20:00:00"}
+[resource] ask {"demand":null,"operation":"test X","resource":"test bench","start":"2026-01-27T12:00:00","end":"2026-01-27T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T12:00:00","end":"2026-01-27T20:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test X","quantity":2,"start":"2026-01-27T12:00:00","end":"2026-01-27T20:00:00"}
+[operation] ask {"demand":null,"operation":"assemble X","quantity":2,"end":"2026-01-27T12:00:00"}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-27T01:05:27","end":"2026-01-27T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T01:05:27","end":"2026-01-27T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler A","start":"2026-01-27T01:05:27","end":"2026-01-27T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T01:05:27","end":"2026-01-27T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler C","start":"2026-01-27T01:05:27","end":"2026-01-27T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T01:05:27","end":"2026-01-27T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-27T01:05:27","end":"2026-01-27T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T01:05:27","end":"2026-01-27T12:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":2,"date":"2026-01-27T01:05:27","onhand":1}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-27T01:05:27","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":2,"end":"2026-01-27T01:05:27"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-26T15:05:27","end":"2026-01-27T01:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-26T15:05:27","end":"2026-01-27T01:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":2,"date":"2026-01-26T15:05:27","onhand":51}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-26T15:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":2,"start":"2026-01-26T15:05:27","end":"2026-01-27T01:05:27"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-27T01:05:27","eventCountBefore":13,"eventCountAfter":14,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-27T01:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble X","quantity":2,"start":"2026-01-27T01:05:27","end":"2026-01-27T12:00:00"}
+[operation] ask {"demand":null,"operation":"machine X","quantity":2,"end":"2026-01-27T01:05:27"}
+[resource] ask {"demand":null,"operation":"machine X","resource":"machining center","start":"2026-01-26T04:05:27","end":"2026-01-27T01:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-26T04:05:27","end":"2026-01-27T01:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":2,"date":"2026-01-26T09:05:27","onhand":1}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-26T09:05:27","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":2,"end":"2026-01-26T09:05:27"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-25T19:05:27","end":"2026-01-26T09:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-25T19:05:27","end":"2026-01-26T09:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":4,"date":"2026-01-25T19:05:27","onhand":74}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":4,"remainingShortage":0,"quantity":4,"date":"2026-01-25T19:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":2,"start":"2026-01-25T19:05:27","end":"2026-01-26T09:05:27"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-26T09:05:27","eventCountBefore":13,"eventCountAfter":14,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-26T09:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine X","quantity":2,"start":"2026-01-26T04:05:27","end":"2026-01-27T01:05:27"}
+[operation] routing-answer {"demand":null,"operation":"build finished X","quantity":2,"start":"2026-01-26T04:05:27","end":"2026-01-27T20:00:00"}
+[buffer] replenish {"buffer":"finished X","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-27T20:00:00","eventCountBefore":7,"eventCountAfter":8,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished X","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-27T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 07 X","operation":"ship finished X","quantity":2,"start":"2026-01-27T20:00:00","end":"2026-01-28T00:00:00"}
+[demand] reply {"demand":"routing order 07 X","attempt":1,"result":true,"quantity":2,"date":"2026-01-28T00:00:00"}
+[demand] attempt {"demand":"routing order 08 Y","attempt":1,"quantity":3,"requestDate":"2026-01-28T08:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 08 Y","operation":"ship finished Y","quantity":3,"end":"2026-01-28T08:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished Y","requested":3,"date":"2026-01-28T04:00:00","onhand":1}
+[buffer] shortage {"buffer":"finished Y","iteration":0,"date":"2026-01-28T04:00:00","onhand":-3,"shortage":3}
+[operation] routing-ask {"demand":null,"operation":"build finished Y","quantity":3,"operationPlanQuantity":3,"end":"2026-01-28T04:00:00","steps":["machine Y","assemble Y","test Y"]}
+[operation] ask {"demand":null,"operation":"test Y","quantity":3,"end":"2026-01-28T04:00:00"}
+[resource] ask {"demand":null,"operation":"test Y","resource":"test bench","start":"2026-01-27T20:00:00","end":"2026-01-28T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T20:00:00","end":"2026-01-28T04:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test Y","quantity":3,"start":"2026-01-27T20:00:00","end":"2026-01-28T04:00:00"}
+[operation] ask {"demand":null,"operation":"assemble Y","quantity":3,"end":"2026-01-27T20:00:00"}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-27T06:21:49","end":"2026-01-27T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T06:21:49","end":"2026-01-27T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler A","start":"2026-01-27T06:21:49","end":"2026-01-27T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T06:21:49","end":"2026-01-27T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler C","start":"2026-01-27T06:21:49","end":"2026-01-27T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T06:21:49","end":"2026-01-27T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-27T06:21:49","end":"2026-01-27T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T06:21:49","end":"2026-01-27T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":3,"date":"2026-01-27T06:21:49","onhand":2}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-27T06:21:49","onhand":-3,"shortage":3}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":3,"end":"2026-01-27T06:21:49"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-26T20:21:49","end":"2026-01-27T06:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-26T20:21:49","end":"2026-01-27T06:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":3,"date":"2026-01-26T20:21:49","onhand":49}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-26T20:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":3,"start":"2026-01-26T20:21:49","end":"2026-01-27T06:21:49"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-01-27T06:21:49","eventCountBefore":15,"eventCountAfter":16,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-27T06:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble Y","quantity":3,"start":"2026-01-27T06:21:49","end":"2026-01-27T20:00:00"}
+[operation] ask {"demand":null,"operation":"machine Y","quantity":3,"end":"2026-01-27T06:21:49"}
+[resource] ask {"demand":null,"operation":"machine Y","resource":"machining center","start":"2026-01-26T04:21:49","end":"2026-01-27T06:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-26T04:21:49","end":"2026-01-27T06:21:49","feasible":false}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-26T04:21:49","start":"2026-01-25T02:21:49","end":"2026-01-26T04:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":3,"date":"2026-01-25T08:21:49","onhand":3}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-25T08:21:49","onhand":-3,"shortage":3}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":3,"end":"2026-01-25T08:21:49"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-24T18:21:49","end":"2026-01-25T08:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-24T18:21:49","end":"2026-01-25T08:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":6,"date":"2026-01-24T18:21:49","onhand":80}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":6,"remainingShortage":0,"quantity":6,"date":"2026-01-24T18:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":3,"start":"2026-01-24T18:21:49","end":"2026-01-25T08:21:49"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-01-25T08:21:49","eventCountBefore":15,"eventCountAfter":16,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-25T08:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine Y","quantity":3,"start":"2026-01-25T02:21:49","end":"2026-01-26T04:21:49"}
+[operation] routing-answer {"demand":null,"operation":"build finished Y","quantity":3,"start":"2026-01-25T02:21:49","end":"2026-01-28T04:00:00"}
+[buffer] replenish {"buffer":"finished Y","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-01-28T04:00:00","eventCountBefore":7,"eventCountAfter":8,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished Y","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-28T04:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 08 Y","operation":"ship finished Y","quantity":3,"start":"2026-01-28T04:00:00","end":"2026-01-28T08:00:00"}
+[demand] reply {"demand":"routing order 08 Y","attempt":1,"result":true,"quantity":3,"date":"2026-01-28T08:00:00"}
+[demand] attempt {"demand":"routing order 09 X","attempt":1,"quantity":1,"requestDate":"2026-01-29T16:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 09 X","operation":"ship finished X","quantity":1,"end":"2026-01-29T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished X","requested":1,"date":"2026-01-29T12:00:00","onhand":2}
+[buffer] shortage {"buffer":"finished X","iteration":0,"date":"2026-01-29T12:00:00","onhand":-1,"shortage":1}
+[operation] routing-ask {"demand":null,"operation":"build finished X","quantity":1,"operationPlanQuantity":1,"end":"2026-01-29T12:00:00","steps":["machine X","assemble X","test X"]}
+[operation] ask {"demand":null,"operation":"test X","quantity":1,"end":"2026-01-29T12:00:00"}
+[resource] ask {"demand":null,"operation":"test X","resource":"test bench","start":"2026-01-29T04:00:00","end":"2026-01-29T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-29T04:00:00","end":"2026-01-29T12:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test X","quantity":1,"start":"2026-01-29T04:00:00","end":"2026-01-29T12:00:00"}
+[operation] ask {"demand":null,"operation":"assemble X","quantity":1,"end":"2026-01-29T04:00:00"}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-28T17:05:27","end":"2026-01-29T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-28T17:05:27","end":"2026-01-29T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler A","start":"2026-01-28T17:05:27","end":"2026-01-29T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-28T17:05:27","end":"2026-01-29T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler C","start":"2026-01-28T17:05:27","end":"2026-01-29T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-28T17:05:27","end":"2026-01-29T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-28T17:05:27","end":"2026-01-29T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-28T17:05:27","end":"2026-01-29T04:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":1,"date":"2026-01-28T17:05:27","onhand":3}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-28T17:05:27","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":1,"end":"2026-01-28T17:05:27"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-28T07:05:27","end":"2026-01-28T17:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-28T07:05:27","end":"2026-01-28T17:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":1,"date":"2026-01-28T07:05:27","onhand":46}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-28T07:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":1,"start":"2026-01-28T07:05:27","end":"2026-01-28T17:05:27"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-28T17:05:27","eventCountBefore":17,"eventCountAfter":18,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-28T17:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble X","quantity":1,"start":"2026-01-28T17:05:27","end":"2026-01-29T04:00:00"}
+[operation] ask {"demand":null,"operation":"machine X","quantity":1,"end":"2026-01-28T17:05:27"}
+[resource] ask {"demand":null,"operation":"machine X","resource":"machining center","start":"2026-01-28T01:05:27","end":"2026-01-28T17:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-28T01:05:27","end":"2026-01-28T17:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":1,"date":"2026-01-28T01:05:27","onhand":2}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-28T01:05:27","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":1,"end":"2026-01-28T01:05:27"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-27T11:05:27","end":"2026-01-28T01:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-27T11:05:27","end":"2026-01-28T01:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":2,"date":"2026-01-27T11:05:27","onhand":64}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-27T11:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":1,"start":"2026-01-27T11:05:27","end":"2026-01-28T01:05:27"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-28T01:05:27","eventCountBefore":17,"eventCountAfter":18,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-28T01:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine X","quantity":1,"start":"2026-01-28T01:05:27","end":"2026-01-28T17:05:27"}
+[operation] routing-answer {"demand":null,"operation":"build finished X","quantity":1,"start":"2026-01-28T01:05:27","end":"2026-01-29T12:00:00"}
+[buffer] replenish {"buffer":"finished X","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-29T12:00:00","eventCountBefore":9,"eventCountAfter":10,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished X","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-29T12:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 09 X","operation":"ship finished X","quantity":1,"start":"2026-01-29T12:00:00","end":"2026-01-29T16:00:00"}
+[demand] reply {"demand":"routing order 09 X","attempt":1,"result":true,"quantity":1,"date":"2026-01-29T16:00:00"}
+[demand] attempt {"demand":"routing order 10 Y","attempt":1,"quantity":2,"requestDate":"2026-01-29T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 10 Y","operation":"ship finished Y","quantity":2,"end":"2026-01-29T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished Y","requested":2,"date":"2026-01-28T20:00:00","onhand":3}
+[buffer] shortage {"buffer":"finished Y","iteration":0,"date":"2026-01-28T20:00:00","onhand":-2,"shortage":2}
+[operation] routing-ask {"demand":null,"operation":"build finished Y","quantity":2,"operationPlanQuantity":2,"end":"2026-01-28T20:00:00","steps":["machine Y","assemble Y","test Y"]}
+[operation] ask {"demand":null,"operation":"test Y","quantity":2,"end":"2026-01-28T20:00:00"}
+[resource] ask {"demand":null,"operation":"test Y","resource":"test bench","start":"2026-01-28T12:00:00","end":"2026-01-28T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-28T12:00:00","end":"2026-01-28T20:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test Y","quantity":2,"start":"2026-01-28T12:00:00","end":"2026-01-28T20:00:00"}
+[operation] ask {"demand":null,"operation":"assemble Y","quantity":2,"end":"2026-01-28T12:00:00"}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-27T22:21:49","end":"2026-01-28T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T22:21:49","end":"2026-01-28T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler A","start":"2026-01-27T22:21:49","end":"2026-01-28T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T22:21:49","end":"2026-01-28T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler C","start":"2026-01-27T22:21:49","end":"2026-01-28T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T22:21:49","end":"2026-01-28T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-27T22:21:49","end":"2026-01-28T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-27T22:21:49","end":"2026-01-28T12:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":2,"date":"2026-01-27T22:21:49","onhand":3}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-27T22:21:49","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":2,"end":"2026-01-27T22:21:49"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-27T12:21:49","end":"2026-01-27T22:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-27T12:21:49","end":"2026-01-27T22:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":2,"date":"2026-01-27T12:21:49","onhand":46}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-27T12:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":2,"start":"2026-01-27T12:21:49","end":"2026-01-27T22:21:49"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-27T22:21:49","eventCountBefore":19,"eventCountAfter":20,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-27T22:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble Y","quantity":2,"start":"2026-01-27T22:21:49","end":"2026-01-28T12:00:00"}
+[operation] ask {"demand":null,"operation":"machine Y","quantity":2,"end":"2026-01-27T22:21:49"}
+[resource] ask {"demand":null,"operation":"machine Y","resource":"machining center","start":"2026-01-26T20:21:49","end":"2026-01-27T22:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-26T20:21:49","end":"2026-01-27T22:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":2,"date":"2026-01-27T02:21:49","onhand":2}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-27T02:21:49","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":2,"end":"2026-01-27T02:21:49"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-26T12:21:49","end":"2026-01-27T02:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-26T12:21:49","end":"2026-01-27T02:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":4,"date":"2026-01-26T12:21:49","onhand":64}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":4,"remainingShortage":0,"quantity":4,"date":"2026-01-26T12:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":2,"start":"2026-01-26T12:21:49","end":"2026-01-27T02:21:49"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-27T02:21:49","eventCountBefore":19,"eventCountAfter":20,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-27T02:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine Y","quantity":2,"start":"2026-01-26T20:21:49","end":"2026-01-27T22:21:49"}
+[operation] routing-answer {"demand":null,"operation":"build finished Y","quantity":2,"start":"2026-01-26T20:21:49","end":"2026-01-28T20:00:00"}
+[buffer] replenish {"buffer":"finished Y","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-28T20:00:00","eventCountBefore":9,"eventCountAfter":10,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished Y","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-28T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 10 Y","operation":"ship finished Y","quantity":2,"start":"2026-01-28T20:00:00","end":"2026-01-29T00:00:00"}
+[demand] reply {"demand":"routing order 10 Y","attempt":1,"result":true,"quantity":2,"date":"2026-01-29T00:00:00"}
+[demand] attempt {"demand":"routing order 11 X","attempt":1,"quantity":1,"requestDate":"2026-01-30T08:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 11 X","operation":"ship finished X","quantity":1,"end":"2026-01-30T08:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished X","requested":1,"date":"2026-01-30T04:00:00","onhand":1}
+[buffer] shortage {"buffer":"finished X","iteration":0,"date":"2026-01-30T04:00:00","onhand":-1,"shortage":1}
+[operation] routing-ask {"demand":null,"operation":"build finished X","quantity":1,"operationPlanQuantity":1,"end":"2026-01-30T04:00:00","steps":["machine X","assemble X","test X"]}
+[operation] ask {"demand":null,"operation":"test X","quantity":1,"end":"2026-01-30T04:00:00"}
+[resource] ask {"demand":null,"operation":"test X","resource":"test bench","start":"2026-01-29T20:00:00","end":"2026-01-30T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-29T20:00:00","end":"2026-01-30T04:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test X","quantity":1,"start":"2026-01-29T20:00:00","end":"2026-01-30T04:00:00"}
+[operation] ask {"demand":null,"operation":"assemble X","quantity":1,"end":"2026-01-29T20:00:00"}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-29T09:05:27","end":"2026-01-29T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-29T09:05:27","end":"2026-01-29T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler A","start":"2026-01-29T09:05:27","end":"2026-01-29T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-29T09:05:27","end":"2026-01-29T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler C","start":"2026-01-29T09:05:27","end":"2026-01-29T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-29T09:05:27","end":"2026-01-29T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-29T09:05:27","end":"2026-01-29T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-29T09:05:27","end":"2026-01-29T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":1,"date":"2026-01-29T09:05:27","onhand":1}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-29T09:05:27","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":1,"end":"2026-01-29T09:05:27"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-28T23:05:27","end":"2026-01-29T09:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-28T23:05:27","end":"2026-01-29T09:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":1,"date":"2026-01-28T23:05:27","onhand":43}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-28T23:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":1,"start":"2026-01-28T23:05:27","end":"2026-01-29T09:05:27"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-29T09:05:27","eventCountBefore":21,"eventCountAfter":22,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-29T09:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble X","quantity":1,"start":"2026-01-29T09:05:27","end":"2026-01-29T20:00:00"}
+[operation] ask {"demand":null,"operation":"machine X","quantity":1,"end":"2026-01-29T09:05:27"}
+[resource] ask {"demand":null,"operation":"machine X","resource":"machining center","start":"2026-01-28T17:05:27","end":"2026-01-29T09:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-28T17:05:27","end":"2026-01-29T09:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":1,"date":"2026-01-28T17:05:27","onhand":1}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-28T17:05:27","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":1,"end":"2026-01-28T17:05:27"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-28T03:05:27","end":"2026-01-28T17:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-28T03:05:27","end":"2026-01-28T17:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":2,"date":"2026-01-28T03:05:27","onhand":58}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-28T03:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":1,"start":"2026-01-28T03:05:27","end":"2026-01-28T17:05:27"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-28T17:05:27","eventCountBefore":21,"eventCountAfter":22,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-28T17:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine X","quantity":1,"start":"2026-01-28T17:05:27","end":"2026-01-29T09:05:27"}
+[operation] routing-answer {"demand":null,"operation":"build finished X","quantity":1,"start":"2026-01-28T17:05:27","end":"2026-01-30T04:00:00"}
+[buffer] replenish {"buffer":"finished X","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-30T04:00:00","eventCountBefore":11,"eventCountAfter":12,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished X","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-30T04:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 11 X","operation":"ship finished X","quantity":1,"start":"2026-01-30T04:00:00","end":"2026-01-30T08:00:00"}
+[demand] reply {"demand":"routing order 11 X","attempt":1,"result":true,"quantity":1,"date":"2026-01-30T08:00:00"}
+[demand] attempt {"demand":"routing order 12 Y","attempt":1,"quantity":2,"requestDate":"2026-01-30T16:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 12 Y","operation":"ship finished Y","quantity":2,"end":"2026-01-30T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished Y","requested":2,"date":"2026-01-30T12:00:00","onhand":2}
+[buffer] shortage {"buffer":"finished Y","iteration":0,"date":"2026-01-30T12:00:00","onhand":-2,"shortage":2}
+[operation] routing-ask {"demand":null,"operation":"build finished Y","quantity":2,"operationPlanQuantity":2,"end":"2026-01-30T12:00:00","steps":["machine Y","assemble Y","test Y"]}
+[operation] ask {"demand":null,"operation":"test Y","quantity":2,"end":"2026-01-30T12:00:00"}
+[resource] ask {"demand":null,"operation":"test Y","resource":"test bench","start":"2026-01-30T04:00:00","end":"2026-01-30T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T04:00:00","end":"2026-01-30T12:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test Y","quantity":2,"start":"2026-01-30T04:00:00","end":"2026-01-30T12:00:00"}
+[operation] ask {"demand":null,"operation":"assemble Y","quantity":2,"end":"2026-01-30T04:00:00"}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-29T14:21:49","end":"2026-01-30T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-29T14:21:49","end":"2026-01-30T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler A","start":"2026-01-29T14:21:49","end":"2026-01-30T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-29T14:21:49","end":"2026-01-30T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler C","start":"2026-01-29T14:21:49","end":"2026-01-30T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-29T14:21:49","end":"2026-01-30T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-29T14:21:49","end":"2026-01-30T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-29T14:21:49","end":"2026-01-30T04:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":2,"date":"2026-01-29T14:21:49","onhand":1}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-29T14:21:49","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":2,"end":"2026-01-29T14:21:49"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-29T04:21:49","end":"2026-01-29T14:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-29T04:21:49","end":"2026-01-29T14:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":2,"date":"2026-01-29T04:21:49","onhand":42}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-29T04:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":2,"start":"2026-01-29T04:21:49","end":"2026-01-29T14:21:49"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-29T14:21:49","eventCountBefore":23,"eventCountAfter":24,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-29T14:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble Y","quantity":2,"start":"2026-01-29T14:21:49","end":"2026-01-30T04:00:00"}
+[operation] ask {"demand":null,"operation":"machine Y","quantity":2,"end":"2026-01-29T14:21:49"}
+[resource] ask {"demand":null,"operation":"machine Y","resource":"machining center","start":"2026-01-28T12:21:49","end":"2026-01-29T14:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-28T12:21:49","end":"2026-01-29T14:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":2,"date":"2026-01-28T18:21:49","onhand":1}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-28T18:21:49","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":2,"end":"2026-01-28T18:21:49"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-28T04:21:49","end":"2026-01-28T18:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-28T04:21:49","end":"2026-01-28T18:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":4,"date":"2026-01-28T04:21:49","onhand":56}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":4,"remainingShortage":0,"quantity":4,"date":"2026-01-28T04:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":2,"start":"2026-01-28T04:21:49","end":"2026-01-28T18:21:49"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-28T18:21:49","eventCountBefore":23,"eventCountAfter":24,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-28T18:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine Y","quantity":2,"start":"2026-01-28T12:21:49","end":"2026-01-29T14:21:49"}
+[operation] routing-answer {"demand":null,"operation":"build finished Y","quantity":2,"start":"2026-01-28T12:21:49","end":"2026-01-30T12:00:00"}
+[buffer] replenish {"buffer":"finished Y","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-30T12:00:00","eventCountBefore":11,"eventCountAfter":12,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished Y","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-30T12:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 12 Y","operation":"ship finished Y","quantity":2,"start":"2026-01-30T12:00:00","end":"2026-01-30T16:00:00"}
+[demand] reply {"demand":"routing order 12 Y","attempt":1,"result":true,"quantity":2,"date":"2026-01-30T16:00:00"}
+[demand] attempt {"demand":"routing order 13 X","attempt":1,"quantity":3,"requestDate":"2026-01-31T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 13 X","operation":"ship finished X","quantity":3,"end":"2026-01-31T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished X","requested":3,"date":"2026-01-30T20:00:00","onhand":1}
+[buffer] shortage {"buffer":"finished X","iteration":0,"date":"2026-01-30T20:00:00","onhand":-3,"shortage":3}
+[operation] routing-ask {"demand":null,"operation":"build finished X","quantity":3,"operationPlanQuantity":3,"end":"2026-01-30T20:00:00","steps":["machine X","assemble X","test X"]}
+[operation] ask {"demand":null,"operation":"test X","quantity":3,"end":"2026-01-30T20:00:00"}
+[resource] ask {"demand":null,"operation":"test X","resource":"test bench","start":"2026-01-30T12:00:00","end":"2026-01-30T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T12:00:00","end":"2026-01-30T20:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test X","quantity":3,"start":"2026-01-30T12:00:00","end":"2026-01-30T20:00:00"}
+[operation] ask {"demand":null,"operation":"assemble X","quantity":3,"end":"2026-01-30T12:00:00"}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-30T01:05:27","end":"2026-01-30T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T01:05:27","end":"2026-01-30T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler A","start":"2026-01-30T01:05:27","end":"2026-01-30T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T01:05:27","end":"2026-01-30T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler C","start":"2026-01-30T01:05:27","end":"2026-01-30T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T01:05:27","end":"2026-01-30T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-30T01:05:27","end":"2026-01-30T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T01:05:27","end":"2026-01-30T12:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":3,"date":"2026-01-30T01:05:27","onhand":2}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-30T01:05:27","onhand":-3,"shortage":3}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":3,"end":"2026-01-30T01:05:27"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-29T15:05:27","end":"2026-01-30T01:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-29T15:05:27","end":"2026-01-30T01:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":3,"date":"2026-01-29T15:05:27","onhand":40}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-29T15:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":3,"start":"2026-01-29T15:05:27","end":"2026-01-30T01:05:27"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-01-30T01:05:27","eventCountBefore":25,"eventCountAfter":26,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-30T01:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble X","quantity":3,"start":"2026-01-30T01:05:27","end":"2026-01-30T12:00:00"}
+[operation] ask {"demand":null,"operation":"machine X","quantity":3,"end":"2026-01-30T01:05:27"}
+[resource] ask {"demand":null,"operation":"machine X","resource":"machining center","start":"2026-01-29T04:05:27","end":"2026-01-30T01:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-29T04:05:27","end":"2026-01-30T01:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":3,"date":"2026-01-29T09:05:27","onhand":2}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-29T09:05:27","onhand":-3,"shortage":3}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":3,"end":"2026-01-29T09:05:27"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-28T19:05:27","end":"2026-01-29T09:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-28T19:05:27","end":"2026-01-29T09:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":6,"date":"2026-01-28T19:05:27","onhand":52}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":6,"remainingShortage":0,"quantity":6,"date":"2026-01-28T19:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":3,"start":"2026-01-28T19:05:27","end":"2026-01-29T09:05:27"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-01-29T09:05:27","eventCountBefore":25,"eventCountAfter":26,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-29T09:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine X","quantity":3,"start":"2026-01-29T04:05:27","end":"2026-01-30T01:05:27"}
+[operation] routing-answer {"demand":null,"operation":"build finished X","quantity":3,"start":"2026-01-29T04:05:27","end":"2026-01-30T20:00:00"}
+[buffer] replenish {"buffer":"finished X","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-01-30T20:00:00","eventCountBefore":13,"eventCountAfter":14,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished X","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-30T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 13 X","operation":"ship finished X","quantity":3,"start":"2026-01-30T20:00:00","end":"2026-01-31T00:00:00"}
+[demand] reply {"demand":"routing order 13 X","attempt":1,"result":true,"quantity":3,"date":"2026-01-31T00:00:00"}
+[demand] attempt {"demand":"routing order 14 Y","attempt":1,"quantity":1,"requestDate":"2026-01-31T08:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 14 Y","operation":"ship finished Y","quantity":1,"end":"2026-01-31T08:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished Y","requested":1,"date":"2026-01-31T04:00:00","onhand":2}
+[buffer] shortage {"buffer":"finished Y","iteration":0,"date":"2026-01-31T04:00:00","onhand":-1,"shortage":1}
+[operation] routing-ask {"demand":null,"operation":"build finished Y","quantity":1,"operationPlanQuantity":1,"end":"2026-01-31T04:00:00","steps":["machine Y","assemble Y","test Y"]}
+[operation] ask {"demand":null,"operation":"test Y","quantity":1,"end":"2026-01-31T04:00:00"}
+[resource] ask {"demand":null,"operation":"test Y","resource":"test bench","start":"2026-01-30T20:00:00","end":"2026-01-31T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T20:00:00","end":"2026-01-31T04:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test Y","quantity":1,"start":"2026-01-30T20:00:00","end":"2026-01-31T04:00:00"}
+[operation] ask {"demand":null,"operation":"assemble Y","quantity":1,"end":"2026-01-30T20:00:00"}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-30T06:21:49","end":"2026-01-30T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T06:21:49","end":"2026-01-30T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler A","start":"2026-01-30T06:21:49","end":"2026-01-30T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T06:21:49","end":"2026-01-30T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler C","start":"2026-01-30T06:21:49","end":"2026-01-30T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T06:21:49","end":"2026-01-30T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-30T06:21:49","end":"2026-01-30T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T06:21:49","end":"2026-01-30T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":1,"date":"2026-01-30T06:21:49","onhand":3}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-30T06:21:49","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":1,"end":"2026-01-30T06:21:49"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-29T20:21:49","end":"2026-01-30T06:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-29T20:21:49","end":"2026-01-30T06:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":1,"date":"2026-01-29T20:21:49","onhand":37}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-29T20:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":1,"start":"2026-01-29T20:21:49","end":"2026-01-30T06:21:49"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-30T06:21:49","eventCountBefore":27,"eventCountAfter":28,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-30T06:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble Y","quantity":1,"start":"2026-01-30T06:21:49","end":"2026-01-30T20:00:00"}
+[operation] ask {"demand":null,"operation":"machine Y","quantity":1,"end":"2026-01-30T06:21:49"}
+[resource] ask {"demand":null,"operation":"machine Y","resource":"machining center","start":"2026-01-29T04:21:49","end":"2026-01-30T06:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-29T04:21:49","end":"2026-01-30T06:21:49","feasible":false}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-29T04:21:49","start":"2026-01-28T02:21:49","end":"2026-01-29T04:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":1,"date":"2026-01-28T08:21:49","onhand":1}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-28T08:21:49","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":1,"end":"2026-01-28T08:21:49"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-27T18:21:49","end":"2026-01-28T08:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-27T18:21:49","end":"2026-01-28T08:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":2,"date":"2026-01-27T18:21:49","onhand":58}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-27T18:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":1,"start":"2026-01-27T18:21:49","end":"2026-01-28T08:21:49"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-28T08:21:49","eventCountBefore":27,"eventCountAfter":28,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-28T08:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine Y","quantity":1,"start":"2026-01-28T02:21:49","end":"2026-01-29T04:21:49"}
+[operation] routing-answer {"demand":null,"operation":"build finished Y","quantity":1,"start":"2026-01-28T02:21:49","end":"2026-01-31T04:00:00"}
+[buffer] replenish {"buffer":"finished Y","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-31T04:00:00","eventCountBefore":13,"eventCountAfter":14,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished Y","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-31T04:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 14 Y","operation":"ship finished Y","quantity":1,"start":"2026-01-31T04:00:00","end":"2026-01-31T08:00:00"}
+[demand] reply {"demand":"routing order 14 Y","attempt":1,"result":true,"quantity":1,"date":"2026-01-31T08:00:00"}
+[demand] attempt {"demand":"routing order 15 X","attempt":1,"quantity":2,"requestDate":"2026-02-01T16:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 15 X","operation":"ship finished X","quantity":2,"end":"2026-02-01T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished X","requested":2,"date":"2026-02-01T12:00:00","onhand":3}
+[buffer] shortage {"buffer":"finished X","iteration":0,"date":"2026-02-01T12:00:00","onhand":-2,"shortage":2}
+[operation] routing-ask {"demand":null,"operation":"build finished X","quantity":2,"operationPlanQuantity":2,"end":"2026-02-01T12:00:00","steps":["machine X","assemble X","test X"]}
+[operation] ask {"demand":null,"operation":"test X","quantity":2,"end":"2026-02-01T12:00:00"}
+[resource] ask {"demand":null,"operation":"test X","resource":"test bench","start":"2026-02-01T04:00:00","end":"2026-02-01T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-02-01T04:00:00","end":"2026-02-01T12:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test X","quantity":2,"start":"2026-02-01T04:00:00","end":"2026-02-01T12:00:00"}
+[operation] ask {"demand":null,"operation":"assemble X","quantity":2,"end":"2026-02-01T04:00:00"}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-31T17:05:27","end":"2026-02-01T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-31T17:05:27","end":"2026-02-01T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler A","start":"2026-01-31T17:05:27","end":"2026-02-01T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-31T17:05:27","end":"2026-02-01T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler C","start":"2026-01-31T17:05:27","end":"2026-02-01T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-31T17:05:27","end":"2026-02-01T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-01-31T17:05:27","end":"2026-02-01T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-31T17:05:27","end":"2026-02-01T04:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":2,"date":"2026-01-31T17:05:27","onhand":1}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-31T17:05:27","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":2,"end":"2026-01-31T17:05:27"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-31T07:05:27","end":"2026-01-31T17:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-31T07:05:27","end":"2026-01-31T17:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":2,"date":"2026-01-31T07:05:27","onhand":36}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-31T07:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":2,"start":"2026-01-31T07:05:27","end":"2026-01-31T17:05:27"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-31T17:05:27","eventCountBefore":29,"eventCountAfter":30,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-31T17:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble X","quantity":2,"start":"2026-01-31T17:05:27","end":"2026-02-01T04:00:00"}
+[operation] ask {"demand":null,"operation":"machine X","quantity":2,"end":"2026-01-31T17:05:27"}
+[resource] ask {"demand":null,"operation":"machine X","resource":"machining center","start":"2026-01-31T01:05:27","end":"2026-01-31T17:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-31T01:05:27","end":"2026-01-31T17:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":2,"date":"2026-01-31T01:05:27","onhand":3}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-31T01:05:27","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":2,"end":"2026-01-31T01:05:27"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-30T11:05:27","end":"2026-01-31T01:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-30T11:05:27","end":"2026-01-31T01:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":4,"date":"2026-01-30T11:05:27","onhand":44}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":4,"remainingShortage":0,"quantity":4,"date":"2026-01-30T11:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":2,"start":"2026-01-30T11:05:27","end":"2026-01-31T01:05:27"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-31T01:05:27","eventCountBefore":29,"eventCountAfter":30,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-31T01:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine X","quantity":2,"start":"2026-01-31T01:05:27","end":"2026-01-31T17:05:27"}
+[operation] routing-answer {"demand":null,"operation":"build finished X","quantity":2,"start":"2026-01-31T01:05:27","end":"2026-02-01T12:00:00"}
+[buffer] replenish {"buffer":"finished X","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-02-01T12:00:00","eventCountBefore":15,"eventCountAfter":16,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished X","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-02-01T12:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 15 X","operation":"ship finished X","quantity":2,"start":"2026-02-01T12:00:00","end":"2026-02-01T16:00:00"}
+[demand] reply {"demand":"routing order 15 X","attempt":1,"result":true,"quantity":2,"date":"2026-02-01T16:00:00"}
+[demand] attempt {"demand":"routing order 16 Y","attempt":1,"quantity":1,"requestDate":"2026-02-01T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 16 Y","operation":"ship finished Y","quantity":1,"end":"2026-02-01T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished Y","requested":1,"date":"2026-01-31T20:00:00","onhand":1}
+[buffer] shortage {"buffer":"finished Y","iteration":0,"date":"2026-01-31T20:00:00","onhand":-1,"shortage":1}
+[operation] routing-ask {"demand":null,"operation":"build finished Y","quantity":1,"operationPlanQuantity":1,"end":"2026-01-31T20:00:00","steps":["machine Y","assemble Y","test Y"]}
+[operation] ask {"demand":null,"operation":"test Y","quantity":1,"end":"2026-01-31T20:00:00"}
+[resource] ask {"demand":null,"operation":"test Y","resource":"test bench","start":"2026-01-31T12:00:00","end":"2026-01-31T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-31T12:00:00","end":"2026-01-31T20:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test Y","quantity":1,"start":"2026-01-31T12:00:00","end":"2026-01-31T20:00:00"}
+[operation] ask {"demand":null,"operation":"assemble Y","quantity":1,"end":"2026-01-31T12:00:00"}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-30T22:21:49","end":"2026-01-31T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T22:21:49","end":"2026-01-31T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler A","start":"2026-01-30T22:21:49","end":"2026-01-31T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T22:21:49","end":"2026-01-31T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler C","start":"2026-01-30T22:21:49","end":"2026-01-31T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T22:21:49","end":"2026-01-31T12:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-01-30T22:21:49","end":"2026-01-31T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-30T22:21:49","end":"2026-01-31T12:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":1,"date":"2026-01-30T22:21:49","onhand":1}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-01-30T22:21:49","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":1,"end":"2026-01-30T22:21:49"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-30T12:21:49","end":"2026-01-30T22:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-30T12:21:49","end":"2026-01-30T22:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":1,"date":"2026-01-30T12:21:49","onhand":36}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-30T12:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":1,"start":"2026-01-30T12:21:49","end":"2026-01-30T22:21:49"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-30T22:21:49","eventCountBefore":31,"eventCountAfter":32,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-30T22:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble Y","quantity":1,"start":"2026-01-30T22:21:49","end":"2026-01-31T12:00:00"}
+[operation] ask {"demand":null,"operation":"machine Y","quantity":1,"end":"2026-01-30T22:21:49"}
+[resource] ask {"demand":null,"operation":"machine Y","resource":"machining center","start":"2026-01-29T20:21:49","end":"2026-01-30T22:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-29T20:21:49","end":"2026-01-30T22:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":1,"date":"2026-01-30T02:21:49","onhand":3}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-30T02:21:49","onhand":-1,"shortage":1}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":1,"end":"2026-01-30T02:21:49"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-29T12:21:49","end":"2026-01-30T02:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-29T12:21:49","end":"2026-01-30T02:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":2,"date":"2026-01-29T12:21:49","onhand":44}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-29T12:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":1,"start":"2026-01-29T12:21:49","end":"2026-01-30T02:21:49"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-30T02:21:49","eventCountBefore":31,"eventCountAfter":32,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-30T02:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine Y","quantity":1,"start":"2026-01-29T20:21:49","end":"2026-01-30T22:21:49"}
+[operation] routing-answer {"demand":null,"operation":"build finished Y","quantity":1,"start":"2026-01-29T20:21:49","end":"2026-01-31T20:00:00"}
+[buffer] replenish {"buffer":"finished Y","iteration":0,"requested":1,"replenished":1,"producerDate":"2026-01-31T20:00:00","eventCountBefore":15,"eventCountAfter":16,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished Y","requested":1,"remainingShortage":0,"quantity":1,"date":"2026-01-31T20:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 16 Y","operation":"ship finished Y","quantity":1,"start":"2026-01-31T20:00:00","end":"2026-02-01T00:00:00"}
+[demand] reply {"demand":"routing order 16 Y","attempt":1,"result":true,"quantity":1,"date":"2026-02-01T00:00:00"}
+[demand] attempt {"demand":"routing order 17 X","attempt":1,"quantity":2,"requestDate":"2026-02-02T08:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 17 X","operation":"ship finished X","quantity":2,"end":"2026-02-02T08:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished X","requested":2,"date":"2026-02-02T04:00:00","onhand":2}
+[buffer] shortage {"buffer":"finished X","iteration":0,"date":"2026-02-02T04:00:00","onhand":-2,"shortage":2}
+[operation] routing-ask {"demand":null,"operation":"build finished X","quantity":2,"operationPlanQuantity":2,"end":"2026-02-02T04:00:00","steps":["machine X","assemble X","test X"]}
+[operation] ask {"demand":null,"operation":"test X","quantity":2,"end":"2026-02-02T04:00:00"}
+[resource] ask {"demand":null,"operation":"test X","resource":"test bench","start":"2026-02-01T20:00:00","end":"2026-02-02T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-02-01T20:00:00","end":"2026-02-02T04:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test X","quantity":2,"start":"2026-02-01T20:00:00","end":"2026-02-02T04:00:00"}
+[operation] ask {"demand":null,"operation":"assemble X","quantity":2,"end":"2026-02-01T20:00:00"}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-02-01T09:05:27","end":"2026-02-01T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-02-01T09:05:27","end":"2026-02-01T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler A","start":"2026-02-01T09:05:27","end":"2026-02-01T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-02-01T09:05:27","end":"2026-02-01T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler C","start":"2026-02-01T09:05:27","end":"2026-02-01T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-02-01T09:05:27","end":"2026-02-01T20:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble X","resource":"assembler B","start":"2026-02-01T09:05:27","end":"2026-02-01T20:00:00"}
+[resource] candidate {"demand":null,"start":"2026-02-01T09:05:27","end":"2026-02-01T20:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":2,"date":"2026-02-01T09:05:27","onhand":2}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-02-01T09:05:27","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":2,"end":"2026-02-01T09:05:27"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-01-31T23:05:27","end":"2026-02-01T09:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-31T23:05:27","end":"2026-02-01T09:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":2,"date":"2026-01-31T23:05:27","onhand":33}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-31T23:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":2,"start":"2026-01-31T23:05:27","end":"2026-02-01T09:05:27"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-02-01T09:05:27","eventCountBefore":33,"eventCountAfter":34,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-02-01T09:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble X","quantity":2,"start":"2026-02-01T09:05:27","end":"2026-02-01T20:00:00"}
+[operation] ask {"demand":null,"operation":"machine X","quantity":2,"end":"2026-02-01T09:05:27"}
+[resource] ask {"demand":null,"operation":"machine X","resource":"machining center","start":"2026-01-31T17:05:27","end":"2026-02-01T09:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-31T17:05:27","end":"2026-02-01T09:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":2,"date":"2026-01-31T17:05:27","onhand":2}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-31T17:05:27","onhand":-2,"shortage":2}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":2,"end":"2026-01-31T17:05:27"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-31T03:05:27","end":"2026-01-31T17:05:27"}
+[resource] candidate {"demand":null,"start":"2026-01-31T03:05:27","end":"2026-01-31T17:05:27","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":4,"date":"2026-01-31T03:05:27","onhand":38}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":4,"remainingShortage":0,"quantity":4,"date":"2026-01-31T03:05:27","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":2,"start":"2026-01-31T03:05:27","end":"2026-01-31T17:05:27"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-01-31T17:05:27","eventCountBefore":33,"eventCountAfter":34,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-01-31T17:05:27","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine X","quantity":2,"start":"2026-01-31T17:05:27","end":"2026-02-01T09:05:27"}
+[operation] routing-answer {"demand":null,"operation":"build finished X","quantity":2,"start":"2026-01-31T17:05:27","end":"2026-02-02T04:00:00"}
+[buffer] replenish {"buffer":"finished X","iteration":0,"requested":2,"replenished":2,"producerDate":"2026-02-02T04:00:00","eventCountBefore":17,"eventCountAfter":18,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished X","requested":2,"remainingShortage":0,"quantity":2,"date":"2026-02-02T04:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 17 X","operation":"ship finished X","quantity":2,"start":"2026-02-02T04:00:00","end":"2026-02-02T08:00:00"}
+[demand] reply {"demand":"routing order 17 X","attempt":1,"result":true,"quantity":2,"date":"2026-02-02T08:00:00"}
+[demand] attempt {"demand":"routing order 18 Y","attempt":1,"quantity":3,"requestDate":"2026-02-02T16:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"routing order 18 Y","operation":"ship finished Y","quantity":3,"end":"2026-02-02T16:00:00"}
+[buffer] ask {"demand":null,"buffer":"finished Y","requested":3,"date":"2026-02-02T12:00:00","onhand":1}
+[buffer] shortage {"buffer":"finished Y","iteration":0,"date":"2026-02-02T12:00:00","onhand":-3,"shortage":3}
+[operation] routing-ask {"demand":null,"operation":"build finished Y","quantity":3,"operationPlanQuantity":3,"end":"2026-02-02T12:00:00","steps":["machine Y","assemble Y","test Y"]}
+[operation] ask {"demand":null,"operation":"test Y","quantity":3,"end":"2026-02-02T12:00:00"}
+[resource] ask {"demand":null,"operation":"test Y","resource":"test bench","start":"2026-02-02T04:00:00","end":"2026-02-02T12:00:00"}
+[resource] candidate {"demand":null,"start":"2026-02-02T04:00:00","end":"2026-02-02T12:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"test Y","quantity":3,"start":"2026-02-02T04:00:00","end":"2026-02-02T12:00:00"}
+[operation] ask {"demand":null,"operation":"assemble Y","quantity":3,"end":"2026-02-02T04:00:00"}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-02-01T14:21:49","end":"2026-02-02T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-02-01T14:21:49","end":"2026-02-02T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler A","start":"2026-02-01T14:21:49","end":"2026-02-02T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-02-01T14:21:49","end":"2026-02-02T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler C","start":"2026-02-01T14:21:49","end":"2026-02-02T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-02-01T14:21:49","end":"2026-02-02T04:00:00","feasible":true}
+[resource] ask {"demand":null,"operation":"assemble Y","resource":"assembler B","start":"2026-02-01T14:21:49","end":"2026-02-02T04:00:00"}
+[resource] candidate {"demand":null,"start":"2026-02-01T14:21:49","end":"2026-02-02T04:00:00","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical module","requested":3,"date":"2026-02-01T14:21:49","onhand":2}
+[buffer] shortage {"buffer":"electrical module","iteration":0,"date":"2026-02-01T14:21:49","onhand":-3,"shortage":3}
+[operation] ask {"demand":null,"operation":"make electrical module","quantity":3,"end":"2026-02-01T14:21:49"}
+[resource] ask {"demand":null,"operation":"make electrical module","resource":"electronics cell","start":"2026-02-01T04:21:49","end":"2026-02-01T14:21:49"}
+[resource] candidate {"demand":null,"start":"2026-02-01T04:21:49","end":"2026-02-01T14:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"electrical stock","requested":3,"date":"2026-02-01T04:21:49","onhand":31}
+[buffer] answer {"demand":null,"buffer":"electrical stock","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-02-01T04:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make electrical module","quantity":3,"start":"2026-02-01T04:21:49","end":"2026-02-01T14:21:49"}
+[buffer] replenish {"buffer":"electrical module","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-02-01T14:21:49","eventCountBefore":35,"eventCountAfter":36,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"electrical module","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-02-01T14:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"assemble Y","quantity":3,"start":"2026-02-01T14:21:49","end":"2026-02-02T04:00:00"}
+[operation] ask {"demand":null,"operation":"machine Y","quantity":3,"end":"2026-02-01T14:21:49"}
+[resource] ask {"demand":null,"operation":"machine Y","resource":"machining center","start":"2026-01-31T12:21:49","end":"2026-02-01T14:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-31T12:21:49","end":"2026-02-01T14:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"machined module","requested":3,"date":"2026-01-31T18:21:49","onhand":2}
+[buffer] shortage {"buffer":"machined module","iteration":0,"date":"2026-01-31T18:21:49","onhand":-3,"shortage":3}
+[operation] ask {"demand":null,"operation":"make machined module","quantity":3,"end":"2026-01-31T18:21:49"}
+[resource] ask {"demand":null,"operation":"make machined module","resource":"press A","start":"2026-01-31T04:21:49","end":"2026-01-31T18:21:49"}
+[resource] candidate {"demand":null,"start":"2026-01-31T04:21:49","end":"2026-01-31T18:21:49","feasible":true}
+[buffer] ask {"demand":null,"buffer":"metal stock","requested":6,"date":"2026-01-31T04:21:49","onhand":34}
+[buffer] answer {"demand":null,"buffer":"metal stock","requested":6,"remainingShortage":0,"quantity":6,"date":"2026-01-31T04:21:49","plan":null}
+[operation] answer {"demand":null,"operation":"make machined module","quantity":3,"start":"2026-01-31T04:21:49","end":"2026-01-31T18:21:49"}
+[buffer] replenish {"buffer":"machined module","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-01-31T18:21:49","eventCountBefore":35,"eventCountAfter":36,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"machined module","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-01-31T18:21:49","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"machine Y","quantity":3,"start":"2026-01-31T12:21:49","end":"2026-02-01T14:21:49"}
+[operation] routing-answer {"demand":null,"operation":"build finished Y","quantity":3,"start":"2026-01-31T12:21:49","end":"2026-02-02T12:00:00"}
+[buffer] replenish {"buffer":"finished Y","iteration":0,"requested":3,"replenished":3,"producerDate":"2026-02-02T12:00:00","eventCountBefore":17,"eventCountAfter":18,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"finished Y","requested":3,"remainingShortage":0,"quantity":3,"date":"2026-02-02T12:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"routing order 18 Y","operation":"ship finished Y","quantity":3,"start":"2026-02-02T12:00:00","end":"2026-02-02T16:00:00"}
+[demand] reply {"demand":"routing order 18 Y","attempt":1,"result":true,"quantity":3,"date":"2026-02-02T16:00:00"}

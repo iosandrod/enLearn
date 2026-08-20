@@ -1,0 +1,6264 @@
+{
+  "version": 1,
+  "declarations": [
+    {
+      "name": "AbstractCacheEntry",
+      "qualifiedName": "AbstractCacheEntry",
+      "adapterName": "AbstractCacheEntry",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "clearDirty",
+        "isDirty",
+        "markDirty"
+      ],
+      "header": "cache.h",
+      "line": 36
+    },
+    {
+      "name": "Association",
+      "qualifiedName": "Association",
+      "adapterName": "Association",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "reader"
+      ],
+      "header": "utils.h",
+      "line": 5551
+    },
+    {
+      "name": "List",
+      "qualifiedName": "Association::List",
+      "adapterName": "AssociationList",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "empty"
+      ],
+      "header": "utils.h",
+      "line": 5559
+    },
+    {
+      "name": "ListA",
+      "qualifiedName": "Association::ListA",
+      "adapterName": "AssociationListA",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "AssociationList"
+      ],
+      "methods": [
+        "begin",
+        "end",
+        "erase",
+        "find",
+        "size"
+      ],
+      "header": "utils.h",
+      "line": 5574
+    },
+    {
+      "name": "const_iterator",
+      "qualifiedName": "Association::ListA::const_iterator",
+      "adapterName": "AssociationListAConst_iterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "utils.h",
+      "line": 5614
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "Association::ListA::iterator",
+      "adapterName": "AssociationListAIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "utils.h",
+      "line": 5580
+    },
+    {
+      "name": "ListB",
+      "qualifiedName": "Association::ListB",
+      "adapterName": "AssociationListB",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "AssociationList"
+      ],
+      "methods": [
+        "begin",
+        "end",
+        "erase",
+        "find",
+        "size"
+      ],
+      "header": "utils.h",
+      "line": 5706
+    },
+    {
+      "name": "const_iterator",
+      "qualifiedName": "Association::ListB::const_iterator",
+      "adapterName": "AssociationListBConst_iterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "utils.h",
+      "line": 5746
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "Association::ListB::iterator",
+      "adapterName": "AssociationListBIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "utils.h",
+      "line": 5712
+    },
+    {
+      "name": "Node",
+      "qualifiedName": "Association::Node",
+      "adapterName": "AssociationNode",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "getEffective",
+        "getEffectiveEnd",
+        "getEffectiveStart",
+        "getName",
+        "getPriority",
+        "getPtrA",
+        "getPtrB",
+        "setEffective",
+        "setEffectiveEnd",
+        "setEffectiveStart",
+        "setName",
+        "setPriority",
+        "setPtrA",
+        "setPtrAB",
+        "setPtrB"
+      ],
+      "header": "utils.h",
+      "line": 5840
+    },
+    {
+      "name": "Buffer",
+      "qualifiedName": "Buffer",
+      "adapterName": "Buffer",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasHierarchy",
+        "HasLevel",
+        "Plannable"
+      ],
+      "methods": [
+        "availableOnhandPython",
+        "buildProducingOperation",
+        "correctProducingFlow",
+        "deleteOperationPlans",
+        "findFlow",
+        "findFromName",
+        "findOrCreate",
+        "followPegging",
+        "getAutofence",
+        "getBatch",
+        "getBatchString",
+        "getDecoupledLeadTime",
+        "getDecoupledLeadTimePython",
+        "getFlowIterator",
+        "getFlowPlanIterator",
+        "getFlowPlans",
+        "getFlows",
+        "getHidden",
+        "getIPFlag",
+        "getItem",
+        "getLocation",
+        "getMaximum",
+        "getMaximumCalendar",
+        "getMinimum",
+        "getMinimumCalendar",
+        "getNextItemBuffer",
+        "getOnHand",
+        "getProducingOperation",
+        "getTool",
+        "getType",
+        "hasConsumingFlows",
+        "initialize",
+        "inspect",
+        "inspectPython",
+        "registerFields",
+        "setAutofence",
+        "setBatch",
+        "setHidden",
+        "setIPFlag",
+        "setItem",
+        "setLocation",
+        "setMaximum",
+        "setMaximumCalendar",
+        "setMinimum",
+        "setMinimumCalendar",
+        "setOnHand",
+        "setProducingOperation",
+        "setTool",
+        "solve",
+        "updateProblems"
+      ],
+      "header": "model.h",
+      "line": 5117
+    },
+    {
+      "name": "BufferDefault",
+      "qualifiedName": "BufferDefault",
+      "adapterName": "BufferDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Buffer"
+      ],
+      "methods": [
+        "getType",
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 5607
+    },
+    {
+      "name": "BufferInfinite",
+      "qualifiedName": "BufferInfinite",
+      "adapterName": "BufferInfinite",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Buffer"
+      ],
+      "methods": [
+        "getType",
+        "initialize",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 5622
+    },
+    {
+      "name": "Cache",
+      "qualifiedName": "Cache",
+      "adapterName": "Cache",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object"
+      ],
+      "methods": [
+        "checkIntegrity",
+        "clear",
+        "clearDirty",
+        "flush",
+        "getInstance",
+        "getLogLevel",
+        "getMaximum",
+        "getStatus",
+        "getThreads",
+        "getType",
+        "getWriteImmediately",
+        "initialize",
+        "printStatus",
+        "pythonClear",
+        "pythonFlush",
+        "pythonPrintStatus",
+        "registerFields",
+        "setLogLevel",
+        "setMaximum",
+        "setThreads",
+        "setWriteImmediately",
+        "setWriteImmediately2"
+      ],
+      "header": "cache.h",
+      "line": 124
+    },
+    {
+      "name": "CacheEntry",
+      "qualifiedName": "CacheEntry",
+      "adapterName": "CacheEntry",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "AbstractCacheEntry"
+      ],
+      "methods": [
+        "clearDirty",
+        "expire",
+        "flush",
+        "getLock",
+        "getSize",
+        "getValue"
+      ],
+      "header": "cache.h",
+      "line": 89
+    },
+    {
+      "name": "Calendar",
+      "qualifiedName": "Calendar",
+      "adapterName": "Calendar",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasName",
+        "HasSource"
+      ],
+      "methods": [
+        "addBucket",
+        "buildEventList",
+        "clearEventList",
+        "findBucket",
+        "getBool",
+        "getBuckets",
+        "getDefault",
+        "getEvents",
+        "getSize",
+        "getType",
+        "getValue",
+        "initialize",
+        "registerFields",
+        "removeBucket",
+        "setDefault",
+        "setPythonValue",
+        "setValue"
+      ],
+      "header": "model.h",
+      "line": 361
+    },
+    {
+      "name": "EventIterator",
+      "qualifiedName": "Calendar::EventIterator",
+      "adapterName": "CalendarEventIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "getCalendar",
+        "getDate",
+        "getPrevValue",
+        "getValue"
+      ],
+      "header": "model.h",
+      "line": 419
+    },
+    {
+      "name": "CalendarBucket",
+      "qualifiedName": "CalendarBucket",
+      "adapterName": "CalendarBucket",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object",
+        "NonCopyable",
+        "HasSource"
+      ],
+      "methods": [
+        "getBool",
+        "getByName",
+        "getCalendar",
+        "getDays",
+        "getEnd",
+        "getEndTime",
+        "getName",
+        "getPriority",
+        "getStart",
+        "getStartTime",
+        "getType",
+        "getValue",
+        "initialize",
+        "isContinuouslyEffective",
+        "reader",
+        "registerFields",
+        "setCalendar",
+        "setDays",
+        "setEnd",
+        "setEndTime",
+        "setName",
+        "setPriority",
+        "setStart",
+        "setStartTime",
+        "setValue"
+      ],
+      "header": "model.h",
+      "line": 97
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "CalendarBucket::iterator",
+      "adapterName": "CalendarBucketIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "end",
+        "next"
+      ],
+      "header": "model.h",
+      "line": 301
+    },
+    {
+      "name": "CalendarDefault",
+      "qualifiedName": "CalendarDefault",
+      "adapterName": "CalendarDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Calendar"
+      ],
+      "methods": [
+        "getType",
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 520
+    },
+    {
+      "name": "CalendarEventIterator",
+      "qualifiedName": "CalendarEventIterator",
+      "adapterName": "CalendarEventIterator",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "PythonExtension"
+      ],
+      "methods": [
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 10080
+    },
+    {
+      "name": "Command",
+      "qualifiedName": "Command",
+      "adapterName": "Command",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "commit",
+        "getNext",
+        "getType",
+        "rollback"
+      ],
+      "header": "utils.h",
+      "line": 4371
+    },
+    {
+      "name": "CommandCreateObject",
+      "qualifiedName": "CommandCreateObject",
+      "adapterName": "CommandCreateObject",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Command"
+      ],
+      "methods": [
+        "commit",
+        "getType",
+        "rollback"
+      ],
+      "header": "utils.h",
+      "line": 4514
+    },
+    {
+      "name": "CommandCreateOperationPlan",
+      "qualifiedName": "CommandCreateOperationPlan",
+      "adapterName": "CommandCreateOperationPlan",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Command"
+      ],
+      "methods": [
+        "commit",
+        "getOperationPlan",
+        "getType",
+        "rollback"
+      ],
+      "header": "model.h",
+      "line": 9519
+    },
+    {
+      "name": "CommandDeleteOperationPlan",
+      "qualifiedName": "CommandDeleteOperationPlan",
+      "adapterName": "CommandDeleteOperationPlan",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Command"
+      ],
+      "methods": [
+        "commit",
+        "getOperationPlan",
+        "getType",
+        "rollback"
+      ],
+      "header": "model.h",
+      "line": 9561
+    },
+    {
+      "name": "CommandList",
+      "qualifiedName": "CommandList",
+      "adapterName": "CommandList",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Command"
+      ],
+      "methods": [
+        "add",
+        "begin",
+        "commit",
+        "empty",
+        "end",
+        "getType",
+        "rollback"
+      ],
+      "header": "utils.h",
+      "line": 4573
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "CommandList::iterator",
+      "adapterName": "CommandListIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "utils.h",
+      "line": 4586
+    },
+    {
+      "name": "CommandManager",
+      "qualifiedName": "CommandManager",
+      "adapterName": "CommandManager",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object"
+      ],
+      "methods": [
+        "add",
+        "addCommandSetField",
+        "begin",
+        "commit",
+        "empty",
+        "end",
+        "initialize",
+        "rbegin",
+        "rend",
+        "rollback",
+        "setBookmark"
+      ],
+      "header": "utils.h",
+      "line": 4660
+    },
+    {
+      "name": "Bookmark",
+      "qualifiedName": "CommandManager::Bookmark",
+      "adapterName": "CommandManagerBookmark",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "CommandList"
+      ],
+      "methods": [
+        "isActive",
+        "isChildOf"
+      ],
+      "header": "utils.h",
+      "line": 4663
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "CommandManager::iterator",
+      "adapterName": "CommandManagerIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "utils.h",
+      "line": 4688
+    },
+    {
+      "name": "reverse_iterator",
+      "qualifiedName": "CommandManager::reverse_iterator",
+      "adapterName": "CommandManagerReverse_iterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "utils.h",
+      "line": 4734
+    },
+    {
+      "name": "CommandMoveOperationPlan",
+      "qualifiedName": "CommandMoveOperationPlan",
+      "adapterName": "CommandMoveOperationPlan",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Command"
+      ],
+      "methods": [
+        "commit",
+        "getDates",
+        "getOperationPlan",
+        "getQuantity",
+        "getType",
+        "restore",
+        "rollback",
+        "setEnd",
+        "setParameters",
+        "setQuantity",
+        "setStart"
+      ],
+      "header": "model.h",
+      "line": 9608
+    },
+    {
+      "name": "CommandSetField",
+      "qualifiedName": "CommandSetField",
+      "adapterName": "CommandSetField",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Command"
+      ],
+      "methods": [
+        "clearObject",
+        "commit",
+        "getObject",
+        "getType",
+        "rollback"
+      ],
+      "header": "utils.h",
+      "line": 4429
+    },
+    {
+      "name": "CommandSetForecastData",
+      "qualifiedName": "CommandSetForecastData",
+      "adapterName": "CommandSetForecastData",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Command"
+      ],
+      "methods": [
+        "commit",
+        "getType",
+        "rollback"
+      ],
+      "header": "forecast.h",
+      "line": 853
+    },
+    {
+      "name": "CommandSetProperty",
+      "qualifiedName": "CommandSetProperty",
+      "adapterName": "CommandSetProperty",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Command"
+      ],
+      "methods": [
+        "clearObject",
+        "commit",
+        "getObject",
+        "getType",
+        "rollback"
+      ],
+      "header": "utils.h",
+      "line": 4471
+    },
+    {
+      "name": "ConstraintDistributionLeadTime",
+      "qualifiedName": "ConstraintDistributionLeadTime",
+      "adapterName": "ConstraintDistributionLeadTime",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getOwner",
+        "getType",
+        "isFeasible",
+        "update"
+      ],
+      "header": "model.h",
+      "line": 9436
+    },
+    {
+      "name": "ConstraintManufacturingLeadTime",
+      "qualifiedName": "ConstraintManufacturingLeadTime",
+      "adapterName": "ConstraintManufacturingLeadTime",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getOwner",
+        "getType",
+        "isFeasible",
+        "update"
+      ],
+      "header": "model.h",
+      "line": 9397
+    },
+    {
+      "name": "ConstraintOverdueDemand",
+      "qualifiedName": "ConstraintOverdueDemand",
+      "adapterName": "ConstraintOverdueDemand",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getOwner",
+        "getType",
+        "isFeasible",
+        "update"
+      ],
+      "header": "model.h",
+      "line": 9475
+    },
+    {
+      "name": "ConstraintPurchasingLeadTime",
+      "qualifiedName": "ConstraintPurchasingLeadTime",
+      "adapterName": "ConstraintPurchasingLeadTime",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getOwner",
+        "getType",
+        "isFeasible",
+        "update"
+      ],
+      "header": "model.h",
+      "line": 9358
+    },
+    {
+      "name": "Customer",
+      "qualifiedName": "Customer",
+      "adapterName": "Customer",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasHierarchy"
+      ],
+      "methods": [
+        "decNumberOfDemands",
+        "getNumberOfDemands",
+        "getType",
+        "incNumberOfDemands",
+        "initialize",
+        "registerFields"
+      ],
+      "header": "model.h",
+      "line": 1309
+    },
+    {
+      "name": "CustomerDefault",
+      "qualifiedName": "CustomerDefault",
+      "adapterName": "CustomerDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Customer"
+      ],
+      "methods": [
+        "getType",
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 1341
+    },
+    {
+      "name": "DatabaseBadConnection",
+      "qualifiedName": "DatabaseBadConnection",
+      "adapterName": "DatabaseBadConnection",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "RuntimeException"
+      ],
+      "methods": [],
+      "header": "database.h",
+      "line": 477
+    },
+    {
+      "name": "DatabasePreparedStatement",
+      "qualifiedName": "DatabasePreparedStatement",
+      "adapterName": "DatabasePreparedStatement",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "DatabaseStatementBase"
+      ],
+      "methods": [
+        "execute",
+        "getArgs",
+        "setArgument"
+      ],
+      "header": "database.h",
+      "line": 413
+    },
+    {
+      "name": "DatabaseReader",
+      "qualifiedName": "DatabaseReader",
+      "adapterName": "DatabaseReader",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable"
+      ],
+      "methods": [
+        "closeConnection",
+        "executeSQL",
+        "getConnection",
+        "getError"
+      ],
+      "header": "database.h",
+      "line": 362
+    },
+    {
+      "name": "DatabaseResult",
+      "qualifiedName": "DatabaseResult",
+      "adapterName": "DatabaseResult",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable"
+      ],
+      "methods": [
+        "countFields",
+        "countRows",
+        "getFieldName",
+        "getValueBool",
+        "getValueDate",
+        "getValueDouble",
+        "getValueDoubleOrNull",
+        "getValueInt",
+        "getValueLong",
+        "getValueString"
+      ],
+      "header": "database.h",
+      "line": 483
+    },
+    {
+      "name": "DatabaseStatement",
+      "qualifiedName": "DatabaseStatement",
+      "adapterName": "DatabaseStatement",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "DatabaseStatementBase"
+      ],
+      "methods": [
+        "execute"
+      ],
+      "header": "database.h",
+      "line": 69
+    },
+    {
+      "name": "DatabaseStatementBase",
+      "qualifiedName": "DatabaseStatementBase",
+      "adapterName": "DatabaseStatementBase",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "execute"
+      ],
+      "header": "database.h",
+      "line": 53
+    },
+    {
+      "name": "DatabaseTransaction",
+      "qualifiedName": "DatabaseTransaction",
+      "adapterName": "DatabaseTransaction",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "DatabaseStatementBase"
+      ],
+      "methods": [
+        "execute",
+        "pushStatement"
+      ],
+      "header": "database.h",
+      "line": 328
+    },
+    {
+      "name": "DatabaseWriter",
+      "qualifiedName": "DatabaseWriter",
+      "adapterName": "DatabaseWriter",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable"
+      ],
+      "methods": [
+        "getConnectionString",
+        "launch",
+        "pushStatement",
+        "pushTransaction",
+        "setConnectionString"
+      ],
+      "header": "database.h",
+      "line": 561
+    },
+    {
+      "name": "DataException",
+      "qualifiedName": "DataException",
+      "adapterName": "DataException",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "logic_error"
+      ],
+      "methods": [],
+      "header": "utils.h",
+      "line": 304
+    },
+    {
+      "name": "DataInput",
+      "qualifiedName": "DataInput",
+      "adapterName": "DataInput",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "callUserExitCpp",
+        "getCommandManager",
+        "getSource",
+        "getUserExit",
+        "setCommandManager",
+        "setSource",
+        "setUserExit",
+        "setUserExitCpp"
+      ],
+      "header": "utils.h",
+      "line": 4861
+    },
+    {
+      "name": "DataKeyword",
+      "qualifiedName": "DataKeyword",
+      "adapterName": "DataKeyword",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "getHash",
+        "getName",
+        "isA",
+        "reset"
+      ],
+      "header": "utils.h",
+      "line": 2310
+    },
+    {
+      "name": "DataValue",
+      "qualifiedName": "DataValue",
+      "adapterName": "DataValue",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "getBool",
+        "getDate",
+        "getDouble",
+        "getDuration",
+        "getInt",
+        "getLong",
+        "getObject",
+        "getString",
+        "getStringList",
+        "getUnsignedLong",
+        "setBool",
+        "setDate",
+        "setDouble",
+        "setDuration",
+        "setInt",
+        "setLong",
+        "setObject",
+        "setString",
+        "setUnsignedLong"
+      ],
+      "header": "utils.h",
+      "line": 2378
+    },
+    {
+      "name": "DataValueDict",
+      "qualifiedName": "DataValueDict",
+      "adapterName": "DataValueDict",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "get"
+      ],
+      "header": "utils.h",
+      "line": 3017
+    },
+    {
+      "name": "Date",
+      "qualifiedName": "Date",
+      "adapterName": "Date",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "detectUTC",
+        "getInfo",
+        "getTicks",
+        "isUTC",
+        "now",
+        "parse",
+        "toCharBuffer",
+        "toString"
+      ],
+      "header": "utils.h",
+      "line": 572
+    },
+    {
+      "name": "DateDetail",
+      "qualifiedName": "DateDetail",
+      "adapterName": "DateDetail",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "addDays",
+        "getSecondsDay",
+        "getSecondsMonth",
+        "getSecondsWeek",
+        "getSecondsYear",
+        "getWeekDay",
+        "normalize",
+        "roundDownDay",
+        "roundUpDay",
+        "setSecondsDay",
+        "toCharBuffer",
+        "toString"
+      ],
+      "header": "utils.h",
+      "line": 774
+    },
+    {
+      "name": "DateRange",
+      "qualifiedName": "DateRange",
+      "adapterName": "DateRange",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "almostEqual",
+        "between",
+        "getDuration",
+        "getEnd",
+        "getStart",
+        "intersect",
+        "overlap",
+        "setEnd",
+        "setStart",
+        "setStartAndEnd",
+        "within"
+      ],
+      "header": "utils.h",
+      "line": 988
+    },
+    {
+      "name": "Demand",
+      "qualifiedName": "Demand",
+      "adapterName": "Demand",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasHierarchy",
+        "Plannable"
+      ],
+      "methods": [
+        "addConstraint",
+        "addDelivery",
+        "deleteOperationPlans",
+        "getBatch",
+        "getBatchString",
+        "getCluster",
+        "getConstraintIterator",
+        "getConstraints",
+        "getCustomer",
+        "getDefaultDeliveryDuration",
+        "getDelay",
+        "getDelivery",
+        "getDeliveryDate",
+        "getDeliveryDuration",
+        "getDeliveryOperation",
+        "getDue",
+        "getEarliestDelivery",
+        "getHidden",
+        "getItem",
+        "getLatestDelivery",
+        "getLocation",
+        "getMaxLateness",
+        "getMinShipment",
+        "getNextItemDemand",
+        "getOperation",
+        "getOperationPlans",
+        "getPegging",
+        "getPeggingFirstLevel",
+        "getPlannedQuantity",
+        "getPriority",
+        "getProblemIterator",
+        "getQuantity",
+        "getRawMinShipment",
+        "getSize",
+        "getStatus",
+        "getStatusString",
+        "getType",
+        "initialize",
+        "isMinShipmentDefault",
+        "registerFields",
+        "removeDelivery",
+        "setBatch",
+        "setCustomer",
+        "setDefaultDeliveryDuration",
+        "setDue",
+        "setHidden",
+        "setItem",
+        "setLocation",
+        "setLocationNoRecalc",
+        "setMaxLateness",
+        "setMinShipment",
+        "setOperation",
+        "setPriority",
+        "setQuantity",
+        "setStatus",
+        "setStatusString",
+        "solve",
+        "updateProblems"
+      ],
+      "header": "model.h",
+      "line": 7563
+    },
+    {
+      "name": "DeliveryIterator",
+      "qualifiedName": "Demand::DeliveryIterator",
+      "adapterName": "DemandDeliveryIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 7579
+    },
+    {
+      "name": "DemandDefault",
+      "qualifiedName": "DemandDefault",
+      "adapterName": "DemandDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Demand"
+      ],
+      "methods": [
+        "getType",
+        "initialize",
+        "registerFields"
+      ],
+      "header": "model.h",
+      "line": 8097
+    },
+    {
+      "name": "DemandGroup",
+      "qualifiedName": "DemandGroup",
+      "adapterName": "DemandGroup",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Demand"
+      ],
+      "methods": [
+        "getCluster",
+        "getDue",
+        "getPolicy",
+        "getPolicyString",
+        "getPriority",
+        "getQuantity",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setDue",
+        "setPolicyString",
+        "setPriority"
+      ],
+      "header": "model.h",
+      "line": 8113
+    },
+    {
+      "name": "Duration",
+      "qualifiedName": "Duration",
+      "adapterName": "Duration",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "double2CharBuffer",
+        "getSeconds",
+        "parse",
+        "parse2double"
+      ],
+      "header": "utils.h",
+      "line": 456
+    },
+    {
+      "name": "Environment",
+      "qualifiedName": "Environment",
+      "adapterName": "Environment",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "getLogFile",
+        "getLogFileSize",
+        "getProcessorCores",
+        "getloglimit",
+        "searchFile",
+        "setLogFile",
+        "setProcessName",
+        "setloglimit",
+        "truncateLogFile"
+      ],
+      "header": "utils.h",
+      "line": 2595
+    },
+    {
+      "name": "Flow",
+      "qualifiedName": "Flow",
+      "adapterName": "Flow",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object",
+        "Node",
+        "Solvable",
+        "HasSource"
+      ],
+      "methods": [
+        "computeFlowToOperationDate",
+        "computeOperationToFlowDate",
+        "finder",
+        "getAlternate",
+        "getBuffer",
+        "getFlowplanDateQuantity",
+        "getHidden",
+        "getItem",
+        "getLocation",
+        "getOffset",
+        "getOperation",
+        "getQuantity",
+        "getQuantityFixed",
+        "getSearch",
+        "getType",
+        "getTypeName",
+        "hasAlternates",
+        "initialize",
+        "isConsumer",
+        "isProducer",
+        "registerFields",
+        "setBuffer",
+        "setItem",
+        "setLocation",
+        "setOffset",
+        "setOperation",
+        "setQuantity",
+        "setQuantityFixed",
+        "setSearch",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 5640
+    },
+    {
+      "name": "FlowEnd",
+      "qualifiedName": "FlowEnd",
+      "adapterName": "FlowEnd",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Flow"
+      ],
+      "methods": [
+        "computeFlowToOperationDate",
+        "computeOperationToFlowDate",
+        "getFlowplanDateQuantity",
+        "getType",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 5917
+    },
+    {
+      "name": "FlowPlan",
+      "qualifiedName": "FlowPlan",
+      "adapterName": "FlowPlan",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "EventChangeOnhand"
+      ],
+      "methods": [
+        "computeFlowToOperationDate",
+        "computeOperationToFlowDate",
+        "getBuffer",
+        "getClosed",
+        "getConfirmed",
+        "getFeasible",
+        "getFlow",
+        "getHidden",
+        "getItem",
+        "getOperation",
+        "getOperationPlan",
+        "getPeriodOfCover",
+        "getProposed",
+        "getStatus",
+        "getTimeLine",
+        "getType",
+        "initialize",
+        "isFollowingBatch",
+        "registerFields",
+        "setBuffer",
+        "setClosed",
+        "setConfirmed",
+        "setDate",
+        "setFlow",
+        "setFollowingBatch",
+        "setItem",
+        "setOperationPlan",
+        "setProposed",
+        "setQuantity",
+        "setQuantityAPI",
+        "setQuantityRaw",
+        "setStatus",
+        "update"
+      ],
+      "header": "model.h",
+      "line": 5995
+    },
+    {
+      "name": "FlowPlanIterator",
+      "qualifiedName": "FlowPlanIterator",
+      "adapterName": "FlowPlanIterator",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "PythonExtension"
+      ],
+      "methods": [
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 10093
+    },
+    {
+      "name": "FlowStart",
+      "qualifiedName": "FlowStart",
+      "adapterName": "FlowStart",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Flow"
+      ],
+      "methods": [
+        "computeFlowToOperationDate",
+        "computeOperationToFlowDate",
+        "getFlowplanDateQuantity",
+        "getType",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 5892
+    },
+    {
+      "name": "FlowTransferBatch",
+      "qualifiedName": "FlowTransferBatch",
+      "adapterName": "FlowTransferBatch",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Flow"
+      ],
+      "methods": [
+        "computeFlowToOperationDate",
+        "computeOperationToFlowDate",
+        "getFlowplanDateQuantity",
+        "getTransferBatch",
+        "getType",
+        "registerFields",
+        "setTransferBatch",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 5946
+    },
+    {
+      "name": "Forecast",
+      "qualifiedName": "Forecast",
+      "adapterName": "Forecast",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Demand",
+        "ForecastBase"
+      ],
+      "methods": [
+        "callback",
+        "getBuckets",
+        "getCalendar",
+        "getCalendar_static",
+        "getDeliveryDuration",
+        "getDeviation",
+        "getDiscrete",
+        "getForecastCustomer",
+        "getForecastItem",
+        "getForecastLocation",
+        "getForecastName",
+        "getMethod",
+        "getMethods",
+        "getMethodsString",
+        "getPlanned",
+        "getSMAPEerror",
+        "getSize",
+        "getType",
+        "initialize",
+        "isAggregate",
+        "isLeaf",
+        "parse",
+        "registerFields",
+        "setCalendar",
+        "setCalendar_static",
+        "setCustomer",
+        "setDeviation",
+        "setDiscrete",
+        "setDue",
+        "setItem",
+        "setLeaf",
+        "setLocation",
+        "setMaxLateness",
+        "setMethod",
+        "setMethods",
+        "setMethodsString",
+        "setMinShipment",
+        "setPlanned",
+        "setPriority",
+        "setQuantity",
+        "setSMAPEerror"
+      ],
+      "header": "forecast.h",
+      "line": 1418
+    },
+    {
+      "name": "ForecastAggregated",
+      "qualifiedName": "ForecastAggregated",
+      "adapterName": "ForecastAggregated",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "ForecastBase"
+      ],
+      "methods": [
+        "getForecastCustomer",
+        "getForecastItem",
+        "getForecastLocation"
+      ],
+      "header": "forecast.h",
+      "line": 1735
+    },
+    {
+      "name": "ForecastBase",
+      "qualifiedName": "ForecastBase",
+      "adapterName": "ForecastBase",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "clearDirty",
+        "findForecast",
+        "getData",
+        "getDiscrete",
+        "getForecastCustomer",
+        "getForecastItem",
+        "getForecastLocation",
+        "getForecastName",
+        "getForecastPartition",
+        "getForecastPartitionStatic",
+        "getForecasts",
+        "getHorizonFuture",
+        "getHorizonFutureStatic",
+        "getHorizonHistory",
+        "getHorizonHistoryStatic",
+        "getLeaves",
+        "getMethods",
+        "getParents",
+        "getPlanned",
+        "inspect",
+        "isAggregate",
+        "isLeaf",
+        "markDirty",
+        "setFields",
+        "setForecastPartition",
+        "setHorizonFuture",
+        "setHorizonHistory"
+      ],
+      "header": "forecast.h",
+      "line": 1171
+    },
+    {
+      "name": "Comparator",
+      "qualifiedName": "ForecastBase::Comparator",
+      "adapterName": "ForecastBaseComparator",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "forecast.h",
+      "line": 1173
+    },
+    {
+      "name": "ItemIterator",
+      "qualifiedName": "ForecastBase::ItemIterator",
+      "adapterName": "ForecastBaseItemIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "forecast.h",
+      "line": 1289
+    },
+    {
+      "name": "LeafIterator",
+      "qualifiedName": "ForecastBase::LeafIterator",
+      "adapterName": "ForecastBaseLeafIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "forecast.h",
+      "line": 1369
+    },
+    {
+      "name": "ParentIterator",
+      "qualifiedName": "ForecastBase::ParentIterator",
+      "adapterName": "ForecastBaseParentIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "forecast.h",
+      "line": 1312
+    },
+    {
+      "name": "ForecastBucket",
+      "qualifiedName": "ForecastBucket",
+      "adapterName": "ForecastBucket",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Demand"
+      ],
+      "methods": [
+        "getBucketIndex",
+        "getDeliveryDuration",
+        "getDueRange",
+        "getDueWithinBucket",
+        "getEndDate",
+        "getForecast",
+        "getForecastBaseline",
+        "getForecastConsumed",
+        "getForecastNet",
+        "getForecastOverride",
+        "getForecastPlanned",
+        "getForecastTotal",
+        "getIndex",
+        "getOrdersAdjustment",
+        "getOrdersAdjustmentMinus1",
+        "getOrdersAdjustmentMinus2",
+        "getOrdersAdjustmentMinus3",
+        "getOrdersOpen",
+        "getOrdersPlanned",
+        "getOrdersTotal",
+        "getStartDate",
+        "getType",
+        "initialize",
+        "reduceDeliveries",
+        "registerFields",
+        "setBucketIndex",
+        "setDueWithinBucket",
+        "setEndDate",
+        "setForecast",
+        "setForecastBaseline",
+        "setForecastOverride",
+        "setForecastPriority",
+        "setOrdersAdjustment",
+        "setOrdersAdjustmentMinus1",
+        "setOrdersAdjustmentMinus2",
+        "setOrdersAdjustmentMinus3",
+        "setOrdersTotal",
+        "setStartDate",
+        "writeProperties"
+      ],
+      "header": "forecast.h",
+      "line": 887
+    },
+    {
+      "name": "bucketiterator",
+      "qualifiedName": "ForecastBucket::bucketiterator",
+      "adapterName": "ForecastBucketBucketiterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "forecast.h",
+      "line": 1770
+    },
+    {
+      "name": "ForecastBucketData",
+      "qualifiedName": "ForecastBucketData",
+      "adapterName": "ForecastBucketData",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "clearDirty",
+        "deleteForecastBucket",
+        "getDates",
+        "getEnd",
+        "getForecast",
+        "getForecastBucket",
+        "getForecastPlanned",
+        "getIndex",
+        "getMeasures",
+        "getOrCreateForecastBucket",
+        "getOrdersPlanned",
+        "getSize",
+        "getStart",
+        "getValue",
+        "getValueAndFound",
+        "incValue",
+        "isDirty",
+        "markDirty",
+        "propagateValue",
+        "removeValue",
+        "setValue",
+        "sortMeasures",
+        "toString"
+      ],
+      "header": "forecast.h",
+      "line": 690
+    },
+    {
+      "name": "ForecastData",
+      "qualifiedName": "ForecastData",
+      "adapterName": "ForecastData",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "clearDirty",
+        "flush",
+        "getBuckets",
+        "getLock",
+        "getSize",
+        "markDirty",
+        "toString"
+      ],
+      "header": "forecast.h",
+      "line": 828
+    },
+    {
+      "name": "ForecastKey",
+      "qualifiedName": "ForecastKey",
+      "adapterName": "ForecastKey",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "ForecastBase"
+      ],
+      "methods": [
+        "getForecastCustomer",
+        "getForecastItem",
+        "getForecastLocation"
+      ],
+      "header": "forecast.h",
+      "line": 1716
+    },
+    {
+      "name": "ForecastMeasure",
+      "qualifiedName": "ForecastMeasure",
+      "adapterName": "ForecastMeasure",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasName"
+      ],
+      "methods": [
+        "aggregateMeasures",
+        "aggregateMeasuresPython",
+        "computeDependentMeasures",
+        "computeMeasures",
+        "computeMeasuresPython",
+        "disaggregate",
+        "evalExpression",
+        "getDefault",
+        "getDiscrete",
+        "getHashedName",
+        "getStored",
+        "getType",
+        "getValue",
+        "getValueAndFound",
+        "initialize",
+        "isAggregate",
+        "isComputed",
+        "isLeaf",
+        "isTemporary",
+        "registerFields",
+        "resetMeasure",
+        "resetMeasuresPython",
+        "setComputed",
+        "setDefault",
+        "setDiscrete",
+        "setName",
+        "setStored",
+        "update",
+        "updatePlannedForecastPython"
+      ],
+      "header": "forecast.h",
+      "line": 79
+    },
+    {
+      "name": "ForecastMeasureAggregated",
+      "qualifiedName": "ForecastMeasureAggregated",
+      "adapterName": "ForecastMeasureAggregated",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "ForecastMeasure"
+      ],
+      "methods": [
+        "disaggregate",
+        "getOverrides",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setOverrides"
+      ],
+      "header": "forecast.h",
+      "line": 233
+    },
+    {
+      "name": "ForecastMeasureAggregatedPlanned",
+      "qualifiedName": "ForecastMeasureAggregatedPlanned",
+      "adapterName": "ForecastMeasureAggregatedPlanned",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "ForecastMeasureAggregated"
+      ],
+      "methods": [
+        "getType",
+        "initialize",
+        "isLeaf"
+      ],
+      "header": "forecast.h",
+      "line": 313
+    },
+    {
+      "name": "ForecastMeasureComputed",
+      "qualifiedName": "ForecastMeasureComputed",
+      "adapterName": "ForecastMeasureComputed",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "ForecastMeasureAggregated"
+      ],
+      "methods": [
+        "compileMeasures",
+        "compileMeasuresPython",
+        "compute",
+        "getComputeExpression",
+        "getOverrides",
+        "getType",
+        "getUpdateExpression",
+        "initialize",
+        "registerFields",
+        "setComputeExpression",
+        "setOverrides",
+        "setUpdateExpression",
+        "update"
+      ],
+      "header": "forecast.h",
+      "line": 366
+    },
+    {
+      "name": "ForecastMeasureComputedPlanned",
+      "qualifiedName": "ForecastMeasureComputedPlanned",
+      "adapterName": "ForecastMeasureComputedPlanned",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "ForecastMeasureComputed"
+      ],
+      "methods": [
+        "getType",
+        "initialize",
+        "isLeaf"
+      ],
+      "header": "forecast.h",
+      "line": 455
+    },
+    {
+      "name": "ForecastMeasureLocal",
+      "qualifiedName": "ForecastMeasureLocal",
+      "adapterName": "ForecastMeasureLocal",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "ForecastMeasure"
+      ],
+      "methods": [
+        "disaggregate",
+        "getType",
+        "initialize",
+        "isLeaf"
+      ],
+      "header": "forecast.h",
+      "line": 336
+    },
+    {
+      "name": "ForecastMeasureTemp",
+      "qualifiedName": "ForecastMeasureTemp",
+      "adapterName": "ForecastMeasureTemp",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "ForecastMeasure"
+      ],
+      "methods": [
+        "disaggregate",
+        "getType",
+        "initialize"
+      ],
+      "header": "forecast.h",
+      "line": 472
+    },
+    {
+      "name": "ForecastSolver",
+      "qualifiedName": "ForecastSolver",
+      "adapterName": "ForecastSolver",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Solver"
+      ],
+      "methods": [
+        "create",
+        "getAverageNoDataDays",
+        "getCalendar",
+        "getCrostonDecayRate",
+        "getCrostonInitialAlfa",
+        "getCrostonMaxAlfa",
+        "getCrostonMinAlfa",
+        "getCrostonMinIntermittence",
+        "getCustomerThenItemHierarchy",
+        "getDoubleExponentialDampenTrend",
+        "getDoubleExponentialInitialAlfa",
+        "getDoubleExponentialInitialGamma",
+        "getDoubleExponentialMaxAlfa",
+        "getDoubleExponentialMaxGamma",
+        "getDoubleExponentialMinAlfa",
+        "getDoubleExponentialMinGamma",
+        "getDueWithinBucket",
+        "getForecastDeadAfterInactivity",
+        "getForecastIterations",
+        "getForecastMaxDeviation",
+        "getForecastSkip",
+        "getForecastSmapeAlfa",
+        "getMatchUsingDeliveryOperation",
+        "getMovingAverageDefaultOrder",
+        "getNetEarly",
+        "getNetIgnoreLocation",
+        "getNetLate",
+        "getNetPastDemand",
+        "getSeasonalDampenTrend",
+        "getSeasonalGamma",
+        "getSeasonalInitialAlfa",
+        "getSeasonalInitialBeta",
+        "getSeasonalMaxAlfa",
+        "getSeasonalMaxAutocorrelation",
+        "getSeasonalMaxBeta",
+        "getSeasonalMaxPeriod",
+        "getSeasonalMinAlfa",
+        "getSeasonalMinAutocorrelation",
+        "getSeasonalMinBeta",
+        "getSeasonalMinPeriod",
+        "getSingleExponentialInitialAlfa",
+        "getSingleExponentialMaxAlfa",
+        "getSingleExponentialMinAlfa",
+        "getSize",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setAverageNoDataDays",
+        "setCalendar",
+        "setCrostonDecayRate",
+        "setCrostonInitialAlfa",
+        "setCrostonMaxAlfa",
+        "setCrostonMinAlfa",
+        "setCrostonMinIntermittence",
+        "setCustomerThenItemHierarchy",
+        "setDoubleExponentialDampenTrend",
+        "setDoubleExponentialInitialAlfa",
+        "setDoubleExponentialInitialGamma",
+        "setDoubleExponentialMaxAlfa",
+        "setDoubleExponentialMaxGamma",
+        "setDoubleExponentialMinAlfa",
+        "setDoubleExponentialMinGamma",
+        "setDueWithinBucket",
+        "setForecastDeadAfterInactivity",
+        "setForecastIterations",
+        "setForecastMaxDeviation",
+        "setForecastSkip",
+        "setForecastSmapeAlfa",
+        "setMatchUsingDeliveryOperation",
+        "setMovingAverageDefaultOrder",
+        "setNetEarly",
+        "setNetIgnoreLocation",
+        "setNetLate",
+        "setNetPastDemand",
+        "setSeasonalDampenTrend",
+        "setSeasonalGamma",
+        "setSeasonalInitialAlfa",
+        "setSeasonalInitialBeta",
+        "setSeasonalMaxAlfa",
+        "setSeasonalMaxAutocorrelation",
+        "setSeasonalMaxBeta",
+        "setSeasonalMaxPeriod",
+        "setSeasonalMinAlfa",
+        "setSeasonalMinAutocorrelation",
+        "setSeasonalMinBeta",
+        "setSeasonalMinPeriod",
+        "setSingleExponentialInitialAlfa",
+        "setSingleExponentialMaxAlfa",
+        "setSingleExponentialMinAlfa",
+        "solve"
+      ],
+      "header": "forecast.h",
+      "line": 1821
+    },
+    {
+      "name": "Croston",
+      "qualifiedName": "ForecastSolver::Croston",
+      "adapterName": "ForecastSolverCroston",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "ForecastSolverForecastMethod"
+      ],
+      "methods": [
+        "applyForecast",
+        "generateForecast",
+        "getCode",
+        "getDecayRate",
+        "getInitialAlfa",
+        "getMaxAlfa",
+        "getMinAlfa",
+        "getMinIntermittence",
+        "setDecayRate",
+        "setInitialAlfa",
+        "setMaxAlfa",
+        "setMinAlfa",
+        "setMinIntermittence"
+      ],
+      "header": "forecast.h",
+      "line": 2409
+    },
+    {
+      "name": "DoubleExponential",
+      "qualifiedName": "ForecastSolver::DoubleExponential",
+      "adapterName": "ForecastSolverDoubleExponential",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "ForecastSolverForecastMethod"
+      ],
+      "methods": [
+        "applyForecast",
+        "generateForecast",
+        "getCode",
+        "getDampenTrend",
+        "getInitialAlfa",
+        "getInitialGamma",
+        "getMaxAlfa",
+        "getMaxGamma",
+        "getMinAlfa",
+        "getMinGamma",
+        "setDampenTrend",
+        "setInitialAlfa",
+        "setInitialGamma",
+        "setMaxAlfa",
+        "setMaxGamma",
+        "setMinAlfa",
+        "setMinGamma"
+      ],
+      "header": "forecast.h",
+      "line": 1990
+    },
+    {
+      "name": "ForecastMethod",
+      "qualifiedName": "ForecastSolver::ForecastMethod",
+      "adapterName": "ForecastSolverForecastMethod",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "applyForecast",
+        "generateForecast",
+        "getCode"
+      ],
+      "header": "forecast.h",
+      "line": 1838
+    },
+    {
+      "name": "Manual",
+      "qualifiedName": "ForecastSolver::Manual",
+      "adapterName": "ForecastSolverManual",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "ForecastSolverForecastMethod"
+      ],
+      "methods": [
+        "applyForecast",
+        "generateForecast",
+        "getCode"
+      ],
+      "header": "forecast.h",
+      "line": 2519
+    },
+    {
+      "name": "Metrics",
+      "qualifiedName": "ForecastSolver::Metrics",
+      "adapterName": "ForecastSolverMetrics",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "forecast.h",
+      "line": 1828
+    },
+    {
+      "name": "MovingAverage",
+      "qualifiedName": "ForecastSolver::MovingAverage",
+      "adapterName": "ForecastSolverMovingAverage",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "ForecastSolverForecastMethod"
+      ],
+      "methods": [
+        "applyForecast",
+        "generateForecast",
+        "getCode",
+        "getDefaultOrder",
+        "setDefaultOrder"
+      ],
+      "header": "forecast.h",
+      "line": 1856
+    },
+    {
+      "name": "Seasonal",
+      "qualifiedName": "ForecastSolver::Seasonal",
+      "adapterName": "ForecastSolverSeasonal",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "ForecastSolverForecastMethod"
+      ],
+      "methods": [
+        "applyForecast",
+        "generateForecast",
+        "getCode",
+        "getDampenTrend",
+        "getGamma",
+        "getInitialAlfa",
+        "getInitialBeta",
+        "getMaxAlfa",
+        "getMaxAutocorrelation",
+        "getMaxBeta",
+        "getMaxPeriod",
+        "getMinAlfa",
+        "getMinAutocorrelation",
+        "getMinBeta",
+        "getMinPeriod",
+        "setDampenTrend",
+        "setGamma",
+        "setInitialAlfa",
+        "setInitialBeta",
+        "setMaxAlfa",
+        "setMaxAutocorrelation",
+        "setMaxBeta",
+        "setMaxPeriod",
+        "setMinAlfa",
+        "setMinAutocorrelation",
+        "setMinBeta",
+        "setMinPeriod"
+      ],
+      "header": "forecast.h",
+      "line": 2148
+    },
+    {
+      "name": "SingleExponential",
+      "qualifiedName": "ForecastSolver::SingleExponential",
+      "adapterName": "ForecastSolverSingleExponential",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "ForecastSolverForecastMethod"
+      ],
+      "methods": [
+        "applyForecast",
+        "generateForecast",
+        "getCode",
+        "getInitialAlfa",
+        "getMaxAlfa",
+        "getMinAlfa",
+        "setInitialAlfa",
+        "setMaxAlfa",
+        "setMinAlfa"
+      ],
+      "header": "forecast.h",
+      "line": 1909
+    },
+    {
+      "name": "sorter",
+      "qualifiedName": "ForecastSolver::sorter",
+      "adapterName": "ForecastSolverSorter",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "forecast.h",
+      "line": 3089
+    },
+    {
+      "name": "FreppleCategory",
+      "qualifiedName": "FreppleCategory",
+      "adapterName": "FreppleCategory",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "PythonExtension"
+      ],
+      "methods": [
+        "initialize"
+      ],
+      "header": "utils.h",
+      "line": 7069
+    },
+    {
+      "name": "FreppleClass",
+      "qualifiedName": "FreppleClass",
+      "adapterName": "FreppleClass",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "PythonExtension"
+      ],
+      "methods": [
+        "initialize"
+      ],
+      "header": "utils.h",
+      "line": 7089
+    },
+    {
+      "name": "Functor",
+      "qualifiedName": "Functor",
+      "adapterName": "Functor",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable"
+      ],
+      "methods": [
+        "callback"
+      ],
+      "header": "utils.h",
+      "line": 1221
+    },
+    {
+      "name": "FunctorInstance",
+      "qualifiedName": "FunctorInstance",
+      "adapterName": "FunctorInstance",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Functor"
+      ],
+      "methods": [
+        "connect",
+        "disconnect"
+      ],
+      "header": "utils.h",
+      "line": 2014
+    },
+    {
+      "name": "FunctorStatic",
+      "qualifiedName": "FunctorStatic",
+      "adapterName": "FunctorStatic",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Functor"
+      ],
+      "methods": [
+        "connect",
+        "disconnect"
+      ],
+      "header": "utils.h",
+      "line": 1971
+    },
+    {
+      "name": "HasDescription",
+      "qualifiedName": "HasDescription",
+      "adapterName": "HasDescription",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasSource"
+      ],
+      "methods": [
+        "getCategory",
+        "getDescription",
+        "getSubCategory",
+        "registerFields",
+        "setCategory",
+        "setDescription",
+        "setSubCategory"
+      ],
+      "header": "utils.h",
+      "line": 5217
+    },
+    {
+      "name": "HasHierarchy",
+      "qualifiedName": "HasHierarchy",
+      "adapterName": "HasHierarchy",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasName",
+        "HasDescription"
+      ],
+      "methods": [
+        "getAllMembers",
+        "getFirstChild",
+        "getHierarchyLevel",
+        "getMembers",
+        "getNextBrother",
+        "getOwner",
+        "getRoot",
+        "getTop",
+        "hasOwner",
+        "isGroup",
+        "isMemberOf",
+        "registerFields",
+        "setOwner",
+        "sortMembers"
+      ],
+      "header": "utils.h",
+      "line": 5265
+    },
+    {
+      "name": "memberIterator",
+      "qualifiedName": "HasHierarchy::memberIterator",
+      "adapterName": "HasHierarchyMemberIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "end",
+        "next"
+      ],
+      "header": "utils.h",
+      "line": 5276
+    },
+    {
+      "name": "memberRecursiveIterator",
+      "qualifiedName": "HasHierarchy::memberRecursiveIterator",
+      "adapterName": "HasHierarchyMemberRecursiveIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "NonCopyable"
+      ],
+      "methods": [
+        "empty",
+        "next"
+      ],
+      "header": "utils.h",
+      "line": 5358
+    },
+    {
+      "name": "HasLevel",
+      "qualifiedName": "HasLevel",
+      "adapterName": "HasLevel",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "copyLevelAndCluster",
+        "getCluster",
+        "getLevel",
+        "getNumberOfClusters",
+        "getNumberOfLevels",
+        "triggerLazyRecomputation"
+      ],
+      "header": "model.h",
+      "line": 1113
+    },
+    {
+      "name": "HasName",
+      "qualifiedName": "HasName",
+      "adapterName": "HasName",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable",
+        "TreeNode",
+        "Object"
+      ],
+      "methods": [
+        "begin",
+        "clear",
+        "compare",
+        "createIterator",
+        "empty",
+        "end",
+        "find",
+        "findLowerBound",
+        "finder",
+        "reader",
+        "setName",
+        "size",
+        "str",
+        "verify"
+      ],
+      "header": "utils.h",
+      "line": 4933
+    },
+    {
+      "name": "all",
+      "qualifiedName": "HasName::all",
+      "adapterName": "HasNameAll",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [
+        "begin",
+        "end"
+      ],
+      "header": "utils.h",
+      "line": 5006
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "HasName::iterator",
+      "adapterName": "HasNameIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "utils.h",
+      "line": 4946
+    },
+    {
+      "name": "HasProblems",
+      "qualifiedName": "HasProblems",
+      "adapterName": "HasProblems",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "beginEntity",
+        "endEntity",
+        "getEntity",
+        "hasNoProblems",
+        "registerFields",
+        "updateProblems"
+      ],
+      "header": "model.h",
+      "line": 707
+    },
+    {
+      "name": "EntityIterator",
+      "qualifiedName": "HasProblems::EntityIterator",
+      "adapterName": "HasProblemsEntityIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "model.h",
+      "line": 8523
+    },
+    {
+      "name": "HasSource",
+      "qualifiedName": "HasSource",
+      "adapterName": "HasSource",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "getSource",
+        "registerFields",
+        "setSource"
+      ],
+      "header": "utils.h",
+      "line": 5196
+    },
+    {
+      "name": "indent",
+      "qualifiedName": "indent",
+      "adapterName": "indent",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "utils.h",
+      "line": 252
+    },
+    {
+      "name": "Item",
+      "qualifiedName": "Item",
+      "adapterName": "Item",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasHierarchy"
+      ],
+      "methods": [
+        "findEarliestPurchaseOrder",
+        "getBufferIterator",
+        "getCluster",
+        "getCost",
+        "getDemandIterator",
+        "getDistributionIterator",
+        "getDistributions",
+        "getOperationIterator",
+        "getSupplierIterator",
+        "getSuppliers",
+        "getType",
+        "getUOM",
+        "getUOMString",
+        "getVolume",
+        "getWeight",
+        "initialize",
+        "registerFields",
+        "setCost",
+        "setUOM",
+        "setVolume",
+        "setWeight"
+      ],
+      "header": "model.h",
+      "line": 4545
+    },
+    {
+      "name": "bufferIterator",
+      "qualifiedName": "Item::bufferIterator",
+      "adapterName": "ItemBufferIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 5565
+    },
+    {
+      "name": "demandIterator",
+      "qualifiedName": "Item::demandIterator",
+      "adapterName": "ItemDemandIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 8059
+    },
+    {
+      "name": "operationIterator",
+      "qualifiedName": "Item::operationIterator",
+      "adapterName": "ItemOperationIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 4625
+    },
+    {
+      "name": "ItemDistribution",
+      "qualifiedName": "ItemDistribution",
+      "adapterName": "ItemDistribution",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object",
+        "Node",
+        "HasSource"
+      ],
+      "methods": [
+        "create",
+        "deleteOperationPlans",
+        "finder",
+        "getBatchWindow",
+        "getCost",
+        "getDestination",
+        "getFence",
+        "getItem",
+        "getLeadTime",
+        "getOperations",
+        "getOrigin",
+        "getResource",
+        "getResourceQuantity",
+        "getSizeMaximum",
+        "getSizeMinimum",
+        "getSizeMultiple",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setBatchWindow",
+        "setCost",
+        "setDestination",
+        "setFence",
+        "setItem",
+        "setLeadTime",
+        "setOrigin",
+        "setResource",
+        "setResourceQuantity",
+        "setSizeMaximum",
+        "setSizeMinimum",
+        "setSizeMultiple"
+      ],
+      "header": "model.h",
+      "line": 4296
+    },
+    {
+      "name": "OperationIterator",
+      "qualifiedName": "ItemDistribution::OperationIterator",
+      "adapterName": "ItemDistributionOperationIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 4304
+    },
+    {
+      "name": "ItemMTO",
+      "qualifiedName": "ItemMTO",
+      "adapterName": "ItemMTO",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Item"
+      ],
+      "methods": [
+        "getType",
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 4739
+    },
+    {
+      "name": "ItemMTS",
+      "qualifiedName": "ItemMTS",
+      "adapterName": "ItemMTS",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Item"
+      ],
+      "methods": [
+        "getType",
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 4727
+    },
+    {
+      "name": "ItemSupplier",
+      "qualifiedName": "ItemSupplier",
+      "adapterName": "ItemSupplier",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object",
+        "Node",
+        "HasSource"
+      ],
+      "methods": [
+        "deleteOperationPlans",
+        "finder",
+        "getBatchWindow",
+        "getCost",
+        "getExtraSafetyLeadTime",
+        "getFence",
+        "getHardSafetyLeadTime",
+        "getItem",
+        "getLeadTime",
+        "getLocation",
+        "getResource",
+        "getResourceQuantity",
+        "getSizeMaximum",
+        "getSizeMinimum",
+        "getSizeMultiple",
+        "getSupplier",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setBatchWindow",
+        "setCost",
+        "setExtraSafetyLeadTime",
+        "setFence",
+        "setHardSafetyLeadTime",
+        "setItem",
+        "setLeadTime",
+        "setLocation",
+        "setResource",
+        "setResourceQuantity",
+        "setSizeMaximum",
+        "setSizeMinimum",
+        "setSizeMultiple",
+        "setSupplier"
+      ],
+      "header": "model.h",
+      "line": 4751
+    },
+    {
+      "name": "JSONData",
+      "qualifiedName": "JSONData",
+      "adapterName": "JSONData",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "DataValue"
+      ],
+      "methods": [
+        "getBool",
+        "getDataType",
+        "getDate",
+        "getDouble",
+        "getDuration",
+        "getInt",
+        "getLong",
+        "getObject",
+        "getString",
+        "getUnsignedLong",
+        "setBool",
+        "setDate",
+        "setDouble",
+        "setDuration",
+        "setInt",
+        "setLong",
+        "setNull",
+        "setObject",
+        "setString",
+        "setUnsignedLong"
+      ],
+      "header": "json.h",
+      "line": 677
+    },
+    {
+      "name": "JSONDataValueDict",
+      "qualifiedName": "JSONDataValueDict",
+      "adapterName": "JSONDataValueDict",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "DataValueDict"
+      ],
+      "methods": [
+        "enlarge",
+        "get",
+        "getEnd",
+        "getStart",
+        "print"
+      ],
+      "header": "json.h",
+      "line": 924
+    },
+    {
+      "name": "JSONInput",
+      "qualifiedName": "JSONInput",
+      "adapterName": "JSONInput",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable",
+        "DataInput"
+      ],
+      "methods": [],
+      "header": "json.h",
+      "line": 796
+    },
+    {
+      "name": "fld",
+      "qualifiedName": "JSONInput::fld",
+      "adapterName": "JSONInputFld",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "json.h",
+      "line": 811
+    },
+    {
+      "name": "obj",
+      "qualifiedName": "JSONInput::obj",
+      "adapterName": "JSONInputObj",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "json.h",
+      "line": 823
+    },
+    {
+      "name": "JSONInputFile",
+      "qualifiedName": "JSONInputFile",
+      "adapterName": "JSONInputFile",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "JSONInput"
+      ],
+      "methods": [
+        "getFileName",
+        "parse",
+        "setFileName"
+      ],
+      "header": "json.h",
+      "line": 887
+    },
+    {
+      "name": "JSONInputString",
+      "qualifiedName": "JSONInputString",
+      "adapterName": "JSONInputString",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "JSONInput"
+      ],
+      "methods": [
+        "parse"
+      ],
+      "header": "json.h",
+      "line": 864
+    },
+    {
+      "name": "JSONSerializer",
+      "qualifiedName": "JSONSerializer",
+      "adapterName": "JSONSerializer",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Serializer"
+      ],
+      "methods": [
+        "BeginList",
+        "BeginObject",
+        "EndList",
+        "EndObject",
+        "escape",
+        "getFormatted",
+        "resetFirst",
+        "setFormatted",
+        "setMode",
+        "writeElement",
+        "writeElementNull",
+        "writeString"
+      ],
+      "header": "json.h",
+      "line": 49
+    },
+    {
+      "name": "obj",
+      "qualifiedName": "JSONSerializer::obj",
+      "adapterName": "JSONSerializerObj",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "json.h",
+      "line": 612
+    },
+    {
+      "name": "JSONSerializerFile",
+      "qualifiedName": "JSONSerializerFile",
+      "adapterName": "JSONSerializerFile",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "JSONSerializer"
+      ],
+      "methods": [],
+      "header": "json.h",
+      "line": 627
+    },
+    {
+      "name": "JSONSerializerString",
+      "qualifiedName": "JSONSerializerString",
+      "adapterName": "JSONSerializerString",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "JSONSerializer"
+      ],
+      "methods": [
+        "getData"
+      ],
+      "header": "json.h",
+      "line": 651
+    },
+    {
+      "name": "Keyword",
+      "qualifiedName": "Keyword",
+      "adapterName": "Keyword",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable"
+      ],
+      "methods": [
+        "find",
+        "getFullName",
+        "getHash",
+        "getName",
+        "getTags",
+        "hash",
+        "printTags"
+      ],
+      "header": "utils.h",
+      "line": 1159
+    },
+    {
+      "name": "LibraryModel",
+      "qualifiedName": "LibraryModel",
+      "adapterName": "LibraryModel",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 87
+    },
+    {
+      "name": "LibrarySolver",
+      "qualifiedName": "LibrarySolver",
+      "adapterName": "LibrarySolver",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "initialize"
+      ],
+      "header": "solver.h",
+      "line": 1451
+    },
+    {
+      "name": "LibraryUtils",
+      "qualifiedName": "LibraryUtils",
+      "adapterName": "LibraryUtils",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "initialize"
+      ],
+      "header": "utils.h",
+      "line": 7061
+    },
+    {
+      "name": "Load",
+      "qualifiedName": "Load",
+      "adapterName": "Load",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object",
+        "Node",
+        "Solvable",
+        "HasSource"
+      ],
+      "methods": [
+        "findPreferredResource",
+        "finder",
+        "getAlternate",
+        "getHidden",
+        "getHiddenLoad",
+        "getLoadplanDate",
+        "getLoadplanQuantity",
+        "getOperation",
+        "getOperationPlanDate",
+        "getQuantity",
+        "getQuantityFixed",
+        "getResource",
+        "getSearch",
+        "getSetup",
+        "getSetupString",
+        "getSkill",
+        "getType",
+        "hasAlternates",
+        "initialize",
+        "registerFields",
+        "setHidden",
+        "setOperation",
+        "setQuantity",
+        "setQuantityFixed",
+        "setResource",
+        "setSearch",
+        "setSetupString",
+        "setSkill",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 7136
+    },
+    {
+      "name": "LoadBucketizedFromEnd",
+      "qualifiedName": "LoadBucketizedFromEnd",
+      "adapterName": "LoadBucketizedFromEnd",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Load"
+      ],
+      "methods": [
+        "getLoadplanDate",
+        "getOffset",
+        "getOperationPlanDate",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setOffset",
+        "setResource",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 7500
+    },
+    {
+      "name": "LoadBucketizedFromStart",
+      "qualifiedName": "LoadBucketizedFromStart",
+      "adapterName": "LoadBucketizedFromStart",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Load"
+      ],
+      "methods": [
+        "getLoadplanDate",
+        "getOffset",
+        "getOperationPlanDate",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setOffset",
+        "setResource",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 7433
+    },
+    {
+      "name": "LoadBucketizedPercentage",
+      "qualifiedName": "LoadBucketizedPercentage",
+      "adapterName": "LoadBucketizedPercentage",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Load"
+      ],
+      "methods": [
+        "getLoadplanDate",
+        "getOffset",
+        "getOperationPlanDate",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setOffset",
+        "setResource",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 7366
+    },
+    {
+      "name": "LoadDefault",
+      "qualifiedName": "LoadDefault",
+      "adapterName": "LoadDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Load"
+      ],
+      "methods": [
+        "getType",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 7342
+    },
+    {
+      "name": "LoadPlan",
+      "qualifiedName": "LoadPlan",
+      "adapterName": "LoadPlan",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "EventChangeOnhand"
+      ],
+      "methods": [
+        "getAlternates",
+        "getBucketEnd",
+        "getBucketStart",
+        "getClosed",
+        "getConfirmed",
+        "getEndDate",
+        "getFeasible",
+        "getHidden",
+        "getLoad",
+        "getOperation",
+        "getOperationPlan",
+        "getOtherLoadPlan",
+        "getProposed",
+        "getResource",
+        "getSetup",
+        "getSetupLoad",
+        "getStartDate",
+        "getStatus",
+        "getTimeLine",
+        "getType",
+        "initialize",
+        "isSetupOnly",
+        "isStart",
+        "reader",
+        "registerFields",
+        "setClosed",
+        "setConfirmed",
+        "setLoad",
+        "setOperationPlan",
+        "setProposed",
+        "setQuantity",
+        "setResource",
+        "setStatus",
+        "update"
+      ],
+      "header": "model.h",
+      "line": 8185
+    },
+    {
+      "name": "AlternateIterator",
+      "qualifiedName": "LoadPlan::AlternateIterator",
+      "adapterName": "LoadPlanAlternateIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 8459
+    },
+    {
+      "name": "LoadPlanIterator",
+      "qualifiedName": "LoadPlanIterator",
+      "adapterName": "LoadPlanIterator",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "PythonExtension"
+      ],
+      "methods": [
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 10139
+    },
+    {
+      "name": "Location",
+      "qualifiedName": "Location",
+      "adapterName": "Location",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasHierarchy"
+      ],
+      "methods": [
+        "getAvailable",
+        "getDistributionIterator",
+        "getDistributions",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setAvailable"
+      ],
+      "header": "model.h",
+      "line": 1238
+    },
+    {
+      "name": "LocationDefault",
+      "qualifiedName": "LocationDefault",
+      "adapterName": "LocationDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Location"
+      ],
+      "methods": [
+        "getType",
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 1295
+    },
+    {
+      "name": "LogicException",
+      "qualifiedName": "LogicException",
+      "adapterName": "LogicException",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "logic_error"
+      ],
+      "methods": [],
+      "header": "utils.h",
+      "line": 316
+    },
+    {
+      "name": "MeasureList",
+      "qualifiedName": "MeasureList",
+      "adapterName": "MeasureList",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "begin",
+        "end",
+        "erase",
+        "find",
+        "findAndFound",
+        "insert",
+        "size",
+        "sort"
+      ],
+      "header": "forecast.h",
+      "line": 537
+    },
+    {
+      "name": "const_iterator",
+      "qualifiedName": "MeasureList::const_iterator",
+      "adapterName": "MeasureListConst_iterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "forecast.h",
+      "line": 570
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "MeasureList::iterator",
+      "adapterName": "MeasureListIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "forecast.h",
+      "line": 547
+    },
+    {
+      "name": "MeasurePage",
+      "qualifiedName": "MeasurePage",
+      "adapterName": "MeasurePage",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "status"
+      ],
+      "header": "forecast.h",
+      "line": 632
+    },
+    {
+      "name": "MeasurePagePool",
+      "qualifiedName": "MeasurePagePool",
+      "adapterName": "MeasurePagePool",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "check",
+        "releaseEmptyPages",
+        "releaseEmptyPagesPython"
+      ],
+      "header": "forecast.h",
+      "line": 654
+    },
+    {
+      "name": "Measures",
+      "qualifiedName": "Measures",
+      "adapterName": "Measures",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "forecast.h",
+      "line": 497
+    },
+    {
+      "name": "MeasureValue",
+      "qualifiedName": "MeasureValue",
+      "adapterName": "MeasureValue",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "getMeasure",
+        "getValue",
+        "setValue"
+      ],
+      "header": "forecast.h",
+      "line": 514
+    },
+    {
+      "name": "MemoryPool",
+      "qualifiedName": "MemoryPool",
+      "adapterName": "MemoryPool",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "utils.h",
+      "line": 7181
+    },
+    {
+      "name": "MemoryObject",
+      "qualifiedName": "MemoryPool::MemoryObject",
+      "adapterName": "MemoryPoolMemoryObject",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "utils.h",
+      "line": 7183
+    },
+    {
+      "name": "MemoryObjectList",
+      "qualifiedName": "MemoryPool::MemoryObjectList",
+      "adapterName": "MemoryPoolMemoryObjectList",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "back",
+        "begin",
+        "empty",
+        "end",
+        "front",
+        "insert",
+        "pop_back",
+        "pop_front",
+        "sort"
+      ],
+      "header": "utils.h",
+      "line": 7191
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "MemoryPool::MemoryObjectList::iterator",
+      "adapterName": "MemoryPoolMemoryObjectListIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "utils.h",
+      "line": 7327
+    },
+    {
+      "name": "MemoryPage",
+      "qualifiedName": "MemoryPool::MemoryPage",
+      "adapterName": "MemoryPoolMemoryPage",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "utils.h",
+      "line": 7354
+    },
+    {
+      "name": "MetaCategory",
+      "qualifiedName": "MetaCategory",
+      "adapterName": "MetaCategory",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaClass"
+      ],
+      "methods": [
+        "ControllerDefault",
+        "find",
+        "findCategoryByGroupTag",
+        "findCategoryByTag",
+        "findClass",
+        "registerCategory",
+        "setDefaultClass"
+      ],
+      "header": "utils.h",
+      "line": 1852
+    },
+    {
+      "name": "MetaClass",
+      "qualifiedName": "MetaClass",
+      "adapterName": "MetaClass",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable"
+      ],
+      "methods": [
+        "addBoolField",
+        "addClass",
+        "addCommandField",
+        "addDateField",
+        "addDoubleField",
+        "addDurationDoubleField",
+        "addDurationField",
+        "addEnumField",
+        "addFunctionField",
+        "addIntField",
+        "addIteratorClassField",
+        "addIteratorField",
+        "addPointerField",
+        "addShortField",
+        "addStringField",
+        "addStringRefField",
+        "addUnsignedLongField",
+        "connect",
+        "decodeAction",
+        "disconnect",
+        "findClass",
+        "findField",
+        "getFields",
+        "printClasses",
+        "raiseEvent",
+        "registerClass",
+        "setPythonClass"
+      ],
+      "header": "utils.h",
+      "line": 1506
+    },
+    {
+      "name": "MetaFieldBase",
+      "qualifiedName": "MetaFieldBase",
+      "adapterName": "MetaFieldBase",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "getClass",
+        "getField",
+        "getFlag",
+        "getFunction",
+        "getHash",
+        "getKeyword",
+        "getName",
+        "getSize",
+        "isGroup",
+        "isPointer",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 1423
+    },
+    {
+      "name": "MetaFieldBool",
+      "qualifiedName": "MetaFieldBool",
+      "adapterName": "MetaFieldBool",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6238
+    },
+    {
+      "name": "MetaFieldCommand",
+      "qualifiedName": "MetaFieldCommand",
+      "adapterName": "MetaFieldCommand",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6215
+    },
+    {
+      "name": "MetaFieldDate",
+      "qualifiedName": "MetaFieldDate",
+      "adapterName": "MetaFieldDate",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6677
+    },
+    {
+      "name": "MetaFieldDouble",
+      "qualifiedName": "MetaFieldDouble",
+      "adapterName": "MetaFieldDouble",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6292
+    },
+    {
+      "name": "MetaFieldDuration",
+      "qualifiedName": "MetaFieldDuration",
+      "adapterName": "MetaFieldDuration",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6568
+    },
+    {
+      "name": "MetaFieldDurationDouble",
+      "qualifiedName": "MetaFieldDurationDouble",
+      "adapterName": "MetaFieldDurationDouble",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6620
+    },
+    {
+      "name": "MetaFieldEnum",
+      "qualifiedName": "MetaFieldEnum",
+      "adapterName": "MetaFieldEnum",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6410
+    },
+    {
+      "name": "MetaFieldFunction",
+      "qualifiedName": "MetaFieldFunction",
+      "adapterName": "MetaFieldFunction",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "getFunction",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6832
+    },
+    {
+      "name": "MetaFieldInt",
+      "qualifiedName": "MetaFieldInt",
+      "adapterName": "MetaFieldInt",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6359
+    },
+    {
+      "name": "MetaFieldIterator",
+      "qualifiedName": "MetaFieldIterator",
+      "adapterName": "MetaFieldIterator",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getClass",
+        "getField",
+        "getKeyword",
+        "isGroup",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6851
+    },
+    {
+      "name": "MetaFieldIteratorClass",
+      "qualifiedName": "MetaFieldIteratorClass",
+      "adapterName": "MetaFieldIteratorClass",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getClass",
+        "getField",
+        "getKeyword",
+        "isGroup",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6955
+    },
+    {
+      "name": "MetaFieldPointer",
+      "qualifiedName": "MetaFieldPointer",
+      "adapterName": "MetaFieldPointer",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getClass",
+        "getField",
+        "isPointer",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6729
+    },
+    {
+      "name": "MetaFieldShort",
+      "qualifiedName": "MetaFieldShort",
+      "adapterName": "MetaFieldShort",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6464
+    },
+    {
+      "name": "MetaFieldString",
+      "qualifiedName": "MetaFieldString",
+      "adapterName": "MetaFieldString",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "getSize",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6097
+    },
+    {
+      "name": "MetaFieldStringRef",
+      "qualifiedName": "MetaFieldStringRef",
+      "adapterName": "MetaFieldStringRef",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "getSize",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6156
+    },
+    {
+      "name": "MetaFieldUnsignedLong",
+      "qualifiedName": "MetaFieldUnsignedLong",
+      "adapterName": "MetaFieldUnsignedLong",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "MetaFieldBase"
+      ],
+      "methods": [
+        "getField",
+        "setField",
+        "writeField"
+      ],
+      "header": "utils.h",
+      "line": 6516
+    },
+    {
+      "name": "NonCopyable",
+      "qualifiedName": "NonCopyable",
+      "adapterName": "NonCopyable",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "utils.h",
+      "line": 368
+    },
+    {
+      "name": "Object",
+      "qualifiedName": "Object",
+      "adapterName": "Object",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "PyObject"
+      ],
+      "methods": [
+        "call",
+        "compare",
+        "create",
+        "deallocator",
+        "deleteProperty",
+        "getBoolProperty",
+        "getDateProperty",
+        "getDoubleProperty",
+        "getHidden",
+        "getPyObjectProperty",
+        "getReferenceCount",
+        "getSize",
+        "getStringProperty",
+        "getType",
+        "getattro",
+        "hasProperty",
+        "hasType",
+        "initType",
+        "iternext",
+        "registerPythonType",
+        "resetReferenceCount",
+        "setBoolProperty",
+        "setDateProperty",
+        "setDoubleProperty",
+        "setHidden",
+        "setProperty",
+        "setStringProperty",
+        "str",
+        "toJSON",
+        "toXML",
+        "writeElement",
+        "writeProperties"
+      ],
+      "header": "utils.h",
+      "line": 3062
+    },
+    {
+      "name": "Operation",
+      "qualifiedName": "Operation",
+      "adapterName": "Operation",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasName",
+        "HasLevel",
+        "Plannable",
+        "HasDescription"
+      ],
+      "methods": [
+        "addDependency",
+        "addSubOperationPlan",
+        "calculateOperationTime",
+        "collectCalendars",
+        "createOperationPlan",
+        "deleteOperationPlans",
+        "findFlow",
+        "findFromName",
+        "findLoad",
+        "getAvailable",
+        "getBatchWindow",
+        "getBlockedbyIterator",
+        "getBlockingIterator",
+        "getCost",
+        "getDecoupledLeadTime",
+        "getDecoupledLeadTimePython",
+        "getDependencies",
+        "getEffective",
+        "getEffectiveEnd",
+        "getEffectiveStart",
+        "getFence",
+        "getFencePython",
+        "getFirstOpPlan",
+        "getFlowIterator",
+        "getFlows",
+        "getHidden",
+        "getItem",
+        "getLastOpPlan",
+        "getLoadIterator",
+        "getLoads",
+        "getLocation",
+        "getMTO",
+        "getMaxEarly",
+        "getNoLocationCalendar",
+        "getOperationPlans",
+        "getOrderType",
+        "getOwner",
+        "getPostTime",
+        "getPriority",
+        "getSearch",
+        "getSizeMaximum",
+        "getSizeMinimum",
+        "getSizeMinimumCalendar",
+        "getSizeMultiple",
+        "getSubOperationIterator",
+        "getSubOperations",
+        "hasSubOperations",
+        "initialize",
+        "registerFields",
+        "removeDependency",
+        "setAvailable",
+        "setBatchWindow",
+        "setCost",
+        "setEffective",
+        "setEffectiveEnd",
+        "setEffectiveStart",
+        "setFence",
+        "setFencePython",
+        "setHidden",
+        "setItem",
+        "setLocation",
+        "setNoLocationCalendar",
+        "setOperationPlanParameters",
+        "setOperationPlanQuantity",
+        "setPostTime",
+        "setPriority",
+        "setSearch",
+        "setSizeMaximum",
+        "setSizeMinimum",
+        "setSizeMinimumCalendar",
+        "setSizeMultiple",
+        "solve",
+        "updateMTO",
+        "updateProblems"
+      ],
+      "header": "model.h",
+      "line": 2964
+    },
+    {
+      "name": "dependencyIterator",
+      "qualifiedName": "Operation::dependencyIterator",
+      "adapterName": "OperationDependencyIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 3186
+    },
+    {
+      "name": "OperationAlternate",
+      "qualifiedName": "OperationAlternate",
+      "adapterName": "OperationAlternate",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Operation"
+      ],
+      "methods": [
+        "addSubOperationPlan",
+        "getDecoupledLeadTime",
+        "getMaxEarly",
+        "getOrderType",
+        "getSize",
+        "getSubOperations",
+        "getType",
+        "hasSubOperations",
+        "initialize",
+        "registerFields",
+        "setOperationPlanParameters",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 4187
+    },
+    {
+      "name": "OperationDelivery",
+      "qualifiedName": "OperationDelivery",
+      "adapterName": "OperationDelivery",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "OperationFixedTime"
+      ],
+      "methods": [
+        "getBuffer",
+        "getOrderType",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setBuffer"
+      ],
+      "header": "model.h",
+      "line": 5481
+    },
+    {
+      "name": "OperationDependency",
+      "qualifiedName": "OperationDependency",
+      "adapterName": "OperationDependency",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object",
+        "HasSource"
+      ],
+      "methods": [
+        "getBlockedBy",
+        "getHardSafetyLeadtime",
+        "getOperation",
+        "getQuantity",
+        "getSafetyLeadtime",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setBlockedBy",
+        "setHardSafetyLeadtime",
+        "setOperation",
+        "setQuantity",
+        "setSafetyLeadtime"
+      ],
+      "header": "model.h",
+      "line": 1491
+    },
+    {
+      "name": "OperationFixedTime",
+      "qualifiedName": "OperationFixedTime",
+      "adapterName": "OperationFixedTime",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Operation"
+      ],
+      "methods": [
+        "getDecoupledLeadTime",
+        "getDuration",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setDuration",
+        "setOperationPlanParameters",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 3862
+    },
+    {
+      "name": "OperationInventory",
+      "qualifiedName": "OperationInventory",
+      "adapterName": "OperationInventory",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "OperationFixedTime"
+      ],
+      "methods": [
+        "getBuffer",
+        "getOrderType",
+        "getType",
+        "initialize",
+        "registerFields"
+      ],
+      "header": "model.h",
+      "line": 5454
+    },
+    {
+      "name": "OperationItemDistribution",
+      "qualifiedName": "OperationItemDistribution",
+      "adapterName": "OperationItemDistribution",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "OperationFixedTime"
+      ],
+      "methods": [
+        "findOrCreate",
+        "getDestination",
+        "getItemDistribution",
+        "getOrderType",
+        "getOrigin",
+        "getType",
+        "initialize",
+        "registerFields",
+        "solve",
+        "trimExcess"
+      ],
+      "header": "model.h",
+      "line": 4993
+    },
+    {
+      "name": "OperationItemSupplier",
+      "qualifiedName": "OperationItemSupplier",
+      "adapterName": "OperationItemSupplier",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "OperationFixedTime"
+      ],
+      "methods": [
+        "findOrCreate",
+        "getBuffer",
+        "getItemSupplier",
+        "getOrderType",
+        "getType",
+        "initialize",
+        "registerFields",
+        "solve",
+        "trimExcess"
+      ],
+      "header": "model.h",
+      "line": 5052
+    },
+    {
+      "name": "OperationPlan",
+      "qualifiedName": "OperationPlan",
+      "adapterName": "OperationPlan",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object",
+        "TreeNode",
+        "HasProblems",
+        "HasSource",
+        "NonCopyable"
+      ],
+      "methods": [
+        "activate",
+        "appendInfo",
+        "begin",
+        "beginFlowPlans",
+        "beginLoadPlans",
+        "calculateOperationTimePython",
+        "clear",
+        "clearSetupEvent",
+        "computeOperationToFlowDate",
+        "create",
+        "createFlowLoads",
+        "createIterator",
+        "createOperationPlan",
+        "deactivate",
+        "deleteFlowLoads",
+        "deleteOperationPlans",
+        "end",
+        "endFlowPlans",
+        "endLoadPlans",
+        "eraseSubOperationPlan",
+        "findReference",
+        "finder",
+        "freezeStatus",
+        "getActivated",
+        "getAlternates",
+        "getApproved",
+        "getBatch",
+        "getBatchString",
+        "getBlockedbyIterator",
+        "getBlockingIterator",
+        "getClosed",
+        "getCluster",
+        "getColorPython",
+        "getCompleted",
+        "getConfirmed",
+        "getConsumeCapacity",
+        "getConsumeMaterial",
+        "getCounterMin",
+        "getCriticality",
+        "getDates",
+        "getDelay",
+        "getDemand",
+        "getDependencies",
+        "getEfficiency",
+        "getEnd",
+        "getEntity",
+        "getFeasible",
+        "getFlowPlans",
+        "getForcedUpdate",
+        "getHidden",
+        "getInfo",
+        "getInfoString",
+        "getInterruptions",
+        "getLoadPlans",
+        "getNextSubOpplan",
+        "getNoSetup",
+        "getOperation",
+        "getOrderType",
+        "getOwner",
+        "getPeggingDemand",
+        "getPeggingDownstream",
+        "getPeggingDownstreamFirstLevel",
+        "getPeggingUpstream",
+        "getPeggingUpstreamFirstLevel",
+        "getPrevSubOpplan",
+        "getPriority",
+        "getProblems",
+        "getProduceMaterial",
+        "getPropagateSetups",
+        "getProposed",
+        "getQuantity",
+        "getQuantityCompleted",
+        "getQuantityCompletedRaw",
+        "getQuantityRemaining",
+        "getReference",
+        "getRemark",
+        "getRemarkString",
+        "getSetup",
+        "getSetupCost",
+        "getSetupEnd",
+        "getSetupEvent",
+        "getSetupOverride",
+        "getSetupRule",
+        "getStart",
+        "getStatus",
+        "getSubOperationPlans",
+        "getTopOwner",
+        "getTotalFlow",
+        "getType",
+        "getUnavailable",
+        "initialize",
+        "insertInOperationplanList",
+        "isConstrained",
+        "isExcess",
+        "matchDependencies",
+        "mergeIfPossible",
+        "nullSetupEvent",
+        "propagateStatus",
+        "registerFields",
+        "removeFromOperationplanList",
+        "resizeFlowLoadPlans",
+        "restore",
+        "setActivated",
+        "setApproved",
+        "setBatch",
+        "setChanged",
+        "setClosed",
+        "setCompleted",
+        "setConfirmed",
+        "setConsumeCapacity",
+        "setConsumeMaterial",
+        "setCounterMin",
+        "setDemand",
+        "setEnd",
+        "setEndForce",
+        "setFeasible",
+        "setForcedUpdate",
+        "setInfo",
+        "setNoSetup",
+        "setOperation",
+        "setOperationPlanParameters",
+        "setOwner",
+        "setProduceMaterial",
+        "setPropagateSetups",
+        "setProposed",
+        "setQuantity",
+        "setQuantityCompleted",
+        "setQuantityCompletedRaw",
+        "setQuantityExternal",
+        "setRawReference",
+        "setReference",
+        "setRemark",
+        "setResetResources",
+        "setSetupEvent",
+        "setSetupOverride",
+        "setStart",
+        "setStartAndEnd",
+        "setStartEndAndQuantity",
+        "setStartForce",
+        "setStatus",
+        "setStatusNoPropagation",
+        "setStatusRaw",
+        "sizeFlowPlans",
+        "sizeLoadPlans",
+        "str",
+        "updateFeasible",
+        "updateFeasiblePython",
+        "updateProblems",
+        "updateSetupTime"
+      ],
+      "header": "model.h",
+      "line": 1775
+    },
+    {
+      "name": "AlternateIterator",
+      "qualifiedName": "OperationPlan::AlternateIterator",
+      "adapterName": "OperationPlanAlternateIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 4264
+    },
+    {
+      "name": "dependencyIterator",
+      "qualifiedName": "OperationPlan::dependencyIterator",
+      "adapterName": "OperationPlanDependencyIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 1820
+    },
+    {
+      "name": "FlowPlanIterator",
+      "qualifiedName": "OperationPlan::FlowPlanIterator",
+      "adapterName": "OperationPlanFlowPlanIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "deleteFlowPlan",
+        "next"
+      ],
+      "header": "model.h",
+      "line": 9891
+    },
+    {
+      "name": "InterruptionIterator",
+      "qualifiedName": "OperationPlan::InterruptionIterator",
+      "adapterName": "OperationPlanInterruptionIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "Object"
+      ],
+      "methods": [
+        "getEnd",
+        "getStart",
+        "getType",
+        "intitialize",
+        "next",
+        "registerFields"
+      ],
+      "header": "model.h",
+      "line": 10033
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "OperationPlan::iterator",
+      "adapterName": "OperationPlanIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 3640
+    },
+    {
+      "name": "LoadPlanIterator",
+      "qualifiedName": "OperationPlan::LoadPlanIterator",
+      "adapterName": "OperationPlanLoadPlanIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "deleteLoadPlan",
+        "next"
+      ],
+      "header": "model.h",
+      "line": 9963
+    },
+    {
+      "name": "ProblemIterator",
+      "qualifiedName": "OperationPlan::ProblemIterator",
+      "adapterName": "OperationPlanProblemIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "OperationPlanIterator"
+      ],
+      "methods": [],
+      "header": "model.h",
+      "line": 8685
+    },
+    {
+      "name": "OperationPlanDependency",
+      "qualifiedName": "OperationPlanDependency",
+      "adapterName": "OperationPlanDependency",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object"
+      ],
+      "methods": [
+        "getFirst",
+        "getOperationDependency",
+        "getQuantity",
+        "getSecond",
+        "getType",
+        "initialize",
+        "registerFields"
+      ],
+      "header": "model.h",
+      "line": 1717
+    },
+    {
+      "name": "OperationPlanState",
+      "qualifiedName": "OperationPlanState",
+      "adapterName": "OperationPlanState",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "model.h",
+      "line": 3793
+    },
+    {
+      "name": "OperationRouting",
+      "qualifiedName": "OperationRouting",
+      "adapterName": "OperationRouting",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Operation"
+      ],
+      "methods": [
+        "addSubOperationPlan",
+        "getDecoupledLeadTime",
+        "getHardPostTime",
+        "getMaxEarly",
+        "getSize",
+        "getSubOperations",
+        "getType",
+        "hasSubOperations",
+        "initialize",
+        "registerFields",
+        "setHardPostTime",
+        "setOperationPlanParameters",
+        "setOperationPlanQuantity",
+        "solve",
+        "useDependencies"
+      ],
+      "header": "model.h",
+      "line": 4006
+    },
+    {
+      "name": "OperationSplit",
+      "qualifiedName": "OperationSplit",
+      "adapterName": "OperationSplit",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Operation"
+      ],
+      "methods": [
+        "addSubOperationPlan",
+        "getDecoupledLeadTime",
+        "getMaxEarly",
+        "getSize",
+        "getSubOperations",
+        "getType",
+        "hasSubOperations",
+        "initialize",
+        "registerFields",
+        "setOperationPlanParameters",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 4110
+    },
+    {
+      "name": "OperationTimePer",
+      "qualifiedName": "OperationTimePer",
+      "adapterName": "OperationTimePer",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Operation"
+      ],
+      "methods": [
+        "getDecoupledLeadTime",
+        "getDuration",
+        "getDurationPer",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setDuration",
+        "setDurationPer",
+        "setOperationPlanParameters",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 3924
+    },
+    {
+      "name": "OperatorBackward",
+      "qualifiedName": "OperatorBackward",
+      "adapterName": "OperatorBackward",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Solver",
+        "NonCopyable"
+      ],
+      "methods": [
+        "addMoveEndDate",
+        "addMoveStartDate",
+        "addResize",
+        "addTabu",
+        "getAcceptTabuCandidate",
+        "getCommandManager",
+        "getPropagate",
+        "resetTabu",
+        "setAcceptTabuCandidate",
+        "setPropagate",
+        "solve"
+      ],
+      "header": "solver.h",
+      "line": 1310
+    },
+    {
+      "name": "compareLoadPlans",
+      "qualifiedName": "OperatorBackward::compareLoadPlans",
+      "adapterName": "OperatorBackwardCompareLoadPlans",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "solver.h",
+      "line": 1405
+    },
+    {
+      "name": "OperatorDelete",
+      "qualifiedName": "OperatorDelete",
+      "adapterName": "OperatorDelete",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Solver"
+      ],
+      "methods": [
+        "clearBuffers",
+        "create",
+        "getCommandManager",
+        "getConstrained",
+        "getPropagate",
+        "getType",
+        "initialize",
+        "pushBuffers",
+        "setCommandManager",
+        "setConstrained",
+        "setPropagate",
+        "solve"
+      ],
+      "header": "solver.h",
+      "line": 45
+    },
+    {
+      "name": "OperatorForward",
+      "qualifiedName": "OperatorForward",
+      "adapterName": "OperatorForward",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Solver",
+        "NonCopyable"
+      ],
+      "methods": [
+        "addMoveEndDate",
+        "addMoveStartDate",
+        "addResize",
+        "clearMovedDeliveries",
+        "compareCandidates",
+        "compare_loadplans",
+        "getAcceptTabuCandidate",
+        "getMovedDeliveries",
+        "getPropagate",
+        "setAcceptTabuCandidate",
+        "setPropagate",
+        "solve"
+      ],
+      "header": "solver.h",
+      "line": 1141
+    },
+    {
+      "name": "compareLoadPlans",
+      "qualifiedName": "OperatorForward::compareLoadPlans",
+      "adapterName": "OperatorForwardCompareLoadPlans",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "solver.h",
+      "line": 1246
+    },
+    {
+      "name": "PeggingDemandIterator",
+      "qualifiedName": "PeggingDemandIterator",
+      "adapterName": "PeggingDemandIterator",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable",
+        "Object"
+      ],
+      "methods": [
+        "getDemand",
+        "getQuantity",
+        "getType",
+        "initialize",
+        "iternext",
+        "next",
+        "registerFields"
+      ],
+      "header": "model.h",
+      "line": 9847
+    },
+    {
+      "name": "PeggingIterator",
+      "qualifiedName": "PeggingIterator",
+      "adapterName": "PeggingIterator",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable",
+        "Object"
+      ],
+      "methods": [
+        "getGap",
+        "getLevel",
+        "getMaxLevel",
+        "getOffset",
+        "getOperationPlan",
+        "getQuantity",
+        "getType",
+        "initialize",
+        "isDownstream",
+        "iternext",
+        "next",
+        "registerFields",
+        "updateStack"
+      ],
+      "header": "model.h",
+      "line": 9694
+    },
+    {
+      "name": "state",
+      "qualifiedName": "PeggingIterator::state",
+      "adapterName": "PeggingIteratorState",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "model.h",
+      "line": 9792
+    },
+    {
+      "name": "Plan",
+      "qualifiedName": "Plan",
+      "adapterName": "Plan",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Plannable",
+        "Object"
+      ],
+      "methods": [
+        "erase",
+        "getAllowMergingOperationPlans",
+        "getAutoFence",
+        "getBuffers",
+        "getCalendars",
+        "getCompletedAllowFuture",
+        "getCurrent",
+        "getCustomers",
+        "getDBconnection",
+        "getDeliveryDuration",
+        "getDemands",
+        "getDescription",
+        "getFcstCurrent",
+        "getIndividualPoolResources",
+        "getItems",
+        "getLocations",
+        "getLogFile",
+        "getMoveApprovedEarly",
+        "getName",
+        "getOperationPlanCounterMin",
+        "getOperationPlans",
+        "getOperations",
+        "getProblems",
+        "getResources",
+        "getSetupMatrices",
+        "getShortageTolerance",
+        "getSkills",
+        "getSuppliers",
+        "getSuppressFlowplanCreation",
+        "getTimeZone",
+        "getType",
+        "getWipProduceFullQuantity",
+        "getloglimit",
+        "initialize",
+        "instance",
+        "registerFields",
+        "setAllowMergingOperationPlans",
+        "setAutoFence",
+        "setCompletedAllowFuture",
+        "setCurrent",
+        "setDBconnection",
+        "setDeliveryDuration",
+        "setDescription",
+        "setFcstCurrent",
+        "setIndividualPoolResources",
+        "setLogFile",
+        "setMoveApprovedEarly",
+        "setName",
+        "setOperationPlanCounterMin",
+        "setShortageTolerance",
+        "setSuppressFlowplanCreation",
+        "setTimeZone",
+        "setWipProduceFullQuantity",
+        "setloglimit",
+        "solve",
+        "updateProblems"
+      ],
+      "header": "model.h",
+      "line": 8712
+    },
+    {
+      "name": "Plannable",
+      "qualifiedName": "Plannable",
+      "adapterName": "Plannable",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasProblems",
+        "Solvable"
+      ],
+      "methods": [
+        "computeProblems",
+        "getChanged",
+        "getDetectProblems",
+        "getEntity",
+        "getProblems",
+        "registerFields",
+        "setChanged",
+        "setDetectProblems"
+      ],
+      "header": "model.h",
+      "line": 1039
+    },
+    {
+      "name": "PooledString",
+      "qualifiedName": "PooledString",
+      "adapterName": "PooledString",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "at",
+        "back",
+        "contains",
+        "empty",
+        "front",
+        "getSize",
+        "getString",
+        "hash",
+        "print",
+        "size",
+        "starts_with"
+      ],
+      "header": "utils.h",
+      "line": 3612
+    },
+    {
+      "name": "Problem",
+      "qualifiedName": "Problem",
+      "adapterName": "Problem",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable",
+        "Object"
+      ],
+      "methods": [
+        "begin",
+        "clearConstraints",
+        "clearProblems",
+        "end",
+        "getDates",
+        "getDescription",
+        "getEnd",
+        "getEntity",
+        "getName",
+        "getNextProblem",
+        "getOwner",
+        "getStart",
+        "getType",
+        "initialize",
+        "isFeasible",
+        "registerFields",
+        "str"
+      ],
+      "header": "model.h",
+      "line": 551
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "Problem::iterator",
+      "adapterName": "ProblemIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 8590
+    },
+    {
+      "name": "List",
+      "qualifiedName": "Problem::List",
+      "adapterName": "ProblemList",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "begin",
+        "clean",
+        "clear",
+        "empty",
+        "end",
+        "erase",
+        "pop",
+        "push",
+        "size",
+        "top",
+        "transfer",
+        "unlink"
+      ],
+      "header": "model.h",
+      "line": 761
+    },
+    {
+      "name": "ProblemAwaitSupply",
+      "qualifiedName": "ProblemAwaitSupply",
+      "adapterName": "ProblemAwaitSupply",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getOwner",
+        "getType",
+        "isFeasible"
+      ],
+      "header": "model.h",
+      "line": 9097
+    },
+    {
+      "name": "ProblemBeforeCurrent",
+      "qualifiedName": "ProblemBeforeCurrent",
+      "adapterName": "ProblemBeforeCurrent",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getOwner",
+        "getType",
+        "isFeasible",
+        "update"
+      ],
+      "header": "model.h",
+      "line": 9030
+    },
+    {
+      "name": "ProblemCapacityOverload",
+      "qualifiedName": "ProblemCapacityOverload",
+      "adapterName": "ProblemCapacityOverload",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getKeep",
+        "getOperation",
+        "getOwner",
+        "getResource",
+        "getType",
+        "isFeasible",
+        "setKeep",
+        "setOperation"
+      ],
+      "header": "model.h",
+      "line": 9271
+    },
+    {
+      "name": "ProblemInvalidData",
+      "qualifiedName": "ProblemInvalidData",
+      "adapterName": "ProblemInvalidData",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getOwner",
+        "getType",
+        "isFeasible"
+      ],
+      "header": "model.h",
+      "line": 9226
+    },
+    {
+      "name": "ProblemMaterialShortage",
+      "qualifiedName": "ProblemMaterialShortage",
+      "adapterName": "ProblemMaterialShortage",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getBuffer",
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getOwner",
+        "getType",
+        "isFeasible"
+      ],
+      "header": "model.h",
+      "line": 9322
+    },
+    {
+      "name": "ProblemOutlier",
+      "qualifiedName": "ProblemOutlier",
+      "adapterName": "ProblemOutlier",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getForecastBucket",
+        "getForecastMethod",
+        "getOwner",
+        "getType",
+        "getWeight",
+        "isFeasible",
+        "setForecastMethod"
+      ],
+      "header": "forecast.h",
+      "line": 3148
+    },
+    {
+      "name": "ProblemPrecedence",
+      "qualifiedName": "ProblemPrecedence",
+      "adapterName": "ProblemPrecedence",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getOwner",
+        "getType",
+        "isFeasible"
+      ],
+      "header": "model.h",
+      "line": 9186
+    },
+    {
+      "name": "ProblemSyncDemand",
+      "qualifiedName": "ProblemSyncDemand",
+      "adapterName": "ProblemSyncDemand",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Problem"
+      ],
+      "methods": [
+        "getDates",
+        "getDescription",
+        "getEntity",
+        "getOwner",
+        "getType",
+        "isFeasible"
+      ],
+      "header": "model.h",
+      "line": 9145
+    },
+    {
+      "name": "PythonData",
+      "qualifiedName": "PythonData",
+      "adapterName": "PythonData",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "DataValue"
+      ],
+      "methods": [
+        "check",
+        "getBool",
+        "getDate",
+        "getDouble",
+        "getDuration",
+        "getInt",
+        "getLong",
+        "getObject",
+        "getString",
+        "getStringList",
+        "getUnsignedLong",
+        "isValid",
+        "setBool",
+        "setDate",
+        "setDouble",
+        "setDuration",
+        "setInt",
+        "setLong",
+        "setNull",
+        "setObject",
+        "setString",
+        "setUnsignedLong"
+      ],
+      "header": "utils.h",
+      "line": 2665
+    },
+    {
+      "name": "PythonDataValueDict",
+      "qualifiedName": "PythonDataValueDict",
+      "adapterName": "PythonDataValueDict",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "DataValueDict"
+      ],
+      "methods": [
+        "get"
+      ],
+      "header": "utils.h",
+      "line": 3027
+    },
+    {
+      "name": "PythonExtension",
+      "qualifiedName": "PythonExtension",
+      "adapterName": "PythonExtension",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object",
+        "NonCopyable"
+      ],
+      "methods": [
+        "deallocator",
+        "getPythonType"
+      ],
+      "header": "utils.h",
+      "line": 3348
+    },
+    {
+      "name": "PythonFunction",
+      "qualifiedName": "PythonFunction",
+      "adapterName": "PythonFunction",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "PythonData"
+      ],
+      "methods": [
+        "call"
+      ],
+      "header": "utils.h",
+      "line": 2943
+    },
+    {
+      "name": "PythonInterpreter",
+      "qualifiedName": "PythonInterpreter",
+      "adapterName": "PythonInterpreter",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "execute",
+        "executeFile",
+        "getModule",
+        "initialize",
+        "registerGlobalMethod",
+        "registerGlobalObject"
+      ],
+      "header": "utils.h",
+      "line": 399
+    },
+    {
+      "name": "PythonIterator",
+      "qualifiedName": "PythonIterator",
+      "adapterName": "PythonIterator",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object"
+      ],
+      "methods": [
+        "create",
+        "getPythonType",
+        "initialize"
+      ],
+      "header": "utils.h",
+      "line": 3395
+    },
+    {
+      "name": "PythonIteratorClass",
+      "qualifiedName": "PythonIteratorClass",
+      "adapterName": "PythonIteratorClass",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object"
+      ],
+      "methods": [
+        "create",
+        "getPythonType",
+        "initialize"
+      ],
+      "header": "utils.h",
+      "line": 3465
+    },
+    {
+      "name": "PythonType",
+      "qualifiedName": "PythonType",
+      "adapterName": "PythonType",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable"
+      ],
+      "methods": [
+        "addMethod",
+        "evalException",
+        "setBase",
+        "setDoc",
+        "setName",
+        "supportcall",
+        "supportcompare",
+        "supportcreate",
+        "supportdealloc",
+        "supportgetattro",
+        "supportiter",
+        "supportsetattro",
+        "supportstr",
+        "typeReady",
+        "type_object"
+      ],
+      "header": "utils.h",
+      "line": 1261
+    },
+    {
+      "name": "RecentlyUsed",
+      "qualifiedName": "RecentlyUsed",
+      "adapterName": "RecentlyUsed",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "clear",
+        "contains",
+        "echoSince",
+        "push",
+        "size"
+      ],
+      "header": "utils.h",
+      "line": 7117
+    },
+    {
+      "name": "Resource",
+      "qualifiedName": "Resource",
+      "adapterName": "Resource",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasHierarchy",
+        "HasLevel",
+        "Plannable"
+      ],
+      "methods": [
+        "deleteOperationPlans",
+        "findLoad",
+        "getAvailable",
+        "getConstrained",
+        "getCost",
+        "getEfficiency",
+        "getEfficiencyCalendar",
+        "getFrozenSetups",
+        "getHidden",
+        "getLoadIterator",
+        "getLoadPlanIterator",
+        "getLoadPlans",
+        "getLoads",
+        "getLocation",
+        "getMaxEarly",
+        "getMaximum",
+        "getMaximumCalendar",
+        "getOperationPlans",
+        "getSetup",
+        "getSetupAt",
+        "getSetupMatrix",
+        "getSetupString",
+        "getSkills",
+        "getTool",
+        "getToolPerPiece",
+        "getType",
+        "getUtilization",
+        "hasSkill",
+        "initialize",
+        "inspect",
+        "inspectPython",
+        "isTime",
+        "registerFields",
+        "setAvailable",
+        "setConstrained",
+        "setCost",
+        "setEfficiency",
+        "setEfficiencyCalendar",
+        "setFrozenSetups",
+        "setHidden",
+        "setLocation",
+        "setMaxEarly",
+        "setMaximum",
+        "setMaximumCalendar",
+        "setOwner",
+        "setSetup",
+        "setSetupMatrix",
+        "setTool",
+        "setToolPerPiece",
+        "solve",
+        "updateProblems",
+        "updateSetupTime"
+      ],
+      "header": "model.h",
+      "line": 6597
+    },
+    {
+      "name": "OperationPlanIterator",
+      "qualifiedName": "Resource::OperationPlanIterator",
+      "adapterName": "ResourceOperationPlanIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 8494
+    },
+    {
+      "name": "PlanIterator",
+      "qualifiedName": "Resource::PlanIterator",
+      "adapterName": "ResourcePlanIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "PythonExtension"
+      ],
+      "methods": [
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 6942
+    },
+    {
+      "name": "_res",
+      "qualifiedName": "Resource::PlanIterator::_res",
+      "adapterName": "ResourcePlanIterator_res",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "model.h",
+      "line": 6958
+    },
+    {
+      "name": "ResourceBuckets",
+      "qualifiedName": "ResourceBuckets",
+      "adapterName": "ResourceBuckets",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Resource"
+      ],
+      "methods": [
+        "computeBucketAvailability",
+        "getMaxBucketCapacity",
+        "getType",
+        "getUtilization",
+        "initialize",
+        "isTime",
+        "registerFields",
+        "setMaximumCalendar",
+        "solve",
+        "updateProblems"
+      ],
+      "header": "model.h",
+      "line": 7029
+    },
+    {
+      "name": "ResourceDefault",
+      "qualifiedName": "ResourceDefault",
+      "adapterName": "ResourceDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Resource"
+      ],
+      "methods": [
+        "getType",
+        "getUtilization",
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 6998
+    },
+    {
+      "name": "ResourceInfinite",
+      "qualifiedName": "ResourceInfinite",
+      "adapterName": "ResourceInfinite",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Resource"
+      ],
+      "methods": [
+        "getType",
+        "getUtilization",
+        "initialize",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 7011
+    },
+    {
+      "name": "ResourceSkill",
+      "qualifiedName": "ResourceSkill",
+      "adapterName": "ResourceSkill",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object",
+        "Node",
+        "HasSource"
+      ],
+      "methods": [
+        "finder",
+        "getResource",
+        "getSkill",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setResource",
+        "setSkill"
+      ],
+      "header": "model.h",
+      "line": 7064
+    },
+    {
+      "name": "ResourceSkillDefault",
+      "qualifiedName": "ResourceSkillDefault",
+      "adapterName": "ResourceSkillDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "ResourceSkill"
+      ],
+      "methods": [
+        "getType"
+      ],
+      "header": "model.h",
+      "line": 7126
+    },
+    {
+      "name": "RuntimeException",
+      "qualifiedName": "RuntimeException",
+      "adapterName": "RuntimeException",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "runtime_error"
+      ],
+      "methods": [],
+      "header": "utils.h",
+      "line": 332
+    },
+    {
+      "name": "Serializer",
+      "qualifiedName": "Serializer",
+      "adapterName": "Serializer",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "BeginList",
+        "BeginObject",
+        "EndList",
+        "EndObject",
+        "countObjects",
+        "getContentType",
+        "getCurrentObject",
+        "getFlattenProperties",
+        "getForceBase",
+        "getPreviousObject",
+        "getSaveReferences",
+        "getServiceMode",
+        "getSkipHead",
+        "getSkipTail",
+        "getWriteHidden",
+        "pushCurrentObject",
+        "setContentType",
+        "setForceBase",
+        "setSaveReferences",
+        "setServiceMode",
+        "setWriteHidden",
+        "skipHead",
+        "skipTail",
+        "writeElement",
+        "writeString"
+      ],
+      "header": "utils.h",
+      "line": 2065
+    },
+    {
+      "name": "SetupEvent",
+      "qualifiedName": "SetupEvent",
+      "adapterName": "SetupEvent",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Event"
+      ],
+      "methods": [
+        "erase",
+        "getEventType",
+        "getLoadplanDate",
+        "getLoadplanQuantity",
+        "getOperationPlan",
+        "getRule",
+        "getSetup",
+        "getSetupBefore",
+        "getSetupOverride",
+        "getSetupString",
+        "getTimeLine",
+        "getType",
+        "initialize",
+        "registerFields",
+        "reset",
+        "setOperationPlan",
+        "setSetup",
+        "setSetupOverride",
+        "setTimeLine",
+        "update"
+      ],
+      "header": "model.h",
+      "line": 1587
+    },
+    {
+      "name": "SetupMatrix",
+      "qualifiedName": "SetupMatrix",
+      "adapterName": "SetupMatrix",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasName",
+        "HasSource"
+      ],
+      "methods": [
+        "calculateSetup",
+        "calculateSetupPython",
+        "getRules",
+        "getType",
+        "initialize",
+        "registerFields"
+      ],
+      "header": "model.h",
+      "line": 6454
+    },
+    {
+      "name": "from_to_hash",
+      "qualifiedName": "SetupMatrix::from_to_hash",
+      "adapterName": "SetupMatrixFrom_to_hash",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "model.h",
+      "line": 6521
+    },
+    {
+      "name": "SetupMatrixDefault",
+      "qualifiedName": "SetupMatrixDefault",
+      "adapterName": "SetupMatrixDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "SetupMatrix"
+      ],
+      "methods": [
+        "getType",
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 6534
+    },
+    {
+      "name": "SetupMatrixRule",
+      "qualifiedName": "SetupMatrixRule",
+      "adapterName": "SetupMatrixRule",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object",
+        "HasSource"
+      ],
+      "methods": [
+        "getCost",
+        "getDuration",
+        "getFromSetup",
+        "getFromSetupString",
+        "getPriority",
+        "getResource",
+        "getSetupMatrix",
+        "getToSetup",
+        "getToSetupString",
+        "initialize",
+        "matches",
+        "reader",
+        "registerFields",
+        "setCost",
+        "setDuration",
+        "setFromSetup",
+        "setPriority",
+        "setResource",
+        "setSetupMatrix",
+        "setToSetup"
+      ],
+      "header": "model.h",
+      "line": 6243
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "SetupMatrixRule::iterator",
+      "adapterName": "SetupMatrixRuleIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "end",
+        "next"
+      ],
+      "header": "model.h",
+      "line": 6383
+    },
+    {
+      "name": "SetupMatrixRuleDefault",
+      "qualifiedName": "SetupMatrixRuleDefault",
+      "adapterName": "SetupMatrixRuleDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "SetupMatrixRule"
+      ],
+      "methods": [
+        "getType",
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 6434
+    },
+    {
+      "name": "Skill",
+      "qualifiedName": "Skill",
+      "adapterName": "Skill",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasName",
+        "HasSource"
+      ],
+      "methods": [
+        "getResources",
+        "getType",
+        "initialize",
+        "registerFields"
+      ],
+      "header": "model.h",
+      "line": 6544
+    },
+    {
+      "name": "SkillDefault",
+      "qualifiedName": "SkillDefault",
+      "adapterName": "SkillDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Skill"
+      ],
+      "methods": [
+        "getType",
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 6585
+    },
+    {
+      "name": "Solvable",
+      "qualifiedName": "Solvable",
+      "adapterName": "Solvable",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 1018
+    },
+    {
+      "name": "Solver",
+      "qualifiedName": "Solver",
+      "adapterName": "Solver",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object"
+      ],
+      "methods": [
+        "createsBatches",
+        "getAutocommit",
+        "getLogLevel",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setAutocommit",
+        "setLogLevel",
+        "solve"
+      ],
+      "header": "model.h",
+      "line": 847
+    },
+    {
+      "name": "SolverCreate",
+      "qualifiedName": "SolverCreate",
+      "adapterName": "SolverCreate",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Solver"
+      ],
+      "methods": [
+        "checkDependencies",
+        "checkOperation",
+        "commit",
+        "create",
+        "demand_comparison",
+        "getAdministrativeLeadTime",
+        "getAlgorithm",
+        "getAutoFence",
+        "getCluster",
+        "getCommandManager",
+        "getCommands",
+        "getConstraints",
+        "getCreateDeliveries",
+        "getErasePreviousFirst",
+        "getIterationAccuracy",
+        "getIterationMax",
+        "getIterationThreshold",
+        "getLazyDelay",
+        "getMinimumDelay",
+        "getPlanType",
+        "getResourceIterationMax",
+        "getRotateResources",
+        "getType",
+        "getUserExitBuffer",
+        "getUserExitDemand",
+        "getUserExitFlow",
+        "getUserExitNextDemand",
+        "getUserExitOperation",
+        "getUserExitResource",
+        "hasOperationPlans",
+        "initialize",
+        "isCapacityConstrained",
+        "isConstrained",
+        "isLeadTimeConstrained",
+        "markAutofence",
+        "registerFields",
+        "rollback",
+        "scanExcess",
+        "setAdministrativeLeadTime",
+        "setAlgorithm",
+        "setAutoFence",
+        "setCluster",
+        "setCommandManager",
+        "setConstraints",
+        "setCreateDeliveries",
+        "setErasePreviousFirst",
+        "setIndentLevel",
+        "setIterationAccuracy",
+        "setIterationMax",
+        "setIterationThreshold",
+        "setLazyDelay",
+        "setMinimumDelay",
+        "setPlanType",
+        "setResourceIterationMax",
+        "setRotateResources",
+        "setUserExitBuffer",
+        "setUserExitDemand",
+        "setUserExitFlow",
+        "setUserExitNextDemand",
+        "setUserExitOperation",
+        "setUserExitResource",
+        "solve"
+      ],
+      "header": "solver.h",
+      "line": 136
+    },
+    {
+      "name": "SolverData",
+      "qualifiedName": "SolverCreate::SolverData",
+      "adapterName": "SolverCreateSolverData",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "clearDependencies",
+        "commit",
+        "getCommandManager",
+        "getLogLevel",
+        "getSolver",
+        "getVerbose",
+        "pop",
+        "push",
+        "runme",
+        "setCommandManager",
+        "setConstraintOwner"
+      ],
+      "header": "solver.h",
+      "line": 885
+    },
+    {
+      "name": "order_buffers",
+      "qualifiedName": "SolverCreate::SolverData::order_buffers",
+      "adapterName": "SolverCreateSolverDataOrder_buffers",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "solver.h",
+      "line": 1065
+    },
+    {
+      "name": "State",
+      "qualifiedName": "SolverCreate::State",
+      "adapterName": "SolverCreateState",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "solver.h",
+      "line": 778
+    },
+    {
+      "name": "SolverPropagateStatus",
+      "qualifiedName": "SolverPropagateStatus",
+      "adapterName": "SolverPropagateStatus",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Solver"
+      ],
+      "methods": [
+        "create",
+        "getType",
+        "initialize",
+        "solve"
+      ],
+      "header": "solver.h",
+      "line": 1432
+    },
+    {
+      "name": "StreambufWrapper",
+      "qualifiedName": "StreambufWrapper",
+      "adapterName": "StreambufWrapper",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "filebuf"
+      ],
+      "methods": [
+        "getLogLimit",
+        "setLogLimit",
+        "sync"
+      ],
+      "header": "utils.h",
+      "line": 237
+    },
+    {
+      "name": "SubOperation",
+      "qualifiedName": "SubOperation",
+      "adapterName": "SubOperation",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Object",
+        "HasSource"
+      ],
+      "methods": [
+        "getEffective",
+        "getEffectiveEnd",
+        "getEffectiveStart",
+        "getOperation",
+        "getOwner",
+        "getPriority",
+        "getType",
+        "initialize",
+        "registerFields",
+        "setEffective",
+        "setEffectiveEnd",
+        "setEffectiveStart",
+        "setOperation",
+        "setOwner",
+        "setPriority"
+      ],
+      "header": "model.h",
+      "line": 1402
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "SubOperation::iterator",
+      "adapterName": "SubOperationIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "model.h",
+      "line": 1472
+    },
+    {
+      "name": "Supplier",
+      "qualifiedName": "Supplier",
+      "adapterName": "Supplier",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "HasHierarchy"
+      ],
+      "methods": [
+        "getItemIterator",
+        "getItems",
+        "getType",
+        "initialize",
+        "registerFields"
+      ],
+      "header": "model.h",
+      "line": 1352
+    },
+    {
+      "name": "SupplierDefault",
+      "qualifiedName": "SupplierDefault",
+      "adapterName": "SupplierDefault",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Supplier"
+      ],
+      "methods": [
+        "getType",
+        "initialize"
+      ],
+      "header": "model.h",
+      "line": 1390
+    },
+    {
+      "name": "Tags",
+      "qualifiedName": "Tags",
+      "adapterName": "Tags",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [],
+      "header": "tags.h",
+      "line": 32
+    },
+    {
+      "name": "ThreadGroup",
+      "qualifiedName": "ThreadGroup",
+      "adapterName": "ThreadGroup",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable"
+      ],
+      "methods": [
+        "add",
+        "execute",
+        "getMaxParallel",
+        "setMaxParallel"
+      ],
+      "header": "utils.h",
+      "line": 3542
+    },
+    {
+      "name": "ThreadSafeLogProxy",
+      "qualifiedName": "ThreadSafeLogProxy",
+      "adapterName": "ThreadSafeLogProxy",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "flush",
+        "rdbuf"
+      ],
+      "header": "utils.h",
+      "line": 195
+    },
+    {
+      "name": "TimeLine",
+      "qualifiedName": "TimeLine",
+      "adapterName": "TimeLine",
+      "nested": false,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "begin",
+        "check",
+        "empty",
+        "end",
+        "erase",
+        "getEvent",
+        "getExcess",
+        "getFlow",
+        "getMax",
+        "getMaxEvent",
+        "getMin",
+        "getMinEvent",
+        "hasTimeVaryingMinimum",
+        "insert",
+        "rbegin",
+        "size",
+        "update"
+      ],
+      "header": "timeline.h",
+      "line": 47
+    },
+    {
+      "name": "const_iterator",
+      "qualifiedName": "TimeLine::const_iterator",
+      "adapterName": "TimeLineConst_iterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "next"
+      ],
+      "header": "timeline.h",
+      "line": 282
+    },
+    {
+      "name": "Event",
+      "qualifiedName": "TimeLine::Event",
+      "adapterName": "TimeLineEvent",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "NonCopyable",
+        "Object"
+      ],
+      "methods": [
+        "getAvailable",
+        "getCumulativeConsumed",
+        "getCumulativeProduced",
+        "getDate",
+        "getEventType",
+        "getMax",
+        "getMin",
+        "getOnhand",
+        "getOnhandAfterDate",
+        "getOnhandBeforeDate",
+        "getOperationPlan",
+        "getQuantity",
+        "getTimeLine",
+        "isFirstOnDate",
+        "isLastOnDate",
+        "isOnlyEventOnDate"
+      ],
+      "header": "timeline.h",
+      "line": 54
+    },
+    {
+      "name": "EventChangeOnhand",
+      "qualifiedName": "TimeLine::EventChangeOnhand",
+      "adapterName": "TimeLineEventChangeOnhand",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "TimeLineEvent"
+      ],
+      "methods": [
+        "getEventType"
+      ],
+      "header": "timeline.h",
+      "line": 182
+    },
+    {
+      "name": "EventMaxQuantity",
+      "qualifiedName": "TimeLine::EventMaxQuantity",
+      "adapterName": "TimeLineEventMaxQuantity",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "TimeLineEvent"
+      ],
+      "methods": [
+        "getEventType",
+        "getMax",
+        "getOperationPlan",
+        "getTimeLine",
+        "setMax"
+      ],
+      "header": "timeline.h",
+      "line": 247
+    },
+    {
+      "name": "EventMinQuantity",
+      "qualifiedName": "TimeLine::EventMinQuantity",
+      "adapterName": "TimeLineEventMinQuantity",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "TimeLineEvent"
+      ],
+      "methods": [
+        "getEventType",
+        "getMin",
+        "getOperationPlan",
+        "getTimeLine",
+        "setMin"
+      ],
+      "header": "timeline.h",
+      "line": 212
+    },
+    {
+      "name": "EventSetOnhand",
+      "qualifiedName": "TimeLine::EventSetOnhand",
+      "adapterName": "TimeLineEventSetOnhand",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "TimeLineEvent"
+      ],
+      "methods": [
+        "getEventType",
+        "getOperationPlan"
+      ],
+      "header": "timeline.h",
+      "line": 191
+    },
+    {
+      "name": "iterator",
+      "qualifiedName": "TimeLine::iterator",
+      "adapterName": "TimeLineIterator",
+      "nested": true,
+      "kind": "class",
+      "bases": [
+        "TimeLineConst_iterator"
+      ],
+      "methods": [],
+      "header": "timeline.h",
+      "line": 333
+    },
+    {
+      "name": "Tree",
+      "qualifiedName": "Tree",
+      "adapterName": "Tree",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "NonCopyable"
+      ],
+      "methods": [
+        "begin",
+        "clear",
+        "compare",
+        "empty",
+        "end",
+        "erase",
+        "find",
+        "findLowerBound",
+        "insert",
+        "rename",
+        "size",
+        "verify"
+      ],
+      "header": "utils.h",
+      "line": 3755
+    },
+    {
+      "name": "TreeNode",
+      "qualifiedName": "Tree::TreeNode",
+      "adapterName": "TreeTreeNode",
+      "nested": true,
+      "kind": "class",
+      "bases": [],
+      "methods": [
+        "decrement",
+        "getColor",
+        "getName",
+        "increment",
+        "setName"
+      ],
+      "header": "utils.h",
+      "line": 3769
+    },
+    {
+      "name": "XMLData",
+      "qualifiedName": "XMLData",
+      "adapterName": "XMLData",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "DataValue"
+      ],
+      "methods": [
+        "appendString",
+        "getBool",
+        "getData",
+        "getDate",
+        "getDouble",
+        "getDuration",
+        "getInt",
+        "getLong",
+        "getObject",
+        "getString",
+        "getStringList",
+        "getUnsignedLong",
+        "reset",
+        "setBool",
+        "setData",
+        "setDate",
+        "setDouble",
+        "setDuration",
+        "setInt",
+        "setLong",
+        "setObject",
+        "setString",
+        "setUnsignedLong"
+      ],
+      "header": "utils.h",
+      "line": 2464
+    },
+    {
+      "name": "XMLDataValueDict",
+      "qualifiedName": "XMLDataValueDict",
+      "adapterName": "XMLDataValueDict",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "DataValueDict"
+      ],
+      "methods": [
+        "enlarge",
+        "get",
+        "print"
+      ],
+      "header": "xml.h",
+      "line": 307
+    },
+    {
+      "name": "XMLInput",
+      "qualifiedName": "XMLInput",
+      "adapterName": "XMLInput",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "DataInput",
+        "NonCopyable",
+        "DefaultHandler"
+      ],
+      "methods": [
+        "getAbortOnDataError",
+        "getAllowPython",
+        "parse",
+        "setAbortOnDataError",
+        "setAllowPython",
+        "setLogLevel",
+        "transcodeUTF8"
+      ],
+      "header": "xml.h",
+      "line": 68
+    },
+    {
+      "name": "fld",
+      "qualifiedName": "XMLInput::fld",
+      "adapterName": "XMLInputFld",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "xml.h",
+      "line": 82
+    },
+    {
+      "name": "obj",
+      "qualifiedName": "XMLInput::obj",
+      "adapterName": "XMLInputObj",
+      "nested": true,
+      "kind": "struct",
+      "bases": [],
+      "methods": [],
+      "header": "xml.h",
+      "line": 97
+    },
+    {
+      "name": "XMLInputFile",
+      "qualifiedName": "XMLInputFile",
+      "adapterName": "XMLInputFile",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "XMLInput"
+      ],
+      "methods": [
+        "getFileName",
+        "parse",
+        "setFileName"
+      ],
+      "header": "xml.h",
+      "line": 270
+    },
+    {
+      "name": "XMLInputString",
+      "qualifiedName": "XMLInputString",
+      "adapterName": "XMLInputString",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "XMLInput"
+      ],
+      "methods": [
+        "parse"
+      ],
+      "header": "xml.h",
+      "line": 237
+    },
+    {
+      "name": "XMLSerializer",
+      "qualifiedName": "XMLSerializer",
+      "adapterName": "XMLSerializer",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "Serializer"
+      ],
+      "methods": [
+        "BeginList",
+        "BeginObject",
+        "EndList",
+        "EndObject",
+        "countObjects",
+        "getCurrentObject",
+        "getIndent",
+        "getPreviousObject",
+        "writeElement",
+        "writeElementWithHeader",
+        "writeString"
+      ],
+      "header": "xml.h",
+      "line": 335
+    },
+    {
+      "name": "XMLSerializerFile",
+      "qualifiedName": "XMLSerializerFile",
+      "adapterName": "XMLSerializerFile",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "XMLSerializer"
+      ],
+      "methods": [],
+      "header": "xml.h",
+      "line": 662
+    },
+    {
+      "name": "XMLSerializerString",
+      "qualifiedName": "XMLSerializerString",
+      "adapterName": "XMLSerializerString",
+      "nested": false,
+      "kind": "class",
+      "bases": [
+        "XMLSerializer"
+      ],
+      "methods": [
+        "getData"
+      ],
+      "header": "xml.h",
+      "line": 686
+    }
+  ]
+}

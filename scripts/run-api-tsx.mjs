@@ -15,7 +15,9 @@ if (!existsSync(tsxCli)) {
 
 const child = spawn(process.execPath, [tsxCli, ...process.argv.slice(2)], {
   cwd: apiDir,
-  env: process.env,
+  // Keep the Node executable selected by the parent pnpm process. This is
+  // required for Node 22's WebSocket support used by the Trigger.dev worker.
+  env: { ...process.env, PATH: `${dirname(process.execPath)}${process.platform === 'win32' ? ';' : ':'}${process.env.PATH ?? ''}` },
   stdio: 'inherit'
 });
 

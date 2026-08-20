@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2009-01-01T00:00:00</current>
+  <operations>
+    <operation name="make red item" xsi:type="operation_fixed_time">
+      <duration>P1D</duration>
+    </operation>
+    <operation name="make blue item" xsi:type="operation_fixed_time">
+      <duration>P1D</duration>
+    </operation>
+    <operation name="delivery red item" xsi:type="operation_fixed_time">
+      <duration>P1D</duration>
+    </operation>
+    <operation name="delivery blue item" xsi:type="operation_fixed_time">
+      <duration>P1D</duration>
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="red item">
+      <producing name="make red item" />
+      <item name="red item" />
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="blue item">
+      <producing name="make blue item" />
+      <item name="blue item" />
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+    <setupmatrix name="color changeover">
+      <rules>
+        <rule priority="1" fromsetup="green" tosetup="red"
+          duration="P2D" cost="10" />
+        <rule priority="2" fromsetup="red" tosetup="blue"
+          duration="P1D" cost="20" />
+        <rule priority="3" fromsetup="green" tosetup="blue"
+          duration="P3D" cost="30" />
+        <rule priority="4" fromsetup="blue" tosetup="red"
+          duration="P1D" cost="20" />
+        <rule priority="99" fromsetup=".*" tosetup=".*"
+          duration="PT12H" cost="50" />
+      </rules>
+    </setupmatrix>
+  </setupmatrices>
+  <resources>
+    <resource name="painting line">
+      
+      <maximum>1</maximum>
+      <maxearly>P30D</maxearly>
+      
+      <setupmatrix name="color changeover" />
+      <setup>green</setup>
+      <loads>
+        <load>
+          <operation name="make red item" /><quantity>1</quantity>
+          
+          
+          
+          
+          <setup>red</setup>
+        </load>
+        <load>
+          <operation name="make blue item" /><quantity>1</quantity>
+          
+          
+          
+          
+          <setup>blue</setup>
+        </load>
+      </loads>
+    </resource>
+  </resources>
+  <skills>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="delivery red item" />
+      <buffer name="red item" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="make red item" />
+      <buffer name="red item" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="delivery blue item" />
+      <buffer name="blue item" />
+      <quantity>-1</quantity>
+      
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="make blue item" />
+      <buffer name="blue item" />
+      <quantity>1</quantity>
+      
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="red order">
+      <quantity>1</quantity><due>2009-01-20T00:00:00</due><priority>1</priority>
+      <item name="red item" /><operation name="delivery red item" />
+    </demand>
+    <demand name="blue order">
+      <quantity>1</quantity><due>2009-01-20T00:00:00</due><priority>2</priority>
+      <item name="blue item" /><operation name="delivery blue item" />
+    </demand>
+  </demands>
+<?python
+import frepple, json
+frepple.solver_mrp(plantype=1, constraints=15, loglevel=0).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+plans = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": flowplan.quantity})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    plans.append({
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": operationplan.quantity,
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+    })
+plans.sort(key=lambda value: (value["operation"], value["start"], value["end"], value["demand"] or "", value["quantity"]))
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": operationplan.quantity, "end": stamp(operationplan.end)})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"]))
+with open("/workspace/cpp-typescript/.schedule-diff/setup_transition.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries}, output, indent=2, sort_keys=True)
+?>
+</plan>

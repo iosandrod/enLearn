@@ -1,0 +1,585 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory partial raw @ plant",
+      "demand": null,
+      "quantity": 80,
+      "quantityCompleted": 0,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "STCK",
+      "status": "closed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "1971-01-01T00:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "partial raw @ plant",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 80
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:Inventory partial raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1",
+      "reference": "auto:Inventory partial raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1"
+    },
+    {
+      "operation": "make partial product",
+      "demand": null,
+      "quantity": 12,
+      "quantityCompleted": 5,
+      "start": "2026-01-02T06:00:00",
+      "end": "2026-01-02T17:40:00",
+      "ownerOperation": null,
+      "batch": "PARTIAL-A",
+      "orderType": "MO",
+      "status": "confirmed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-02T06:00:00",
+      "resources": [
+        "partial machine"
+      ],
+      "materials": [
+        {
+          "buffer": "partial raw @ plant",
+          "date": "2026-01-02T06:00:00",
+          "quantity": -7
+        },
+        {
+          "buffer": "partial product @ plant",
+          "date": "2026-01-02T17:40:00",
+          "quantity": 7
+        }
+      ],
+      "operationCost": 108,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 108,
+      "setupPenalty": 0,
+      "planKey": "ref:WIP-CONFIRMED-001",
+      "reference": "WIP-CONFIRMED-001"
+    },
+    {
+      "operation": "make partial product",
+      "demand": null,
+      "quantity": 10,
+      "quantityCompleted": 4,
+      "start": "2026-01-05T13:30:00",
+      "end": "2026-01-06T00:00:00",
+      "ownerOperation": null,
+      "batch": "PARTIAL-A",
+      "orderType": "MO",
+      "status": "approved",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-05T13:30:00",
+      "resources": [
+        "partial machine"
+      ],
+      "materials": [
+        {
+          "buffer": "partial raw @ plant",
+          "date": "2026-01-05T13:30:00",
+          "quantity": -6
+        },
+        {
+          "buffer": "partial product @ plant",
+          "date": "2026-01-06T00:00:00",
+          "quantity": 6
+        }
+      ],
+      "operationCost": 90,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 90,
+      "setupPenalty": 0,
+      "planKey": "ref:WIP-APPROVED-001",
+      "reference": "WIP-APPROVED-001"
+    },
+    {
+      "operation": "make partial product",
+      "demand": null,
+      "quantity": 8,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T08:00:00",
+      "end": "2026-01-10T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T08:00:00",
+      "resources": [
+        "partial machine"
+      ],
+      "materials": [
+        {
+          "buffer": "partial raw @ plant",
+          "date": "2026-01-10T08:00:00",
+          "quantity": -8
+        },
+        {
+          "buffer": "partial product @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": 8
+        }
+      ],
+      "operationCost": 72,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 72,
+      "setupPenalty": 0,
+      "planKey": "auto:make partial product|2026-01-10T08:00:00|2026-01-10T23:00:00||8||MO|#1",
+      "reference": "auto:make partial product|2026-01-10T08:00:00|2026-01-10T23:00:00||8||MO|#1"
+    },
+    {
+      "operation": "make partial product",
+      "demand": null,
+      "quantity": 8,
+      "quantityCompleted": 0,
+      "start": "2026-01-13T08:00:00",
+      "end": "2026-01-13T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-13T08:00:00",
+      "resources": [
+        "partial machine"
+      ],
+      "materials": [
+        {
+          "buffer": "partial raw @ plant",
+          "date": "2026-01-13T08:00:00",
+          "quantity": -8
+        },
+        {
+          "buffer": "partial product @ plant",
+          "date": "2026-01-13T23:00:00",
+          "quantity": 8
+        }
+      ],
+      "operationCost": 72,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 72,
+      "setupPenalty": 0,
+      "planKey": "auto:make partial product|2026-01-13T08:00:00|2026-01-13T23:00:00||8||MO|#1",
+      "reference": "auto:make partial product|2026-01-13T08:00:00|2026-01-13T23:00:00||8||MO|#1"
+    },
+    {
+      "operation": "ship partial product",
+      "demand": "partial demand A",
+      "quantity": 9,
+      "quantityCompleted": 0,
+      "start": "2026-01-07T23:00:00",
+      "end": "2026-01-08T00:00:00",
+      "ownerOperation": null,
+      "batch": "PARTIAL-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-07T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "partial product @ plant",
+          "date": "2026-01-07T23:00:00",
+          "quantity": -9
+        }
+      ],
+      "operationCost": 9,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 9,
+      "setupPenalty": 0,
+      "planKey": "auto:ship partial product|2026-01-07T23:00:00|2026-01-08T00:00:00|partial demand A|9|PARTIAL-A|MO|#1",
+      "reference": "auto:ship partial product|2026-01-07T23:00:00|2026-01-08T00:00:00|partial demand A|9|PARTIAL-A|MO|#1"
+    },
+    {
+      "operation": "ship partial product",
+      "demand": "partial demand B",
+      "quantity": 12,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T00:00:00",
+      "ownerOperation": null,
+      "batch": "PARTIAL-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "partial product @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -12
+        }
+      ],
+      "operationCost": 12,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 12,
+      "setupPenalty": 0,
+      "planKey": "auto:ship partial product|2026-01-10T23:00:00|2026-01-11T00:00:00|partial demand B|12|PARTIAL-A|MO|#1",
+      "reference": "auto:ship partial product|2026-01-10T23:00:00|2026-01-11T00:00:00|partial demand B|12|PARTIAL-A|MO|#1"
+    },
+    {
+      "operation": "ship partial product",
+      "demand": "partial demand C",
+      "quantity": 8,
+      "quantityCompleted": 0,
+      "start": "2026-01-13T23:00:00",
+      "end": "2026-01-14T00:00:00",
+      "ownerOperation": null,
+      "batch": "PARTIAL-A",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-13T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "partial product @ plant",
+          "date": "2026-01-13T23:00:00",
+          "quantity": -8
+        }
+      ],
+      "operationCost": 8,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 8,
+      "setupPenalty": 0,
+      "planKey": "auto:ship partial product|2026-01-13T23:00:00|2026-01-14T00:00:00|partial demand C|8|PARTIAL-A|MO|#1",
+      "reference": "auto:ship partial product|2026-01-13T23:00:00|2026-01-14T00:00:00|partial demand C|8|PARTIAL-A|MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "partial demand A",
+      "quantity": 9,
+      "end": "2026-01-08T00:00:00",
+      "batch": "PARTIAL-A",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship partial product|2026-01-07T23:00:00|2026-01-08T00:00:00|partial demand A|9|PARTIAL-A|MO|#1"
+    },
+    {
+      "demand": "partial demand B",
+      "quantity": 12,
+      "end": "2026-01-11T00:00:00",
+      "batch": "PARTIAL-A",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship partial product|2026-01-10T23:00:00|2026-01-11T00:00:00|partial demand B|12|PARTIAL-A|MO|#1"
+    },
+    {
+      "demand": "partial demand C",
+      "quantity": 8,
+      "end": "2026-01-14T00:00:00",
+      "batch": "PARTIAL-A",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship partial product|2026-01-13T23:00:00|2026-01-14T00:00:00|partial demand C|8|PARTIAL-A|MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [
+    {
+      "name": "invalid data",
+      "description": "No replenishment defined for 'partial raw @ plant'",
+      "start": "1971-01-01T00:00:00",
+      "end": "2030-12-31T00:00:00",
+      "entity": "material",
+      "owner": "partial raw @ plant",
+      "feasible": false
+    }
+  ],
+  "inventoryProfiles": [
+    {
+      "buffer": "partial product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-02T17:40:00",
+      "quantity": 7,
+      "onhand": 7,
+      "operationPlanKey": "ref:WIP-CONFIRMED-001",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "partial product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-06T00:00:00",
+      "quantity": 6,
+      "onhand": 13,
+      "operationPlanKey": "ref:WIP-APPROVED-001",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "partial product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-07T23:00:00",
+      "quantity": -9,
+      "onhand": 4,
+      "operationPlanKey": "auto:ship partial product|2026-01-07T23:00:00|2026-01-08T00:00:00|partial demand A|9|PARTIAL-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "partial product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "quantity": -12,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship partial product|2026-01-10T23:00:00|2026-01-11T00:00:00|partial demand B|12|PARTIAL-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "partial product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "quantity": 8,
+      "onhand": 12,
+      "operationPlanKey": "auto:make partial product|2026-01-10T08:00:00|2026-01-10T23:00:00||8||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "partial product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T23:00:00",
+      "quantity": -8,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship partial product|2026-01-13T23:00:00|2026-01-14T00:00:00|partial demand C|8|PARTIAL-A|MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "partial product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T23:00:00",
+      "quantity": 8,
+      "onhand": 8,
+      "operationPlanKey": "auto:make partial product|2026-01-13T08:00:00|2026-01-13T23:00:00||8||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "partial raw @ plant",
+      "bufferBatch": "",
+      "date": "1971-01-01T00:00:00",
+      "quantity": 80,
+      "onhand": 80,
+      "operationPlanKey": "auto:Inventory partial raw @ plant|1971-01-01T00:00:00|1971-01-01T00:00:00||80||STCK|#1",
+      "orderType": "STCK"
+    },
+    {
+      "buffer": "partial raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-02T06:00:00",
+      "quantity": -7,
+      "onhand": 73,
+      "operationPlanKey": "ref:WIP-CONFIRMED-001",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "partial raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-05T13:30:00",
+      "quantity": -6,
+      "onhand": 67,
+      "operationPlanKey": "ref:WIP-APPROVED-001",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "partial raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T08:00:00",
+      "quantity": -8,
+      "onhand": 59,
+      "operationPlanKey": "auto:make partial product|2026-01-10T08:00:00|2026-01-10T23:00:00||8||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "partial raw @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-13T08:00:00",
+      "quantity": -8,
+      "onhand": 51,
+      "operationPlanKey": "auto:make partial product|2026-01-13T08:00:00|2026-01-13T23:00:00||8||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "resource": "partial machine",
+      "start": "1971-01-01T00:00:00",
+      "end": "2026-01-01T00:00:00",
+      "available": 482136,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 482136,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-02T06:00:00",
+      "available": 30,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 30,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-02T06:00:00",
+      "end": "2026-01-02T17:40:00",
+      "available": 11.666666667,
+      "load": 11.666666667,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 11.666666667,
+      "utilization": 1
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-02T17:40:00",
+      "end": "2026-01-05T13:30:00",
+      "available": 67.833333333,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 67.833333333,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-05T13:30:00",
+      "end": "2026-01-06T00:00:00",
+      "available": 10.5,
+      "load": 10.5,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 10.5,
+      "utilization": 1
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-06T00:00:00",
+      "end": "2026-01-07T23:00:00",
+      "available": 47,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 47,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-07T23:00:00",
+      "end": "2026-01-08T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-08T00:00:00",
+      "end": "2026-01-10T08:00:00",
+      "available": 56,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 56,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-10T08:00:00",
+      "end": "2026-01-10T23:00:00",
+      "available": 15,
+      "load": 15,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-11T00:00:00",
+      "end": "2026-01-13T08:00:00",
+      "available": 56,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 56,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-13T08:00:00",
+      "end": "2026-01-13T23:00:00",
+      "available": 15,
+      "load": 15,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 0,
+      "loadConfirmed": 0,
+      "utilization": 1
+    },
+    {
+      "resource": "partial machine",
+      "start": "2026-01-13T23:00:00",
+      "end": "2026-01-14T00:00:00",
+      "available": 1,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 1,
+      "loadConfirmed": 0,
+      "utilization": 0
+    }
+  ],
+  "costSummary": {
+    "operationCost": 371,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 371,
+    "setupPenalty": 0
+  }
+}

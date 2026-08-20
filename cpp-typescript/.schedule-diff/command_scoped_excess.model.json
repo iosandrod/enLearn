@@ -1,0 +1,109 @@
+{
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "scoped demand product @ plant",
+      "quantity": 1,
+      "operation": "make scoped demand product"
+    },
+    {
+      "type": "start",
+      "buffer": "scoped demand product @ plant",
+      "quantity": -1,
+      "operation": "ship scoped demand product"
+    },
+    {
+      "type": "end",
+      "buffer": "unrelated excess product @ plant",
+      "quantity": 1,
+      "operation": "make unrelated excess product"
+    }
+  ],
+  "items": [
+    {
+      "name": "scoped demand product"
+    },
+    {
+      "name": "unrelated excess product"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "erasePreviousFirst": false
+  },
+  "buffers": [
+    {
+      "item": "scoped demand product",
+      "name": "scoped demand product @ plant",
+      "onhand": 0,
+      "location": "command scope plant",
+      "producing": "make scoped demand product"
+    },
+    {
+      "item": "unrelated excess product",
+      "name": "unrelated excess product @ plant",
+      "onhand": 5,
+      "location": "command scope plant",
+      "producing": "make unrelated excess product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-11T00:00:00",
+      "item": "scoped demand product",
+      "name": "scoped demand order",
+      "location": "command scope plant",
+      "priority": 1,
+      "quantity": 4,
+      "operation": "ship scoped demand product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "command scope plant"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "cost": 4,
+      "name": "make scoped demand product",
+      "type": "fixed_time",
+      "duration": 18000,
+      "location": "command scope plant",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "ship scoped demand product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "command scope plant"
+    },
+    {
+      "cost": 4,
+      "name": "make unrelated excess product",
+      "type": "fixed_time",
+      "duration": 18000,
+      "location": "command scope plant",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1
+    }
+  ],
+  "operationPlans": [
+    {
+      "end": "2026-01-13T05:00:00",
+      "start": "2026-01-13T00:00:00",
+      "status": "proposed",
+      "quantity": 2,
+      "operation": "make unrelated excess product",
+      "reference": "MO-UNRELATED-EXCESS"
+    }
+  ]
+}

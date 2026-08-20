@@ -1,0 +1,187 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "forward repair raw @ plant",
+      "quantity": -1,
+      "operation": "make forward repair product"
+    },
+    {
+      "type": "end",
+      "buffer": "forward repair product @ plant",
+      "quantity": 1,
+      "operation": "make forward repair product"
+    },
+    {
+      "type": "start",
+      "buffer": "forward repair product @ plant",
+      "quantity": -1,
+      "operation": "ship forward repair product"
+    }
+  ],
+  "items": [
+    {
+      "name": "forward repair raw"
+    },
+    {
+      "name": "forward repair product"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "forward repair bottleneck",
+      "operation": "make forward repair product"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "algorithm": "heuristic_2",
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "iterationMax": 32,
+    "minimumDelay": 3600,
+    "erasePreviousFirst": false,
+    "resourceIterationMax": 32
+  },
+  "buffers": [
+    {
+      "item": "forward repair raw",
+      "name": "forward repair raw @ plant",
+      "onhand": 80,
+      "location": "forward repair plant"
+    },
+    {
+      "item": "forward repair product",
+      "name": "forward repair product @ plant",
+      "onhand": 0,
+      "location": "forward repair plant",
+      "producing": "make forward repair product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-03T00:00:00",
+      "item": "forward repair product",
+      "name": "forward repair order 01",
+      "location": "forward repair plant",
+      "priority": 1,
+      "quantity": 2,
+      "operation": "ship forward repair product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-03T12:00:00",
+      "item": "forward repair product",
+      "name": "forward repair order 02",
+      "location": "forward repair plant",
+      "priority": 2,
+      "quantity": 3,
+      "operation": "ship forward repair product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-04T00:00:00",
+      "item": "forward repair product",
+      "name": "forward repair order 03",
+      "location": "forward repair plant",
+      "priority": 3,
+      "quantity": 4,
+      "operation": "ship forward repair product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-04T12:00:00",
+      "item": "forward repair product",
+      "name": "forward repair order 04",
+      "location": "forward repair plant",
+      "priority": 4,
+      "quantity": 5,
+      "operation": "ship forward repair product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-05T00:00:00",
+      "item": "forward repair product",
+      "name": "forward repair order 05",
+      "location": "forward repair plant",
+      "priority": 5,
+      "quantity": 2,
+      "operation": "ship forward repair product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-05T12:00:00",
+      "item": "forward repair product",
+      "name": "forward repair order 06",
+      "location": "forward repair plant",
+      "priority": 6,
+      "quantity": 3,
+      "operation": "ship forward repair product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-06T00:00:00",
+      "item": "forward repair product",
+      "name": "forward repair order 07",
+      "location": "forward repair plant",
+      "priority": 7,
+      "quantity": 4,
+      "operation": "ship forward repair product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-06T12:00:00",
+      "item": "forward repair product",
+      "name": "forward repair order 08",
+      "location": "forward repair plant",
+      "priority": 8,
+      "quantity": 5,
+      "operation": "ship forward repair product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "forward repair plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "forward repair bottleneck",
+      "maximum": 1,
+      "location": "forward repair plant",
+      "maxearly": 1728000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 6,
+      "name": "make forward repair product",
+      "type": "fixed_time",
+      "duration": 172800,
+      "location": "forward repair plant",
+      "sizeMaximum": 5,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "name": "ship forward repair product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "forward repair plant"
+    }
+  ],
+  "operationPlans": [
+    {
+      "end": "2026-01-04T00:00:00",
+      "start": "2026-01-01T00:00:00",
+      "status": "confirmed",
+      "quantity": 5,
+      "operation": "make forward repair product",
+      "reference": "MO-FORWARD-LOCKED"
+    }
+  ]
+}

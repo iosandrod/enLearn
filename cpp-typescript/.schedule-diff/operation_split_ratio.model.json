@@ -1,0 +1,112 @@
+{
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "split finished",
+      "quantity": 2,
+      "operation": "split lane A"
+    },
+    {
+      "type": "end",
+      "buffer": "split finished",
+      "quantity": 1,
+      "operation": "split lane B"
+    },
+    {
+      "type": "end",
+      "buffer": "split finished",
+      "quantity": 1,
+      "operation": "split lane future"
+    },
+    {
+      "type": "start",
+      "buffer": "split finished",
+      "quantity": -1,
+      "operation": "split ship"
+    }
+  ],
+  "items": [
+    {
+      "name": "split finished"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "split finished",
+      "name": "split finished",
+      "onhand": 0,
+      "producing": "split make"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-21T00:00:00",
+      "item": "split finished",
+      "name": "split order",
+      "priority": 1,
+      "quantity": 10,
+      "operation": "split ship"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "name": "split make",
+      "type": "split",
+      "suboperations": [
+        {
+          "priority": 30,
+          "operation": "split lane A"
+        },
+        {
+          "priority": 70,
+          "operation": "split lane B"
+        },
+        {
+          "priority": 50,
+          "operation": "split lane future",
+          "effectiveStart": "2026-01-31T00:00:00"
+        }
+      ]
+    },
+    {
+      "cost": 12,
+      "name": "split lane A",
+      "type": "fixed_time",
+      "duration": 172800,
+      "sizeMaximum": 100,
+      "sizeMinimum": 0,
+      "sizeMultiple": 0.5
+    },
+    {
+      "cost": 8,
+      "name": "split lane B",
+      "type": "fixed_time",
+      "duration": 259200,
+      "sizeMaximum": 100,
+      "sizeMinimum": 0,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 4,
+      "name": "split lane future",
+      "type": "fixed_time",
+      "duration": 86400,
+      "sizeMaximum": 100,
+      "sizeMinimum": 0
+    },
+    {
+      "cost": 1,
+      "name": "split ship",
+      "type": "fixed_time",
+      "duration": 3600
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "hard posttime raw @ plant",
+      "quantity": -1,
+      "operation": "hard posttime cure"
+    },
+    {
+      "type": "end",
+      "buffer": "hard posttime product @ plant",
+      "quantity": 1,
+      "operation": "hard posttime finish"
+    },
+    {
+      "type": "start",
+      "buffer": "hard posttime product @ plant",
+      "quantity": -1,
+      "operation": "ship hard posttime product"
+    }
+  ],
+  "items": [
+    {
+      "name": "hard posttime raw"
+    },
+    {
+      "name": "hard posttime product"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "hard posttime cure resource",
+      "operation": "hard posttime cure"
+    },
+    {
+      "quantity": 1,
+      "resource": "hard posttime finish resource",
+      "operation": "hard posttime finish"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "hard posttime raw",
+      "name": "hard posttime raw @ plant",
+      "onhand": 60,
+      "location": "hard posttime plant"
+    },
+    {
+      "item": "hard posttime product",
+      "name": "hard posttime product @ plant",
+      "onhand": 0,
+      "location": "hard posttime plant",
+      "producing": "hard posttime routing"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-09T00:00:00",
+      "item": "hard posttime product",
+      "name": "hard posttime order A",
+      "location": "hard posttime plant",
+      "priority": 1,
+      "quantity": 4,
+      "operation": "ship hard posttime product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-12T00:00:00",
+      "item": "hard posttime product",
+      "name": "hard posttime order B",
+      "location": "hard posttime plant",
+      "priority": 2,
+      "quantity": 6,
+      "operation": "ship hard posttime product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-15T00:00:00",
+      "item": "hard posttime product",
+      "name": "hard posttime order C",
+      "location": "hard posttime plant",
+      "priority": 3,
+      "quantity": 5,
+      "operation": "ship hard posttime product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "hard posttime plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "hard posttime cure resource",
+      "maximum": 1,
+      "location": "hard posttime plant",
+      "maxearly": 2592000,
+      "efficiency": 100
+    },
+    {
+      "name": "hard posttime finish resource",
+      "maximum": 1,
+      "location": "hard posttime plant",
+      "maxearly": 2592000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 5,
+      "name": "hard posttime cure",
+      "type": "fixed_time",
+      "duration": 86400,
+      "location": "hard posttime plant",
+      "posttime": 172800,
+      "sizeMaximum": 8,
+      "sizeMinimum": 1
+    },
+    {
+      "cost": 7,
+      "name": "hard posttime finish",
+      "type": "fixed_time",
+      "duration": 86400,
+      "location": "hard posttime plant",
+      "sizeMaximum": 8,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "hard posttime routing",
+      "type": "routing",
+      "location": "hard posttime plant",
+      "hardPosttime": true,
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "hard posttime cure"
+        },
+        {
+          "priority": 2,
+          "operation": "hard posttime finish"
+        }
+      ]
+    },
+    {
+      "name": "ship hard posttime product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "hard posttime plant"
+    }
+  ]
+}

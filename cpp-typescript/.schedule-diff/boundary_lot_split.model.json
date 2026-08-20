@@ -1,0 +1,167 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "boundary lot item",
+      "quantity": -1,
+      "operation": "boundary lot ship"
+    }
+  ],
+  "items": [
+    {
+      "name": "boundary lot item"
+    }
+  ],
+  "loads": [],
+  "skills": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "iterationMax": 64,
+    "minimumDelay": 1,
+    "rotateResources": false,
+    "resourceIterationMax": 64
+  },
+  "buffers": [
+    {
+      "item": "boundary lot item",
+      "name": "boundary lot item",
+      "onhand": 200,
+      "producing": "boundary lot make"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-06T12:00:00",
+      "item": "boundary lot item",
+      "name": "lot boundary 01 zero",
+      "batch": "lot-a",
+      "priority": 1,
+      "quantity": 0,
+      "operation": "boundary lot ship",
+      "maxLateness": 259200,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-07T12:00:00",
+      "item": "boundary lot item",
+      "name": "lot boundary 02 epsilon-below",
+      "batch": "lot-b",
+      "priority": 2,
+      "quantity": 5e-7,
+      "operation": "boundary lot ship",
+      "maxLateness": 259200,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-08T12:00:00",
+      "item": "boundary lot item",
+      "name": "lot boundary 03 epsilon-above",
+      "batch": "lot-a",
+      "priority": 3,
+      "quantity": 0.000002,
+      "operation": "boundary lot ship",
+      "maxLateness": 1,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-09T12:00:00",
+      "item": "boundary lot item",
+      "name": "lot boundary 04 below-min",
+      "batch": "lot-b",
+      "priority": 4,
+      "quantity": 3,
+      "operation": "boundary lot ship",
+      "maxLateness": 259200,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-10T12:00:00",
+      "item": "boundary lot item",
+      "name": "lot boundary 05 at-min",
+      "batch": "lot-a",
+      "priority": 5,
+      "quantity": 4,
+      "operation": "boundary lot ship",
+      "maxLateness": 259200,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-11T12:00:00",
+      "item": "boundary lot item",
+      "name": "lot boundary 06 at-max",
+      "batch": "lot-b",
+      "priority": 6,
+      "quantity": 7,
+      "operation": "boundary lot ship",
+      "maxLateness": 259200,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-12T12:00:00",
+      "item": "boundary lot item",
+      "name": "lot boundary 07 max-plus-one",
+      "batch": "lot-a",
+      "priority": 7,
+      "quantity": 8,
+      "operation": "boundary lot ship",
+      "maxLateness": 259200,
+      "minShipment": 0
+    },
+    {
+      "due": "2026-01-13T12:00:00",
+      "item": "boundary lot item",
+      "name": "lot boundary 08 three-splits",
+      "batch": "lot-b",
+      "priority": 8,
+      "quantity": 20,
+      "operation": "boundary lot ship",
+      "maxLateness": 259200,
+      "minShipment": 7
+    },
+    {
+      "due": "2026-01-14T12:00:00",
+      "item": "boundary lot item",
+      "name": "lot boundary 09 min-above-max",
+      "batch": "lot-a",
+      "priority": 9,
+      "quantity": 20,
+      "operation": "boundary lot ship",
+      "maxLateness": 259200,
+      "minShipment": 8
+    },
+    {
+      "due": "2026-01-15T12:00:00",
+      "item": "boundary lot item",
+      "name": "lot boundary 10 fractional",
+      "batch": "lot-b",
+      "priority": 10,
+      "quantity": 9.75,
+      "operation": "boundary lot ship",
+      "maxLateness": 259200,
+      "minShipment": 0.25
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "cost": 1,
+      "name": "boundary lot make",
+      "type": "fixed_time",
+      "duration": 3600,
+      "sizeMaximum": 7,
+      "sizeMinimum": 4
+    },
+    {
+      "cost": 1,
+      "name": "boundary lot ship",
+      "type": "fixed_time",
+      "duration": 1,
+      "sizeMaximum": 7
+    }
+  ],
+  "setupMatrices": [],
+  "resourceSkills": []
+}

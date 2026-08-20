@@ -1,0 +1,99 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "finished item",
+      "quantity": -1,
+      "operation": "delivery finished item"
+    },
+    {
+      "type": "end",
+      "buffer": "finished item",
+      "quantity": 1,
+      "operation": "make finished item"
+    },
+    {
+      "type": "start",
+      "buffer": "component",
+      "quantity": -1,
+      "operation": "make finished item"
+    },
+    {
+      "type": "end",
+      "buffer": "component",
+      "quantity": 1,
+      "operation": "make component"
+    },
+    {
+      "type": "start",
+      "buffer": "raw material",
+      "quantity": -2,
+      "operation": "make component"
+    }
+  ],
+  "items": [
+    {
+      "name": "raw material"
+    },
+    {
+      "name": "component"
+    },
+    {
+      "name": "finished item"
+    }
+  ],
+  "loads": [],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 86400,
+    "constraints": 15
+  },
+  "buffers": [
+    {
+      "item": "raw material",
+      "name": "raw material",
+      "onhand": 30
+    },
+    {
+      "item": "component",
+      "name": "component",
+      "onhand": 0,
+      "producing": "make component"
+    },
+    {
+      "item": "finished item",
+      "name": "finished item",
+      "onhand": 0,
+      "producing": "make finished item"
+    }
+  ],
+  "current": "2009-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2009-01-20T00:00:00",
+      "item": "finished item",
+      "name": "chain order",
+      "priority": 1,
+      "quantity": 10,
+      "operation": "delivery finished item"
+    }
+  ],
+  "resources": [],
+  "operations": [
+    {
+      "name": "make component",
+      "type": "fixed_time",
+      "duration": 172800
+    },
+    {
+      "name": "make finished item",
+      "type": "fixed_time",
+      "duration": 86400
+    },
+    {
+      "name": "delivery finished item",
+      "type": "fixed_time",
+      "duration": 86400
+    }
+  ]
+}

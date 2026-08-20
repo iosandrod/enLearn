@@ -1,0 +1,175 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "alternate raw @ alternate plant",
+      "quantity": -1,
+      "operation": "cheap slow process"
+    },
+    {
+      "type": "end",
+      "buffer": "alternate cost product @ alternate plant",
+      "quantity": 1,
+      "operation": "cheap slow process"
+    },
+    {
+      "type": "start",
+      "buffer": "alternate raw @ alternate plant",
+      "quantity": -1,
+      "operation": "costly fast process"
+    },
+    {
+      "type": "end",
+      "buffer": "alternate cost product @ alternate plant",
+      "quantity": 1,
+      "operation": "costly fast process"
+    },
+    {
+      "type": "start",
+      "buffer": "alternate cost product @ alternate plant",
+      "quantity": -1,
+      "operation": "ship alternate cost product"
+    }
+  ],
+  "items": [
+    {
+      "name": "alternate raw"
+    },
+    {
+      "name": "alternate cost product"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "cheap line",
+      "operation": "cheap slow process"
+    },
+    {
+      "quantity": 1,
+      "resource": "fast line",
+      "operation": "costly fast process"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 14400,
+    "constraints": 15,
+    "minimumDelay": 3600
+  },
+  "buffers": [
+    {
+      "item": "alternate raw",
+      "name": "alternate raw @ alternate plant",
+      "onhand": 100,
+      "location": "alternate plant"
+    },
+    {
+      "item": "alternate cost product",
+      "name": "alternate cost product @ alternate plant",
+      "onhand": 0,
+      "location": "alternate plant",
+      "producing": "choose alternate cost process"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-08T00:00:00",
+      "item": "alternate cost product",
+      "name": "alternate cost order A",
+      "location": "alternate plant",
+      "priority": 1,
+      "quantity": 9,
+      "operation": "ship alternate cost product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-09T00:00:00",
+      "item": "alternate cost product",
+      "name": "alternate cost order B",
+      "location": "alternate plant",
+      "priority": 2,
+      "quantity": 8,
+      "operation": "ship alternate cost product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-10T00:00:00",
+      "item": "alternate cost product",
+      "name": "alternate cost order C",
+      "location": "alternate plant",
+      "priority": 3,
+      "quantity": 4,
+      "operation": "ship alternate cost product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "alternate plant"
+    }
+  ],
+  "resources": [
+    {
+      "cost": 1,
+      "name": "cheap line",
+      "maximum": 1,
+      "location": "alternate plant",
+      "maxearly": 172800,
+      "efficiency": 100
+    },
+    {
+      "cost": 8,
+      "name": "fast line",
+      "maximum": 2,
+      "location": "alternate plant",
+      "maxearly": 1728000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 2,
+      "name": "cheap slow process",
+      "type": "fixed_time",
+      "duration": 172800,
+      "location": "alternate plant",
+      "sizeMaximum": 6,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 35,
+      "name": "costly fast process",
+      "type": "fixed_time",
+      "duration": 21600,
+      "location": "alternate plant",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "name": "choose alternate cost process",
+      "type": "alternate",
+      "search": "MINCOSTPENALTY",
+      "location": "alternate plant",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "cheap slow process"
+        },
+        {
+          "priority": 2,
+          "operation": "costly fast process"
+        }
+      ]
+    },
+    {
+      "name": "ship alternate cost product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "alternate plant"
+    }
+  ]
+}

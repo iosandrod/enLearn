@@ -1,0 +1,1236 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <current>2026-01-01T00:00:00</current>
+  <calendars>
+  </calendars>
+  <locations>
+  </locations>
+  <suppliers>
+  </suppliers>
+  <items>
+    <item name="engine spares">
+      
+      
+      
+      
+    </item>
+    <item name="structure spares">
+      
+      
+      
+      
+    </item>
+    <item name="avionics modules">
+      
+      
+      
+      
+    </item>
+    <item name="generic repair kit">
+      
+      
+      
+      
+    </item>
+    <item name="engine inspection">
+      
+      
+      
+      
+    </item>
+    <item name="landing gear overhaul">
+      
+      
+      
+      
+    </item>
+    <item name="avionics repair">
+      
+      
+      
+      
+    </item>
+  </items>
+  <operations>
+    <operation name="diagnose ENG-INSP" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT9H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>1</size_maximum>
+      <cost>250</cost>
+      
+      
+      
+    </operation>
+    <operation name="repair ENG-INSP" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT17H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>1</size_maximum>
+      <cost>500</cost>
+      
+      
+      
+    </operation>
+    <operation name="signoff ENG-INSP" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT5H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>1</size_maximum>
+      <cost>180</cost>
+      
+      
+      
+    </operation>
+    <operation name="maintain ENG-INSP" xsi:type="operation_routing">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="diagnose ENG-INSP" />
+          <priority>1</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="repair ENG-INSP" />
+          <priority>2</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="signoff ENG-INSP" />
+          <priority>3</priority>
+          
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="return ENG-INSP" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT2H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>30</cost>
+      
+      
+      
+    </operation>
+    <operation name="diagnose GEAR-OH" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT11H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>1</size_maximum>
+      <cost>250</cost>
+      
+      
+      
+    </operation>
+    <operation name="repair GEAR-OH" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT21H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>1</size_maximum>
+      <cost>500</cost>
+      
+      
+      
+    </operation>
+    <operation name="signoff GEAR-OH" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT6H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>1</size_maximum>
+      <cost>180</cost>
+      
+      
+      
+    </operation>
+    <operation name="maintain GEAR-OH" xsi:type="operation_routing">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="diagnose GEAR-OH" />
+          <priority>1</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="repair GEAR-OH" />
+          <priority>2</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="signoff GEAR-OH" />
+          <priority>3</priority>
+          
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="return GEAR-OH" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT2H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>30</cost>
+      
+      
+      
+    </operation>
+    <operation name="diagnose AVIO-REP" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT7H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>1</size_maximum>
+      <cost>250</cost>
+      
+      
+      
+    </operation>
+    <operation name="repair AVIO-REP" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT12H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>1</size_maximum>
+      <cost>500</cost>
+      
+      
+      
+    </operation>
+    <operation name="signoff AVIO-REP" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT3H</duration>
+      
+      
+      
+      <size_minimum>1</size_minimum>
+      
+      <size_maximum>1</size_maximum>
+      <cost>180</cost>
+      
+      
+      
+    </operation>
+    <operation name="maintain AVIO-REP" xsi:type="operation_routing">
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      <suboperations>
+        <suboperation>
+          <operation name="diagnose AVIO-REP" />
+          <priority>1</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="repair AVIO-REP" />
+          <priority>2</priority>
+          
+          
+        </suboperation>
+        <suboperation>
+          <operation name="signoff AVIO-REP" />
+          <priority>3</priority>
+          
+          
+        </suboperation>
+      </suboperations>
+      
+      
+    </operation>
+    <operation name="return AVIO-REP" xsi:type="operation_fixed_time">
+      
+      
+      
+      <duration>PT2H</duration>
+      
+      
+      
+      
+      
+      
+      <cost>30</cost>
+      
+      
+      
+    </operation>
+  </operations>
+  <buffers>
+    <buffer name="engine spares">
+      
+      <item name="engine spares" />
+      
+      
+      
+      
+      
+      
+      <onhand>14</onhand>
+    </buffer>
+    <buffer name="structure spares">
+      
+      <item name="structure spares" />
+      
+      
+      
+      
+      
+      
+      <onhand>15</onhand>
+    </buffer>
+    <buffer name="avionics modules">
+      
+      <item name="avionics modules" />
+      
+      
+      
+      
+      
+      
+      <onhand>16</onhand>
+    </buffer>
+    <buffer name="generic repair kit">
+      
+      <item name="generic repair kit" />
+      
+      
+      
+      
+      
+      
+      <onhand>80</onhand>
+    </buffer>
+    <buffer name="engine inspection">
+      <producing name="maintain ENG-INSP" />
+      <item name="engine inspection" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="landing gear overhaul">
+      <producing name="maintain GEAR-OH" />
+      <item name="landing gear overhaul" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+    <buffer name="avionics repair">
+      <producing name="maintain AVIO-REP" />
+      <item name="avionics repair" />
+      
+      
+      
+      
+      
+      
+      <onhand>0</onhand>
+    </buffer>
+  </buffers>
+  <setupmatrices>
+    <setupmatrix name="repair bay tooling">
+      <rules>
+        <rule priority="1" fromsetup="idle" tosetup="engine|gear|avionics"
+          duration="PT2H" cost="15" />
+        <rule priority="2" fromsetup="engine" tosetup="gear|avionics"
+          duration="PT6H" cost="45" />
+        <rule priority="3" fromsetup="gear" tosetup="engine|avionics"
+          duration="PT5H" cost="40" />
+        <rule priority="99" fromsetup=".*" tosetup=".*"
+          duration="PT3H" cost="25" />
+      </rules>
+    </setupmatrix>
+  </setupmatrices>
+  <resources>
+    <resource name="inspection pool">
+      
+      <maximum>1</maximum>
+      <maxearly>P100D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="inspector engine">
+      <owner name="inspection pool" />
+      <maximum>2</maximum>
+      <maxearly>P100D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="inspector structures">
+      <owner name="inspection pool" />
+      <maximum>2</maximum>
+      <maxearly>P100D</maxearly>
+      
+      
+      
+      
+      <efficiency>95</efficiency>
+      
+      
+    </resource>
+    <resource name="inspector avionics">
+      <owner name="inspection pool" />
+      <maximum>2</maximum>
+      <maxearly>P100D</maxearly>
+      
+      
+      
+      
+      <efficiency>105</efficiency>
+      
+      
+    </resource>
+    <resource name="repair bay 1">
+      
+      <maximum>2</maximum>
+      <maxearly>P100D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      <setupmatrix name="repair bay tooling" />
+      <setup>idle</setup>
+    </resource>
+    <resource name="repair bay 2">
+      
+      <maximum>2</maximum>
+      <maxearly>P100D</maxearly>
+      
+      
+      
+      
+      <efficiency>90</efficiency>
+      <setupmatrix name="repair bay tooling" />
+      <setup>idle</setup>
+    </resource>
+    <resource name="signoff pool">
+      
+      <maximum>1</maximum>
+      <maxearly>P100D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="signoff engine">
+      <owner name="signoff pool" />
+      <maximum>2</maximum>
+      <maxearly>P100D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="signoff structures">
+      <owner name="signoff pool" />
+      <maximum>2</maximum>
+      <maxearly>P100D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+    <resource name="signoff avionics">
+      <owner name="signoff pool" />
+      <maximum>2</maximum>
+      <maxearly>P100D</maxearly>
+      
+      
+      
+      
+      <efficiency>100</efficiency>
+      
+      
+    </resource>
+  </resources>
+  <loads>
+    <load>
+      <operation name="diagnose ENG-INSP" />
+      <resource name="inspection pool" />
+      <quantity>1</quantity>
+      
+      
+      
+      <search>PRIORITY</search>
+      <skill name="engine cert" />
+      
+    </load>
+    <load>
+      <operation name="repair ENG-INSP" />
+      <resource name="repair bay 1" />
+      <quantity>1</quantity>
+      
+      <name>bay ENG-INSP</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>engine</setup>
+    </load>
+    <load>
+      <operation name="repair ENG-INSP" />
+      <resource name="repair bay 2" />
+      <quantity>1</quantity>
+      
+      <name>bay ENG-INSP</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>engine</setup>
+    </load>
+    <load>
+      <operation name="signoff ENG-INSP" />
+      <resource name="signoff pool" />
+      <quantity>1</quantity>
+      
+      
+      
+      <search>PRIORITY</search>
+      <skill name="engine cert" />
+      
+    </load>
+    <load>
+      <operation name="diagnose GEAR-OH" />
+      <resource name="inspection pool" />
+      <quantity>1</quantity>
+      
+      
+      
+      <search>PRIORITY</search>
+      <skill name="structures cert" />
+      
+    </load>
+    <load>
+      <operation name="repair GEAR-OH" />
+      <resource name="repair bay 1" />
+      <quantity>1</quantity>
+      
+      <name>bay GEAR-OH</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>gear</setup>
+    </load>
+    <load>
+      <operation name="repair GEAR-OH" />
+      <resource name="repair bay 2" />
+      <quantity>1</quantity>
+      
+      <name>bay GEAR-OH</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>gear</setup>
+    </load>
+    <load>
+      <operation name="signoff GEAR-OH" />
+      <resource name="signoff pool" />
+      <quantity>1</quantity>
+      
+      
+      
+      <search>PRIORITY</search>
+      <skill name="structures cert" />
+      
+    </load>
+    <load>
+      <operation name="diagnose AVIO-REP" />
+      <resource name="inspection pool" />
+      <quantity>1</quantity>
+      
+      
+      
+      <search>PRIORITY</search>
+      <skill name="avionics cert" />
+      
+    </load>
+    <load>
+      <operation name="repair AVIO-REP" />
+      <resource name="repair bay 1" />
+      <quantity>1</quantity>
+      
+      <name>bay AVIO-REP</name>
+      <priority>1</priority>
+      <search>PRIORITY</search>
+      
+      <setup>avionics</setup>
+    </load>
+    <load>
+      <operation name="repair AVIO-REP" />
+      <resource name="repair bay 2" />
+      <quantity>1</quantity>
+      
+      <name>bay AVIO-REP</name>
+      <priority>2</priority>
+      <search>PRIORITY</search>
+      
+      <setup>avionics</setup>
+    </load>
+    <load>
+      <operation name="signoff AVIO-REP" />
+      <resource name="signoff pool" />
+      <quantity>1</quantity>
+      
+      
+      
+      <search>PRIORITY</search>
+      <skill name="avionics cert" />
+      
+    </load>
+  </loads>
+  <skills>
+    <skill name="engine cert">
+      <resourceskills>
+        <resourceskill>
+          <resource name="inspector engine" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="signoff engine" />
+          <priority>1</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+    <skill name="structures cert">
+      <resourceskills>
+        <resourceskill>
+          <resource name="inspector structures" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="signoff structures" />
+          <priority>1</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+    <skill name="avionics cert">
+      <resourceskills>
+        <resourceskill>
+          <resource name="inspector avionics" />
+          <priority>1</priority>
+        </resourceskill>
+        <resourceskill>
+          <resource name="signoff avionics" />
+          <priority>1</priority>
+        </resourceskill>
+      </resourceskills>
+    </skill>
+  </skills>
+  <flows>
+    <flow xsi:type="flow_start">
+      <operation name="return ENG-INSP" />
+      <buffer name="engine inspection" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="repair ENG-INSP" />
+      <buffer name="engine spares" />
+      <quantity>-1</quantity>
+      
+      <name>repair material ENG-INSP</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="repair ENG-INSP" />
+      <buffer name="generic repair kit" />
+      <quantity>-1</quantity>
+      
+      <name>repair material ENG-INSP</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="signoff ENG-INSP" />
+      <buffer name="engine inspection" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="return GEAR-OH" />
+      <buffer name="landing gear overhaul" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="repair GEAR-OH" />
+      <buffer name="structure spares" />
+      <quantity>-1</quantity>
+      
+      <name>repair material GEAR-OH</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="repair GEAR-OH" />
+      <buffer name="generic repair kit" />
+      <quantity>-1</quantity>
+      
+      <name>repair material GEAR-OH</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="signoff GEAR-OH" />
+      <buffer name="landing gear overhaul" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="return AVIO-REP" />
+      <buffer name="avionics repair" />
+      <quantity>-1</quantity>
+      
+      
+      
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="repair AVIO-REP" />
+      <buffer name="avionics modules" />
+      <quantity>-1</quantity>
+      
+      <name>repair material AVIO-REP</name>
+      <priority>1</priority>
+      
+    </flow>
+    <flow xsi:type="flow_start">
+      <operation name="repair AVIO-REP" />
+      <buffer name="generic repair kit" />
+      <quantity>-1</quantity>
+      
+      <name>repair material AVIO-REP</name>
+      <priority>2</priority>
+      
+    </flow>
+    <flow xsi:type="flow_end">
+      <operation name="signoff AVIO-REP" />
+      <buffer name="avionics repair" />
+      <quantity>1</quantity>
+      
+      
+      
+      
+    </flow>
+  </flows>
+  <demands>
+    <demand name="mro work order 001 ENG-INSP">
+      <quantity>1</quantity><due>2026-02-05T08:00:00</due><priority>1</priority>
+      <item name="engine inspection" /><operation name="return ENG-INSP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 002 GEAR-OH">
+      <quantity>1</quantity><due>2026-02-05T20:00:00</due><priority>2</priority>
+      <item name="landing gear overhaul" /><operation name="return GEAR-OH" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 003 AVIO-REP">
+      <quantity>1</quantity><due>2026-02-06T08:00:00</due><priority>3</priority>
+      <item name="avionics repair" /><operation name="return AVIO-REP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 004 ENG-INSP">
+      <quantity>1</quantity><due>2026-02-06T20:00:00</due><priority>4</priority>
+      <item name="engine inspection" /><operation name="return ENG-INSP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 005 GEAR-OH">
+      <quantity>1</quantity><due>2026-02-07T08:00:00</due><priority>5</priority>
+      <item name="landing gear overhaul" /><operation name="return GEAR-OH" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 006 AVIO-REP">
+      <quantity>1</quantity><due>2026-02-07T20:00:00</due><priority>6</priority>
+      <item name="avionics repair" /><operation name="return AVIO-REP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 007 ENG-INSP">
+      <quantity>1</quantity><due>2026-02-08T08:00:00</due><priority>1</priority>
+      <item name="engine inspection" /><operation name="return ENG-INSP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 008 GEAR-OH">
+      <quantity>1</quantity><due>2026-02-08T20:00:00</due><priority>2</priority>
+      <item name="landing gear overhaul" /><operation name="return GEAR-OH" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 009 AVIO-REP">
+      <quantity>1</quantity><due>2026-02-09T08:00:00</due><priority>3</priority>
+      <item name="avionics repair" /><operation name="return AVIO-REP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 010 ENG-INSP">
+      <quantity>1</quantity><due>2026-02-09T20:00:00</due><priority>4</priority>
+      <item name="engine inspection" /><operation name="return ENG-INSP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 011 GEAR-OH">
+      <quantity>1</quantity><due>2026-02-10T08:00:00</due><priority>5</priority>
+      <item name="landing gear overhaul" /><operation name="return GEAR-OH" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 012 AVIO-REP">
+      <quantity>1</quantity><due>2026-02-10T20:00:00</due><priority>6</priority>
+      <item name="avionics repair" /><operation name="return AVIO-REP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 013 ENG-INSP">
+      <quantity>1</quantity><due>2026-02-11T08:00:00</due><priority>1</priority>
+      <item name="engine inspection" /><operation name="return ENG-INSP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 014 GEAR-OH">
+      <quantity>1</quantity><due>2026-02-11T20:00:00</due><priority>2</priority>
+      <item name="landing gear overhaul" /><operation name="return GEAR-OH" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 015 AVIO-REP">
+      <quantity>1</quantity><due>2026-02-12T08:00:00</due><priority>3</priority>
+      <item name="avionics repair" /><operation name="return AVIO-REP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 016 ENG-INSP">
+      <quantity>1</quantity><due>2026-02-12T20:00:00</due><priority>4</priority>
+      <item name="engine inspection" /><operation name="return ENG-INSP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 017 GEAR-OH">
+      <quantity>1</quantity><due>2026-02-13T08:00:00</due><priority>5</priority>
+      <item name="landing gear overhaul" /><operation name="return GEAR-OH" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 018 AVIO-REP">
+      <quantity>1</quantity><due>2026-02-13T20:00:00</due><priority>6</priority>
+      <item name="avionics repair" /><operation name="return AVIO-REP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 019 ENG-INSP">
+      <quantity>1</quantity><due>2026-02-14T08:00:00</due><priority>1</priority>
+      <item name="engine inspection" /><operation name="return ENG-INSP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 020 GEAR-OH">
+      <quantity>1</quantity><due>2026-02-14T20:00:00</due><priority>2</priority>
+      <item name="landing gear overhaul" /><operation name="return GEAR-OH" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 021 AVIO-REP">
+      <quantity>1</quantity><due>2026-02-15T08:00:00</due><priority>3</priority>
+      <item name="avionics repair" /><operation name="return AVIO-REP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 022 ENG-INSP">
+      <quantity>1</quantity><due>2026-02-15T20:00:00</due><priority>4</priority>
+      <item name="engine inspection" /><operation name="return ENG-INSP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 023 GEAR-OH">
+      <quantity>1</quantity><due>2026-02-16T08:00:00</due><priority>5</priority>
+      <item name="landing gear overhaul" /><operation name="return GEAR-OH" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 024 AVIO-REP">
+      <quantity>1</quantity><due>2026-02-16T20:00:00</due><priority>6</priority>
+      <item name="avionics repair" /><operation name="return AVIO-REP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 025 ENG-INSP">
+      <quantity>1</quantity><due>2026-02-17T08:00:00</due><priority>1</priority>
+      <item name="engine inspection" /><operation name="return ENG-INSP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 026 GEAR-OH">
+      <quantity>1</quantity><due>2026-02-17T20:00:00</due><priority>2</priority>
+      <item name="landing gear overhaul" /><operation name="return GEAR-OH" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 027 AVIO-REP">
+      <quantity>1</quantity><due>2026-02-18T08:00:00</due><priority>3</priority>
+      <item name="avionics repair" /><operation name="return AVIO-REP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 028 ENG-INSP">
+      <quantity>1</quantity><due>2026-02-18T20:00:00</due><priority>4</priority>
+      <item name="engine inspection" /><operation name="return ENG-INSP" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 029 GEAR-OH">
+      <quantity>1</quantity><due>2026-02-19T08:00:00</due><priority>5</priority>
+      <item name="landing gear overhaul" /><operation name="return GEAR-OH" />
+      
+      
+      
+      
+      
+    </demand>
+    <demand name="mro work order 030 AVIO-REP">
+      <quantity>1</quantity><due>2026-02-19T20:00:00</due><priority>6</priority>
+      <item name="avionics repair" /><operation name="return AVIO-REP" />
+      
+      
+      
+      
+      
+    </demand>
+  </demands>
+  <operationplans>
+  </operationplans>
+<?python
+import datetime, frepple, json
+frepple.solver_mrp(**{"plantype":1,"constraints":13,"loglevel":0,"lazydelay":86400,"erasePreviousFirst":True,"minimumdelay":7200,"rotateresources":False}).solve()
+def stamp(value):
+    return value.strftime("%Y-%m-%dT%H:%M:%S")
+def name(value):
+    return getattr(value, "name", None) if value is not None else None
+def metric(value):
+    value = round(float(value), 9)
+    return 0.0 if abs(value) < 0.000000001 else value
+def number_key(value):
+    return ("%.9f" % metric(value)).rstrip("0").rstrip(".") or "0"
+explicit_references = set([])
+dependency_quantities = {}
+plan_rows = []
+all_buffers = list(frepple.buffers())
+all_resources = list(frepple.resources())
+for operationplan in frepple.operationplans():
+    materials = []
+    for buffer in all_buffers:
+        for flowplan in buffer.flowplans:
+            if flowplan.operationplan == operationplan:
+                materials.append({"buffer": buffer.name, "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity)})
+    resources = []
+    for resource in all_resources:
+        if any(loadplan.operationplan == operationplan for loadplan in resource.loadplans):
+            resources.append(resource.name)
+    owner = getattr(operationplan, "owner", None)
+    productive_seconds = max(0.0, (operationplan.end - operationplan.start).total_seconds() - operationplan.unavailable)
+    operation_cost = metric(operationplan.operation.cost * operationplan.quantity)
+    resource_cost = metric(operationplan.quantity * sum(resource.cost for resource in all_resources if resource.name in resources) * productive_seconds / 3600.0)
+    setup_cost = metric(getattr(getattr(operationplan, "rule", None), "cost", 0))
+    plan_rows.append((operationplan, {
+        "operation": operationplan.operation.name,
+        "demand": name(getattr(operationplan, "demand", None)),
+        "quantity": metric(operationplan.quantity),
+        "quantityCompleted": metric(getattr(operationplan, "quantity_completed", 0)),
+        "start": stamp(operationplan.start),
+        "end": stamp(operationplan.end),
+        "ownerOperation": name(getattr(owner, "operation", None)),
+        "batch": getattr(operationplan, "batch", "") or "",
+        "orderType": getattr(operationplan, "ordertype", "") or "",
+        "status": operationplan.status,
+        "feasible": bool(operationplan.feasible),
+        "setupSeconds": operationplan.setup,
+        "setupEnd": stamp(operationplan.setupend),
+        "resources": sorted(resources),
+        "materials": sorted(materials, key=lambda value: (value["date"], value["buffer"], value["quantity"])),
+        "operationCost": operation_cost,
+        "resourceCost": resource_cost,
+        "setupCost": setup_cost,
+        "totalCost": metric(operation_cost + resource_cost),
+        "setupPenalty": setup_cost,
+    }))
+plan_rows.sort(key=lambda pair: (pair[1]["operation"], pair[1]["start"], pair[1]["end"], pair[1]["demand"] or "", pair[1]["quantity"], pair[1]["batch"], pair[1]["orderType"]))
+plan_keys = {}
+key_counts = {}
+plans = []
+for operationplan, row in plan_rows:
+    reference = str(getattr(operationplan, "reference", "") or "")
+    seed = "|".join((row["operation"], row["start"], row["end"], row["demand"] or "", number_key(row["quantity"]), row["batch"], row["orderType"], row["ownerOperation"] or ""))
+    key_counts[seed] = key_counts.get(seed, 0) + 1
+    plan_key = "ref:" + reference if reference in explicit_references else "auto:" + seed + "#" + str(key_counts[seed])
+    plan_keys[id(operationplan)] = plan_key
+    row["planKey"] = plan_key
+    row["reference"] = reference if reference in explicit_references else plan_key
+    plans.append(row)
+deliveries = []
+for demand in frepple.demands():
+    for operationplan in demand.operationplans:
+        deliveries.append({"demand": demand.name, "quantity": metric(operationplan.quantity), "end": stamp(operationplan.end), "batch": getattr(operationplan, "batch", "") or "", "orderType": getattr(operationplan, "ordertype", "") or "", "operationPlanKey": plan_keys.get(id(operationplan))})
+deliveries.sort(key=lambda value: (value["demand"], value["end"], value["quantity"], value["batch"], value["orderType"]))
+dependencies = []
+seen_dependencies = set()
+for operationplan in frepple.operationplans():
+    for dependency in getattr(operationplan, "blockedby", []):
+        if id(dependency) in seen_dependencies: continue
+        seen_dependencies.add(id(dependency))
+        first = dependency.first
+        second = dependency.second
+        ratio = dependency_quantities.get(second.operation.name + "\u0000" + first.operation.name, 1)
+        dependencies.append({"first": plan_keys.get(id(first)), "second": plan_keys.get(id(second)), "quantity": metric(min(first.quantity, second.quantity * ratio)), "operation": second.operation.name, "blockedBy": first.operation.name})
+dependencies.sort(key=lambda value: (value["second"] or "", value["first"] or "", value["operation"], value["blockedBy"], value["quantity"]))
+problems = []
+for problem in frepple.problems():
+    owner = getattr(problem, "owner", None)
+    owner_key = plan_keys.get(id(owner)) if owner is not None else None
+    problems.append({"name": problem.name, "description": problem.description, "start": stamp(problem.start), "end": stamp(problem.end), "entity": problem.entity, "owner": owner_key or name(owner), "feasible": bool(problem.feasible)})
+problems.sort(key=lambda value: (value["owner"] or "", value["name"], value["start"], value["end"], value["description"]))
+inventory_profiles = []
+for buffer in all_buffers:
+    for flowplan in buffer.flowplans:
+        operationplan = getattr(flowplan, "operationplan", None)
+        inventory_profiles.append({"buffer": buffer.name, "bufferBatch": getattr(buffer, "batch", "") or "", "date": stamp(flowplan.date), "quantity": metric(flowplan.quantity), "onhand": metric(flowplan.onhand), "operationPlanKey": plan_keys.get(id(operationplan)) if operationplan is not None else None, "orderType": getattr(operationplan, "ordertype", "") if operationplan is not None else None})
+inventory_profiles.sort(key=lambda value: (value["buffer"], value["bufferBatch"], value["date"], value["quantity"], value["operationPlanKey"] or "", value["onhand"]))
+boundaries = sorted(set([frepple.settings.current] + [value for operationplan, row in plan_rows for value in (operationplan.start, operationplan.end)]))
+if len(boundaries) < 2: boundaries.append(boundaries[0] + datetime.timedelta(days=1))
+resource_plans = []
+for resource in all_resources:
+    for bucket in resource.plan(boundaries):
+        values = [metric(bucket[field]) for field in ("available", "load", "unavailable", "setup", "free", "load_confirmed")]
+        if not any(values): continue
+        available, load, unavailable, setup, free, load_confirmed = values
+        resource_plans.append({"resource": resource.name, "start": stamp(bucket["start"]), "end": stamp(bucket["end"]), "available": available, "load": load, "unavailable": unavailable, "setup": setup, "free": free, "loadConfirmed": load_confirmed, "utilization": metric((load + setup) / available) if available else metric(load + setup)})
+resource_plans.sort(key=lambda value: (value["resource"], value["start"], value["end"]))
+cost_summary = {"operationCost": metric(sum(value["operationCost"] for value in plans)), "resourceCost": metric(sum(value["resourceCost"] for value in plans)), "setupCost": metric(sum(value["setupCost"] for value in plans)), "totalCost": metric(sum(value["totalCost"] for value in plans)), "setupPenalty": metric(sum(value["setupPenalty"] for value in plans))}
+with open("/workspace/cpp-typescript/.schedule-diff/aerospace_mro.native.json", "w", encoding="utf-8") as output:
+    json.dump({"operationPlans": plans, "deliveries": deliveries, "dependencies": dependencies, "problems": problems, "inventoryProfiles": inventory_profiles, "resourcePlans": resource_plans, "costSummary": cost_summary}, output, indent=2, sort_keys=True)
+?>
+</plan>

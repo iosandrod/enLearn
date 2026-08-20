@@ -1,0 +1,150 @@
+{
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "quota product @ quota plant",
+      "quantity": 1,
+      "operation": "make quota product"
+    },
+    {
+      "type": "start",
+      "buffer": "quota product @ quota plant",
+      "quantity": -1,
+      "operation": "ship quota product"
+    }
+  ],
+  "items": [
+    {
+      "name": "quota product"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "quota resource",
+      "operation": "make quota product"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 7200,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "resourceIterationMax": 500
+  },
+  "buffers": [
+    {
+      "item": "quota product",
+      "name": "quota product @ quota plant",
+      "onhand": 0,
+      "location": "quota plant",
+      "producing": "make quota product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-13T00:00:00",
+      "item": "quota product",
+      "name": "quota order A",
+      "location": "quota plant",
+      "priority": 1,
+      "quantity": 11,
+      "operation": "ship quota product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-16T00:00:00",
+      "item": "quota product",
+      "name": "quota order B",
+      "location": "quota plant",
+      "priority": 2,
+      "quantity": 10,
+      "operation": "ship quota product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-24T00:00:00",
+      "item": "quota product",
+      "name": "quota order C",
+      "location": "quota plant",
+      "priority": 3,
+      "quantity": 7,
+      "operation": "ship quota product",
+      "minShipment": 1
+    }
+  ],
+  "calendars": [
+    {
+      "name": "daily quota",
+      "buckets": [
+        {
+          "end": "2026-01-06T00:00:00",
+          "start": "2026-01-01T00:00:00",
+          "value": 6,
+          "priority": 1
+        },
+        {
+          "end": "2026-01-09T00:00:00",
+          "start": "2026-01-06T00:00:00",
+          "value": 0,
+          "priority": 1
+        },
+        {
+          "end": "2026-01-15T00:00:00",
+          "start": "2026-01-09T00:00:00",
+          "value": 4,
+          "priority": 1
+        },
+        {
+          "end": "2026-01-23T00:00:00",
+          "start": "2026-01-15T00:00:00",
+          "value": 8,
+          "priority": 1
+        },
+        {
+          "end": "2026-02-05T00:00:00",
+          "start": "2026-01-23T00:00:00",
+          "value": 3,
+          "priority": 1
+        }
+      ],
+      "default": 0
+    }
+  ],
+  "locations": [
+    {
+      "name": "quota plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "quota resource",
+      "type": "buckets",
+      "maximum": 0,
+      "location": "quota plant",
+      "maxearly": 1728000,
+      "efficiency": 100,
+      "maximumCalendar": "daily quota"
+    }
+  ],
+  "operations": [
+    {
+      "cost": 2,
+      "name": "make quota product",
+      "type": "fixed_time",
+      "duration": 7200,
+      "location": "quota plant",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 1,
+      "name": "ship quota product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "quota plant"
+    }
+  ]
+}

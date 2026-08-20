@@ -1,0 +1,1418 @@
+{
+  "deliveries": [
+    {
+      "demand": "process order 01 P",
+      "end": "2026-01-21T00:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "process order 02 Q",
+      "end": "2026-01-21T12:00:00",
+      "quantity": 2.0
+    },
+    {
+      "demand": "process order 03 P",
+      "end": "2026-01-22T00:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "process order 04 Q",
+      "end": "2026-01-22T12:00:00",
+      "quantity": 2.0
+    },
+    {
+      "demand": "process order 05 P",
+      "end": "2026-01-23T00:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "process order 06 Q",
+      "end": "2026-01-23T12:00:00",
+      "quantity": 2.0
+    },
+    {
+      "demand": "process order 07 P",
+      "end": "2026-01-24T00:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "process order 08 Q",
+      "end": "2026-01-24T12:00:00",
+      "quantity": 2.0
+    },
+    {
+      "demand": "process order 09 P",
+      "end": "2026-01-25T00:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "process order 10 Q",
+      "end": "2026-01-25T12:00:00",
+      "quantity": 2.0
+    },
+    {
+      "demand": "process order 11 P",
+      "end": "2026-01-26T00:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "process order 12 Q",
+      "end": "2026-01-26T12:00:00",
+      "quantity": 2.0
+    },
+    {
+      "demand": "resin order 01 R",
+      "end": "2026-01-22T06:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "resin order 02 R",
+      "end": "2026-01-22T18:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "resin order 03 R",
+      "end": "2026-01-23T06:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "resin order 04 R",
+      "end": "2026-01-23T18:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "resin order 05 R",
+      "end": "2026-01-24T06:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "resin order 06 R",
+      "end": "2026-01-24T18:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "resin order 07 R",
+      "end": "2026-01-25T06:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "resin order 08 R",
+      "end": "2026-01-25T18:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "resin order 09 R",
+      "end": "2026-01-26T06:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "resin order 10 R",
+      "end": "2026-01-26T18:00:00",
+      "quantity": 1.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "preferred resin",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 4.0
+        }
+      ],
+      "operation": "Inventory preferred resin",
+      "ownerOperation": null,
+      "quantity": 4.0,
+      "resources": [],
+      "setupEnd": "1971-01-01T00:00:00",
+      "setupSeconds": -1,
+      "start": "1971-01-01T00:00:00",
+      "status": "closed"
+    },
+    {
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "premium component P",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 5.0
+        }
+      ],
+      "operation": "Inventory premium component P",
+      "ownerOperation": null,
+      "quantity": 5.0,
+      "resources": [],
+      "setupEnd": "1971-01-01T00:00:00",
+      "setupSeconds": -1,
+      "start": "1971-01-01T00:00:00",
+      "status": "closed"
+    },
+    {
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "premium component Q",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 4.0
+        }
+      ],
+      "operation": "Inventory premium component Q",
+      "ownerOperation": null,
+      "quantity": 4.0,
+      "resources": [],
+      "setupEnd": "1971-01-01T00:00:00",
+      "setupSeconds": -1,
+      "start": "1971-01-01T00:00:00",
+      "status": "closed"
+    },
+    {
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "standard component",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 80.0
+        }
+      ],
+      "operation": "Inventory standard component",
+      "ownerOperation": null,
+      "quantity": 80.0,
+      "resources": [],
+      "setupEnd": "1971-01-01T00:00:00",
+      "setupSeconds": -1,
+      "start": "1971-01-01T00:00:00",
+      "status": "closed"
+    },
+    {
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "substitute resin",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 40.0
+        }
+      ],
+      "operation": "Inventory substitute resin",
+      "ownerOperation": null,
+      "quantity": 40.0,
+      "resources": [],
+      "setupEnd": "1971-01-01T00:00:00",
+      "setupSeconds": -1,
+      "start": "1971-01-01T00:00:00",
+      "status": "closed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-20T20:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-20T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-20T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-21T20:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-21T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-21T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-22T20:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-22T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-22T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-23T20:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-23T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-23T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-24T20:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-24T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-24T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-25T20:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-24T16:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-24T16:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-21T08:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-20T14:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-20T14:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-22T08:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-21T14:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-21T14:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-23T04:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-22T00:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-22T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-23T08:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-22T04:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-22T04:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-24T08:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-23T04:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-23T04:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-25T08:00:00",
+      "feasible": true,
+      "materials": [],
+      "operation": "choose process Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-24T04:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-24T04:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-18T18:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "substitute resin",
+          "date": "2026-01-18T02:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured R",
+          "date": "2026-01-18T18:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "resin line"
+      ],
+      "setupEnd": "2026-01-18T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-18T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-19T10:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "substitute resin",
+          "date": "2026-01-18T18:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured R",
+          "date": "2026-01-19T10:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "resin line"
+      ],
+      "setupEnd": "2026-01-18T18:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-18T18:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-20T02:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "substitute resin",
+          "date": "2026-01-19T10:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured R",
+          "date": "2026-01-20T02:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "resin line"
+      ],
+      "setupEnd": "2026-01-19T10:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-19T10:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-20T18:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "preferred resin",
+          "date": "2026-01-20T02:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured R",
+          "date": "2026-01-20T18:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "resin line"
+      ],
+      "setupEnd": "2026-01-20T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-20T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-21T10:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "preferred resin",
+          "date": "2026-01-20T18:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured R",
+          "date": "2026-01-21T10:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "resin line"
+      ],
+      "setupEnd": "2026-01-20T18:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-20T18:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-22T02:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "preferred resin",
+          "date": "2026-01-21T10:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured R",
+          "date": "2026-01-22T02:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "resin line"
+      ],
+      "setupEnd": "2026-01-21T10:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-21T10:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-23T02:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "preferred resin",
+          "date": "2026-01-22T10:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured R",
+          "date": "2026-01-23T02:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "resin line"
+      ],
+      "setupEnd": "2026-01-22T10:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-22T10:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-24T02:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "substitute resin",
+          "date": "2026-01-23T10:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured R",
+          "date": "2026-01-24T02:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "resin line"
+      ],
+      "setupEnd": "2026-01-23T10:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-23T10:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-25T02:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "substitute resin",
+          "date": "2026-01-24T10:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured R",
+          "date": "2026-01-25T02:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "resin line"
+      ],
+      "setupEnd": "2026-01-24T10:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-24T10:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-26T02:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "substitute resin",
+          "date": "2026-01-25T10:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured R",
+          "date": "2026-01-26T02:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "resin line"
+      ],
+      "setupEnd": "2026-01-25T10:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-25T10:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-20T20:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "premium component P",
+          "date": "2026-01-20T02:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured P",
+          "date": "2026-01-20T20:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "premium process P",
+      "ownerOperation": "choose process P",
+      "quantity": 1.0,
+      "resources": [
+        "premium line"
+      ],
+      "setupEnd": "2026-01-20T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-20T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-21T20:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "premium component P",
+          "date": "2026-01-21T02:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured P",
+          "date": "2026-01-21T20:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "premium process P",
+      "ownerOperation": "choose process P",
+      "quantity": 1.0,
+      "resources": [
+        "premium line"
+      ],
+      "setupEnd": "2026-01-21T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-21T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-22T20:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "premium component P",
+          "date": "2026-01-22T02:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured P",
+          "date": "2026-01-22T20:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "premium process P",
+      "ownerOperation": "choose process P",
+      "quantity": 1.0,
+      "resources": [
+        "premium line"
+      ],
+      "setupEnd": "2026-01-22T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-22T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-23T20:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "premium component P",
+          "date": "2026-01-23T02:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured P",
+          "date": "2026-01-23T20:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "premium process P",
+      "ownerOperation": "choose process P",
+      "quantity": 1.0,
+      "resources": [
+        "premium line"
+      ],
+      "setupEnd": "2026-01-23T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-23T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-24T20:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "premium component P",
+          "date": "2026-01-24T02:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured P",
+          "date": "2026-01-24T20:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "premium process P",
+      "ownerOperation": "choose process P",
+      "quantity": 1.0,
+      "resources": [
+        "premium line"
+      ],
+      "setupEnd": "2026-01-24T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-24T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-21T08:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "premium component Q",
+          "date": "2026-01-20T14:00:00",
+          "quantity": -2.0
+        },
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-21T08:00:00",
+          "quantity": 2.0
+        }
+      ],
+      "operation": "premium process Q",
+      "ownerOperation": "choose process Q",
+      "quantity": 2.0,
+      "resources": [
+        "premium line"
+      ],
+      "setupEnd": "2026-01-20T14:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-20T14:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-22T08:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "premium component Q",
+          "date": "2026-01-21T14:00:00",
+          "quantity": -2.0
+        },
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-22T08:00:00",
+          "quantity": 2.0
+        }
+      ],
+      "operation": "premium process Q",
+      "ownerOperation": "choose process Q",
+      "quantity": 2.0,
+      "resources": [
+        "premium line"
+      ],
+      "setupEnd": "2026-01-21T14:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-21T14:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 01 P",
+      "end": "2026-01-21T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured P",
+          "date": "2026-01-20T20:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-20T20:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-20T20:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 03 P",
+      "end": "2026-01-22T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured P",
+          "date": "2026-01-21T20:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-21T20:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-21T20:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 05 P",
+      "end": "2026-01-23T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured P",
+          "date": "2026-01-22T20:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-22T20:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-22T20:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 07 P",
+      "end": "2026-01-24T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured P",
+          "date": "2026-01-23T20:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-23T20:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-23T20:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 09 P",
+      "end": "2026-01-25T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured P",
+          "date": "2026-01-24T20:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-24T20:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-24T20:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 11 P",
+      "end": "2026-01-26T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured P",
+          "date": "2026-01-25T20:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured P",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-25T20:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-25T20:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 02 Q",
+      "end": "2026-01-21T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-21T08:00:00",
+          "quantity": -2.0
+        }
+      ],
+      "operation": "ship configured Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-21T08:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-21T08:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 04 Q",
+      "end": "2026-01-22T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-22T08:00:00",
+          "quantity": -2.0
+        }
+      ],
+      "operation": "ship configured Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-22T08:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-22T08:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 06 Q",
+      "end": "2026-01-23T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-23T08:00:00",
+          "quantity": -2.0
+        }
+      ],
+      "operation": "ship configured Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-23T08:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-23T08:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 08 Q",
+      "end": "2026-01-24T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-24T08:00:00",
+          "quantity": -2.0
+        }
+      ],
+      "operation": "ship configured Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-24T08:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-24T08:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 10 Q",
+      "end": "2026-01-25T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-25T08:00:00",
+          "quantity": -2.0
+        }
+      ],
+      "operation": "ship configured Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-25T08:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-25T08:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "process order 12 Q",
+      "end": "2026-01-26T12:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-26T08:00:00",
+          "quantity": -2.0
+        }
+      ],
+      "operation": "ship configured Q",
+      "ownerOperation": null,
+      "quantity": 2.0,
+      "resources": [],
+      "setupEnd": "2026-01-26T08:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-26T08:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "resin order 01 R",
+      "end": "2026-01-22T06:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured R",
+          "date": "2026-01-22T02:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-22T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-22T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "resin order 02 R",
+      "end": "2026-01-22T18:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured R",
+          "date": "2026-01-22T14:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-22T14:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-22T14:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "resin order 03 R",
+      "end": "2026-01-23T06:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured R",
+          "date": "2026-01-23T02:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-23T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-23T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "resin order 04 R",
+      "end": "2026-01-23T18:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured R",
+          "date": "2026-01-23T14:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-23T14:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-23T14:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "resin order 05 R",
+      "end": "2026-01-24T06:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured R",
+          "date": "2026-01-24T02:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-24T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-24T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "resin order 06 R",
+      "end": "2026-01-24T18:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured R",
+          "date": "2026-01-24T14:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-24T14:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-24T14:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "resin order 07 R",
+      "end": "2026-01-25T06:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured R",
+          "date": "2026-01-25T02:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-25T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-25T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "resin order 08 R",
+      "end": "2026-01-25T18:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured R",
+          "date": "2026-01-25T14:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-25T14:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-25T14:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "resin order 09 R",
+      "end": "2026-01-26T06:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured R",
+          "date": "2026-01-26T02:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-26T02:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-26T02:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "resin order 10 R",
+      "end": "2026-01-26T18:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "configured R",
+          "date": "2026-01-26T14:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "ship configured R",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "setupEnd": "2026-01-26T14:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-26T14:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-25T20:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "standard component",
+          "date": "2026-01-24T16:00:00",
+          "quantity": -1.0
+        },
+        {
+          "buffer": "configured P",
+          "date": "2026-01-25T20:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "standard process P",
+      "ownerOperation": "choose process P",
+      "quantity": 1.0,
+      "resources": [
+        "standard line A"
+      ],
+      "setupEnd": "2026-01-24T16:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-24T16:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-23T04:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "standard component",
+          "date": "2026-01-22T00:00:00",
+          "quantity": -2.0
+        },
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-23T04:00:00",
+          "quantity": 2.0
+        }
+      ],
+      "operation": "standard process Q",
+      "ownerOperation": "choose process Q",
+      "quantity": 2.0,
+      "resources": [
+        "standard line A"
+      ],
+      "setupEnd": "2026-01-22T00:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-22T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-23T08:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "standard component",
+          "date": "2026-01-22T04:00:00",
+          "quantity": -2.0
+        },
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-23T08:00:00",
+          "quantity": 2.0
+        }
+      ],
+      "operation": "standard process Q",
+      "ownerOperation": "choose process Q",
+      "quantity": 2.0,
+      "resources": [
+        "standard line A"
+      ],
+      "setupEnd": "2026-01-22T04:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-22T04:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-24T08:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "standard component",
+          "date": "2026-01-23T04:00:00",
+          "quantity": -2.0
+        },
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-24T08:00:00",
+          "quantity": 2.0
+        }
+      ],
+      "operation": "standard process Q",
+      "ownerOperation": "choose process Q",
+      "quantity": 2.0,
+      "resources": [
+        "standard line A"
+      ],
+      "setupEnd": "2026-01-23T04:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-23T04:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2026-01-25T08:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "standard component",
+          "date": "2026-01-24T04:00:00",
+          "quantity": -2.0
+        },
+        {
+          "buffer": "configured Q",
+          "date": "2026-01-25T08:00:00",
+          "quantity": 2.0
+        }
+      ],
+      "operation": "standard process Q",
+      "ownerOperation": "choose process Q",
+      "quantity": 2.0,
+      "resources": [
+        "standard line A"
+      ],
+      "setupEnd": "2026-01-24T04:00:00",
+      "setupSeconds": -1,
+      "start": "2026-01-24T04:00:00",
+      "status": "proposed"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "operationPlans": [
+    {
+      "operation": "delivery alternate item",
+      "demand": "alternate order 1",
+      "quantity": 1,
+      "start": "2009-01-19T00:00:00",
+      "end": "2009-01-20T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "alternate item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "delivery alternate item",
+      "demand": "alternate order 2",
+      "quantity": 1,
+      "start": "2009-01-19T00:00:00",
+      "end": "2009-01-20T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "alternate item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -1
+        }
+      ]
+    },
+    {
+      "operation": "make alternate item",
+      "demand": null,
+      "quantity": 1,
+      "start": "2009-01-18T00:00:00",
+      "end": "2009-01-19T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [
+        "Resource A"
+      ],
+      "materials": [
+        {
+          "buffer": "alternate item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "operation": "make alternate item",
+      "demand": null,
+      "quantity": 1,
+      "start": "2009-01-18T00:00:00",
+      "end": "2009-01-19T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [
+        "Resource B"
+      ],
+      "materials": [
+        {
+          "buffer": "alternate item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 1
+        }
+      ]
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "alternate order 1",
+      "quantity": 1,
+      "end": "2009-01-20T00:00:00"
+    },
+    {
+      "demand": "alternate order 2",
+      "quantity": 1,
+      "end": "2009-01-20T00:00:00"
+    }
+  ]
+}

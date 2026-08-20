@@ -1,0 +1,93 @@
+{
+  "deliveries": [
+    {
+      "demand": "chain order",
+      "end": "2009-01-20T00:00:00",
+      "quantity": 10.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "demand": null,
+      "end": "1971-01-01T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "raw material",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 30.0
+        }
+      ],
+      "operation": "Inventory raw material",
+      "ownerOperation": null,
+      "quantity": 30.0,
+      "resources": [],
+      "start": "1971-01-01T00:00:00",
+      "status": "closed"
+    },
+    {
+      "demand": "chain order",
+      "end": "2009-01-20T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "finished item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -10.0
+        }
+      ],
+      "operation": "delivery finished item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-19T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-18T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "raw material",
+          "date": "2009-01-16T00:00:00",
+          "quantity": -20.0
+        },
+        {
+          "buffer": "component",
+          "date": "2009-01-18T00:00:00",
+          "quantity": 10.0
+        }
+      ],
+      "operation": "make component",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-16T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-19T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "component",
+          "date": "2009-01-18T00:00:00",
+          "quantity": -10.0
+        },
+        {
+          "buffer": "finished item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 10.0
+        }
+      ],
+      "operation": "make finished item",
+      "ownerOperation": null,
+      "quantity": 10.0,
+      "resources": [],
+      "start": "2009-01-18T00:00:00",
+      "status": "proposed"
+    }
+  ]
+}

@@ -1,0 +1,285 @@
+[demand] attempt {"demand":"order 1","attempt":1,"quantity":10,"requestDate":"2009-01-20T00:00:00","lastDate":"2014-01-19T00:00:00"}
+[operation] ask {"demand":"order 1","operation":"delivery end item","quantity":10,"end":"2009-01-20T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"end item","requested":10,"date":"2009-01-19T00:00:00","onhand":0}
+[buffer] shortage {"buffer":"end item","iteration":0,"date":"2009-01-19T00:00:00","onhand":-10,"shortage":10}
+[operation] ask {"demand":null,"operation":"make end item","quantity":10,"end":"2009-01-19T00:00:00"}
+[resource] ask {"demand":null,"operation":"make end item","resource":"Resource","start":"2009-01-18T00:00:00","end":"2009-01-19T00:00:00"}
+[resource] candidate {"demand":null,"start":"2009-01-18T00:00:00","end":"2009-01-19T00:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"make end item","quantity":10,"start":"2009-01-18T00:00:00","end":"2009-01-19T00:00:00"}
+[buffer] replenish {"buffer":"end item","iteration":0,"requested":10,"replenished":10,"producerDate":"2009-01-19T00:00:00","eventCountBefore":1,"eventCountAfter":2,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"end item","requested":10,"remainingShortage":0,"quantity":10,"date":"2009-01-19T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"order 1","operation":"delivery end item","quantity":10,"start":"2009-01-19T00:00:00","end":"2009-01-20T00:00:00"}
+[demand] reply {"demand":"order 1","attempt":1,"result":true,"quantity":10,"date":"2009-01-20T00:00:00"}
+[demand] attempt {"demand":"order 2","attempt":1,"quantity":10,"requestDate":"2009-01-20T00:00:00","lastDate":"2014-01-19T00:00:00"}
+[operation] ask {"demand":"order 2","operation":"delivery end item","quantity":10,"end":"2009-01-20T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"end item","requested":10,"date":"2009-01-19T00:00:00","onhand":0}
+[buffer] shortage {"buffer":"end item","iteration":0,"date":"2009-01-19T00:00:00","onhand":-10,"shortage":10}
+[operation] ask {"demand":null,"operation":"make end item","quantity":10,"end":"2009-01-19T00:00:00"}
+[resource] ask {"demand":null,"operation":"make end item","resource":"Resource","start":"2009-01-18T00:00:00","end":"2009-01-19T00:00:00"}
+[resource] candidate {"demand":null,"start":"2009-01-18T00:00:00","end":"2009-01-19T00:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":1,"start":"2009-01-17T23:00:00","end":"2009-01-18T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":2,"start":"2009-01-17T22:00:00","end":"2009-01-18T22:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":3,"start":"2009-01-17T21:00:00","end":"2009-01-18T21:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":4,"start":"2009-01-17T20:00:00","end":"2009-01-18T20:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":5,"start":"2009-01-17T19:00:00","end":"2009-01-18T19:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":6,"start":"2009-01-17T18:00:00","end":"2009-01-18T18:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":7,"start":"2009-01-17T17:00:00","end":"2009-01-18T17:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":8,"start":"2009-01-17T16:00:00","end":"2009-01-18T16:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":9,"start":"2009-01-17T15:00:00","end":"2009-01-18T15:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":10,"start":"2009-01-17T14:00:00","end":"2009-01-18T14:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":11,"start":"2009-01-17T13:00:00","end":"2009-01-18T13:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":12,"start":"2009-01-17T12:00:00","end":"2009-01-18T12:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":13,"start":"2009-01-17T11:00:00","end":"2009-01-18T11:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":14,"start":"2009-01-17T10:00:00","end":"2009-01-18T10:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":15,"start":"2009-01-17T09:00:00","end":"2009-01-18T09:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":16,"start":"2009-01-17T08:00:00","end":"2009-01-18T08:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":17,"start":"2009-01-17T07:00:00","end":"2009-01-18T07:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":18,"start":"2009-01-17T06:00:00","end":"2009-01-18T06:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":19,"start":"2009-01-17T05:00:00","end":"2009-01-18T05:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":20,"start":"2009-01-17T04:00:00","end":"2009-01-18T04:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":21,"start":"2009-01-17T03:00:00","end":"2009-01-18T03:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":22,"start":"2009-01-17T02:00:00","end":"2009-01-18T02:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":23,"start":"2009-01-17T01:00:00","end":"2009-01-18T01:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":24,"start":"2009-01-17T00:00:00","end":"2009-01-18T00:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"make end item","quantity":10,"start":"2009-01-17T00:00:00","end":"2009-01-18T00:00:00"}
+[buffer] replenish {"buffer":"end item","iteration":0,"requested":10,"replenished":10,"producerDate":"2009-01-18T00:00:00","eventCountBefore":3,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"end item","requested":10,"remainingShortage":0,"quantity":10,"date":"2009-01-19T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"order 2","operation":"delivery end item","quantity":10,"start":"2009-01-19T00:00:00","end":"2009-01-20T00:00:00"}
+[demand] reply {"demand":"order 2","attempt":1,"result":true,"quantity":10,"date":"2009-01-20T00:00:00"}
+[demand] attempt {"demand":"order 3","attempt":1,"quantity":10,"requestDate":"2009-01-17T12:00:00","lastDate":"2014-01-16T12:00:00"}
+[operation] ask {"demand":"order 3","operation":"delivery end item","quantity":10,"end":"2009-01-17T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"end item","requested":10,"date":"2009-01-16T12:00:00","onhand":0}
+[buffer] shortage {"buffer":"end item","iteration":0,"date":"2009-01-16T12:00:00","onhand":-10,"shortage":10}
+[operation] ask {"demand":null,"operation":"make end item","quantity":10,"end":"2009-01-16T12:00:00"}
+[resource] ask {"demand":null,"operation":"make end item","resource":"Resource","start":"2009-01-15T12:00:00","end":"2009-01-16T12:00:00"}
+[resource] candidate {"demand":null,"start":"2009-01-15T12:00:00","end":"2009-01-16T12:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"make end item","quantity":10,"start":"2009-01-15T12:00:00","end":"2009-01-16T12:00:00"}
+[buffer] replenish {"buffer":"end item","iteration":0,"requested":10,"replenished":10,"producerDate":"2009-01-16T12:00:00","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"end item","requested":10,"remainingShortage":0,"quantity":10,"date":"2009-01-16T12:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"order 3","operation":"delivery end item","quantity":10,"start":"2009-01-16T12:00:00","end":"2009-01-17T12:00:00"}
+[demand] reply {"demand":"order 3","attempt":1,"result":true,"quantity":10,"date":"2009-01-17T12:00:00"}
+[demand] attempt {"demand":"order 4","attempt":1,"quantity":10,"requestDate":"2009-01-20T00:00:00","lastDate":"2014-01-19T00:00:00"}
+[operation] ask {"demand":"order 4","operation":"delivery end item","quantity":10,"end":"2009-01-20T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"end item","requested":10,"date":"2009-01-19T00:00:00","onhand":10}
+[buffer] shortage {"buffer":"end item","iteration":0,"date":"2009-01-19T00:00:00","onhand":-10,"shortage":10}
+[operation] ask {"demand":null,"operation":"make end item","quantity":10,"end":"2009-01-19T00:00:00"}
+[resource] ask {"demand":null,"operation":"make end item","resource":"Resource","start":"2009-01-18T00:00:00","end":"2009-01-19T00:00:00"}
+[resource] candidate {"demand":null,"start":"2009-01-18T00:00:00","end":"2009-01-19T00:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":1,"start":"2009-01-17T23:00:00","end":"2009-01-18T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":2,"start":"2009-01-17T22:00:00","end":"2009-01-18T22:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":3,"start":"2009-01-17T21:00:00","end":"2009-01-18T21:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":4,"start":"2009-01-17T20:00:00","end":"2009-01-18T20:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":5,"start":"2009-01-17T19:00:00","end":"2009-01-18T19:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":6,"start":"2009-01-17T18:00:00","end":"2009-01-18T18:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":7,"start":"2009-01-17T17:00:00","end":"2009-01-18T17:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":8,"start":"2009-01-17T16:00:00","end":"2009-01-18T16:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":9,"start":"2009-01-17T15:00:00","end":"2009-01-18T15:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":10,"start":"2009-01-17T14:00:00","end":"2009-01-18T14:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":11,"start":"2009-01-17T13:00:00","end":"2009-01-18T13:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":12,"start":"2009-01-17T12:00:00","end":"2009-01-18T12:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":13,"start":"2009-01-17T11:00:00","end":"2009-01-18T11:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":14,"start":"2009-01-17T10:00:00","end":"2009-01-18T10:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":15,"start":"2009-01-17T09:00:00","end":"2009-01-18T09:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":16,"start":"2009-01-17T08:00:00","end":"2009-01-18T08:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":17,"start":"2009-01-17T07:00:00","end":"2009-01-18T07:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":18,"start":"2009-01-17T06:00:00","end":"2009-01-18T06:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":19,"start":"2009-01-17T05:00:00","end":"2009-01-18T05:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":20,"start":"2009-01-17T04:00:00","end":"2009-01-18T04:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":21,"start":"2009-01-17T03:00:00","end":"2009-01-18T03:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":22,"start":"2009-01-17T02:00:00","end":"2009-01-18T02:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":23,"start":"2009-01-17T01:00:00","end":"2009-01-18T01:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":24,"start":"2009-01-17T00:00:00","end":"2009-01-18T00:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":25,"start":"2009-01-16T23:00:00","end":"2009-01-17T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":26,"start":"2009-01-16T22:00:00","end":"2009-01-17T22:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":27,"start":"2009-01-16T21:00:00","end":"2009-01-17T21:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":28,"start":"2009-01-16T20:00:00","end":"2009-01-17T20:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":29,"start":"2009-01-16T19:00:00","end":"2009-01-17T19:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":30,"start":"2009-01-16T18:00:00","end":"2009-01-17T18:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":31,"start":"2009-01-16T17:00:00","end":"2009-01-17T17:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":32,"start":"2009-01-16T16:00:00","end":"2009-01-17T16:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":33,"start":"2009-01-16T15:00:00","end":"2009-01-17T15:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":34,"start":"2009-01-16T14:00:00","end":"2009-01-17T14:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":35,"start":"2009-01-16T13:00:00","end":"2009-01-17T13:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":36,"start":"2009-01-16T12:00:00","end":"2009-01-17T12:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":37,"start":"2009-01-16T11:00:00","end":"2009-01-17T11:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":38,"start":"2009-01-16T10:00:00","end":"2009-01-17T10:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":39,"start":"2009-01-16T09:00:00","end":"2009-01-17T09:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":40,"start":"2009-01-16T08:00:00","end":"2009-01-17T08:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":41,"start":"2009-01-16T07:00:00","end":"2009-01-17T07:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":42,"start":"2009-01-16T06:00:00","end":"2009-01-17T06:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":43,"start":"2009-01-16T05:00:00","end":"2009-01-17T05:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":44,"start":"2009-01-16T04:00:00","end":"2009-01-17T04:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":45,"start":"2009-01-16T03:00:00","end":"2009-01-17T03:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":46,"start":"2009-01-16T02:00:00","end":"2009-01-17T02:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":47,"start":"2009-01-16T01:00:00","end":"2009-01-17T01:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":48,"start":"2009-01-16T00:00:00","end":"2009-01-17T00:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":49,"start":"2009-01-15T23:00:00","end":"2009-01-16T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":50,"start":"2009-01-15T22:00:00","end":"2009-01-16T22:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":51,"start":"2009-01-15T21:00:00","end":"2009-01-16T21:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":52,"start":"2009-01-15T20:00:00","end":"2009-01-16T20:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":53,"start":"2009-01-15T19:00:00","end":"2009-01-16T19:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":54,"start":"2009-01-15T18:00:00","end":"2009-01-16T18:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":55,"start":"2009-01-15T17:00:00","end":"2009-01-16T17:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":56,"start":"2009-01-15T16:00:00","end":"2009-01-16T16:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":57,"start":"2009-01-15T15:00:00","end":"2009-01-16T15:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":58,"start":"2009-01-15T14:00:00","end":"2009-01-16T14:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":59,"start":"2009-01-15T13:00:00","end":"2009-01-16T13:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":60,"start":"2009-01-15T12:00:00","end":"2009-01-16T12:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":61,"start":"2009-01-15T11:00:00","end":"2009-01-16T11:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":62,"start":"2009-01-15T10:00:00","end":"2009-01-16T10:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":63,"start":"2009-01-15T09:00:00","end":"2009-01-16T09:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":64,"start":"2009-01-15T08:00:00","end":"2009-01-16T08:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":65,"start":"2009-01-15T07:00:00","end":"2009-01-16T07:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":66,"start":"2009-01-15T06:00:00","end":"2009-01-16T06:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":67,"start":"2009-01-15T05:00:00","end":"2009-01-16T05:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":68,"start":"2009-01-15T04:00:00","end":"2009-01-16T04:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":69,"start":"2009-01-15T03:00:00","end":"2009-01-16T03:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":70,"start":"2009-01-15T02:00:00","end":"2009-01-16T02:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":71,"start":"2009-01-15T01:00:00","end":"2009-01-16T01:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":72,"start":"2009-01-15T00:00:00","end":"2009-01-16T00:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":73,"start":"2009-01-14T23:00:00","end":"2009-01-15T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":74,"start":"2009-01-14T22:00:00","end":"2009-01-15T22:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":75,"start":"2009-01-14T21:00:00","end":"2009-01-15T21:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":76,"start":"2009-01-14T20:00:00","end":"2009-01-15T20:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":77,"start":"2009-01-14T19:00:00","end":"2009-01-15T19:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":78,"start":"2009-01-14T18:00:00","end":"2009-01-15T18:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":79,"start":"2009-01-14T17:00:00","end":"2009-01-15T17:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":80,"start":"2009-01-14T16:00:00","end":"2009-01-15T16:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":81,"start":"2009-01-14T15:00:00","end":"2009-01-15T15:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":82,"start":"2009-01-14T14:00:00","end":"2009-01-15T14:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":83,"start":"2009-01-14T13:00:00","end":"2009-01-15T13:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":84,"start":"2009-01-14T12:00:00","end":"2009-01-15T12:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"make end item","quantity":10,"start":"2009-01-14T12:00:00","end":"2009-01-15T12:00:00"}
+[buffer] replenish {"buffer":"end item","iteration":0,"requested":10,"replenished":10,"producerDate":"2009-01-15T12:00:00","eventCountBefore":7,"eventCountAfter":8,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"end item","requested":10,"remainingShortage":0,"quantity":10,"date":"2009-01-19T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"order 4","operation":"delivery end item","quantity":10,"start":"2009-01-19T00:00:00","end":"2009-01-20T00:00:00"}
+[demand] reply {"demand":"order 4","attempt":1,"result":true,"quantity":10,"date":"2009-01-20T00:00:00"}
+[demand] attempt {"demand":"order 5","attempt":1,"quantity":10,"requestDate":"2009-01-20T00:00:00","lastDate":"2014-01-19T00:00:00"}
+[operation] ask {"demand":"order 5","operation":"delivery end item","quantity":10,"end":"2009-01-20T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"end item","requested":10,"date":"2009-01-19T00:00:00","onhand":20}
+[buffer] shortage {"buffer":"end item","iteration":0,"date":"2009-01-19T00:00:00","onhand":-10,"shortage":10}
+[operation] ask {"demand":null,"operation":"make end item","quantity":10,"end":"2009-01-19T00:00:00"}
+[resource] ask {"demand":null,"operation":"make end item","resource":"Resource","start":"2009-01-18T00:00:00","end":"2009-01-19T00:00:00"}
+[resource] candidate {"demand":null,"start":"2009-01-18T00:00:00","end":"2009-01-19T00:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":1,"start":"2009-01-17T23:00:00","end":"2009-01-18T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":2,"start":"2009-01-17T22:00:00","end":"2009-01-18T22:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":3,"start":"2009-01-17T21:00:00","end":"2009-01-18T21:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":4,"start":"2009-01-17T20:00:00","end":"2009-01-18T20:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":5,"start":"2009-01-17T19:00:00","end":"2009-01-18T19:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":6,"start":"2009-01-17T18:00:00","end":"2009-01-18T18:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":7,"start":"2009-01-17T17:00:00","end":"2009-01-18T17:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":8,"start":"2009-01-17T16:00:00","end":"2009-01-18T16:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":9,"start":"2009-01-17T15:00:00","end":"2009-01-18T15:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":10,"start":"2009-01-17T14:00:00","end":"2009-01-18T14:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":11,"start":"2009-01-17T13:00:00","end":"2009-01-18T13:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":12,"start":"2009-01-17T12:00:00","end":"2009-01-18T12:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":13,"start":"2009-01-17T11:00:00","end":"2009-01-18T11:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":14,"start":"2009-01-17T10:00:00","end":"2009-01-18T10:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":15,"start":"2009-01-17T09:00:00","end":"2009-01-18T09:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":16,"start":"2009-01-17T08:00:00","end":"2009-01-18T08:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":17,"start":"2009-01-17T07:00:00","end":"2009-01-18T07:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":18,"start":"2009-01-17T06:00:00","end":"2009-01-18T06:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":19,"start":"2009-01-17T05:00:00","end":"2009-01-18T05:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":20,"start":"2009-01-17T04:00:00","end":"2009-01-18T04:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":21,"start":"2009-01-17T03:00:00","end":"2009-01-18T03:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":22,"start":"2009-01-17T02:00:00","end":"2009-01-18T02:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":23,"start":"2009-01-17T01:00:00","end":"2009-01-18T01:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":24,"start":"2009-01-17T00:00:00","end":"2009-01-18T00:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":25,"start":"2009-01-16T23:00:00","end":"2009-01-17T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":26,"start":"2009-01-16T22:00:00","end":"2009-01-17T22:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":27,"start":"2009-01-16T21:00:00","end":"2009-01-17T21:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":28,"start":"2009-01-16T20:00:00","end":"2009-01-17T20:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":29,"start":"2009-01-16T19:00:00","end":"2009-01-17T19:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":30,"start":"2009-01-16T18:00:00","end":"2009-01-17T18:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":31,"start":"2009-01-16T17:00:00","end":"2009-01-17T17:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":32,"start":"2009-01-16T16:00:00","end":"2009-01-17T16:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":33,"start":"2009-01-16T15:00:00","end":"2009-01-17T15:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":34,"start":"2009-01-16T14:00:00","end":"2009-01-17T14:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":35,"start":"2009-01-16T13:00:00","end":"2009-01-17T13:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":36,"start":"2009-01-16T12:00:00","end":"2009-01-17T12:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":37,"start":"2009-01-16T11:00:00","end":"2009-01-17T11:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":38,"start":"2009-01-16T10:00:00","end":"2009-01-17T10:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":39,"start":"2009-01-16T09:00:00","end":"2009-01-17T09:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":40,"start":"2009-01-16T08:00:00","end":"2009-01-17T08:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":41,"start":"2009-01-16T07:00:00","end":"2009-01-17T07:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":42,"start":"2009-01-16T06:00:00","end":"2009-01-17T06:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":43,"start":"2009-01-16T05:00:00","end":"2009-01-17T05:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":44,"start":"2009-01-16T04:00:00","end":"2009-01-17T04:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":45,"start":"2009-01-16T03:00:00","end":"2009-01-17T03:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":46,"start":"2009-01-16T02:00:00","end":"2009-01-17T02:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":47,"start":"2009-01-16T01:00:00","end":"2009-01-17T01:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":48,"start":"2009-01-16T00:00:00","end":"2009-01-17T00:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":49,"start":"2009-01-15T23:00:00","end":"2009-01-16T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":50,"start":"2009-01-15T22:00:00","end":"2009-01-16T22:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":51,"start":"2009-01-15T21:00:00","end":"2009-01-16T21:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":52,"start":"2009-01-15T20:00:00","end":"2009-01-16T20:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":53,"start":"2009-01-15T19:00:00","end":"2009-01-16T19:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":54,"start":"2009-01-15T18:00:00","end":"2009-01-16T18:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":55,"start":"2009-01-15T17:00:00","end":"2009-01-16T17:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":56,"start":"2009-01-15T16:00:00","end":"2009-01-16T16:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":57,"start":"2009-01-15T15:00:00","end":"2009-01-16T15:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":58,"start":"2009-01-15T14:00:00","end":"2009-01-16T14:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":59,"start":"2009-01-15T13:00:00","end":"2009-01-16T13:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":60,"start":"2009-01-15T12:00:00","end":"2009-01-16T12:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":61,"start":"2009-01-15T11:00:00","end":"2009-01-16T11:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":62,"start":"2009-01-15T10:00:00","end":"2009-01-16T10:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":63,"start":"2009-01-15T09:00:00","end":"2009-01-16T09:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":64,"start":"2009-01-15T08:00:00","end":"2009-01-16T08:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":65,"start":"2009-01-15T07:00:00","end":"2009-01-16T07:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":66,"start":"2009-01-15T06:00:00","end":"2009-01-16T06:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":67,"start":"2009-01-15T05:00:00","end":"2009-01-16T05:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":68,"start":"2009-01-15T04:00:00","end":"2009-01-16T04:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":69,"start":"2009-01-15T03:00:00","end":"2009-01-16T03:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":70,"start":"2009-01-15T02:00:00","end":"2009-01-16T02:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":71,"start":"2009-01-15T01:00:00","end":"2009-01-16T01:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":72,"start":"2009-01-15T00:00:00","end":"2009-01-16T00:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":73,"start":"2009-01-14T23:00:00","end":"2009-01-15T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":74,"start":"2009-01-14T22:00:00","end":"2009-01-15T22:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":75,"start":"2009-01-14T21:00:00","end":"2009-01-15T21:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":76,"start":"2009-01-14T20:00:00","end":"2009-01-15T20:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":77,"start":"2009-01-14T19:00:00","end":"2009-01-15T19:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":78,"start":"2009-01-14T18:00:00","end":"2009-01-15T18:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":79,"start":"2009-01-14T17:00:00","end":"2009-01-15T17:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":80,"start":"2009-01-14T16:00:00","end":"2009-01-15T16:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":81,"start":"2009-01-14T15:00:00","end":"2009-01-15T15:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":82,"start":"2009-01-14T14:00:00","end":"2009-01-15T14:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":83,"start":"2009-01-14T13:00:00","end":"2009-01-15T13:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":84,"start":"2009-01-14T12:00:00","end":"2009-01-15T12:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":85,"start":"2009-01-14T11:00:00","end":"2009-01-15T11:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":86,"start":"2009-01-14T10:00:00","end":"2009-01-15T10:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":87,"start":"2009-01-14T09:00:00","end":"2009-01-15T09:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":88,"start":"2009-01-14T08:00:00","end":"2009-01-15T08:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":89,"start":"2009-01-14T07:00:00","end":"2009-01-15T07:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":90,"start":"2009-01-14T06:00:00","end":"2009-01-15T06:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":91,"start":"2009-01-14T05:00:00","end":"2009-01-15T05:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":92,"start":"2009-01-14T04:00:00","end":"2009-01-15T04:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":93,"start":"2009-01-14T03:00:00","end":"2009-01-15T03:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":94,"start":"2009-01-14T02:00:00","end":"2009-01-15T02:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":95,"start":"2009-01-14T01:00:00","end":"2009-01-15T01:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":96,"start":"2009-01-14T00:00:00","end":"2009-01-15T00:00:00","feasible":false}
+[operation] capacity-reject {"demand":null,"operation":"make end item","start":"2009-01-18T00:00:00","end":"2009-01-19T00:00:00","answerQuantity":0,"answerDate":"2030-12-30T19:00:00"}
+[buffer] replenish {"buffer":"end item","iteration":0,"requested":10,"replenished":0,"producerDate":"2009-01-20T00:00:00","eventCountBefore":9,"eventCountAfter":9,"remaining":10}
+[buffer] answer {"demand":null,"buffer":"end item","requested":10,"remainingShortage":10,"quantity":0,"date":"2009-01-20T00:00:00","plan":null}
+[operation] material-reject {"demand":"order 5","operation":"delivery end item","start":"2009-01-19T00:00:00","end":"2009-01-20T00:00:00","asked":10,"answerQuantity":0,"answerDate":"2030-12-30T19:00:00"}
+[demand] reply {"demand":"order 5","attempt":1,"result":false,"quantity":0,"date":"2009-01-21T00:00:00"}
+[demand] attempt {"demand":"order 5","attempt":2,"quantity":10,"requestDate":"2009-01-21T00:00:00","lastDate":"2014-01-19T00:00:00"}
+[operation] ask {"demand":"order 5","operation":"delivery end item","quantity":10,"end":"2009-01-21T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"end item","requested":10,"date":"2009-01-20T00:00:00","onhand":0}
+[buffer] shortage {"buffer":"end item","iteration":0,"date":"2009-01-20T00:00:00","onhand":-10,"shortage":10}
+[operation] ask {"demand":null,"operation":"make end item","quantity":10,"end":"2009-01-20T00:00:00"}
+[resource] ask {"demand":null,"operation":"make end item","resource":"Resource","start":"2009-01-19T00:00:00","end":"2009-01-20T00:00:00"}
+[resource] candidate {"demand":null,"start":"2009-01-19T00:00:00","end":"2009-01-20T00:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"make end item","quantity":10,"start":"2009-01-19T00:00:00","end":"2009-01-20T00:00:00"}
+[buffer] replenish {"buffer":"end item","iteration":0,"requested":10,"replenished":10,"producerDate":"2009-01-20T00:00:00","eventCountBefore":9,"eventCountAfter":10,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"end item","requested":10,"remainingShortage":0,"quantity":10,"date":"2009-01-20T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"order 5","operation":"delivery end item","quantity":10,"start":"2009-01-20T00:00:00","end":"2009-01-21T00:00:00"}
+[demand] reply {"demand":"order 5","attempt":2,"result":true,"quantity":10,"date":"2009-01-21T00:00:00"}
+{
+  "scenario": "resource_capacity",
+  "identical": true,
+  "nativeOperationPlans": 10,
+  "typescriptOperationPlans": 10,
+  "differenceCount": 0,
+  "firstDifferences": [],
+  "databaseSchema": "codex_schedule_diff"
+}

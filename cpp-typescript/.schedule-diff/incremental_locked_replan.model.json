@@ -1,0 +1,150 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "incremental raw @ plant",
+      "quantity": -1,
+      "operation": "make incremental product"
+    },
+    {
+      "type": "end",
+      "buffer": "incremental product @ plant",
+      "quantity": 1,
+      "operation": "make incremental product"
+    },
+    {
+      "type": "start",
+      "buffer": "incremental product @ plant",
+      "quantity": -1,
+      "operation": "ship incremental product"
+    }
+  ],
+  "items": [
+    {
+      "name": "incremental raw"
+    },
+    {
+      "name": "incremental product"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "incremental line",
+      "operation": "make incremental product"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "erasePreviousFirst": false
+  },
+  "buffers": [
+    {
+      "item": "incremental raw",
+      "name": "incremental raw @ plant",
+      "onhand": 100,
+      "location": "incremental plant"
+    },
+    {
+      "item": "incremental product",
+      "name": "incremental product @ plant",
+      "onhand": 0,
+      "location": "incremental plant",
+      "producing": "make incremental product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-06T00:00:00",
+      "item": "incremental product",
+      "name": "incremental order urgent",
+      "location": "incremental plant",
+      "priority": 1,
+      "quantity": 5,
+      "operation": "ship incremental product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-10T00:00:00",
+      "item": "incremental product",
+      "name": "incremental order regular",
+      "location": "incremental plant",
+      "priority": 2,
+      "quantity": 10,
+      "operation": "ship incremental product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-14T00:00:00",
+      "item": "incremental product",
+      "name": "incremental order later",
+      "location": "incremental plant",
+      "priority": 3,
+      "quantity": 6,
+      "operation": "ship incremental product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "incremental plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "incremental line",
+      "maximum": 1,
+      "location": "incremental plant",
+      "maxearly": 2592000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 4,
+      "name": "make incremental product",
+      "type": "fixed_time",
+      "duration": 86400,
+      "location": "incremental plant",
+      "sizeMaximum": 6,
+      "sizeMinimum": 1,
+      "sizeMultiple": 1
+    },
+    {
+      "name": "ship incremental product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "incremental plant"
+    }
+  ],
+  "operationPlans": [
+    {
+      "end": "2026-01-03T00:00:00",
+      "start": "2026-01-02T00:00:00",
+      "status": "confirmed",
+      "quantity": 3,
+      "operation": "make incremental product",
+      "reference": "MO-INCREMENTAL-CONFIRMED"
+    },
+    {
+      "end": "2026-01-05T00:00:00",
+      "start": "2026-01-04T00:00:00",
+      "status": "approved",
+      "quantity": 4,
+      "operation": "make incremental product",
+      "reference": "MO-INCREMENTAL-APPROVED"
+    },
+    {
+      "end": "2026-01-08T00:00:00",
+      "start": "2026-01-07T00:00:00",
+      "status": "proposed",
+      "quantity": 5,
+      "operation": "make incremental product",
+      "reference": "MO-INCREMENTAL-PROPOSED"
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "operationPlans": [
+    {
+      "operation": "Inventory raw material",
+      "demand": null,
+      "quantity": 30,
+      "start": "1971-01-01T00:00:00",
+      "end": "1971-01-01T00:00:00",
+      "ownerOperation": null,
+      "status": "closed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "raw material",
+          "date": "1971-01-01T00:00:00",
+          "quantity": 30
+        }
+      ]
+    },
+    {
+      "operation": "delivery finished item",
+      "demand": "chain order",
+      "quantity": 10,
+      "start": "2009-01-19T00:00:00",
+      "end": "2009-01-20T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "finished item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -10
+        }
+      ]
+    },
+    {
+      "operation": "make component",
+      "demand": null,
+      "quantity": 10,
+      "start": "2009-01-16T00:00:00",
+      "end": "2009-01-18T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "raw material",
+          "date": "2009-01-16T00:00:00",
+          "quantity": -20
+        },
+        {
+          "buffer": "component",
+          "date": "2009-01-18T00:00:00",
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "operation": "make finished item",
+      "demand": null,
+      "quantity": 10,
+      "start": "2009-01-18T00:00:00",
+      "end": "2009-01-19T00:00:00",
+      "ownerOperation": null,
+      "status": "proposed",
+      "feasible": true,
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "component",
+          "date": "2009-01-18T00:00:00",
+          "quantity": -10
+        },
+        {
+          "buffer": "finished item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 10
+        }
+      ]
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "chain order",
+      "quantity": 10,
+      "end": "2009-01-20T00:00:00"
+    }
+  ]
+}

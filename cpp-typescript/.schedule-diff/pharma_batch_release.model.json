@@ -1,0 +1,841 @@
+{
+  "flows": [
+    {
+      "type": "start",
+      "buffer": "tablet A",
+      "quantity": -1,
+      "operation": "release TAB-A"
+    },
+    {
+      "type": "start",
+      "buffer": "active A",
+      "quantity": -1,
+      "operation": "blend TAB-A"
+    },
+    {
+      "type": "start",
+      "buffer": "excipient",
+      "quantity": -2,
+      "operation": "blend TAB-A"
+    },
+    {
+      "type": "start",
+      "buffer": "primary packaging",
+      "quantity": -1,
+      "operation": "form TAB-A"
+    },
+    {
+      "type": "end",
+      "buffer": "tablet A",
+      "quantity": 1,
+      "operation": "inspect TAB-A"
+    },
+    {
+      "type": "start",
+      "buffer": "tablet B",
+      "quantity": -1,
+      "operation": "release TAB-B"
+    },
+    {
+      "type": "start",
+      "buffer": "active B",
+      "quantity": -1,
+      "operation": "blend TAB-B"
+    },
+    {
+      "type": "start",
+      "buffer": "excipient",
+      "quantity": -2,
+      "operation": "blend TAB-B"
+    },
+    {
+      "type": "start",
+      "buffer": "primary packaging",
+      "quantity": -1,
+      "operation": "form TAB-B"
+    },
+    {
+      "type": "end",
+      "buffer": "tablet B",
+      "quantity": 1,
+      "operation": "inspect TAB-B"
+    },
+    {
+      "type": "start",
+      "buffer": "capsule C",
+      "quantity": -1,
+      "operation": "release CAP-C"
+    },
+    {
+      "type": "start",
+      "buffer": "active C",
+      "quantity": -1,
+      "operation": "blend CAP-C"
+    },
+    {
+      "type": "start",
+      "buffer": "excipient",
+      "quantity": -2,
+      "operation": "blend CAP-C"
+    },
+    {
+      "type": "start",
+      "buffer": "primary packaging",
+      "quantity": -1,
+      "operation": "form CAP-C"
+    },
+    {
+      "type": "end",
+      "buffer": "capsule C",
+      "quantity": 1,
+      "operation": "inspect CAP-C"
+    }
+  ],
+  "items": [
+    {
+      "name": "excipient"
+    },
+    {
+      "name": "active A"
+    },
+    {
+      "name": "active B"
+    },
+    {
+      "name": "active C"
+    },
+    {
+      "name": "primary packaging"
+    },
+    {
+      "name": "tablet A"
+    },
+    {
+      "name": "tablet B"
+    },
+    {
+      "name": "capsule C"
+    }
+  ],
+  "loads": [
+    {
+      "setup": "allergen-free",
+      "quantity": 1,
+      "resource": "blender",
+      "operation": "blend TAB-A"
+    },
+    {
+      "name": "forming TAB-A",
+      "setup": "TAB-A",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "forming line A",
+      "operation": "form TAB-A"
+    },
+    {
+      "name": "forming TAB-A",
+      "setup": "TAB-A",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "forming line B",
+      "operation": "form TAB-A"
+    },
+    {
+      "skill": "batch release",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "qa pool",
+      "operation": "inspect TAB-A"
+    },
+    {
+      "setup": "potent",
+      "quantity": 1,
+      "resource": "blender",
+      "operation": "blend TAB-B"
+    },
+    {
+      "name": "forming TAB-B",
+      "setup": "TAB-B",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "forming line A",
+      "operation": "form TAB-B"
+    },
+    {
+      "name": "forming TAB-B",
+      "setup": "TAB-B",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "forming line B",
+      "operation": "form TAB-B"
+    },
+    {
+      "skill": "batch release",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "qa pool",
+      "operation": "inspect TAB-B"
+    },
+    {
+      "setup": "allergen-free",
+      "quantity": 1,
+      "resource": "blender",
+      "operation": "blend CAP-C"
+    },
+    {
+      "name": "forming CAP-C",
+      "setup": "CAP-C",
+      "search": "PRIORITY",
+      "priority": 1,
+      "quantity": 1,
+      "resource": "forming line A",
+      "operation": "form CAP-C"
+    },
+    {
+      "name": "forming CAP-C",
+      "setup": "CAP-C",
+      "search": "PRIORITY",
+      "priority": 2,
+      "quantity": 1,
+      "resource": "forming line B",
+      "operation": "form CAP-C"
+    },
+    {
+      "skill": "batch release",
+      "search": "PRIORITY",
+      "quantity": 1,
+      "resource": "qa pool",
+      "operation": "inspect CAP-C"
+    }
+  ],
+  "skills": [
+    {
+      "name": "batch release"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 172800,
+    "constraints": 15,
+    "minimumDelay": 14400,
+    "administrativeLeadTime": 86400
+  },
+  "buffers": [
+    {
+      "item": "excipient",
+      "name": "excipient",
+      "onhand": 420
+    },
+    {
+      "item": "active A",
+      "name": "active A",
+      "onhand": 85
+    },
+    {
+      "item": "active B",
+      "name": "active B",
+      "onhand": 75
+    },
+    {
+      "item": "active C",
+      "name": "active C",
+      "onhand": 90
+    },
+    {
+      "item": "primary packaging",
+      "name": "primary packaging",
+      "onhand": 280
+    },
+    {
+      "item": "tablet A",
+      "name": "tablet A",
+      "onhand": 0,
+      "producing": "batch TAB-A"
+    },
+    {
+      "item": "tablet B",
+      "name": "tablet B",
+      "onhand": 0,
+      "producing": "batch TAB-B"
+    },
+    {
+      "item": "capsule C",
+      "name": "capsule C",
+      "onhand": 0,
+      "producing": "batch CAP-C"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-02-02T06:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 001 TAB-A",
+      "priority": 1,
+      "quantity": 2,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-02T18:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 002 TAB-B",
+      "priority": 2,
+      "quantity": 3,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-03T06:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 003 CAP-C",
+      "priority": 3,
+      "quantity": 5,
+      "operation": "release CAP-C"
+    },
+    {
+      "due": "2026-02-03T18:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 004 TAB-A",
+      "priority": 4,
+      "quantity": 4,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-04T06:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 005 TAB-B",
+      "priority": 5,
+      "quantity": 6,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-04T18:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 006 CAP-C",
+      "priority": 6,
+      "quantity": 2,
+      "operation": "release CAP-C"
+    },
+    {
+      "due": "2026-02-05T06:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 007 TAB-A",
+      "priority": 7,
+      "quantity": 2,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-05T18:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 008 TAB-B",
+      "priority": 8,
+      "quantity": 3,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-06T06:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 009 CAP-C",
+      "priority": 9,
+      "quantity": 5,
+      "operation": "release CAP-C"
+    },
+    {
+      "due": "2026-02-06T18:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 010 TAB-A",
+      "priority": 1,
+      "quantity": 4,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-07T06:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 011 TAB-B",
+      "priority": 2,
+      "quantity": 6,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-07T18:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 012 CAP-C",
+      "priority": 3,
+      "quantity": 2,
+      "operation": "release CAP-C"
+    },
+    {
+      "due": "2026-02-08T06:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 013 TAB-A",
+      "priority": 4,
+      "quantity": 2,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-08T18:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 014 TAB-B",
+      "priority": 5,
+      "quantity": 3,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-09T06:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 015 CAP-C",
+      "priority": 6,
+      "quantity": 5,
+      "operation": "release CAP-C"
+    },
+    {
+      "due": "2026-02-09T18:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 016 TAB-A",
+      "priority": 7,
+      "quantity": 4,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-10T06:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 017 TAB-B",
+      "priority": 8,
+      "quantity": 6,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-10T18:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 018 CAP-C",
+      "priority": 9,
+      "quantity": 2,
+      "operation": "release CAP-C"
+    },
+    {
+      "due": "2026-02-11T06:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 019 TAB-A",
+      "priority": 1,
+      "quantity": 2,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-11T18:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 020 TAB-B",
+      "priority": 2,
+      "quantity": 3,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-12T06:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 021 CAP-C",
+      "priority": 3,
+      "quantity": 5,
+      "operation": "release CAP-C"
+    },
+    {
+      "due": "2026-02-12T18:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 022 TAB-A",
+      "priority": 4,
+      "quantity": 4,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-13T06:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 023 TAB-B",
+      "priority": 5,
+      "quantity": 6,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-13T18:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 024 CAP-C",
+      "priority": 6,
+      "quantity": 2,
+      "operation": "release CAP-C"
+    },
+    {
+      "due": "2026-02-14T06:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 025 TAB-A",
+      "priority": 7,
+      "quantity": 2,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-14T18:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 026 TAB-B",
+      "priority": 8,
+      "quantity": 3,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-15T06:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 027 CAP-C",
+      "priority": 9,
+      "quantity": 5,
+      "operation": "release CAP-C"
+    },
+    {
+      "due": "2026-02-15T18:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 028 TAB-A",
+      "priority": 1,
+      "quantity": 4,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-16T06:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 029 TAB-B",
+      "priority": 2,
+      "quantity": 6,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-16T18:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 030 CAP-C",
+      "priority": 3,
+      "quantity": 2,
+      "operation": "release CAP-C"
+    },
+    {
+      "due": "2026-02-17T06:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 031 TAB-A",
+      "priority": 4,
+      "quantity": 2,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-17T18:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 032 TAB-B",
+      "priority": 5,
+      "quantity": 3,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-18T06:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 033 CAP-C",
+      "priority": 6,
+      "quantity": 5,
+      "operation": "release CAP-C"
+    },
+    {
+      "due": "2026-02-18T18:00:00",
+      "item": "tablet A",
+      "name": "medicine demand 034 TAB-A",
+      "priority": 7,
+      "quantity": 4,
+      "operation": "release TAB-A"
+    },
+    {
+      "due": "2026-02-19T06:00:00",
+      "item": "tablet B",
+      "name": "medicine demand 035 TAB-B",
+      "priority": 8,
+      "quantity": 6,
+      "operation": "release TAB-B"
+    },
+    {
+      "due": "2026-02-19T18:00:00",
+      "item": "capsule C",
+      "name": "medicine demand 036 CAP-C",
+      "priority": 9,
+      "quantity": 2,
+      "operation": "release CAP-C"
+    }
+  ],
+  "resources": [
+    {
+      "name": "blender",
+      "setup": "clean",
+      "maximum": 2,
+      "maxearly": 7776000,
+      "efficiency": 100,
+      "setupMatrix": "sanitation class"
+    },
+    {
+      "name": "forming line A",
+      "setup": "idle",
+      "maximum": 3,
+      "maxearly": 7776000,
+      "efficiency": 100,
+      "setupMatrix": "forming tooling"
+    },
+    {
+      "name": "forming line B",
+      "setup": "idle",
+      "maximum": 2,
+      "maxearly": 7776000,
+      "efficiency": 82,
+      "setupMatrix": "forming tooling"
+    },
+    {
+      "name": "qa pool",
+      "maximum": 1,
+      "maxearly": 7776000,
+      "efficiency": 100
+    },
+    {
+      "name": "qa pharmacist 1",
+      "owner": "qa pool",
+      "maximum": 2,
+      "maxearly": 7776000,
+      "efficiency": 100
+    },
+    {
+      "name": "qa pharmacist 2",
+      "owner": "qa pool",
+      "maximum": 2,
+      "maxearly": 7776000,
+      "efficiency": 95
+    },
+    {
+      "name": "qa analyst",
+      "owner": "qa pool",
+      "maximum": 2,
+      "maxearly": 7776000,
+      "efficiency": 85
+    }
+  ],
+  "operations": [
+    {
+      "cost": 140,
+      "name": "blend TAB-A",
+      "type": "fixed_time",
+      "duration": 72000,
+      "sizeMaximum": 10,
+      "sizeMinimum": 2,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 170,
+      "name": "form TAB-A",
+      "type": "fixed_time",
+      "duration": 43200,
+      "sizeMaximum": 10,
+      "sizeMinimum": 2,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 100,
+      "name": "inspect TAB-A",
+      "type": "fixed_time",
+      "duration": 64800,
+      "sizeMaximum": 10,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "batch TAB-A",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "blend TAB-A"
+        },
+        {
+          "priority": 2,
+          "operation": "form TAB-A"
+        },
+        {
+          "priority": 3,
+          "operation": "inspect TAB-A"
+        }
+      ]
+    },
+    {
+      "cost": 25,
+      "name": "release TAB-A",
+      "type": "fixed_time",
+      "duration": 21600
+    },
+    {
+      "cost": 140,
+      "name": "blend TAB-B",
+      "type": "fixed_time",
+      "duration": 86400,
+      "sizeMaximum": 10,
+      "sizeMinimum": 2,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 170,
+      "name": "form TAB-B",
+      "type": "fixed_time",
+      "duration": 50400,
+      "sizeMaximum": 10,
+      "sizeMinimum": 2,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 100,
+      "name": "inspect TAB-B",
+      "type": "fixed_time",
+      "duration": 64800,
+      "sizeMaximum": 10,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "batch TAB-B",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "blend TAB-B"
+        },
+        {
+          "priority": 2,
+          "operation": "form TAB-B"
+        },
+        {
+          "priority": 3,
+          "operation": "inspect TAB-B"
+        }
+      ]
+    },
+    {
+      "cost": 25,
+      "name": "release TAB-B",
+      "type": "fixed_time",
+      "duration": 21600
+    },
+    {
+      "cost": 140,
+      "name": "blend CAP-C",
+      "type": "fixed_time",
+      "duration": 64800,
+      "sizeMaximum": 10,
+      "sizeMinimum": 2,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 170,
+      "name": "form CAP-C",
+      "type": "fixed_time",
+      "duration": 57600,
+      "sizeMaximum": 10,
+      "sizeMinimum": 2,
+      "sizeMultiple": 1
+    },
+    {
+      "cost": 100,
+      "name": "inspect CAP-C",
+      "type": "fixed_time",
+      "duration": 64800,
+      "sizeMaximum": 10,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "batch CAP-C",
+      "type": "routing",
+      "suboperations": [
+        {
+          "priority": 1,
+          "operation": "blend CAP-C"
+        },
+        {
+          "priority": 2,
+          "operation": "form CAP-C"
+        },
+        {
+          "priority": 3,
+          "operation": "inspect CAP-C"
+        }
+      ]
+    },
+    {
+      "cost": 25,
+      "name": "release CAP-C",
+      "type": "fixed_time",
+      "duration": 21600
+    }
+  ],
+  "setupMatrices": [
+    {
+      "name": "sanitation class",
+      "rules": [
+        {
+          "to": "allergen-free",
+          "cost": 30,
+          "from": "clean",
+          "duration": 10800,
+          "priority": 1
+        },
+        {
+          "to": "potent",
+          "cost": 50,
+          "from": "clean",
+          "duration": 18000,
+          "priority": 2
+        },
+        {
+          "to": "allergen-free",
+          "cost": 110,
+          "from": "potent",
+          "duration": 43200,
+          "priority": 3
+        },
+        {
+          "to": "potent",
+          "cost": 85,
+          "from": "allergen-free",
+          "duration": 28800,
+          "priority": 4
+        },
+        {
+          "to": ".*",
+          "cost": 20,
+          "from": ".*",
+          "duration": 7200,
+          "priority": 99
+        }
+      ]
+    },
+    {
+      "name": "forming tooling",
+      "rules": [
+        {
+          "to": "TAB-A|TAB-B|CAP-C",
+          "cost": 20,
+          "from": "idle",
+          "duration": 7200,
+          "priority": 1
+        },
+        {
+          "to": ".*",
+          "cost": 45,
+          "from": ".*",
+          "duration": 18000,
+          "priority": 99
+        }
+      ]
+    }
+  ],
+  "resourceSkills": [
+    {
+      "skill": "batch release",
+      "priority": 1,
+      "resource": "qa pharmacist 1"
+    },
+    {
+      "skill": "batch release",
+      "priority": 2,
+      "resource": "qa pharmacist 2"
+    }
+  ]
+}

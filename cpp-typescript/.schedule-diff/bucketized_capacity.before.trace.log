@@ -1,0 +1,179 @@
+[demand] attempt {"demand":"quota order A","attempt":1,"quantity":11,"requestDate":"2026-01-13T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"quota order A","operation":"ship quota product","quantity":11,"operationQuantity":11,"end":"2026-01-13T00:00:00","operationEnd":"2026-01-13T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"quota product @ quota plant","requested":11,"date":"2026-01-12T23:00:00","onhand":0}
+[buffer] shortage {"buffer":"quota product @ quota plant","iteration":0,"date":"2026-01-12T23:00:00","onhand":-11,"shortage":11}
+[operation] ask {"demand":null,"operation":"make quota product","quantity":11,"operationQuantity":11,"end":"2026-01-12T23:00:00","operationEnd":"2026-01-12T23:00:00"}
+[resource] ask {"demand":null,"operation":"make quota product","resource":"quota resource","start":"2026-01-12T21:00:00","end":"2026-01-12T23:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-12T21:00:00","end":"2026-01-12T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-12T21:00:00","start":"2026-01-12T21:00:00","end":"2026-01-12T23:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"make quota product","quantity":11,"start":"2026-01-12T21:00:00","end":"2026-01-12T23:00:00"}
+[buffer] replenish {"buffer":"quota product @ quota plant","iteration":0,"requested":11,"replenished":11,"producerDate":"2030-12-31T00:00:00","eventCountBefore":1,"eventCountAfter":2,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"quota product @ quota plant","requested":11,"remainingShortage":0,"quantity":11,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"quota order A","operation":"ship quota product","quantity":11,"start":"2026-01-12T23:00:00","end":"2026-01-13T00:00:00"}
+[demand] reply {"demand":"quota order A","attempt":1,"result":true,"quantity":11,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"quota order B","attempt":1,"quantity":10,"requestDate":"2026-01-16T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"quota order B","operation":"ship quota product","quantity":10,"operationQuantity":10,"end":"2026-01-16T00:00:00","operationEnd":"2026-01-16T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"quota product @ quota plant","requested":10,"date":"2026-01-15T23:00:00","onhand":11}
+[buffer] shortage {"buffer":"quota product @ quota plant","iteration":0,"date":"2026-01-15T23:00:00","onhand":-10,"shortage":10}
+[operation] ask {"demand":null,"operation":"make quota product","quantity":10,"operationQuantity":10,"end":"2026-01-15T23:00:00","operationEnd":"2026-01-15T23:00:00"}
+[resource] ask {"demand":null,"operation":"make quota product","resource":"quota resource","start":"2026-01-15T21:00:00","end":"2026-01-15T23:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-15T21:00:00","end":"2026-01-15T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-15T21:00:00","start":"2026-01-15T21:00:00","end":"2026-01-15T23:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"make quota product","quantity":10,"start":"2026-01-15T21:00:00","end":"2026-01-15T23:00:00"}
+[buffer] replenish {"buffer":"quota product @ quota plant","iteration":0,"requested":10,"replenished":10,"producerDate":"2030-12-31T00:00:00","eventCountBefore":3,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"quota product @ quota plant","requested":10,"remainingShortage":0,"quantity":10,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"quota order B","operation":"ship quota product","quantity":10,"start":"2026-01-15T23:00:00","end":"2026-01-16T00:00:00"}
+[demand] reply {"demand":"quota order B","attempt":1,"result":true,"quantity":10,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"quota order C","attempt":1,"quantity":7,"requestDate":"2026-01-24T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"quota order C","operation":"ship quota product","quantity":7,"operationQuantity":7,"end":"2026-01-24T00:00:00","operationEnd":"2026-01-24T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"quota product @ quota plant","requested":7,"date":"2026-01-23T23:00:00","onhand":10}
+[buffer] shortage {"buffer":"quota product @ quota plant","iteration":0,"date":"2026-01-23T23:00:00","onhand":-7,"shortage":7}
+[operation] ask {"demand":null,"operation":"make quota product","quantity":7,"operationQuantity":7,"end":"2026-01-23T23:00:00","operationEnd":"2026-01-23T23:00:00"}
+[resource] ask {"demand":null,"operation":"make quota product","resource":"quota resource","start":"2026-01-23T21:00:00","end":"2026-01-23T23:00:00"}
+[resource] candidate {"demand":null,"start":"2026-01-23T21:00:00","end":"2026-01-23T23:00:00","feasible":false}
+[resource] candidate {"demand":null,"iteration":1,"boundary":"2026-01-23T21:00:00","start":"2026-01-23T21:00:00","end":"2026-01-23T23:00:00","feasible":true}
+[operation] answer {"demand":null,"operation":"make quota product","quantity":7,"start":"2026-01-23T21:00:00","end":"2026-01-23T23:00:00"}
+[buffer] replenish {"buffer":"quota product @ quota plant","iteration":0,"requested":7,"replenished":7,"producerDate":"2030-12-31T00:00:00","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"quota product @ quota plant","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"quota order C","operation":"ship quota product","quantity":7,"start":"2026-01-23T23:00:00","end":"2026-01-24T00:00:00"}
+[demand] reply {"demand":"quota order C","attempt":1,"result":true,"quantity":7,"date":"2030-12-31T00:00:00"}
+{
+  "scenario": "bucketized_capacity",
+  "industry": "按日配额生产",
+  "description": "A bucketized resource with varying daily quotas must split, move early and move late across zero-capacity buckets",
+  "coverage": [
+    "桶化资源",
+    "变动日配额",
+    "零产能桶",
+    "部分数量",
+    "提前桶",
+    "延期桶"
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 7200,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "resourceIterationMax": 500
+  },
+  "input": {
+    "demands": 3,
+    "items": 1,
+    "buffers": 1,
+    "operations": 2,
+    "resources": 1,
+    "loads": 1,
+    "flows": 2,
+    "skills": 0,
+    "setupMatrices": 0
+  },
+  "identical": false,
+  "nativeOperationPlans": 9,
+  "typescriptOperationPlans": 6,
+  "nativeDeliveries": 4,
+  "typescriptDeliveries": 3,
+  "differenceCount": 54,
+  "firstDifferences": [
+    {
+      "path": "$.deliveries.length",
+      "native": 4,
+      "typescript": 3
+    },
+    {
+      "path": "$.deliveries[0].quantity",
+      "native": 10,
+      "typescript": 11
+    },
+    {
+      "path": "$.deliveries[1].demand",
+      "native": "quota order A",
+      "typescript": "quota order B"
+    },
+    {
+      "path": "$.deliveries[1].end",
+      "native": "2026-01-15T03:00:00",
+      "typescript": "2026-01-16T00:00:00"
+    },
+    {
+      "path": "$.deliveries[1].quantity",
+      "native": 1,
+      "typescript": 10
+    },
+    {
+      "path": "$.deliveries[2].demand",
+      "native": "quota order B",
+      "typescript": "quota order C"
+    },
+    {
+      "path": "$.deliveries[2].end",
+      "native": "2026-01-16T00:00:00",
+      "typescript": "2026-01-24T00:00:00"
+    },
+    {
+      "path": "$.operationPlans.length",
+      "native": 9,
+      "typescript": 6
+    },
+    {
+      "path": "$.operationPlans[0].end",
+      "native": "2026-01-06T01:59:59",
+      "typescript": "2026-01-12T23:00:00"
+    },
+    {
+      "path": "$.operationPlans[0].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[0].materials[0].date",
+      "native": "2026-01-06T01:59:59",
+      "typescript": "2026-01-12T23:00:00"
+    },
+    {
+      "path": "$.operationPlans[0].materials[0].quantity",
+      "native": 6,
+      "typescript": 11
+    },
+    {
+      "path": "$.operationPlans[0].quantity",
+      "native": 6,
+      "typescript": 11
+    },
+    {
+      "path": "$.operationPlans[0].setupEnd",
+      "native": "2026-01-05T23:59:59",
+      "typescript": "2026-01-12T21:00:00"
+    },
+    {
+      "path": "$.operationPlans[0].start",
+      "native": "2026-01-05T23:59:59",
+      "typescript": "2026-01-12T21:00:00"
+    },
+    {
+      "path": "$.operationPlans[1].end",
+      "native": "2026-01-12T23:00:00",
+      "typescript": "2026-01-15T23:00:00"
+    },
+    {
+      "path": "$.operationPlans[1].feasible",
+      "native": true,
+      "typescript": false
+    },
+    {
+      "path": "$.operationPlans[1].materials[0].date",
+      "native": "2026-01-12T23:00:00",
+      "typescript": "2026-01-15T23:00:00"
+    },
+    {
+      "path": "$.operationPlans[1].materials[0].quantity",
+      "native": 4,
+      "typescript": 10
+    },
+    {
+      "path": "$.operationPlans[1].quantity",
+      "native": 4,
+      "typescript": 10
+    }
+  ],
+  "databaseSchema": "codex_schedule_diff"
+}

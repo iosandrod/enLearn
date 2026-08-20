@@ -1,0 +1,70 @@
+[demand] attempt {"demand":"transfer order A","attempt":1,"quantity":8,"requestDate":"2026-01-13T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"transfer order A","operation":"ship transfer finished","quantity":8,"operationQuantity":8,"end":"2026-01-13T00:00:00","operationEnd":"2026-01-13T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"transfer finished @ transfer plant","requested":8,"date":"2026-01-12T23:00:00","onhand":0}
+[buffer] shortage {"buffer":"transfer finished @ transfer plant","iteration":0,"date":"2026-01-12T23:00:00","onhand":-8,"shortage":8}
+[operation] routing-ask {"demand":null,"operation":"transfer downstream routing","quantity":8,"operationPlanQuantity":8,"end":"2026-01-12T23:00:00","steps":["transfer finish step","transfer pack step"]}
+[operation] ask {"demand":null,"operation":"transfer pack step","quantity":8,"operationQuantity":8,"end":"2026-01-12T23:00:00","operationEnd":"2026-01-12T23:00:00"}
+[operation] answer {"demand":null,"operation":"transfer pack step","quantity":8,"start":"2026-01-12T21:00:00","end":"2026-01-12T23:00:00"}
+[operation] ask {"demand":null,"operation":"transfer finish step","quantity":8,"operationQuantity":8,"end":"2026-01-12T21:00:00","operationEnd":"2026-01-12T21:00:00"}
+[resource] ask {"demand":null,"operation":"transfer finish step","resource":"transfer finishing line","start":"2026-01-12T16:00:00","end":"2026-01-12T21:00:00"}
+[resource] input {"operation":"transfer finish step","resource":"transfer finishing line","questionQuantity":-1,"operationQuantity":8,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-01-12T16:00:00","end":"2026-01-12T21:00:00","feasible":true}
+[resource] answer {"operation":"transfer finish step","resource":"transfer finishing line","answerQuantity":1,"operationQuantity":8,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"transfer intermediate @ transfer plant","requested":8,"date":"2026-01-12T16:00:00","onhand":0}
+[buffer] shortage {"buffer":"transfer intermediate @ transfer plant","iteration":0,"date":"2026-01-12T16:00:00","onhand":-8,"shortage":8}
+[operation] ask {"demand":null,"operation":"continuous upstream","quantity":8,"operationQuantity":8,"end":"2026-01-12T16:00:00","operationEnd":"2026-01-12T16:00:00"}
+[resource] ask {"demand":null,"operation":"continuous upstream","resource":"transfer reactor","start":"2026-01-11T20:00:00","end":"2026-01-12T16:00:00"}
+[resource] input {"operation":"continuous upstream","resource":"transfer reactor","questionQuantity":-1,"operationQuantity":8,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-01-11T20:00:00","end":"2026-01-12T16:00:00","feasible":true}
+[resource] answer {"operation":"continuous upstream","resource":"transfer reactor","answerQuantity":1,"operationQuantity":8,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"transfer raw @ transfer plant","requested":8,"date":"2026-01-11T20:00:00","onhand":80}
+[buffer] answer {"demand":null,"buffer":"transfer raw @ transfer plant","requested":8,"remainingShortage":0,"quantity":8,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"continuous upstream","quantity":8,"start":"2026-01-11T20:00:00","end":"2026-01-12T16:00:00"}
+[buffer] replenish {"buffer":"transfer intermediate @ transfer plant","iteration":0,"requested":8,"replenished":8,"producerDate":"2030-12-31T00:00:00","eventCountBefore":1,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"transfer intermediate @ transfer plant","requested":8,"remainingShortage":0,"quantity":8,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":null,"operation":"transfer finish step","quantity":8,"start":"2026-01-12T16:00:00","end":"2026-01-12T21:00:00"}
+[operation] routing-answer {"demand":null,"operation":"transfer downstream routing","quantity":8,"start":"2026-01-12T16:00:00","end":"2026-01-12T23:00:00"}
+[buffer] replenish {"buffer":"transfer finished @ transfer plant","iteration":0,"requested":8,"replenished":8,"producerDate":"2026-01-12T23:00:00","eventCountBefore":1,"eventCountAfter":2,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"transfer finished @ transfer plant","requested":8,"remainingShortage":0,"quantity":8,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"transfer order A","operation":"ship transfer finished","quantity":8,"start":"2026-01-12T23:00:00","end":"2026-01-13T00:00:00"}
+[demand] reply {"demand":"transfer order A","attempt":1,"result":true,"quantity":8,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"transfer order B","attempt":1,"quantity":7,"requestDate":"2026-01-14T12:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"transfer order B","operation":"ship transfer finished","quantity":7,"operationQuantity":7,"end":"2026-01-14T12:00:00","operationEnd":"2026-01-14T12:00:00"}
+[buffer] ask {"demand":null,"buffer":"transfer finished @ transfer plant","requested":7,"date":"2026-01-14T11:00:00","onhand":0}
+[buffer] shortage {"buffer":"transfer finished @ transfer plant","iteration":0,"date":"2026-01-14T11:00:00","onhand":-7,"shortage":7}
+[operation] routing-ask {"demand":null,"operation":"transfer downstream routing","quantity":7,"operationPlanQuantity":7,"end":"2026-01-14T11:00:00","steps":["transfer finish step","transfer pack step"]}
+[operation] ask {"demand":null,"operation":"transfer pack step","quantity":7,"operationQuantity":7,"end":"2026-01-14T11:00:00","operationEnd":"2026-01-14T11:00:00"}
+[operation] answer {"demand":null,"operation":"transfer pack step","quantity":7,"start":"2026-01-14T09:00:00","end":"2026-01-14T11:00:00"}
+[operation] ask {"demand":null,"operation":"transfer finish step","quantity":7,"operationQuantity":7,"end":"2026-01-14T09:00:00","operationEnd":"2026-01-14T09:00:00"}
+[resource] ask {"demand":null,"operation":"transfer finish step","resource":"transfer finishing line","start":"2026-01-14T04:00:00","end":"2026-01-14T09:00:00"}
+[resource] input {"operation":"transfer finish step","resource":"transfer finishing line","questionQuantity":-1,"operationQuantity":7,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-01-14T04:00:00","end":"2026-01-14T09:00:00","feasible":true}
+[resource] answer {"operation":"transfer finish step","resource":"transfer finishing line","answerQuantity":1,"operationQuantity":7,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"transfer intermediate @ transfer plant","requested":7,"date":"2026-01-14T04:00:00","onhand":8}
+[buffer] answer {"demand":null,"buffer":"transfer intermediate @ transfer plant","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"transfer finish step","quantity":7,"start":"2026-01-14T04:00:00","end":"2026-01-14T09:00:00"}
+[operation] routing-answer {"demand":null,"operation":"transfer downstream routing","quantity":7,"start":"2026-01-14T04:00:00","end":"2026-01-14T11:00:00"}
+[buffer] replenish {"buffer":"transfer finished @ transfer plant","iteration":0,"requested":7,"replenished":7,"producerDate":"2026-01-14T11:00:00","eventCountBefore":3,"eventCountAfter":4,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"transfer finished @ transfer plant","requested":7,"remainingShortage":0,"quantity":7,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"transfer order B","operation":"ship transfer finished","quantity":7,"start":"2026-01-14T11:00:00","end":"2026-01-14T12:00:00"}
+[demand] reply {"demand":"transfer order B","attempt":1,"result":true,"quantity":7,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"transfer order C","attempt":1,"quantity":5,"requestDate":"2026-01-17T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"transfer order C","operation":"ship transfer finished","quantity":5,"operationQuantity":5,"end":"2026-01-17T00:00:00","operationEnd":"2026-01-17T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"transfer finished @ transfer plant","requested":5,"date":"2026-01-16T23:00:00","onhand":0}
+[buffer] shortage {"buffer":"transfer finished @ transfer plant","iteration":0,"date":"2026-01-16T23:00:00","onhand":-5,"shortage":5}
+[operation] routing-ask {"demand":null,"operation":"transfer downstream routing","quantity":5,"operationPlanQuantity":5,"end":"2026-01-16T23:00:00","steps":["transfer finish step","transfer pack step"]}
+[operation] ask {"demand":null,"operation":"transfer pack step","quantity":5,"operationQuantity":5,"end":"2026-01-16T23:00:00","operationEnd":"2026-01-16T23:00:00"}
+[operation] answer {"demand":null,"operation":"transfer pack step","quantity":5,"start":"2026-01-16T21:00:00","end":"2026-01-16T23:00:00"}
+[operation] ask {"demand":null,"operation":"transfer finish step","quantity":5,"operationQuantity":5,"end":"2026-01-16T21:00:00","operationEnd":"2026-01-16T21:00:00"}
+[resource] ask {"demand":null,"operation":"transfer finish step","resource":"transfer finishing line","start":"2026-01-16T16:00:00","end":"2026-01-16T21:00:00"}
+[resource] input {"operation":"transfer finish step","resource":"transfer finishing line","questionQuantity":-1,"operationQuantity":5,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-01-16T16:00:00","end":"2026-01-16T21:00:00","feasible":true}
+[resource] answer {"operation":"transfer finish step","resource":"transfer finishing line","answerQuantity":1,"operationQuantity":5,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"transfer intermediate @ transfer plant","requested":5,"date":"2026-01-16T16:00:00","onhand":8}
+[buffer] answer {"demand":null,"buffer":"transfer intermediate @ transfer plant","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"transfer finish step","quantity":5,"start":"2026-01-16T16:00:00","end":"2026-01-16T21:00:00"}
+[operation] routing-answer {"demand":null,"operation":"transfer downstream routing","quantity":5,"start":"2026-01-16T16:00:00","end":"2026-01-16T23:00:00"}
+[buffer] replenish {"buffer":"transfer finished @ transfer plant","iteration":0,"requested":5,"replenished":5,"producerDate":"2026-01-16T23:00:00","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"transfer finished @ transfer plant","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"transfer order C","operation":"ship transfer finished","quantity":5,"start":"2026-01-16T23:00:00","end":"2026-01-17T00:00:00"}
+[demand] reply {"demand":"transfer order C","attempt":1,"result":true,"quantity":5,"date":"2030-12-31T00:00:00"}

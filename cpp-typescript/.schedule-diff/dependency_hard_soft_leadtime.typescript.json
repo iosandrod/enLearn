@@ -1,0 +1,136 @@
+{
+  "operationPlans": [
+    {
+      "operation": "dependency predecessor",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-14T23:00:00",
+      "end": "2026-01-17T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-14T23:00:00",
+      "resources": [],
+      "materials": [],
+      "operationCost": 42,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 42,
+      "setupPenalty": 0,
+      "planKey": "auto:dependency predecessor|2026-01-14T23:00:00|2026-01-17T23:00:00||6||MO|#1",
+      "reference": "auto:dependency predecessor|2026-01-14T23:00:00|2026-01-17T23:00:00||6||MO|#1"
+    },
+    {
+      "operation": "dependency ship",
+      "demand": "dependency order",
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-24T23:00:00",
+      "end": "2026-01-25T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-24T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "dependency project",
+          "date": "2026-01-24T23:00:00",
+          "quantity": -6
+        }
+      ],
+      "operationCost": 6,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 6,
+      "setupPenalty": 0,
+      "planKey": "auto:dependency ship|2026-01-24T23:00:00|2026-01-25T00:00:00|dependency order|6||MO|#1",
+      "reference": "auto:dependency ship|2026-01-24T23:00:00|2026-01-25T00:00:00|dependency order|6||MO|#1"
+    },
+    {
+      "operation": "dependency successor",
+      "demand": null,
+      "quantity": 6,
+      "quantityCompleted": 0,
+      "start": "2026-01-22T23:00:00",
+      "end": "2026-01-24T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-22T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "dependency project",
+          "date": "2026-01-24T23:00:00",
+          "quantity": 6
+        }
+      ],
+      "operationCost": 66,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 66,
+      "setupPenalty": 0,
+      "planKey": "auto:dependency successor|2026-01-22T23:00:00|2026-01-24T23:00:00||6||MO|#1",
+      "reference": "auto:dependency successor|2026-01-22T23:00:00|2026-01-24T23:00:00||6||MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "dependency order",
+      "quantity": 6,
+      "end": "2026-01-25T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:dependency ship|2026-01-24T23:00:00|2026-01-25T00:00:00|dependency order|6||MO|#1"
+    }
+  ],
+  "dependencies": [
+    {
+      "first": "auto:dependency predecessor|2026-01-14T23:00:00|2026-01-17T23:00:00||6||MO|#1",
+      "second": "auto:dependency successor|2026-01-22T23:00:00|2026-01-24T23:00:00||6||MO|#1",
+      "quantity": 6,
+      "operation": "dependency successor",
+      "blockedBy": "dependency predecessor"
+    }
+  ],
+  "problems": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "dependency project",
+      "bufferBatch": "",
+      "date": "2026-01-24T23:00:00",
+      "quantity": -6,
+      "onhand": 0,
+      "operationPlanKey": "auto:dependency ship|2026-01-24T23:00:00|2026-01-25T00:00:00|dependency order|6||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "dependency project",
+      "bufferBatch": "",
+      "date": "2026-01-24T23:00:00",
+      "quantity": 6,
+      "onhand": 6,
+      "operationPlanKey": "auto:dependency successor|2026-01-22T23:00:00|2026-01-24T23:00:00||6||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [],
+  "costSummary": {
+    "operationCost": 114,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 114,
+    "setupPenalty": 0
+  }
+}

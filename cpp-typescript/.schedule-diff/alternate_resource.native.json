@@ -1,0 +1,92 @@
+{
+  "deliveries": [
+    {
+      "demand": "alternate order 1",
+      "end": "2009-01-20T00:00:00",
+      "quantity": 1.0
+    },
+    {
+      "demand": "alternate order 2",
+      "end": "2009-01-20T00:00:00",
+      "quantity": 1.0
+    }
+  ],
+  "operationPlans": [
+    {
+      "demand": "alternate order 1",
+      "end": "2009-01-20T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "alternate item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "delivery alternate item",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "start": "2009-01-19T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": "alternate order 2",
+      "end": "2009-01-20T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "alternate item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": -1.0
+        }
+      ],
+      "operation": "delivery alternate item",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [],
+      "start": "2009-01-19T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-19T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "alternate item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make alternate item",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "Resource A"
+      ],
+      "start": "2009-01-18T00:00:00",
+      "status": "proposed"
+    },
+    {
+      "demand": null,
+      "end": "2009-01-19T00:00:00",
+      "feasible": true,
+      "materials": [
+        {
+          "buffer": "alternate item",
+          "date": "2009-01-19T00:00:00",
+          "quantity": 1.0
+        }
+      ],
+      "operation": "make alternate item",
+      "ownerOperation": null,
+      "quantity": 1.0,
+      "resources": [
+        "Resource B"
+      ],
+      "start": "2009-01-18T00:00:00",
+      "status": "proposed"
+    }
+  ]
+}

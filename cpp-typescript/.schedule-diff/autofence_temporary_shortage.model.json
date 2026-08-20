@@ -1,0 +1,179 @@
+{
+  "plan": {
+    "autoFence": 259200
+  },
+  "flows": [
+    {
+      "type": "end",
+      "buffer": "autofence component @ plant",
+      "quantity": 1,
+      "operation": "replenish autofence component"
+    },
+    {
+      "type": "start",
+      "buffer": "autofence component @ plant",
+      "quantity": -1,
+      "operation": "confirmed component issue"
+    },
+    {
+      "type": "end",
+      "buffer": "autofence component @ plant",
+      "quantity": 1,
+      "operation": "confirmed component receipt"
+    },
+    {
+      "type": "start",
+      "buffer": "autofence component @ plant",
+      "quantity": -1,
+      "operation": "make autofence product"
+    },
+    {
+      "type": "end",
+      "buffer": "autofence product @ plant",
+      "quantity": 1,
+      "operation": "make autofence product"
+    },
+    {
+      "type": "start",
+      "buffer": "autofence product @ plant",
+      "quantity": -1,
+      "operation": "ship autofence product"
+    }
+  ],
+  "items": [
+    {
+      "name": "autofence component"
+    },
+    {
+      "name": "autofence product"
+    }
+  ],
+  "loads": [
+    {
+      "quantity": 1,
+      "resource": "autofence production line",
+      "operation": "replenish autofence component"
+    },
+    {
+      "quantity": 1,
+      "resource": "autofence production line",
+      "operation": "make autofence product"
+    }
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "erasePreviousFirst": false
+  },
+  "buffers": [
+    {
+      "item": "autofence component",
+      "name": "autofence component @ plant",
+      "onhand": 0,
+      "location": "autofence plant",
+      "producing": "replenish autofence component"
+    },
+    {
+      "item": "autofence product",
+      "name": "autofence product @ plant",
+      "onhand": 0,
+      "location": "autofence plant",
+      "producing": "make autofence product"
+    }
+  ],
+  "current": "2026-01-01T00:00:00",
+  "demands": [
+    {
+      "due": "2026-01-09T00:00:00",
+      "item": "autofence product",
+      "name": "autofence customer order A",
+      "location": "autofence plant",
+      "priority": 1,
+      "quantity": 5,
+      "operation": "ship autofence product",
+      "minShipment": 1
+    },
+    {
+      "due": "2026-01-12T00:00:00",
+      "item": "autofence product",
+      "name": "autofence customer order B",
+      "location": "autofence plant",
+      "priority": 2,
+      "quantity": 4,
+      "operation": "ship autofence product",
+      "minShipment": 1
+    }
+  ],
+  "locations": [
+    {
+      "name": "autofence plant"
+    }
+  ],
+  "resources": [
+    {
+      "name": "autofence production line",
+      "maximum": 1,
+      "location": "autofence plant",
+      "maxearly": 1728000,
+      "efficiency": 100
+    }
+  ],
+  "operations": [
+    {
+      "cost": 3,
+      "name": "replenish autofence component",
+      "type": "fixed_time",
+      "duration": 86400,
+      "location": "autofence plant",
+      "sizeMaximum": 20,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "confirmed component issue",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "autofence plant"
+    },
+    {
+      "name": "confirmed component receipt",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "autofence plant"
+    },
+    {
+      "cost": 5,
+      "name": "make autofence product",
+      "type": "fixed_time",
+      "duration": 86400,
+      "location": "autofence plant",
+      "sizeMaximum": 10,
+      "sizeMinimum": 1
+    },
+    {
+      "name": "ship autofence product",
+      "type": "fixed_time",
+      "duration": 3600,
+      "location": "autofence plant"
+    }
+  ],
+  "operationPlans": [
+    {
+      "end": "2026-01-02T01:00:00",
+      "start": "2026-01-02T00:00:00",
+      "status": "confirmed",
+      "quantity": 8,
+      "operation": "confirmed component issue",
+      "reference": "AUTOFENCE-ISSUE"
+    },
+    {
+      "end": "2026-01-03T01:00:00",
+      "start": "2026-01-03T00:00:00",
+      "status": "confirmed",
+      "quantity": 8,
+      "operation": "confirmed component receipt",
+      "reference": "AUTOFENCE-RECEIPT"
+    }
+  ]
+}

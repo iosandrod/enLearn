@@ -1,0 +1,190 @@
+{
+  "operationPlans": [
+    {
+      "operation": "make dst product",
+      "demand": null,
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-03-07T04:30:00",
+      "end": "2026-03-09T04:30:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-03-07T04:30:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "dst product @ dst plant",
+          "date": "2026-03-09T04:30:00",
+          "quantity": 1
+        }
+      ],
+      "operationCost": 3,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 3,
+      "setupPenalty": 0,
+      "planKey": "auto:make dst product|2026-03-07T04:30:00|2026-03-09T04:30:00||1||MO|#1",
+      "reference": "auto:make dst product|2026-03-07T04:30:00|2026-03-09T04:30:00||1||MO|#1"
+    },
+    {
+      "operation": "make dst product",
+      "demand": null,
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-10-31T04:00:00",
+      "end": "2026-11-02T04:30:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-10-31T04:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "dst product @ dst plant",
+          "date": "2026-11-02T04:30:00",
+          "quantity": 1
+        }
+      ],
+      "operationCost": 3,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 3,
+      "setupPenalty": 0,
+      "planKey": "auto:make dst product|2026-10-31T04:00:00|2026-11-02T04:30:00||1||MO|#1",
+      "reference": "auto:make dst product|2026-10-31T04:00:00|2026-11-02T04:30:00||1||MO|#1"
+    },
+    {
+      "operation": "ship dst product",
+      "demand": "dst spring order",
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-03-09T04:30:00",
+      "end": "2026-03-09T05:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-03-09T04:30:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "dst product @ dst plant",
+          "date": "2026-03-09T04:30:00",
+          "quantity": -1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:ship dst product|2026-03-09T04:30:00|2026-03-09T05:00:00|dst spring order|1||MO|#1",
+      "reference": "auto:ship dst product|2026-03-09T04:30:00|2026-03-09T05:00:00|dst spring order|1||MO|#1"
+    },
+    {
+      "operation": "ship dst product",
+      "demand": "dst fall order",
+      "quantity": 1,
+      "quantityCompleted": 0,
+      "start": "2026-11-02T04:30:00",
+      "end": "2026-11-02T05:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-11-02T04:30:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "dst product @ dst plant",
+          "date": "2026-11-02T04:30:00",
+          "quantity": -1
+        }
+      ],
+      "operationCost": 1,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 1,
+      "setupPenalty": 0,
+      "planKey": "auto:ship dst product|2026-11-02T04:30:00|2026-11-02T05:00:00|dst fall order|1||MO|#1",
+      "reference": "auto:ship dst product|2026-11-02T04:30:00|2026-11-02T05:00:00|dst fall order|1||MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "dst fall order",
+      "quantity": 1,
+      "end": "2026-11-02T05:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship dst product|2026-11-02T04:30:00|2026-11-02T05:00:00|dst fall order|1||MO|#1"
+    },
+    {
+      "demand": "dst spring order",
+      "quantity": 1,
+      "end": "2026-03-09T05:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship dst product|2026-03-09T04:30:00|2026-03-09T05:00:00|dst spring order|1||MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "dst product @ dst plant",
+      "bufferBatch": "",
+      "date": "2026-03-09T04:30:00",
+      "quantity": -1,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship dst product|2026-03-09T04:30:00|2026-03-09T05:00:00|dst spring order|1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "dst product @ dst plant",
+      "bufferBatch": "",
+      "date": "2026-03-09T04:30:00",
+      "quantity": 1,
+      "onhand": 1,
+      "operationPlanKey": "auto:make dst product|2026-03-07T04:30:00|2026-03-09T04:30:00||1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "dst product @ dst plant",
+      "bufferBatch": "",
+      "date": "2026-11-02T04:30:00",
+      "quantity": -1,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship dst product|2026-11-02T04:30:00|2026-11-02T05:00:00|dst fall order|1||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "dst product @ dst plant",
+      "bufferBatch": "",
+      "date": "2026-11-02T04:30:00",
+      "quantity": 1,
+      "onhand": 1,
+      "operationPlanKey": "auto:make dst product|2026-10-31T04:00:00|2026-11-02T04:30:00||1||MO|#1",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [],
+  "costSummary": {
+    "operationCost": 8,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 8,
+    "setupPenalty": 0
+  }
+}

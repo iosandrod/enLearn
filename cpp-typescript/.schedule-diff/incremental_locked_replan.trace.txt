@@ -1,0 +1,242 @@
+
+> frepple-cpp-typescript@0.1.0 compare:scheduling
+> node scripts/compare-scheduling.mjs
+
+Deleting previous plan
+Start solving cluster 1
+Start safety stock replenishment pass for cluster 1
+  Buffer 'incremental product @ plant' solves for safety stock
+  Buffer 'incremental product @ plant' solved for safety stock
+Finished safety stock replenishment pass
+Planning demand 'incremental order urgent': 1, 2026-01-06T00:00:00, 5
+  Demand 'incremental order urgent' asks: 5  2026-01-06T00:00:00
+    Operation 'ship incremental product' is asked: 5  2026-01-06T00:00:00
+      Buffer 'incremental product @ plant' is asked: 5  2026-01-05T23:00:00
+      Buffer 'incremental product @ plant' answers: 5
+    Operation 'ship incremental product' answers: 5
+  Demand 'incremental order urgent' gets answer: 5  0  0
+Planning demand 'incremental order regular': 2, 2026-01-10T00:00:00, 10
+  Demand 'incremental order regular' asks: 10  2026-01-10T00:00:00
+    Operation 'ship incremental product' is asked: 10  2026-01-10T00:00:00
+      Buffer 'incremental product @ plant' is asked: 10  2026-01-09T23:00:00
+        Operation 'make incremental product' is asked: 8  2026-01-09T23:00:00
+          Resource 'incremental line' is asked: 1  2026-01-08T23:00:00 / 2026-01-09T23:00:00
+          Resource 'incremental line' answers: 1  2026-01-09T23:00:00
+          Buffer 'incremental raw @ plant' is asked: 6  2026-01-08T23:00:00
+          Buffer 'incremental raw @ plant' answers: 6
+        Operation 'make incremental product' answers: 6
+        Operation 'make incremental product' is asked: 2  2026-01-09T23:00:00
+          Resource 'incremental line' is asked: 1  2026-01-08T23:00:00 / 2026-01-09T23:00:00
+          Resource 'incremental line' answers: 1  2026-01-09T23:00:00 using earlier capacity 2026-01-08T23:00:00
+          Buffer 'incremental raw @ plant' is asked: 2  2026-01-07T23:00:00
+          Buffer 'incremental raw @ plant' answers: 2
+        Operation 'make incremental product' answers: 2
+      Buffer 'incremental product @ plant' answers: 10
+    Operation 'ship incremental product' answers: 10
+    Constraint: Resource 'incremental line' has capacity shortage
+  Demand 'incremental order regular' gets answer: 10  32  20.2
+Planning demand 'incremental order later': 3, 2026-01-14T00:00:00, 6
+  Demand 'incremental order later' asks: 6  2026-01-14T00:00:00
+    Operation 'ship incremental product' is asked: 6  2026-01-14T00:00:00
+      Buffer 'incremental product @ plant' is asked: 6  2026-01-13T23:00:00
+        Operation 'make incremental product' is asked: 6  2026-01-13T23:00:00
+          Resource 'incremental line' is asked: 1  2026-01-12T23:00:00 / 2026-01-13T23:00:00
+          Resource 'incremental line' answers: 1  2026-01-13T23:00:00
+          Buffer 'incremental raw @ plant' is asked: 6  2026-01-12T23:00:00
+          Buffer 'incremental raw @ plant' answers: 6
+        Operation 'make incremental product' answers: 6
+      Buffer 'incremental product @ plant' answers: 6
+    Operation 'ship incremental product' answers: 6
+  Demand 'incremental order later' gets answer: 6  24  30
+Start safety stock replenishment pass for cluster 1
+Finished safety stock replenishment pass
+Start scanning excess in cluster 1
+Scanning buffer incremental product @ plant
+Finished excess scan
+End solving cluster 1
+Start solving cluster 0
+Start safety stock replenishment pass for cluster 0
+Finished safety stock replenishment pass
+Start safety stock replenishment pass for cluster 0
+Finished safety stock replenishment pass
+Start scanning excess in cluster 0
+Finished excess scan
+End solving cluster 0
+[demand] attempt {"demand":"incremental order urgent","attempt":1,"quantity":5,"requestDate":"2026-01-06T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"incremental order urgent","operation":"ship incremental product","quantity":5,"operationQuantity":5,"end":"2026-01-06T00:00:00","operationEnd":"2026-01-06T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"incremental product @ plant","requested":5,"date":"2026-01-05T23:00:00","onhand":7}
+[buffer] answer {"demand":null,"buffer":"incremental product @ plant","requested":5,"remainingShortage":0,"quantity":5,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":"incremental order urgent","operation":"ship incremental product","quantity":5,"start":"2026-01-05T23:00:00","end":"2026-01-06T00:00:00"}
+[demand] reply {"demand":"incremental order urgent","attempt":1,"result":true,"quantity":5,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"incremental order regular","attempt":1,"quantity":10,"requestDate":"2026-01-10T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"incremental order regular","operation":"ship incremental product","quantity":10,"operationQuantity":10,"end":"2026-01-10T00:00:00","operationEnd":"2026-01-10T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"incremental product @ plant","requested":10,"date":"2026-01-09T23:00:00","onhand":7}
+[buffer] shortage {"buffer":"incremental product @ plant","iteration":0,"date":"2026-01-09T23:00:00","onhand":-3,"shortage":3}
+[operation] ask {"demand":null,"operation":"make incremental product","quantity":3,"operationQuantity":3,"end":"2026-01-09T23:00:00","operationEnd":"2026-01-09T23:00:00"}
+[resource] ask {"demand":null,"operation":"make incremental product","resource":"incremental line","start":"2026-01-08T23:00:00","end":"2026-01-09T23:00:00"}
+[resource] input {"operation":"make incremental product","resource":"incremental line","questionQuantity":-1,"operationQuantity":3,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-01-08T23:00:00","end":"2026-01-09T23:00:00","feasible":true}
+[resource] answer {"operation":"make incremental product","resource":"incremental line","answerQuantity":1,"operationQuantity":3,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"incremental raw @ plant","requested":3,"date":"2026-01-08T23:00:00","onhand":88}
+[buffer] answer {"demand":null,"buffer":"incremental raw @ plant","requested":3,"remainingShortage":0,"quantity":3,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make incremental product","quantity":3,"start":"2026-01-08T23:00:00","end":"2026-01-09T23:00:00"}
+[buffer] replenish {"buffer":"incremental product @ plant","iteration":0,"requested":3,"replenished":3,"producerDate":"2030-12-31T00:00:00","eventCountBefore":5,"eventCountAfter":6,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"incremental product @ plant","requested":10,"remainingShortage":0,"quantity":10,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"incremental order regular","operation":"ship incremental product","quantity":10,"start":"2026-01-09T23:00:00","end":"2026-01-10T00:00:00"}
+[demand] reply {"demand":"incremental order regular","attempt":1,"result":true,"quantity":10,"date":"2030-12-31T00:00:00"}
+[demand] attempt {"demand":"incremental order later","attempt":1,"quantity":6,"requestDate":"2026-01-14T00:00:00","lastDate":"2030-12-31T00:00:00"}
+[operation] ask {"demand":"incremental order later","operation":"ship incremental product","quantity":6,"operationQuantity":6,"end":"2026-01-14T00:00:00","operationEnd":"2026-01-14T00:00:00"}
+[buffer] ask {"demand":null,"buffer":"incremental product @ plant","requested":6,"date":"2026-01-13T23:00:00","onhand":0}
+[buffer] shortage {"buffer":"incremental product @ plant","iteration":0,"date":"2026-01-13T23:00:00","onhand":-6,"shortage":6}
+[operation] ask {"demand":null,"operation":"make incremental product","quantity":6,"operationQuantity":6,"end":"2026-01-13T23:00:00","operationEnd":"2026-01-13T23:00:00"}
+[resource] ask {"demand":null,"operation":"make incremental product","resource":"incremental line","start":"2026-01-12T23:00:00","end":"2026-01-13T23:00:00"}
+[resource] input {"operation":"make incremental product","resource":"incremental line","questionQuantity":-1,"operationQuantity":6,"loadQuantity":-1}
+[resource] candidate {"demand":null,"start":"2026-01-12T23:00:00","end":"2026-01-13T23:00:00","feasible":true}
+[resource] answer {"operation":"make incremental product","resource":"incremental line","answerQuantity":1,"operationQuantity":6,"loadQuantity":-1}
+[buffer] ask {"demand":null,"buffer":"incremental raw @ plant","requested":6,"date":"2026-01-12T23:00:00","onhand":85}
+[buffer] answer {"demand":null,"buffer":"incremental raw @ plant","requested":6,"remainingShortage":0,"quantity":6,"date":"2030-12-31T00:00:00","plan":null}
+[operation] answer {"demand":null,"operation":"make incremental product","quantity":6,"start":"2026-01-12T23:00:00","end":"2026-01-13T23:00:00"}
+[buffer] replenish {"buffer":"incremental product @ plant","iteration":0,"requested":6,"replenished":6,"producerDate":"2030-12-31T00:00:00","eventCountBefore":7,"eventCountAfter":8,"remaining":0}
+[buffer] answer {"demand":null,"buffer":"incremental product @ plant","requested":6,"remainingShortage":0,"quantity":6,"date":"2030-12-31T00:00:00","plan":"OperationPlan"}
+[operation] answer {"demand":"incremental order later","operation":"ship incremental product","quantity":6,"start":"2026-01-13T23:00:00","end":"2026-01-14T00:00:00"}
+[demand] reply {"demand":"incremental order later","attempt":1,"result":true,"quantity":6,"date":"2030-12-31T00:00:00"}
+{
+  "scenario": "incremental_locked_replan",
+  "industry": "滚动计划增量重排",
+  "description": "An incremental solve consumes confirmed and approved supply, retains usable proposed supply, and adds only the remaining requirement",
+  "coverage": [
+    "erasePreviousFirst=false",
+    "proposed",
+    "approved",
+    "confirmed",
+    "增量补单",
+    "锁定日期"
+  ],
+  "solver": {
+    "plantype": 1,
+    "lazyDelay": 3600,
+    "constraints": 15,
+    "minimumDelay": 3600,
+    "erasePreviousFirst": false
+  },
+  "input": {
+    "demands": 3,
+    "items": 2,
+    "buffers": 2,
+    "operations": 2,
+    "resources": 1,
+    "loads": 1,
+    "flows": 3,
+    "skills": 0,
+    "setupMatrices": 0
+  },
+  "identical": false,
+  "nativeOperationPlans": 9,
+  "typescriptOperationPlans": 9,
+  "nativeDeliveries": 3,
+  "typescriptDeliveries": 3,
+  "differenceCount": 65,
+  "firstDifferences": [
+    {
+      "path": "$.inventoryProfiles[3].date",
+      "native": "2026-01-08T23:00:00",
+      "typescript": "2026-01-08T00:00:00"
+    },
+    {
+      "path": "$.inventoryProfiles[3].onhand",
+      "native": 4,
+      "typescript": 7
+    },
+    {
+      "path": "$.inventoryProfiles[3].operationPlanKey",
+      "native": "auto:make incremental product|2026-01-07T23:00:00|2026-01-08T23:00:00||2||MO|#1",
+      "typescript": "ref:MO-INCREMENTAL-PROPOSED"
+    },
+    {
+      "path": "$.inventoryProfiles[3].quantity",
+      "native": 2,
+      "typescript": 5
+    },
+    {
+      "path": "$.inventoryProfiles[5].operationPlanKey",
+      "native": "auto:make incremental product|2026-01-08T23:00:00|2026-01-09T23:00:00||6||MO|#1",
+      "typescript": "auto:make incremental product|2026-01-08T23:00:00|2026-01-09T23:00:00||3||MO|#1"
+    },
+    {
+      "path": "$.inventoryProfiles[5].quantity",
+      "native": 6,
+      "typescript": 3
+    },
+    {
+      "path": "$.inventoryProfiles[11].date",
+      "native": "2026-01-07T23:00:00",
+      "typescript": "2026-01-07T00:00:00"
+    },
+    {
+      "path": "$.inventoryProfiles[11].onhand",
+      "native": 91,
+      "typescript": 88
+    },
+    {
+      "path": "$.inventoryProfiles[11].operationPlanKey",
+      "native": "auto:make incremental product|2026-01-07T23:00:00|2026-01-08T23:00:00||2||MO|#1",
+      "typescript": "ref:MO-INCREMENTAL-PROPOSED"
+    },
+    {
+      "path": "$.inventoryProfiles[11].quantity",
+      "native": -2,
+      "typescript": -5
+    },
+    {
+      "path": "$.inventoryProfiles[12].operationPlanKey",
+      "native": "auto:make incremental product|2026-01-08T23:00:00|2026-01-09T23:00:00||6||MO|#1",
+      "typescript": "auto:make incremental product|2026-01-08T23:00:00|2026-01-09T23:00:00||3||MO|#1"
+    },
+    {
+      "path": "$.inventoryProfiles[12].quantity",
+      "native": -6,
+      "typescript": -3
+    },
+    {
+      "path": "$.operationPlans[3].end",
+      "native": "2026-01-08T23:00:00",
+      "typescript": "2026-01-08T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[3].materials[0].date",
+      "native": "2026-01-07T23:00:00",
+      "typescript": "2026-01-07T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[3].materials[0].quantity",
+      "native": -2,
+      "typescript": -5
+    },
+    {
+      "path": "$.operationPlans[3].materials[1].date",
+      "native": "2026-01-08T23:00:00",
+      "typescript": "2026-01-08T00:00:00"
+    },
+    {
+      "path": "$.operationPlans[3].materials[1].quantity",
+      "native": 2,
+      "typescript": 5
+    },
+    {
+      "path": "$.operationPlans[3].operationCost",
+      "native": 8,
+      "typescript": 20
+    },
+    {
+      "path": "$.operationPlans[3].planKey",
+      "native": "auto:make incremental product|2026-01-07T23:00:00|2026-01-08T23:00:00||2||MO|#1",
+      "typescript": "ref:MO-INCREMENTAL-PROPOSED"
+    },
+    {
+      "path": "$.operationPlans[3].quantity",
+      "native": 2,
+      "typescript": 5
+    }
+  ],
+  "databaseSchema": "codex_schedule_diff"
+}

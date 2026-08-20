@@ -1,0 +1,439 @@
+{
+  "operationPlans": [
+    {
+      "operation": "make fixed flow product",
+      "demand": null,
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T19:00:00",
+      "end": "2026-01-10T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T19:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "fixed flow product @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 9,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 9,
+      "setupPenalty": 0,
+      "planKey": "auto:make fixed flow product|2026-01-10T19:00:00|2026-01-10T23:00:00||3||MO|#1",
+      "reference": "auto:make fixed flow product|2026-01-10T19:00:00|2026-01-10T23:00:00||3||MO|#1"
+    },
+    {
+      "operation": "make fixed flow product",
+      "demand": null,
+      "quantity": 3,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T19:00:00",
+      "end": "2026-01-10T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T19:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "fixed flow product @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": 5
+        }
+      ],
+      "operationCost": 9,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 9,
+      "setupPenalty": 0,
+      "planKey": "auto:make fixed flow product|2026-01-10T19:00:00|2026-01-10T23:00:00||3||MO|#2",
+      "reference": "auto:make fixed flow product|2026-01-10T19:00:00|2026-01-10T23:00:00||3||MO|#2"
+    },
+    {
+      "operation": "make resource guard product",
+      "demand": null,
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T19:00:00",
+      "end": "2026-01-12T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T19:00:00",
+      "resources": [
+        "merge guard machine"
+      ],
+      "materials": [
+        {
+          "buffer": "resource guard product @ plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": 2
+        }
+      ],
+      "operationCost": 10,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 10,
+      "setupPenalty": 0,
+      "planKey": "auto:make resource guard product|2026-01-12T19:00:00|2026-01-12T23:00:00||2||MO|#1",
+      "reference": "auto:make resource guard product|2026-01-12T19:00:00|2026-01-12T23:00:00||2||MO|#1"
+    },
+    {
+      "operation": "make resource guard product",
+      "demand": null,
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T19:00:00",
+      "end": "2026-01-12T23:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T19:00:00",
+      "resources": [
+        "merge guard machine"
+      ],
+      "materials": [
+        {
+          "buffer": "resource guard product @ plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": 2
+        }
+      ],
+      "operationCost": 10,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 10,
+      "setupPenalty": 0,
+      "planKey": "auto:make resource guard product|2026-01-12T19:00:00|2026-01-12T23:00:00||2||MO|#2",
+      "reference": "auto:make resource guard product|2026-01-12T19:00:00|2026-01-12T23:00:00||2||MO|#2"
+    },
+    {
+      "operation": "ship fixed flow product",
+      "demand": "fixed flow guard order A",
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "fixed flow product @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship fixed flow product|2026-01-10T23:00:00|2026-01-11T00:00:00|fixed flow guard order A|5||MO|#1",
+      "reference": "auto:ship fixed flow product|2026-01-10T23:00:00|2026-01-11T00:00:00|fixed flow guard order A|5||MO|#1"
+    },
+    {
+      "operation": "ship fixed flow product",
+      "demand": "fixed flow guard order B",
+      "quantity": 5,
+      "quantityCompleted": 0,
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-10T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "fixed flow product @ plant",
+          "date": "2026-01-10T23:00:00",
+          "quantity": -5
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship fixed flow product|2026-01-10T23:00:00|2026-01-11T00:00:00|fixed flow guard order B|5||MO|#1",
+      "reference": "auto:ship fixed flow product|2026-01-10T23:00:00|2026-01-11T00:00:00|fixed flow guard order B|5||MO|#1"
+    },
+    {
+      "operation": "ship resource guard product",
+      "demand": "resource guard order A",
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-13T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "resource guard product @ plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": -2
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship resource guard product|2026-01-12T23:00:00|2026-01-13T00:00:00|resource guard order A|2||MO|#1",
+      "reference": "auto:ship resource guard product|2026-01-12T23:00:00|2026-01-13T00:00:00|resource guard order A|2||MO|#1"
+    },
+    {
+      "operation": "ship resource guard product",
+      "demand": "resource guard order B",
+      "quantity": 2,
+      "quantityCompleted": 0,
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-13T00:00:00",
+      "ownerOperation": null,
+      "batch": "",
+      "orderType": "MO",
+      "status": "proposed",
+      "feasible": true,
+      "setupSeconds": -1,
+      "setupEnd": "2026-01-12T23:00:00",
+      "resources": [],
+      "materials": [
+        {
+          "buffer": "resource guard product @ plant",
+          "date": "2026-01-12T23:00:00",
+          "quantity": -2
+        }
+      ],
+      "operationCost": 0,
+      "resourceCost": 0,
+      "setupCost": 0,
+      "totalCost": 0,
+      "setupPenalty": 0,
+      "planKey": "auto:ship resource guard product|2026-01-12T23:00:00|2026-01-13T00:00:00|resource guard order B|2||MO|#1",
+      "reference": "auto:ship resource guard product|2026-01-12T23:00:00|2026-01-13T00:00:00|resource guard order B|2||MO|#1"
+    }
+  ],
+  "deliveries": [
+    {
+      "demand": "fixed flow guard order A",
+      "quantity": 5,
+      "end": "2026-01-11T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship fixed flow product|2026-01-10T23:00:00|2026-01-11T00:00:00|fixed flow guard order A|5||MO|#1"
+    },
+    {
+      "demand": "fixed flow guard order B",
+      "quantity": 5,
+      "end": "2026-01-11T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship fixed flow product|2026-01-10T23:00:00|2026-01-11T00:00:00|fixed flow guard order B|5||MO|#1"
+    },
+    {
+      "demand": "resource guard order A",
+      "quantity": 2,
+      "end": "2026-01-13T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship resource guard product|2026-01-12T23:00:00|2026-01-13T00:00:00|resource guard order A|2||MO|#1"
+    },
+    {
+      "demand": "resource guard order B",
+      "quantity": 2,
+      "end": "2026-01-13T00:00:00",
+      "batch": "",
+      "orderType": "MO",
+      "operationPlanKey": "auto:ship resource guard product|2026-01-12T23:00:00|2026-01-13T00:00:00|resource guard order B|2||MO|#1"
+    }
+  ],
+  "dependencies": [],
+  "problems": [],
+  "inventoryProfiles": [
+    {
+      "buffer": "fixed flow product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "quantity": -5,
+      "onhand": 5,
+      "operationPlanKey": "auto:ship fixed flow product|2026-01-10T23:00:00|2026-01-11T00:00:00|fixed flow guard order A|5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "fixed flow product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "quantity": -5,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship fixed flow product|2026-01-10T23:00:00|2026-01-11T00:00:00|fixed flow guard order B|5||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "fixed flow product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "quantity": 5,
+      "onhand": 5,
+      "operationPlanKey": "auto:make fixed flow product|2026-01-10T19:00:00|2026-01-10T23:00:00||3||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "fixed flow product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-10T23:00:00",
+      "quantity": 5,
+      "onhand": 10,
+      "operationPlanKey": "auto:make fixed flow product|2026-01-10T19:00:00|2026-01-10T23:00:00||3||MO|#2",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "resource guard product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "quantity": -2,
+      "onhand": 2,
+      "operationPlanKey": "auto:ship resource guard product|2026-01-12T23:00:00|2026-01-13T00:00:00|resource guard order A|2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "resource guard product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "quantity": -2,
+      "onhand": 0,
+      "operationPlanKey": "auto:ship resource guard product|2026-01-12T23:00:00|2026-01-13T00:00:00|resource guard order B|2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "resource guard product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "quantity": 2,
+      "onhand": 2,
+      "operationPlanKey": "auto:make resource guard product|2026-01-12T19:00:00|2026-01-12T23:00:00||2||MO|#1",
+      "orderType": "MO"
+    },
+    {
+      "buffer": "resource guard product @ plant",
+      "bufferBatch": "",
+      "date": "2026-01-12T23:00:00",
+      "quantity": 2,
+      "onhand": 4,
+      "operationPlanKey": "auto:make resource guard product|2026-01-12T19:00:00|2026-01-12T23:00:00||2||MO|#2",
+      "orderType": "MO"
+    }
+  ],
+  "resourcePlans": [
+    {
+      "resource": "merge guard machine",
+      "start": "2026-01-01T00:00:00",
+      "end": "2026-01-10T19:00:00",
+      "available": 23500,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 23500,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "merge guard machine",
+      "start": "2026-01-10T19:00:00",
+      "end": "2026-01-10T23:00:00",
+      "available": 400,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 400,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "merge guard machine",
+      "start": "2026-01-10T23:00:00",
+      "end": "2026-01-11T00:00:00",
+      "available": 100,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 100,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "merge guard machine",
+      "start": "2026-01-11T00:00:00",
+      "end": "2026-01-12T19:00:00",
+      "available": 4300,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 4300,
+      "loadConfirmed": 0,
+      "utilization": 0
+    },
+    {
+      "resource": "merge guard machine",
+      "start": "2026-01-12T19:00:00",
+      "end": "2026-01-12T23:00:00",
+      "available": 400,
+      "load": 8,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 392,
+      "loadConfirmed": 0,
+      "utilization": 0.02
+    },
+    {
+      "resource": "merge guard machine",
+      "start": "2026-01-12T23:00:00",
+      "end": "2026-01-13T00:00:00",
+      "available": 100,
+      "load": 0,
+      "unavailable": 0,
+      "setup": 0,
+      "free": 100,
+      "loadConfirmed": 0,
+      "utilization": 0
+    }
+  ],
+  "costSummary": {
+    "operationCost": 38,
+    "resourceCost": 0,
+    "setupCost": 0,
+    "totalCost": 38,
+    "setupPenalty": 0
+  }
+}
