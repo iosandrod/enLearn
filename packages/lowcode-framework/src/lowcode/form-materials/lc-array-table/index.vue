@@ -27,7 +27,7 @@
       @row-dragend="handleRowDragend"
       @checkbox-change="commitRows"
       @checkbox-all="commitRows"
-      :height="'100%'"
+      :height="fillAvailableHeight ? '100%' : undefined"
     >
       <vxe-column v-if="showSeq" type="seq" width="42" />
       <vxe-column
@@ -1428,7 +1428,6 @@ function cloneValue(value: unknown) {
   min-height: 0;
   overflow-x: auto;
   overflow-y: hidden;
-  height:100%;
 }
 .lc-array-table__grid {
   width: 100%;

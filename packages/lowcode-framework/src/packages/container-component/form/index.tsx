@@ -5,37 +5,19 @@ import {
   createLowCodeFormSchema,
   isPlainRecord,
   readJsonObject,
-  readLowCodeFormSchema,
 } from '../../../lowcode/visual-converters/helpers';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
-import { compProps } from './compProps';
 
 const previewSchema: LowCodeFormSchema = {
   fields: [
-    {
-      field: 'username',
-      label: 'Username',
-      component: 'vxe-input',
-      props: { placeholder: 'Username' },
-      rules: [{ required: true, message: 'Username is required' }],
-    },
-    {
-      field: 'password',
-      label: 'Password',
-      component: 'vxe-password-input',
-      props: { placeholder: 'Password' },
-      rules: [{ required: true, message: 'Password is required' }],
-    },
+    { field: 'username', label: 'Username', component: 'vxe-input', props: { placeholder: 'Username' }, rules: [{ required: true, message: 'Username is required' }] },
+    { field: 'password', label: 'Password', component: 'vxe-password-input', props: { placeholder: 'Password' }, rules: [{ required: true, message: 'Password is required' }] },
   ],
   actions: [],
 };
 
 function createDesignSchema(props: Record<string, unknown>) {
-  return createLowCodeFormSchema(
-    props.fields,
-    props.formDesignerModel,
-    props.schema,
-  );
+  return createLowCodeFormSchema(props.fields, props.formDesignerModel, props.schema);
 }
 
 function createDesignModel(props: Record<string, unknown>) {
@@ -65,23 +47,15 @@ export default {
   preview: () => <LowCodeForm schema={previewSchema} modelValue={{}} />,
   render({ props, styles, block }) {
     const { registerRef } = useGlobalProperties();
-
     return () => (
       <div style={{ ...styles, width: '100%', minWidth: 0 }}>
-        <LowCodeForm
-          ref={(el) => registerRef(el, block._vid)}
-          {...createDesignFormProps(props)}
-        />
+        <LowCodeForm ref={(el) => registerRef(el, block._vid)} {...createDesignFormProps(props)} />
       </div>
     );
   },
-  resize: {
-    height: true,
-    width: true,
-  },
+  resize: { height: true, width: true },
   events: [
     { label: 'Submit', value: 'submit' },
     { label: 'Model value changed', value: 'update:model-value' },
   ],
-  props: compProps,
 } as VisualEditorComponent;

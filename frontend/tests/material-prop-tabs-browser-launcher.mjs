@@ -38,11 +38,13 @@ page.on('response', (response) => {
     postData?.serviceName === 'lowcode' &&
     postData?.serviceMethod === 'listItems' &&
     postData?.postData?.resource === 'lowcode_form_definitions' &&
-    postData?.postData?.filters?.code?.value === 'material-prop.'
+    typeof postData?.postData?.filters?.code === 'string' &&
+    postData.postData.filters.code.startsWith('material-prop.')
   ) {
     definitionRequests.push({
       status: response.status(),
-      operator: postData.postData.filters.code.op,
+      code: postData.postData.filters.code,
+      enabled: postData.postData.filters.enabled,
       limit: postData.postData.limit,
     });
   }
@@ -74,7 +76,7 @@ async function selectTreeNode(text, componentKey) {
     const strong = (await row.locator('strong').first().textContent())?.trim();
     const small = (await row.locator('small').first().textContent())?.trim();
     if (strong !== text || (componentKey && small !== componentKey)) continue;
-    await row.click();
+    await row.evaluate((element) => element.click());
     await page.waitForTimeout(300);
     return true;
   }
@@ -122,20 +124,41 @@ try {
   await mkdir(artifactDir, { recursive: true });
   await waitForDesigner();
 
-  assert.ok(
-    definitionRequests.some(
-      (entry) => entry.status === 200 && entry.operator === 'startsWith' && entry.limit === 500,
-    ),
-    'Designer did not load material property definitions from the database.',
-  );
-
   const selectedForm =
     await selectTreeNode('数据源信息', 'form') ||
     await selectTreeNode('普通表单', 'form');
   assert.ok(selectedForm, 'Could not select the form block in the layer tree.');
-  await verifyTabs(['基础', '数据', '表单字段', '默认插槽节点', '表单按钮', '行为']);
-  await verifyStandaloneArrayTableTab('表单字段');
+  await page.waitForFunction(
+    () => document.querySelector('.material-prop-form')?.textContent?.includes('结构'),
+  );
+  assert.ok(
+    definitionRequests.some(
+      (entry) =>
+        entry.status === 200 &&
+        entry.code === 'material-prop.form' &&
+        entry.enabled === true &&
+        entry.limit === 1,
+    ),
+    'Designer did not query the selected form material property definition by exact code.',
+  );
+  await verifyTabs(['基础', '数据', '结构', '按钮', '行为']);
+  await innerTab('结构').click();
   await page.getByText('表单字段', { exact: true }).last().waitFor({ state: 'visible' });
+  const formFieldsTable = page.locator(
+    '.material-prop-form [data-lc-field="fields"] .lc-array-table',
+  );
+  await formFieldsTable.waitFor({ state: 'visible' });
+  await formFieldsTable
+    .locator('.vxe-table--header-wrapper')
+    .first()
+    .waitFor({ state: 'visible' });
+  const formFieldsTableBox = await formFieldsTable
+    .locator('.lc-array-table__grid')
+    .boundingBox();
+  assert.ok(
+    formFieldsTableBox && formFieldsTableBox.height > 100,
+    'The form fields table should have a visible, usable height inside the structure tab.',
+  );
   await page.screenshot({
     path: join(artifactDir, 'material-prop-tabs-form.png'),
     fullPage: true,
@@ -145,16 +168,8 @@ try {
     await selectTreeNode('字典明细', 'lowcode-grid') ||
     await selectTreeNode('数据表格', 'lowcode-grid');
   assert.ok(selectedGrid, 'Could not select the grid block in the layer tree.');
-  await verifyTabs([
-    '基础',
-    '数据',
-    'VxeGrid data',
-    '表格列',
-    '显示',
-    '行按钮',
-    'VxeGrid 事件',
-  ]);
-  await verifyStandaloneArrayTableTab('VxeGrid 事件');
+  await verifyTabs(['基础', '数据', '列', '显示', '交互']);
+  await innerTab('交互').click();
   await page.getByText('VxeGrid 事件', { exact: true }).last().waitFor({ state: 'visible' });
   await page.screenshot({
     path: join(artifactDir, 'material-prop-tabs-grid.png'),

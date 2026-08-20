@@ -6,8 +6,6 @@ import {
   registerLowCodeFormMaterial,
   type LowCodeFormMaterial,
 } from '../lowcode/form-materials';
-import { registerMaterialPropForm } from '../visual-editor/material-prop-forms';
-import type { MaterialPropFormDefinition } from '../visual-editor/material-prop-forms';
 import {
   registerVisualToLowCodeConverter,
   type VisualToLowCodeConverter,
@@ -17,7 +15,6 @@ export type LowCodeMaterialPluginContext = {
   registerBlockMaterial(material: LowCodeBlockMaterial): void;
   registerFormMaterial(material: LowCodeFormMaterial): void;
   registerVisualConverter(converter: VisualToLowCodeConverter): void;
-  registerMaterialPropForm(definition: MaterialPropFormDefinition): void;
 };
 
 export type LowCodeMaterialPlugin = {
@@ -29,7 +26,6 @@ export const lowCodeMaterialPluginContext: LowCodeMaterialPluginContext = {
   registerBlockMaterial: registerLowCodeBlockMaterial,
   registerFormMaterial: registerLowCodeFormMaterial,
   registerVisualConverter: registerVisualToLowCodeConverter,
-  registerMaterialPropForm,
 };
 
 const installedMaterialPlugins = new Set<string | LowCodeMaterialPlugin>();

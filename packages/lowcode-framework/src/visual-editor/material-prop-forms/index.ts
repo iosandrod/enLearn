@@ -12,14 +12,10 @@ export {
   mergeTableFieldOptions,
 } from './table-field-options';
 export {
-  getMaterialPropFormDefinition,
-  getMaterialPropFormDefinitions,
-  registerMaterialPropForm,
-} from './registry';
-export {
   MATERIAL_PROP_FORM_CODE_PREFIX,
-  loadDatabaseMaterialPropForms,
-  reloadDatabaseMaterialPropForms,
+  getMaterialPropFormCode,
+  loadDatabaseMaterialPropForm,
+  reloadDatabaseMaterialPropForm,
 } from './database';
 export type {
   MaterialPropFieldTarget,

@@ -4,7 +4,6 @@ export { default as VisualEditor } from '../visual-editor/index.vue';
 export * from './design-dialog';
 
 export * from '../core';
-export * from '../visual-editor/visual-editor.props';
 export * from '../visual-editor/components/grid-designer/grid-designer.service';
 export {
   $$buttonGroupDesigner,

@@ -5,13 +5,6 @@ import {
   useSystemSettings,
 } from '../../../core/system-settings';
 import type { VisualEditorComponent } from '../../../visual-editor/visual-editor.utils';
-import {
-  createEditorInputProp,
-  createEditorJsonProp,
-  createEditorSelectProp,
-  createEditorSwitchProp,
-  createEditorTableProp,
-} from '../../../visual-editor/visual-editor.props';
 import { normalizeLowCodeGridColumns } from '../../../utils/lowcode';
 import type { LowCodeGridColumn } from '../../../types/lowcode';
 
@@ -26,76 +19,14 @@ const defaultData: Record<string, unknown>[] = [
   { email: 'bob@example.com', full_name: 'Bob', role: '老师' },
 ];
 
-const gridOverflowOptions = [
-  { label: '默认', value: '' },
-  { label: 'true', value: true },
-  { label: 'false', value: false },
-  { label: 'ellipsis', value: 'ellipsis' },
-  { label: 'title', value: 'title' },
-  { label: 'tooltip', value: 'tooltip' },
-];
-
-const gridBorderOptions = [
-  { label: 'true', value: true },
-  { label: 'false', value: false },
-  { label: 'default', value: 'default' },
-  { label: 'full', value: 'full' },
-  { label: 'outer', value: 'outer' },
-  { label: 'inner', value: 'inner' },
-  { label: 'none', value: 'none' },
-];
-
-const gridSizeOptions = [
-  { label: '默认', value: '' },
-  { label: 'medium', value: 'medium' },
-  { label: 'small', value: 'small' },
-  { label: 'mini', value: 'mini' },
-];
-
-const gridTableTypeOptions = [
-  { label: 'main', value: 'main' },
-  { label: 'detail', value: 'detail' },
-  { label: 'default', value: 'default' },
-];
-
 const vxeGridPropKeys = [
-  'border',
-  'stripe',
-  'showOverflow',
-  'showHeaderOverflow',
-  'showFooterOverflow',
-  'height',
-  'minHeight',
-  'maxHeight',
-  'rowHeight',
-  'headerHeight',
-  'headerRowHeight',
-  'footerHeight',
-  'footerRowHeight',
-  'size',
-  'loading',
-  'round',
-  'showHeader',
-  'showFooter',
-  'autoResize',
-  'syncResize',
-  'cellConfig',
-  'headerCellConfig',
-  'footerCellConfig',
-  'rowConfig',
-  'columnConfig',
-  'sortConfig',
-  'filterConfig',
-  'pagerConfig',
-  'toolbarConfig',
-  'proxyConfig',
-  'editConfig',
-  'checkboxConfig',
-  'radioConfig',
-  'treeConfig',
-  'expandConfig',
-  'tooltipConfig',
-  'virtualXConfig',
+  'border', 'stripe', 'showOverflow', 'showHeaderOverflow', 'showFooterOverflow',
+  'height', 'minHeight', 'maxHeight', 'rowHeight', 'headerHeight', 'headerRowHeight',
+  'footerHeight', 'footerRowHeight', 'size', 'loading', 'round', 'showHeader',
+  'showFooter', 'autoResize', 'syncResize', 'cellConfig', 'headerCellConfig',
+  'footerCellConfig', 'rowConfig', 'columnConfig', 'sortConfig', 'filterConfig',
+  'pagerConfig', 'toolbarConfig', 'proxyConfig', 'editConfig', 'checkboxConfig',
+  'radioConfig', 'treeConfig', 'expandConfig', 'tooltipConfig', 'virtualXConfig',
   'virtualYConfig',
 ] as const;
 
@@ -110,28 +41,20 @@ function normalizeRows(value: unknown, fallback: Record<string, unknown>[]) {
 }
 
 function resolveGridMinHeight(value: unknown) {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return `${Math.max(value, 200)}px`;
-  }
-
+  if (typeof value === 'number' && Number.isFinite(value)) return `${Math.max(value, 200)}px`;
   if (typeof value === 'string') {
     const px = value.trim().match(/^(\d+(?:\.\d+)?)px$/i);
     if (px) return `${Math.max(Number(px[1]), 200)}px`;
   }
-
   return '200px';
 }
 
 function pickVxeGridOptions(props: Record<string, unknown>) {
   const legacyOptions = isRecord(props.gridOptions) ? props.gridOptions : {};
   const nextOptions: Record<string, unknown> = { ...legacyOptions };
-
   vxeGridPropKeys.forEach((key) => {
-    if (typeof props[key] !== 'undefined') {
-      nextOptions[key] = props[key];
-    }
+    if (typeof props[key] !== 'undefined') nextOptions[key] = props[key];
   });
-
   return nextOptions;
 }
 
@@ -152,25 +75,13 @@ function createDesignGridProps(
   fillRemaining: boolean,
   systemTableConfig = resolveSystemTableConfig(),
 ) {
-  const options = mergeSystemTableOptions(
-    pickVxeGridOptions(props),
-    systemTableConfig,
-  );
+  const options = mergeSystemTableOptions(pickVxeGridOptions(props), systemTableConfig);
   const columns = normalizeLowCodeGridColumns(
-    normalizeRows(props.columns ?? options.columns, defaultColumns) as LowCodeGridColumn[]
+    normalizeRows(props.columns ?? options.columns, defaultColumns) as LowCodeGridColumn[],
   );
   const data = normalizeRows(props.data, createPreviewData(columns));
   const height = fillRemaining ? '100%' : options.height ?? styles.height ?? '360px';
-
-  return {
-    border: true,
-    stripe: true,
-    showOverflow: true,
-    ...options,
-    height,
-    columns,
-    data,
-  };
+  return { border: true, stripe: true, showOverflow: true, ...options, height, columns, data };
 }
 
 export default {
@@ -180,29 +91,10 @@ export default {
   preview: () => {
     const VxeGrid = resolveComponent('vxe-grid') as any;
     return (
-      <div
-        style={{
-          width: '240px',
-          border: '1px solid #dcdfe6',
-          borderRadius: '6px',
-          background: '#fff',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{ fontWeight: 600, padding: '8px 10px', borderBottom: '1px solid #ebeef5' }}
-        >
-          数据表格
-        </div>
+      <div style={{ width: '240px', border: '1px solid #dcdfe6', borderRadius: '6px', background: '#fff', overflow: 'hidden' }}>
+        <div style={{ fontWeight: 600, padding: '8px 10px', borderBottom: '1px solid #ebeef5' }}>数据表格</div>
         <div style={{ height: '116px' }}>
-          <VxeGrid
-            border
-            size="mini"
-            showOverflow
-            height="116px"
-            columns={defaultColumns}
-            data={defaultData}
-          />
+          <VxeGrid border size="mini" showOverflow height="116px" columns={defaultColumns} data={defaultData} />
         </div>
       </div>
     );
@@ -211,164 +103,20 @@ export default {
     const systemSettings = useSystemSettings();
     return () => {
       const VxeGrid = resolveComponent('vxe-grid') as any;
-      const fillRemaining =
-        block.layout?.fillRemaining === true || props.layout?.fillRemaining === true;
+      const fillRemaining = block.layout?.fillRemaining === true || props.layout?.fillRemaining === true;
       const gridProps = createDesignGridProps(
         props,
         styles as Record<string, unknown>,
         fillRemaining,
         resolveSystemTableConfig(systemSettings),
       );
-
       return (
-        <div
-          style={{
-            ...styles,
-            width: '100%',
-            height: fillRemaining ? '100%' : styles.height,
-            minHeight: resolveGridMinHeight(styles.minHeight),
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-          }}
-        >
+        <div style={{ ...styles, width: '100%', height: fillRemaining ? '100%' : styles.height, minHeight: resolveGridMinHeight(styles.minHeight), display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <VxeGrid {...gridProps} />
         </div>
       );
     };
   },
   showStyleConfig: true,
-  styles: {
-    minHeight: '320px',
-    height: '360px',
-  },
-  props: {
-    blockId: createEditorInputProp({
-      label: 'Block ID',
-      defaultValue: 'records-grid',
-    }),
-    title: createEditorInputProp({
-      label: '标题',
-      defaultValue: '数据列表',
-    }),
-    tableType: createEditorSelectProp({
-      label: '表格类型',
-      options: gridTableTypeOptions,
-      defaultValue: 'default',
-    }),
-    sourceKey: createEditorInputProp({
-      label: '数据源',
-      defaultValue: 'records',
-    }),
-    serviceName: createEditorInputProp({
-      label: '服务名',
-      defaultValue: 'admin',
-    }),
-    serviceMethod: createEditorInputProp({
-      label: '列表方法',
-      defaultValue: 'listItems',
-    }),
-    saveMethod: createEditorInputProp({
-      label: '保存方法',
-      defaultValue: '',
-    }),
-    deleteMethod: createEditorInputProp({
-      label: '删除方法',
-      defaultValue: '',
-    }),
-    postDataJson: createEditorJsonProp({
-      label: '请求参数 JSON',
-      defaultValue: '{\n  "tableName": "profiles"\n}',
-      rootType: 'object',
-      valueMode: 'string',
-    }),
-    showRowActions: createEditorSwitchProp({
-      label: '显示行操作',
-      defaultValue: true,
-    }),
-    border: createEditorSelectProp({
-      label: 'VxeGrid border',
-      options: gridBorderOptions,
-      defaultValue: true,
-    }),
-    stripe: createEditorSwitchProp({
-      label: 'VxeGrid stripe',
-      defaultValue: true,
-    }),
-    showOverflow: createEditorSelectProp({
-      label: 'VxeGrid showOverflow',
-      options: gridOverflowOptions,
-      defaultValue: 'tooltip',
-    }),
-    height: createEditorInputProp({
-      label: 'VxeGrid height',
-      defaultValue: '360px',
-    }),
-    size: createEditorSelectProp({
-      label: 'VxeGrid size',
-      options: gridSizeOptions,
-      defaultValue: '',
-    }),
-    columns: createEditorTableProp({
-      label: 'VxeGrid columns',
-      option: {
-        showKey: 'title',
-        options: [
-          { label: '字段', field: 'field' },
-          { label: '标题', field: 'title' },
-          { label: '宽度', field: 'width' },
-          { label: '最小宽度', field: 'minWidth' },
-          { label: '格式化器', field: 'formatter' },
-          {
-            label: '溢出',
-            field: 'showOverflow',
-            component: 'vxe-select',
-            minWidth: 110,
-            options: gridOverflowOptions,
-          },
-          {
-            label: '筛选 JSON',
-            field: 'filters',
-            component: 'lc-json-editor',
-            minWidth: 220,
-            placeholder: '[]',
-          },
-          {
-            label: '渲染 JSON',
-            field: 'cellRender',
-            component: 'lc-json-editor',
-            minWidth: 220,
-            placeholder: '{}',
-          },
-          {
-            label: '编辑 JSON',
-            field: 'editRender',
-            component: 'lc-json-editor',
-            minWidth: 220,
-            placeholder: '{}',
-          },
-          {
-            label: '参数 JSON',
-            field: 'params',
-            component: 'lc-json-editor',
-            minWidth: 220,
-            placeholder: '{}',
-          },
-        ],
-      },
-      defaultValue: defaultColumns,
-    }),
-    data: createEditorTableProp({
-      label: 'VxeGrid data',
-      option: {
-        showKey: 'email',
-        options: [
-          { label: 'email', field: 'email' },
-          { label: 'full_name', field: 'full_name' },
-          { label: 'role', field: 'role' },
-        ],
-      },
-      defaultValue: defaultData,
-    }),
-  },
+  styles: { minHeight: '320px', height: '360px' },
 } as VisualEditorComponent;

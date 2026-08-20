@@ -3,12 +3,6 @@ import type {
   VisualEditorBlockData,
   VisualEditorComponent,
 } from '../../visual-editor/visual-editor.utils';
-import {
-  createEditorInputProp,
-  createEditorJsonProp,
-  createEditorSwitchProp,
-  type VisualEditorProps,
-} from '../../visual-editor/visual-editor.props';
 
 type PlanningVisualDesignerOptions = {
   key: string;
@@ -20,7 +14,6 @@ type PlanningVisualDesignerOptions = {
   sourceKey: string;
   dataset: string;
   sampleData: unknown;
-  props?: Record<string, VisualEditorProps>;
   createRuntimeProps?: (props: Record<string, unknown>) => Record<string, unknown>;
 };
 
@@ -66,45 +59,6 @@ function previewCard(options: PlanningVisualDesignerOptions) {
       </span>
     </div>
   );
-}
-
-function commonProps(options: PlanningVisualDesignerOptions) {
-  return {
-    blockId: createEditorInputProp({
-      label: 'Block ID',
-      defaultValue: `${options.key}-block`,
-    }),
-    title: createEditorInputProp({
-      label: '标题',
-      defaultValue: options.label,
-    }),
-    description: createEditorInputProp({
-      label: '说明',
-      defaultValue: options.description,
-    }),
-    sourceKey: createEditorInputProp({
-      label: '数据源',
-      defaultValue: options.sourceKey,
-    }),
-    serviceName: createEditorInputProp({
-      label: '服务名',
-      defaultValue: 'planning',
-    }),
-    serviceMethod: createEditorInputProp({
-      label: '数据方法',
-      defaultValue: 'getPlanningConsoleData',
-    }),
-    postDataJson: createEditorJsonProp({
-      label: '请求参数 JSON',
-      defaultValue: JSON.stringify({ dataset: options.dataset, filters: {} }),
-      rootType: 'object',
-      valueMode: 'string',
-    }),
-    height: createEditorInputProp({
-      label: '高度',
-      defaultValue: 420,
-    }),
-  };
 }
 
 export function createPlanningVisualDesigner(
@@ -153,18 +107,6 @@ export function createPlanningVisualDesigner(
     styles: {
       width: '100%',
       minHeight: '420px',
-    },
-    props: {
-      ...commonProps(options),
-      ...(options.kind === 'planningFlow'
-        ? {
-            fitViewOnInit: createEditorSwitchProp({
-              label: '初始适应视图',
-              defaultValue: true,
-            }),
-          }
-        : {}),
-      ...(options.props ?? {}),
     },
     events: [{ label: '选择节点或任务', value: `${options.kind}.select` }],
   };

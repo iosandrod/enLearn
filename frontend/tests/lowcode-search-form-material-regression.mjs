@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const root = new URL('../../', import.meta.url);
-const [material, converter, runtimeConverter, propertyForms, migration] = await Promise.all([
+const [material, converter, runtimeConverter, migration] = await Promise.all([
   readFile(
     new URL(
       'packages/lowcode-framework/src/packages/business-component/lowcode-search-form/index.tsx',
@@ -22,14 +22,7 @@ const [material, converter, runtimeConverter, propertyForms, migration] = await 
     'utf8',
   ),
   readFile(
-    new URL(
-      'packages/lowcode-framework/src/visual-editor/material-prop-forms/materials/page-blocks.ts',
-      root,
-    ),
-    'utf8',
-  ),
-  readFile(
-    new URL('supabase/migrations/20260810130000_search_form_material_schema.sql', root),
+    new URL('supabase/migrations/20260819100000_database_only_material_property_forms.sql', root),
     'utf8',
   ),
 ]);
@@ -74,19 +67,20 @@ assert.match(
   /initialValuesJson: stringifyJson\(block\.initialValues, \{\}\)/,
   'Runtime-to-visual conversion must retain initial values for search and edit forms.',
 );
-assert.match(
-  propertyForms,
-  /componentKey: 'lowcode-search-form'[\s\S]*?field: 'initialValuesJson'/,
+const definitionMatch = migration.match(
+  /\('material-prop\.lowcode-search-form'[^$]*\$schema\$(\{.*?\})\$schema\$::jsonb/,
+);
+assert.ok(definitionMatch, 'The database-only migration must seed the search form schema.');
+const definition = JSON.parse(definitionMatch[1]);
+assert.ok(
+  definition.fields.some((field) => field.field === 'initialValuesJson'),
   'The database-backed property form must expose canonical search initial values.',
 );
-assert.match(
-  migration,
-  /where code = 'material-prop\.lowcode-search-form'/,
-  'The database-backed property definition must be updated by a forward migration.',
+const dataTab = definition.layout[0].tabs.find((tab) =>
+  tab.blocks.some((block) => block.field === 'initialValuesJson'),
 );
-assert.match(
-  migration,
-  /"label": "数据"[\s\S]*?"field": "initialValuesJson"/,
+assert.ok(
+  dataTab?.blocks.some((block) => block.field === 'initialValuesJson'),
   'The database property layout must keep initial values in the data tab.',
 );
 

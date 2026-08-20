@@ -1,126 +1,132 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 
 const root = new URL('../../', import.meta.url);
+const source = (path) => readFile(new URL(path, root), 'utf8');
 
-async function source(path) {
-  return readFile(new URL(path, root), 'utf8');
-}
-
-const database = await source(
-  'packages/lowcode-framework/src/visual-editor/material-prop-forms/database.ts',
-);
-const registry = await source(
-  'packages/lowcode-framework/src/visual-editor/material-prop-forms/registry.ts',
-);
-const visualProps = await source(
-  'packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts',
-);
-const provider = await source(
-  'packages/lowcode-framework/src/components/VisualEditorProvider.vue',
-);
-const panelStyles = await source(
-  'packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/index.module.scss',
-);
-const migration = await source(
-  'supabase/migrations/20260809160000_material_property_form_tabs.sql',
-);
-const arrayTableMigration = await source(
-  'supabase/migrations/20260809170000_material_property_array_table_tabs.sql',
-);
-const repairMigration = await source(
-  'supabase/migrations/20260817090000_repair_form_property_tabs.sql',
-);
+const [
+  database,
+  registry,
+  visualProps,
+  provider,
+  attrEditor,
+  panelStyles,
+  materialsApi,
+  migration,
+  designerPage,
+  emptyDesignerPage,
+] = await Promise.all([
+  source('packages/lowcode-framework/src/visual-editor/material-prop-forms/database.ts'),
+  source('packages/lowcode-framework/src/visual-editor/material-prop-forms/registry.ts'),
+  source('packages/lowcode-framework/src/visual-editor/material-prop-forms/visual-props.ts'),
+  source('packages/lowcode-framework/src/components/VisualEditorProvider.vue'),
+  source('packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/components/attr-editor/index.tsx'),
+  source('packages/lowcode-framework/src/visual-editor/components/right-attribute-panel/index.module.scss'),
+  source('packages/lowcode-framework/src/materials/index.ts'),
+  source('supabase/migrations/20260819100000_database_only_material_property_forms.sql'),
+  source('frontend/pages/dashboard/low-code/designer/[code].vue'),
+  source('frontend/pages/dashboard/low-code/designer/index.vue'),
+]);
 
 assert.match(database, /MATERIAL_PROP_FORM_CODE_PREFIX = 'material-prop\.'/);
+assert.match(database, /componentKey\.trim\(\)\.toLowerCase\(\)/);
 assert.match(database, /resource: 'lowcode_form_definitions'/);
-assert.match(database, /op: 'startsWith'/);
-assert.match(database, /definitions\.forEach\(registerMaterialPropForm\)/);
+assert.match(database, /filters:\s*\{\s*code,\s*enabled: true/);
+assert.match(database, /limit: 1/);
+assert.match(database, /layout\.length === 1/);
+assert.match(database, /layout\[0\]\.kind === 'tabs'/);
+assert.match(database, /layout\[0\]\.tabs\.length > 0/);
+assert.doesNotMatch(database, /op:\s*'startsWith'|loadDatabaseMaterialPropForms/);
 
-assert.match(registry, /const definitionVersion = shallowRef\(0\)/);
-assert.match(registry, /definition\.mergeBuiltinFields && current/);
-assert.match(registry, /definitionVersion\.value \+= 1/);
-assert.match(visualProps, /definition\?\.separateArrayTableTabs === true/);
-assert.match(visualProps, /field\.component === 'lc-array-table'/);
-assert.match(visualProps, /promoteArrayTableFieldsToTabs\(rootTabs, fields\)/);
-assert.match(visualProps, /label: firstField\.label \|\| tab\.label/);
-assert.match(visualProps, /'样式'/);
-assert.match(visualProps, /'其他'/);
-assert.match(provider, /loadDatabaseMaterialPropForms\(host\.getServiceApi\(\)\)/);
+assert.match(registry, /const definitionMap/);
+assert.doesNotMatch(registry, /import\.meta\.glob|mergeBuiltinFields|materials\//);
+assert.doesNotMatch(materialsApi, /registerMaterialPropForm/);
+assert.doesNotMatch(visualProps, /VisualEditorProps|promoteArrayTableFieldsToTabs|mergeBuiltinFields|extendsVisualProps/);
+assert.doesNotMatch(provider, /loadDatabaseMaterialPropForm/);
+assert.match(attrEditor, /loadDatabaseMaterialPropForm\(host\.getServiceApi\(\), componentKey\)/);
+assert.match(attrEditor, /watch\(\s*\(\) => currentBlock\.value\?\.componentKey/);
+assert.match(designerPage, /<LowCodeVisualDesigner[^>]*:service-api="serviceApi"/);
+assert.match(designerPage, /const serviceApi = useServiceApi\(\)/);
+assert.match(emptyDesignerPage, /<LowCodeVisualDesigner[^>]*:service-api="serviceApi"/);
+assert.match(emptyDesignerPage, /const serviceApi = useServiceApi\(\)/);
 
 assert.match(panelStyles, /\.material-prop-form \.lc-form-tabs/);
 assert.match(panelStyles, /min-height: 36px/);
 assert.match(panelStyles, /border-radius: 6px/);
 
-const expectedComponents = [
-  'form',
-  'lowcode-edit-form',
-  'lowcode-search-form',
-  'lowcode-grid',
-  'array-table',
-  'input',
-  'picker',
-  'datetimePicker',
-  'stepper',
-  'switch',
-  'radio',
-  'checkbox',
-  'rate',
-  'slider',
-  'sub-form',
+const rowPattern = /\(\s*'material-prop\.([^']+)'[^$]*\$schema\$(\{.*?\})\$schema\$::jsonb,\s*true\s*\)/g;
+const definitions = new Map();
+for (const match of migration.matchAll(rowPattern)) {
+  const definition = JSON.parse(match[2]);
+  assert.equal(match[1], definition.componentKey.toLowerCase());
+  definitions.set(definition.componentKey, definition);
+}
+
+const chartComponentKeys = [
+  'echarts-bar',
+  'echarts-line',
+  'echarts-area',
+  'echarts-pie',
+  'echarts-doughnut',
+  'echarts-scatter',
+  'echarts-radar',
 ];
 
-for (const componentKey of expectedComponents) {
-  assert.match(
-    migration,
-    new RegExp(`'${componentKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`),
+assert.ok(
+  definitions.size + chartComponentKeys.length >= 38,
+  'the database-only migration must seed all draggable material schemas',
+);
+for (const [componentKey, definition] of definitions) {
+  assert.equal(definition.componentKey, componentKey);
+  assert.ok(Array.isArray(definition.fields) && definition.fields.length > 0, `${componentKey} needs fields`);
+  assert.ok(Array.isArray(definition.actions), `${componentKey} needs actions`);
+  assert.equal(definition.layout?.length, 1, `${componentKey} needs one root layout node`);
+  assert.equal(definition.layout[0].kind, 'tabs', `${componentKey} root layout must be tabs`);
+  assert.ok(definition.layout[0].tabs.length > 0, `${componentKey} needs at least one tab`);
+}
+
+for (const componentKey of ['form', 'lowcode-edit-form', 'lowcode-search-form', 'lowcode-grid', 'array-table', 'input', 'picker', 'datetimePicker', 'stepper', 'switch', 'radio', 'checkbox', 'rate', 'slider', 'sub-form']) {
+  assert.ok(definitions.has(componentKey), `missing database material property definition for ${componentKey}`);
+}
+
+assert.ok(definitions.has('planning-flow'), 'missing database material property definition for planning-flow');
+for (const componentKey of chartComponentKeys) {
+  assert.ok(
+    migration.includes(`('${componentKey}'`),
     `missing database material property definition for ${componentKey}`,
   );
 }
+assert.match(migration, /'layout', jsonb_build_array\(jsonb_build_object\(\s*'kind', 'tabs'/);
+assert.match(migration, /'actions', jsonb_build_array\(\)/);
 
-assert.equal(
-  new Set(migration.match(/'material-prop\.[^']+'/g) ?? []).size,
-  expectedComponents.length,
-);
-assert.match(migration, /'mergeBuiltinFields', true/);
-assert.match(migration, /'separateArrayTableTabs', true/);
-assert.match(migration, /'fields', '\[\]'::jsonb/);
-assert.match(migration, /on conflict \(code\) do update set/);
-assert.match(arrayTableMigration, /where code like 'material-prop\.%'/);
-assert.match(arrayTableMigration, /\{separateArrayTableTabs\}/);
-
-const repairedTabLabels = {
-  'material-prop.form': {
-    basic: '基础',
-    data: '数据',
-    structure: '结构',
-    actions: '按钮',
-    behavior: '行为',
-  },
-  'material-prop.lowcode-edit-form': {
-    basic: '基础',
-    data: '数据',
-    structure: '字段',
-    actions: '按钮',
-  },
-  'material-prop.lowcode-search-form': {
-    basic: '基础',
-    data: '数据',
-    structure: '字段',
-  },
-};
-
-for (const [code, labels] of Object.entries(repairedTabLabels)) {
-  for (const [key, label] of Object.entries(labels)) {
-    assert.ok(
-      repairMigration.includes(`('${code}', '${key}', '${label}')`),
-      `missing repaired label ${code}.${key}`,
-    );
-  }
+const sourceMaterialKeys = new Set();
+for (const match of (await source('packages/lowcode-framework/src/packages/chart-component/index.tsx')).matchAll(/key:\s*'([^']+)'/g)) {
+  sourceMaterialKeys.add(match[1]);
 }
-assert.match(repairMigration, /jsonb_set\(tab\.value, '\{label\}'/);
-assert.match(repairMigration, /order by tab\.ordinality/);
-assert.match(repairMigration, /else tab\.value/);
-assert.match(repairMigration, /definition\.schema is distinct from repaired\.schema/);
 
-console.log('material property tabs regression checks passed');
+async function walk(path) {
+  const entries = await readdir(new URL(path, root), { withFileTypes: true });
+  const files = [];
+  for (const entry of entries) {
+    const child = `${path}${entry.name}`;
+    if (entry.isDirectory()) files.push(...await walk(`${child}/`));
+    else if (/\.(?:ts|tsx)$/.test(entry.name)) files.push(child);
+  }
+  return files;
+}
+
+const materialSources = await Promise.all((await walk('packages/lowcode-framework/src/packages/')).map(source));
+for (const materialSource of materialSources) {
+  assert.doesNotMatch(materialSource, /createEditor[A-Za-z]*Prop|createFieldProps|visual-editor\.props/);
+  for (const match of materialSource.matchAll(/key:\s*'([^']+)'/g)) sourceMaterialKeys.add(match[1]);
+}
+
+for (const componentKey of sourceMaterialKeys) {
+  if (componentKey === 'tabbar-item') continue;
+  assert.ok(
+    definitions.has(componentKey) || chartComponentKeys.includes(componentKey),
+    `missing database material property definition for source material ${componentKey}`,
+  );
+}
+
+console.log('material property database-only tabs regression checks passed');

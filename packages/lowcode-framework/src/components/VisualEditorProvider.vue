@@ -23,7 +23,6 @@ import { computed, onBeforeUnmount, onMounted, provide, useSlots, watch } from '
 import VisualEditor from '../visual-editor/index.vue';
 import GlobalDialogHost from './GlobalDialogHost';
 import { useLowCodeHost } from '../core/host';
-import { loadDatabaseMaterialPropForms } from '../visual-editor/material-prop-forms';
 import {
   ensureUniqueVisualBlockIds,
   type VisualEditorModelValue,
@@ -141,14 +140,6 @@ defineExpose({
 
 onMounted(() => {
   window.addEventListener('beforeunload', persistToSession);
-
-  try {
-    void loadDatabaseMaterialPropForms(host.getServiceApi()).catch((error) => {
-      console.warn('数据库物料属性表单加载失败，已继续使用内置定义。', error);
-    });
-  } catch (error) {
-    console.warn('未配置低代码服务，已继续使用内置物料属性定义。', error);
-  }
 });
 
 onBeforeUnmount(() => {

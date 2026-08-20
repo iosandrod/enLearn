@@ -8,7 +8,6 @@ const readFrameworkSource = (path) => readFile(new URL(path, frameworkRoot), 'ut
 
 const [
   gridComponentSource,
-  materialPropsSource,
   gridConverterSource,
   runtimeToVisualSource,
   gridDesignerSource,
@@ -16,29 +15,25 @@ const [
   migrationSource,
 ] = await Promise.all([
   readFrameworkSource('packages/business-component/lowcode-grid/index.tsx'),
-  readFrameworkSource('visual-editor/material-prop-forms/materials/page-blocks.ts'),
   readFrameworkSource('lowcode/visual-converters/lowcode-grid/index.ts'),
   readFrameworkSource('lowcode/visual-converters/index.ts'),
   readFrameworkSource('visual-editor/components/grid-designer/grid-designer.service.tsx'),
   readFrameworkSource('types/lowcode.ts'),
   readFile(
-    new URL('../../supabase/migrations/20260811140000_grid_table_type_property.sql', import.meta.url),
+    new URL('../../supabase/migrations/20260819100000_database_only_material_property_forms.sql', import.meta.url),
     'utf8',
   ),
 ]);
 
-assert.match(gridComponentSource, /tableType:\s*createEditorSelectProp\(/);
-assert.match(gridComponentSource, /label:\s*'表格类型'/);
-for (const value of ['main', 'detail', 'default']) {
-  assert.match(
-    gridComponentSource,
-    new RegExp(`label: '${value}', value: '${value}'`),
-    `The grid table type selector must include ${value}.`,
-  );
-}
-
-assert.match(materialPropsSource, /field:\s*'tableType'[\s\S]*?component:\s*'lc-option-select'/);
-assert.match(materialPropsSource, /field:\s*'tableType'[\s\S]*?defaultValue:\s*'default'/);
+assert.doesNotMatch(gridComponentSource, /createEditor[A-Za-z]*Prop|tableType:\s*createEditor/);
+const gridDefinitionMatch = migrationSource.match(
+  /\('material-prop\.lowcode-grid'[^$]*\$schema\$(\{.*?\})\$schema\$::jsonb/,
+);
+assert.ok(gridDefinitionMatch, 'missing database schema for lowcode-grid');
+const tableTypeField = JSON.parse(gridDefinitionMatch[1]).fields.find((field) => field.field === 'tableType');
+assert.equal(tableTypeField?.component, 'lc-option-select');
+assert.equal(tableTypeField?.defaultValue, 'default');
+assert.deepEqual(tableTypeField.options.map((option) => option.rawValue), ['main', 'detail', 'default']);
 assert.match(gridConverterSource, /tableType:\s*'default'/);
 assert.match(gridDesignerSource, /GridDesignerTableType = 'main' \| 'detail' \| 'default'/);
 for (const value of ['main', 'detail', 'default']) {
@@ -54,7 +49,7 @@ assert.match(
   /tableType === 'normal'\) return 'default'[\s\S]*tableType === 'default'/,
 );
 assert.match(gridTypesSource, /tableType\?: 'main' \| 'detail' \| 'default'/);
-assert.match(migrationSource, /where code = 'material-prop\.lowcode-grid'/);
+assert.match(migrationSource, /'material-prop\.lowcode-grid'/);
 assert.match(migrationSource, /"field":"tableType"/);
 
 const bundledConverter = await build({

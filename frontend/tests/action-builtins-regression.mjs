@@ -151,7 +151,6 @@ const consumerPaths = [
   'lowcode/block-materials/defaults.ts',
   'packages/business-component/lowcode-button-group/index.tsx',
   'visual-editor/components/button-group-designer/button-group-designer.service.tsx',
-  'visual-editor/material-prop-forms/materials/page-blocks.ts',
 ];
 const consumerSources = await Promise.all(
   consumerPaths.map((path) => readFile(new URL(path, frameworkRoot), 'utf8')),

@@ -7,21 +7,15 @@ const frameworkRoot = new URL('../../packages/lowcode-framework/src/', import.me
 const readFrameworkSource = (path) => readFile(new URL(path, frameworkRoot), 'utf8');
 
 const [
-  formPropsSource,
-  editFormPropsSource,
-  materialPropsSource,
   runtimeToVisualSource,
   formTypesSource,
-  migrationSource,
+  databaseOnlyMigrationSource,
   applyMigrationSource,
 ] = await Promise.all([
-  readFrameworkSource('packages/container-component/form/compProps.ts'),
-  readFrameworkSource('packages/business-component/lowcode-edit-form/index.tsx'),
-  readFrameworkSource('visual-editor/material-prop-forms/materials/page-blocks.ts'),
   readFrameworkSource('lowcode/visual-converters/index.ts'),
   readFrameworkSource('types/lowcode.ts'),
   readFile(
-    new URL('../../supabase/migrations/20260811130000_form_type_property.sql', import.meta.url),
+    new URL('../../supabase/migrations/20260819100000_database_only_material_property_forms.sql', import.meta.url),
     'utf8',
   ),
   readFile(
@@ -30,26 +24,22 @@ const [
   ),
 ]);
 
-assert.match(formPropsSource, /formType:\s*createEditorSelectProp\(/);
-assert.match(formPropsSource, /label:\s*'表单类型'/);
-assert.match(formPropsSource, /formType:[\s\S]*?defaultValue:\s*'default'/);
-assert.match(editFormPropsSource, /formType:\s*createEditorSelectProp\(/);
-assert.match(editFormPropsSource, /formType:[\s\S]*?defaultValue:\s*'edit'/);
-for (const value of ['edit', 'search', 'default']) {
-  assert.match(
-    formPropsSource,
-    new RegExp(`value: '${value}'`),
-    `The form type selector must include ${value}.`,
+for (const [componentKey, expectedDefault] of [['lowcode-edit-form', 'edit']]) {
+  const match = databaseOnlyMigrationSource.match(
+    new RegExp(`\\('material-prop\\.${componentKey}'[^$]*\\$schema\\$(\\{.*?\\})\\$schema\\$::jsonb`),
   );
+  assert.ok(match, `missing database schema for ${componentKey}`);
+  const definition = JSON.parse(match[1]);
+  const formType = definition.fields.find((field) => field.field === 'formType');
+  assert.equal(formType?.component, 'lc-option-select');
+  assert.equal(formType?.defaultValue, expectedDefault);
+  assert.deepEqual(formType.options.map((option) => option.rawValue), ['edit', 'search', 'default']);
 }
-
-assert.match(materialPropsSource, /field:\s*'formType'[\s\S]*?component:\s*'lc-option-select'/);
-assert.match(materialPropsSource, /componentKey:\s*'lowcode-edit-form'[\s\S]*?field:\s*'formType'[\s\S]*?defaultValue:\s*'edit'/);
 assert.match(runtimeToVisualSource, /formType:[\s\S]*?block\.formType === 'edit'[\s\S]*?block\.formType === 'search'[\s\S]*?block\.formType === 'default'/);
 assert.match(formTypesSource, /formType\?: 'edit' \| 'search' \| 'default'/);
-assert.match(migrationSource, /where code = 'material-prop\.form'/);
-assert.match(migrationSource, /where code = 'material-prop\.lowcode-edit-form'/);
-assert.match(migrationSource, /"field":"formType"/);
+assert.match(databaseOnlyMigrationSource, /'material-prop\.form'/);
+assert.match(databaseOnlyMigrationSource, /'material-prop\.lowcode-edit-form'/);
+assert.match(databaseOnlyMigrationSource, /"field":"formType"/);
 assert.match(applyMigrationSource, /20260811130000_form_type_property\.sql/);
 assert.match(applyMigrationSource, /20260817090000_repair_form_property_tabs\.sql/);
 assert.match(applyMigrationSource, /for \(const migrationPath of migrationPaths\)/);

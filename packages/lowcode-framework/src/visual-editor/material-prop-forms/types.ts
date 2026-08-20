@@ -26,19 +26,11 @@ export type MaterialPropFormField = LowCodeField & {
 export type MaterialPropFormDefinition = {
   componentKey: string;
   title?: string;
-  extendsVisualProps?: boolean;
-  mergeBuiltinFields?: boolean;
-  separateArrayTableTabs?: boolean;
   fields: MaterialPropFormField[];
-  layout?: LowCodeFormLayoutNode[];
-  actions?: LowCodeAction[];
+  layout: LowCodeFormLayoutNode[];
+  actions: LowCodeAction[];
 };
 
 export type MaterialPropFormSchema = LowCodeFormSchema & {
   fields: MaterialPropFormField[];
 };
-
-export type MaterialPropFormModule =
-  | { default?: MaterialPropFormDefinition | MaterialPropFormDefinition[] }
-  | MaterialPropFormDefinition
-  | MaterialPropFormDefinition[];

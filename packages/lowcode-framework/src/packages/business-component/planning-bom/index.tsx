@@ -1,8 +1,4 @@
 import PlanningBom from '../../../lowcode/block-materials/planning-bom/index.vue';
-import {
-  createEditorInputProp,
-  createEditorJsonProp,
-} from '../../../visual-editor/visual-editor.props';
 import { createPlanningVisualDesigner } from '../planning-visual-designer';
 
 export default createPlanningVisualDesigner({
@@ -30,17 +26,6 @@ export default createPlanningVisualDesigner({
       ],
     }],
   }],
-  props: {
-    keyField: createEditorInputProp({ label: '主键字段', defaultValue: 'id' }),
-    titleField: createEditorInputProp({ label: '标题字段', defaultValue: 'title' }),
-    childrenField: createEditorInputProp({ label: '子节点字段', defaultValue: 'children' }),
-    rowsJson: createEditorJsonProp({
-      label: '静态节点 JSON',
-      defaultValue: '',
-      rootType: 'array',
-      valueMode: 'string',
-    }),
-  },
   createRuntimeProps: (props) => ({
     keyField: props.keyField || 'id',
     titleField: props.titleField || 'title',

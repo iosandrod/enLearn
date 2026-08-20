@@ -1,8 +1,6 @@
 import { inject, provide } from 'vue';
-import type { VisualEditorProps } from './visual-editor.props';
 import type { CSSProperties } from 'vue';
 import type { RequestEnum, ContentTypeEnum } from '../enums/httpEnum';
-import { useDotProp } from './hooks/useDotProp';
 import { generateNanoid } from './utils';
 
 /**
@@ -288,8 +286,6 @@ export type VisualEditorComponent = {
   draggable?: boolean;
   /** 是否显示组件的样式配置项 */
   showStyleConfig?: boolean;
-  /** 组件属性 */
-  props?: Record<string, VisualEditorProps>;
   /** 动画集 */
   animations?: Animation[];
   /** 组件事件集合 */
@@ -305,24 +301,7 @@ export type VisualEditorMarkLines = {
 
 export function createNewBlock(component: VisualEditorComponent): VisualEditorBlockData {
   const vid = `vid_${generateNanoid()}`;
-  const props = Object.entries(component.props || {}).reduce<Record<string, any>>(
-    (prev, [propName, propSchema]) => {
-      const { propObj, prop, isDotProp } = useDotProp(prev, propName);
-      if (propSchema?.defaultValue) {
-        propObj[prop] = propSchema.defaultValue;
-        if (!isDotProp) {
-          prev[propName] = propSchema.defaultValue;
-        }
-      }
-      return prev;
-    },
-    {},
-  );
-
-  if (typeof props.blockId === 'string' && props.blockId.trim()) {
-    const suffix = vid.replace(/^vid_/, '').slice(-6);
-    props.blockId = `${normalizeVisualBlockId(props.blockId, component.key)}-${suffix}`;
-  }
+  const props: Record<string, any> = {};
 
   return {
     _vid: vid,
@@ -404,7 +383,7 @@ export function createVisualEditorConfig() {
     componentMap,
     registry: <
       _,
-      Props extends Record<string, VisualEditorProps> = {},
+      Props extends Record<string, any> = {},
       Model extends Record<string, string> = {},
     >(
       moduleName: keyof ComponentModules,
@@ -419,7 +398,6 @@ export function createVisualEditorConfig() {
           block: VisualEditorBlockData;
           custom: Record<string, any>;
         }) => () => JSX.Element;
-        props?: Props;
         model?: Model;
         styles?: CSSProperties;
       },
